@@ -8,11 +8,15 @@ async function bootstrap() {
   // Esta línea es CRÍTICA: permite que @Body() reciba los datos del JSON
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    forbidNonWhitelisted: true,
+    forbidNonWhitelisted: false,
     transform: true,
   }));
 
-  app.enableCors();
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableCors({
+    origin: '*',  // En producción cambiar a tu dominio
+  });
+
+  await app.listen(3000);
+  console.log('🚀 Backend corriendo en http://localhost:3000');
 }
 bootstrap();
