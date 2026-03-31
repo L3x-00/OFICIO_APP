@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  # Base de datos principal
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: oficio_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: oficio_user
+      POSTGRES_PASSWORD: oficio_pass_2025
+      POSTGRES_DB: oficio_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Cache y sesiones
+  redis:
+    image: redis:7.2-alpine
+    container_name: oficio_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis_pass_2025
+
+  # Almacenamiento de imágenes (compatible S3)
+  minio:
+    image: minio/minio:latest
+    container_name: oficio_minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: oficio_minio
+      MINIO_ROOT_PASSWORD: minio_pass_2025
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+volumes:
+  postgres_data:
+  minio_data:

@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum UserRole {
+  USUARIO        // Cliente final, usa la app gratis
+  PROVEEDOR      // Profesional u oficio, paga suscripción
+  ADMIN          // Administrador del sistema
+}
+
+enum AvailabilityStatus {
+  DISPONIBLE
+  OCUPADO
+  CON_DEMORA
+}
+
+enum SubscriptionPlan {
+  GRATIS         // Periodo de gracia (freemium)
+  BASICO
+  ESTANDAR
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVA
+  VENCIDA
+  CANCELADA
+  GRACIA          // Meses gratis iniciales
+}
+
+enum ProviderType {
+  OFICIO          // Electricista, gasfitero, etc.
+  NEGOCIO         // Restaurante, peluquería, etc.
+}
+
+enum VerificationStatus {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+// ─────────────────────────────────────────
+// USUARIOS
+// ─────────────────────────────────────────
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String
+  role          UserRole  @default(USUARIO)
+  firstName     String
+  lastName      String
+  avatarUrl     String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones
+  provider      Provider?           // Si el usuario es proveedor
+  favorites     Favorite[]          // Proveedores guardados
+  reviews       Review[]            // Reseñas que escribió
+  refreshTokens RefreshToken[]      // Sesiones activas
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          Int       @id @default(autoincrement())
+  token       String    @unique
+  userId      Int
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────
+// LOCALIDADES (para multi-ciudad)
+// ─────────────────────────────────────────
+
+model Locality {
+  id          Int        @id @default(autoincrement())
+  name        String     // "Huancayo", "Lima", etc.
+  department  String
+  country     String     @default("Perú")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  providers   Provider[]
+
+  @@map("localities")
+}
+
+// ─────────────────────────────────────────
+// CATEGORÍAS
+// ─────────────────────────────────────────
+
+model Category {
+  id            Int         @id @default(autoincrement())
+  name          String      // "Electricistas"
+  slug          String      @unique  // "electricistas"
+  iconUrl       String?
+  parentId      Int?        // Para subcategorías
+  isActive      Boolean     @default(true)
+
+  parent        Category?   @relation("SubCategories", fields: [parentId], references: [id])
+  children      Category[]  @relation("SubCategories")
+  providers     Provider[]
+
+  @@map("categories")
+}
+
+// ─────────────────────────────────────────
+// PROVEEDORES
+// ─────────────────────────────────────────
+
+model Provider {
+  id                  Int                 @id @default(autoincrement())
+  userId              Int                 @unique
+  type                ProviderType        @default(OFICIO)
+  businessName        String              // Nombre del servicio o negocio
+  description         String?
+  phone               String
+  whatsapp            String?
+  address             String?
+
+  // Geolocalización — guardamos lat/lng como decimales
+  // PostGIS se usa para las consultas de cercanía
+  latitude            Float?
+  longitude           Float?
+
+  // Horarios (JSON flexible)
+  scheduleJson        Json?               // {"lun":"8:00-18:00", "mar":"8:00-18:00"...}
+
+  // Estado y disponibilidad
+  availability        AvailabilityStatus  @default(DISPONIBLE)
+  isVisible           Boolean             @default(true) // false cuando suscripción vence
+
+  // Verificación
+  verificationStatus  VerificationStatus  @default(PENDIENTE)
+  isVerified          Boolean             @default(false)
+  hasCleanRecord      Boolean             @default(false) // Sin antecedentes
+
+  // Calificación (desnormalizada para velocidad)
+  averageRating       Float               @default(0)
+  totalReviews        Int                 @default(0)
+
+  localityId          Int
+  categoryId          Int
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relaciones
+  user                User                @relation(fields: [userId], references: [id])
+  locality            Locality            @relation(fields: [localityId], references: [id])
+  category            Category            @relation(fields: [categoryId], references: [id])
+  images              ProviderImage[]
+  reviews             Review[]
+  favorites           Favorite[]
+  subscription        Subscription?
+  verificationDocs    VerificationDoc[]
+  analytics           ProviderAnalytic[]
+
+  @@map("providers")
+}
+
+model ProviderImage {
+  id          Int       @id @default(autoincrement())
+  providerId  Int
+  url         String
+  isCover     Boolean   @default(false)  // Foto principal
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  provider    Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("provider_images")
+}
+
+// ─────────────────────────────────────────
+// SUSCRIPCIONES
+// ─────────────────────────────────────────
+
+model Subscription {
+  id            Int                 @id @default(autoincrement())
+  providerId    Int                 @unique
+  plan          SubscriptionPlan    @default(GRATIS)
+  status        SubscriptionStatus  @default(GRACIA)
+  startDate     DateTime            @default(now())
+  endDate       DateTime            // Fecha de vencimiento
+  graceMonths   Int                 @default(2) // Meses gratis otorgados
+  priceUSD      Float               @default(0)
+  
+  provider      Provider            @relation(fields: [providerId], references: [id])
+  payments      Payment[]
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  subscriptionId  Int
+  amount          Float
+  currency        String        @default("PEN")
+  method          String        // "yape", "bcp_deposito", etc.
+  reference       String?       // Número de operación
+  confirmedAt     DateTime?
+  createdAt       DateTime      @default(now())
+
+  subscription    Subscription  @relation(fields: [subscriptionId], references: [id])
+
+  @@map("payments")
+}
+
+// ─────────────────────────────────────────
+// RESEÑAS
+// ─────────────────────────────────────────
+
+model Review {
+  id          Int       @id @default(autoincrement())
+  providerId  Int
+  userId      Int
+  rating      Int       // 1 a 5
+  comment     String?
+  photoUrl    String    // Obligatorio — foto evidencia
+  isVisible   Boolean   @default(true)  // Admin puede ocultar
+  
+  // Validación anti-fraude
+  // Opción A: GPS
+  userLatAtReview   Float?
+  userLngAtReview   Float?
+  // Opción B: QR
+  qrCodeUsed        String?
+
+  createdAt   DateTime  @default(now())
+
+  provider    Provider  @relation(fields: [providerId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+}
+
+// ─────────────────────────────────────────
+// FAVORITOS
+// ─────────────────────────────────────────
+
+model Favorite {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  providerId  Int
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId]) // Un usuario no puede favoritear dos veces el mismo
+  @@map("favorites")
+}
+
+// ─────────────────────────────────────────
+// VERIFICACIÓN DOCUMENTAL
+// ─────────────────────────────────────────
+
+model VerificationDoc {
+  id          Int                 @id @default(autoincrement())
+  providerId  Int
+  docType     String              // "dni", "antecedentes", "certificado"
+  fileUrl     String
+  status      VerificationStatus  @default(PENDIENTE)
+  reviewedAt  DateTime?
+  notes       String?             // Notas del admin al revisar
+
+  provider    Provider            @relation(fields: [providerId], references: [id])
+
+  @@map("verification_docs")
+}
+
+// ─────────────────────────────────────────
+// ANALYTICS (clics en WhatsApp, llamadas)
+// ─────────────────────────────────────────
+
+model ProviderAnalytic {
+  id          Int       @id @default(autoincrement())
+  providerId  Int
+  eventType   String    // "whatsapp_click", "call_click", "profile_view", "favorite_add"
+  userId      Int?      // Puede ser anónimo
+  createdAt   DateTime  @default(now())
+
+  provider    Provider  @relation(fields: [providerId], references: [id])
+
+  @@map("provider_analytics")
+}
