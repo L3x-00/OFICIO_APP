@@ -72,6 +72,14 @@ class ProviderModel {
     );
   }
 
+  Object? get reviews => null;
+
+  get description => null;
+
+  get scheduleJson => null;
+
+  get address => null;
+
   /// Para actualizar el estado de favorito sin mutar el objeto
   ProviderModel copyWith({bool? isFavorite}) {
     return ProviderModel(

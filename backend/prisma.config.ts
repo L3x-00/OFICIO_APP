@@ -1,11 +1,14 @@
-import path from 'node:path';
 import { defineConfig, env } from 'prisma/config';
-import 'dotenv/config';
+// No uses 'path' de forma tradicional, usa la URL de importación de ESM
+import { join } from 'node:path';
 
 export default defineConfig({
-  schema: path.join('prisma', 'schema.prisma'),
+  // process.cwd() asegura que encuentre la carpeta prisma desde la raíz del proyecto
+  schema: join(process.cwd(), 'prisma', 'schema.prisma'),
+  migrations: {
+    seed: 'npx tsx ./prisma/seed.ts',
+  },
   datasource: {
-    // Usamos la variable cargada por dotenv
-    url: process.env.DATABASE_URL,
+    url: env('DATABASE_URL'),
   },
 });

@@ -1,20 +1,27 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+// Importamos directamente desde client.js (que se genera a partir de client.ts)
+// La ruta es relativa desde prisma/prisma.service.ts hasta src/generated/client/client.js
+import { PrismaClient } from '../src/generated/client/client.js'; 
 import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  
+  // ... tus propiedades (user, category, etc)
+
   constructor() {
-    // Pasamos el adapter explícitamente como requiere Prisma 7
-    const adapter = new PrismaPg({
-      connectionString: process.env.DATABASE_URL!,
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
     });
-    
+
+    const adapter = new PrismaPg(pool);
+
+    // Pasamos el adaptador al constructor
     super({ adapter });
   }
 
   async onModuleInit() {
+    // Al extender de PrismaClient desde client.js, estos métodos ya existen
     await this.$connect();
   }
 

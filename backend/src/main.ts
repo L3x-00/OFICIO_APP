@@ -1,22 +1,28 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Esta línea es CRÍTICA: permite que @Body() reciba los datos del JSON
+  // 1. HABILITAR CORS (Crucial para que el navegador no bloquee las peticiones)
+  app.enableCors({
+    origin: '*', // En desarrollo puedes usar '*' para permitir todo
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  // 2. VALIDATION PIPE (Para que el @Body() no llegue vacío)
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    forbidNonWhitelisted: false,
+    forbidNonWhitelisted: true,
     transform: true,
   }));
 
-  app.enableCors({
-    origin: '*',  // En producción cambiar a tu dominio
-  });
-
-  await app.listen(3000);
-  console.log('🚀 Backend corriendo en http://localhost:3000');
+  // 3. ESCUCHAR EN 0.0.0.0 (Para que sea visible desde el emulador y la red)
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port, '0.0.0.0'); 
+  
+  console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
 }
 bootstrap();
