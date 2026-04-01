@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AvailabilityStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -156,4 +157,155 @@ export class AdminService {
       })),
     };
   }
+  // ── CREAR PROVEEDOR DESDE EL ADMIN ──────────────────────
+async createProvider(data: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  businessName: string;
+  phone: string;
+  whatsapp?: string;
+  description?: string;
+  address?: string;
+  categoryId: number;
+  localityId: number;
+  type: string;
+  scheduleJson?: any;
+}) {
+  // Crear usuario base para el proveedor
+  const bcrypt = await import('bcrypt');
+  const tempPassword = Math.random().toString(36).slice(-8);
+
+  const user = await this.prisma.user.create({
+    data: {
+      email: data.email,
+      passwordHash: await bcrypt.hash(tempPassword, 10),
+      firstName: data.firstName,
+      lastName: data.lastName,
+      role: 'PROVEEDOR',
+    },
+  });
+
+  // Crear el proveedor
+  const provider = await this.prisma.provider.create({
+    data: {
+      userId: user.id,
+      businessName: data.businessName,
+      phone: data.phone,
+      whatsapp: data.whatsapp,
+      description: data.description,
+      address: data.address,
+      categoryId: data.categoryId,
+      localityId: data.localityId,
+      type: data.type as any,
+      scheduleJson: data.scheduleJson ?? {
+        lun: '8:00-18:00', mar: '8:00-18:00',
+        mie: '8:00-18:00', jue: '8:00-18:00',
+        vie: '8:00-18:00', sab: '9:00-13:00',
+        dom: 'Cerrado',
+      },
+    },
+    include: {
+      category: true,
+      locality: true,
+    },
+  });
+
+  // Suscripción gratuita por 2 meses
+  const endDate = new Date();
+  endDate.setMonth(endDate.getMonth() + 2);
+  await this.prisma.subscription.create({
+    data: {
+      providerId: provider.id,
+      plan: 'GRATIS',
+      status: 'GRACIA',
+      endDate,
+    },
+  });
+
+  return { provider, tempPassword };
+}
+
+// ── ACTUALIZAR PROVEEDOR ─────────────────────────────────
+async updateProvider(id: number, data: {
+    businessName?: string;
+    phone?: string;
+    description?: string;
+    address?: string;
+    isVisible?: boolean;
+    isVerified?: boolean;
+    // 2. Cambia 'string' por 'AvailabilityStatus'
+    availability?: AvailabilityStatus; 
+  }) {
+    return this.prisma.provider.update({
+      where: { id },
+      data, // Ahora 'data' es compatible con lo que Prisma espera
+      include: { category: true, locality: true },
+    });
+  
+}
+
+// ── SUSPENDER / ACTIVAR PROVEEDOR ────────────────────────
+async toggleProviderVisibility(id: number) {
+  const provider = await this.prisma.provider.findUnique({
+    where: { id },
+  });
+  if (!provider) throw new Error('Proveedor no encontrado');
+
+  return this.prisma.provider.update({
+    where: { id },
+    data: { isVisible: !provider.isVisible },
+  });
+}
+
+// ── APROBAR VERIFICACIÓN ─────────────────────────────────
+async approveVerification(providerId: number) {
+  return this.prisma.provider.update({
+    where: { id: providerId },
+    data: {
+      isVerified: true,
+      verificationStatus: 'APROBADO',
+    },
+  });
+}
+
+// ── LISTAR TODOS LOS PROVEEDORES (sin límite) ────────────
+async getAllProviders(page = 1, limit = 15, search?: string) {
+  const skip = (page - 1) * limit;
+  const where: any = {};
+
+  if (search) {
+    where.OR = [
+      { businessName: { contains: search, mode: 'insensitive' } },
+      { phone: { contains: search } },
+    ];
+  }
+
+  const [providers, total] = await Promise.all([
+    this.prisma.provider.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        category: { select: { name: true } },
+        locality: { select: { name: true } },
+        subscription: { select: { plan: true, status: true, endDate: true } },
+        user: { select: { email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    this.prisma.provider.count({ where }),
+  ]);
+
+  return { data: providers, total, page, lastPage: Math.ceil(total / limit) };
+}
+
+// ── LISTAR CATEGORÍAS Y LOCALIDADES (para el formulario) ─
+async getFormOptions() {
+  const [categories, localities] = await Promise.all([
+    this.prisma.category.findMany({ where: { isActive: true } }),
+    this.prisma.locality.findMany({ where: { isActive: true } }),
+  ]);
+  return { categories, localities };
+}
 }

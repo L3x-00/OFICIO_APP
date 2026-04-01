@@ -1,49 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:mobile/core/constans/app_colors.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../providers_list/domain/models/provider_model.dart';
+import 'package:provider/provider.dart';
+import '../providers/favorites_provider.dart';
 import '../../../providers_list/presentation/widgets/service_card.dart';
 import '../../../providers_list/presentation/screens/provider_detail_sheet.dart';
 
-class FavoritesScreen extends StatefulWidget {
+class FavoritesScreen extends StatelessWidget {
   final int userId;
   const FavoritesScreen({super.key, required this.userId});
-
-  @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
-}
-
-class _FavoritesScreenState extends State<FavoritesScreen> {
-  final Dio _dio = DioClient.instance.dio;
-  List<ProviderModel> _favorites = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavorites();
-  }
-
-  Future<void> _loadFavorites() async {
-    try {
-      final response = await _dio.get('/favorites/${widget.userId}');
-      final list = response.data as List;
-      setState(() {
-        _favorites = list
-            .map((p) => ProviderModel.fromJson(p as Map<String, dynamic>))
-            .toList();
-        _isLoading = false;
-      });
-    } catch (_) {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _toggleFavorite(int providerId) async {
-    await _dio.post('/favorites/${widget.userId}/$providerId');
-    await _loadFavorites(); // Recargar la lista
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,28 +24,38 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(
+      body: Consumer<FavoritesProvider>(
+        builder: (context, favProv, _) {
+          if (favProv.isLoading) {
+            return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          : _favorites.isEmpty
-              ? _buildEmpty()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _favorites.length,
-                  itemBuilder: (context, index) {
-                    final provider = _favorites[index].copyWith(
-                      isFavorite: true,
-                    );
-                    return ServiceCard(
-                      provider: provider,
-                      onTap: () =>
-                          ProviderDetailSheet.show(context, provider),
-                      onFavoriteToggle: () =>
-                          _toggleFavorite(provider.id),
-                    );
-                  },
-                ),
+            );
+          }
+
+          if (favProv.favorites.isEmpty) {
+            return _buildEmpty();
+          }
+
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: favProv.loadFavorites,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: favProv.favorites.length,
+              itemBuilder: (context, index) {
+                final provider = favProv.favorites[index].copyWith(
+                  isFavorite: true,
+                );
+                return ServiceCard(
+                  provider: provider,
+                  onTap: () => ProviderDetailSheet.show(context, provider),
+                  onFavoriteToggle: () => favProv.toggle(provider.id),
+                );
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -93,7 +67,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           Icon(
             Icons.favorite_border_rounded,
             size: 64,
-            color: AppColors.textMuted.withOpacity(0.4),
+            color: AppColors.textMuted.withOpacity(0.3),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -101,11 +75,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Toca el corazón en cualquier tarjeta\npara guardar un proveedor',
+            'Toca el ❤ en cualquier tarjeta\npara guardar un servicio aquí',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),

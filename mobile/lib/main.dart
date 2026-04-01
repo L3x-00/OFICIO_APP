@@ -3,13 +3,19 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
-import 'features/providers_list/presentation/screens/providers_screen.dart';
+import 'features/auth/presentation/screens/onboarding_screen.dart';
+import 'features/favorites/presentation/providers/favorites_provider.dart';
 import 'features/favorites/presentation/screens/favorites_screen.dart';
+import 'features/providers_list/presentation/screens/providers_screen.dart';
+import 'features/auth/presentation/screens/profile_screen.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AuthProvider()..initialize(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()..initialize()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+      ],
       child: const OficioApp(),
     ),
   );
@@ -26,7 +32,7 @@ class OficioApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: AppColors.bgDark,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: AppColors.primary,
           surface: AppColors.bgCard,
         ),
@@ -44,54 +50,79 @@ class _AppRoot extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    // Mientras inicializa, muestra splash
-    if (!auth.isInitialized) {
-      return const Scaffold(
-        backgroundColor: AppColors.bgDark,
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
-
-    // Si no está autenticado, muestra login
-    if (!auth.isAuthenticated) {
-      return const LoginScreen();
-    }
-
-    // Si está autenticado, muestra la app principal
-    return MainNavigation(userId: auth.user!.id);
+    return switch (auth.navigationState) {
+      AppNavigationState.loading => const _SplashScreen(),
+      AppNavigationState.unauthenticated => const LoginScreen(),
+      AppNavigationState.needsOnboarding => const OnboardingScreen(),
+      AppNavigationState.authenticated => _MainApp(userId: auth.user!.id),
+    };
   }
 }
 
-class MainNavigation extends StatefulWidget {
-  final int userId;
-  const MainNavigation({super.key, required this.userId});
+// ─── Splash screen ─────────────────────────────────────────
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
 
   @override
-  State<MainNavigation> createState() => _MainNavigationState();
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.bgDark,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: AppColors.primary),
+            SizedBox(height: 20),
+            Text(
+              'OficioApp',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0;
+// ─── App principal con navegación ─────────────────────────
 
-  late final List<Widget> _screens;
+class _MainApp extends StatefulWidget {
+  final int userId;
+  const _MainApp({required this.userId});
+
+  @override
+  State<_MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<_MainApp> {
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _screens = [
-      const ProvidersScreen(),
-      FavoritesScreen(userId: widget.userId),
-    ];
+    // Inicializar favoritos cuando el usuario está autenticado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FavoritesProvider>().initialize(widget.userId);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      const ProvidersScreen(),
+      FavoritesScreen(userId: widget.userId),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -108,6 +139,11 @@ class _MainNavigationState extends State<MainNavigation> {
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textMuted,
           type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.search_rounded),
@@ -118,6 +154,11 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icon(Icons.favorite_border_rounded),
               activeIcon: Icon(Icons.favorite_rounded),
               label: 'Favoritos',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline_rounded),
+              activeIcon: Icon(Icons.person_rounded),
+              label: 'Perfil',
             ),
           ],
         ),

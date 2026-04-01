@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/features/favorites/presentation/providers/favorites_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
-import '../../data/providers_repository.dart';
 import '../providers/providers_provider.dart';
 import '../widgets/service_card.dart';
 import 'provider_detail_sheet.dart';
@@ -275,7 +275,12 @@ class _ProvidersList extends StatelessWidget {
         return ServiceCard(
           provider: provider,
           onTap: () => ProviderDetailSheet.show(context, provider),
-          onFavoriteToggle: () => prov.toggleFavorite(provider.id),
+          onFavoriteToggle: () {
+            // Actualiza el estado visual local
+            prov.toggleFavorite(provider.id);
+            // También persiste en BD y actualiza el FavoritesProvider global
+            context.read<FavoritesProvider>().toggle(provider.id);
+          },
         );
       },
     );

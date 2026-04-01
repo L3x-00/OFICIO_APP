@@ -3,32 +3,47 @@ import '../../data/auth_repository.dart';
 import '../../domain/models/user_model.dart';
 import '../../../../core/errors/failures.dart';
 
+/// Estado de navegación del usuario
+enum AppNavigationState {
+  loading,      // Verificando sesión guardada
+  unauthenticated, // Sin sesión
+  needsOnboarding, // Registrado pero sin elegir rol
+  authenticated,   // Listo para usar la app
+}
+
 class AuthProvider extends ChangeNotifier {
   final _repo = AuthRepository();
 
   UserModel? _user;
-  bool _isLoading = false;
-  bool _isInitialized = false;
+  bool _isInitialized       = false;
+  bool _needsOnboarding     = false;
   String? _error;
+  bool _isLoading           = false;
 
-  // Getters
-  UserModel? get user       => _user;
-  bool get isLoading        => _isLoading;
-  bool get isAuthenticated  => _user != null;
-  bool get isInitialized    => _isInitialized;
-  String? get error         => _error;
+  UserModel? get user         => _user;
+  bool get isLoading          => _isLoading;
+  bool get isAuthenticated    => _user != null && !_needsOnboarding;
+  bool get needsOnboarding    => _needsOnboarding;
+  bool get isInitialized      => _isInitialized;
+  String? get error           => _error;
 
-  // ── Inicializar — llamar al arrancar la app ───────────────
+  /// Estado calculado para la navegación
+  AppNavigationState get navigationState {
+    if (!_isInitialized) return AppNavigationState.loading;
+    if (_user == null)   return AppNavigationState.unauthenticated;
+    if (_needsOnboarding) return AppNavigationState.needsOnboarding;
+    return AppNavigationState.authenticated;
+  }
+
   Future<void> initialize() async {
     _user = await _repo.restoreSession();
     _isInitialized = true;
     notifyListeners();
   }
 
-  // ── Login ─────────────────────────────────────────────────
   Future<bool> login(String email, String password) async {
     _isLoading = true;
-    _error = null;
+    _error     = null;
     notifyListeners();
 
     final result = await _repo.login(email: email, password: password);
@@ -40,11 +55,9 @@ class AuthProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
-
     return result.isSuccess;
   }
 
-  // ── Registro ──────────────────────────────────────────────
   Future<bool> register({
     required String email,
     required String password,
@@ -53,32 +66,51 @@ class AuthProvider extends ChangeNotifier {
     String? phone,
   }) async {
     _isLoading = true;
-    _error = null;
+    _error     = null;
     notifyListeners();
 
     final result = await _repo.register(
-      email:     email,
-      password:  password,
-      firstName: firstName,
-      lastName:  lastName,
-      phone:     phone,
+      email: email, password: password,
+      firstName: firstName, lastName: lastName,
+      phone: phone,
     );
 
     result.when(
-      success: (user) => _user = user,
-      failure: (e)    => _error = e.message,
+      success: (user) {
+        _user = user;
+        _needsOnboarding = true; // Nuevo registro siempre pasa por onboarding
+      },
+      failure: (e) => _error = e.message,
     );
 
     _isLoading = false;
     notifyListeners();
-
     return result.isSuccess;
   }
 
-  // ── Logout ────────────────────────────────────────────────
+  /// Llamado desde OnboardingScreen cuando el usuario elige su rol
+  void completeOnboarding({required String role}) {
+    _needsOnboarding = false;
+    // Actualizar el rol local del usuario
+    if (_user != null) {
+      _user = UserModel(
+        id:        _user!.id,
+        email:     _user!.email,
+        firstName: _user!.firstName,
+        lastName:  _user!.lastName,
+        role:      role == 'USUARIO' ? 'USUARIO' : 'PROVEEDOR',
+        phone:     _user!.phone,
+        avatarUrl: _user!.avatarUrl,
+      );
+    }
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     await _repo.logout();
-    _user = null;
+    _user            = null;
+    _needsOnboarding = false;
+    _error           = null;
     notifyListeners();
   }
 
