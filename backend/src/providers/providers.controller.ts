@@ -46,7 +46,20 @@ export class ProvidersController {
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.providersService.findOne(id);
   }
+  @Get('admin/metrics')
+    async getAdminMetrics() {
+      return this.providersService.getAdminMetrics();
+    }
 
+  @Get('admin/grace-providers')
+    async getGraceProviders() {
+      return this.providersService.getGraceProviders();
+    }
+  @Get('admin/analytics')
+    async getAnalytics(@Query('days') days: string) {
+      const daysNum = days ? parseInt(days) : 30;
+      return this.providersService.getAnalyticsSummary(daysNum);
+    }
   // POST /providers/:id/track
   @Post(':id/track')
   trackEvent(

@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { ProvidersModule } from './providers/providers.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
+import { AdminModule } from './admin/admin.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ 
@@ -15,6 +17,9 @@ import { ProvidersModule } from './providers/providers.module.js';
     UsersModule,
     PrismaModule,
     ProvidersModule,
+    ReviewsModule,
+    AdminModule,
+    
   ],
     
   controllers: [AppController],

@@ -30,6 +30,8 @@ dependencies:
 
   # Navegación
   go_router: ^14.8.1
+  image_picker: ^1.2.1
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

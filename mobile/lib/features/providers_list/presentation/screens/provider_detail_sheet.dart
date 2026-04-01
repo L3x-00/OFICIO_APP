@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile/features/providers_list/presentation/widgets/create_review_sheet.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/constans/app_strings.dart';
 import '../../domain/models/provider_model.dart';
+import '../../../reviews/presentation/widgets/create_review_sheet.dart';
 
 /// Modal de detalle completo del proveedor
 /// Se abre como bottom sheet desde la ServiceCard
@@ -529,36 +531,80 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Botones de contacto fijos ────────────────────────────
 
   Widget _buildContactButtons() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
+  return Container(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+    decoration: BoxDecoration(
+      color: AppColors.bgCard,
+      border: Border(
+        top: BorderSide(color: Colors.white.withOpacity(0.06)),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: _BigContactButton(
-              label: 'WhatsApp',
-              icon: Icons.chat_rounded,
-              color: AppColors.whatsapp,
-              onTap: () => _openWhatsApp(),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Botones de contacto (fila)
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: _BigContactButton(
+                label: 'WhatsApp',
+                icon: Icons.chat_rounded,
+                color: AppColors.whatsapp,
+                onTap: () => _openWhatsApp(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _BigContactButton(
+                label: 'Llamar',
+                icon: Icons.call_rounded,
+                color: AppColors.call,
+                onTap: () => _makeCall(),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Botón de reseña (fila completa)
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              // Importa el widget al inicio del archivo
+              final created = await CreateReviewSheet.show(
+                context,
+                providerId: widget.provider.id,
+                providerName: widget.provider.businessName,
+                userId: 1, // Temporal — vendrá del AuthProvider
+              );
+              if (created == true && mounted) {
+                // Puedes recargar el proveedor aquí si quieres
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('¡Reseña publicada!'),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.star_rounded, size: 18),
+            label: const Text('Dejar una reseña'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.star,
+              side: BorderSide(
+                color: AppColors.star.withOpacity(0.4),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _BigContactButton(
-              label: 'Llamar',
-              icon: Icons.call_rounded,
-              color: AppColors.call,
-              onTap: () => _makeCall(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Future<void> _openWhatsApp() async {
     final number = (widget.provider.whatsapp ?? widget.provider.phone)

@@ -163,9 +163,52 @@ async function main() {
 
   console.log('🏁 Seed completado exitosamente');
 }
+// ── Reseñas de prueba ──────────────────────────────────────
+async function seedReviews(prisma: PrismaClient) {
+  const providers = await prisma.provider.findMany({ take: 3 });
+  const users = await prisma.user.findMany({
+    where: { role: 'USUARIO' },
+    take: 2,
+  });
 
+  if (users.length === 0) {
+    // Crear un usuario normal para las reseñas
+    const user = await prisma.user.create({
+      data: {
+        email: 'cliente@test.com',
+        passwordHash: await bcrypt.hash('123456', 10),
+        firstName: 'Ana',
+        lastName: 'Usuaria',
+        role: 'USUARIO',
+      },
+    });
+    users.push(user);
+  }
+
+  for (const provider of providers) {
+    const existing = await prisma.review.findFirst({
+      where: { providerId: provider.id },
+    });
+    if (!existing) {
+      await prisma.review.create({
+        data: {
+          providerId: provider.id,
+          userId: users[0].id,
+          rating: 5,
+          comment: 'Excelente servicio, muy puntual y profesional.',
+          photoUrl: 'https://picsum.photos/400/300?random=1',
+          isVisible: true,
+        },
+      });
+      await seedReviews(prisma);
+      console.log(`⭐ Reseña creada para: ${provider.businessName}`);
+    }
+  }
+}
 main()
+
   .catch((e) => {
+    
     console.error('❌ Error en el seed:', e);
     process.exit(1);
   })

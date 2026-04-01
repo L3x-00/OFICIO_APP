@@ -122,4 +122,75 @@ export class ProvidersService {
       data: { providerId, eventType, userId },
     });
   }
+  // backend/src/providers/providers.service.ts
+
+  async getAdminMetrics() {
+    const [totalProviders, totalUsers, totalReviews] = await Promise.all([
+      this.prisma.provider.count(),
+      this.prisma.user.count({ where: { role: 'USUARIO' } }),
+      this.prisma.review.count(),
+    ]);
+
+    // Esto es lo que espera tu frontend para el Dashboard
+    return {
+      totalProviders,
+      totalUsers,
+      totalReviews,
+      activeServices: totalProviders, // Puedes ajustar la lógica después
+      revenue: 0 // Placeholder por ahora
+    };
+  }
+
+  async getGraceProviders() {
+    // Retorna proveedores que están en periodo de prueba o próximos a vencer
+    return this.prisma.provider.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+  // backend/src/providers/providers.service.ts
+
+async getAnalyticsSummary(days: number) {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  // 1. Obtenemos los eventos de la base de datos (clicks en whatsapp/llamadas)
+  // Asumiendo que tienes una tabla 'ProviderEvent' o similar del Hito 4
+  const events = await this.prisma.providerAnalytic.findMany({
+      where: {
+        createdAt: { gte: startDate },
+      },
+      select: {
+        eventType: true,
+        createdAt: true,
+      },
+    });
+
+    // 2. Agrupamos los datos por día para la gráfica
+    const dailyData = {};
+    
+    // Inicializamos los días con 0 para que la gráfica no tenga huecos
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      dailyData[dateStr] = { date: dateStr, whatsapp: 0, calls: 0 };
+    }
+
+    // Llenamos con datos reales
+    events.forEach(event => {
+      const dateStr = event.createdAt.toISOString().split('T')[0];
+      if (dailyData[dateStr]) {
+        if (event.eventType === 'WHATSAPP') dailyData[dateStr].whatsapp++;
+        if (event.eventType === 'CALL') dailyData[dateStr].calls++;
+      }
+    });
+
+    // Devolvemos el array ordenado por fecha
+    return {
+      dailyClicks: Object.values(dailyData).sort((a: any, b: any) => 
+        a.date.localeCompare(b.date)
+      )
+    };
+  }
 }
