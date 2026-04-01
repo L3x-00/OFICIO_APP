@@ -6,14 +6,19 @@ import {
   Post,
   Body,
   ParseIntPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProvidersService } from './providers.service.js';
+import { Throttle } from '@nestjs/throttler';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('providers')
 export class ProvidersController {
   constructor(private readonly providersService: ProvidersService) {}
 
-  // GET /providers?categorySlug=electricistas&availability=DISPONIBLE
+  // Cachea el listado general de proveedores por 2 minutos
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(120)
   @Get()
   findAll(
     @Query('categorySlug') categorySlug?: string,
@@ -35,10 +40,28 @@ export class ProvidersController {
     });
   }
 
-  // GET /providers/categories
+  // Cachea el listado de categorías por 10 minutos
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(600)
   @Get('categories')
   getCategories() {
     return this.providersService.getCategories();
+  }
+
+  @Get('admin/metrics')
+  async getAdminMetrics() {
+    return this.providersService.getAdminMetrics();
+  }
+
+  @Get('admin/grace-providers')
+  async getGraceProviders() {
+    return this.providersService.getGraceProviders();
+  }
+
+  @Get('admin/analytics')
+  async getAnalytics(@Query('days') days: string) {
+    const daysNum = days ? parseInt(days) : 30;
+    return this.providersService.getAnalyticsSummary(daysNum);
   }
 
   // GET /providers/:id
@@ -46,21 +69,9 @@ export class ProvidersController {
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.providersService.findOne(id);
   }
-  @Get('admin/metrics')
-    async getAdminMetrics() {
-      return this.providersService.getAdminMetrics();
-    }
 
-  @Get('admin/grace-providers')
-    async getGraceProviders() {
-      return this.providersService.getGraceProviders();
-    }
-  @Get('admin/analytics')
-    async getAnalytics(@Query('days') days: string) {
-      const daysNum = days ? parseInt(days) : 30;
-      return this.providersService.getAnalyticsSummary(daysNum);
-    }
-  // POST /providers/:id/track
+  // Este endpoint: máximo 10 eventos por minuto por IP
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Post(':id/track')
   trackEvent(
     @Param('id', ParseIntPipe) id: number,

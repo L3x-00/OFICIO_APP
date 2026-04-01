@@ -18,3 +18,6 @@
   background: #2D3448;
   border-radius: 3px;
 }
+body {
+  @apply bg-bg-dark text-white;
+}

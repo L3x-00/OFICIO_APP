@@ -1,26 +1,19 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// admin/app/layout.tsx
 import './globals.css';
 import { Sidebar } from '@/components/sidebar';
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'OficioApp — Panel Admin',
-  description: 'Panel de administración',
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} bg-bg-dark text-white`}>
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 ml-64 p-8 overflow-auto">
+      <body className="bg-bg-dark text-white antialiased">
+        <div className="flex min-h-screen overflow-hidden">
+          {/* Sidebar fijo */}
+          <div className="w-64 fixed inset-y-0 left-0 z-50">
+            <Sidebar />
+          </div>
+          
+          {/* Contenido principal con margen para no chocar con el sidebar */}
+          <main className="flex-1 ml-64 p-8 min-h-screen">
             {children}
           </main>
         </div>

@@ -1,7 +1,6 @@
-const config = {
+export default {
   plugins: {
-    "@tailwindcss/postcss": {},
+    tailwindcss: {}, // Cambia "@tailwindcss/postcss" por "tailwindcss"
+    autoprefixer: {},
   },
 };
-
-export default config;
