@@ -5,32 +5,32 @@ import '../../../../core/errors/failures.dart';
 
 /// Estado de navegación del usuario
 enum AppNavigationState {
-  loading,      // Verificando sesión guardada
+  loading, // Verificando sesión guardada
   unauthenticated, // Sin sesión
   needsOnboarding, // Registrado pero sin elegir rol
-  authenticated,   // Listo para usar la app
+  authenticated, // Listo para usar la app
 }
 
 class AuthProvider extends ChangeNotifier {
   final _repo = AuthRepository();
 
   UserModel? _user;
-  bool _isInitialized       = false;
-  bool _needsOnboarding     = false;
+  bool _isInitialized = false;
+  bool _needsOnboarding = false;
   String? _error;
-  bool _isLoading           = false;
+  bool _isLoading = false;
 
-  UserModel? get user         => _user;
-  bool get isLoading          => _isLoading;
-  bool get isAuthenticated    => _user != null && !_needsOnboarding;
-  bool get needsOnboarding    => _needsOnboarding;
-  bool get isInitialized      => _isInitialized;
-  String? get error           => _error;
+  UserModel? get user => _user;
+  bool get isLoading => _isLoading;
+  bool get isAuthenticated => _user != null && !_needsOnboarding;
+  bool get needsOnboarding => _needsOnboarding;
+  bool get isInitialized => _isInitialized;
+  String? get error => _error;
 
   /// Estado calculado para la navegación
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
-    if (_user == null)   return AppNavigationState.unauthenticated;
+    if (_user == null) return AppNavigationState.unauthenticated;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
     return AppNavigationState.authenticated;
   }
@@ -43,14 +43,18 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> login(String email, String password) async {
     _isLoading = true;
-    _error     = null;
+    _error = null;
     notifyListeners();
 
     final result = await _repo.login(email: email, password: password);
 
     result.when(
-      success: (user) => _user = user,
-      failure: (e)    => _error = e.message,
+      success: (user) {
+        _user = user;
+        // Si el usuario ya tiene un rol, no necesita onboarding
+        _needsOnboarding = (user.role == null || user.role.isEmpty);
+      },
+      failure: (e) => _error = e.message,
     );
 
     _isLoading = false;
@@ -66,12 +70,14 @@ class AuthProvider extends ChangeNotifier {
     String? phone,
   }) async {
     _isLoading = true;
-    _error     = null;
+    _error = null;
     notifyListeners();
 
     final result = await _repo.register(
-      email: email, password: password,
-      firstName: firstName, lastName: lastName,
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName: lastName,
       phone: phone,
     );
 
@@ -94,12 +100,12 @@ class AuthProvider extends ChangeNotifier {
     // Actualizar el rol local del usuario
     if (_user != null) {
       _user = UserModel(
-        id:        _user!.id,
-        email:     _user!.email,
+        id: _user!.id,
+        email: _user!.email,
         firstName: _user!.firstName,
-        lastName:  _user!.lastName,
-        role:      role == 'USUARIO' ? 'USUARIO' : 'PROVEEDOR',
-        phone:     _user!.phone,
+        lastName: _user!.lastName,
+        role: role == 'USUARIO' ? 'USUARIO' : 'PROVEEDOR',
+        phone: _user!.phone,
         avatarUrl: _user!.avatarUrl,
       );
     }
@@ -108,9 +114,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await _repo.logout();
-    _user            = null;
+    _user = null;
     _needsOnboarding = false;
-    _error           = null;
+    _error = null;
     notifyListeners();
   }
 

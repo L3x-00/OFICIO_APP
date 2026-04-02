@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '@prisma/client';
 
@@ -6,35 +10,19 @@ import { AvailabilityStatus } from '@prisma/client';
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
-  // ── MÉTRICAS GENERALES ───────────────────────────────────
+  // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
-    const now = new Date();
+    const now          = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [
-      totalProviders,
-      activeProviders,
-      providersInGrace,
-      providersExpiringSoon,
-      totalUsers,
-      totalReviews,
-      pendingReviews,
-      pendingVerifications,
-      whatsappClicks,
-      callClicks,
+      totalProviders, activeProviders, providersInGrace,
+      providersExpiringSoon, totalUsers, totalReviews,
+      pendingVerifications, whatsappClicks, callClicks,
     ] = await Promise.all([
-      // Total de proveedores
       this.prisma.provider.count(),
-
-      // Proveedores visibles activos
       this.prisma.provider.count({ where: { isVisible: true } }),
-
-      // En periodo de gracia
-      this.prisma.subscription.count({
-        where: { status: 'GRACIA' },
-      }),
-
-      // Periodo de gracia que vence en los próximos 7 días
+      this.prisma.subscription.count({ where: { status: 'GRACIA' } }),
       this.prisma.subscription.count({
         where: {
           status: 'GRACIA',
@@ -44,103 +32,62 @@ export class AdminService {
           },
         },
       }),
-
-      // Total de usuarios
       this.prisma.user.count({ where: { role: 'USUARIO' } }),
-
-      // Total de reseñas
       this.prisma.review.count(),
-
-      // Reseñas pendientes de moderación (visibles pero sin revisar)
-      this.prisma.review.count({ where: { isVisible: true } }),
-
-      // Documentos de verificación pendientes
-      this.prisma.verificationDoc.count({
-        where: { status: 'PENDIENTE' },
-      }),
-
-      // Clics en WhatsApp este mes
+      this.prisma.verificationDoc.count({ where: { status: 'PENDIENTE' } }),
       this.prisma.providerAnalytic.count({
-        where: {
-          eventType: 'whatsapp_click',
-          createdAt: { gte: startOfMonth },
-        },
+        where: { eventType: 'whatsapp_click', createdAt: { gte: startOfMonth } },
       }),
-
-      // Clics en llamadas este mes
       this.prisma.providerAnalytic.count({
-        where: {
-          eventType: 'call_click',
-          createdAt: { gte: startOfMonth },
-        },
+        where: { eventType: 'call_click', createdAt: { gte: startOfMonth } },
       }),
     ]);
 
     return {
-      totalProviders,
-      activeProviders,
-      providersInGrace,
-      providersExpiringSoon,
-      totalUsers,
-      totalReviews,
-      pendingReviews,
-      pendingVerifications,
-      whatsappClicks,
-      callClicks,
+      totalProviders, activeProviders, providersInGrace,
+      providersExpiringSoon, totalUsers, totalReviews,
+      pendingVerifications, whatsappClicks, callClicks,
     };
   }
 
-  // ── PROVEEDORES EN PERIODO DE GRACIA ─────────────────────
+  // ── PROVEEDORES EN GRACIA ─────────────────────────────────
   async getGraceProviders() {
     const now = new Date();
-
     const subscriptions = await this.prisma.subscription.findMany({
       where: { status: 'GRACIA' },
       include: {
         provider: {
           include: {
             category: { select: { name: true } },
-            locality: { select: { name: true } },
+            locality:  { select: { name: true } },
           },
         },
       },
-      orderBy: { endDate: 'asc' }, // Los que vencen primero, primero
+      orderBy: { endDate: 'asc' },
     });
 
-    return subscriptions.map((sub) => {
-      const daysLeft = Math.ceil(
+    return subscriptions.map((sub) => ({
+      ...sub,
+      daysLeft: Math.ceil(
         (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      );
-      return {
-        ...sub,
-        daysLeft,
-        isUrgent: daysLeft <= 7,
-      };
-    });
+      ),
+      isUrgent: Math.ceil(
+        (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+      ) <= 7,
+    }));
   }
 
-  // ── ANALYTICS POR PROVEEDOR ───────────────────────────────
+  // ── ANALYTICS ─────────────────────────────────────────────
   async getAnalytics(days = 30) {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    // Top proveedores con más clics
-    const topProviders = await this.prisma.providerAnalytic.groupBy({
-      by: ['providerId', 'eventType'],
-      where: { createdAt: { gte: since } },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 10,
-    });
-
-    // Datos del gráfico: clics por día
     const dailyClicks = await this.prisma.providerAnalytic.findMany({
       where: { createdAt: { gte: since } },
       select: { eventType: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
     });
 
-    // Agrupar por día manualmente
     const byDay: Record<string, { whatsapp: number; calls: number }> = {};
     for (const click of dailyClicks) {
       const day = click.createdAt.toISOString().split('T')[0];
@@ -150,162 +97,215 @@ export class AdminService {
     }
 
     return {
-      topProviders,
       dailyClicks: Object.entries(byDay).map(([date, counts]) => ({
         date,
         ...counts,
       })),
     };
   }
-  // ── CREAR PROVEEDOR DESDE EL ADMIN ──────────────────────
-async createProvider(data: {
-  email: string;
-  firstName: string;
-  lastName: string;
-  businessName: string;
-  phone: string;
-  whatsapp?: string;
-  description?: string;
-  address?: string;
-  categoryId: number;
-  localityId: number;
-  type: string;
-  scheduleJson?: any;
-}) {
-  // Crear usuario base para el proveedor
-  const bcrypt = await import('bcrypt');
-  const tempPassword = Math.random().toString(36).slice(-8);
 
-  const user = await this.prisma.user.create({
-    data: {
-      email: data.email,
-      passwordHash: await bcrypt.hash(tempPassword, 10),
-      firstName: data.firstName,
-      lastName: data.lastName,
-      role: 'PROVEEDOR',
-    },
-  });
+  // ── LISTAR TODOS LOS PROVEEDORES ──────────────────────────
+  async getAllProviders(page = 1, limit = 15, search?: string) {
+    const skip  = (page - 1) * limit;
+    const where: any = {};
 
-  // Crear el proveedor
-  const provider = await this.prisma.provider.create({
-    data: {
-      userId: user.id,
-      businessName: data.businessName,
-      phone: data.phone,
-      whatsapp: data.whatsapp,
-      description: data.description,
-      address: data.address,
-      categoryId: data.categoryId,
-      localityId: data.localityId,
-      type: data.type as any,
-      scheduleJson: data.scheduleJson ?? {
-        lun: '8:00-18:00', mar: '8:00-18:00',
-        mie: '8:00-18:00', jue: '8:00-18:00',
-        vie: '8:00-18:00', sab: '9:00-13:00',
-        dom: 'Cerrado',
-      },
-    },
-    include: {
-      category: true,
-      locality: true,
-    },
-  });
+    if (search) {
+      where.OR = [
+        { businessName: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
 
-  // Suscripción gratuita por 2 meses
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + 2);
-  await this.prisma.subscription.create({
-    data: {
-      providerId: provider.id,
-      plan: 'GRATIS',
-      status: 'GRACIA',
-      endDate,
-    },
-  });
+    const [providers, total] = await Promise.all([
+      this.prisma.provider.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          category:     { select: { name: true } },
+          locality:     { select: { name: true } },
+          subscription: { select: { plan: true, status: true, endDate: true } },
+          user:         { select: { email: true, firstName: true, lastName: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.provider.count({ where }),
+    ]);
 
-  return { provider, tempPassword };
-}
-
-// ── ACTUALIZAR PROVEEDOR ─────────────────────────────────
-async updateProvider(id: number, data: {
-    businessName?: string;
-    phone?: string;
-    description?: string;
-    address?: string;
-    isVisible?: boolean;
-    isVerified?: boolean;
-    // 2. Cambia 'string' por 'AvailabilityStatus'
-    availability?: AvailabilityStatus; 
-  }) {
-    return this.prisma.provider.update({
-      where: { id },
-      data, // Ahora 'data' es compatible con lo que Prisma espera
-      include: { category: true, locality: true },
-    });
-  
-}
-
-// ── SUSPENDER / ACTIVAR PROVEEDOR ────────────────────────
-async toggleProviderVisibility(id: number) {
-  const provider = await this.prisma.provider.findUnique({
-    where: { id },
-  });
-  if (!provider) throw new Error('Proveedor no encontrado');
-
-  return this.prisma.provider.update({
-    where: { id },
-    data: { isVisible: !provider.isVisible },
-  });
-}
-
-// ── APROBAR VERIFICACIÓN ─────────────────────────────────
-async approveVerification(providerId: number) {
-  return this.prisma.provider.update({
-    where: { id: providerId },
-    data: {
-      isVerified: true,
-      verificationStatus: 'APROBADO',
-    },
-  });
-}
-
-// ── LISTAR TODOS LOS PROVEEDORES (sin límite) ────────────
-async getAllProviders(page = 1, limit = 15, search?: string) {
-  const skip = (page - 1) * limit;
-  const where: any = {};
-
-  if (search) {
-    where.OR = [
-      { businessName: { contains: search, mode: 'insensitive' } },
-      { phone: { contains: search } },
-    ];
+    return { data: providers, total, page, lastPage: Math.ceil(total / limit) };
   }
 
-  const [providers, total] = await Promise.all([
-    this.prisma.provider.findMany({
-      where,
-      skip,
-      take: limit,
-      include: {
-        category: { select: { name: true } },
-        locality: { select: { name: true } },
-        subscription: { select: { plan: true, status: true, endDate: true } },
-        user: { select: { email: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
-    this.prisma.provider.count({ where }),
-  ]);
+  // ── OPCIONES PARA FORMULARIOS ─────────────────────────────
+  async getFormOptions() {
+    const [categories, localities] = await Promise.all([
+      this.prisma.category.findMany({ where: { isActive: true } }),
+      this.prisma.locality.findMany({ where: { isActive: true } }),
+    ]);
+    return { categories, localities };
+  }
 
-  return { data: providers, total, page, lastPage: Math.ceil(total / limit) };
-}
+  // ── CREAR PROVEEDOR ───────────────────────────────────────
+  async createProvider(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    businessName: string;
+    phone: string;
+    whatsapp?: string;
+    description?: string;
+    address?: string;
+    categoryId: number;
+    localityId: number;
+    type: string;
+  }) {
+    // Verificar email duplicado
+    const existing = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (existing) {
+      throw new ConflictException(
+        'El correo electrónico ya está registrado en el sistema.',
+      );
+    }
 
-// ── LISTAR CATEGORÍAS Y LOCALIDADES (para el formulario) ─
-async getFormOptions() {
-  const [categories, localities] = await Promise.all([
-    this.prisma.category.findMany({ where: { isActive: true } }),
-    this.prisma.locality.findMany({ where: { isActive: true } }),
-  ]);
-  return { categories, localities };
-}
+    const bcrypt = await import('bcrypt');
+    const chars  = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const tempPassword = Array.from(
+      { length: 8 },
+      () => chars[Math.floor(Math.random() * chars.length)],
+    ).join('');
+
+    // Crear usuario y proveedor en transacción
+    const result = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email:        data.email,
+          passwordHash: await bcrypt.hash(tempPassword, 10),
+          firstName:    data.firstName,
+          lastName:     data.lastName,
+          role:         'PROVEEDOR',
+        },
+      });
+
+      const provider = await tx.provider.create({
+        data: {
+          userId:       user.id,
+          businessName: data.businessName,
+          phone:        data.phone,
+          whatsapp:     data.whatsapp ?? null,
+          description:  data.description ?? null,
+          address:      data.address ?? null,
+          categoryId:   data.categoryId,
+          localityId:   data.localityId,
+          type:         data.type as any,
+          scheduleJson: {
+            lun: '8:00-18:00', mar: '8:00-18:00',
+            mie: '8:00-18:00', jue: '8:00-18:00',
+            vie: '8:00-18:00', sab: '9:00-13:00',
+            dom: 'Cerrado',
+          },
+        },
+        include: { category: true, locality: true },
+      });
+
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 2);
+      await tx.subscription.create({
+        data: {
+          providerId: provider.id,
+          plan:       'GRATIS',
+          status:     'GRACIA',
+          endDate,
+        },
+      });
+
+      return { provider, userId: user.id };
+    });
+
+    return { ...result, tempPassword };
+  }
+
+  // ── ACTUALIZAR PROVEEDOR ──────────────────────────────────
+  async updateProvider(
+    id: number,
+    data: {
+      businessName?: string;
+      phone?: string;
+      description?: string;
+      address?: string;
+      isVisible?: boolean;
+      isVerified?: boolean;
+      availability?: AvailabilityStatus; // <--- CAMBIA 'string' POR 'AvailabilityStatus'
+    },
+  ) {
+    const exists = await this.prisma.provider.findUnique({ where: { id } });
+    if (!exists) throw new NotFoundException('Proveedor no encontrado');
+
+    return this.prisma.provider.update({
+      where: { id },
+      data,
+      include: { category: true, locality: true },
+    });
+  }
+
+  // ── TOGGLE VISIBILIDAD ────────────────────────────────────
+  async toggleProviderVisibility(id: number) {
+    const provider = await this.prisma.provider.findUnique({ where: { id } });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    return this.prisma.provider.update({
+      where: { id },
+      data: { isVisible: !provider.isVisible },
+    });
+  }
+
+  // ── APROBAR VERIFICACIÓN ──────────────────────────────────
+  async approveVerification(id: number) {
+    const provider = await this.prisma.provider.findUnique({ where: { id } });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    return this.prisma.provider.update({
+      where: { id },
+      data: { isVerified: true, verificationStatus: 'APROBADO' },
+    });
+  }
+
+  // ── ELIMINAR PROVEEDOR (lógico) ───────────────────────────
+  async deleteProvider(id: number) {
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+      include: { subscription: true },
+    });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    // Borrar en cascada usando transacción
+    await this.prisma.$transaction(async (tx) => {
+      // Eliminar analytics
+      await tx.providerAnalytic.deleteMany({ where: { providerId: id } });
+      // Eliminar reseñas
+      await tx.review.deleteMany({ where: { providerId: id } });
+      // Eliminar favoritos
+      await tx.favorite.deleteMany({ where: { providerId: id } });
+      // Eliminar imágenes
+      await tx.providerImage.deleteMany({ where: { providerId: id } });
+      // Eliminar documentos
+      await tx.verificationDoc.deleteMany({ where: { providerId: id } });
+      // Eliminar suscripción
+      if (provider.subscription) {
+        await tx.payment.deleteMany({
+          where: { subscriptionId: provider.subscription.id },
+        });
+        await tx.subscription.delete({
+          where: { providerId: id },
+        });
+      }
+      // Eliminar proveedor
+      await tx.provider.delete({ where: { id } });
+      // Eliminar usuario asociado
+      await tx.user.delete({ where: { id: provider.userId } });
+    });
+
+    return { success: true, message: 'Proveedor eliminado correctamente' };
+  }
 }

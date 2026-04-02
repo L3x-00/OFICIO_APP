@@ -1,32 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus, Search, Eye, EyeOff,
-  CheckCircle, XCircle, Edit, Star,
+import { 
+  Plus, Search, Eye, EyeOff, 
+  CheckCircle, XCircle, Edit, Star, Trash2, Loader2 
 } from 'lucide-react';
 import { StatusBadge } from './status-badge';
-// Al estar en la misma carpeta, usamos ./
 import { CreateProviderModal } from './create-provider-modal';
 import { EditProviderModal } from './edit-provider-modal';
-
-const BASE_URL = 'http://localhost:3000';
-
-interface Provider {
-  id: number;
-  businessName: string;
-  phone: string;
-  isVerified: boolean;
-  isVisible: boolean;
-  averageRating: number;
-  totalReviews: number;
-  availability: string;
-  type: string;
-  category: { name: string };
-  locality: { name: string };
-  subscription?: { plan: string; status: string; endDate: string };
-  user: { email: string };
-}
+// Importamos las funciones unificadas
+import { getProviders, deleteProvider, toggleVisibility, Provider } from '@/lib/api';
 
 interface Props {
   initialPage: number;
@@ -35,9 +18,9 @@ interface Props {
 
 export function ProvidersList({ initialPage, initialSearch }: Props) {
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [total, setTotal]         = useState(0);
-  const [page, setPage]           = useState(initialPage);
-  const [search, setSearch]       = useState(initialSearch);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(initialPage);
+  const [search, setSearch] = useState(initialSearch);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
@@ -45,224 +28,183 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
 
   const lastPage = Math.ceil(total / 15);
 
+  // Carga de datos usando la API unificada
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: '15',
-        ...(search ? { search } : {}),
-      });
-      const res  = await fetch(`${BASE_URL}/admin/providers?${params}`);
-      const data = await res.json();
+      const data = await getProviders(page, search);
       setProviders(data.data);
       setTotal(data.total);
+    } catch (error) {
+      console.error("Error cargando proveedores:", error);
     } finally {
       setIsLoading(false);
     }
   }, [page, search]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // Implementamos un pequeño debounce manual para la búsqueda
+    const timer = setTimeout(() => {
+      load();
+    }, 300); 
+    return () => clearTimeout(timer);
+  }, [load]);
 
   const handleToggleVisibility = async (id: number) => {
     setActionLoading(id);
-    await fetch(`${BASE_URL}/admin/providers/${id}/toggle-visibility`, {
-      method: 'PATCH',
-    });
-    await load();
-    setActionLoading(null);
+    try {
+      await toggleVisibility(id);
+      await load();
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const handleApproveVerification = async (id: number) => {
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro? Se borrará el usuario, fotos y reseñas en cascada.')) return;
+    
     setActionLoading(id);
-    await fetch(`${BASE_URL}/admin/providers/${id}/approve`, {
-      method: 'PATCH',
-    });
-    await load();
-    setActionLoading(null);
+    try {
+      await deleteProvider(id);
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Error al eliminar');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const availabilityBadge = (av: string) => {
-    const map: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' }> = {
+    const map: Record<string, { label: string; variant: any }> = {
       DISPONIBLE: { label: 'Disponible', variant: 'success' },
-      OCUPADO:    { label: 'Ocupado',    variant: 'danger'  },
-      CON_DEMORA: { label: 'Con demora', variant: 'warning' },
+      OCUPADO: { label: 'Ocupado', variant: 'danger' },
+      CON_DEMORA: { label: 'Demora', variant: 'warning' },
+      FUERA_DE_SERVICIO: { label: 'Offline', variant: 'muted' },
     };
-    return map[av] ?? { label: av, variant: 'muted' as const };
+    return map[av] ?? { label: av, variant: 'muted' };
   };
 
   return (
     <div className="space-y-4">
-      {/* Barra de herramientas */}
-      <div className="flex gap-3 items-center">
-        <div className="relative flex-1 max-w-sm">
+      {/* Herramientas */}
+      <div className="flex flex-wrap gap-3 items-center justify-between">
+        <div className="relative w-full max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Buscar proveedor..."
-            className="w-full bg-bg-card border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary/50"
+            placeholder="Buscar por nombre, teléfono o correo..."
+            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none transition-all"
           />
         </div>
-        <span className="text-sm text-gray-500 ml-auto">
-          {total} proveedores
-        </span>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-        >
-          <Plus size={16} />
-          Nuevo proveedor
-        </button>
+        
+        <div className="flex items-center gap-4">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {total} resultados
+          </span>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-900/20"
+          >
+            <Plus size={16} />
+            Nuevo Proveedor
+          </button>
+        </div>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-bg-card rounded-2xl border border-white/5 overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 text-center text-gray-500">Cargando...</div>
-        ) : providers.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            No se encontraron proveedores
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/5">
-                {[
-                  'Proveedor', 'Categoría', 'Tipo',
-                  'Calificación', 'Estado', 'Verificado',
-                  'Suscripción', 'Acciones',
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
+      {/* Tabla con scroll horizontal para móviles */}
+      <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-white/[0.02] border-b border-white/5">
+              <tr>
+                {['Proveedor', 'Categoría', 'Estado / Visibilidad', 'Calificación', 'Suscripción', 'Acciones'].map((h) => (
+                  <th key={h} className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {providers.map((p) => {
-                const av = availabilityBadge(p.availability);
-                return (
-                  <tr key={p.id} className="hover:bg-white/2">
-                    <td className="p-4">
-                      <p className="font-medium text-white text-sm">{p.businessName}</p>
-                      <p className="text-xs text-gray-500">{p.phone}</p>
-                      <p className="text-xs text-gray-600">{p.user.email}</p>
-                    </td>
-                    <td className="p-4 text-sm text-gray-300">{p.category.name}</td>
-                    <td className="p-4">
-                      <StatusBadge
-                        label={p.type === 'OFICIO' ? 'Oficio' : 'Negocio'}
-                        variant={p.type === 'OFICIO' ? 'info' : 'warning'}
+              {isLoading ? (
+                <tr><td colSpan={6} className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" /></td></tr>
+              ) : providers.map((p) => (
+                <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="p-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white text-sm">{p.businessName}</span>
+                      <span className="text-xs text-gray-500">{p.user?.email}</span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className="text-xs px-2 py-1 bg-white/5 rounded-lg text-gray-300">{p.category.name}</span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex flex-col gap-1.5">
+                      <StatusBadge {...availabilityBadge(p.availability)} />
+                      <StatusBadge 
+                        label={p.isVisible ? 'Público' : 'Privado'} 
+                        variant={p.isVisible ? 'success' : 'muted'} 
                       />
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-1">
-                        <Star size={13} className="text-yellow-400 fill-yellow-400" />
-                        <span className="text-sm text-white">
-                          {p.averageRating.toFixed(1)}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-1">
+                      <Star size={12} className="text-yellow-500 fill-yellow-500" />
+                      <span className="text-sm font-bold text-white">{p.averageRating.toFixed(1)}</span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    {p.subscription ? (
+                      <div className="flex flex-col">
+                        <span className={`text-xs font-bold ${p.subscription.status === 'ACTIVA' ? 'text-green-400' : 'text-orange-400'}`}>
+                          {p.subscription.plan}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          ({p.totalReviews})
-                        </span>
+                        <span className="text-[10px] text-gray-600 uppercase">{p.subscription.status}</span>
                       </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="space-y-1">
-                        <StatusBadge label={av.label} variant={av.variant} />
-                        <div>
-                          {p.isVisible
-                            ? <StatusBadge label="Visible" variant="success" />
-                            : <StatusBadge label="Oculto" variant="muted" />
-                          }
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      {p.isVerified
-                        ? <CheckCircle size={18} className="text-green-400" />
-                        : <XCircle size={18} className="text-gray-600" />
-                      }
-                    </td>
-                    <td className="p-4">
-                      {p.subscription && (
-                        <div>
-                          <StatusBadge
-                            label={p.subscription.plan}
-                            variant={
-                              p.subscription.status === 'ACTIVA' ? 'success' :
-                              p.subscription.status === 'GRACIA' ? 'warning' : 'danger'
-                            }
-                          />
-                          <p className="text-xs text-gray-500 mt-1">
-                            {p.subscription.status}
-                          </p>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        {/* Editar */}
-                        <button
-                          onClick={() => setEditingProvider(p)}
-                          className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all"
-                          title="Editar"
-                        >
-                          <Edit size={14} />
-                        </button>
-
-                        {/* Suspender / Activar */}
-                        <button
-                          onClick={() => handleToggleVisibility(p.id)}
-                          disabled={actionLoading === p.id}
-                          className={`p-2 rounded-lg transition-all disabled:opacity-50 ${
-                            p.isVisible
-                              ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                              : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                          }`}
-                          title={p.isVisible ? 'Suspender' : 'Activar'}
-                        >
-                          {p.isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </button>
-
-                        {/* Verificar */}
-                        {!p.isVerified && (
-                          <button
-                            onClick={() => handleApproveVerification(p.id)}
-                            disabled={actionLoading === p.id}
-                            className="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all disabled:opacity-50"
-                            title="Aprobar verificación"
-                          >
-                            <CheckCircle size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                    ) : <span className="text-gray-700">-</span>}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setEditingProvider(p)}
+                        className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleToggleVisibility(p.id)}
+                        disabled={actionLoading === p.id}
+                        className={`p-2 rounded-lg transition-all ${p.isVisible ? 'bg-orange-500/10 text-orange-400' : 'bg-green-500/10 text-green-400'}`}
+                      >
+                        {p.isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(p.id)}
+                        disabled={actionLoading === p.id}
+                        className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
+                      >
+                        {actionLoading === p.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        )}
+        </div>
       </div>
 
       {/* Paginación */}
       {lastPage > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: lastPage }, (_, i) => i + 1).map((p) => (
+        <div className="flex justify-center gap-2 pt-4">
+          {Array.from({ length: lastPage }, (_, i) => i + 1).map((num) => (
             <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-all ${
-                p === page
-                  ? 'bg-primary text-white'
-                  : 'bg-bg-card text-gray-400 border border-white/5 hover:text-white'
+              key={num}
+              onClick={() => setPage(num)}
+              className={`w-10 h-10 rounded-xl text-xs font-bold transition-all ${
+                num === page ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-[#1a1a1a] text-gray-500 border border-white/5 hover:border-white/20'
               }`}
             >
-              {p}
+              {num}
             </button>
           ))}
         </div>
@@ -275,18 +217,13 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
           onSuccess={() => { setShowCreate(false); load(); }}
         />
       )}
-      {/* Cambia onSuccess por onUpdated */}
-        {editingProvider && (
-        <EditProviderModal
-            provider={editingProvider}
-            isOpen={!!editingProvider} // Añadimos esta prop si usas el código que te pasé
-            onClose={() => setEditingProvider(null)}
-            onUpdated={() => { 
-            setEditingProvider(null); 
-            load(); // Refresca la lista automáticamente
-            }}
-        />
-        )}
+
+      <EditProviderModal
+        provider={editingProvider}
+        isOpen={!!editingProvider}
+        onClose={() => setEditingProvider(null)}
+        onUpdated={() => { setEditingProvider(null); load(); }}
+      />
     </div>
   );
 }

@@ -1,40 +1,65 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/providers';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  // Ahora endpoint debe empezar con /admin o /reviews, etc.
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API Error: ${response.status}`);
   }
 
   return response.json();
 }
 
-// ── Métricas ─────────────────────────────────────────────
+// ── MÉTRICAS Y ANALYTICS ───────────────────────────────────
 export const getDashboardMetrics = () =>
   fetchApi<DashboardMetrics>('/admin/metrics');
 
 export const getGraceProviders = () =>
   fetchApi<GraceProvider[]>('/admin/grace-providers');
-export interface DailyClick {
-  date: string;
-  whatsapp: number;
-  calls: number;
-}
-export interface AnalyticsResponse {
-  dailyClicks: DailyClick[];
-}
-export async function getAnalytics(days: number = 30): Promise<AnalyticsResponse> {
-  // IMPORTANTE: Usamos BASE_URL para no repetir código
-  return fetchApi<AnalyticsResponse>(`/admin/analytics?days=${days}`, {
+
+export const getAnalytics = (days: number = 30) =>
+  fetchApi<AnalyticsResponse>(`/admin/analytics?days=${days}`, {
     next: { revalidate: 60 }
   });
-}
 
-// ── Reseñas ───────────────────────────────────────────────
+// ── PROVEEDORES (RUTAS CORREGIDAS /admin/...) ─────────────
+export const getProviders = (page = 1, search?: string) => {
+  const params = new URLSearchParams({ page: String(page), limit: '15' });
+  if (search) params.append('search', search);
+  return fetchApi<ProvidersResponse>(`/admin/providers?${params}`);
+};
+
+export const getFormOptions = () => 
+  fetchApi<{ categories: any[], localities: any[] }>('/admin/form-options');
+
+export const createProvider = (data: any) =>
+  fetchApi('/admin/providers', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const updateProvider = (id: number, data: any) =>
+  fetchApi(`/admin/providers/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+export const deleteProvider = (id: number) =>
+  fetchApi(`/admin/providers/${id}`, {
+    method: 'DELETE',
+  });
+
+export const toggleVisibility = (id: number) =>
+  fetchApi(`/admin/providers/${id}/toggle-visibility`, {
+    method: 'PATCH',
+  });
+
+// ── RESEÑAS ───────────────────────────────────────────────
 export const getAllReviews = (page = 1, isVisible?: boolean) => {
   const params = new URLSearchParams({ page: String(page), limit: '15' });
   if (isVisible !== undefined) params.append('isVisible', String(isVisible));
@@ -47,15 +72,7 @@ export const moderateReview = (reviewId: number, isVisible: boolean) =>
     body: JSON.stringify({ isVisible }),
   });
 
-// ── Proveedores ───────────────────────────────────────────
-export const getProviders = (page = 1, search?: string) => {
-  const params = new URLSearchParams({ page: String(page), limit: '15' });
-  if (search) params.append('search', search);
-  return fetchApi<ProvidersResponse>(`/providers?${params}`);
-};
-
-// ── Tipos ──────────────────────────────────────────────────
-
+// ── INTERFACES ─────────────────────────────────────────────
 export interface DashboardMetrics {
   totalProviders: number;
   activeProviders: number;
@@ -84,17 +101,37 @@ export interface GraceProvider {
   };
 }
 
-export interface Analytics {
-  topProviders: Array<{
-    providerId: number;
-    eventType: string;
-    _count: { id: number };
-  }>;
-  dailyClicks: Array<{
-    date: string;
-    whatsapp: number;
-    calls: number;
-  }>;
+export interface DailyClick {
+  date: string;
+  whatsapp: number;
+  calls: number;
+}
+
+export interface AnalyticsResponse {
+  dailyClicks: DailyClick[];
+}
+
+export interface ProvidersResponse {
+  data: Provider[];
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
+export interface Provider {
+  averageRating: any;
+  id: number;
+  businessName: string;
+  phone: string;
+  address?: string;
+  description?: string;
+  isVerified: boolean;
+  isVisible: boolean;
+  availability: string;
+  category: { name: string };
+  locality: { name: string };
+  user?: { email: string; firstName: string; lastName: string };
+  subscription?: { plan: string; status: string; endDate: string };
 }
 
 export interface ReviewsResponse {
@@ -105,30 +142,12 @@ export interface ReviewsResponse {
 }
 
 export interface Review {
+  photoUrl: any;
   id: number;
   rating: number;
   comment: string | null;
-  photoUrl: string;
   isVisible: boolean;
   createdAt: string;
   user: { firstName: string; lastName: string };
   provider: { businessName: string };
-}
-
-export interface ProvidersResponse {
-  data: Provider[];
-  total: number;
-}
-
-export interface Provider {
-  id: number;
-  businessName: string;
-  phone: string;
-  isVerified: boolean;
-  isVisible: boolean;
-  averageRating: number;
-  totalReviews: number;
-  availability: string;
-  category: { name: string };
-  locality: { name: string };
 }

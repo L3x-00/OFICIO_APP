@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Copy, CheckCircle2 } from 'lucide-react'; // Añadidos para el botón de copiar
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -18,11 +18,12 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
     categoryId: '', localityId: '',
     type: 'OFICIO',
   });
-  const [categories, setCategories]  = useState<any[]>([]);
-  const [localities, setLocalities]  = useState<any[]>([]);
-  const [isLoading, setIsLoading]    = useState(false);
-  const [error, setError]            = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
+  const [localities, setLocalities] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [tempPassword, setTempPassword] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetch(`${BASE_URL}/admin/form-options`)
@@ -31,19 +32,27 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
         setCategories(d.categories);
         setLocalities(d.localities);
         if (d.categories.length > 0)
-          setForm((f) => ({ ...f, categoryId: d.categories[0].id }));
+          setForm((f) => ({ ...f, categoryId: d.categories[0].id.toString() }));
         if (d.localities.length > 0)
-          setForm((f) => ({ ...f, localityId: d.localities[0].id }));
+          setForm((f) => ({ ...f, localityId: d.localities[0].id.toString() }));
       });
   }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(tempPassword);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = async () => {
     if (!form.email || !form.firstName || !form.businessName || !form.phone) {
       setError('Los campos marcados con * son obligatorios');
       return;
     }
+
     setIsLoading(true);
     setError('');
+
     try {
       const res = await fetch(`${BASE_URL}/admin/providers`, {
         method: 'POST',
@@ -54,9 +63,15 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
           localityId: parseInt(form.localityId),
         }),
       });
-      if (!res.ok) throw new Error('Error al crear el proveedor');
+
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Error al crear el proveedor');
+      }
+
       setTempPassword(data.tempPassword);
+      
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -75,40 +90,57 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
         </div>
 
         {tempPassword ? (
-          // Mostrar contraseña temporal después de crear
-          <div className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-3xl">✅</span>
+          /* VISTA DE ÉXITO */
+          <div className="p-8 text-center space-y-6">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto text-2xl">
+              ✅
             </div>
-            <h3 className="text-white font-bold text-lg">
-              ¡Proveedor creado exitosamente!
-            </h3>
-            <p className="text-gray-400 text-sm">
-              Comparte estas credenciales con el proveedor:
-            </p>
-            <div className="bg-bg-dark rounded-xl p-4 text-left space-y-2">
-              <p className="text-sm text-gray-400">
-                Email: <span className="text-white font-mono">{form.email}</span>
-              </p>
-              <p className="text-sm text-gray-400">
-                Contraseña temporal:{' '}
-                <span className="text-primary font-mono font-bold text-base">
-                  {tempPassword}
-                </span>
-              </p>
+            <div>
+              <h3 className="text-white font-bold text-xl">¡Proveedor creado!</h3>
+              <p className="text-gray-400 text-sm mt-1">Copia las credenciales de acceso:</p>
             </div>
-            <p className="text-xs text-gray-500">
-              El proveedor deberá cambiar esta contraseña al ingresar.
-            </p>
+
+            <div className="bg-bg-dark rounded-xl p-4 text-left border border-white/5 space-y-3">
+              <div>
+                <p className="text-[10px] font-bold text-gray-500 uppercase">Email</p>
+                <p className="text-white font-mono">{form.email}</p>
+              </div>
+              <div className="pt-2 border-t border-white/5">
+                <p className="text-[10px] font-bold text-gray-500 uppercase">Contraseña Temporal</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-primary font-mono font-bold text-lg">{tempPassword}</span>
+                  <button 
+                    onClick={handleCopy}
+                    className="flex items-center gap-2 text-xs bg-white/5 hover:bg-white/10 text-gray-300 px-3 py-1.5 rounded-lg transition-all border border-white/10"
+                  >
+                    {copied ? <CheckCircle2 size={14} className="text-green-400"/> : <Copy size={14}/>}
+                    {copied ? 'Copiado' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <button
-              onClick={onSuccess}
-              className="bg-primary text-white px-6 py-2.5 rounded-xl font-semibold"
+              onClick={() => {
+                setTempPassword('');
+                setError('');
+                setForm({
+                  email: '', firstName: '', lastName: '',
+                  businessName: '', phone: '', whatsapp: '',
+                  description: '', address: '',
+                  categoryId: categories[0]?.id.toString() || '',
+                  localityId: localities[0]?.id.toString() || '',
+                  type: 'OFICIO',
+                });
+                onSuccess();
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold transition-all"
             >
-              Listo
+              Listo, volver a la lista
             </button>
           </div>
         ) : (
-          // Formulario de creación
+          /* FORMULARIO DE CREACIÓN */
           <div className="p-6 space-y-4">
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">
@@ -117,116 +149,51 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
             )}
 
             <div className="grid grid-cols-2 gap-4">
-              <Field
-                label="Email *"
-                value={form.email}
-                onChange={(v) => setForm({ ...form, email: v })}
-                placeholder="juan@ejemplo.com"
-                type="email"
-              />
-              <Field
-                label="Nombre del servicio *"
-                value={form.businessName}
-                onChange={(v) => setForm({ ...form, businessName: v })}
-                placeholder="Juan Electricista"
-              />
-              <Field
-                label="Nombre *"
-                value={form.firstName}
-                onChange={(v) => setForm({ ...form, firstName: v })}
-                placeholder="Juan"
-              />
-              <Field
-                label="Apellido *"
-                value={form.lastName}
-                onChange={(v) => setForm({ ...form, lastName: v })}
-                placeholder="Pérez"
-              />
-              <Field
-                label="Teléfono *"
-                value={form.phone}
-                onChange={(v) => setForm({ ...form, phone: v })}
-                placeholder="+51 987 654 321"
-              />
-              <Field
-                label="WhatsApp"
-                value={form.whatsapp}
-                onChange={(v) => setForm({ ...form, whatsapp: v })}
-                placeholder="+51 987 654 321"
-              />
+              <Field label="Email *" value={form.email} onChange={(v: any) => setForm({ ...form, email: v })} placeholder="juan@ejemplo.com" type="email" />
+              <Field label="Nombre del servicio *" value={form.businessName} onChange={(v: any) => setForm({ ...form, businessName: v })} placeholder="Juan Electricista" />
+              <Field label="Nombre *" value={form.firstName} onChange={(v: any) => setForm({ ...form, firstName: v })} placeholder="Juan" />
+              <Field label="Apellido *" value={form.lastName} onChange={(v: any) => setForm({ ...form, lastName: v })} placeholder="Pérez" />
+              <Field label="Teléfono *" value={form.phone} onChange={(v: any) => setForm({ ...form, phone: v })} placeholder="+51 987 654 321" />
+              <Field label="WhatsApp" value={form.whatsapp} onChange={(v: any) => setForm({ ...form, whatsapp: v })} placeholder="+51 987 654 321" />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-gray-400 mb-2 block">
-                Descripción
-              </label>
+              <label className="text-xs font-semibold text-gray-400 mb-2 block">Descripción</label>
               <textarea
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
                 placeholder="Descripción del servicio..."
-                className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary/50 resize-none"
+                className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary/50 resize-none"
               />
             </div>
 
-            <Field
-              label="Dirección"
-              value={form.address}
-              onChange={(v) => setForm({ ...form, address: v })}
-              placeholder="Jr. Ejemplo 123"
-            />
+            <Field label="Dirección" value={form.address} onChange={(v: any) => setForm({ ...form, address: v })} placeholder="Jr. Ejemplo 123" />
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-400 mb-2 block">
-                  Tipo *
-                </label>
-                <select
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50"
-                >
+                <label className="text-xs font-semibold text-gray-400 mb-2 block">Tipo *</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50">
                   <option value="OFICIO">Oficio</option>
                   <option value="NEGOCIO">Negocio</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 mb-2 block">
-                  Categoría *
-                </label>
-                <select
-                  value={form.categoryId}
-                  onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                  className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                <label className="text-xs font-semibold text-gray-400 mb-2 block">Categoría *</label>
+                <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50">
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 mb-2 block">
-                  Localidad *
-                </label>
-                <select
-                  value={form.localityId}
-                  onChange={(e) => setForm({ ...form, localityId: e.target.value })}
-                  className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50"
-                >
-                  {localities.map((l) => (
-                    <option key={l.id} value={l.id}>{l.name}</option>
-                  ))}
+                <label className="text-xs font-semibold text-gray-400 mb-2 block">Localidad *</label>
+                <select value={form.localityId} onChange={(e) => setForm({ ...form, localityId: e.target.value })} className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50">
+                  {localities.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl text-gray-400 hover:text-white text-sm"
-              >
-                Cancelar
-              </button>
+              <button onClick={onClose} className="px-4 py-2 rounded-xl text-gray-400 hover:text-white text-sm">Cancelar</button>
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
@@ -242,20 +209,10 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   );
 }
 
-function Field({
-  label, value, onChange, placeholder, type = 'text',
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-}) {
+function Field({ label, value, onChange, placeholder, type = 'text' }: any) {
   return (
     <div>
-      <label className="text-xs font-semibold text-gray-400 mb-2 block">
-        {label}
-      </label>
+      <label className="text-xs font-semibold text-gray-400 mb-2 block">{label}</label>
       <input
         type={type}
         value={value}

@@ -1,6 +1,6 @@
 import {
-  Controller, Get, Post, Patch,
-  Body, Param, Query, ParseIntPipe,
+  Controller, Get, Post, Patch, Delete,
+  Body, Param, Query, ParseIntPipe, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { AdminService } from './admin.service.js';
 
@@ -19,16 +19,14 @@ export class AdminController {
     return this.adminService.getAnalytics(days ? parseInt(days) : 30);
   }
 
-  // ── NUEVOS ENDPOINTS ─────────────────────────────────────
-
   @Get('providers')
   getAllProviders(
-    @Query('page') page?: string,
+    @Query('page')   page?:   string,
+    @Query('limit')  limit?:  string,
     @Query('search') search?: string,
-    @Query('limit') limit?: string,
   ) {
     return this.adminService.getAllProviders(
-      page ? parseInt(page) : 1,
+      page  ? parseInt(page)  : 1,
       limit ? parseInt(limit) : 15,
       search,
     );
@@ -58,5 +56,11 @@ export class AdminController {
   @Patch('providers/:id/approve')
   approveVerification(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.approveVerification(id);
+  }
+
+  @Delete('providers/:id')
+  @HttpCode(HttpStatus.OK)
+  deleteProvider(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteProvider(id);
   }
 }

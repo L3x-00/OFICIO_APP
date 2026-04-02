@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/features/favorites/presentation/providers/favorites_provider.dart';
+import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/shared/widgets/join_us_modal.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/constans/app_colors.dart';
 import '../providers/providers_provider.dart';
 import '../widgets/service_card.dart';
 import 'provider_detail_sheet.dart';
+import '../../../../features/favorites/presentation/providers/favorites_provider.dart';
 
 class ProvidersScreen extends StatelessWidget {
   const ProvidersScreen({super.key});
@@ -18,23 +19,57 @@ class ProvidersScreen extends StatelessWidget {
   }
 }
 
-class _ProvidersView extends StatelessWidget {
+class _ProvidersView extends StatefulWidget {
   const _ProvidersView();
 
   @override
+  State<_ProvidersView> createState() => _ProvidersViewState();
+}
+
+class _ProvidersViewState extends State<_ProvidersView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Scaffold(
       backgroundColor: AppColors.bgDark,
+      // ── Botón flotante "¡Quiero ser parte!" ────────────
+      floatingActionButton: _JoinUsButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         backgroundColor: AppColors.bgDark,
         elevation: 0,
-        title: const Text(
-          'Servicios cerca de ti',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.handshake_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'OficioApp',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         actions: [
           Consumer<ProvidersProvider>(
@@ -43,9 +78,10 @@ class _ProvidersView extends StatelessWidget {
                 isLabelVisible: prov.selectedCategory != null ||
                     prov.selectedAvailability != null ||
                     prov.onlyVerified,
-                label: const Text(''),
-                child: const Icon(Icons.filter_list_rounded,
-                    color: AppColors.textPrimary),
+                child: const Icon(
+                  Icons.filter_list_rounded,
+                  color: AppColors.textPrimary,
+                ),
               ),
               onPressed: () => _showFilterSheet(context, prov),
             ),
@@ -54,11 +90,8 @@ class _ProvidersView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Barra de búsqueda
           _SearchBar(),
-          // Chips de categorías
           _CategoryChips(),
-          // Lista de proveedores
           Expanded(child: _ProvidersList()),
         ],
       ),
@@ -80,7 +113,87 @@ class _ProvidersView extends StatelessWidget {
   }
 }
 
-// ─── Barra de búsqueda ────────────────────────────────────
+// ─── Botón flotante "¡Quiero ser parte!" ─────────────────
+
+class _JoinUsButton extends StatefulWidget {
+  @override
+  State<_JoinUsButton> createState() => _JoinUsButtonState();
+}
+
+class _JoinUsButtonState extends State<_JoinUsButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnim;
+  
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _pulseAnim = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _pulseAnim,
+      child: FloatingActionButton.extended(
+        onPressed: () => JoinUsModal.show(context),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        label: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFB347), Color(0xFFFF6B35)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF6B35).withOpacity(0.4),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.rocket_launch_rounded,
+                  color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Text(
+                '¡Quiero ser parte!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Barra de búsqueda ─────────────────────────────────────
 
 class _SearchBar extends StatefulWidget {
   @override
@@ -106,7 +219,8 @@ class _SearchBarState extends State<_SearchBar> {
         decoration: InputDecoration(
           hintText: 'Buscar electricistas, pintores...',
           hintStyle: const TextStyle(color: AppColors.textMuted),
-          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
+          prefixIcon: const Icon(
+              Icons.search_rounded, color: AppColors.textMuted),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, color: AppColors.textMuted),
@@ -117,18 +231,18 @@ class _SearchBarState extends State<_SearchBar> {
                 )
               : null,
           filled: true,
-          fillColor: AppColors.bgInput,
+          fillColor: AppColors.bgCard,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
         ),
-        onChanged: (value) {
+        onChanged: (v) {
           setState(() {});
-          // Búsqueda con pequeño delay
           Future.delayed(const Duration(milliseconds: 500), () {
-            if (_controller.text == value) {
-              context.read<ProvidersProvider>().setSearch(value);
+            if (_controller.text == v) {
+              // ignore: use_build_context_synchronously
+              context.read<ProvidersProvider>().setSearch(v);
             }
           });
         },
@@ -143,70 +257,77 @@ class _CategoryChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<ProvidersProvider>();
-
     if (prov.categories.isEmpty) return const SizedBox(height: 8);
 
     return SizedBox(
       height: 52,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: prov.categories.length + 1, // +1 para "Todos"
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            // Chip "Todos"
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: prov.categories.length + 1,
+        itemBuilder: (_, i) {
+          if (i == 0) {
             final isSelected = prov.selectedCategory == null;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
-                onTap: () => prov.setCategory(null),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.bgInput,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Todos',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              ),
+            return _CategoryChip(
+              label: 'Todos',
+              isSelected: isSelected,
+              onTap: () => prov.setCategory(null),
             );
           }
-
-          final cat = prov.categories[index - 1];
+          final cat = prov.categories[i - 1];
           final isSelected = prov.selectedCategory == cat.slug;
-
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => prov.setCategory(isSelected ? null : cat.slug),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.bgInput,
-                  borderRadius: BorderRadius.circular(20),
-                  border: isSelected
-                      ? null
-                      : Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: Text(
-                  cat.name,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-            ),
+          return _CategoryChip(
+            label: cat.name,
+            isSelected: isSelected,
+            onTap: () =>
+                prov.setCategory(isSelected ? null : cat.slug),
           );
         },
+      ),
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : AppColors.bgCard,
+            borderRadius: BorderRadius.circular(20),
+            border: isSelected
+                ? null
+                : Border.all(
+                    color: Colors.white.withOpacity(0.08)),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+              fontSize: 13,
+              fontWeight: isSelected
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -217,7 +338,8 @@ class _CategoryChips extends StatelessWidget {
 class _ProvidersList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final prov = context.watch<ProvidersProvider>();
+    final prov    = context.watch<ProvidersProvider>();
+    final favProv = context.watch<FavoritesProvider>();
 
     if (prov.isLoading) {
       return const Center(
@@ -234,7 +356,8 @@ class _ProvidersList extends StatelessWidget {
                 color: AppColors.textMuted, size: 48),
             const SizedBox(height: 12),
             Text(prov.errorMessage,
-                style: const TextStyle(color: AppColors.textSecondary)),
+                style: const TextStyle(
+                    color: AppColors.textSecondary)),
             const SizedBox(height: 16),
             TextButton(
               onPressed: prov.loadProviders,
@@ -255,7 +378,8 @@ class _ProvidersList extends StatelessWidget {
                 color: AppColors.textMuted, size: 48),
             const SizedBox(height: 12),
             const Text('No encontramos servicios',
-                style: TextStyle(color: AppColors.textSecondary)),
+                style: TextStyle(
+                    color: AppColors.textSecondary)),
             const SizedBox(height: 16),
             TextButton(
               onPressed: prov.clearFilters,
@@ -268,18 +392,19 @@ class _ProvidersList extends StatelessWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      // 100 de bottom para que el FAB no tape las tarjetas
       itemCount: prov.providers.length,
       itemBuilder: (context, index) {
-        final provider = prov.providers[index];
+        final provider = prov.providers[index].copyWith(
+          isFavorite: favProv.isFavorite(prov.providers[index].id),
+        );
         return ServiceCard(
           provider: provider,
           onTap: () => ProviderDetailSheet.show(context, provider),
           onFavoriteToggle: () {
-            // Actualiza el estado visual local
             prov.toggleFavorite(provider.id);
-            // También persiste en BD y actualiza el FavoritesProvider global
-            context.read<FavoritesProvider>().toggle(provider.id);
+            favProv.toggle(provider.id);
           },
         );
       },
@@ -287,7 +412,7 @@ class _ProvidersList extends StatelessWidget {
   }
 }
 
-// ─── Sheet de filtros avanzados ───────────────────────────
+// ─── Sheet de filtros ─────────────────────────────────────
 
 class _FilterSheet extends StatelessWidget {
   const _FilterSheet();
@@ -305,10 +430,14 @@ class _FilterSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Filtros', style: TextStyle(
-                color: AppColors.textPrimary, fontSize: 18,
-                fontWeight: FontWeight.bold,
-              )),
+              const Text(
+                'Filtros',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               TextButton(
                 onPressed: () {
                   prov.clearFilters();
@@ -319,12 +448,17 @@ class _FilterSheet extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Disponibilidad
-          const Text('Disponibilidad', style: TextStyle(
-              color: AppColors.textSecondary, fontSize: 13)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          const Text(
+            'DISPONIBILIDAD',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             children: [
@@ -333,7 +467,9 @@ class _FilterSheet extends StatelessWidget {
                 isSelected: prov.selectedAvailability == 'DISPONIBLE',
                 color: AppColors.available,
                 onTap: () => prov.setAvailability(
-                  prov.selectedAvailability == 'DISPONIBLE' ? null : 'DISPONIBLE',
+                  prov.selectedAvailability == 'DISPONIBLE'
+                      ? null
+                      : 'DISPONIBLE',
                 ),
               ),
               _FilterChip(
@@ -341,15 +477,14 @@ class _FilterSheet extends StatelessWidget {
                 isSelected: prov.selectedAvailability == 'CON_DEMORA',
                 color: AppColors.delayed,
                 onTap: () => prov.setAvailability(
-                  prov.selectedAvailability == 'CON_DEMORA' ? null : 'CON_DEMORA',
+                  prov.selectedAvailability == 'CON_DEMORA'
+                      ? null
+                      : 'CON_DEMORA',
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
-          // Solo verificados
           GestureDetector(
             onTap: () {
               prov.toggleVerified();
@@ -379,8 +514,10 @@ class _FilterSheet extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
-                    child: Text('Solo proveedores verificados',
-                        style: TextStyle(color: AppColors.textPrimary)),
+                    child: Text(
+                      'Solo proveedores verificados',
+                      style: TextStyle(color: AppColors.textPrimary),
+                    ),
                   ),
                   if (prov.onlyVerified)
                     const Icon(Icons.check_rounded,
@@ -389,7 +526,7 @@ class _FilterSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -413,13 +550,17 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : AppColors.bgInput,
+          color: isSelected ? color.withOpacity(0.15) : AppColors.bgCard,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.4) : Colors.transparent,
+            color: isSelected
+                ? color.withOpacity(0.4)
+                : Colors.transparent,
           ),
         ),
         child: Text(
@@ -427,7 +568,8 @@ class _FilterChip extends StatelessWidget {
           style: TextStyle(
             color: isSelected ? color : AppColors.textSecondary,
             fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontWeight:
+                isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
       ),
