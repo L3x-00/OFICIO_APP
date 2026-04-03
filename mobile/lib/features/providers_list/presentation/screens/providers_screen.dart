@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/providers_provider.dart';
 import '../widgets/service_card.dart';
 import 'provider_detail_sheet.dart';
+import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/favorites/presentation/providers/favorites_provider.dart';
 
 class ProvidersScreen extends StatelessWidget {
@@ -113,7 +114,9 @@ class _ProvidersViewState extends State<_ProvidersView>
   }
 }
 
-// ─── Botón flotante "¡Quiero ser parte!" ─────────────────
+// ─── Botón flotante dinámico ──────────────────────────────
+// Naranja "¡Quiero ser parte!" → si el usuario NO es proveedor
+// Azul   "Ir a mi panel"      → si el usuario SÍ es proveedor
 
 class _JoinUsButton extends StatefulWidget {
   @override
@@ -124,7 +127,6 @@ class _JoinUsButtonState extends State<_JoinUsButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnim;
-  
 
   @override
   void initState() {
@@ -147,6 +149,66 @@ class _JoinUsButtonState extends State<_JoinUsButton>
 
   @override
   Widget build(BuildContext context) {
+    final isProvider = context.watch<AuthProvider>().user?.isProvider ?? false;
+
+    // Pausar la animación si no es necesaria
+    if (isProvider) {
+      _pulseController.stop();
+    } else if (!_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    }
+
+    if (isProvider) {
+      return _buildProviderButton(context);
+    }
+    return _buildJoinUsButton(context);
+  }
+
+  // ── Botón azul: "Ir a mi panel" ──────────────────────────
+  Widget _buildProviderButton(BuildContext context) {
+    return FloatingActionButton.extended(
+      onPressed: () => _openProviderPanel(context),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      label: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1E88E5).withOpacity(0.4),
+              blurRadius: 12,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.dashboard_rounded, color: Colors.white, size: 18),
+            SizedBox(width: 8),
+            Text(
+              'Ir a mi panel',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Botón naranja: "¡Quiero ser parte!" con pulso ─────────
+  Widget _buildJoinUsButton(BuildContext context) {
     return ScaleTransition(
       scale: _pulseAnim,
       child: FloatingActionButton.extended(
@@ -174,8 +236,7 @@ class _JoinUsButtonState extends State<_JoinUsButton>
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.rocket_launch_rounded,
-                  color: Colors.white, size: 18),
+              Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18),
               SizedBox(width: 8),
               Text(
                 '¡Quiero ser parte!',
@@ -187,6 +248,164 @@ class _JoinUsButtonState extends State<_JoinUsButton>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _openProviderPanel(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _ProviderPanelSheet(
+        user: context.read<AuthProvider>().user,
+      ),
+    );
+  }
+}
+
+// ─── Panel rápido del proveedor ───────────────────────────
+
+class _ProviderPanelSheet extends StatelessWidget {
+  final dynamic user;
+  const _ProviderPanelSheet({this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.textMuted.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Avatar e info
+          Row(
+            children: [
+              Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.store_rounded, color: Colors.white, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.fullName ?? 'Mi panel',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      'Proveedor verificado',
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Acciones rápidas
+          _PanelAction(
+            icon: Icons.edit_rounded,
+            label: 'Editar mi perfil',
+            color: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Editor de perfil próximamente'), behavior: SnackBarBehavior.floating),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          _PanelAction(
+            icon: Icons.bar_chart_rounded,
+            label: 'Ver mis estadísticas',
+            color: AppColors.available,
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Estadísticas próximamente'), behavior: SnackBarBehavior.floating),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          _PanelAction(
+            icon: Icons.schedule_rounded,
+            label: 'Cambiar disponibilidad',
+            color: AppColors.delayed,
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Gestión de disponibilidad próximamente'), behavior: SnackBarBehavior.floating),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PanelAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _PanelAction({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 14),
+          ],
         ),
       ),
     );

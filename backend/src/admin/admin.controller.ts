@@ -63,4 +63,29 @@ export class AdminController {
   deleteProvider(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.deleteProvider(id);
   }
+
+  // ── CRUD DE CATEGORÍAS ─────────────────────────────────────
+
+  @Get('categories')
+  getCategories() {
+    return this.adminService.getCategories();
+  }
+
+  @Post('categories')
+  createCategory(@Body() body: any) {
+    return this.adminService.createCategory(body);
+  }
+
+  @Patch('categories/:id')
+  updateCategory(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.adminService.updateCategory(id, body);
+  }
+
+  @Patch('categories/:id/toggle')
+  toggleCategoryActive(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.toggleCategoryActive(id);
+  }
 }

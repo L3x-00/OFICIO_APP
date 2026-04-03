@@ -14,6 +14,7 @@ import { ProvidersModule } from './providers/providers.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { FavoritesModule } from './favorites/favorites.module.js';
+import { ProviderProfileModule } from './provider-profile/provider-profile.module.js';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { FavoritesModule } from './favorites/favorites.module.js';
     // 4. Módulos de la Aplicación
     FavoritesModule,
     AuthModule,
+    ProviderProfileModule,
     UsersModule,
     PrismaModule,
     ProvidersModule,

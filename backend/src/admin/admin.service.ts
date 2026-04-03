@@ -271,6 +271,63 @@ export class AdminService {
     });
   }
 
+  // ── CRUD DE CATEGORÍAS ────────────────────────────────────
+
+  async getCategories() {
+    return this.prisma.category.findMany({
+      include: {
+        children: { select: { id: true, name: true, slug: true, isActive: true } },
+        parent:   { select: { id: true, name: true } },
+        _count:   { select: { providers: true } },
+      },
+      orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
+    });
+  }
+
+  async createCategory(data: {
+    name:      string;
+    slug:      string;
+    iconUrl?:  string;
+    parentId?: number;
+    isActive?: boolean;
+  }) {
+    const existing = await this.prisma.category.findUnique({ where: { slug: data.slug } });
+    if (existing) throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
+
+    return this.prisma.category.create({ data });
+  }
+
+  async updateCategory(
+    id: number,
+    data: {
+      name?:     string;
+      slug?:     string;
+      iconUrl?:  string;
+      parentId?: number | null;
+      isActive?: boolean;
+    },
+  ) {
+    const exists = await this.prisma.category.findUnique({ where: { id } });
+    if (!exists) throw new NotFoundException('Categoría no encontrada');
+
+    if (data.slug && data.slug !== exists.slug) {
+      const slugTaken = await this.prisma.category.findUnique({ where: { slug: data.slug } });
+      if (slugTaken) throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
+    }
+
+    return this.prisma.category.update({ where: { id }, data });
+  }
+
+  async toggleCategoryActive(id: number) {
+    const category = await this.prisma.category.findUnique({ where: { id } });
+    if (!category) throw new NotFoundException('Categoría no encontrada');
+
+    return this.prisma.category.update({
+      where: { id },
+      data: { isActive: !category.isActive },
+    });
+  }
+
   // ── ELIMINAR PROVEEDOR (lógico) ───────────────────────────
   async deleteProvider(id: number) {
     const provider = await this.prisma.provider.findUnique({

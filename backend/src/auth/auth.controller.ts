@@ -1,9 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
+import { JwtAuthGuard } from './jwt.guard.js';
 
 @Controller('auth')
 export class AuthController {
-  // Inyectamos el servicio que tendrá la lógica
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
@@ -13,7 +13,13 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() dto: { email: string; password: string }) {
-    // Asegúrate de que aquí diga .login y NO .loginUser
     return this.authService.login(dto.email, dto.password);
+  }
+
+  // Retorna el perfil completo del usuario autenticado (usuario + proveedor si aplica)
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMe(@Request() req: any) {
+    return this.authService.getMe(req.user.userId);
   }
 }

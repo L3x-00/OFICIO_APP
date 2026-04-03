@@ -6,9 +6,6 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  loginUser(dto: any) {
-      throw new Error('Method not implemented.');
-  }
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -16,7 +13,6 @@ export class AuthService {
   ) {}
 
   // ── REGISTRO DE USUARIO NORMAL ──────────────────────────
-  
   async registerUser(data: {
     email: string;
     password: string;
@@ -24,7 +20,6 @@ export class AuthService {
     lastName: string;
     phone?: string;
   }) {
-    // Verificar si el email ya existe
     const exists = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -35,7 +30,7 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         email: data.email,
-        passwordHash:await bcrypt.hash(data.password, 10),
+        passwordHash,
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
@@ -59,7 +54,46 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    return this.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+    // Incluir datos del usuario para que Flutter los guarde localmente
+    return {
+      ...tokens,
+      firstName: user.firstName,
+      lastName:  user.lastName,
+      phone:     user.phone,
+      avatarUrl: user.avatarUrl,
+    };
+  }
+
+  // ── GET ME (perfil completo del usuario autenticado) ─────
+  async getMe(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id:        true,
+        email:     true,
+        firstName: true,
+        lastName:  true,
+        phone:     true,
+        avatarUrl: true,
+        role:      true,
+        provider: {
+          select: {
+            id:           true,
+            businessName: true,
+            isVerified:   true,
+            isVisible:    true,
+            availability: true,
+            subscription: {
+              select: { plan: true, status: true, endDate: true },
+            },
+          },
+        },
+      },
+    });
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+    return user;
   }
 
   // ── REFRESH TOKEN ────────────────────────────────────────
@@ -78,7 +112,6 @@ export class AuthService {
         throw new UnauthorizedException('Token expirado');
       }
 
-      // Rotar el refresh token (seguridad)
       await this.prisma.refreshToken.delete({ where: { token: refreshToken } });
 
       return this.generateTokens(
@@ -104,16 +137,15 @@ export class AuthService {
     const payload = { sub: userId, email, role };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.config.get('JWT_SECRET'),
+      secret:    this.config.get('JWT_SECRET'),
       expiresIn: this.config.get('JWT_EXPIRES_IN'),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.config.get('JWT_REFRESH_SECRET'),
+      secret:    this.config.get('JWT_REFRESH_SECRET'),
       expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN'),
     });
 
-    // Guardar refresh token en BD
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
