@@ -13,11 +13,15 @@ class ProviderModel {
   final bool hasCleanRecord;
   final ProviderType type;
   final String? coverImageUrl;
-  final List<String> thumbnailUrls;  // Para negocios: hasta 3 miniaturas
+  final List<String> thumbnailUrls;
   final double? latitude;
   final double? longitude;
-  final double? distanceKm;          // Se calcula en el cliente con GPS
-  final bool isFavorite;             // Estado local del usuario
+  final double? distanceKm;
+  final bool isFavorite;
+  final String? description;
+  final String? address;
+  final Map<String, dynamic>? scheduleJson;
+  final List<Map<String, dynamic>>? reviews;
 
   const ProviderModel({
     required this.id,
@@ -37,9 +41,12 @@ class ProviderModel {
     this.longitude,
     this.distanceKm,
     this.isFavorite = false,
+    this.description,
+    this.address,
+    this.scheduleJson,
+    this.reviews,
   });
 
-  /// Constructor desde JSON del backend
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
     return ProviderModel(
       id:            json['id'] as int,
@@ -69,19 +76,19 @@ class ProviderModel {
       latitude:     (json['latitude'] as num?)?.toDouble(),
       longitude:    (json['longitude'] as num?)?.toDouble(),
       isFavorite:   json['isFavorite'] as bool? ?? false,
+      description:  json['description'] as String?,
+      address:      json['address'] as String?,
+      scheduleJson: json['schedule'] as Map<String, dynamic>?,
+      reviews:      (json['reviews'] as List?)
+                      ?.map((r) => r as Map<String, dynamic>)
+                      .toList(),
     );
   }
 
-  Object? get reviews => null;
-
-  get description => null;
-
-  get scheduleJson => null;
-
-  get address => null;
-
-  /// Para actualizar el estado de favorito sin mutar el objeto
-  ProviderModel copyWith({bool? isFavorite}) {
+  ProviderModel copyWith({
+    bool? isFavorite,
+    List<Map<String, dynamic>>? reviews,
+  }) {
     return ProviderModel(
       id:             id,
       businessName:   businessName,
@@ -100,6 +107,10 @@ class ProviderModel {
       longitude:      longitude,
       distanceKm:     distanceKm,
       isFavorite:     isFavorite ?? this.isFavorite,
+      description:    description,
+      address:        address,
+      scheduleJson:   scheduleJson,
+      reviews:        reviews ?? this.reviews,
     );
   }
 }

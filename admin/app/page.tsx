@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { MetricCard } from '@/components/metric-card';
 import { GraceProvidersTable } from '@/components/grace-providers-table';
+import { DashboardRefreshButton } from '@/components/dashboard-refresh';
 import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
 
 export const dynamic = 'force-dynamic'; // Siempre refresca los datos
@@ -24,11 +25,14 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Resumen general de OficioApp
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Resumen general de OficioApp
+          </p>
+        </div>
+        <DashboardRefreshButton />
       </div>
 
       {/* Métricas principales */}

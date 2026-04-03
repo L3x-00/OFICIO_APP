@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:provider/provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/onboarding_screen.dart';
 
 /// Modal informativo "¡Quiero ser parte de OficioApp!"
 /// Se abre desde el botón flotante en la pantalla principal
@@ -380,39 +383,77 @@ class _JoinUsModalState extends State<JoinUsModal>
           const _FreePeriodBanner(),
           const SizedBox(height: 28),
 
-          // CTA: Registrarse
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        const LoginScreen(initialMode: AuthMode.register),
+          // CTA: Registro o formulario directo según autenticación
+          Consumer<AuthProvider>(
+            builder: (_, auth, __) {
+              final alreadyLoggedIn = auth.isAuthenticated;
+
+              return Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Cerrar modal
+
+                        if (alreadyLoggedIn) {
+                          // Usuario ya tiene sesión → ir directo al formulario
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ProviderOnboardingForm(
+                                providerType: type,
+                                isStandalone: true,
+                              ),
+                            ),
+                          );
+                        } else {
+                          // Sin sesión → flujo de registro habitual
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(
+                                initialMode: AuthMode.register,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        alreadyLoggedIn
+                            ? (isOficio
+                                ? 'Completar perfil de Profesional'
+                                : 'Completar perfil de Negocio')
+                            : (isOficio
+                                ? 'Registrarme como Profesional'
+                                : 'Registrarme como Negocio'),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Text(
-                'Registrarme y empezar gratis',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Center(
-            child: Text(
-              'Sin tarjeta de crédito • Sin compromisos',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-            ),
+                  const SizedBox(height: 12),
+                  Text(
+                    alreadyLoggedIn
+                        ? 'Accederás con tu cuenta actual'
+                        : 'Sin tarjeta de crédito • Sin compromisos',
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

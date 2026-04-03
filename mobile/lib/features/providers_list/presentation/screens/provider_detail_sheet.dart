@@ -2,23 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:mobile/features/providers_list/presentation/widgets/create_review_sheet.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/constans/app_strings.dart';
+import '../../data/reviews_repository.dart';
 import '../../domain/models/provider_model.dart';
-import '../../../reviews/presentation/widgets/create_review_sheet.dart';
+import '../../domain/models/review_model.dart';
+import '../../presentation/widgets/create_review_sheet.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// Modal de detalle completo del proveedor
-/// Se abre como bottom sheet desde la ServiceCard
 class ProviderDetailSheet extends StatefulWidget {
   final ProviderModel provider;
 
   const ProviderDetailSheet({super.key, required this.provider});
 
-  /// Método estático para abrir el sheet fácilmente
   static Future<void> show(BuildContext context, ProviderModel provider) {
     return showModalBottomSheet(
       context: context,
@@ -33,7 +34,29 @@ class ProviderDetailSheet extends StatefulWidget {
 }
 
 class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
+  final _reviewsRepo = ReviewsRepository();
+
   int _currentImageIndex = 0;
+  List<ReviewModel> _reviews = [];
+  bool _reviewsLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviews();
+  }
+
+  Future<void> _loadReviews() async {
+    setState(() => _reviewsLoading = true);
+    try {
+      final reviews = await _reviewsRepo.getProviderReviews(widget.provider.id);
+      if (mounted) setState(() => _reviews = reviews);
+    } catch (_) {
+      // No crítico — la app sigue funcionando sin reseñas
+    } finally {
+      if (mounted) setState(() => _reviewsLoading = false);
+    }
+  }
 
   List<String> get _allImages {
     final images = <String>[];
@@ -56,7 +79,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       ),
       child: Column(
         children: [
-          // ── Handle ────────────────────────────────────────
+          // ── Handle ─────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Container(
@@ -69,14 +92,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             ),
           ),
 
-          // ── Contenido scrollable ──────────────────────────
+          // ── Contenido scrollable ────────────────────────────
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Galería de imágenes
                   if (_allImages.isNotEmpty) _buildGallery(),
 
                   Padding(
@@ -84,19 +106,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header: nombre + verificado
                         _buildHeader(),
                         const SizedBox(height: 12),
-
-                        // Calificación
                         _buildRating(),
                         const SizedBox(height: 16),
-
-                        // Disponibilidad
                         _buildAvailabilityBadge(),
                         const SizedBox(height: 16),
 
-                        // Descripción
                         if (widget.provider.description != null) ...[
                           _buildSectionTitle('Descripción'),
                           const SizedBox(height: 8),
@@ -111,7 +127,6 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 20),
                         ],
 
-                        // Horarios
                         if (widget.provider.scheduleJson != null) ...[
                           _buildSectionTitle('Horarios'),
                           const SizedBox(height: 8),
@@ -119,7 +134,6 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 20),
                         ],
 
-                        // Mapa
                         if (widget.provider.latitude != null &&
                             widget.provider.longitude != null) ...[
                           _buildSectionTitle('Ubicación'),
@@ -150,15 +164,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 20),
                         ],
 
-                        // Reseñas
-                        if (widget.provider.reviews?.isNotEmpty ?? false) ...[
-                          _buildSectionTitle(
-                            'Reseñas (${widget.provider.totalReviews})',
-                          ),
-                          const SizedBox(height: 12),
-                          ..._buildReviews(),
-                          const SizedBox(height: 20),
-                        ],
+                        // ── Sección de reseñas ────────────────
+                        _buildReviewsSection(),
                       ],
                     ),
                   ),
@@ -167,14 +174,14 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             ),
           ),
 
-          // ── Botones de contacto fijos abajo ───────────────
+          // ── Botones de contacto fijos ──────────────────────
           _buildContactButtons(),
         ],
       ),
     );
   }
 
-  // ─── Galería de imágenes ──────────────────────────────────
+  // ─── Galería de imágenes ─────────────────────────────────
 
   Widget _buildGallery() {
     return SizedBox(
@@ -212,7 +219,6 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             ),
           ),
 
-          // Indicador de página
           if (_allImages.length > 1)
             Positioned(
               bottom: 12,
@@ -238,7 +244,6 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               ),
             ),
 
-          // Contador
           Positioned(
             top: 12,
             right: 12,
@@ -282,7 +287,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     );
   }
 
-  // ─── Header con nombre e insignias ───────────────────────
+  // ─── Header ──────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Row(
@@ -323,11 +328,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.verified_rounded,
-                  color: AppColors.verified,
-                  size: 14,
-                ),
+                Icon(Icons.verified_rounded, color: AppColors.verified, size: 14),
                 SizedBox(width: 4),
                 Text(
                   'Verificado',
@@ -340,7 +341,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     );
   }
 
-  // ─── Calificación ─────────────────────────────────────────
+  // ─── Rating ──────────────────────────────────────────────
 
   Widget _buildRating() {
     return Row(
@@ -354,20 +355,21 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
         ),
         const SizedBox(width: 8),
         Text(
-          '${widget.provider.averageRating.toStringAsFixed(1)} · ${widget.provider.totalReviews} reseñas',
+          '${widget.provider.averageRating.toStringAsFixed(1)} · '
+          '${widget.provider.totalReviews} reseñas',
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
       ],
     );
   }
 
-  // ─── Badge de disponibilidad ──────────────────────────────
+  // ─── Disponibilidad ───────────────────────────────────────
 
   Widget _buildAvailabilityBadge() {
     final Color color = switch (widget.provider.availability) {
       AvailabilityStatus.disponible => AppColors.available,
-      AvailabilityStatus.ocupado => AppColors.busy,
-      AvailabilityStatus.conDemora => AppColors.delayed,
+      AvailabilityStatus.ocupado    => AppColors.busy,
+      AvailabilityStatus.conDemora  => AppColors.delayed,
     };
 
     return Container(
@@ -402,7 +404,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Horarios ─────────────────────────────────────────────
 
   Widget _buildSchedule() {
-    final schedule = widget.provider.scheduleJson as Map<String, dynamic>?;
+    final schedule = widget.provider.scheduleJson;
     if (schedule == null) return const SizedBox.shrink();
 
     final days = {
@@ -426,7 +428,6 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           final hours = schedule[entry.key] as String?;
           if (hours == null) return const SizedBox.shrink();
           final isClosed = hours == 'Cerrado';
-
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
@@ -457,7 +458,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     );
   }
 
-  // ─── Mapa OpenStreetMap ───────────────────────────────────
+  // ─── Mapa ─────────────────────────────────────────────────
 
   Widget _buildMap() {
     final lat = widget.provider.latitude!;
@@ -508,11 +509,39 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     );
   }
 
-  // ─── Reseñas ──────────────────────────────────────────────
+  // ─── Sección de reseñas ───────────────────────────────────
 
-  List<Widget> _buildReviews() {
-    final reviews = widget.provider.reviews ?? [];
-    return reviews.take(5).map((r) => _ReviewCard(review: r)).toList();
+  Widget _buildReviewsSection() {
+    if (_reviewsLoading) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Reseñas'),
+          const SizedBox(height: 12),
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 2,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_reviews.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Reseñas (${_reviews.length})'),
+        const SizedBox(height: 12),
+        ..._reviews.take(5).map((r) => _ReviewCard(review: r)),
+        const SizedBox(height: 8),
+      ],
+    );
   }
 
   // ─── Título de sección ────────────────────────────────────
@@ -531,80 +560,82 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Botones de contacto fijos ────────────────────────────
 
   Widget _buildContactButtons() {
-  return Container(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-    decoration: BoxDecoration(
-      color: AppColors.bgCard,
-      border: Border(
-        top: BorderSide(color: Colors.white.withOpacity(0.06)),
-      ),
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Botones de contacto (fila)
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: _BigContactButton(
-                label: 'WhatsApp',
-                icon: Icons.chat_rounded,
-                color: AppColors.whatsapp,
-                onTap: () => _openWhatsApp(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BigContactButton(
-                label: 'Llamar',
-                icon: Icons.call_rounded,
-                color: AppColors.call,
-                onTap: () => _makeCall(),
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        border: Border(
+          top: BorderSide(color: Colors.white.withOpacity(0.06)),
         ),
-        const SizedBox(height: 10),
-        // Botón de reseña (fila completa)
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () async {
-              // Importa el widget al inicio del archivo
-              final created = await CreateReviewSheet.show(
-                context,
-                providerId: widget.provider.id,
-                providerName: widget.provider.businessName,
-                userId: 1, // Temporal — vendrá del AuthProvider
-              );
-              if (created == true && mounted) {
-                // Puedes recargar el proveedor aquí si quieres
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('¡Reseña publicada!'),
-                  ),
-                );
-              }
-            },
-            icon: const Icon(Icons.star_rounded, size: 18),
-            label: const Text('Dejar una reseña'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.star,
-              side: BorderSide(
-                color: AppColors.star.withOpacity(0.4),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _BigContactButton(
+                  label: 'WhatsApp',
+                  icon: Icons.chat_rounded,
+                  color: AppColors.whatsapp,
+                  onTap: _openWhatsApp,
+                ),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _BigContactButton(
+                  label: 'Llamar',
+                  icon: Icons.call_rounded,
+                  color: AppColors.call,
+                  onTap: _makeCall,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                // Obtener userId del AuthProvider
+                final authProvider = context.read<AuthProvider>();
+                final userId = authProvider.user?.id ?? 0;
+
+                final created = await CreateReviewSheet.show(
+                  context,
+                  providerId: widget.provider.id,
+                  providerName: widget.provider.businessName,
+                  userId: userId,
+                );
+                if (created == true && mounted) {
+                  // Recargar reseñas inmediatamente tras publicar
+                  await _loadReviews();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('¡Reseña publicada!'),
+                      backgroundColor: AppColors.available,
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.star_rounded, size: 18),
+              label: const Text('Dejar una reseña'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.star,
+                side: BorderSide(color: AppColors.star.withOpacity(0.4)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Future<void> _openWhatsApp() async {
     final number = (widget.provider.whatsapp ?? widget.provider.phone)
@@ -628,16 +659,10 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 }
 
-extension on Object {
-  bool? get isNotEmpty => null;
-
-  take(int i) {}
-}
-
-// ─── Widget de reseña ─────────────────────────────────────
+// ─── Tarjeta de reseña ────────────────────────────────────
 
 class _ReviewCard extends StatelessWidget {
-  final dynamic review;
+  final ReviewModel review;
   const _ReviewCard({required this.review});
 
   @override
@@ -657,14 +682,18 @@ class _ReviewCard extends StatelessWidget {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: AppColors.bgInput,
-                child: Text(
-                  (review['user']?['firstName'] as String? ?? '?')[0]
-                      .toUpperCase(),
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                backgroundImage: review.user?.avatarUrl != null
+                    ? NetworkImage(review.user!.avatarUrl!)
+                    : null,
+                child: review.user?.avatarUrl == null
+                    ? Text(
+                        review.user?.initial ?? '?',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -672,7 +701,7 @@ class _ReviewCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${review['user']?['firstName'] ?? ''} ${review['user']?['lastName'] ?? ''}',
+                      review.user?.fullName ?? 'Usuario',
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
@@ -680,7 +709,7 @@ class _ReviewCard extends StatelessWidget {
                       ),
                     ),
                     RatingBarIndicator(
-                      rating: (review['rating'] as int).toDouble(),
+                      rating: review.rating.toDouble(),
                       itemBuilder: (_, __) =>
                           const Icon(Icons.star_rounded, color: AppColors.star),
                       itemCount: 5,
@@ -689,14 +718,20 @@ class _ReviewCard extends StatelessWidget {
                   ],
                 ),
               ),
+              Text(
+                _formatDate(review.createdAt),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 11,
+                ),
+              ),
             ],
           ),
-          if (review['comment'] != null &&
-              (review['comment'] as String).isNotEmpty)
+          if (review.comment != null && review.comment!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                review['comment'] as String,
+                review.comment!,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
@@ -704,17 +739,34 @@ class _ReviewCard extends StatelessWidget {
                 ),
               ),
             ),
-          if (review['photoUrl'] != null)
+          if (review.photoUrl.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  review['photoUrl'] as String,
-                  height: 80,
-                  width: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  PageRouteBuilder(
+                    opaque: false,
+                    barrierColor: Colors.black,
+                    pageBuilder: (_, __, ___) => _ReviewImageFullscreen(
+                      imageUrl: review.photoUrl,
+                      heroTag: 'review_photo_${review.id}',
+                    ),
+                    transitionsBuilder: (_, anim, __, child) =>
+                        FadeTransition(opacity: anim, child: child),
+                  ),
+                ),
+                child: Hero(
+                  tag: 'review_photo_${review.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      review.photoUrl,
+                      height: 80,
+                      width: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -722,9 +774,20 @@ class _ReviewCard extends StatelessWidget {
       ),
     );
   }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inDays == 0) return 'Hoy';
+    if (diff.inDays == 1) return 'Ayer';
+    if (diff.inDays < 7) return 'Hace ${diff.inDays} días';
+    if (diff.inDays < 30) return 'Hace ${(diff.inDays / 7).floor()} sem.';
+    if (diff.inDays < 365) return 'Hace ${(diff.inDays / 30).floor()} mes.';
+    return 'Hace ${(diff.inDays / 365).floor()} año(s)';
+  }
 }
 
-// ─── Botón de contacto grande ─────────────────────────────
+// ─── Botón de contacto ────────────────────────────────────
 
 class _BigContactButton extends StatelessWidget {
   final String label;
@@ -764,6 +827,90 @@ class _BigContactButton extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Visor de imagen a pantalla completa ─────────────────
+
+class _ReviewImageFullscreen extends StatelessWidget {
+  final String imageUrl;
+  final String heroTag;
+
+  const _ReviewImageFullscreen({
+    required this.imageUrl,
+    required this.heroTag,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12, top: 8),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.55),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Center(
+        child: Hero(
+          tag: heroTag,
+          child: InteractiveViewer(
+            minScale: 0.5,
+            maxScale: 5.0,
+            clipBehavior: Clip.none,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+              loadingBuilder: (_, child, progress) {
+                if (progress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: progress.expectedTotalBytes != null
+                        ? progress.cumulativeBytesLoaded /
+                            progress.expectedTotalBytes!
+                        : null,
+                    color: Colors.white54,
+                    strokeWidth: 2,
+                  ),
+                );
+              },
+              errorBuilder: (_, __, ___) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.broken_image_rounded,
+                      color: Colors.white24, size: 64),
+                  SizedBox(height: 12),
+                  Text(
+                    'No se pudo cargar la imagen',
+                    style: TextStyle(color: Colors.white38, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

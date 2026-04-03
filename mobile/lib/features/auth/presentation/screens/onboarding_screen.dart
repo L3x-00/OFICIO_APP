@@ -221,8 +221,19 @@ class _RoleOption extends StatelessWidget {
 
 // ─── Formulario de perfil de proveedor ────────────────────
 
+/// [providerType] — 'OFICIO' | 'NEGOCIO' (opcional; se puede elegir en el form)
+/// [isStandalone] — true cuando el usuario ya está autenticado y llega desde
+///                  el modal "Quiero ser parte"; en ese caso el formulario
+///                  simplemente regresa al navegar en lugar de cambiar el estado global.
 class ProviderOnboardingForm extends StatefulWidget {
-  const ProviderOnboardingForm({super.key});
+  final String? providerType;
+  final bool isStandalone;
+
+  const ProviderOnboardingForm({
+    super.key,
+    this.providerType,
+    this.isStandalone = false,
+  });
 
   @override
   State<ProviderOnboardingForm> createState() => _ProviderOnboardingFormState();
@@ -244,6 +255,20 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     super.dispose();
   }
 
+  bool get _isOficio => widget.providerType == 'OFICIO';
+
+  String get _formTitle => _isOficio
+      ? 'Perfil de Profesional'
+      : widget.providerType == 'NEGOCIO'
+          ? 'Perfil de Negocio'
+          : 'Configura tu perfil';
+
+  String get _formSubtitle => _isOficio
+      ? 'Completa los datos de tu servicio independiente'
+      : widget.providerType == 'NEGOCIO'
+          ? 'Completa los datos de tu establecimiento'
+          : 'Esta información aparecerá en tu tarjeta de servicio';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -251,9 +276,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       appBar: AppBar(
         backgroundColor: AppColors.bgDark,
         elevation: 0,
-        title: const Text(
-          'Configura tu perfil',
-          style: TextStyle(color: AppColors.textPrimary),
+        leading: widget.isStandalone
+            ? IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
+        title: Text(
+          _formTitle,
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
       ),
       body: SingleChildScrollView(
@@ -261,18 +292,61 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            // Badge de tipo (solo cuando viene del modal)
+            if (widget.providerType != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _isOficio
+                      ? AppColors.primary.withOpacity(0.1)
+                      : const Color(0xFF8E2DE2).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _isOficio
+                        ? AppColors.primary.withOpacity(0.3)
+                        : const Color(0xFF8E2DE2).withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isOficio
+                          ? Icons.handyman_rounded
+                          : Icons.storefront_rounded,
+                      size: 14,
+                      color: _isOficio
+                          ? AppColors.primary
+                          : const Color(0xFF8E2DE2),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _isOficio ? 'Profesional Independiente' : 'Negocio',
+                      style: TextStyle(
+                        color: _isOficio
+                            ? AppColors.primary
+                            : const Color(0xFF8E2DE2),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            Text(
               'Cuéntanos sobre tu servicio',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Esta información aparecerá en tu tarjeta de servicio',
-              style: TextStyle(
+            Text(
+              _formSubtitle,
+              style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
               ),
@@ -342,10 +416,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             Center(
               child: TextButton(
                 onPressed: () {
-                  // Saltar por ahora, completar después
-                  context.read<AuthProvider>().completeOnboarding(
-                    role: 'USUARIO',
-                  );
+                  if (widget.isStandalone) {
+                    // Usuario ya autenticado — solo cierra el formulario
+                    Navigator.of(context).pop();
+                  } else {
+                    // Flujo de onboarding normal — pasar a cliente
+                    context.read<AuthProvider>().completeOnboarding(
+                      role: 'USUARIO',
+                    );
+                  }
                 },
                 child: const Text(
                   'Completar después',
@@ -373,15 +452,33 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
     setState(() => _isLoading = true);
 
-    // TODO Hito 6: llamar al endpoint de creación de proveedor
-    // Por ahora simulamos un delay y marcamos onboarding completo
+    // TODO Hito 6: llamar al endpoint de creación de proveedor con:
+    //   userId: context.read<AuthProvider>().user!.id
+    //   businessName: _businessNameController.text.trim()
+    //   phone: _phoneController.text.trim()
+    //   description: _descriptionController.text.trim()
+    //   address: _addressController.text.trim()
+    //   type: widget.providerType ?? 'OFICIO'
     await Future.delayed(const Duration(seconds: 1));
 
-    if (mounted) {
-      context.read<AuthProvider>().completeOnboarding(role: 'PROVEEDOR');
-    }
+    if (!mounted) return;
 
-    setState(() => _isLoading = false);
+    if (widget.isStandalone) {
+      // Usuario ya autenticado — mostrar éxito y volver a la app
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Perfil de proveedor creado con éxito!'),
+          backgroundColor: AppColors.available,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      // Flujo de onboarding normal
+      context.read<AuthProvider>().completeOnboarding(role: 'PROVEEDOR');
+      setState(() => _isLoading = false);
+    }
   }
 
   Widget _buildField({

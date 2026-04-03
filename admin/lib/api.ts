@@ -59,6 +59,28 @@ export const toggleVisibility = (id: number) =>
     method: 'PATCH',
   });
 
+// ── CATEGORÍAS ────────────────────────────────────────────
+export const getCategories = (search?: string) => {
+  const params = new URLSearchParams();
+  if (search) params.append('search', search);
+  return fetchApi<Category[]>(`/admin/categories?${params}`);
+};
+
+export const createCategory = (data: { name: string; slug: string; iconUrl?: string }) =>
+  fetchApi<Category>('/admin/categories', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const updateCategory = (id: number, data: { name?: string; slug?: string; iconUrl?: string }) =>
+  fetchApi<Category>(`/admin/categories/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+export const deleteCategory = (id: number) =>
+  fetchApi(`/admin/categories/${id}`, { method: 'DELETE' });
+
 // ── RESEÑAS ───────────────────────────────────────────────
 export const getAllReviews = (page = 1, isVisible?: boolean) => {
   const params = new URLSearchParams({ page: String(page), limit: '15' });
@@ -132,6 +154,14 @@ export interface Provider {
   locality: { name: string };
   user?: { email: string; firstName: string; lastName: string };
   subscription?: { plan: string; status: string; endDate: string };
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  iconUrl?: string;
+  providerCount?: number;
 }
 
 export interface ReviewsResponse {

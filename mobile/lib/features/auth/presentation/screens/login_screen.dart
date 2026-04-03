@@ -89,10 +89,15 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (ok && mounted) {
-        // ✅ NAVEGACIÓN TRAS REGISTRO EXITOSO
-        // Como el registro pone _needsOnboarding = true, 
-        // aquí podrías mandar a una pantalla de selección de rol o al home
-        Navigator.pushReplacementNamed(context, '/home'); 
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Cuenta creada! Elige tu rol para continuar.'),
+            backgroundColor: AppColors.available,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        // El AuthProvider notifica listeners → _AppRoot reconstruye con OnboardingScreen
+        Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -108,13 +113,12 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (ok && mounted) {
-        // ✅ NAVEGACIÓN TRAS LOGIN EXITOSO
-        // Esto quita la necesidad de dar F5
-        Navigator.pushReplacementNamed(context, '/home');
+        // El AuthProvider notifica listeners → _AppRoot reconstruye con _MainNavigation
+        Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(auth.error ?? 'Credenciales incorrectas'),
+            content: Text(auth.error ?? 'Correo o contraseña incorrectos'),
             backgroundColor: AppColors.busy,
           ),
         );
