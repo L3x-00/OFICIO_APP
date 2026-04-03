@@ -12,6 +12,11 @@ abstract class AppColors {
   static const Color primary     = Color(0xFF00C6FF);
   static const Color primaryDark = Color(0xFF0072FF);
 
+  // Acento cálido — ámbar/dorado para comunidad y confianza
+  static const Color amber       = Color(0xFFFFC107);
+  static const Color amberDark   = Color(0xFFFF8F00);
+  static const Color amberDeep   = Color(0xFF3D2B00); // fondo oscuro cálido
+
   // Estado de disponibilidad
   static const Color available   = Color(0xFF00E676);  // Verde
   static const Color busy        = Color(0xFFFF3D00);  // Rojo
@@ -30,4 +35,8 @@ abstract class AppColors {
   // WhatsApp y llamada
   static const Color whatsapp    = Color(0xFF25D366);
   static const Color call        = Color(0xFF0072FF);
+
+  // Redes sociales
+  static const Color google      = Color(0xFFEA4335);
+  static const Color facebook    = Color(0xFF1877F2);
 }

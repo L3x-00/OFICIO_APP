@@ -7,6 +7,7 @@ class UserModel {
   final String role;
   final String? avatarUrl;
   final String? phone;
+  final String? dni;
 
   const UserModel({
     required this.id,
@@ -16,6 +17,7 @@ class UserModel {
     required this.role,
     this.avatarUrl,
     this.phone,
+    this.dni,
   });
 
   String get fullName => '$firstName $lastName';
@@ -31,6 +33,25 @@ class UserModel {
       role:      json['role'] as String? ?? 'USUARIO',
       avatarUrl: json['avatarUrl'] as String?,
       phone:     json['phone'] as String?,
+      dni:       json['dni'] as String?,
+    );
+  }
+
+  UserModel copyWith({
+    String? role,
+    String? dni,
+    String? phone,
+    String? avatarUrl,
+  }) {
+    return UserModel(
+      id:        id,
+      email:     email,
+      firstName: firstName,
+      lastName:  lastName,
+      role:      role      ?? this.role,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      phone:     phone     ?? this.phone,
+      dni:       dni       ?? this.dni,
     );
   }
 
@@ -42,5 +63,6 @@ class UserModel {
     'role':      role,
     'avatarUrl': avatarUrl,
     'phone':     phone,
+    'dni':       dni,
   };
 }

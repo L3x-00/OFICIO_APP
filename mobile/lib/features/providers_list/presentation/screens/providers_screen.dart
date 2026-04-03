@@ -6,6 +6,7 @@ import '../providers/providers_provider.dart';
 import '../widgets/service_card.dart';
 import 'provider_detail_sheet.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
+import '../../../../features/auth/presentation/screens/login_screen.dart';
 import '../../../../features/favorites/presentation/providers/favorites_provider.dart';
 
 class ProvidersScreen extends StatelessWidget {
@@ -51,7 +52,9 @@ class _ProvidersViewState extends State<_ProvidersView>
               height: 32,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
+                  colors: [AppColors.amber, AppColors.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -91,6 +94,7 @@ class _ProvidersViewState extends State<_ProvidersView>
       ),
       body: Column(
         children: [
+          _GreetingHeader(),
           _SearchBar(),
           _CategoryChips(),
           Expanded(child: _ProvidersList()),
@@ -412,6 +416,126 @@ class _PanelAction extends StatelessWidget {
   }
 }
 
+// ─── Helper: diálogo de login requerido ──────────────────
+
+void _showLoginRequiredDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: AppColors.bgCard,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text(
+        'Inicia sesión para continuar',
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 17,
+        ),
+      ),
+      content: const Text(
+        'Necesitas una cuenta para agregar favoritos y dejar reseñas.',
+        style: TextStyle(color: AppColors.textSecondary, height: 1.5),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Ahora no',
+              style: TextStyle(color: AppColors.textMuted)),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const LoginScreen(initialMode: AuthMode.register),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('Registrarme',
+              style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
+
+// ─── Encabezado de saludo personalizado ──────────────────
+
+class _GreetingHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final user = auth.user;
+    final firstName = user?.firstName ?? (auth.isGuest ? null : 'Usuario');
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  firstName != null
+                      ? '¡Hola, $firstName!'
+                      : '¡Explora los servicios!',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  firstName != null
+                      ? '¿Qué necesitas hoy?'
+                      : 'Contrata sin registro • Es gratis',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Indicador de ubicación
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on_rounded,
+                    color: AppColors.amber, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  'Cerca de ti',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Barra de búsqueda ─────────────────────────────────────
 
 class _SearchBar extends StatefulWidget {
@@ -560,6 +684,8 @@ class _ProvidersList extends StatelessWidget {
     final prov    = context.watch<ProvidersProvider>();
     final favProv = context.watch<FavoritesProvider>();
 
+    final auth = context.watch<AuthProvider>();
+
     if (prov.isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
@@ -611,17 +737,53 @@ class _ProvidersList extends StatelessWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
       // 100 de bottom para que el FAB no tape las tarjetas
-      itemCount: prov.providers.length,
+      itemCount: prov.providers.length + 1, // +1 para el encabezado de sección
       itemBuilder: (context, index) {
-        final provider = prov.providers[index].copyWith(
-          isFavorite: favProv.isFavorite(prov.providers[index].id),
+        // Primer ítem: encabezado de sección
+        if (index == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12, top: 4),
+            child: Row(
+              children: [
+                Container(
+                  width: 3,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.amber, AppColors.primary],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Profesionales Destacados Cerca de Ti',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final provider = prov.providers[index - 1].copyWith(
+          isFavorite: favProv.isFavorite(prov.providers[index - 1].id),
         );
         return ServiceCard(
           provider: provider,
           onTap: () => ProviderDetailSheet.show(context, provider),
           onFavoriteToggle: () {
+            if (auth.user == null) {
+              _showLoginRequiredDialog(context);
+              return;
+            }
             prov.toggleFavorite(provider.id);
             favProv.toggle(provider.id);
           },

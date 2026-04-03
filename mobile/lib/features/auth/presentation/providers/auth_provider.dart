@@ -5,10 +5,11 @@ import '../../../../core/errors/failures.dart';
 
 /// Estado de navegación del usuario
 enum AppNavigationState {
-  loading, // Verificando sesión guardada
+  loading,         // Verificando sesión guardada
   unauthenticated, // Sin sesión
+  guest,           // Navega como invitado (sin cuenta)
   needsOnboarding, // Registrado pero sin elegir rol
-  authenticated, // Listo para usar la app
+  authenticated,   // Listo para usar la app
 }
 
 class AuthProvider extends ChangeNotifier {
@@ -17,22 +18,42 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   bool _isInitialized = false;
   bool _needsOnboarding = false;
+  bool _isGuest = false;
   String? _error;
   bool _isLoading = false;
+
+  // ── Multi-perfil de proveedor ─────────────────────────────
+  // Almacena los tipos de perfil que tiene el usuario: 'OFICIO', 'NEGOCIO'
+  // TODO Hito 6: sincronizar con backend al iniciar sesión
+  final Set<String> _providerProfiles = {};
+  String? _activeProfileType;
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null && !_needsOnboarding;
+  bool get isGuest => _isGuest;
   bool get needsOnboarding => _needsOnboarding;
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
+  Set<String> get providerProfiles => Set.unmodifiable(_providerProfiles);
+  String?     get activeProfileType => _activeProfileType;
+  bool get hasOficioProfile  => _providerProfiles.contains('OFICIO');
+  bool get hasNegocioProfile => _providerProfiles.contains('NEGOCIO');
+
   /// Estado calculado para la navegación
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
+    if (_user == null && _isGuest) return AppNavigationState.guest;
     if (_user == null) return AppNavigationState.unauthenticated;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
     return AppNavigationState.authenticated;
+  }
+
+  /// Permite navegar la app sin registrarse
+  void browseAsGuest() {
+    _isGuest = true;
+    notifyListeners();
   }
 
   Future<void> initialize() async {
@@ -42,6 +63,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
+    _isGuest = false;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -69,6 +91,7 @@ class AuthProvider extends ChangeNotifier {
     required String lastName,
     String? phone,
   }) async {
+    _isGuest = false;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -97,26 +120,39 @@ class AuthProvider extends ChangeNotifier {
   /// Llamado desde OnboardingScreen cuando el usuario elige su rol
   void completeOnboarding({required String role}) {
     _needsOnboarding = false;
-    // Actualizar el rol local del usuario
-    if (_user != null) {
-      _user = UserModel(
-        id: _user!.id,
-        email: _user!.email,
-        firstName: _user!.firstName,
-        lastName: _user!.lastName,
-        role: role == 'USUARIO' ? 'USUARIO' : 'PROVEEDOR',
-        phone: _user!.phone,
-        avatarUrl: _user!.avatarUrl,
-      );
+    final userRole = (role == 'OFICIO' || role == 'NEGOCIO') ? 'PROVEEDOR' : 'USUARIO';
+    if (role == 'OFICIO' || role == 'NEGOCIO') {
+      _providerProfiles.add(role);
+      _activeProfileType = role;
     }
+    _user = _user?.copyWith(role: userRole);
     notifyListeners();
+  }
+
+  /// Agrega un perfil de proveedor adicional (mismo usuario, segundo perfil)
+  void addProviderProfile({required String type}) {
+    _providerProfiles.add(type);
+    _activeProfileType = type;
+    _user = _user?.copyWith(role: 'PROVEEDOR');
+    notifyListeners();
+  }
+
+  /// Cambia el perfil activo entre OFICIO y NEGOCIO
+  void switchProfile(String type) {
+    if (_providerProfiles.contains(type)) {
+      _activeProfileType = type;
+      notifyListeners();
+    }
   }
 
   Future<void> logout() async {
     await _repo.logout();
     _user = null;
+    _isGuest = false;
     _needsOnboarding = false;
     _error = null;
+    _providerProfiles.clear();
+    _activeProfileType = null;
     notifyListeners();
   }
 

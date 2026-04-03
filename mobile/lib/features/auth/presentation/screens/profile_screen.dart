@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'onboarding_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -118,20 +119,63 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          // Si es proveedor, mostrar opción de gestionar perfil
-          if (user?.isProvider == true) ...[
+          // ── Sección: Mis perfiles de proveedor ───────────
+          if (auth.hasOficioProfile || auth.hasNegocioProfile) ...[
+            const _SectionTitle(title: 'MIS PERFILES DE PROVEEDOR'),
+            const SizedBox(height: 12),
+
+            // Switcher de perfiles (aparece cuando hay 2)
+            if (auth.hasOficioProfile && auth.hasNegocioProfile) ...[
+              _ProfileSwitcher(auth: auth),
+              const SizedBox(height: 12),
+            ],
+
+            // Gestionar perfil activo
             _ActionButton(
-              icon: Icons.store_outlined,
-              label: 'Gestionar mi perfil de proveedor',
-              color: AppColors.primary,
+              icon: Icons.tune_rounded,
+              label: auth.activeProfileType == 'NEGOCIO'
+                  ? 'Gestionar mi negocio'
+                  : 'Gestionar mi perfil profesional',
+              color: auth.activeProfileType == 'NEGOCIO'
+                  ? const Color(0xFF8E2DE2)
+                  : AppColors.primary,
               onTap: () {
-                // Hito 6: navegar al perfil del proveedor
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Próximamente: Editar perfil de proveedor'),
+                    content: Text('Edición de perfil — próximamente'),
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
               },
+            ),
+            const SizedBox(height: 10),
+
+            // Botón para agregar el segundo perfil (si falta uno)
+            if (auth.hasOficioProfile && !auth.hasNegocioProfile)
+              _ActionButton(
+                icon: Icons.storefront_rounded,
+                label: 'Agregar perfil de negocio',
+                color: const Color(0xFF8E2DE2),
+                onTap: () => _openAddProfile(context, 'NEGOCIO'),
+              ),
+            if (auth.hasNegocioProfile && !auth.hasOficioProfile)
+              _ActionButton(
+                icon: Icons.handyman_rounded,
+                label: 'Agregar perfil profesional',
+                color: AppColors.primary,
+                onTap: () => _openAddProfile(context, 'OFICIO'),
+              ),
+
+            const SizedBox(height: 20),
+          ],
+
+          // Si no es proveedor, CTA para unirse
+          if (user?.isProvider != true) ...[
+            _ActionButton(
+              icon: Icons.rocket_launch_rounded,
+              label: '¡Quiero ser proveedor!',
+              color: AppColors.amber,
+              onTap: () => _openAddProfile(context, 'OFICIO'),
             ),
             const SizedBox(height: 12),
           ],
@@ -153,8 +197,19 @@ class ProfileScreen extends StatelessWidget {
     return switch (role) {
       'ADMIN'     => 'Administrador',
       'PROVEEDOR' => 'Proveedor',
-      _           => 'Usuario',
+      _           => 'Cliente',
     };
+  }
+
+  void _openAddProfile(BuildContext context, String type) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProviderOnboardingForm(
+          providerType: type,
+          isStandalone: true,
+        ),
+      ),
+    );
   }
 
   void _confirmLogout(BuildContext context, AuthProvider auth) {
@@ -315,6 +370,105 @@ class _ActionButton extends StatelessWidget {
             ),
             const Spacer(),
             Icon(Icons.arrow_forward_ios_rounded, color: color, size: 14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Switcher de perfiles ─────────────────────────────────
+
+class _ProfileSwitcher extends StatelessWidget {
+  final AuthProvider auth;
+  const _ProfileSwitcher({required this.auth});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
+      ),
+      child: Row(
+        children: [
+          if (auth.hasOficioProfile)
+            Expanded(
+              child: _ProfileTab(
+                icon: Icons.handyman_rounded,
+                label: 'Profesional',
+                color: AppColors.primary,
+                isActive: auth.activeProfileType == 'OFICIO',
+                onTap: () => auth.switchProfile('OFICIO'),
+              ),
+            ),
+          if (auth.hasOficioProfile && auth.hasNegocioProfile)
+            const SizedBox(width: 4),
+          if (auth.hasNegocioProfile)
+            Expanded(
+              child: _ProfileTab(
+                icon: Icons.storefront_rounded,
+                label: 'Mi Negocio',
+                color: const Color(0xFF8E2DE2),
+                isActive: auth.activeProfileType == 'NEGOCIO',
+                onTap: () => auth.switchProfile('NEGOCIO'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileTab extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _ProfileTab({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isActive ? color.withOpacity(0.14) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: isActive
+              ? Border.all(color: color.withOpacity(0.4))
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? color : AppColors.textMuted,
+              size: 18,
+            ),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? color : AppColors.textMuted,
+                fontSize: 13,
+                fontWeight:
+                    isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ],
         ),
       ),

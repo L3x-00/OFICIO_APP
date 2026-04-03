@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -29,7 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               // Título
               const Text(
-                '¿Cómo usarás\nOficioApp?',
+                '¿Cómo te ayudamos\nhoy?',
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 30,
@@ -39,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Elige tu perfil para personalizar tu experiencia',
+                'Cuéntanos quién eres para personalizar tu experiencia',
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 15,
@@ -51,7 +54,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _RoleOption(
                 icon: Icons.search_rounded,
                 title: 'Soy cliente',
-                subtitle: 'Busco electricistas, gasfiteros y más servicios',
+                subtitle: 'Busco, comparo y contrato profesionales o negocios en mi zona.',
                 roleValue: 'USUARIO',
                 isSelected: _selectedRole == 'USUARIO',
                 onTap: () => setState(() => _selectedRole = 'USUARIO'),
@@ -59,8 +62,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 14),
               _RoleOption(
                 icon: Icons.handyman_rounded,
-                title: 'Ofrezco un oficio',
-                subtitle: 'Soy electricista, pintor, gasfitero, etc.',
+                title: 'Soy profesional',
+                subtitle: 'Ofrezco mis servicios como independiente y quiero conseguir más clientes.',
                 roleValue: 'OFICIO',
                 isSelected: _selectedRole == 'OFICIO',
                 onTap: () => setState(() => _selectedRole = 'OFICIO'),
@@ -69,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _RoleOption(
                 icon: Icons.storefront_rounded,
                 title: 'Tengo un negocio',
-                subtitle: 'Restaurante, peluquería, tienda, etc.',
+                subtitle: 'Promociono mi establecimiento y llego a más personas en mi ciudad.',
                 roleValue: 'NEGOCIO',
                 isSelected: _selectedRole == 'NEGOCIO',
                 onTap: () => setState(() => _selectedRole = 'NEGOCIO'),
@@ -221,10 +224,9 @@ class _RoleOption extends StatelessWidget {
 
 // ─── Formulario de perfil de proveedor ────────────────────
 
-/// [providerType] — 'OFICIO' | 'NEGOCIO' (opcional; se puede elegir en el form)
-/// [isStandalone] — true cuando el usuario ya está autenticado y llega desde
-///                  el modal "Quiero ser parte"; en ese caso el formulario
-///                  simplemente regresa al navegar en lugar de cambiar el estado global.
+/// [providerType] — 'OFICIO' | 'NEGOCIO'
+/// [isStandalone] — true cuando el usuario ya está autenticado (viene del modal
+///                  "Quiero ser parte" o de agregar un segundo perfil).
 class ProviderOnboardingForm extends StatefulWidget {
   final String? providerType;
   final bool isStandalone;
@@ -241,14 +243,22 @@ class ProviderOnboardingForm extends StatefulWidget {
 
 class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   final _businessNameController = TextEditingController();
+  final _dniController          = TextEditingController();
   final _phoneController        = TextEditingController();
   final _descriptionController  = TextEditingController();
   final _addressController      = TextEditingController();
+
+  final List<XFile> _photos = [];
+  final _picker = ImagePicker();
   bool _isLoading = false;
+
+  static const _maxPhotos = 4;
+  static const _maxMB     = 5;
 
   @override
   void dispose() {
     _businessNameController.dispose();
+    _dniController.dispose();
     _phoneController.dispose();
     _descriptionController.dispose();
     _addressController.dispose();
@@ -269,6 +279,100 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           ? 'Completa los datos de tu establecimiento'
           : 'Esta información aparecerá en tu tarjeta de servicio';
 
+  // ─── Picker de fotos ─────────────────────────────────────
+
+  Future<void> _pickPhoto() async {
+    if (_photos.length >= _maxPhotos) return;
+
+    final file = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file == null || !mounted) return;
+
+    // Validar formato por extensión del nombre original
+    final ext = file.name.split('.').last.toLowerCase();
+    if (!['jpg', 'jpeg', 'png', 'webp'].contains(ext)) {
+      _showSnack('Formato no válido. Usa JPG, PNG o WEBP.', isError: true);
+      return;
+    }
+
+    // Validar tamaño (máx _maxMB MB)
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    if (bytes.length > _maxMB * 1024 * 1024) {
+      _showSnack('La imagen supera $_maxMB MB. Elige una más pequeña.', isError: true);
+      return;
+    }
+
+    setState(() => _photos.add(file));
+  }
+
+  void _removePhoto(int index) => setState(() => _photos.removeAt(index));
+
+  void _reorderPhotos(int from, int to) {
+    if (from == to) return;
+    setState(() {
+      final photo = _photos.removeAt(from);
+      _photos.insert(to, photo);
+    });
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? AppColors.busy : AppColors.available,
+      ),
+    );
+  }
+
+  // ─── Submit ──────────────────────────────────────────────
+
+  Future<void> _submit() async {
+    final name  = _businessNameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final dni   = _dniController.text.trim();
+
+    if (name.isEmpty || phone.isEmpty) {
+      _showSnack('El nombre y el teléfono son obligatorios.', isError: true);
+      return;
+    }
+    if (dni.isNotEmpty && !RegExp(r'^\d{8}$').hasMatch(dni)) {
+      _showSnack('El DNI debe tener exactamente 8 dígitos.', isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // TODO Hito 6: enviar al endpoint de creación de proveedor:
+    //   userId, businessName: name, phone, dni, type: widget.providerType ?? 'OFICIO'
+    //   description: _descriptionController.text.trim()
+    //   address: _addressController.text.trim()
+    //   photos: _photos  → subir como multipart/form-data
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    if (widget.isStandalone) {
+      if (widget.providerType != null) {
+        context.read<AuthProvider>().addProviderProfile(
+          type: widget.providerType!,
+        );
+      }
+      setState(() => _isLoading = false);
+      _showSnack('¡Perfil de proveedor creado con éxito!');
+      Navigator.of(context).pop();
+    } else {
+      context.read<AuthProvider>().completeOnboarding(
+        role: widget.providerType ?? 'OFICIO',
+      );
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // ─── Build principal ─────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -288,77 +392,60 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Badge de tipo (solo cuando viene del modal)
+            // Badge de tipo
             if (widget.providerType != null) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _isOficio
-                      ? AppColors.primary.withOpacity(0.1)
-                      : const Color(0xFF8E2DE2).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: _isOficio
-                        ? AppColors.primary.withOpacity(0.3)
-                        : const Color(0xFF8E2DE2).withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isOficio
-                          ? Icons.handyman_rounded
-                          : Icons.storefront_rounded,
-                      size: 14,
-                      color: _isOficio
-                          ? AppColors.primary
-                          : const Color(0xFF8E2DE2),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _isOficio ? 'Profesional Independiente' : 'Negocio',
-                      style: TextStyle(
-                        color: _isOficio
-                            ? AppColors.primary
-                            : const Color(0xFF8E2DE2),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+              _TypeBadge(isOficio: _isOficio),
+              const SizedBox(height: 14),
             ],
-            Text(
+
+            const Text(
               'Cuéntanos sobre tu servicio',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               _formSubtitle,
               style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+                  color: AppColors.textSecondary, fontSize: 14),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
+
+            // ── Sección: Información básica ──────────────
+            const _FormSectionHeader(label: 'INFORMACIÓN BÁSICA'),
+            const SizedBox(height: 12),
+
             _buildField(
               controller: _businessNameController,
-              label: 'Nombre del servicio o negocio *',
-              hint: 'Ej: Juan Electricista o Restaurante El Sabor',
-              icon: Icons.storefront_outlined,
+              label: _isOficio
+                  ? 'Nombre del profesional *'
+                  : 'Nombre del negocio *',
+              hint: _isOficio
+                  ? 'Ej: Juan Electricista'
+                  : 'Ej: Restaurante El Sabor',
+              icon: _isOficio
+                  ? Icons.handyman_outlined
+                  : Icons.storefront_outlined,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+
+            _buildField(
+              controller: _dniController,
+              label: 'DNI del titular',
+              hint: '12345678',
+              icon: Icons.badge_outlined,
+              keyboardType: TextInputType.number,
+              maxLength: 8,
+            ),
+            const SizedBox(height: 14),
+
             _buildField(
               controller: _phoneController,
               label: 'Teléfono de contacto *',
@@ -366,22 +453,40 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 16),
-            _buildField(
-              controller: _descriptionController,
-              label: 'Descripción del servicio',
-              hint: 'Describe qué haces, tu experiencia, especialidades...',
-              icon: Icons.description_outlined,
-              maxLines: 4,
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+
             _buildField(
               controller: _addressController,
               label: 'Dirección (opcional)',
               hint: 'Jr. Ejemplo 123, Ciudad',
               icon: Icons.location_on_outlined,
             ),
+            const SizedBox(height: 24),
+
+            // ── Sección: Descripción ──────────────────────
+            const _FormSectionHeader(label: 'DESCRIPCIÓN'),
+            const SizedBox(height: 12),
+
+            _buildField(
+              controller: _descriptionController,
+              label: _isOficio
+                  ? 'Describe tu servicio'
+                  : 'Describe tu negocio',
+              hint: _isOficio
+                  ? 'Experiencia, especialidades, horario de trabajo...'
+                  : 'Qué ofreces, horarios, especialidades...',
+              icon: Icons.description_outlined,
+              maxLines: 4,
+            ),
+            const SizedBox(height: 24),
+
+            // ── Sección: Fotos ────────────────────────────
+            const _FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
+            const SizedBox(height: 12),
+            _buildPhotoSection(),
             const SizedBox(height: 32),
+
+            // ── Botón enviar ──────────────────────────────
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -389,6 +494,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.bgCard,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -417,13 +523,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               child: TextButton(
                 onPressed: () {
                   if (widget.isStandalone) {
-                    // Usuario ya autenticado — solo cierra el formulario
                     Navigator.of(context).pop();
                   } else {
-                    // Flujo de onboarding normal — pasar a cliente
-                    context.read<AuthProvider>().completeOnboarding(
-                      role: 'USUARIO',
-                    );
+                    context
+                        .read<AuthProvider>()
+                        .completeOnboarding(role: 'USUARIO');
                   }
                 },
                 child: const Text(
@@ -438,48 +542,254 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     );
   }
 
-  Future<void> _submit() async {
-    if (_businessNameController.text.trim().isEmpty ||
-        _phoneController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El nombre y teléfono son obligatorios'),
-          backgroundColor: AppColors.busy,
+  // ─── Sección de fotos ─────────────────────────────────────
+
+  Widget _buildPhotoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Tip de conversión
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+          ),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.lightbulb_rounded,
+                  color: AppColors.primary, size: 18),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Agregar imágenes reales de tus servicios aumenta la confianza del cliente y mejora tu visibilidad.',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      );
-      return;
-    }
+        const SizedBox(height: 14),
 
-    setState(() => _isLoading = true);
-
-    // TODO Hito 6: llamar al endpoint de creación de proveedor con:
-    //   userId: context.read<AuthProvider>().user!.id
-    //   businessName: _businessNameController.text.trim()
-    //   phone: _phoneController.text.trim()
-    //   description: _descriptionController.text.trim()
-    //   address: _addressController.text.trim()
-    //   type: widget.providerType ?? 'OFICIO'
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (!mounted) return;
-
-    if (widget.isStandalone) {
-      // Usuario ya autenticado — mostrar éxito y volver a la app
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Perfil de proveedor creado con éxito!'),
-          backgroundColor: AppColors.available,
-          duration: Duration(seconds: 3),
+        // Grid de 4 slots
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(_maxPhotos, (i) {
+              if (i < _photos.length) return _buildFilledSlot(i);
+              return _buildEmptySlot(i);
+            }),
+          ),
         ),
-      );
-      Navigator.of(context).pop();
-    } else {
-      // Flujo de onboarding normal
-      context.read<AuthProvider>().completeOnboarding(role: 'PROVEEDOR');
-      setState(() => _isLoading = false);
-    }
+        const SizedBox(height: 8),
+
+        const Text(
+          'Formatos: JPG, PNG, WEBP  •  Máx. 5 MB por foto',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+        ),
+        if (_photos.isNotEmpty) ...[
+          const SizedBox(height: 3),
+          const Text(
+            'Mantén presionado y arrastra para reordenar  •  La primera foto es la portada',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+        ],
+      ],
+    );
   }
+
+  /// Slot con imagen seleccionada: draggable + delete + cover badge
+  Widget _buildFilledSlot(int index) {
+    return DragTarget<int>(
+      onWillAcceptWithDetails: (d) => d.data != index,
+      onAcceptWithDetails:     (d) => _reorderPhotos(d.data, index),
+      builder: (ctx, candidates, _) {
+        final isHovered = candidates.isNotEmpty;
+        return LongPressDraggable<int>(
+          data: index,
+          hapticFeedbackOnStart: true,
+          feedback: Material(
+            color: Colors.transparent,
+            child: Opacity(
+              opacity: 0.85,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  File(_photos[index].path),
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          childWhenDragging: Container(
+            width: 100,
+            height: 100,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: AppColors.bgCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.4),
+                width: 2,
+              ),
+            ),
+          ),
+          child: Container(
+            width: 100,
+            height: 100,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: isHovered
+                  ? Border.all(color: AppColors.primary, width: 2)
+                  : null,
+            ),
+            child: Stack(
+              children: [
+                // Imagen
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(_photos[index].path),
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // Overlay de drop
+                if (isHovered)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                // Botón eliminar
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: GestureDetector(
+                    onTap: () => _removePhoto(index),
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.65),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                // Icono de arrastrar
+                Positioned(
+                  bottom: 4,
+                  left: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.55),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Icon(
+                      Icons.drag_indicator_rounded,
+                      color: Colors.white,
+                      size: 13,
+                    ),
+                  ),
+                ),
+                // Badge "Portada" en la primera foto
+                if (index == 0)
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.amber.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text(
+                        'Portada',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Slot vacío: solo el siguiente disponible es tappable
+  Widget _buildEmptySlot(int index) {
+    final isNext = index == _photos.length;
+    return GestureDetector(
+      onTap: isNext ? _pickPhoto : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 100,
+        height: 100,
+        margin: const EdgeInsets.only(right: 8),
+        decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isNext
+                ? AppColors.primary.withOpacity(0.35)
+                : Colors.white.withOpacity(0.05),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isNext
+                  ? Icons.add_photo_alternate_rounded
+                  : Icons.photo_outlined,
+              color: isNext
+                  ? AppColors.primary.withOpacity(0.6)
+                  : AppColors.textMuted.withOpacity(0.25),
+              size: 28,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Foto ${index + 1}',
+              style: TextStyle(
+                color: isNext
+                    ? AppColors.primary.withOpacity(0.6)
+                    : AppColors.textMuted.withOpacity(0.25),
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Constructor de campos de texto ──────────────────────
 
   Widget _buildField({
     required TextEditingController controller,
@@ -488,6 +798,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     required IconData icon,
     TextInputType? keyboardType,
     int maxLines = 1,
+    int? maxLength,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,13 +816,16 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          maxLength: maxLength,
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            hintStyle: const TextStyle(
+                color: AppColors.textMuted, fontSize: 13),
             prefixIcon: maxLines == 1
                 ? Icon(icon, color: AppColors.textMuted, size: 20)
                 : null,
+            counterText: '',
             filled: true,
             fillColor: AppColors.bgCard,
             border: OutlineInputBorder(
@@ -521,14 +835,70 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
+                  color: AppColors.primary, width: 1.5),
             ),
             contentPadding: EdgeInsets.all(maxLines > 1 ? 16 : 14),
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Widgets auxiliares del formulario ─────────────────────
+
+class _FormSectionHeader extends StatelessWidget {
+  final String label;
+  const _FormSectionHeader({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.textMuted,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+}
+
+class _TypeBadge extends StatelessWidget {
+  final bool isOficio;
+  const _TypeBadge({required this.isOficio});
+
+  @override
+  Widget build(BuildContext context) {
+    final color =
+        isOficio ? AppColors.primary : const Color(0xFF8E2DE2);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isOficio ? Icons.handyman_rounded : Icons.storefront_rounded,
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            isOficio ? 'Profesional Independiente' : 'Negocio',
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

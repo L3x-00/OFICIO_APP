@@ -59,10 +59,13 @@ class _AppRoot extends StatelessWidget {
       // 2. Sin sesión: muestra bienvenida con carrusel
       AppNavigationState.unauthenticated => const WelcomeScreen(),
 
-      // 3. Registrado pero sin elegir rol
+      // 3. Invitado: navega sin cuenta (acceso limitado)
+      AppNavigationState.guest => const _MainNavigation(userId: null),
+
+      // 4. Registrado pero sin elegir rol
       AppNavigationState.needsOnboarding => const OnboardingScreen(),
 
-      // 4. Autenticado: app principal con tabs
+      // 5. Autenticado: app principal con tabs
       AppNavigationState.authenticated => _MainNavigation(
         userId: auth.user!.id,
       ),
@@ -72,8 +75,9 @@ class _AppRoot extends StatelessWidget {
 
 /// Navegación principal con 3 pestañas
 class _MainNavigation extends StatefulWidget {
-  final int userId;
-  const _MainNavigation({required this.userId});
+  /// null = modo invitado (sin cuenta)
+  final int? userId;
+  const _MainNavigation({this.userId});
 
   @override
   State<_MainNavigation> createState() => _MainNavigationState();
@@ -82,13 +86,63 @@ class _MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<_MainNavigation> {
   int _currentIndex = 0;
 
+  bool get _isGuest => widget.userId == null;
+
   @override
   void initState() {
     super.initState();
-    // Cargar favoritos una sola vez al autenticarse
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FavoritesProvider>().initialize(widget.userId);
-    });
+    // Cargar favoritos solo si el usuario está autenticado
+    if (!_isGuest) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<FavoritesProvider>().initialize(widget.userId!);
+      });
+    }
+  }
+
+  void _handleTabTap(int index) {
+    // Invitados solo pueden acceder a Explorar (index 0)
+    if (_isGuest && index != 0) {
+      _showLoginRequired(context);
+      return;
+    }
+    setState(() => _currentIndex = index);
+  }
+
+  void _showLoginRequired(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Crea tu cuenta gratis',
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Inicia sesión o regístrate para acceder a esta función.',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Ahora no', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Registrarme', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -99,13 +153,92 @@ class _MainNavigationState extends State<_MainNavigation> {
         index: _currentIndex,
         children: [
           const ProvidersScreen(),
-          FavoritesScreen(userId: widget.userId),
-          const ProfileScreen(),
+          _isGuest
+              ? _GuestPlaceholder(onLogin: () => _showLoginRequired(context))
+              : FavoritesScreen(userId: widget.userId!),
+          _isGuest
+              ? _GuestPlaceholder(onLogin: () => _showLoginRequired(context))
+              : const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: _BottomNav(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: _handleTabTap,
+      ),
+    );
+  }
+}
+
+/// Pantalla placeholder para invitados en tabs protegidas
+class _GuestPlaceholder extends StatelessWidget {
+  final VoidCallback onLogin;
+  const _GuestPlaceholder({required this.onLogin});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.bgDark,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.lock_outline_rounded,
+                  color: AppColors.primary,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Crea tu cuenta gratis',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Guarda tus profesionales favoritos,\ndeja reseñas y mucho más.',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onLogin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Registrarme o iniciar sesión',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -31,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   bool _obscurePassword  = true;
   bool _obscurePassword2 = true;
+  bool _acceptedTerms    = false;
   String? _passwordMismatch;
 
   @override
@@ -65,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() {
         _mode = mode;
         _passwordMismatch = null;
+        _acceptedTerms = false;
       });
       _animController.forward();
     });
@@ -74,9 +76,18 @@ class _LoginScreenState extends State<LoginScreen>
     final auth = context.read<AuthProvider>();
 
     if (_mode == AuthMode.register) {
-      // Validar contraseñas iguales
       if (_passwordController.text != _password2Controller.text) {
         setState(() => _passwordMismatch = 'Las contraseñas no coinciden');
+        return;
+      }
+      if (!_acceptedTerms) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Debes aceptar los Términos y Condiciones para continuar'),
+            backgroundColor: AppColors.busy,
+          ),
+        );
         return;
       }
       setState(() => _passwordMismatch = null);
@@ -96,7 +107,6 @@ class _LoginScreenState extends State<LoginScreen>
             duration: Duration(seconds: 3),
           ),
         );
-        // El AuthProvider notifica listeners → _AppRoot reconstruye con OnboardingScreen
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +123,6 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (ok && mounted) {
-        // El AuthProvider notifica listeners → _AppRoot reconstruye con _MainNavigation
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -126,6 +135,41 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  void _showForgotPassword() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Recuperar contraseña',
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+        ),
+        content: const Text(
+          'Pronto podrás recuperar tu contraseña por correo electrónico. Esta función estará disponible muy pronto.',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendido',
+                style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _socialLoginPlaceholder(String provider) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Inicio con $provider próximamente'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.bgCard,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isRegister = _mode == AuthMode.register;
@@ -135,39 +179,118 @@ class _LoginScreenState extends State<LoginScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme:
-            const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
       ),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnim,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título
+                // ── Badge de contexto (solo en login) ──────
+                if (!isRegister) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.person_rounded,
+                            color: AppColors.primary, size: 13),
+                        SizedBox(width: 5),
+                        Text(
+                          'Ingresando como Cliente',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ── Título ──────────────────────────────────
                 Text(
-                  isRegister ? 'Crear cuenta' : 'Bienvenido de vuelta',
+                  isRegister
+                      ? 'Crea tu cuenta\npara empezar'
+                      : '¡Bienvenido\nde nuevo!',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
+                    height: 1.2,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   isRegister
                       ? 'Únete a OficioApp gratis'
-                      : 'Ingresa con tu cuenta',
+                      : 'Ingresa con tu cuenta para continuar',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
-                // Campos de nombre (solo en registro)
+                // ── Botones de login social (solo en registro) ──
+                if (isRegister) ...[
+                  _SocialButton(
+                    label: 'Continuar con Google',
+                    brandLetter: 'G',
+                    brandColor: AppColors.google,
+                    onTap: () => _socialLoginPlaceholder('Google'),
+                  ),
+                  const SizedBox(height: 10),
+                  _SocialButton(
+                    label: 'Continuar con Facebook',
+                    brandLetter: 'f',
+                    brandColor: AppColors.facebook,
+                    onTap: () => _socialLoginPlaceholder('Facebook'),
+                  ),
+                  const SizedBox(height: 20),
+                  // Divisor "O regístrate con tu correo"
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: Colors.white.withOpacity(0.1),
+                          thickness: 1,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'O regístrate con tu correo',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: Colors.white.withOpacity(0.1),
+                          thickness: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // ── Campos nombre (solo en registro) ────────
                 if (isRegister) ...[
                   Row(
                     children: [
@@ -191,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen>
                   const SizedBox(height: 14),
                 ],
 
-                // Email
+                // ── Email ───────────────────────────────────
                 _Field(
                   controller: _emailController,
                   label: 'Correo electrónico',
@@ -200,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 const SizedBox(height: 14),
 
-                // Contraseña
+                // ── Contraseña ──────────────────────────────
                 _Field(
                   controller: _passwordController,
                   label: 'Contraseña',
@@ -213,12 +336,31 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
 
-                // Repetir contraseña (solo en registro)
+                // ── Enlace ¿Olvidaste tu contraseña? (solo login) ──
+                if (!isRegister) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: _showForgotPassword,
+                      child: const Text(
+                        '¿Olvidaste tu contraseña?',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+
+                // ── Confirmar contraseña (solo registro) ────
                 if (isRegister) ...[
                   const SizedBox(height: 14),
                   _Field(
                     controller: _password2Controller,
-                    label: 'Repetir contraseña',
+                    label: 'Confirmar contraseña',
                     icon: Icons.lock_outline,
                     obscureText: _obscurePassword2,
                     errorText: _passwordMismatch,
@@ -228,11 +370,17 @@ class _LoginScreenState extends State<LoginScreen>
                           () => _obscurePassword2 = !_obscurePassword2),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  // Checkbox de términos y condiciones
+                  _TermsCheckbox(
+                    value: _acceptedTerms,
+                    onChanged: (v) => setState(() => _acceptedTerms = v ?? false),
+                  ),
                 ],
 
                 const SizedBox(height: 28),
 
-                // Botón principal
+                // ── Botón principal ─────────────────────────
                 Consumer<AuthProvider>(
                   builder: (_, auth, __) => SizedBox(
                     width: double.infinity,
@@ -241,8 +389,7 @@ class _LoginScreenState extends State<LoginScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -257,7 +404,7 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             )
                           : Text(
-                              isRegister ? 'Registrarme' : 'Ingresar',
+                              isRegister ? 'Crear mi cuenta' : 'Ingresar',
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -268,7 +415,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 const SizedBox(height: 20),
 
-                // Switch login/registro
+                // ── Switch login / registro ─────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -284,7 +431,7 @@ class _LoginScreenState extends State<LoginScreen>
                         isRegister ? AuthMode.login : AuthMode.register,
                       ),
                       child: Text(
-                        isRegister ? 'Ingresar' : 'Registrarme',
+                        isRegister ? 'Inicia sesión' : 'Regístrate gratis',
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 13,
@@ -303,7 +450,139 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// ─── Widgets auxiliares ───────────────────────────────────
+// ─── Botón de login social ────────────────────────────────
+
+class _SocialButton extends StatelessWidget {
+  final String label;
+  final String brandLetter;
+  final Color brandColor;
+  final VoidCallback onTap;
+
+  const _SocialButton({
+    required this.label,
+    required this.brandLetter,
+    required this.brandColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Ícono de marca
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: brandColor,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  brandLetter,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Checkbox de términos y condiciones ──────────────────
+
+class _TermsCheckbox extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool?> onChanged;
+
+  const _TermsCheckbox({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Checkbox(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.primary,
+              checkColor: Colors.white,
+              side: BorderSide(color: AppColors.textMuted, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: RichText(
+              text: const TextSpan(
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+                children: [
+                  TextSpan(text: 'Acepto los '),
+                  TextSpan(
+                    text: 'Términos y Condiciones',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextSpan(text: ' y la '),
+                  TextSpan(
+                    text: 'Política de Privacidad',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextSpan(text: ' de OficioApp.'),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Campo de texto reutilizable ─────────────────────────
 
 class _Field extends StatelessWidget {
   final TextEditingController controller;
@@ -330,33 +609,31 @@ class _Field extends StatelessWidget {
       controller:   controller,
       keyboardType: keyboardType,
       obscureText:  obscureText,
-      style: const TextStyle(
-          color: AppColors.textPrimary, fontSize: 15),
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
       decoration: InputDecoration(
-        labelText: label,
-        errorText: errorText,
-        labelStyle: const TextStyle(
-            color: AppColors.textMuted, fontSize: 13),
-        prefixIcon:
-            Icon(icon, color: AppColors.textMuted, size: 20),
+        labelText:  label,
+        errorText:  errorText,
+        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+        prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
         suffixIcon: suffixIcon,
         filled:     true,
         fillColor:  AppColors.bgCard,
-        errorStyle: const TextStyle(
-            color: AppColors.busy, fontSize: 12),
+        errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.busy, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.busy, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.busy, width: 1.5),
         ),
       ),
     );
