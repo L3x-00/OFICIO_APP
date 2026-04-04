@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/auth_repository.dart';
+import '../../data/auth_local_storage.dart';
+import '../../data/saved_accounts_storage.dart';
 import '../../domain/models/user_model.dart';
 import '../../../../core/errors/failures.dart';
 
@@ -62,7 +64,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {bool rememberSession = false}) async {
     _isGuest = false;
     _isLoading = true;
     _error = null;
@@ -73,8 +75,56 @@ class AuthProvider extends ChangeNotifier {
     result.when(
       success: (user) {
         _user = user;
-        // Si el usuario ya tiene un rol, no necesita onboarding
         _needsOnboarding = (user.role == null || user.role.isEmpty);
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    // Guardar cuenta si el usuario lo solicitó
+    if (result.isSuccess && rememberSession && _user != null) {
+      final accessToken  = await AuthLocalStorage.getAccessToken();
+      final refreshToken = await AuthLocalStorage.getRefreshToken();
+      if (accessToken != null && refreshToken != null) {
+        final saveResult = await SavedAccountsStorage.addOrUpdate(SavedAccount(
+          userId:       _user!.id,
+          email:        email,
+          firstName:    _user!.firstName,
+          lastName:     _user!.lastName,
+          accessToken:  accessToken,
+          refreshToken: refreshToken,
+        ));
+        if (saveResult == SaveAccountResult.limitReached) {
+          _savedAccountLimitReached = true;
+        }
+      }
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// true cuando el último intento de guardar cuenta falló por límite (máx. 3)
+  bool _savedAccountLimitReached = false;
+  bool get savedAccountLimitReached => _savedAccountLimitReached;
+  void clearSavedAccountLimitFlag() {
+    _savedAccountLimitReached = false;
+    notifyListeners();
+  }
+
+  /// Inicia sesión desde una cuenta guardada en el dispositivo sin contraseña.
+  Future<bool> loginFromSaved(SavedAccount account) async {
+    _isGuest = false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.loginFromSaved(account);
+
+    result.when(
+      success: (user) {
+        _user = user;
+        _needsOnboarding = false;
       },
       failure: (e) => _error = e.message,
     );

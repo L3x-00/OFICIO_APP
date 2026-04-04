@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import {
   Star, MessageSquare, Users, Tag, Download,
-  Loader2, ShieldCheck, TrendingUp,
+  Loader2, ShieldCheck, TrendingUp, AlertTriangle,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { getReports, exportUsersCSV, exportProvidersCSV, ReportsResponse } from '@/lib/api';
 
 export function ReportsDashboard() {
-  const [data, setData]       = useState<ReportsResponse | null>(null);
+  const [data, setData]           = useState<ReportsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError]         = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     'top_rated' | 'most_reviewed' | 'active_users' | 'categories' | 'registrations' | 'verification'
   >('top_rated');
@@ -17,6 +19,11 @@ export function ReportsDashboard() {
   useEffect(() => {
     getReports()
       .then(setData)
+      .catch((err: any) => {
+        const msg = err?.message || 'No se pudieron cargar los reportes';
+        setError(msg);
+        toast.error(msg);
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -52,7 +59,20 @@ export function ReportsDashboard() {
     );
   }
 
-  if (!data) return null;
+  if (error || !data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <AlertTriangle className="text-red-400" size={36} />
+        <p className="text-red-400 text-sm">{error || 'Error al cargar reportes'}</p>
+        <button
+          onClick={() => { setError(null); setIsLoading(true); getReports().then(setData).catch((e) => setError(e.message)).finally(() => setIsLoading(false)); }}
+          className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-all"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

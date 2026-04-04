@@ -21,17 +21,15 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-   "paths": {
-    "@generated/client": ["src/generated/client/index.d.ts"],
-    "@generated/client/*": ["src/generated/client/*"],
-    "rootDirs": [".", "src/generated/client"]
-  }
+    "paths": {
+      "@generated/client": ["src/generated/client/client.js"],
+      "@generated/client/*": ["src/generated/client/*"]
+    }
   },
-  "include": ["src/**/*", "prisma/**/*","src/generated/client/**/*"],
+  "include": ["src/**/*", "src/generated/client/**/*"],
   "exclude": [
     "node_modules",
-    "prisma/**/*.ts",
+    "prisma",
     "prisma.config.ts"
   ]
-  
 }

@@ -87,27 +87,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
               child: Row(
                 children: [
-                  // Mini logo
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.amber, AppColors.primary],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.handshake_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    ),
+                  // Mini logo de marca
+                  Image.asset(
+                    c.isDark
+                        ? 'assets/images/logo/logo_dark.png'
+                        : 'assets/images/logo/logo_light.png',
+                    width:  36,
+                    height: 36,
+                    filterQuality: FilterQuality.high,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'OficioApp',
+                    'ConfiServ',
                     style: TextStyle(
                       color: c.textPrimary,
                       fontWeight: FontWeight.bold,
@@ -337,7 +328,7 @@ class _DiscoverSlide extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Encuentra al profesional\nque necesitas, cerca de ti.',
+            'El experto que buscas,\nen quien puedes confiar.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: c.textPrimary,
@@ -348,7 +339,7 @@ class _DiscoverSlide extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Electricistas, gasfiteros, pintores, restaurantes y mucho más en tu barrio.',
+            'Profesionales verificados por tu comunidad — electricistas, gasfiteros, pintores, restaurantes y más, a un clic.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: c.textSecondary,
@@ -425,19 +416,21 @@ class _TrustSlide extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Elige con confianza.',
+            'Confianza que se ve,\nservicios que se sienten.',
             style: TextStyle(
               color: c.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              height: 1.3,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Lee opiniones de tus vecinos, contacta directo.',
+            'Lee reseñas reales de tus vecinos y contacta directo — sin intermediarios.',
             style: TextStyle(
               color: c.textSecondary,
               fontSize: 12,
+              height: 1.5,
             ),
           ),
           const SizedBox(height: 14),
@@ -657,18 +650,19 @@ class _CommunitySlide extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Impulsa a tu barrio.',
+            'Juntos hacemos\ncrecer la comunidad.',
             style: TextStyle(
               color: c.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.bold,
+              height: 1.3,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
-            'Miles de vecinos ya confían en nuestra comunidad.',
-            style: TextStyle(color: c.textSecondary, fontSize: 13),
+            'Cada servicio contratado impulsa la economía local. Tú eliges en quién confiar.',
+            style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -697,7 +691,7 @@ class _CommunitySlide extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"Gracias a OficioApp, mi panadería tiene más clientes de toda la ciudad."',
+                  '"Gracias a ConfiServ, mi panadería duplicó sus clientes. La gente confía porque ve las reseñas reales."',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textPrimary,

@@ -7,60 +7,96 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { extname } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 
-// ── Helper: crea la configuración de multer para un subdirectorio ──
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+// ── Directorios canónicos de almacenamiento ───────────────
+//   Evidencia de reseñas  →  uploads/reviews/evidence/
+//   Fotos de proveedores  →  uploads/providers/
+const SUBFOLDERS = {
+  reviewEvidence: 'reviews/evidence',
+  provider:       'providers',
+} as const;
+
+// ── Genera configuración de almacenamiento multer ─────────
 function makeStorage(subfolder: string) {
   return diskStorage({
-    destination: (req, file, cb) => {
+    destination: (_req, _file, cb) => {
       const uploadPath = `./uploads/${subfolder}`;
       if (!existsSync(uploadPath)) mkdirSync(uploadPath, { recursive: true });
       cb(null, uploadPath);
     },
-    filename: (req, file, cb) => {
-      const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
-      cb(null, `${uniqueName}${extname(file.originalname)}`);
+    filename: (_req, file, cb) => {
+      const ext = extname(file.originalname).toLowerCase();
+      cb(null, `${randomUUID()}${ext}`);  // UUID → imposible colisión
     },
   });
 }
 
-function imageFilter(req: any, file: Express.Multer.File, cb: any) {
+// ── Valida que el archivo sea una imagen permitida ─────────
+function imageFilter(_req: any, file: Express.Multer.File, cb: any) {
   if (!file.mimetype.startsWith('image/')) {
     cb(new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP)'), false);
+    return;
+  }
+  const ext = extname(file.originalname).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    cb(
+      new BadRequestException(`Extensión no permitida. Usa: ${ALLOWED_EXTENSIONS.join(', ')}`),
+      false,
+    );
     return;
   }
   cb(null, true);
 }
 
-const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+// ── Construye la URL pública del archivo ──────────────────
+function buildUrl(subfolder: string, filename: string): string {
+  const base = process.env.API_BASE_URL ?? 'http://localhost:3000';
+  return `${base}/uploads/${subfolder}/${filename}`;
+}
 
+// ─────────────────────────────────────────────────────────
 @Controller('upload')
 export class UploadController {
 
+  /**
+   * POST /upload/review-photo
+   * Almacena la foto de evidencia de una reseña.
+   * Destino: uploads/reviews/evidence/<uuid>.<ext>
+   */
   @Post('review-photo')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: makeStorage('reviews'),
+      storage:    makeStorage(SUBFOLDERS.reviewEvidence),
       fileFilter: imageFilter,
-      limits: { fileSize: MAX_SIZE },
+      limits:     { fileSize: MAX_SIZE },
     }),
   )
   uploadReviewPhoto(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    return { url: `http://localhost:3000/uploads/reviews/${file.filename}` };
+    return { url: buildUrl(SUBFOLDERS.reviewEvidence, file.filename) };
   }
 
+  /**
+   * POST /upload/provider-photo
+   * Almacena fotos de perfil o galería de un proveedor/negocio.
+   * Destino: uploads/providers/<uuid>.<ext>
+   */
   @Post('provider-photo')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: makeStorage('providers'),
+      storage:    makeStorage(SUBFOLDERS.provider),
       fileFilter: imageFilter,
-      limits: { fileSize: MAX_SIZE },
+      limits:     { fileSize: MAX_SIZE },
     }),
   )
   uploadProviderPhoto(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    return { url: `http://localhost:3000/uploads/providers/${file.filename}` };
+    return { url: buildUrl(SUBFOLDERS.provider, file.filename) };
   }
 }

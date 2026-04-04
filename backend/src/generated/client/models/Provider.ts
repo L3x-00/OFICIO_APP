@@ -52,6 +52,7 @@ export type ProviderMinAggregateOutputType = {
   id: number | null
   userId: number | null
   type: $Enums.ProviderType | null
+  providerType: $Enums.ProviderType | null
   businessName: string | null
   description: string | null
   dni: string | null
@@ -77,6 +78,7 @@ export type ProviderMaxAggregateOutputType = {
   id: number | null
   userId: number | null
   type: $Enums.ProviderType | null
+  providerType: $Enums.ProviderType | null
   businessName: string | null
   description: string | null
   dni: string | null
@@ -102,6 +104,7 @@ export type ProviderCountAggregateOutputType = {
   id: number
   userId: number
   type: number
+  providerType: number
   businessName: number
   description: number
   dni: number
@@ -152,6 +155,7 @@ export type ProviderMinAggregateInputType = {
   id?: true
   userId?: true
   type?: true
+  providerType?: true
   businessName?: true
   description?: true
   dni?: true
@@ -177,6 +181,7 @@ export type ProviderMaxAggregateInputType = {
   id?: true
   userId?: true
   type?: true
+  providerType?: true
   businessName?: true
   description?: true
   dni?: true
@@ -202,6 +207,7 @@ export type ProviderCountAggregateInputType = {
   id?: true
   userId?: true
   type?: true
+  providerType?: true
   businessName?: true
   description?: true
   dni?: true
@@ -315,6 +321,7 @@ export type ProviderGroupByOutputType = {
   id: number
   userId: number
   type: $Enums.ProviderType
+  providerType: $Enums.ProviderType
   businessName: string
   description: string | null
   dni: string | null
@@ -364,6 +371,7 @@ export type ProviderWhereInput = {
   id?: Prisma.IntFilter<"Provider"> | number
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -400,6 +408,7 @@ export type ProviderOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   dni?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -440,6 +449,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ProviderWhereInput[]
   NOT?: Prisma.ProviderWhereInput | Prisma.ProviderWhereInput[]
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   phone?: Prisma.StringFilter<"Provider"> | string
@@ -475,6 +485,7 @@ export type ProviderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   dni?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -509,6 +520,7 @@ export type ProviderScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   userId?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeWithAggregatesFilter<"Provider"> | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeWithAggregatesFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringWithAggregatesFilter<"Provider"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
@@ -533,6 +545,7 @@ export type ProviderScalarWhereWithAggregatesInput = {
 
 export type ProviderCreateInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -567,6 +580,7 @@ export type ProviderUncheckedCreateInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -598,6 +612,7 @@ export type ProviderUncheckedCreateInput = {
 
 export type ProviderUpdateInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -632,6 +647,7 @@ export type ProviderUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -665,6 +681,7 @@ export type ProviderCreateManyInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -689,6 +706,7 @@ export type ProviderCreateManyInput = {
 
 export type ProviderUpdateManyMutationInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -713,6 +731,7 @@ export type ProviderUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -754,6 +773,7 @@ export type ProviderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
@@ -791,6 +811,7 @@ export type ProviderMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
@@ -816,6 +837,7 @@ export type ProviderMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
@@ -1097,6 +1119,7 @@ export type ProviderUpdateOneRequiredWithoutNotificationsNestedInput = {
 
 export type ProviderCreateWithoutUserInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1129,6 +1152,7 @@ export type ProviderCreateWithoutUserInput = {
 export type ProviderUncheckedCreateWithoutUserInput = {
   id?: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1176,6 +1200,7 @@ export type ProviderUpdateToOneWithWhereWithoutUserInput = {
 
 export type ProviderUpdateWithoutUserInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1208,6 +1233,7 @@ export type ProviderUpdateWithoutUserInput = {
 export type ProviderUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1239,6 +1265,7 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
 
 export type ProviderCreateWithoutLocalityInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1272,6 +1299,7 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1333,6 +1361,7 @@ export type ProviderScalarWhereInput = {
   id?: Prisma.IntFilter<"Provider"> | number
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -1357,6 +1386,7 @@ export type ProviderScalarWhereInput = {
 
 export type ProviderCreateWithoutCategoryInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1390,6 +1420,7 @@ export type ProviderUncheckedCreateWithoutCategoryInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1446,6 +1477,7 @@ export type ProviderUpdateManyWithWhereWithoutCategoryInput = {
 
 export type ProviderCreateWithoutImagesInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1479,6 +1511,7 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1525,6 +1558,7 @@ export type ProviderUpdateToOneWithWhereWithoutImagesInput = {
 
 export type ProviderUpdateWithoutImagesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1558,6 +1592,7 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1588,6 +1623,7 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
 
 export type ProviderCreateWithoutSubscriptionInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1621,6 +1657,7 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1667,6 +1704,7 @@ export type ProviderUpdateToOneWithWhereWithoutSubscriptionInput = {
 
 export type ProviderUpdateWithoutSubscriptionInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1700,6 +1738,7 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1730,6 +1769,7 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
 
 export type ProviderCreateWithoutReviewsInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1763,6 +1803,7 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1809,6 +1850,7 @@ export type ProviderUpdateToOneWithWhereWithoutReviewsInput = {
 
 export type ProviderUpdateWithoutReviewsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1842,6 +1884,7 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1872,6 +1915,7 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
 
 export type ProviderCreateWithoutFavoritesInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1905,6 +1949,7 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -1951,6 +1996,7 @@ export type ProviderUpdateToOneWithWhereWithoutFavoritesInput = {
 
 export type ProviderUpdateWithoutFavoritesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1984,6 +2030,7 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2014,6 +2061,7 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
 
 export type ProviderCreateWithoutVerificationDocsInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2047,6 +2095,7 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2093,6 +2142,7 @@ export type ProviderUpdateToOneWithWhereWithoutVerificationDocsInput = {
 
 export type ProviderUpdateWithoutVerificationDocsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2126,6 +2176,7 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2156,6 +2207,7 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
 
 export type ProviderCreateWithoutAnalyticsInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2189,6 +2241,7 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2235,6 +2288,7 @@ export type ProviderUpdateToOneWithWhereWithoutAnalyticsInput = {
 
 export type ProviderUpdateWithoutAnalyticsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2268,6 +2322,7 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2298,6 +2353,7 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
 
 export type ProviderCreateWithoutNotificationsInput = {
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2331,6 +2387,7 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2377,6 +2434,7 @@ export type ProviderUpdateToOneWithWhereWithoutNotificationsInput = {
 
 export type ProviderUpdateWithoutNotificationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2410,6 +2468,7 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2442,6 +2501,7 @@ export type ProviderCreateManyLocalityInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2465,6 +2525,7 @@ export type ProviderCreateManyLocalityInput = {
 
 export type ProviderUpdateWithoutLocalityInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2498,6 +2559,7 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2530,6 +2592,7 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2555,6 +2618,7 @@ export type ProviderCreateManyCategoryInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
@@ -2578,6 +2642,7 @@ export type ProviderCreateManyCategoryInput = {
 
 export type ProviderUpdateWithoutCategoryInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2611,6 +2676,7 @@ export type ProviderUncheckedUpdateWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2643,6 +2709,7 @@ export type ProviderUncheckedUpdateManyWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2744,6 +2811,7 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   userId?: boolean
   type?: boolean
+  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
@@ -2781,6 +2849,7 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   userId?: boolean
   type?: boolean
+  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
@@ -2810,6 +2879,7 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   userId?: boolean
   type?: boolean
+  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
@@ -2839,6 +2909,7 @@ export type ProviderSelectScalar = {
   id?: boolean
   userId?: boolean
   type?: boolean
+  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
@@ -2861,7 +2932,7 @@ export type ProviderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "providerType" | "businessName" | "description" | "dni" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -2904,6 +2975,7 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: number
     userId: number
     type: $Enums.ProviderType
+    providerType: $Enums.ProviderType
     businessName: string
     description: string | null
     dni: string | null
@@ -3360,6 +3432,7 @@ export interface ProviderFieldRefs {
   readonly id: Prisma.FieldRef<"Provider", 'Int'>
   readonly userId: Prisma.FieldRef<"Provider", 'Int'>
   readonly type: Prisma.FieldRef<"Provider", 'ProviderType'>
+  readonly providerType: Prisma.FieldRef<"Provider", 'ProviderType'>
   readonly businessName: Prisma.FieldRef<"Provider", 'String'>
   readonly description: Prisma.FieldRef<"Provider", 'String'>
   readonly dni: Prisma.FieldRef<"Provider", 'String'>

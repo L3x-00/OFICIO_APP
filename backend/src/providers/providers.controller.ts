@@ -11,6 +11,7 @@ import {
 import { ProvidersService } from './providers.service.js';
 import { Throttle } from '@nestjs/throttler';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+import { TrackEventDto } from './dto/track-event.dto.js';
 
 @Controller('providers')
 export class ProvidersController {
@@ -25,6 +26,10 @@ export class ProvidersController {
     @Query('availability') availability?: string,
     @Query('search') search?: string,
     @Query('localityId') localityId?: string,
+    @Query('type') type?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('verified') verified?: string,
+    @Query('location') location?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -33,6 +38,10 @@ export class ProvidersController {
       availability,
       search,
       localityId: localityId ? parseInt(localityId) : undefined,
+      type,
+      sortBy,
+      verified: verified !== undefined ? verified === 'true' : undefined,
+      location,
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 20,
     });
@@ -73,7 +82,7 @@ export class ProvidersController {
   @Post(':id/track')
   trackEvent(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { eventType: string; userId?: number },
+    @Body() body: TrackEventDto,
   ) {
     return this.providersService.trackEvent(id, body.eventType, body.userId);
   }

@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 import { BigintInterceptor } from './common/interceptors/bigint.interceptor.js';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.js';
 // 1. Importamos los tipos y herramientas necesarios
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'node:path';
@@ -17,7 +18,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 4. INTERCEPTOR GLOBAL — serializa BigInt a string antes del JSON
+  // 4. FILTRO GLOBAL — convierte errores de Prisma en respuestas HTTP legibles
+  app.useGlobalFilters(new PrismaExceptionFilter());
+
+  // 5. INTERCEPTOR GLOBAL — serializa BigInt a string antes del JSON
   app.useGlobalInterceptors(new BigintInterceptor());
 
   // 5. VALIDATION PIPE (Tu configuración actual de seguridad)

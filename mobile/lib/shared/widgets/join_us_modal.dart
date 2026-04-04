@@ -6,7 +6,7 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
 
-/// Modal informativo "¡Quiero ser parte de OficioApp!"
+/// Modal informativo "¡Quiero ser parte de ConfiServ!"
 /// Se abre desde el botón flotante en la pantalla principal
 class JoinUsModal extends StatefulWidget {
   const JoinUsModal({super.key});
@@ -150,18 +150,19 @@ class _JoinUsModalState extends State<JoinUsModal>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '¡Haz crecer tu negocio!',
+                  '¡Tu talento merece\nser encontrado!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    height: 1.3,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Miles de personas en tu zona buscan tus servicios. '
-                  'Aparecer en OficioApp es gratis los primeros 2 meses.',
+                  'Miles de personas en tu zona buscan exactamente lo que tú ofreces. '
+                  'Únete a ConfiServ gratis los primeros 2 meses.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textSecondary,
@@ -239,22 +240,22 @@ class _JoinUsModalState extends State<JoinUsModal>
           ),
           const SizedBox(height: 14),
 
-          // Opción: Oficio personal
+          // Opción: Profesional independiente
           _TypeCard(
             icon: Icons.handyman_rounded,
             title: 'Soy un profesional independiente',
-            subtitle: 'Electricista, gasfitero, pintor, carpintero, etc.',
+            subtitle: 'Tu habilidad + nuestra plataforma = más clientes.\nElectricista, gasfitero, pintor, carpintero…',
             tag: 'OFICIO',
             gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
             onTap: () => setState(() => _selectedType = 'OFICIO'),
           ),
           const SizedBox(height: 14),
 
-          // Opción: Negocio
+          // Opción: Negocio establecido
           _TypeCard(
             icon: Icons.storefront_rounded,
             title: 'Tengo un negocio establecido',
-            subtitle: 'Restaurante, peluquería, ferretería, taller, etc.',
+            subtitle: 'Crece con la confianza de tu comunidad.\nRestaurante, peluquería, ferretería, taller…',
             tag: 'NEGOCIO',
             gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
             onTap: () => setState(() => _selectedType = 'NEGOCIO'),
@@ -343,19 +344,30 @@ class _JoinUsModalState extends State<JoinUsModal>
           const SizedBox(height: 20),
 
           // Título según tipo
-          Text(
-            isOficio ? 'Profesional Independiente' : 'Negocio Establecido',
-            style: TextStyle(
-              color: c.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+          // Eslogan diferenciado por tipo
+          ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              colors: isOficio
+                  ? const [Color(0xFF00C6FF), Color(0xFF0072FF)]
+                  : const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+            ).createShader(bounds),
+            child: Text(
+              isOficio
+                  ? 'Tu talento merece\nser encontrado.'
+                  : 'Crece con la confianza\nde tu comunidad.',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                height: 1.25,
+              ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             isOficio
-                ? 'Tu perfil personal como electricista, gasfitero, pintor y más'
-                : 'La vitrina digital de tu local: restaurante, salón, taller...',
+                ? 'Crea tu perfil profesional y conecta con clientes que ya buscan tus servicios en tu zona.'
+                : 'Dale a tu negocio la vitrina digital que merece. Clientes que confían en ti, regresan.',
             style: TextStyle(
               color: c.textSecondary,
               fontSize: 13,
@@ -830,7 +842,7 @@ class _FreePeriodBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Los primeros proveedores de cada localidad obtienen '
-              '2 meses gratis con todos los beneficios del plan Estándar.',
+              '2 meses gratis con todos los beneficios del plan Estándar en ConfiServ.',
               style: TextStyle(
                 color: AppColors.available,
                 fontSize: 12,

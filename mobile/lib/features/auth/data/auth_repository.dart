@@ -4,6 +4,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/failures.dart';
 import '../domain/models/user_model.dart';
 import 'auth_local_storage.dart';
+import 'saved_accounts_storage.dart';
 
 class AuthRepository {
   final Dio _dio = DioClient.instance.dio;
@@ -136,21 +137,55 @@ class AuthRepository {
 
   // ── RESTAURAR SESIÓN AL INICIAR LA APP ───────────────────
   Future<UserModel?> restoreSession() async {
-    final hasSession = await AuthLocalStorage.hasSession();
-    if (!hasSession) return null;
+    try {
+      final hasSession = await AuthLocalStorage.hasSession();
+      if (!hasSession) return null;
 
-    final accessToken  = await AuthLocalStorage.getAccessToken();
-    final refreshToken = await AuthLocalStorage.getRefreshToken();
-    final user         = await AuthLocalStorage.getUser();
+      final accessToken  = await AuthLocalStorage.getAccessToken();
+      final refreshToken = await AuthLocalStorage.getRefreshToken();
+      final user         = await AuthLocalStorage.getUser();
 
-    if (accessToken != null && refreshToken != null) {
-      DioClient.instance.setTokens(
-        accessToken:  accessToken,
-        refreshToken: refreshToken,
-      );
+      if (accessToken != null && refreshToken != null) {
+        DioClient.instance.setTokens(
+          accessToken:  accessToken,
+          refreshToken: refreshToken,
+        );
+      }
+
+      return user;
+    } catch (_) {
+      // Si el almacenamiento seguro está corrupto o falla, tratar como sin sesión
+      await AuthLocalStorage.clearSession().catchError((_) {});
+      return null;
     }
+  }
 
-    return user;
+  // ── RESTAURAR SESIÓN DESDE CUENTA GUARDADA ──────────────
+  Future<ApiResult<UserModel>> loginFromSaved(SavedAccount account) async {
+    try {
+      final user = UserModel(
+        id:        account.userId,
+        email:     account.email,
+        firstName: account.firstName,
+        lastName:  account.lastName,
+        role:      'USUARIO',
+      );
+
+      await AuthLocalStorage.saveSession(
+        accessToken:  account.accessToken,
+        refreshToken: account.refreshToken,
+        user:         user,
+      );
+
+      DioClient.instance.setTokens(
+        accessToken:  account.accessToken,
+        refreshToken: account.refreshToken,
+      );
+
+      return Success(user);
+    } catch (e) {
+      return Failure(ServerException('Error al restaurar la sesión guardada'));
+    }
   }
 
   // ── LOGOUT ─────────────────────────────────────────────────

@@ -41,6 +41,8 @@ enum SubscriptionStatus {
 enum ProviderType {
   OFICIO          // Electricista, gasfitero, etc.
   NEGOCIO         // Restaurante, peluquería, etc.
+  PROFESSIONAL    // Alias moderno de OFICIO
+  BUSINESS        // Alias moderno de NEGOCIO
 }
 
 enum VerificationStatus {
@@ -131,6 +133,7 @@ model Provider {
   id                  Int                 @id @default(autoincrement())
   userId              Int                 @unique
   type                ProviderType        @default(OFICIO)
+  providerType        ProviderType        @default(PROFESSIONAL) // Clasificación UI: PROFESSIONAL | BUSINESS
   businessName        String              // Nombre del servicio o negocio
   description         String?
   dni                 String?             @unique  // DNI del titular — único si se proporciona

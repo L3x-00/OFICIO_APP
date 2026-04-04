@@ -6,6 +6,7 @@ import {
   ShieldCheck, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { getUsers, deleteUser, updateUserStatus, UserItem } from '@/lib/api';
+import { toast } from 'sonner';
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   USUARIO:    { label: 'Cliente',      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
@@ -37,8 +38,8 @@ export function UsersList() {
       setUsers(data.data);
       setTotal(data.total);
       setLastPage(data.lastPage);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast.error(err?.message || 'Error al cargar usuarios');
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +57,7 @@ export function UsersList() {
       setConfirmDelete(null);
       load();
     } catch (e: any) {
-      alert(e.message || 'Error al eliminar');
+      toast.error(e?.message || 'Error al eliminar usuario');
     } finally {
       setActionId(null);
     }
@@ -68,7 +69,7 @@ export function UsersList() {
       await updateUserStatus(user.id, !user.isActive);
       load();
     } catch (e: any) {
-      alert(e.message || 'Error al actualizar estado');
+      toast.error(e?.message || 'Error al actualizar estado del usuario');
     } finally {
       setActionId(null);
     }

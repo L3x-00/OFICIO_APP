@@ -133,7 +133,7 @@ class PanelSettingsTab extends StatelessWidget {
                   const SizedBox(height: 20),
                   Center(
                     child: Text(
-                      'OficioApp v1.0.0 — Panel de Profesionales',
+                      'ConfiServ v1.0.0 — Panel de Profesionales',
                       style: TextStyle(color: c.textMuted, fontSize: 11),
                     ),
                   ),

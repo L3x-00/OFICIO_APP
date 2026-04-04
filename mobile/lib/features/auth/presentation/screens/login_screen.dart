@@ -34,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _obscurePassword  = true;
   bool _obscurePassword2 = true;
   bool _acceptedTerms    = false;
+  bool _rememberSession  = false;
   String? _passwordMismatch;
 
   @override
@@ -122,9 +123,22 @@ class _LoginScreenState extends State<LoginScreen>
       final ok = await auth.login(
         _emailController.text.trim(),
         _passwordController.text,
+        rememberSession: _rememberSession,
       );
 
       if (ok && mounted) {
+        if (auth.savedAccountLimitReached) {
+          auth.clearSavedAccountLimitFlag();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sesión iniciada. Límite de 3 cuentas guardadas alcanzado — elimina una desde tu perfil.',
+              ),
+              backgroundColor: AppColors.amber,
+              duration: Duration(seconds: 5),
+            ),
+          );
+        }
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -215,6 +229,41 @@ class _LoginScreenState extends State<LoginScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Logo de marca ───────────────────────────
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(c.isDark ? 20 : 0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.amber.withValues(alpha: 0.18),
+                          blurRadius: 28,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          blurRadius: 36,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(c.isDark ? 20 : 0),
+                      child: Image.asset(
+                        c.isDark
+                            ? 'assets/images/logo/logo_dark.png'
+                            : 'assets/images/logo/logo_light.png',
+                        width:  isRegister ? 64 : 76,
+                        height: isRegister ? 64 : 76,
+                        filterQuality: FilterQuality.high,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: isRegister ? 16 : 20),
+
                 // ── Badge de contexto (solo en login) ──────
                 if (!isRegister) ...[
                   Container(
@@ -261,8 +310,8 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(height: 6),
                 Text(
                   isRegister
-                      ? 'Únete a OficioApp gratis'
-                      : 'Ingresa con tu cuenta para continuar',
+                      ? 'Tu comunidad, en quien confiar — gratis'
+                      : 'El experto que buscas, en quien puedes confiar',
                   style: TextStyle(
                     color: c.textSecondary,
                     fontSize: 14,
@@ -377,6 +426,44 @@ class _LoginScreenState extends State<LoginScreen>
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // ── Checkbox "Mantener sesión" ─────────────
+                  GestureDetector(
+                    onTap: () =>
+                        setState(() => _rememberSession = !_rememberSession),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Checkbox(
+                            value: _rememberSession,
+                            onChanged: (v) => setState(
+                                () => _rememberSession = v ?? false),
+                            activeColor: AppColors.primary,
+                            checkColor: Colors.white,
+                            side: BorderSide(
+                                color: c.textMuted, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Mantener sesión iniciada en este dispositivo',
+                            style: TextStyle(
+                              color: c.textMuted,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -599,7 +686,7 @@ class _TermsCheckbox extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  TextSpan(text: ' de OficioApp.'),
+                  TextSpan(text: ' de ConfiServ.'),
                 ],
               ),
             ),

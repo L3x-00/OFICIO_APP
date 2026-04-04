@@ -1,47 +1,84 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/errors/failures.dart';
 import '../domain/models/provider_model.dart';
 
 /// Repositorio que conecta con el backend NestJS
-/// Reemplaza los datos mock del Hito 2
 class ProvidersRepository {
   final Dio _dio = DioClient.instance.dio;
 
   // ── LISTAR proveedores con filtros ───────────────────────
-  Future<ProvidersResponse> getProviders({
+  Future<ApiResult<ProvidersResponse>> getProviders({
     String? categorySlug,
     String? availability,
-    bool? onlyVerified,
+    bool? verified,       // null = solo verificados (backend default), false = mostrar todos
     String? search,
+    String? type,         // 'PROFESSIONAL' | 'BUSINESS'
+    String? sortBy,       // 'reviews' | 'availability'
+    String? location,     // búsqueda por texto en dirección
     int page = 1,
     int limit = 20,
   }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'limit': limit,
-      if (categorySlug != null) 'categorySlug': categorySlug,
-      if (availability != null) 'availability': availability,
-      if (onlyVerified == true) 'onlyVerified': 'true',
-      if (search != null && search.isNotEmpty) 'search': search,
-    };
+    try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+        if (categorySlug != null) 'categorySlug': categorySlug,
+        if (availability != null) 'availability': availability,
+        if (verified != null) 'verified': verified.toString(),
+        if (search != null && search.isNotEmpty) 'search': search,
+        if (type != null) 'type': type,
+        if (sortBy != null) 'sortBy': sortBy,
+        if (location != null && location.isNotEmpty) 'location': location,
+      };
 
-    final response = await _dio.get('/providers', queryParameters: queryParams);
-
-    return ProvidersResponse.fromJson(response.data as Map<String, dynamic>);
+      final response = await _dio.get('/providers', queryParameters: queryParams);
+      return Success(ProvidersResponse.fromJson(response.data as Map<String, dynamic>));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al cargar proveedores'),
+      );
+    } catch (e) {
+      return Failure(ServerException('Error inesperado: ${e.toString()}'));
+    }
   }
 
   // ── OBTENER detalle de un proveedor ──────────────────────
-  Future<ProviderModel> getProviderDetail(int id) async {
-    final response = await _dio.get('/providers/$id');
-    return ProviderModel.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiResult<ProviderModel>> getProviderDetail(int id) async {
+    try {
+      final response = await _dio.get('/providers/$id');
+      return Success(ProviderModel.fromJson(response.data as Map<String, dynamic>));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al cargar el proveedor'),
+      );
+    } catch (e) {
+      return Failure(ServerException('Error inesperado: ${e.toString()}'));
+    }
   }
 
   // ── LISTAR categorías ─────────────────────────────────────
-  Future<List<CategoryModel>> getCategories() async {
-    final response = await _dio.get('/providers/categories');
-    return (response.data as List)
-        .map((c) => CategoryModel.fromJson(c as Map<String, dynamic>))
-        .toList();
+  Future<ApiResult<List<CategoryModel>>> getCategories() async {
+    try {
+      final response = await _dio.get('/providers/categories');
+      final list = (response.data as List)
+          .map((c) => CategoryModel.fromJson(c as Map<String, dynamic>))
+          .toList();
+      return Success(list);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al cargar categorías'),
+      );
+    } catch (e) {
+      return Failure(ServerException('Error inesperado: ${e.toString()}'));
+    }
   }
 
   // ── REGISTRAR evento analítico ────────────────────────────

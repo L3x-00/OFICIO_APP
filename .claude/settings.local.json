@@ -25,7 +25,13 @@
       "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma db push)",
       "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma db push --accept-data-loss)",
       "Bash(grep -r '$queryRaw\\\\|$executeRaw' /c/Users/Usuario/oficio_app/backend/src '--include=*.ts')",
-      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(npm install:*)",
+      "Bash(grep -r \"PrismaClientKnownRequestError\" /c/Users/Usuario/oficio_app/backend/node_modules/@prisma/client/*.d.ts)",
+      "Bash(ls:*)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx tsc --noEmit)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma:*)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

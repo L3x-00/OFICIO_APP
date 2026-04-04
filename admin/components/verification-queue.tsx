@@ -16,6 +16,7 @@ import {
   getProviders,
   Provider,
 } from '@/lib/api';
+import { toast } from 'sonner';
 
 type Tab = 'pending' | 'verified';
 
@@ -42,6 +43,8 @@ export function VerificationQueue() {
     try {
       const data = await getPendingVerifications();
       setPending(data);
+    } catch (e: any) {
+      toast.error(e?.message || 'Error al cargar solicitudes pendientes');
     } finally {
       setIsLoading(false);
     }
@@ -52,6 +55,8 @@ export function VerificationQueue() {
     try {
       const data = await getProviders(1, undefined);
       setVerified(data.data.filter((p) => p.isVerified));
+    } catch (e: any) {
+      toast.error(e?.message || 'Error al cargar proveedores verificados');
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +73,7 @@ export function VerificationQueue() {
       await approveVerification(id);
       await loadPending();
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e?.message || 'Error al aprobar la verificación');
     } finally {
       setActionId(null);
     }
@@ -77,7 +82,7 @@ export function VerificationQueue() {
   const handleModalSubmit = async () => {
     if (!modal) return;
     if (!reason.trim()) {
-      alert('Por favor ingresa un motivo');
+      toast.error('Por favor ingresa un motivo');
       return;
     }
     setModalLoading(true);
@@ -86,12 +91,13 @@ export function VerificationQueue() {
       if (modal.action === 'reject') await rejectVerification(id, reason);
       else if (modal.action === 'info') await requestMoreInfo(id, reason);
       else if (modal.action === 'revoke') await revokeVerification(id, reason);
+      toast.success('Acción completada correctamente');
       setModal(null);
       setReason('');
       if (tab === 'pending') await loadPending();
       else await loadVerified();
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e?.message || 'Error al procesar la acción');
     } finally {
       setModalLoading(false);
     }

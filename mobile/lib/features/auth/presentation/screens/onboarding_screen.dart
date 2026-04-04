@@ -362,17 +362,94 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     setState(() => _isLoading = false);
 
     if (!result) {
-      // El error ya fue guardado en auth.error — mostrarlo
       _showSnack(auth.error ?? 'Error al crear el perfil', isError: true);
       return;
     }
 
-    if (widget.isStandalone) {
-      _showSnack('¡Perfil de proveedor creado con éxito!');
-      Navigator.of(context).pop();
-    } else {
-      auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
-    }
+    _showSuccessDialog();
+  }
+
+  void _showSuccessDialog() {
+    final c = context.colors;
+    final auth = context.read<AuthProvider>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: AppColors.available.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.available,
+                  size: 44,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                '¡Perfil Profesional Creado!',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Tu información está siendo revisada. Te notificaremos cuando esté aprobado.',
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 14,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop(); // cerrar diálogo
+                    if (widget.isStandalone) {
+                      // Volver a la pantalla principal que ya está en el stack
+                      Navigator.of(context).pop();
+                    } else {
+                      // Completar onboarding → el router lleva al home
+                      auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Ir al inicio',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // ─── Build principal ─────────────────────────────────────

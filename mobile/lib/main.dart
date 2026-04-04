@@ -26,19 +26,19 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
       ],
-      child: const OficioApp(),
+      child: const ConfiServApp(),
     ),
   );
 }
 
-class OficioApp extends StatelessWidget {
-  const OficioApp({super.key});
+class ConfiServApp extends StatelessWidget {
+  const ConfiServApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final themeMode = context.watch<ThemeProvider>().mode;
     return MaterialApp(
-      title: 'OficioApp',
+      title: 'ConfiServ',
       debugShowCheckedModeBanner: false,
       theme:      AppThemeColors.buildLight(),
       darkTheme:  AppThemeColors.buildDark(),
@@ -59,7 +59,7 @@ class _AppRoot extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
 
     return switch (auth.navigationState) {
-      AppNavigationState.loading        => const SplashScreen(),
+      AppNavigationState.loading         => const SplashScreen(),
       AppNavigationState.unauthenticated => const WelcomeScreen(),
       AppNavigationState.guest           => const _MainNavigation(userId: null),
       AppNavigationState.needsOnboarding => const OnboardingScreen(),
@@ -143,9 +143,9 @@ class _BottomNav extends StatelessWidget {
         selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search_rounded),         label: 'Explorar'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded),  activeIcon: Icon(Icons.person_rounded),   label: 'Perfil'),
+          BottomNavigationBarItem(icon: Icon(Icons.search_rounded),          label: 'Explorar'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded),  activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded),   activeIcon: Icon(Icons.person_rounded),   label: 'Perfil'),
         ],
       ),
     );

@@ -11,6 +11,11 @@ export class ProvidersService {
     availability?: string;
     search?: string;
     localityId?: number;
+    // Nuevos filtros
+    type?: string;       // PROFESSIONAL | BUSINESS (providerType)
+    sortBy?: string;     // 'reviews' | 'availability' | 'rating' (default)
+    verified?: boolean;  // true = solo verificados (por defecto true)
+    location?: string;   // búsqueda por texto en dirección
     lat?: number;
     lng?: number;
     page?: number;
@@ -21,14 +26,20 @@ export class ProvidersService {
       availability,
       search,
       localityId,
+      type,
+      sortBy,
+      verified = true,
+      location,
       page = 1,
       limit = 20,
     } = filters;
 
-    const where: any = {
-      isVisible:  true,
-      isVerified: true,  // Solo proveedores verificados son visibles al público
-    };
+    const where: any = { isVisible: true };
+
+    // Solo proveedores verificados por defecto
+    if (verified) {
+      where.isVerified = true;
+    }
 
     if (categorySlug) {
       where.category = { slug: categorySlug };
@@ -36,14 +47,33 @@ export class ProvidersService {
     if (availability) {
       where.availability = availability;
     }
-    if (search) {
-      where.OR = [
-        { businessName: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
-    }
     if (localityId) {
       where.localityId = localityId;
+    }
+
+    // Filtro por tipo de proveedor (PROFESSIONAL | BUSINESS)
+    if (type === 'PROFESSIONAL' || type === 'BUSINESS') {
+      where.providerType = type;
+    }
+
+    // Búsqueda por texto en nombre, descripción y dirección
+    if (search || location) {
+      const term = search || location;
+      where.OR = [
+        { businessName: { contains: term, mode: 'insensitive' } },
+        { description:  { contains: term, mode: 'insensitive' } },
+        { address:      { contains: term, mode: 'insensitive' } },
+      ];
+    }
+
+    // Ordenamiento
+    let orderBy: any = { averageRating: 'desc' }; // default: mejor calificación
+    if (sortBy === 'reviews') {
+      orderBy = { totalReviews: 'desc' };
+    } else if (sortBy === 'availability') {
+      orderBy = { availability: 'asc' };
+    } else if (sortBy === 'rating') {
+      orderBy = { averageRating: 'desc' };
     }
 
     const skip = (page - 1) * limit;
@@ -59,7 +89,7 @@ export class ProvidersService {
           user: { select: { firstName: true, lastName: true, avatarUrl: true } },
           locality: { select: { name: true } },
         },
-        orderBy: { averageRating: 'desc' },
+        orderBy,
       }),
       this.prisma.provider.count({ where }),
     ]);

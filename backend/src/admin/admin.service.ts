@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus } from '@prisma/client';
+import { AvailabilityStatus } from '../generated/client/enums.js';
 
 @Injectable()
 export class AdminService {

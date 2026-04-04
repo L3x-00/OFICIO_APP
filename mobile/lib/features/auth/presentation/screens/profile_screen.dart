@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'onboarding_screen.dart';
+import 'saved_accounts_screen.dart';
 import 'welcome_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -247,6 +248,18 @@ class ProfileScreen extends StatelessWidget {
 
           // ── Toggle de tema (también accesible aquí) ──────
           _ThemeToggleRow(theme: theme),
+          const SizedBox(height: 12),
+
+          // ── Cuentas guardadas ─────────────────────────────
+          _ActionButton(
+            icon: Icons.devices_rounded,
+            label: 'Cuentas guardadas en este dispositivo',
+            color: AppColors.primary,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const SavedAccountsScreen()),
+            ),
+          ),
           const SizedBox(height: 12),
 
           _ActionButton(

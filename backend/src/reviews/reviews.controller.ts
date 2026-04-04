@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service.js';
+import { CreateReviewDto, ModerateReviewDto, ValidateQrDto } from './dto/create-review.dto.js';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -16,19 +17,7 @@ export class ReviewsController {
 
   // POST /reviews — Crear reseña
   @Post()
-  create(
-    @Body()
-    body: {
-      providerId: number;
-      userId: number;
-      rating: number;
-      comment?: string;
-      photoUrl: string;
-      userLatAtReview?: number;
-      userLngAtReview?: number;
-      qrCodeUsed?: string;
-    },
-  ) {
+  create(@Body() body: CreateReviewDto) {
     return this.reviewsService.create(body);
   }
 
@@ -54,9 +43,7 @@ export class ReviewsController {
     @Query('limit') limit?: string,
   ) {
     return this.reviewsService.findAll({
-      isVisible: isVisible !== undefined
-        ? isVisible === 'true'
-        : undefined,
+      isVisible: isVisible !== undefined ? isVisible === 'true' : undefined,
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 20,
     });
@@ -66,7 +53,7 @@ export class ReviewsController {
   @Patch(':id/moderate')
   moderate(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { isVisible: boolean },
+    @Body() body: ModerateReviewDto,
   ) {
     return this.reviewsService.moderate(id, body.isVisible);
   }
@@ -79,7 +66,7 @@ export class ReviewsController {
 
   // POST /reviews/qr/validate — Validar código QR escaneado
   @Post('qr/validate')
-  validateQr(@Body() body: { providerId: number; code: string }) {
+  validateQr(@Body() body: ValidateQrDto) {
     return this.reviewsService.validateQrCode(body.providerId, body.code);
   }
 }

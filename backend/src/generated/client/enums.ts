@@ -49,7 +49,9 @@ export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof Subscr
 
 export const ProviderType = {
   OFICIO: 'OFICIO',
-  NEGOCIO: 'NEGOCIO'
+  NEGOCIO: 'NEGOCIO',
+  PROFESSIONAL: 'PROFESSIONAL',
+  BUSINESS: 'BUSINESS'
 } as const
 
 export type ProviderType = (typeof ProviderType)[keyof typeof ProviderType]
