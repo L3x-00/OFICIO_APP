@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -19,28 +20,18 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-
-    _fadeAnim = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    );
-
-    _scaleAnim = Tween<double>(begin: 0.7, end: 1.0).animate(
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _fadeAnim   = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _scaleAnim  = Tween<double>(begin: 0.7, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
-
     _controller.forward();
     Future.delayed(const Duration(milliseconds: 2200), _checkSession);
   }
 
   Future<void> _checkSession() async {
     if (!mounted) return;
-    final auth = context.read<AuthProvider>();
-    await auth.initialize();
+    await context.read<AuthProvider>().initialize();
   }
 
   @override
@@ -51,16 +42,16 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final c    = context.colors;
+    final topC = c.isDark ? const Color(0xFF1A0A00) : c.warmDeep;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF1A0A00),   // cálido oscuro arriba
-              AppColors.bgDark,    // azul oscuro abajo
-            ],
+            colors: [topC, c.bg],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -68,33 +59,26 @@ class _SplashScreenState extends State<SplashScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              // Orbe decorativo ámbar en la esquina superior
               Positioned(
-                top: -60,
-                right: -60,
+                top: -60, right: -60,
                 child: Container(
-                  width: 200,
-                  height: 200,
+                  width: 200, height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.amber.withOpacity(0.08),
+                    color: AppColors.amber.withValues(alpha: 0.08),
                   ),
                 ),
               ),
-              // Orbe decorativo azul en la esquina inferior
               Positioned(
-                bottom: -80,
-                left: -80,
+                bottom: -80, left: -80,
                 child: Container(
-                  width: 240,
-                  height: 240,
+                  width: 240, height: 240,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary.withOpacity(0.06),
+                    color: AppColors.primary.withValues(alpha: 0.06),
                   ),
                 ),
               ),
-              // Contenido central
               Center(
                 child: FadeTransition(
                   opacity: _fadeAnim,
@@ -103,10 +87,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Logo con glow ámbar
                         Container(
-                          width: 96,
-                          height: 96,
+                          width: 96, height: 96,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [AppColors.amber, AppColors.primary],
@@ -115,36 +97,23 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                             borderRadius: BorderRadius.circular(28),
                             boxShadow: [
-                              BoxShadow(
-                                color: AppColors.amber.withOpacity(0.3),
-                                blurRadius: 32,
-                                spreadRadius: 4,
-                              ),
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.2),
-                                blurRadius: 48,
-                                spreadRadius: 8,
-                              ),
+                              BoxShadow(color: AppColors.amber.withValues(alpha: 0.3),   blurRadius: 32, spreadRadius: 4),
+                              BoxShadow(color: AppColors.primary.withValues(alpha: 0.2), blurRadius: 48, spreadRadius: 8),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.handshake_rounded,
-                            color: Colors.white,
-                            size: 46,
-                          ),
+                          child: const Icon(Icons.handshake_rounded, color: Colors.white, size: 46),
                         ),
                         const SizedBox(height: 28),
-                        const Text(
+                        Text(
                           'OficioApp',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: c.textPrimary,
                             fontSize: 34,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.2,
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // Eslogan de marca
                         const Text(
                           'El talento de tu pueblo, a un clic.',
                           style: TextStyle(
@@ -156,10 +125,9 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(height: 56),
                         SizedBox(
-                          width: 28,
-                          height: 28,
+                          width: 28, height: 28,
                           child: CircularProgressIndicator(
-                            color: AppColors.amber.withOpacity(0.7),
+                            color: AppColors.amber.withValues(alpha: 0.7),
                             strokeWidth: 2,
                           ),
                         ),

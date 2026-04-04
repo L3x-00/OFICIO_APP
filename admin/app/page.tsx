@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import {
   Users,
   Star,
@@ -12,15 +15,62 @@ import { MetricCard } from '@/components/metric-card';
 import { GraceProvidersTable } from '@/components/grace-providers-table';
 import { DashboardRefreshButton } from '@/components/dashboard-refresh';
 import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
+import type { DashboardMetrics, GraceProvider } from '@/lib/api';
 
-export const dynamic = 'force-dynamic'; // Siempre refresca los datos
+export default function DashboardPage() {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [graceProviders, setGraceProviders] = useState<GraceProvider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function DashboardPage() {
-  // Carga de datos en el servidor (SSR)
-  const [metrics, graceProviders] = await Promise.all([
-    getDashboardMetrics(),
-    getGraceProviders(),
-  ]);
+  async function loadData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const [m, gp] = await Promise.all([
+        getDashboardMetrics(),
+        getGraceProviders(),
+      ]);
+      setMetrics(m);
+      setGraceProviders(gp);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar el dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400 mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !metrics) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3" />
+          <p className="text-red-400 text-sm mb-4">{error || 'Error desconocido'}</p>
+          <button
+            onClick={loadData}
+            className="px-4 py-2 bg-amber-500 text-black rounded-lg text-sm font-medium hover:bg-amber-400 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -32,7 +82,7 @@ export default async function DashboardPage() {
             Resumen general de OficioApp
           </p>
         </div>
-        <DashboardRefreshButton />
+        <DashboardRefreshButton onRefresh={loadData} />
       </div>
 
       {/* Métricas principales */}

@@ -102,6 +102,38 @@ class AuthRepository {
     }
   }
 
+  // ── REGISTRO DE PROVEEDOR (usuario ya autenticado) ───────
+  Future<ApiResult<Map<String, dynamic>>> registerProvider({
+    required String businessName,
+    required String phone,
+    required String type,
+    String? dni,
+    String? description,
+    String? address,
+    int? categoryId,
+    int? localityId,
+  }) async {
+    try {
+      final response = await _dio.post('/auth/register/provider', data: {
+        'businessName': businessName,
+        'phone':        phone,
+        'type':         type,
+        if (dni != null && dni.isNotEmpty) 'dni': dni,
+        if (description != null && description.isNotEmpty) 'description': description,
+        if (address != null && address.isNotEmpty) 'address': address,
+        if (categoryId != null) 'categoryId': categoryId,
+        if (localityId != null) 'localityId': localityId,
+      });
+      return Success(Map<String, dynamic>.from(response.data as Map));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al crear el perfil'),
+      );
+    }
+  }
+
   // ── RESTAURAR SESIÓN AL INICIAR LA APP ───────────────────
   Future<UserModel?> restoreSession() async {
     final hasSession = await AuthLocalStorage.hasSession();

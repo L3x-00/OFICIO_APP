@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
@@ -72,11 +73,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final size = MediaQuery.of(context).size;
     final isLastPage = _currentPage == 2;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -104,10 +106,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'OficioApp',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: c.textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
@@ -121,10 +123,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       onPressed: isLastPage
                           ? null
                           : () => context.read<AuthProvider>().browseAsGuest(),
-                      child: const Text(
+                      child: Text(
                         'Omitir',
                         style: TextStyle(
-                          color: AppColors.textMuted,
+                          color: c.textMuted,
                           fontSize: 13,
                         ),
                       ),
@@ -184,7 +186,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   decoration: BoxDecoration(
                     color: _currentPage == i
                         ? (_currentPage == 2 ? AppColors.amber : AppColors.primary)
-                        : AppColors.textMuted.withOpacity(0.3),
+                        : c.textMuted.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -272,14 +274,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                               side: BorderSide(
-                                color: Colors.white.withOpacity(0.1),
+                                color: c.border,
                               ),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Ya tengo una cuenta',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: c.textSecondary,
                               fontSize: 15,
                             ),
                           ),
@@ -306,6 +308,7 @@ class _DiscoverSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
       child: Column(
@@ -333,33 +336,33 @@ class _DiscoverSlide extends StatelessWidget {
             child: const Icon(Icons.search_rounded, color: Colors.white, size: 38),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Encuentra al profesional\nque necesitas, cerca de ti.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: c.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.bold,
               height: 1.35,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Electricistas, gasfiteros, pintores, restaurantes y mucho más en tu barrio.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: c.textSecondary,
               fontSize: 13,
               height: 1.6,
             ),
           ),
           const SizedBox(height: 20),
           // Chips de categorías de muestra
-          Wrap(
+          const Wrap(
             spacing: 8,
             runSpacing: 6,
             alignment: WrapAlignment.center,
-            children: const [
+            children: [
               _CategoryPill(icon: Icons.bolt_rounded, label: 'Electricistas'),
               _CategoryPill(icon: Icons.format_paint_rounded, label: 'Pintores'),
               _CategoryPill(icon: Icons.plumbing_rounded, label: 'Gasfiteros'),
@@ -415,24 +418,25 @@ class _TrustSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Elige con confianza.',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: c.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Lee opiniones de tus vecinos, contacta directo.',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: c.textSecondary,
               fontSize: 12,
             ),
           ),
@@ -441,16 +445,24 @@ class _TrustSlide extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.bgCard,
+              color: c.bgCard,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.08)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+              border: Border.all(color: c.border),
+              boxShadow: c.isDark
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
             ),
             child: Column(
               children: [
@@ -460,8 +472,8 @@ class _TrustSlide extends StatelessWidget {
                     Container(
                       width: 46,
                       height: 46,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
                           colors: [AppColors.primary, AppColors.primaryDark],
                         ),
                         shape: BoxShape.circle,
@@ -481,20 +493,20 @@ class _TrustSlide extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Juan Sosa',
                             style: TextStyle(
-                              color: AppColors.textPrimary,
+                              color: c.textPrimary,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
                             'Electricista Certificado',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: c.textSecondary,
                               fontSize: 12,
                             ),
                           ),
@@ -543,18 +555,18 @@ class _TrustSlide extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Text(
+                    Text(
                       '4.8',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: c.textPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Text(
+                    Text(
                       ' (23 reseñas)',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: c.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -638,24 +650,25 @@ class _CommunitySlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Impulsa a tu barrio.',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: c.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Miles de vecinos ya confían en nuestra comunidad.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: c.textSecondary, fontSize: 13),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -663,7 +676,7 @@ class _CommunitySlide extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.amberDeep,
+              color: c.warmDeep,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.amber.withOpacity(0.3)),
               boxShadow: [
@@ -683,11 +696,11 @@ class _CommunitySlide extends StatelessWidget {
                   size: 28,
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   '"Gracias a OficioApp, mi panadería tiene más clientes de toda la ciudad."',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: c.textPrimary,
                     fontSize: 14,
                     height: 1.6,
                     fontStyle: FontStyle.italic,
@@ -717,8 +730,8 @@ class _CommunitySlide extends StatelessWidget {
                     const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
+                      children: [
+                        const Text(
                           'Carlos',
                           style: TextStyle(
                             color: AppColors.amber,
@@ -729,7 +742,7 @@ class _CommunitySlide extends StatelessWidget {
                         Text(
                           "Panadería 'El Trigo Dorado'",
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: c.textSecondary,
                             fontSize: 11,
                           ),
                         ),

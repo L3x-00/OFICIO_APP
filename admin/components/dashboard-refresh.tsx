@@ -1,18 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 
-export function DashboardRefreshButton() {
-  const router = useRouter();
+interface Props {
+  onRefresh?: () => void | Promise<void>;
+}
+
+export function DashboardRefreshButton({ onRefresh }: Props) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    router.refresh();
-    // Restaurar el ícono tras 1.5s (el refresh es instantáneo en Next.js)
-    setTimeout(() => setIsRefreshing(false), 1500);
+    try {
+      await onRefresh?.();
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
   };
 
   return (

@@ -1,12 +1,21 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, ParseIntPipe, HttpCode, HttpStatus,
+  Body, Param, Query, ParseIntPipe,
+  HttpCode, HttpStatus, Res, UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { AdminService } from './admin.service.js';
+import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { RolesGuard } from '../auth/roles.guard.js';
+import { Roles } from '../auth/roles.decorator.js';
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  // ── MÉTRICAS Y ANALYTICS ─────────────────────────────────
 
   @Get('metrics')
   getMetrics() { return this.adminService.getDashboardMetrics(); }
@@ -18,6 +27,8 @@ export class AdminController {
   getAnalytics(@Query('days') days?: string) {
     return this.adminService.getAnalytics(days ? parseInt(days) : 30);
   }
+
+  // ── GESTIÓN DE PROVEEDORES ────────────────────────────────
 
   @Get('providers')
   getAllProviders(
@@ -53,23 +64,129 @@ export class AdminController {
     return this.adminService.toggleProviderVisibility(id);
   }
 
-  @Patch('providers/:id/approve')
-  approveVerification(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.approveVerification(id);
-  }
-
   @Delete('providers/:id')
   @HttpCode(HttpStatus.OK)
   deleteProvider(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.deleteProvider(id);
   }
 
-  // ── CRUD DE CATEGORÍAS ─────────────────────────────────────
+  // ── VERIFICACIÓN ──────────────────────────────────────────
+
+  @Get('verification/pending')
+  getPendingVerifications() {
+    return this.adminService.getPendingVerifications();
+  }
+
+  @Patch('providers/:id/approve')
+  approveVerification(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.approveVerification(id);
+  }
+
+  @Patch('providers/:id/reject')
+  rejectVerification(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('reason') reason: string,
+  ) {
+    return this.adminService.rejectVerification(id, reason);
+  }
+
+  @Patch('providers/:id/request-info')
+  requestMoreInfo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('reason') reason: string,
+  ) {
+    return this.adminService.requestMoreInfo(id, reason);
+  }
+
+  @Patch('providers/:id/revoke-verification')
+  revokeVerification(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('reason') reason?: string,
+  ) {
+    return this.adminService.revokeVerification(id, reason);
+  }
+
+  // ── GESTIÓN DE USUARIOS ───────────────────────────────────
+
+  @Get('users')
+  getUsers(
+    @Query('page')     page?:     string,
+    @Query('limit')    limit?:    string,
+    @Query('search')   search?:   string,
+    @Query('role')     role?:     string,
+    @Query('isActive') isActive?: string,
+  ) {
+    return this.adminService.getUsers(
+      page     ? parseInt(page)           : 1,
+      limit    ? parseInt(limit)          : 20,
+      search,
+      role,
+      isActive !== undefined ? isActive === 'true' : undefined,
+    );
+  }
+
+  @Delete('users/:id')
+  @HttpCode(HttpStatus.OK)
+  deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteUser(id);
+  }
+
+  @Patch('users/:id/status')
+  updateUserStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('isActive') isActive: boolean,
+  ) {
+    return this.adminService.updateUserStatus(id, isActive);
+  }
+
+  // ── NOTIFICACIONES ────────────────────────────────────────
+
+  @Get('notifications')
+  getNotifications(
+    @Query('page')  page?:  string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.adminService.getNotifications(
+      page  ? parseInt(page)  : 1,
+      limit ? parseInt(limit) : 20,
+    );
+  }
+
+  @Patch('notifications/:id/read')
+  markNotificationRead(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.markNotificationRead(id);
+  }
+
+  @Patch('notifications/read-all')
+  markAllNotificationsRead() {
+    return this.adminService.markAllNotificationsRead();
+  }
+
+  // ── REPORTES ──────────────────────────────────────────────
+
+  @Get('reports')
+  getReports() { return this.adminService.getReports(); }
+
+  @Get('reports/export/users')
+  async exportUsersCSV(@Res() res: Response) {
+    const csv = await this.adminService.exportUsersCSV();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="usuarios.csv"');
+    res.send('\uFEFF' + csv); // BOM para Excel
+  }
+
+  @Get('reports/export/providers')
+  async exportProvidersCSV(@Res() res: Response) {
+    const csv = await this.adminService.exportProvidersCSV();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="proveedores.csv"');
+    res.send('\uFEFF' + csv);
+  }
+
+  // ── CRUD DE CATEGORÍAS ────────────────────────────────────
 
   @Get('categories')
-  getCategories() {
-    return this.adminService.getCategories();
-  }
+  getCategories() { return this.adminService.getCategories(); }
 
   @Post('categories')
   createCategory(@Body() body: any) {

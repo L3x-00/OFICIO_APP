@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -58,6 +59,7 @@ class _JoinUsModalState extends State<JoinUsModal>
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SlideTransition(
@@ -66,8 +68,8 @@ class _JoinUsModalState extends State<JoinUsModal>
         opacity: _fadeAnim,
         child: Container(
           height: screenHeight * 0.92,
-          decoration: const BoxDecoration(
-            color: AppColors.bgDark,
+          decoration: BoxDecoration(
+            color: c.bg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: Column(
@@ -79,7 +81,7 @@ class _JoinUsModalState extends State<JoinUsModal>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textMuted.withOpacity(0.3),
+                    color: c.textMuted.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -100,6 +102,7 @@ class _JoinUsModalState extends State<JoinUsModal>
   // ─── Vista inicial: elegir tipo ──────────────────────────
 
   Widget _buildInitialView() {
+    final c = context.colors;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       child: Column(
@@ -146,22 +149,22 @@ class _JoinUsModalState extends State<JoinUsModal>
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   '¡Haz crecer tu negocio!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: c.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Miles de personas en tu zona buscan tus servicios. '
                   'Aparecer en OficioApp es gratis los primeros 2 meses.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     fontSize: 13,
                     height: 1.6,
                   ),
@@ -172,10 +175,10 @@ class _JoinUsModalState extends State<JoinUsModal>
           const SizedBox(height: 28),
 
           // Beneficios
-          const Text(
+          Text(
             '¿POR QUÉ UNIRTE?',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: c.textMuted,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
@@ -225,10 +228,10 @@ class _JoinUsModalState extends State<JoinUsModal>
           const SizedBox(height: 28),
 
           // Opciones de tipo
-          const Text(
+          Text(
             '¿CÓMO QUIERES APARECER?',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: c.textMuted,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
@@ -266,6 +269,7 @@ class _JoinUsModalState extends State<JoinUsModal>
   // ─── Vista de detalle por tipo ───────────────────────────
 
   Widget _buildTypeDetail(String type) {
+    final c = context.colors;
     final isOficio = type == 'OFICIO';
 
     final plans = [
@@ -317,19 +321,19 @@ class _JoinUsModalState extends State<JoinUsModal>
           // Botón volver
           GestureDetector(
             onTap: () => setState(() => _selectedType = null),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.arrow_back_rounded,
-                  color: AppColors.textSecondary,
+                  color: c.textSecondary,
                   size: 18,
                 ),
                 SizedBox(width: 6),
                 Text(
                   'Volver',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -341,8 +345,8 @@ class _JoinUsModalState extends State<JoinUsModal>
           // Título según tipo
           Text(
             isOficio ? 'Profesional Independiente' : 'Negocio Establecido',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: c.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -352,8 +356,8 @@ class _JoinUsModalState extends State<JoinUsModal>
             isOficio
                 ? 'Tu perfil personal como electricista, gasfitero, pintor y más'
                 : 'La vitrina digital de tu local: restaurante, salón, taller...',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: c.textSecondary,
               fontSize: 13,
               height: 1.5,
             ),
@@ -361,10 +365,10 @@ class _JoinUsModalState extends State<JoinUsModal>
           const SizedBox(height: 24),
 
           // Vista previa del perfil con fotos
-          const Text(
+          Text(
             'VISTA PREVIA DE TU PERFIL',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: c.textMuted,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
@@ -375,10 +379,10 @@ class _JoinUsModalState extends State<JoinUsModal>
           const SizedBox(height: 28),
 
           // Planes
-          const Text(
+          Text(
             'ELIGE TU PLAN',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: c.textMuted,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
@@ -447,7 +451,7 @@ class _JoinUsModalState extends State<JoinUsModal>
                             : (isOficio
                                 ? 'Registrarme como Profesional'
                                 : 'Registrarme como Negocio'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
@@ -459,8 +463,8 @@ class _JoinUsModalState extends State<JoinUsModal>
                     alreadyLoggedIn
                         ? 'Accederás con tu cuenta actual'
                         : 'Sin tarjeta de crédito • Sin compromisos',
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
+                    style: TextStyle(
+                      color: c.textMuted,
                       fontSize: 12,
                     ),
                     textAlign: TextAlign.center,
@@ -522,6 +526,7 @@ class _BenefitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -543,8 +548,8 @@ class _BenefitRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -552,8 +557,8 @@ class _BenefitRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: c.textSecondary,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -580,6 +585,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
@@ -601,8 +607,8 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textMuted,
+            style: TextStyle(
+              color: c.textMuted,
               fontSize: 10,
               height: 1.3,
             ),
@@ -632,12 +638,13 @@ class _TypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: c.bgCard,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: Colors.white.withOpacity(0.06)),
         ),
@@ -659,8 +666,8 @@ class _TypeCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: c.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -668,8 +675,8 @@ class _TypeCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: c.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -679,7 +686,7 @@ class _TypeCard extends StatelessWidget {
             const SizedBox(width: 8),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: AppColors.textMuted,
+              color: c.textMuted,
               size: 16,
             ),
           ],
@@ -695,12 +702,13 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: plan.isHighlighted
             ? AppColors.primary.withOpacity(0.08)
-            : AppColors.bgCard,
+            : c.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: plan.isHighlighted
@@ -719,7 +727,7 @@ class _PlanCard extends StatelessWidget {
                 style: TextStyle(
                   color: plan.isHighlighted
                       ? AppColors.primary
-                      : AppColors.textPrimary,
+                      : c.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -735,7 +743,7 @@ class _PlanCard extends StatelessWidget {
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Popular',
                     style: TextStyle(
                       color: Colors.white,
@@ -754,15 +762,15 @@ class _PlanCard extends StatelessWidget {
                       style: TextStyle(
                         color: plan.isHighlighted
                             ? AppColors.primary
-                            : AppColors.textPrimary,
+                            : c.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     TextSpan(
                       text: '\n${plan.period}',
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
+                      style: TextStyle(
+                        color: c.textMuted,
                         fontSize: 11,
                       ),
                     ),
@@ -788,8 +796,8 @@ class _PlanCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     f,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: c.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -860,13 +868,14 @@ class _ProfilePreviewMock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final accentColors = isOficio
         ? [const Color(0xFF00C6FF), const Color(0xFF0072FF)]
         : [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)];
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withOpacity(0.06)),
       ),
@@ -899,7 +908,7 @@ class _ProfilePreviewMock extends StatelessWidget {
                       size: 28,
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Tu foto de portada aquí',
                       style: TextStyle(color: Colors.white54, fontSize: 11),
                     ),
@@ -941,8 +950,8 @@ class _ProfilePreviewMock extends StatelessWidget {
                             isOficio
                                 ? 'Tu nombre profesional'
                                 : 'Nombre de tu negocio',
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: c.textPrimary,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
@@ -951,8 +960,8 @@ class _ProfilePreviewMock extends StatelessWidget {
                             isOficio
                                 ? 'Especialidad (ej: Electricista)'
                                 : 'Categoría (ej: Restaurante)',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: c.textSecondary,
                               fontSize: 11,
                             ),
                           ),
@@ -999,7 +1008,7 @@ class _ProfilePreviewMock extends StatelessWidget {
                           height: 50,
                           margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
                           decoration: BoxDecoration(
-                            color: AppColors.bgInput,
+                            color: c.bgInput,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                                 color: Colors.white.withOpacity(0.06)),
@@ -1007,7 +1016,7 @@ class _ProfilePreviewMock extends StatelessWidget {
                           child: Center(
                             child: Icon(
                               Icons.image_rounded,
-                              color: AppColors.textMuted.withOpacity(0.4),
+                              color: c.textMuted.withOpacity(0.4),
                               size: 18,
                             ),
                           ),
@@ -1016,11 +1025,11 @@ class _ProfilePreviewMock extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Center(
+                  Center(
                     child: Text(
                       'Tus fotos aparecen en la tarjeta del negocio',
                       style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 10),
+                          color: c.textMuted, fontSize: 10),
                       textAlign: TextAlign.center,
                     ),
                   ),

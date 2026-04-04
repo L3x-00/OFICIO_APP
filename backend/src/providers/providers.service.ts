@@ -9,7 +9,6 @@ export class ProvidersService {
   async findAll(filters: {
     categorySlug?: string;
     availability?: string;
-    onlyVerified?: boolean;
     search?: string;
     localityId?: number;
     lat?: number;
@@ -20,7 +19,6 @@ export class ProvidersService {
     const {
       categorySlug,
       availability,
-      onlyVerified,
       search,
       localityId,
       page = 1,
@@ -28,7 +26,8 @@ export class ProvidersService {
     } = filters;
 
     const where: any = {
-      isVisible: true,
+      isVisible:  true,
+      isVerified: true,  // Solo proveedores verificados son visibles al público
     };
 
     if (categorySlug) {
@@ -36,9 +35,6 @@ export class ProvidersService {
     }
     if (availability) {
       where.availability = availability;
-    }
-    if (onlyVerified) {
-      where.isVerified = true;
     }
     if (search) {
       where.OR = [

@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '@prisma/client';
@@ -19,6 +20,7 @@ export class AdminService {
       totalProviders, activeProviders, providersInGrace,
       providersExpiringSoon, totalUsers, totalReviews,
       pendingVerifications, whatsappClicks, callClicks,
+      totalActiveUsers, totalProviderUsers,
     ] = await Promise.all([
       this.prisma.provider.count(),
       this.prisma.provider.count({ where: { isVisible: true } }),
@@ -34,19 +36,22 @@ export class AdminService {
       }),
       this.prisma.user.count({ where: { role: 'USUARIO' } }),
       this.prisma.review.count(),
-      this.prisma.verificationDoc.count({ where: { status: 'PENDIENTE' } }),
+      this.prisma.provider.count({ where: { verificationStatus: 'PENDIENTE' } }),
       this.prisma.providerAnalytic.count({
         where: { eventType: 'whatsapp_click', createdAt: { gte: startOfMonth } },
       }),
       this.prisma.providerAnalytic.count({
         where: { eventType: 'call_click', createdAt: { gte: startOfMonth } },
       }),
+      this.prisma.user.count({ where: { isActive: true } }),
+      this.prisma.user.count({ where: { role: 'PROVEEDOR' } }),
     ]);
 
     return {
       totalProviders, activeProviders, providersInGrace,
       providersExpiringSoon, totalUsers, totalReviews,
       pendingVerifications, whatsappClicks, callClicks,
+      totalActiveUsers, totalProviderUsers,
     };
   }
 
@@ -159,7 +164,6 @@ export class AdminService {
     localityId: number;
     type: string;
   }) {
-    // Verificar email duplicado
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -176,7 +180,6 @@ export class AdminService {
       () => chars[Math.floor(Math.random() * chars.length)],
     ).join('');
 
-    // Crear usuario y proveedor en transacción
     const result = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
@@ -236,7 +239,7 @@ export class AdminService {
       address?: string;
       isVisible?: boolean;
       isVerified?: boolean;
-      availability?: AvailabilityStatus; // <--- CAMBIA 'string' POR 'AvailabilityStatus'
+      availability?: AvailabilityStatus;
     },
   ) {
     const exists = await this.prisma.provider.findUnique({ where: { id } });
@@ -260,15 +263,385 @@ export class AdminService {
     });
   }
 
-  // ── APROBAR VERIFICACIÓN ──────────────────────────────────
+  // ── VERIFICACIÓN ──────────────────────────────────────────
+
+  async getPendingVerifications() {
+    return this.prisma.provider.findMany({
+      where: { verificationStatus: 'PENDIENTE' },
+      include: {
+        user:     { select: { email: true, firstName: true, lastName: true, createdAt: true } },
+        category: { select: { name: true } },
+        locality: { select: { name: true } },
+        verificationDocs: true,
+        images: { where: { isCover: true }, take: 1 },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
   async approveVerification(id: number) {
     const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
-    return this.prisma.provider.update({
-      where: { id },
-      data: { isVerified: true, verificationStatus: 'APROBADO' },
+    const [updated] = await Promise.all([
+      this.prisma.provider.update({
+        where: { id },
+        data: { isVerified: true, verificationStatus: 'APROBADO' },
+      }),
+      this.prisma.adminNotification.create({
+        data: {
+          providerId: id,
+          type: 'APROBADO',
+          message: '¡Felicidades! Tu perfil ha sido verificado y aprobado. Tu insignia de verificación ya está activa.',
+        },
+      }),
+    ]);
+
+    return updated;
+  }
+
+  async rejectVerification(id: number, reason: string) {
+    if (!reason?.trim()) throw new BadRequestException('El motivo de rechazo es obligatorio');
+
+    const provider = await this.prisma.provider.findUnique({ where: { id } });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    const [updated] = await Promise.all([
+      this.prisma.provider.update({
+        where: { id },
+        data: { isVerified: false, verificationStatus: 'RECHAZADO' },
+      }),
+      this.prisma.adminNotification.create({
+        data: {
+          providerId: id,
+          type: 'RECHAZADO',
+          message: `Tu solicitud de verificación fue rechazada. Motivo: ${reason}`,
+        },
+      }),
+    ]);
+
+    return updated;
+  }
+
+  async requestMoreInfo(id: number, reason: string) {
+    if (!reason?.trim()) throw new BadRequestException('El detalle de la solicitud es obligatorio');
+
+    const provider = await this.prisma.provider.findUnique({ where: { id } });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    await this.prisma.adminNotification.create({
+      data: {
+        providerId: id,
+        type: 'MAS_INFO',
+        message: `Necesitamos más información para verificar tu perfil: ${reason}`,
+      },
     });
+
+    return { success: true, message: 'Solicitud de información enviada' };
+  }
+
+  async revokeVerification(id: number, reason?: string) {
+    const provider = await this.prisma.provider.findUnique({ where: { id } });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+    if (!provider.isVerified) throw new BadRequestException('Este proveedor no está verificado');
+
+    const [updated] = await Promise.all([
+      this.prisma.provider.update({
+        where: { id },
+        data: { isVerified: false, verificationStatus: 'PENDIENTE' },
+      }),
+      this.prisma.adminNotification.create({
+        data: {
+          providerId: id,
+          type: 'VERIFICACION_REVOCADA',
+          message: reason
+            ? `Tu verificación ha sido revocada. Motivo: ${reason}`
+            : 'Tu verificación ha sido revocada por el administrador.',
+        },
+      }),
+    ]);
+
+    return updated;
+  }
+
+  // ── GESTIÓN DE USUARIOS ───────────────────────────────────
+
+  async getUsers(
+    page = 1,
+    limit = 20,
+    search?: string,
+    role?: string,
+    isActive?: boolean,
+  ) {
+    const skip  = (page - 1) * limit;
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName:  { contains: search, mode: 'insensitive' } },
+        { email:     { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (role)             where.role     = role;
+    if (isActive !== undefined) where.isActive = isActive;
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        select: {
+          id:        true,
+          firstName: true,
+          lastName:  true,
+          email:     true,
+          role:      true,
+          isActive:  true,
+          createdAt: true,
+          provider:  { select: { id: true, businessName: true, verificationStatus: true, isVerified: true } },
+          _count:    { select: { reviews: true, favorites: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data: users, total, page, lastPage: Math.ceil(total / limit) };
+  }
+
+  async deleteUser(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { provider: { include: { subscription: true } } },
+    });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (user.role === 'ADMIN') throw new BadRequestException('No se puede eliminar un administrador');
+
+    await this.prisma.$transaction(async (tx) => {
+      if (user.provider) {
+        const providerId = user.provider.id;
+        await tx.providerAnalytic.deleteMany({ where: { providerId } });
+        await tx.review.deleteMany({ where: { providerId } });
+        await tx.favorite.deleteMany({ where: { providerId } });
+        await tx.providerImage.deleteMany({ where: { providerId } });
+        await tx.verificationDoc.deleteMany({ where: { providerId } });
+        await tx.adminNotification.deleteMany({ where: { providerId } });
+
+        if (user.provider.subscription) {
+          await tx.payment.deleteMany({ where: { subscriptionId: user.provider.subscription.id } });
+          await tx.subscription.delete({ where: { providerId } });
+        }
+
+        await tx.provider.delete({ where: { id: providerId } });
+      }
+
+      await tx.review.deleteMany({ where: { userId: id } });
+      await tx.favorite.deleteMany({ where: { userId: id } });
+      await tx.refreshToken.deleteMany({ where: { userId: id } });
+      await tx.user.delete({ where: { id } });
+    });
+
+    return { success: true, message: 'Usuario eliminado correctamente' };
+  }
+
+  async updateUserStatus(id: number, isActive: boolean) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (user.role === 'ADMIN') throw new BadRequestException('No se puede modificar el estado de un administrador');
+
+    return this.prisma.user.update({
+      where: { id },
+      data: { isActive },
+      select: { id: true, email: true, isActive: true, role: true },
+    });
+  }
+
+  // ── NOTIFICACIONES ────────────────────────────────────────
+
+  async getNotifications(page = 1, limit = 20) {
+    const skip  = (page - 1) * limit;
+
+    const [notifications, total, unreadCount] = await Promise.all([
+      this.prisma.adminNotification.findMany({
+        skip,
+        take: limit,
+        include: {
+          provider: {
+            select: { businessName: true, user: { select: { firstName: true, lastName: true } } },
+          },
+        },
+        orderBy: { sentAt: 'desc' },
+      }),
+      this.prisma.adminNotification.count(),
+      this.prisma.adminNotification.count({ where: { isRead: false } }),
+    ]);
+
+    return { data: notifications, total, page, lastPage: Math.ceil(total / limit), unreadCount };
+  }
+
+  async markNotificationRead(id: number) {
+    return this.prisma.adminNotification.update({
+      where: { id },
+      data: { isRead: true },
+    });
+  }
+
+  async markAllNotificationsRead() {
+    await this.prisma.adminNotification.updateMany({
+      where: { isRead: false },
+      data: { isRead: true },
+    });
+    return { success: true };
+  }
+
+  // ── REPORTES ──────────────────────────────────────────────
+
+  async getReports() {
+    const [
+      topRatedProviders,
+      mostReviewedProviders,
+      mostActiveUsers,
+      popularCategories,
+      recentRegistrations,
+      verificationStats,
+    ] = await Promise.all([
+      // Mejor calificados
+      this.prisma.provider.findMany({
+        where: { totalReviews: { gt: 0 } },
+        select: {
+          id: true, businessName: true, averageRating: true, totalReviews: true,
+          category: { select: { name: true } },
+          locality: { select: { name: true } },
+          isVerified: true,
+        },
+        orderBy: [{ averageRating: 'desc' }, { totalReviews: 'desc' }],
+        take: 10,
+      }),
+
+      // Más reseñas
+      this.prisma.provider.findMany({
+        where: { totalReviews: { gt: 0 } },
+        select: {
+          id: true, businessName: true, totalReviews: true, averageRating: true,
+          category: { select: { name: true } },
+        },
+        orderBy: { totalReviews: 'desc' },
+        take: 10,
+      }),
+
+      // Usuarios más activos (más reseñas)
+      this.prisma.user.findMany({
+        where: { role: 'USUARIO' },
+        select: {
+          id: true, firstName: true, lastName: true, email: true, createdAt: true,
+          _count: { select: { reviews: true, favorites: true } },
+        },
+        orderBy: { reviews: { _count: 'desc' } },
+        take: 10,
+      }),
+
+      // Categorías populares
+      this.prisma.category.findMany({
+        where: { isActive: true, parentId: null },
+        select: {
+          id: true, name: true, slug: true,
+          _count: { select: { providers: true } },
+        },
+        orderBy: { providers: { _count: 'desc' } },
+        take: 10,
+      }),
+
+      // Registros por mes (últimos 6 meses)
+      this.prisma.$queryRaw<{ month: string; users: number; providers: number }[]>`
+        SELECT
+          TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') AS month,
+          COUNT(*) FILTER (WHERE role = 'USUARIO')    AS users,
+          COUNT(*) FILTER (WHERE role = 'PROVEEDOR')  AS providers
+        FROM users
+        WHERE "createdAt" >= NOW() - INTERVAL '6 months'
+        GROUP BY 1
+        ORDER BY 1
+      `,
+
+      // Estadísticas de verificación
+      this.prisma.provider.groupBy({
+        by: ['verificationStatus'],
+        _count: { verificationStatus: true },
+      }),
+    ]);
+
+    return {
+      topRatedProviders,
+      mostReviewedProviders,
+      mostActiveUsers,
+      popularCategories,
+      recentRegistrations,
+      verificationStats: verificationStats.map((v) => ({
+        status: v.verificationStatus,
+        count: v._count.verificationStatus,
+      })),
+    };
+  }
+
+  async exportUsersCSV(): Promise<string> {
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true, firstName: true, lastName: true, email: true,
+        role: true, isActive: true, createdAt: true,
+        provider: { select: { businessName: true, verificationStatus: true } },
+        _count: { select: { reviews: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const header = ['ID', 'Nombre', 'Apellido', 'Email', 'Rol', 'Activo', 'Fecha Registro', 'Negocio', 'Verificación', 'Reseñas'].join(',');
+    const rows = users.map((u) => [
+      u.id,
+      `"${u.firstName}"`,
+      `"${u.lastName}"`,
+      `"${u.email}"`,
+      u.role,
+      u.isActive ? 'Sí' : 'No',
+      u.createdAt.toISOString().split('T')[0],
+      u.provider ? `"${u.provider.businessName}"` : '',
+      u.provider?.verificationStatus ?? '',
+      u._count.reviews,
+    ].join(','));
+
+    return [header, ...rows].join('\n');
+  }
+
+  async exportProvidersCSV(): Promise<string> {
+    const providers = await this.prisma.provider.findMany({
+      include: {
+        user:         { select: { email: true, firstName: true, lastName: true } },
+        category:     { select: { name: true } },
+        locality:     { select: { name: true } },
+        subscription: { select: { plan: true, status: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const header = ['ID', 'Negocio', 'Email', 'Nombre', 'Teléfono', 'Categoría', 'Localidad', 'Calificación', 'Reseñas', 'Verificado', 'Estado', 'Plan', 'Suscripción'].join(',');
+    const rows = providers.map((p) => [
+      p.id,
+      `"${p.businessName}"`,
+      `"${p.user.email}"`,
+      `"${p.user.firstName} ${p.user.lastName}"`,
+      `"${p.phone}"`,
+      `"${p.category.name}"`,
+      `"${p.locality.name}"`,
+      p.averageRating.toFixed(2),
+      p.totalReviews,
+      p.isVerified ? 'Sí' : 'No',
+      p.verificationStatus,
+      p.subscription?.plan ?? '',
+      p.subscription?.status ?? '',
+    ].join(','));
+
+    return [header, ...rows].join('\n');
   }
 
   // ── CRUD DE CATEGORÍAS ────────────────────────────────────
@@ -328,7 +701,7 @@ export class AdminService {
     });
   }
 
-  // ── ELIMINAR PROVEEDOR (lógico) ───────────────────────────
+  // ── ELIMINAR PROVEEDOR ────────────────────────────────────
   async deleteProvider(id: number) {
     const provider = await this.prisma.provider.findUnique({
       where: { id },
@@ -336,30 +709,22 @@ export class AdminService {
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
-    // Borrar en cascada usando transacción
     await this.prisma.$transaction(async (tx) => {
-      // Eliminar analytics
       await tx.providerAnalytic.deleteMany({ where: { providerId: id } });
-      // Eliminar reseñas
       await tx.review.deleteMany({ where: { providerId: id } });
-      // Eliminar favoritos
       await tx.favorite.deleteMany({ where: { providerId: id } });
-      // Eliminar imágenes
       await tx.providerImage.deleteMany({ where: { providerId: id } });
-      // Eliminar documentos
       await tx.verificationDoc.deleteMany({ where: { providerId: id } });
-      // Eliminar suscripción
+      await tx.adminNotification.deleteMany({ where: { providerId: id } });
+
       if (provider.subscription) {
         await tx.payment.deleteMany({
           where: { subscriptionId: provider.subscription.id },
         });
-        await tx.subscription.delete({
-          where: { providerId: id },
-        });
+        await tx.subscription.delete({ where: { providerId: id } });
       }
-      // Eliminar proveedor
+
       await tx.provider.delete({ where: { id } });
-      // Eliminar usuario asociado
       await tx.user.delete({ where: { id: provider.userId } });
     });
 

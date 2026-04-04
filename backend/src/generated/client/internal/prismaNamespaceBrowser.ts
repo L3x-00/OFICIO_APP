@@ -62,7 +62,8 @@ export const ModelName = {
   Review: 'Review',
   Favorite: 'Favorite',
   VerificationDoc: 'VerificationDoc',
-  ProviderAnalytic: 'ProviderAnalytic'
+  ProviderAnalytic: 'ProviderAnalytic',
+  AdminNotification: 'AdminNotification'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -139,6 +140,7 @@ export const ProviderScalarFieldEnum = {
   type: 'type',
   businessName: 'businessName',
   description: 'description',
+  dni: 'dni',
   phone: 'phone',
   whatsapp: 'whatsapp',
   address: 'address',
@@ -250,6 +252,18 @@ export const ProviderAnalyticScalarFieldEnum = {
 } as const
 
 export type ProviderAnalyticScalarFieldEnum = (typeof ProviderAnalyticScalarFieldEnum)[keyof typeof ProviderAnalyticScalarFieldEnum]
+
+
+export const AdminNotificationScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  type: 'type',
+  message: 'message',
+  isRead: 'isRead',
+  sentAt: 'sentAt'
+} as const
+
+export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]
 
 
 export const SortOrder = {

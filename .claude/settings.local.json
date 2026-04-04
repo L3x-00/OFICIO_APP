@@ -2,7 +2,30 @@
   "permissions": {
     "allow": [
       "Bash(flutter analyze:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Read(//mnt/c/Users/Usuario/.claude/projects/C--Users-Usuario-oficio-app/**)",
+      "Bash(dir \"C:\\\\Users\\\\Usuario\\\\.claude\\\\projects\\\\C--Users-Usuario-oficio-app\\\\memory\")",
+      "Bash(find:*)",
+      "Bash(xargs grep:*)",
+      "Bash(sed -n '37,42p' /c/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_home_tab.dart)",
+      "Bash(sed -n '106,112p' /c/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_home_tab.dart)",
+      "Bash(sed -n '158,163p' /c/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_home_tab.dart)",
+      "Bash(sed -n '228,233p' /c/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_home_tab.dart)",
+      "Bash(python3:*)",
+      "Bash(pwsh --version)",
+      "Bash(node:*)",
+      "Bash(sed -n '395,400p' \"C:/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_profile_tab.dart\")",
+      "Bash(sed -n '422,426p' \"C:/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_profile_tab.dart\")",
+      "Bash(sed -n '302,307p' \"C:/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/screens/panel_settings_tab.dart\")",
+      "Bash(npx prisma:*)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma migrate dev --name add_admin_notifications)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma generate)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma migrate dev --name add_provider_dni)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma migrate dev --name add_provider_dni --non-interactive)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma db push)",
+      "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma db push --accept-data-loss)",
+      "Bash(grep -r '$queryRaw\\\\|$executeRaw' /c/Users/Usuario/oficio_app/backend/src '--include=*.ts')",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ]
   }
 }

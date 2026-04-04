@@ -62,3 +62,13 @@ export const VerificationStatus = {
 } as const
 
 export type VerificationStatus = (typeof VerificationStatus)[keyof typeof VerificationStatus]
+
+
+export const NotificationType = {
+  APROBADO: 'APROBADO',
+  RECHAZADO: 'RECHAZADO',
+  MAS_INFO: 'MAS_INFO',
+  VERIFICACION_REVOCADA: 'VERIFICACION_REVOCADA'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

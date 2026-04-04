@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/join_us_modal.dart';
 import 'package:provider/provider.dart';
 import '../providers/providers_provider.dart';
@@ -36,14 +37,15 @@ class _ProvidersViewState extends State<_ProvidersView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final c = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       // ── Botón flotante "¡Quiero ser parte!" ────────────
       floatingActionButton: _JoinUsButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
-        backgroundColor: AppColors.bgDark,
+        backgroundColor: c.bg,
         elevation: 0,
         title: Row(
           children: [
@@ -65,10 +67,10 @@ class _ProvidersViewState extends State<_ProvidersView>
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'OficioApp',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: c.textPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -82,9 +84,9 @@ class _ProvidersViewState extends State<_ProvidersView>
                 isLabelVisible: prov.selectedCategory != null ||
                     prov.selectedAvailability != null ||
                     prov.onlyVerified,
-                child: const Icon(
+                child: Icon(
                   Icons.filter_list_rounded,
-                  color: AppColors.textPrimary,
+                  color: c.textPrimary,
                 ),
               ),
               onPressed: () => _showFilterSheet(context, prov),
@@ -104,9 +106,10 @@ class _ProvidersViewState extends State<_ProvidersView>
   }
 
   void _showFilterSheet(BuildContext context, ProvidersProvider prov) {
+    final c = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: c.bgCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -118,7 +121,7 @@ class _ProvidersViewState extends State<_ProvidersView>
   }
 }
 
-// ─── Botón flotante dinámico ──────────────────────────────
+// ─── Botón flotante dinámico ──────────────────────────────────
 // Naranja "¡Quiero ser parte!" → si el usuario NO es proveedor
 // Azul   "Ir a mi panel"      → si el usuario SÍ es proveedor
 
@@ -258,9 +261,10 @@ class _JoinUsButtonState extends State<_JoinUsButton>
   }
 
   void _openProviderPanel(BuildContext context) {
+    final c = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: c.bgCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -279,6 +283,7 @@ class _ProviderPanelSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
@@ -288,7 +293,7 @@ class _ProviderPanelSheet extends StatelessWidget {
           Container(
             width: 40, height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textMuted.withOpacity(0.3),
+              color: c.textMuted.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -298,8 +303,8 @@ class _ProviderPanelSheet extends StatelessWidget {
             children: [
               Container(
                 width: 52, height: 52,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
                     colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
                   ),
                   shape: BoxShape.circle,
@@ -313,15 +318,15 @@ class _ProviderPanelSheet extends StatelessWidget {
                   children: [
                     Text(
                       user?.fullName ?? 'Mi panel',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: c.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Proveedor verificado',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      style: TextStyle(color: c.textSecondary, fontSize: 12),
                     ),
                   ],
                 ),
@@ -386,6 +391,7 @@ class _PanelAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -401,14 +407,14 @@ class _PanelAction extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: c.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
-            Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 14),
+            Icon(Icons.arrow_forward_ios_rounded, color: c.textMuted, size: 14),
           ],
         ),
       ),
@@ -419,28 +425,29 @@ class _PanelAction extends StatelessWidget {
 // ─── Helper: diálogo de login requerido ──────────────────
 
 void _showLoginRequiredDialog(BuildContext context) {
+  final c = context.colors;
   showDialog(
     context: context,
     builder: (_) => AlertDialog(
-      backgroundColor: AppColors.bgCard,
+      backgroundColor: c.bgCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text(
+      title: Text(
         'Inicia sesión para continuar',
         style: TextStyle(
-          color: AppColors.textPrimary,
+          color: c.textPrimary,
           fontWeight: FontWeight.bold,
           fontSize: 17,
         ),
       ),
-      content: const Text(
+      content: Text(
         'Necesitas una cuenta para agregar favoritos y dejar reseñas.',
-        style: TextStyle(color: AppColors.textSecondary, height: 1.5),
+        style: TextStyle(color: c.textSecondary, height: 1.5),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Ahora no',
-              style: TextStyle(color: AppColors.textMuted)),
+          child: Text('Ahora no',
+              style: TextStyle(color: c.textMuted)),
         ),
         ElevatedButton(
           onPressed: () {
@@ -469,6 +476,7 @@ void _showLoginRequiredDialog(BuildContext context) {
 class _GreetingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final firstName = user?.firstName ?? (auth.isGuest ? null : 'Usuario');
@@ -486,8 +494,8 @@ class _GreetingHeader extends StatelessWidget {
                   firstName != null
                       ? '¡Hola, $firstName!'
                       : '¡Explora los servicios!',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -497,8 +505,8 @@ class _GreetingHeader extends StatelessWidget {
                   firstName != null
                       ? '¿Qué necesitas hoy?'
                       : 'Contrata sin registro • Es gratis',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: c.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -509,20 +517,20 @@ class _GreetingHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.bgCard,
+              color: c.bgCard,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.08)),
+              border: Border.all(color: c.border),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on_rounded,
+                const Icon(Icons.location_on_rounded,
                     color: AppColors.amber, size: 14),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
                   'Cerca de ti',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -554,19 +562,20 @@ class _SearchBarState extends State<_SearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: TextField(
         controller: _controller,
-        style: const TextStyle(color: AppColors.textPrimary),
+        style: TextStyle(color: c.textPrimary),
         decoration: InputDecoration(
           hintText: 'Buscar electricistas, pintores...',
-          hintStyle: const TextStyle(color: AppColors.textMuted),
-          prefixIcon: const Icon(
-              Icons.search_rounded, color: AppColors.textMuted),
+          hintStyle: TextStyle(color: c.textMuted),
+          prefixIcon: Icon(
+              Icons.search_rounded, color: c.textMuted),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppColors.textMuted),
+                  icon: Icon(Icons.clear, color: c.textMuted),
                   onPressed: () {
                     _controller.clear();
                     context.read<ProvidersProvider>().setSearch('');
@@ -574,7 +583,7 @@ class _SearchBarState extends State<_SearchBar> {
                 )
               : null,
           filled: true,
-          fillColor: AppColors.bgCard,
+          fillColor: c.bgCard,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
@@ -645,6 +654,7 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: GestureDetector(
@@ -653,17 +663,16 @@ class _CategoryChip extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.bgCard,
+            color: isSelected ? AppColors.primary : c.bgCard,
             borderRadius: BorderRadius.circular(20),
             border: isSelected
                 ? null
-                : Border.all(
-                    color: Colors.white.withOpacity(0.08)),
+                : Border.all(color: c.border),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.textSecondary,
+              color: isSelected ? Colors.white : c.textSecondary,
               fontSize: 13,
               fontWeight: isSelected
                   ? FontWeight.bold
@@ -681,6 +690,7 @@ class _CategoryChip extends StatelessWidget {
 class _ProvidersList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final c      = context.colors;
     final prov    = context.watch<ProvidersProvider>();
     final favProv = context.watch<FavoritesProvider>();
 
@@ -697,12 +707,12 @@ class _ProvidersList extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded,
-                color: AppColors.textMuted, size: 48),
+            Icon(Icons.wifi_off_rounded,
+                color: c.textMuted, size: 48),
             const SizedBox(height: 12),
             Text(prov.errorMessage,
-                style: const TextStyle(
-                    color: AppColors.textSecondary)),
+                style: TextStyle(
+                    color: c.textSecondary)),
             const SizedBox(height: 16),
             TextButton(
               onPressed: prov.loadProviders,
@@ -719,12 +729,12 @@ class _ProvidersList extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.search_off_rounded,
-                color: AppColors.textMuted, size: 48),
+            Icon(Icons.search_off_rounded,
+                color: c.textMuted, size: 48),
             const SizedBox(height: 12),
-            const Text('No encontramos servicios',
+            Text('No encontramos servicios',
                 style: TextStyle(
-                    color: AppColors.textSecondary)),
+                    color: c.textSecondary)),
             const SizedBox(height: 16),
             TextButton(
               onPressed: prov.clearFilters,
@@ -760,10 +770,10 @@ class _ProvidersList extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Text(
+                Text(
                   'Profesionales Destacados Cerca de Ti',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: c.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -800,6 +810,7 @@ class _FilterSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final prov = context.watch<ProvidersProvider>();
 
     return Padding(
@@ -811,10 +822,10 @@ class _FilterSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Filtros',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: c.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -830,10 +841,10 @@ class _FilterSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'DISPONIBILIDAD',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: c.textMuted,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
@@ -876,12 +887,12 @@ class _FilterSheet extends StatelessWidget {
               decoration: BoxDecoration(
                 color: prov.onlyVerified
                     ? AppColors.verified.withOpacity(0.1)
-                    : AppColors.bgInput,
+                    : c.bgInput,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: prov.onlyVerified
                       ? AppColors.verified.withOpacity(0.4)
-                      : Colors.white.withOpacity(0.08),
+                      : c.border,
                 ),
               ),
               child: Row(
@@ -890,14 +901,14 @@ class _FilterSheet extends StatelessWidget {
                     Icons.verified_rounded,
                     color: prov.onlyVerified
                         ? AppColors.verified
-                        : AppColors.textMuted,
+                        : c.textMuted,
                     size: 20,
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Solo proveedores verificados',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: c.textPrimary),
                     ),
                   ),
                   if (prov.onlyVerified)
@@ -929,6 +940,7 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -936,7 +948,7 @@ class _FilterChip extends StatelessWidget {
         padding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : AppColors.bgCard,
+          color: isSelected ? color.withOpacity(0.15) : c.bgCard,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
@@ -947,7 +959,7 @@ class _FilterChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? color : AppColors.textSecondary,
+            color: isSelected ? color : c.textSecondary,
             fontSize: 13,
             fontWeight:
                 isSelected ? FontWeight.w600 : FontWeight.normal,

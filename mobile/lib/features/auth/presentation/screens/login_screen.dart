@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -136,18 +138,19 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _showForgotPassword() {
+    final c = context.colors;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'Recuperar contraseña',
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(color: c.textPrimary, fontSize: 18),
         ),
-        content: const Text(
+        content: Text(
           'Pronto podrás recuperar tu contraseña por correo electrónico. Esta función estará disponible muy pronto.',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+          style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.5),
         ),
         actions: [
           TextButton(
@@ -161,25 +164,48 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _socialLoginPlaceholder(String provider) {
+    final c = context.colors;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Inicio con $provider próximamente'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final theme = context.watch<ThemeProvider>();
     final isRegister = _mode == AuthMode.register;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: IconThemeData(color: c.textSecondary),
+        actions: [
+          IconButton(
+            tooltip: theme.isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro',
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, anim) => RotationTransition(
+                turns: anim,
+                child: FadeTransition(opacity: anim, child: child),
+              ),
+              child: Icon(
+                theme.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                key: ValueKey(theme.isDark),
+                color: AppColors.amber,
+                size: 22,
+              ),
+            ),
+            onPressed: theme.toggle,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         child: FadeTransition(
@@ -225,8 +251,8 @@ class _LoginScreenState extends State<LoginScreen>
                   isRegister
                       ? 'Crea tu cuenta\npara empezar'
                       : '¡Bienvenido\nde nuevo!',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     height: 1.2,
@@ -237,8 +263,8 @@ class _LoginScreenState extends State<LoginScreen>
                   isRegister
                       ? 'Únete a OficioApp gratis'
                       : 'Ingresa con tu cuenta para continuar',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: c.textSecondary,
                     fontSize: 14,
                   ),
                 ),
@@ -265,7 +291,7 @@ class _LoginScreenState extends State<LoginScreen>
                     children: [
                       Expanded(
                         child: Divider(
-                          color: Colors.white.withOpacity(0.1),
+                          color: c.border,
                           thickness: 1,
                         ),
                       ),
@@ -274,14 +300,14 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Text(
                           'O regístrate con tu correo',
                           style: TextStyle(
-                            color: AppColors.textMuted,
+                            color: c.textMuted,
                             fontSize: 12,
                           ),
                         ),
                       ),
                       Expanded(
                         child: Divider(
-                          color: Colors.white.withOpacity(0.1),
+                          color: c.border,
                           thickness: 1,
                         ),
                       ),
@@ -423,8 +449,8 @@ class _LoginScreenState extends State<LoginScreen>
                       isRegister
                           ? '¿Ya tienes cuenta? '
                           : '¿No tienes cuenta? ',
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 13),
+                      style: TextStyle(
+                          color: c.textMuted, fontSize: 13),
                     ),
                     GestureDetector(
                       onTap: () => _switchMode(
@@ -467,15 +493,16 @@ class _SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: c.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -502,8 +529,8 @@ class _SocialButton extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: c.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -525,6 +552,7 @@ class _TermsCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: Row(
@@ -538,7 +566,7 @@ class _TermsCheckbox extends StatelessWidget {
               onChanged: onChanged,
               activeColor: AppColors.primary,
               checkColor: Colors.white,
-              side: BorderSide(color: AppColors.textMuted, width: 1.5),
+              side: BorderSide(color: c.textMuted, width: 1.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -548,13 +576,13 @@ class _TermsCheckbox extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 style: TextStyle(
-                  color: AppColors.textMuted,
+                  color: c.textMuted,
                   fontSize: 12,
                   height: 1.5,
                 ),
-                children: [
+                children: const [
                   TextSpan(text: 'Acepto los '),
                   TextSpan(
                     text: 'Términos y Condiciones',
@@ -605,19 +633,20 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return TextField(
       controller:   controller,
       keyboardType: keyboardType,
       obscureText:  obscureText,
-      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+      style: TextStyle(color: c.textPrimary, fontSize: 15),
       decoration: InputDecoration(
         labelText:  label,
         errorText:  errorText,
-        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-        prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+        labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
+        prefixIcon: Icon(icon, color: c.textMuted, size: 20),
         suffixIcon: suffixIcon,
         filled:     true,
-        fillColor:  AppColors.bgCard,
+        fillColor:  c.bgCard,
         errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -651,12 +680,13 @@ class _ToggleVisibilityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return IconButton(
       icon: Icon(
         isObscure
             ? Icons.visibility_off_outlined
             : Icons.visibility_outlined,
-        color: AppColors.textMuted,
+        color: c.textMuted,
         size: 20,
       ),
       onPressed: onToggle,

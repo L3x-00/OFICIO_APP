@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '@prisma/client';
 
@@ -64,6 +64,41 @@ export class ProviderProfileService {
       where: { userId },
       data: { availability },
       select: { id: true, availability: true },
+    });
+  }
+
+  // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
+
+  async getMyNotifications(userId: number) {
+    const provider = await this.prisma.provider.findUnique({ where: { userId } });
+    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+
+    const [notifications, unreadCount] = await Promise.all([
+      this.prisma.adminNotification.findMany({
+        where: { providerId: provider.id },
+        orderBy: { sentAt: 'desc' },
+        take: 30,
+      }),
+      this.prisma.adminNotification.count({
+        where: { providerId: provider.id, isRead: false },
+      }),
+    ]);
+
+    return { data: notifications, unreadCount };
+  }
+
+  async markNotificationRead(userId: number, notifId: number) {
+    const provider = await this.prisma.provider.findUnique({ where: { userId } });
+    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+
+    const notif = await this.prisma.adminNotification.findFirst({
+      where: { id: notifId, providerId: provider.id },
+    });
+    if (!notif) throw new BadRequestException('Notificación no encontrada');
+
+    return this.prisma.adminNotification.update({
+      where: { id: notifId },
+      data: { isRead: true },
     });
   }
 

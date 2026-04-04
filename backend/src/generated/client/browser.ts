@@ -77,3 +77,8 @@ export type VerificationDoc = Prisma.VerificationDocModel
  * 
  */
 export type ProviderAnalytic = Prisma.ProviderAnalyticModel
+/**
+ * Model AdminNotification
+ * 
+ */
+export type AdminNotification = Prisma.AdminNotificationModel

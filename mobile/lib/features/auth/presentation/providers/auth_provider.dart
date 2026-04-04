@@ -117,6 +117,42 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
+  /// Registra el perfil de proveedor en el backend y actualiza el estado local.
+  /// Devuelve true si se creó con éxito, false si hubo error (ver [error]).
+  Future<bool> registerProvider({
+    required String businessName,
+    required String phone,
+    required String type,
+    String? dni,
+    String? description,
+    String? address,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.registerProvider(
+      businessName: businessName,
+      phone:        phone,
+      type:         type,
+      dni:          dni,
+      description:  description,
+      address:      address,
+    );
+
+    result.when(
+      success: (_) {
+        // Actualizar rol localmente; el onboarding finaliza en completeOnboarding()
+        _user = _user?.copyWith(role: 'PROVEEDOR');
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
   /// Llamado desde OnboardingScreen cuando el usuario elige su rol
   void completeOnboarding({required String role}) {
     _needsOnboarding = false;

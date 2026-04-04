@@ -133,6 +133,7 @@ model Provider {
   type                ProviderType        @default(OFICIO)
   businessName        String              // Nombre del servicio o negocio
   description         String?
+  dni                 String?             @unique  // DNI del titular — único si se proporciona
   phone               String
   whatsapp            String?
   address             String?
@@ -173,6 +174,7 @@ model Provider {
   subscription        Subscription?
   verificationDocs    VerificationDoc[]
   analytics           ProviderAnalytic[]
+  notifications       AdminNotification[]
 
   @@map("providers")
 }
@@ -302,4 +304,28 @@ model ProviderAnalytic {
   provider    Provider  @relation(fields: [providerId], references: [id])
 
   @@map("provider_analytics")
+}
+
+// ─────────────────────────────────────────
+// NOTIFICACIONES DEL ADMIN A PROVEEDORES
+// ─────────────────────────────────────────
+
+enum NotificationType {
+  APROBADO
+  RECHAZADO
+  MAS_INFO
+  VERIFICACION_REVOCADA
+}
+
+model AdminNotification {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  type        NotificationType
+  message     String
+  isRead      Boolean          @default(false)
+  sentAt      DateTime         @default(now())
+
+  provider    Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("admin_notifications")
 }

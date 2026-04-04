@@ -1,4 +1,4 @@
-import { PrismaClient } from '../src/generated/client/client.js';
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pkg from 'pg';
 const { Pool } = pkg;
@@ -42,7 +42,27 @@ async function main() {
       }),
     ),
   );
+  // ── Administrador ───────────────────────────────────────────
+  const adminEmail = 'admin@oficio.com';
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
 
+  if (!existingAdmin) {
+    const adminPasswordHash = await bcrypt.hash('admin123', 10);
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        passwordHash: adminPasswordHash,
+        firstName: 'Administrador',
+        lastName: 'Principal',
+        role: 'ADMIN',
+      },
+    });
+    console.log(`✅ Creado usuario administrador: ${adminEmail}`);
+  } else {
+    console.log(`ℹ️  Usuario administrador ya existe: ${adminEmail}`);
+  }
   // ── Datos de Proveedores ─────────────────────
   const proveedoresData = [
     {

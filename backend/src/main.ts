@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
+import { BigintInterceptor } from './common/interceptors/bigint.interceptor.js';
 // 1. Importamos los tipos y herramientas necesarios
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'node:path';
@@ -16,7 +17,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 4. VALIDATION PIPE (Tu configuración actual de seguridad)
+  // 4. INTERCEPTOR GLOBAL — serializa BigInt a string antes del JSON
+  app.useGlobalInterceptors(new BigintInterceptor());
+
+  // 5. VALIDATION PIPE (Tu configuración actual de seguridad)
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,

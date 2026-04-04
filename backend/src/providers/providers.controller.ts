@@ -23,7 +23,6 @@ export class ProvidersController {
   findAll(
     @Query('categorySlug') categorySlug?: string,
     @Query('availability') availability?: string,
-    @Query('onlyVerified') onlyVerified?: string,
     @Query('search') search?: string,
     @Query('localityId') localityId?: string,
     @Query('page') page?: string,
@@ -32,7 +31,6 @@ export class ProvidersController {
     return this.providersService.findAll({
       categorySlug,
       availability,
-      onlyVerified: onlyVerified === 'true',
       search,
       localityId: localityId ? parseInt(localityId) : undefined,
       page: page ? parseInt(page) : 1,

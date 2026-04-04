@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import 'panel_home_tab.dart';
@@ -25,11 +26,12 @@ class _ProviderPanelState extends State<ProviderPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final auth    = context.watch<AuthProvider>();
     final isNeg   = auth.activeProfileType == 'NEGOCIO';
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       body: IndexedStack(
         index: _currentIndex,
         children: [
@@ -72,9 +74,10 @@ class _PanelBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         border: Border(
           top: BorderSide(color: Colors.white.withOpacity(0.06)),
         ),
@@ -85,13 +88,13 @@ class _PanelBottomNav extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         selectedItemColor: AppColors.amber,
-        unselectedItemColor: AppColors.textMuted,
+        unselectedItemColor: c.textMuted,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(
+        selectedLabelStyle: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: const TextStyle(fontSize: 10),
+        unselectedLabelStyle: TextStyle(fontSize: 10),
         items: [
           const BottomNavigationBarItem(
             icon: Icon(Icons.home_rounded),
@@ -100,7 +103,7 @@ class _PanelBottomNav extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Badge(
               isLabelVisible: isPaused,
-              label: const Text('!'),
+              label: Text('!'),
               backgroundColor: AppColors.delayed,
               child: const Icon(Icons.manage_accounts_rounded),
             ),

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/constans/app_strings.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../data/reviews_repository.dart';
 import '../../domain/models/provider_model.dart';
 import '../../domain/models/review_model.dart';
@@ -39,6 +40,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   int _currentImageIndex = 0;
   List<ReviewModel> _reviews = [];
   bool _reviewsLoading = false;
+  late final PageController _pageController = PageController(keepPage: true);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -69,12 +77,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
       height: screenHeight * 0.92,
-      decoration: const BoxDecoration(
-        color: AppColors.bgDark,
+      decoration: BoxDecoration(
+        color: c.bg,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
@@ -86,7 +95,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textMuted.withOpacity(0.4),
+                color: c.textMuted.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -118,8 +127,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 8),
                           Text(
                             widget.provider.description!,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: c.textSecondary,
                               fontSize: 14,
                               height: 1.6,
                             ),
@@ -151,8 +160,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                                   Expanded(
                                     child: Text(
                                       widget.provider.address!,
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
+                                      style: TextStyle(
+                                        color: c.textSecondary,
                                         fontSize: 13,
                                       ),
                                     ),
@@ -184,37 +193,41 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Galería de imágenes ─────────────────────────────────
 
   Widget _buildGallery() {
+    final c = context.colors;
     return SizedBox(
       height: 240,
       child: Stack(
         children: [
           PageView.builder(
+            controller: _pageController,
             itemCount: _allImages.length,
             onPageChanged: (i) => setState(() => _currentImageIndex = i),
-            itemBuilder: (context, index) => GestureDetector(
-              onTap: () => _openFullscreenGallery(index),
-              child: Image.network(
-                _allImages[index],
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => Container(
-                  color: AppColors.bgInput,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    color: AppColors.textMuted,
-                    size: 48,
+            itemBuilder: (context, index) => RepaintBoundary(
+              child: GestureDetector(
+                onTap: () => _openFullscreenGallery(index),
+                child: Image.network(
+                  _allImages[index],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: c.bgInput,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: c.textMuted,
+                      size: 48,
+                    ),
                   ),
-                ),
-                loadingBuilder: (_, child, progress) => progress == null
-                    ? child
-                    : Container(
-                        color: AppColors.bgInput,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
+                  loadingBuilder: (_, child, progress) => progress == null
+                      ? child
+                      : Container(
+                          color: c.bgInput,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
-                      ),
+                ),
               ),
             ),
           ),
@@ -255,7 +268,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               ),
               child: Text(
                 '${_currentImageIndex + 1}/${_allImages.length}',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
           ),
@@ -290,6 +303,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Header ──────────────────────────────────────────────
 
   Widget _buildHeader() {
+    final c = context.colors;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -299,8 +313,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             children: [
               Text(
                 widget.provider.businessName,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: c.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
@@ -308,7 +322,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               const SizedBox(height: 4),
               Text(
                 widget.provider.categoryName,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -344,6 +358,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Rating ──────────────────────────────────────────────
 
   Widget _buildRating() {
+    final c = context.colors;
     return Row(
       children: [
         RatingBarIndicator(
@@ -357,7 +372,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
         Text(
           '${widget.provider.averageRating.toStringAsFixed(1)} · '
           '${widget.provider.totalReviews} reseñas',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: c.textSecondary, fontSize: 13),
         ),
       ],
     );
@@ -404,6 +419,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Horarios ─────────────────────────────────────────────
 
   Widget _buildSchedule() {
+    final c = context.colors;
     final schedule = widget.provider.scheduleJson;
     if (schedule == null) return const SizedBox.shrink();
 
@@ -420,7 +436,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -436,8 +452,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                   width: 88,
                   child: Text(
                     entry.value,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: c.textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -445,7 +461,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                 Text(
                   hours,
                   style: TextStyle(
-                    color: isClosed ? AppColors.busy : AppColors.textPrimary,
+                    color: isClosed ? AppColors.busy : c.textPrimary,
                     fontSize: 13,
                     fontWeight: isClosed ? FontWeight.normal : FontWeight.w500,
                   ),
@@ -547,10 +563,11 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Título de sección ────────────────────────────────────
 
   Widget _buildSectionTitle(String title) {
+    final c = context.colors;
     return Text(
       title,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
+      style: TextStyle(
+        color: c.textPrimary,
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
@@ -560,10 +577,11 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Botones de contacto fijos ────────────────────────────
 
   Widget _buildContactButtons() {
+    final c = context.colors;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         border: Border(
           top: BorderSide(color: Colors.white.withOpacity(0.06)),
         ),
@@ -621,7 +639,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                 }
               },
               icon: const Icon(Icons.star_rounded, size: 18),
-              label: const Text('Dejar una reseña'),
+              label: Text('Dejar una reseña'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.star,
                 side: BorderSide(color: AppColors.star.withOpacity(0.4)),
@@ -667,11 +685,12 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -681,14 +700,14 @@ class _ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: AppColors.bgInput,
+                backgroundColor: c.bgInput,
                 backgroundImage: review.user?.avatarUrl != null
                     ? NetworkImage(review.user!.avatarUrl!)
                     : null,
                 child: review.user?.avatarUrl == null
                     ? Text(
                         review.user?.initial ?? '?',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
@@ -702,8 +721,8 @@ class _ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       review.user?.fullName ?? 'Usuario',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: c.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -720,8 +739,8 @@ class _ReviewCard extends StatelessWidget {
               ),
               Text(
                 _formatDate(review.createdAt),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
+                style: TextStyle(
+                  color: c.textMuted,
                   fontSize: 11,
                 ),
               ),
@@ -732,8 +751,8 @@ class _ReviewCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 review.comment!,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: c.textSecondary,
                   fontSize: 13,
                   height: 1.5,
                 ),

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt.guard.js';
 
@@ -14,6 +14,14 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: { email: string; password: string }) {
     return this.authService.login(dto.email, dto.password);
+  }
+
+  // Registro de perfil de proveedor (usuario ya autenticado)
+  @UseGuards(JwtAuthGuard)
+  @Post('register/provider')
+  @HttpCode(HttpStatus.CREATED)
+  async registerProvider(@Request() req: any, @Body() dto: any) {
+    return this.authService.registerProvider(req.user.userId, dto);
   }
 
   // Retorna el perfil completo del usuario autenticado (usuario + proveedor si aplica)

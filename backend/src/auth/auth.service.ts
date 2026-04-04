@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
@@ -39,6 +39,88 @@ export class AuthService {
     });
 
     return this.generateTokens(user.id, user.email, user.role);
+  }
+
+  // ── REGISTRO DE PROVEEDOR ────────────────────────────────
+  async registerProvider(
+    userId: number,
+    data: {
+      businessName: string;
+      phone: string;
+      dni?: string;
+      description?: string;
+      address?: string;
+      type: 'OFICIO' | 'NEGOCIO';
+      categoryId?: number;
+      localityId?: number;
+    },
+  ) {
+    // Verificar que el usuario existe
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+    // Verificar que no tenga ya un perfil de proveedor
+    const existing = await this.prisma.provider.findUnique({ where: { userId } });
+    if (existing) throw new ConflictException('Este usuario ya tiene un perfil de proveedor');
+
+    // Validar unicidad del DNI si se proporciona
+    if (data.dni?.trim()) {
+      const dniTaken = await this.prisma.provider.findUnique({
+        where: { dni: data.dni.trim() },
+      });
+      if (dniTaken) {
+        throw new ConflictException('Este DNI ya está registrado en la plataforma');
+      }
+    }
+
+    // Valores por defecto para categoryId y localityId
+    const categoryId = data.categoryId ?? 1;
+    const localityId = data.localityId ?? 1;
+
+    const provider = await this.prisma.$transaction(async (tx) => {
+      // Actualizar rol del usuario a PROVEEDOR
+      await tx.user.update({
+        where: { id: userId },
+        data: { role: 'PROVEEDOR' },
+      });
+
+      // Crear proveedor
+      const newProvider = await tx.provider.create({
+        data: {
+          userId,
+          businessName: data.businessName,
+          phone:        data.phone,
+          dni:          data.dni?.trim() || null,
+          description:  data.description || null,
+          address:      data.address || null,
+          type:         data.type,
+          categoryId,
+          localityId,
+          scheduleJson: {
+            lun: '8:00-18:00', mar: '8:00-18:00',
+            mie: '8:00-18:00', jue: '8:00-18:00',
+            vie: '8:00-18:00', sab: '9:00-13:00',
+            dom: 'Cerrado',
+          },
+        },
+      });
+
+      // Crear suscripción de gracia por 2 meses
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 2);
+      await tx.subscription.create({
+        data: {
+          providerId: newProvider.id,
+          plan:       'GRATIS',
+          status:     'GRACIA',
+          endDate,
+        },
+      });
+
+      return newProvider;
+    });
+
+    return { success: true, providerId: provider.id, role: 'PROVEEDOR' };
   }
 
   // ── LOGIN ────────────────────────────────────────────────
