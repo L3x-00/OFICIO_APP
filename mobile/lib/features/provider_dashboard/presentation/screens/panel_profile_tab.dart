@@ -426,7 +426,6 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
 
     if (url != null) {
       _showSnack('¡Foto subida con éxito!');
-      await dash.loadDashboard(); // refresca lista de imágenes
     } else {
       _showSnack(
         dash.uploadError ?? 'Error al subir la imagen. Inténtalo de nuevo.',
@@ -464,10 +463,14 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
             child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Foto eliminada'), backgroundColor: c.bgCard),
+              final dash = context.read<DashboardProvider>();
+              final ok = await dash.deleteProviderImage(img.id);
+              if (!mounted) return;
+              _showSnack(
+                ok ? 'Foto eliminada' : 'Error al eliminar la foto',
+                isError: !ok,
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.busy),

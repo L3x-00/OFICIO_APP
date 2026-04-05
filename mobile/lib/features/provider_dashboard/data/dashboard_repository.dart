@@ -89,7 +89,7 @@ class DashboardRepository {
     return response.data['url'] as String;
   }
 
-  /// Sube una imagen de perfil del proveedor. Devuelve la URL pública.
+  /// Sube una imagen de perfil del proveedor al disco. Devuelve la URL pública.
   Future<String> uploadProviderPhoto(String filePath) async {
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(filePath),
@@ -105,6 +105,20 @@ class DashboardRepository {
     return response.data['url'] as String;
   }
 
+  /// Vincula la URL de una imagen subida al perfil del proveedor en la BD.
+  Future<ProfileImageRef> saveProviderImage(String url) async {
+    final response = await _dio.post(
+      '/provider-profile/me/images',
+      data: {'url': url},
+    );
+    return ProfileImageRef.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Elimina una imagen del perfil del proveedor de la BD.
+  Future<void> deleteProviderImage(int imageId) async {
+    await _dio.delete('/provider-profile/me/images/$imageId');
+  }
+
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
 
   Future<ProviderNotificationsResult> getMyNotifications() async {
@@ -117,6 +131,16 @@ class DashboardRepository {
   Future<void> markNotificationRead(int id) async {
     await _dio.patch('/provider-profile/me/notifications/$id/read');
   }
+}
+
+// ── Modelo de referencia de imagen ───────────────────────
+
+class ProfileImageRef {
+  final int id;
+  final String url;
+  const ProfileImageRef({required this.id, required this.url});
+  factory ProfileImageRef.fromJson(Map<String, dynamic> json) =>
+      ProfileImageRef(id: json['id'] as int, url: json['url'] as String);
 }
 
 // ── Modelos de notificación ───────────────────────────────

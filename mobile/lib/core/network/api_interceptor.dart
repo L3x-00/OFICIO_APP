@@ -108,9 +108,13 @@ class ApiInterceptor extends Interceptor {
   String _extractMessage(dynamic data) {
     if (data == null) return 'Error del servidor';
     if (data is Map) {
-      return data['message']?.toString() ??
-             data['error']?.toString() ??
-             'Error del servidor';
+      final msg = data['message'];
+      if (msg is List && msg.isNotEmpty) {
+        // NestJS class-validator devuelve los errores como array
+        return msg.first.toString();
+      }
+      if (msg != null) return msg.toString();
+      return data['error']?.toString() ?? 'Error del servidor';
     }
     return data.toString();
   }

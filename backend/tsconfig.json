@@ -21,8 +21,9 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "ignoreDeprecations": "5.0",
     "paths": {
-      "@generated/client": ["src/generated/client/client.js"],
+      "@generated/client": ["src/generated/client"],
       "@generated/client/*": ["src/generated/client/*"]
     }
   },

@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Patch, Body, Request,
+  Controller, Get, Patch, Post, Delete, Body, Request,
   UseGuards, Query, Param, ParseIntPipe,
 } from '@nestjs/common';
 import { ProviderProfileService } from './provider-profile.service.js';
@@ -50,5 +50,23 @@ export class ProviderProfileController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.service.markNotificationRead(req.user.userId, id);
+  }
+
+  // POST /provider-profile/me/images — vincula imagen subida al perfil del proveedor
+  @Post('me/images')
+  addImage(
+    @Request() req: any,
+    @Body() body: { url: string; isCover?: boolean },
+  ) {
+    return this.service.addImage(req.user.userId, body.url, body.isCover ?? false);
+  }
+
+  // DELETE /provider-profile/me/images/:id — elimina imagen del perfil
+  @Delete('me/images/:id')
+  deleteImage(
+    @Request() req: any,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.service.deleteImage(req.user.userId, id);
   }
 }

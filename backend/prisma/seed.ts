@@ -1,4 +1,4 @@
-import { PrismaClient } from '../src/generated/client/client.js';
+import { PrismaClient } from '../src/generated/client/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pkg from 'pg';
 const { Pool } = pkg;

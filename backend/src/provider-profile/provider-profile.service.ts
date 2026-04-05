@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '../generated/client/enums.js';
 
@@ -101,6 +101,54 @@ export class ProviderProfileService {
       where: { id: notifId },
       data: { isRead: true },
     });
+  }
+
+  // ── IMÁGENES DEL PROVEEDOR ───────────────────────────────
+
+  async addImage(userId: number, url: string, isCover = false) {
+    const provider = await this.findProviderByUser(userId);
+    const existingCount = await this.prisma.providerImage.count({
+      where: { providerId: provider.id },
+    });
+    if (existingCount >= 4) {
+      throw new BadRequestException('Máximo 4 fotos permitidas');
+    }
+    // La primera imagen sube automáticamente como portada
+    const shouldBeCover = isCover || existingCount === 0;
+    return this.prisma.providerImage.create({
+      data: {
+        providerId: provider.id,
+        url,
+        isCover: shouldBeCover,
+        order: existingCount,
+      },
+    });
+  }
+
+  async deleteImage(userId: number, imageId: number) {
+    const provider = await this.findProviderByUser(userId);
+    const img = await this.prisma.providerImage.findFirst({
+      where: { id: imageId, providerId: provider.id },
+    });
+    if (!img) throw new NotFoundException('Imagen no encontrada');
+
+    await this.prisma.providerImage.delete({ where: { id: imageId } });
+
+    // Si era la portada, asignar la siguiente imagen como portada
+    if (img.isCover) {
+      const next = await this.prisma.providerImage.findFirst({
+        where: { providerId: provider.id },
+        orderBy: { order: 'asc' },
+      });
+      if (next) {
+        await this.prisma.providerImage.update({
+          where: { id: next.id },
+          data: { isCover: true },
+        });
+      }
+    }
+
+    return { success: true };
   }
 
   // ── OBTENER MIS ANALÍTICAS ────────────────────────────────

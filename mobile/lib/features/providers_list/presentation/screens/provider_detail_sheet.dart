@@ -40,6 +40,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   int _currentImageIndex = 0;
   List<ReviewModel> _reviews = [];
   bool _reviewsLoading = false;
+  bool _reviewsError = false;
   late final PageController _pageController = PageController(keepPage: true);
 
   @override
@@ -55,12 +56,12 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   Future<void> _loadReviews() async {
-    setState(() => _reviewsLoading = true);
+    setState(() { _reviewsLoading = true; _reviewsError = false; });
     try {
       final reviews = await _reviewsRepo.getProviderReviews(widget.provider.id);
       if (mounted) setState(() => _reviews = reviews);
     } catch (_) {
-      // No crítico — la app sigue funcionando sin reseñas
+      if (mounted) setState(() => _reviewsError = true);
     } finally {
       if (mounted) setState(() => _reviewsLoading = false);
     }
@@ -543,6 +544,24 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               ),
             ),
           ),
+        ],
+      );
+    }
+
+    if (_reviewsError) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Reseñas'),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: _loadReviews,
+            child: Text(
+              'No se pudieron cargar las reseñas. Toca para reintentar.',
+              style: TextStyle(color: context.colors.textMuted, fontSize: 13),
+            ),
+          ),
+          const SizedBox(height: 16),
         ],
       );
     }

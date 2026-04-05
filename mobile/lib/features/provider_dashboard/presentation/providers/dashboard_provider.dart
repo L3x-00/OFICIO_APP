@@ -5,7 +5,7 @@ import '../../domain/models/service_item_model.dart';
 import '../../../../features/providers_list/domain/models/review_model.dart';
 
 export '../../data/dashboard_repository.dart'
-    show ProviderNotification, ProviderNotificationsResult;
+    show ProviderNotification, ProviderNotificationsResult, ProfileImageRef;
 
 enum DashboardStatus { idle, loading, loaded, error }
 
@@ -173,8 +173,8 @@ class DashboardProvider extends ChangeNotifier {
 
   // ── SUBIDA DE IMAGEN ──────────────────────────────────────
 
-  /// Sube una foto del proveedor. Devuelve la URL o null si falló.
-  /// El llamante debe mostrar el error desde [uploadError].
+  /// Sube una foto del proveedor y la registra en la BD.
+  /// Devuelve la URL o null si falló.
   String? _uploadError;
   String? get uploadError => _uploadError;
 
@@ -183,7 +183,14 @@ class DashboardProvider extends ChangeNotifier {
     _uploadError = null;
     notifyListeners();
     try {
+      // 1. Subir archivo al disco
       final url = await _repo.uploadProviderPhoto(filePath);
+      // 2. Crear registro en la BD (ProviderImage)
+      final saved = await _repo.saveProviderImage(url);
+      // 3. Actualizar estado local
+      final updatedImages = List<ProfileImage>.from(_profile?.images ?? [])
+        ..add(ProfileImage(id: saved.id, url: saved.url));
+      _profile = _profile?.copyWith(images: updatedImages);
       _isUploadingPhoto = false;
       notifyListeners();
       return url;
@@ -192,6 +199,23 @@ class DashboardProvider extends ChangeNotifier {
       _uploadError = _mapUploadError(e);
       notifyListeners();
       return null;
+    }
+  }
+
+  /// Elimina una imagen del perfil de la BD y actualiza el estado local.
+  Future<bool> deleteProviderImage(int imageId) async {
+    try {
+      await _repo.deleteProviderImage(imageId);
+      final updatedImages = (_profile?.images ?? [])
+          .where((img) => img.id != imageId)
+          .toList();
+      _profile = _profile?.copyWith(images: updatedImages);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = _formatError(e);
+      notifyListeners();
+      return false;
     }
   }
 
