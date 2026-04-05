@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../data/auth_repository.dart';
 import '../../data/auth_local_storage.dart';
@@ -79,16 +80,28 @@ class AuthProvider extends ChangeNotifier {
     result.when(
       success: (data) {
         if (data['hasProvider'] == true) {
-          final rawType = data['providerType'] as String? ?? 'OFICIO';
-          // Mapear tipos del backend a tipos internos
-          final internalType = switch (rawType) {
-            'PROFESSIONAL' => 'OFICIO',
-            'BUSINESS'     => 'NEGOCIO',
-            _              => rawType,
-          };
-          _providerProfiles.add(internalType);
-          _activeProfileType         ??= internalType;
-          _providerVerificationStatus = data['verificationStatus'] as String?;
+          final profiles = data['profiles'] as List<dynamic>? ?? [];
+          _providerProfiles.clear();
+          _providerVerificationStatus = null;
+
+          for (final raw in profiles) {
+            final profile = raw as Map<String, dynamic>;
+            final rawType = profile['type'] as String? ?? 'OFICIO';
+            // Mapear alias del backend a tipos canónicos internos
+            final internalType = switch (rawType) {
+              'PROFESSIONAL' => 'OFICIO',
+              'BUSINESS'     => 'NEGOCIO',
+              _              => rawType,
+            };
+            _providerProfiles.add(internalType);
+            _activeProfileType ??= internalType;
+
+            // Priorizar estado APROBADO; si ninguno aprobado, mostrar el último
+            final status = profile['verificationStatus'] as String?;
+            if (_providerVerificationStatus == null || status == 'APROBADO') {
+              _providerVerificationStatus = status;
+            }
+          }
         }
       },
       failure: (_) {}, // Silencioso
@@ -110,6 +123,11 @@ class AuthProvider extends ChangeNotifier {
       },
       failure: (e) => _error = e.message,
     );
+
+    // Sincronizar perfiles de proveedor tras un login exitoso
+    if (result.isSuccess && _user != null) {
+      await _syncProviderStatus();
+    }
 
     // Guardar cuenta si el usuario lo solicitó
     if (result.isSuccess && rememberSession && _user != null) {
@@ -243,6 +261,17 @@ class AuthProvider extends ChangeNotifier {
       _activeProfileType = role;
     }
     _user = _user?.copyWith(role: userRole);
+    // Persistir rol actualizado para que sobreviva reinicios de la app
+    if (_user != null) {
+      AuthLocalStorage.getAccessToken().then((at) async {
+        final rt = await AuthLocalStorage.getRefreshToken();
+        if (at != null && rt != null) {
+          await AuthLocalStorage.saveSession(
+            accessToken: at, refreshToken: rt, user: _user!,
+          );
+        }
+      });
+    }
     notifyListeners();
   }
 
@@ -272,6 +301,144 @@ class AuthProvider extends ChangeNotifier {
     _activeProfileType = null;
     _providerVerificationStatus = null;
     notifyListeners();
+  }
+
+  /// Actualiza nombre, apellido y/o teléfono del usuario.
+  Future<bool> updateProfile({String? firstName, String? lastName, String? phone}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.updateProfile(
+      firstName: firstName,
+      lastName:  lastName,
+      phone:     phone,
+    );
+
+    result.when(
+      success: (updated) {
+        _user = _user?.copyWith(
+          firstName: updated.firstName,
+          lastName:  updated.lastName,
+          phone:     updated.phone,
+        );
+        // Persisitir cambios localmente
+        if (_user != null) {
+          AuthLocalStorage.getAccessToken().then((at) async {
+            final rt = await AuthLocalStorage.getRefreshToken();
+            if (at != null && rt != null) {
+              await AuthLocalStorage.saveSession(
+                accessToken: at, refreshToken: rt, user: _user!,
+              );
+            }
+          });
+        }
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// Sube una nueva foto de perfil y actualiza el modelo local.
+  Future<bool> updateProfilePicture(File image) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.updateProfilePicture(image);
+
+    result.when(
+      success: (avatarUrl) {
+        _user = _user?.copyWith(avatarUrl: avatarUrl);
+        if (_user != null) {
+          AuthLocalStorage.getAccessToken().then((at) async {
+            final rt = await AuthLocalStorage.getRefreshToken();
+            if (at != null && rt != null) {
+              await AuthLocalStorage.saveSession(
+                accessToken: at, refreshToken: rt, user: _user!,
+              );
+            }
+          });
+        }
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// Cambia la contraseña del usuario autenticado.
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.changePassword(
+      currentPassword: currentPassword,
+      newPassword:     newPassword,
+    );
+
+    result.when(
+      success: (_) {},
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// Solicita el envío del código de recuperación. Devuelve el token de dev si disponible.
+  Future<Map<String, dynamic>?> forgotPassword(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    Map<String, dynamic>? responseData;
+    final result = await _repo.forgotPassword(email);
+
+    result.when(
+      success: (data) => responseData = data,
+      failure: (e)    => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return responseData;
+  }
+
+  /// Restablece la contraseña usando el código de 6 dígitos recibido.
+  Future<bool> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.resetPassword(
+      email:       email,
+      token:       token,
+      newPassword: newPassword,
+    );
+
+    result.when(
+      success: (_) {},
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
   }
 
   void clearError() {

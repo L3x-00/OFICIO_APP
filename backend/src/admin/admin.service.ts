@@ -271,6 +271,27 @@ export class AdminService {
     });
   }
 
+  // ── HELPER: INVALIDAR CACHÉ DE PROVEEDORES ───────────────
+  // cache-manager v7 + cache-manager-redis-yet puede exponer reset()
+  // directamente o a través del store. Intentamos ambas vías.
+  private async clearProvidersCache(): Promise<void> {
+    try {
+      const cm = this.cacheManager as any;
+      if (typeof cm?.reset === 'function') {
+        await cm.reset();
+      } else if (typeof cm?.store?.reset === 'function') {
+        await cm.store.reset();
+      } else {
+        // Último recurso: flushAll/flushDb vía cliente Redis directo
+        const client = cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client;
+        if (typeof client?.flushAll === 'function') await client.flushAll();
+        else if (typeof client?.flushDb === 'function') await client.flushDb();
+      }
+    } catch {
+      // Si la limpieza falla, el TTL de 30s invalida la caché naturalmente
+    }
+  }
+
   // ── VERIFICACIÓN ──────────────────────────────────────────
 
   async getPendingVerifications() {
@@ -306,7 +327,7 @@ export class AdminService {
     ]);
 
     // Invalidar caché para que la app móvil vea al proveedor de inmediato
-    await this.cacheManager.reset();
+    await this.clearProvidersCache();
 
     // Notificar en tiempo real a todos los clientes conectados
     this.eventsGateway.emitProviderStatusChanged({
@@ -340,7 +361,7 @@ export class AdminService {
     ]);
 
     // Notificar en tiempo real (el proveedor dejará de aparecer si estaba visible)
-    await this.cacheManager.reset();
+    await this.clearProvidersCache();
     this.eventsGateway.emitProviderStatusChanged({
       id: updated.id,
       businessName: updated.businessName,
@@ -390,7 +411,7 @@ export class AdminService {
     ]);
 
     // Invalidar caché y notificar — el proveedor ya no aparecerá en la app
-    await this.cacheManager.reset();
+    await this.clearProvidersCache();
     this.eventsGateway.emitProviderStatusChanged({
       id: updated.id,
       businessName: updated.businessName,
@@ -437,7 +458,7 @@ export class AdminService {
           role:      true,
           isActive:  true,
           createdAt: true,
-          provider:  { select: { id: true, businessName: true, verificationStatus: true, isVerified: true } },
+          providers: { select: { id: true, businessName: true, verificationStatus: true, isVerified: true }, take: 1 },
           _count:    { select: { reviews: true, favorites: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -445,20 +466,24 @@ export class AdminService {
       this.prisma.user.count({ where }),
     ]);
 
-    return { data: users, total, page, lastPage: Math.ceil(total / limit) };
+    const mapped = users.map(({ providers, ...u }) => ({
+      ...u,
+      provider: providers[0] ?? null,
+    }));
+    return { data: mapped, total, page, lastPage: Math.ceil(total / limit) };
   }
 
   async deleteUser(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { provider: { include: { subscription: true } } },
+      include: { providers: { include: { subscription: true } } },
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
     if (user.role === 'ADMIN') throw new BadRequestException('No se puede eliminar un administrador');
 
     await this.prisma.$transaction(async (tx) => {
-      if (user.provider) {
-        const providerId = user.provider.id;
+      for (const prov of user.providers) {
+        const providerId = prov.id;
         await tx.providerAnalytic.deleteMany({ where: { providerId } });
         await tx.review.deleteMany({ where: { providerId } });
         await tx.favorite.deleteMany({ where: { providerId } });
@@ -466,8 +491,8 @@ export class AdminService {
         await tx.verificationDoc.deleteMany({ where: { providerId } });
         await tx.adminNotification.deleteMany({ where: { providerId } });
 
-        if (user.provider.subscription) {
-          await tx.payment.deleteMany({ where: { subscriptionId: user.provider.subscription.id } });
+        if (prov.subscription) {
+          await tx.payment.deleteMany({ where: { subscriptionId: prov.subscription.id } });
           await tx.subscription.delete({ where: { providerId } });
         }
 
@@ -627,25 +652,28 @@ export class AdminService {
       select: {
         id: true, firstName: true, lastName: true, email: true,
         role: true, isActive: true, createdAt: true,
-        provider: { select: { businessName: true, verificationStatus: true } },
+        providers: { select: { businessName: true, verificationStatus: true }, take: 1 },
         _count: { select: { reviews: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
     const header = ['ID', 'Nombre', 'Apellido', 'Email', 'Rol', 'Activo', 'Fecha Registro', 'Negocio', 'Verificación', 'Reseñas'].join(',');
-    const rows = users.map((u) => [
-      u.id,
-      `"${u.firstName}"`,
-      `"${u.lastName}"`,
-      `"${u.email}"`,
-      u.role,
-      u.isActive ? 'Sí' : 'No',
-      u.createdAt.toISOString().split('T')[0],
-      u.provider ? `"${u.provider.businessName}"` : '',
-      u.provider?.verificationStatus ?? '',
-      u._count.reviews,
-    ].join(','));
+    const rows = users.map((u) => {
+      const prov = u.providers[0] ?? null;
+      return [
+        u.id,
+        `"${u.firstName}"`,
+        `"${u.lastName}"`,
+        `"${u.email}"`,
+        u.role,
+        u.isActive ? 'Sí' : 'No',
+        u.createdAt.toISOString().split('T')[0],
+        prov ? `"${prov.businessName}"` : '',
+        prov?.verificationStatus ?? '',
+        u._count.reviews,
+      ].join(',');
+    });
 
     return [header, ...rows].join('\n');
   }

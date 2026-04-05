@@ -4,6 +4,8 @@ import { JwtAuthGuard } from './jwt.guard.js';
 import { RegisterUserDto } from './dto/register-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterProviderDto } from './dto/register-provider.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -39,5 +41,19 @@ export class AuthController {
   @Get('me')
   async getMe(@Request() req: any) {
     return this.authService.getMe(req.user.userId);
+  }
+
+  // POST /auth/forgot-password — envía código de recuperación al email
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  // POST /auth/reset-password — establece nueva contraseña con el token recibido
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.email, dto.token, dto.newPassword);
   }
 }

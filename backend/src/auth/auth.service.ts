@@ -59,17 +59,23 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
-    // Verificar que no tenga ya un perfil de proveedor
-    const existing = await this.prisma.provider.findUnique({ where: { userId } });
-    if (existing) throw new ConflictException('Este usuario ya tiene un perfil de proveedor');
+    // Verificar que no tenga ya un perfil del MISMO tipo (puede tener OFICIO + NEGOCIO)
+    const existing = await this.prisma.provider.findUnique({
+      where: { userId_type: { userId, type: data.type } },
+    });
+    if (existing) throw new ConflictException(`Ya tienes un perfil de tipo ${data.type}`);
 
-    // Validar unicidad del DNI si se proporciona
+    // Validar DNI: el mismo usuario puede reusar su DNI en otro tipo de perfil,
+    // pero otro usuario no puede registrarse con un DNI ya usado por alguien más.
     if (data.dni?.trim()) {
-      const dniTaken = await this.prisma.provider.findUnique({
-        where: { dni: data.dni.trim() },
+      const dniTaken = await this.prisma.provider.findFirst({
+        where: {
+          dni: data.dni.trim(),
+          NOT: { userId },     // Permite que el mismo usuario lo reutilice
+        },
       });
       if (dniTaken) {
-        throw new ConflictException('Este DNI ya está registrado en la plataforma');
+        throw new ConflictException('Este DNI ya está registrado por otro usuario');
       }
     }
 
@@ -160,13 +166,15 @@ export class AuthService {
         phone:     true,
         avatarUrl: true,
         role:      true,
-        provider: {
+        providers: {
           select: {
-            id:           true,
-            businessName: true,
-            isVerified:   true,
-            isVisible:    true,
-            availability: true,
+            id:                 true,
+            businessName:       true,
+            type:               true,
+            isVerified:         true,
+            isVisible:          true,
+            availability:       true,
+            verificationStatus: true,
             subscription: {
               select: { plan: true, status: true, endDate: true },
             },
@@ -212,6 +220,55 @@ export class AuthService {
       where: { token: refreshToken },
     });
     return { message: 'Sesión cerrada' };
+  }
+
+  // ── FORGOT PASSWORD ─────────────────────────────────────
+  // Siempre responde con éxito (no revela si el email existe)
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (user) {
+      // Generar token de 6 dígitos numérico y guardarlo como refreshToken temporal
+      // En producción se enviaría por email; aquí lo devolvemos solo en desarrollo
+      const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+
+      // Reutilizamos la tabla refreshToken con prefijo "RESET_"
+      await this.prisma.refreshToken.create({
+        data: { token: `RESET_${resetToken}`, userId: user.id, expiresAt },
+      });
+
+      // TODO: enviar email con resetToken cuando se integre el servicio de correo
+      if (this.config.get('NODE_ENV') !== 'production') {
+        return { message: 'Si el correo existe recibirás un código de recuperación', _devToken: resetToken };
+      }
+    }
+
+    return { message: 'Si el correo existe recibirás un código de recuperación' };
+  }
+
+  // ── RESET PASSWORD ───────────────────────────────────────
+  async resetPassword(email: string, token: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new UnauthorizedException('Token inválido o expirado');
+
+    const stored = await this.prisma.refreshToken.findUnique({
+      where: { token: `RESET_${token}` },
+    });
+
+    if (!stored || stored.userId !== user.id || stored.expiresAt < new Date()) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
+
+    // Consumir el token de reset
+    await this.prisma.refreshToken.delete({ where: { token: `RESET_${token}` } });
+
+    // Cambiar contraseña e invalidar todos los refresh tokens
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+    await this.prisma.refreshToken.deleteMany({ where: { userId: user.id } });
+
+    return { message: 'Contraseña restablecida correctamente' };
   }
 
   // ── HELPER: GENERAR TOKENS ───────────────────────────────

@@ -435,6 +435,17 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
     }
   }
 
+  void _showSnack(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.busy : AppColors.available,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   void _confirmDeletePhoto(ProfileImage img) {
     final c = context.colors;
     showDialog(

@@ -4,6 +4,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'forgot_password_screen.dart';
 
 enum AuthMode { login, register }
 
@@ -152,28 +153,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _showForgotPassword() {
-    final c = context.colors;
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: c.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Recuperar contraseña',
-          style: TextStyle(color: c.textPrimary, fontSize: 18),
-        ),
-        content: Text(
-          'Pronto podrás recuperar tu contraseña por correo electrónico. Esta función estará disponible muy pronto.',
-          style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Entendido',
-                style: TextStyle(color: AppColors.primary)),
-          ),
-        ],
-      ),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
     );
   }
 

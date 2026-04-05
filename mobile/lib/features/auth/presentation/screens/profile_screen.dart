@@ -1,15 +1,92 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'change_password_screen.dart';
+import 'edit_profile_screen.dart';
 import 'onboarding_screen.dart';
 import 'saved_accounts_screen.dart';
 import 'welcome_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _uploadingAvatar = false;
+
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, imageQuality: 80, maxWidth: 800);
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingAvatar = true);
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.updateProfilePicture(File(picked.path));
+    if (!mounted) return;
+    setState(() => _uploadingAvatar = false);
+
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.error ?? 'Error al subir la imagen'),
+          backgroundColor: AppColors.busy,
+        ),
+      );
+    }
+  }
+
+  void _showAvatarOptions() {
+    final c = context.colors;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+              title: Text('Tomar foto', style: TextStyle(color: c.textPrimary)),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndUploadAvatar(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
+              title: Text('Seleccionar de la galería', style: TextStyle(color: c.textPrimary)),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndUploadAvatar(ImageSource.gallery);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +175,9 @@ class ProfileScreen extends StatelessWidget {
       );
     }
 
+    // After the null-check guard above, user is guaranteed non-null
+    final u = user!;
+
     return Scaffold(
       backgroundColor: c.bg,
       appBar: AppBar(
@@ -136,36 +216,78 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      user?.firstName.isNotEmpty == true
-                          ? user!.firstName[0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
+                // ── Avatar tappable ──────────────────────────
+                GestureDetector(
+                  onTap: _showAvatarOptions,
+                  child: Stack(
+                    children: [
+                      // Círculo del avatar
+                      Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: u.avatarUrl == null
+                              ? const LinearGradient(
+                                  colors: [AppColors.primary, AppColors.primaryDark])
+                              : null,
+                          color: u.avatarUrl != null ? c.bgCard : null,
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.4),
+                            width: 2,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: _uploadingAvatar
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : u.avatarUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: u.avatarUrl!,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => const Center(
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                      errorWidget: (_, __, ___) => _InitialsAvatar(
+                                        name: u.firstName,
+                                      ),
+                                    )
+                                  : _InitialsAvatar(name: u.firstName),
+                        ),
                       ),
-                    ),
+                      // Badge cámara
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 26,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: c.bg, width: 2),
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 13),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  user?.fullName ?? 'Usuario',
+                  u.fullName,
                   style: TextStyle(color: c.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  user?.email ?? '',
+                  u.email,
                   style: TextStyle(color: c.textSecondary, fontSize: 14),
                 ),
                 const SizedBox(height: 8),
@@ -177,7 +299,7 @@ class ProfileScreen extends StatelessWidget {
                     border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                   ),
                   child: Text(
-                    _roleLabel(user?.role ?? 'USUARIO'),
+                    _accountTypeLabel(auth),
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 12,
@@ -192,9 +314,33 @@ class ProfileScreen extends StatelessWidget {
 
           _SectionTitle(title: 'Información de cuenta'),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.email_outlined,  label: 'Correo',         value: user?.email     ?? '-'),
-          _InfoRow(icon: Icons.person_outline,  label: 'Nombre completo',value: user?.fullName  ?? '-'),
-          _InfoRow(icon: Icons.shield_outlined, label: 'Tipo de cuenta', value: _roleLabel(user?.role ?? 'USUARIO')),
+          _InfoRow(icon: Icons.email_outlined,  label: 'Correo',          value: u.email),
+          _InfoRow(icon: Icons.person_outline,  label: 'Nombre completo', value: u.fullName),
+          if (u.phone != null && u.phone!.isNotEmpty)
+            _InfoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: u.phone!),
+          _InfoRow(icon: Icons.shield_outlined, label: 'Tipo de cuenta',  value: _accountTypeLabel(auth)),
+          const SizedBox(height: 20),
+
+          // ── Acciones de perfil ────────────────────────────
+          _SectionTitle(title: 'Gestión de cuenta'),
+          const SizedBox(height: 12),
+          _ActionButton(
+            icon:  Icons.edit_outlined,
+            label: 'Editar información',
+            color: AppColors.primary,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _ActionButton(
+            icon:  Icons.lock_outline,
+            label: 'Cambiar contraseña',
+            color: AppColors.primary,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+            ),
+          ),
           const SizedBox(height: 28),
 
           if (auth.hasOficioProfile || auth.hasNegocioProfile) ...[
@@ -239,7 +385,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
-          if (user?.isProvider != true) ...[
+          if (!u.isProvider) ...[
             _ActionButton(
               icon: Icons.rocket_launch_rounded,
               label: '¡Quiero ser proveedor!',
@@ -285,6 +431,16 @@ class ProfileScreen extends StatelessWidget {
     };
   }
 
+  /// Descripción detallada que incluye todos los perfiles del usuario.
+  String _accountTypeLabel(AuthProvider auth) {
+    if (auth.user?.role == 'ADMIN') return 'Administrador';
+
+    final parts = <String>['Cliente'];
+    if (auth.hasOficioProfile)  parts.add('Profesional');
+    if (auth.hasNegocioProfile) parts.add('Negocio');
+    return parts.join(' + ');
+  }
+
   void _openAddProfile(BuildContext context, String type) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -293,23 +449,23 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context, AuthProvider auth) {
-    final c = context.colors;
+  void _confirmLogout(BuildContext ctx, AuthProvider auth) {
+    final c = ctx.colors;
     showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
+      context: ctx,
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Cerrar sesión', style: TextStyle(color: c.textPrimary)),
         content: Text('¿Estás seguro de que deseas salir?', style: TextStyle(color: c.textSecondary)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => Navigator.pop(dialogCtx),
             child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(ctx);
+              Navigator.pop(dialogCtx);
               await auth.logout();
             },
             style: ElevatedButton.styleFrom(
@@ -325,6 +481,28 @@ class ProfileScreen extends StatelessWidget {
 }
 
 // ─── Widgets auxiliares ───────────────────────────────────
+
+class _InitialsAvatar extends StatelessWidget {
+  final String name;
+  const _InitialsAvatar({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.transparent,
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _ThemeToggleRow extends StatelessWidget {
   final ThemeProvider theme;

@@ -1,16 +1,87 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller, Get, Patch, Body, UseGuards, Request,
+  UseInterceptors, UploadedFile, BadRequestException,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { UsersService } from './users.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
+
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+const MAX_SIZE = 5 * 1024 * 1024;
+
+const avatarStorage = diskStorage({
+  destination: (_req, _file, cb) => {
+    const p = './uploads/clients/profiles';
+    if (!existsSync(p)) mkdirSync(p, { recursive: true });
+    cb(null, p);
+  },
+  filename: (_req, file, cb) => {
+    cb(null, `${randomUUID()}${extname(file.originalname).toLowerCase()}`);
+  },
+});
+
+function imageFilter(_req: any, file: Express.Multer.File, cb: any) {
+  if (!file.mimetype.startsWith('image/')) {
+    cb(new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP)'), false);
+    return;
+  }
+  const ext = extname(file.originalname).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    cb(new BadRequestException(`Extensión no permitida. Usa: ${ALLOWED_EXTENSIONS.join(', ')}`), false);
+    return;
+  }
+  cb(null, true);
+}
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   // GET /users/my-provider-status
-  // El usuario autenticado consulta si ya tiene perfil de proveedor y su estado
   @UseGuards(JwtAuthGuard)
   @Get('my-provider-status')
   getMyProviderStatus(@Request() req: any) {
     return this.usersService.getMyProviderStatus(req.user.userId);
+  }
+
+  // PATCH /users/profile
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(req.user.userId, dto);
+  }
+
+  // PATCH /users/profile-picture
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile-picture')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage:    avatarStorage,
+      fileFilter: imageFilter,
+      limits:     { fileSize: MAX_SIZE },
+    }),
+  )
+  updateProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No se recibió ninguna imagen');
+    const base = process.env.API_BASE_URL ?? 'http://localhost:3000';
+    const avatarUrl = `${base}/uploads/clients/profiles/${file.filename}`;
+    return this.usersService.updateProfilePicture(req.user.userId, avatarUrl);
+  }
+
+  // PATCH /users/change-password
+  @UseGuards(JwtAuthGuard)
+  @Patch('change-password')
+  changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+    return this.usersService.changePassword(
+      req.user.userId,
+      dto.currentPassword,
+      dto.newPassword,
+    );
   }
 }

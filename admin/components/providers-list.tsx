@@ -74,6 +74,16 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
     }
   };
 
+  const typeBadge = (type: string) => {
+    const map: Record<string, { label: string; cls: string }> = {
+      NEGOCIO:      { label: 'Negocio',     cls: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
+      BUSINESS:     { label: 'Negocio',     cls: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
+      OFICIO:       { label: 'Profesional', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+      PROFESSIONAL: { label: 'Profesional', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+    };
+    return map[type] ?? { label: type, cls: 'text-gray-400 bg-white/5 border-white/10' };
+  };
+
   const availabilityBadge = (av: string) => {
     const map: Record<string, { label: string; variant: any }> = {
       DISPONIBLE: { label: 'Disponible', variant: 'success' },
@@ -118,21 +128,29 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] border-b border-white/5">
               <tr>
-                {['Proveedor', 'Categoría', 'Estado / Visibilidad', 'Calificación', 'Suscripción', 'Acciones'].map((h) => (
+                {['Proveedor', 'Tipo', 'Categoría', 'Estado / Visibilidad', 'Calificación', 'Suscripción', 'Acciones'].map((h) => (
                   <th key={h} className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {isLoading ? (
-                <tr><td colSpan={6} className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" /></td></tr>
-              ) : providers.map((p) => (
+                <tr><td colSpan={7} className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" /></td></tr>
+              ) : providers.map((p) => {
+                const tb = typeBadge(p.type);
+                return (
                 <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
                   <td className="p-4">
                     <div className="flex flex-col">
                       <span className="font-bold text-white text-sm">{p.businessName}</span>
                       <span className="text-xs text-gray-500">{p.user?.email}</span>
                     </div>
+                  </td>
+                  {/* Tipo de proveedor */}
+                  <td className="p-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-xs font-bold ${tb.cls}`}>
+                      {tb.label}
+                    </span>
                   </td>
                   <td className="p-4">
                     <span className="text-xs px-2 py-1 bg-white/5 rounded-lg text-gray-300">{p.category.name}</span>
@@ -187,7 +205,8 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

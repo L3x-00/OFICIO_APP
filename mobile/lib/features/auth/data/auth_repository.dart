@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:path/path.dart' as p;
 import '../../../core/network/dio_client.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/failures.dart';
@@ -31,6 +33,8 @@ class AuthRepository {
         firstName: data['firstName'] as String? ?? '',
         lastName:  data['lastName']  as String? ?? '',
         role:      data['role']      as String? ?? 'USUARIO',
+        avatarUrl: data['avatarUrl'] as String?,
+        phone:     data['phone']     as String?,
       );
 
       // Guardar en almacenamiento seguro
@@ -80,6 +84,7 @@ class AuthRepository {
         firstName: firstName,
         lastName:  lastName,
         role:      'USUARIO',
+        phone:     phone,
       );
 
       await AuthLocalStorage.saveSession(
@@ -199,6 +204,113 @@ class AuthRepository {
         e.error is AppException
             ? e.error as AppException
             : ServerException(e.message ?? 'Error al obtener estado del proveedor'),
+      );
+    }
+  }
+
+  // ── ACTUALIZAR PERFIL ─────────────────────────────────────
+  Future<ApiResult<UserModel>> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) async {
+    try {
+      final response = await _dio.patch('/users/profile', data: {
+        if (firstName != null) 'firstName': firstName,
+        if (lastName  != null) 'lastName':  lastName,
+        if (phone     != null) 'phone':     phone,
+      });
+      final data = response.data as Map<String, dynamic>;
+      final user = UserModel.fromJson({...data, 'id': data['id']});
+      return Success(user);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al actualizar el perfil'),
+      );
+    }
+  }
+
+  // ── ACTUALIZAR FOTO DE PERFIL ─────────────────────────────
+  Future<ApiResult<String>> updateProfilePicture(File image) async {
+    try {
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(
+          image.path,
+          filename: p.basename(image.path),
+        ),
+      });
+      final response = await _dio.patch(
+        '/users/profile-picture',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final avatarUrl = (response.data as Map<String, dynamic>)['avatarUrl'] as String;
+      return Success(avatarUrl);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al subir la imagen'),
+      );
+    }
+  }
+
+  // ── CAMBIAR CONTRASEÑA ─────────────────────────────────────
+  Future<ApiResult<String>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _dio.patch('/users/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword':     newPassword,
+      });
+      final msg = (response.data as Map<String, dynamic>)['message'] as String;
+      return Success(msg);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al cambiar la contraseña'),
+      );
+    }
+  }
+
+  // ── OLVIDÉ MI CONTRASEÑA ───────────────────────────────────
+  Future<ApiResult<Map<String, dynamic>>> forgotPassword(String email) async {
+    try {
+      final response = await _dio.post('/auth/forgot-password', data: {'email': email});
+      return Success(Map<String, dynamic>.from(response.data as Map));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al solicitar recuperación'),
+      );
+    }
+  }
+
+  // ── RESTABLECER CONTRASEÑA ────────────────────────────────
+  Future<ApiResult<String>> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _dio.post('/auth/reset-password', data: {
+        'email':       email,
+        'token':       token,
+        'newPassword': newPassword,
+      });
+      final msg = (response.data as Map<String, dynamic>)['message'] as String;
+      return Success(msg);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al restablecer la contraseña'),
       );
     }
   }

@@ -69,7 +69,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relaciones
-  provider      Provider?           // Si el usuario es proveedor
+  providers     Provider[]          // Puede tener un perfil OFICIO y/o NEGOCIO
   favorites     Favorite[]          // Proveedores guardados
   reviews       Review[]            // Reseñas que escribió
   refreshTokens RefreshToken[]      // Sesiones activas
@@ -131,12 +131,12 @@ model Category {
 
 model Provider {
   id                  Int                 @id @default(autoincrement())
-  userId              Int                 @unique
+  userId              Int                 // sin @unique: un usuario puede tener OFICIO y NEGOCIO
   type                ProviderType        @default(OFICIO)
   providerType        ProviderType        @default(PROFESSIONAL) // Clasificación UI: PROFESSIONAL | BUSINESS
   businessName        String              // Nombre del servicio o negocio
   description         String?
-  dni                 String?             @unique  // DNI del titular — único si se proporciona
+  dni                 String?             // DNI del titular — ya no globalmente único
   phone               String
   whatsapp            String?
   address             String?
@@ -179,6 +179,8 @@ model Provider {
   analytics           ProviderAnalytic[]
   notifications       AdminNotification[]
 
+  // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
+  @@unique([userId, type])
   @@map("providers")
 }
 

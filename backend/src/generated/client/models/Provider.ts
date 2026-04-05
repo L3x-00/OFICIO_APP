@@ -443,15 +443,16 @@ export type ProviderOrderByWithRelationInput = {
 
 export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  userId?: number
-  dni?: string
+  userId_type?: Prisma.ProviderUserIdTypeCompoundUniqueInput
   AND?: Prisma.ProviderWhereInput | Prisma.ProviderWhereInput[]
   OR?: Prisma.ProviderWhereInput[]
   NOT?: Prisma.ProviderWhereInput | Prisma.ProviderWhereInput[]
+  userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
+  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -479,7 +480,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   verificationDocs?: Prisma.VerificationDocListRelationFilter
   analytics?: Prisma.ProviderAnalyticListRelationFilter
   notifications?: Prisma.AdminNotificationListRelationFilter
-}, "id" | "userId" | "dni">
+}, "id" | "userId_type">
 
 export type ProviderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -564,7 +565,7 @@ export type ProviderCreateInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -631,7 +632,7 @@ export type ProviderUpdateInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -754,11 +755,6 @@ export type ProviderUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type ProviderNullableScalarRelationFilter = {
-  is?: Prisma.ProviderWhereInput | null
-  isNot?: Prisma.ProviderWhereInput | null
-}
-
 export type ProviderListRelationFilter = {
   every?: Prisma.ProviderWhereInput
   some?: Prisma.ProviderWhereInput
@@ -767,6 +763,11 @@ export type ProviderListRelationFilter = {
 
 export type ProviderOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ProviderUserIdTypeCompoundUniqueInput = {
+  userId: number
+  type: $Enums.ProviderType
 }
 
 export type ProviderCountOrderByAggregateInput = {
@@ -875,36 +876,46 @@ export type ProviderScalarRelationFilter = {
   isNot?: Prisma.ProviderWhereInput
 }
 
-export type ProviderCreateNestedOneWithoutUserInput = {
-  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
-  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput
-  connect?: Prisma.ProviderWhereUniqueInput
+export type ProviderCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput> | Prisma.ProviderCreateWithoutUserInput[] | Prisma.ProviderUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput | Prisma.ProviderCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.ProviderCreateManyUserInputEnvelope
+  connect?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
 }
 
-export type ProviderUncheckedCreateNestedOneWithoutUserInput = {
-  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
-  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput
-  connect?: Prisma.ProviderWhereUniqueInput
+export type ProviderUncheckedCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput> | Prisma.ProviderCreateWithoutUserInput[] | Prisma.ProviderUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput | Prisma.ProviderCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.ProviderCreateManyUserInputEnvelope
+  connect?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
 }
 
-export type ProviderUpdateOneWithoutUserNestedInput = {
-  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
-  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput
-  upsert?: Prisma.ProviderUpsertWithoutUserInput
-  disconnect?: Prisma.ProviderWhereInput | boolean
-  delete?: Prisma.ProviderWhereInput | boolean
-  connect?: Prisma.ProviderWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutUserInput, Prisma.ProviderUpdateWithoutUserInput>, Prisma.ProviderUncheckedUpdateWithoutUserInput>
+export type ProviderUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput> | Prisma.ProviderCreateWithoutUserInput[] | Prisma.ProviderUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput | Prisma.ProviderCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.ProviderUpsertWithWhereUniqueWithoutUserInput | Prisma.ProviderUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.ProviderCreateManyUserInputEnvelope
+  set?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  disconnect?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  delete?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  connect?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  update?: Prisma.ProviderUpdateWithWhereUniqueWithoutUserInput | Prisma.ProviderUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.ProviderUpdateManyWithWhereWithoutUserInput | Prisma.ProviderUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
 }
 
-export type ProviderUncheckedUpdateOneWithoutUserNestedInput = {
-  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
-  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput
-  upsert?: Prisma.ProviderUpsertWithoutUserInput
-  disconnect?: Prisma.ProviderWhereInput | boolean
-  delete?: Prisma.ProviderWhereInput | boolean
-  connect?: Prisma.ProviderWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutUserInput, Prisma.ProviderUpdateWithoutUserInput>, Prisma.ProviderUncheckedUpdateWithoutUserInput>
+export type ProviderUncheckedUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput> | Prisma.ProviderCreateWithoutUserInput[] | Prisma.ProviderUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutUserInput | Prisma.ProviderCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.ProviderUpsertWithWhereUniqueWithoutUserInput | Prisma.ProviderUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.ProviderCreateManyUserInputEnvelope
+  set?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  disconnect?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  delete?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  connect?: Prisma.ProviderWhereUniqueInput | Prisma.ProviderWhereUniqueInput[]
+  update?: Prisma.ProviderUpdateWithWhereUniqueWithoutUserInput | Prisma.ProviderUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.ProviderUpdateManyWithWhereWithoutUserInput | Prisma.ProviderUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
 }
 
 export type ProviderCreateNestedManyWithoutLocalityInput = {
@@ -1187,80 +1198,55 @@ export type ProviderCreateOrConnectWithoutUserInput = {
   create: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
 }
 
-export type ProviderUpsertWithoutUserInput = {
-  update: Prisma.XOR<Prisma.ProviderUpdateWithoutUserInput, Prisma.ProviderUncheckedUpdateWithoutUserInput>
-  create: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
-  where?: Prisma.ProviderWhereInput
+export type ProviderCreateManyUserInputEnvelope = {
+  data: Prisma.ProviderCreateManyUserInput | Prisma.ProviderCreateManyUserInput[]
+  skipDuplicates?: boolean
 }
 
-export type ProviderUpdateToOneWithWhereWithoutUserInput = {
-  where?: Prisma.ProviderWhereInput
+export type ProviderUpsertWithWhereUniqueWithoutUserInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutUserInput, Prisma.ProviderUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutUserInput, Prisma.ProviderUncheckedCreateWithoutUserInput>
+}
+
+export type ProviderUpdateWithWhereUniqueWithoutUserInput = {
+  where: Prisma.ProviderWhereUniqueInput
   data: Prisma.XOR<Prisma.ProviderUpdateWithoutUserInput, Prisma.ProviderUncheckedUpdateWithoutUserInput>
 }
 
-export type ProviderUpdateWithoutUserInput = {
-  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
-  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
-  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
-  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
-  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
-  category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
-  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+export type ProviderUpdateManyWithWhereWithoutUserInput = {
+  where: Prisma.ProviderScalarWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateManyMutationInput, Prisma.ProviderUncheckedUpdateManyWithoutUserInput>
 }
 
-export type ProviderUncheckedUpdateWithoutUserInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
-  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
-  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
-  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
-  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  localityId?: Prisma.IntFieldUpdateOperationsInput | number
-  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+export type ProviderScalarWhereInput = {
+  AND?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
+  OR?: Prisma.ProviderScalarWhereInput[]
+  NOT?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
+  id?: Prisma.IntFilter<"Provider"> | number
+  userId?: Prisma.IntFilter<"Provider"> | number
+  type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
+  businessName?: Prisma.StringFilter<"Provider"> | string
+  description?: Prisma.StringNullableFilter<"Provider"> | string | null
+  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  phone?: Prisma.StringFilter<"Provider"> | string
+  whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
+  address?: Prisma.StringNullableFilter<"Provider"> | string | null
+  latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
+  longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
+  scheduleJson?: Prisma.JsonNullableFilter<"Provider">
+  availability?: Prisma.EnumAvailabilityStatusFilter<"Provider"> | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFilter<"Provider"> | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFilter<"Provider"> | boolean
+  hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
+  averageRating?: Prisma.FloatFilter<"Provider"> | number
+  totalReviews?: Prisma.IntFilter<"Provider"> | number
+  localityId?: Prisma.IntFilter<"Provider"> | number
+  categoryId?: Prisma.IntFilter<"Provider"> | number
+  createdAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
 }
 
 export type ProviderCreateWithoutLocalityInput = {
@@ -1284,7 +1270,7 @@ export type ProviderCreateWithoutLocalityInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
@@ -1354,36 +1340,6 @@ export type ProviderUpdateManyWithWhereWithoutLocalityInput = {
   data: Prisma.XOR<Prisma.ProviderUpdateManyMutationInput, Prisma.ProviderUncheckedUpdateManyWithoutLocalityInput>
 }
 
-export type ProviderScalarWhereInput = {
-  AND?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
-  OR?: Prisma.ProviderScalarWhereInput[]
-  NOT?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
-  id?: Prisma.IntFilter<"Provider"> | number
-  userId?: Prisma.IntFilter<"Provider"> | number
-  type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
-  businessName?: Prisma.StringFilter<"Provider"> | string
-  description?: Prisma.StringNullableFilter<"Provider"> | string | null
-  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
-  phone?: Prisma.StringFilter<"Provider"> | string
-  whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
-  address?: Prisma.StringNullableFilter<"Provider"> | string | null
-  latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
-  longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
-  scheduleJson?: Prisma.JsonNullableFilter<"Provider">
-  availability?: Prisma.EnumAvailabilityStatusFilter<"Provider"> | $Enums.AvailabilityStatus
-  isVisible?: Prisma.BoolFilter<"Provider"> | boolean
-  verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
-  isVerified?: Prisma.BoolFilter<"Provider"> | boolean
-  hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
-  averageRating?: Prisma.FloatFilter<"Provider"> | number
-  totalReviews?: Prisma.IntFilter<"Provider"> | number
-  localityId?: Prisma.IntFilter<"Provider"> | number
-  categoryId?: Prisma.IntFilter<"Provider"> | number
-  createdAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
-}
-
 export type ProviderCreateWithoutCategoryInput = {
   type?: $Enums.ProviderType
   providerType?: $Enums.ProviderType
@@ -1405,7 +1361,7 @@ export type ProviderCreateWithoutCategoryInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
@@ -1496,7 +1452,7 @@ export type ProviderCreateWithoutImagesInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
@@ -1577,7 +1533,7 @@ export type ProviderUpdateWithoutImagesInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
@@ -1642,7 +1598,7 @@ export type ProviderCreateWithoutSubscriptionInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -1723,7 +1679,7 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -1788,7 +1744,7 @@ export type ProviderCreateWithoutReviewsInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -1869,7 +1825,7 @@ export type ProviderUpdateWithoutReviewsInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -1934,7 +1890,7 @@ export type ProviderCreateWithoutFavoritesInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -2015,7 +1971,7 @@ export type ProviderUpdateWithoutFavoritesInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -2080,7 +2036,7 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -2161,7 +2117,7 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -2226,7 +2182,7 @@ export type ProviderCreateWithoutAnalyticsInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -2307,7 +2263,7 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -2372,7 +2328,7 @@ export type ProviderCreateWithoutNotificationsInput = {
   totalReviews?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
   category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
@@ -2453,7 +2409,7 @@ export type ProviderUpdateWithoutNotificationsInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
@@ -2495,6 +2451,123 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderCreateManyUserInput = {
+  id?: number
+  type?: $Enums.ProviderType
+  providerType?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  dni?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  localityId: number
+  categoryId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ProviderUpdateWithoutUserInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateManyWithoutUserInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProviderCreateManyLocalityInput = {
@@ -2544,7 +2617,7 @@ export type ProviderUpdateWithoutLocalityInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
@@ -2661,7 +2734,7 @@ export type ProviderUpdateWithoutCategoryInput = {
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput

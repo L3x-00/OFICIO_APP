@@ -33,7 +33,9 @@
       "Bash(DATABASE_URL=\"postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db\" npx prisma:*)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(timeout 15 npm run start:dev)",
-      "Bash(grep -v \"^Analyzing\\\\|^  •\\\\|^$\")"
+      "Bash(grep -v \"^Analyzing\\\\|^  •\\\\|^$\")",
+      "Bash(npx dotenv:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npx dotenv:*)"
     ]
   }
 }

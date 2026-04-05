@@ -282,6 +282,7 @@ export interface Provider {
   isVisible: boolean;
   availability: string;
   verificationStatus: string;
+  type: string;           // 'OFICIO' | 'NEGOCIO' | 'PROFESSIONAL' | 'BUSINESS'
   category: { name: string };
   locality: { name: string };
   user?: { email: string; firstName: string; lastName: string };

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '../generated/client/enums.js';
 
@@ -6,18 +6,23 @@ import { AvailabilityStatus } from '../generated/client/enums.js';
 export class ProviderProfileService {
   constructor(private prisma: PrismaService) {}
 
+  // ── HELPER: obtener proveedor por userId (primer perfil) ──
+  private async findProviderByUser(userId: number) {
+    const provider = await this.prisma.provider.findFirst({ where: { userId } });
+    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    return provider;
+  }
+
   // ── OBTENER MI PERFIL DE PROVEEDOR ───────────────────────
   async getMyProfile(userId: number) {
-    const provider = await this.prisma.provider.findUnique({
+    const provider = await this.prisma.provider.findFirst({
       where: { userId },
       include: {
         category:     { select: { id: true, name: true, slug: true } },
         locality:     { select: { id: true, name: true, department: true } },
-        // SE ELIMINÓ isPrimary PORQUE NO EXISTE EN EL ESQUEMA
-        images:       { select: { id: true, url: true } }, 
+        images:       { select: { id: true, url: true } },
         subscription: { select: { plan: true, status: true, endDate: true } },
         verificationDocs: {
-          // SE ELIMINÓ createdAt PORQUE NO EXISTE EN EL ESQUEMA
           select: { id: true, docType: true, status: true },
         },
         user: {
@@ -42,11 +47,10 @@ export class ProviderProfileService {
       scheduleJson?: Record<string, string>;
     },
   ) {
-    const provider = await this.prisma.provider.findUnique({ where: { userId } });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    const provider = await this.findProviderByUser(userId);
 
     return this.prisma.provider.update({
-      where: { userId },
+      where: { id: provider.id },
       data,
       include: {
         category: { select: { name: true } },
@@ -57,11 +61,10 @@ export class ProviderProfileService {
 
   // ── CAMBIAR DISPONIBILIDAD ───────────────────────────────
   async setAvailability(userId: number, availability: AvailabilityStatus) {
-    const provider = await this.prisma.provider.findUnique({ where: { userId } });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    const provider = await this.findProviderByUser(userId);
 
     return this.prisma.provider.update({
-      where: { userId },
+      where: { id: provider.id },
       data: { availability },
       select: { id: true, availability: true },
     });
@@ -70,8 +73,7 @@ export class ProviderProfileService {
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
 
   async getMyNotifications(userId: number) {
-    const provider = await this.prisma.provider.findUnique({ where: { userId } });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    const provider = await this.findProviderByUser(userId);
 
     const [notifications, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
@@ -88,8 +90,7 @@ export class ProviderProfileService {
   }
 
   async markNotificationRead(userId: number, notifId: number) {
-    const provider = await this.prisma.provider.findUnique({ where: { userId } });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    const provider = await this.findProviderByUser(userId);
 
     const notif = await this.prisma.adminNotification.findFirst({
       where: { id: notifId, providerId: provider.id },
@@ -104,14 +105,11 @@ export class ProviderProfileService {
 
   // ── OBTENER MIS ANALÍTICAS ────────────────────────────────
   async getMyAnalytics(userId: number, days = 30) {
-    const provider = await this.prisma.provider.findUnique({ where: { userId } });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    const provider = await this.findProviderByUser(userId);
 
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    // Nota: Si providerAnalytic tampoco tiene createdAt, esto podría fallar.
-    // Pero usualmente las tablas de analíticas sí lo traen por defecto.
     const [whatsappClicks, callClicks, recentEvents] = await Promise.all([
       this.prisma.providerAnalytic.count({
         where: { providerId: provider.id, eventType: 'whatsapp_click', createdAt: { gte: since } },
@@ -126,7 +124,6 @@ export class ProviderProfileService {
       }),
     ]);
 
-    // Agrupar por día
     const byDay: Record<string, { whatsapp: number; calls: number }> = {};
     for (const event of recentEvents) {
       const day = event.createdAt.toISOString().split('T')[0];

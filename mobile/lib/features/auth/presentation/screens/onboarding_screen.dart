@@ -121,7 +121,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   /// Navega directamente al formulario de proveedor sin pasar por "Continuar"
   void _goToProviderForm(String type) {
     setState(() => _selectedRole = type);
-    Navigator.of(context).pushReplacement(
+    // push (no pushReplacement) para que _AppRoot quede en el stack
+    // y al completar el onboarding podamos volver al home con pop()
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ProviderOnboardingForm(providerType: type),
       ),
@@ -421,13 +423,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(ctx).pop(); // cerrar diálogo
-                    if (widget.isStandalone) {
-                      // Limpiar toda la pila hasta la raíz → vuelve a _MainNavigation
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    } else {
-                      // Completar onboarding → _AppRoot muestra _MainNavigation
-                      auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
-                    }
+                    // Completar onboarding → _AppRoot rebuild → _MainNavigation
+                    auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
+                    // Pop el formulario (standalone o no) para revelar _AppRoot
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
