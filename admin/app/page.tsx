@@ -13,15 +13,21 @@ import {
 } from 'lucide-react';
 import { MetricCard } from '@/components/metric-card';
 import { GraceProvidersTable } from '@/components/grace-providers-table';
+import { PendingApprovalsTable } from '@/components/pending-approvals-table';
 import { DashboardRefreshButton } from '@/components/dashboard-refresh';
 import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
 import type { DashboardMetrics, GraceProvider } from '@/lib/api';
 
 export default function DashboardPage() {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [metrics, setMetrics]           = useState<DashboardMetrics | null>(null);
   const [graceProviders, setGraceProviders] = useState<GraceProvider[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState<string | null>(null);
+
+  // Decrementa el badge de pendientes cuando el admin aprueba/rechaza desde el dashboard
+  function handlePendingAction() {
+    setMetrics(m => m ? { ...m, pendingVerifications: Math.max(0, m.pendingVerifications - 1) } : m);
+  }
 
   async function loadData() {
     setLoading(true);
@@ -147,7 +153,27 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Tabla de proveedores en gracia */}
+      {/* ── Proveedores pendientes de aprobación ───────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              Proveedores Pendientes de Aprobación
+              {metrics.pendingVerifications > 0 && (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-500 text-white text-xs font-bold animate-pulse">
+                  {metrics.pendingVerifications}
+                </span>
+              )}
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Aprobar o rechazar directamente sin salir del dashboard
+            </p>
+          </div>
+        </div>
+        <PendingApprovalsTable onAction={handlePendingAction} />
+      </div>
+
+      {/* ── Tabla de proveedores en gracia ─────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white">

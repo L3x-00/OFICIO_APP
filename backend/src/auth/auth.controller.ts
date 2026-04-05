@@ -27,6 +27,13 @@ export class AuthController {
     return this.authService.registerProvider(req.user.userId, dto);
   }
 
+  // Renueva el access token usando el refresh token
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Body() body: { refreshToken: string }) {
+    return this.authService.refreshTokens(body.refreshToken);
+  }
+
   // Retorna el perfil completo del usuario autenticado (usuario + proveedor si aplica)
   @UseGuards(JwtAuthGuard)
   @Get('me')

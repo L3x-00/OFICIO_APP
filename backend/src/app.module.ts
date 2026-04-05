@@ -15,6 +15,7 @@ import { ReviewsModule } from './reviews/reviews.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { FavoritesModule } from './favorites/favorites.module.js';
 import { ProviderProfileModule } from './provider-profile/provider-profile.module.js';
+import { EventsModule } from './events/events.module.js';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ProviderProfileModule } from './provider-profile/provider-profile.modul
     ProvidersModule,
     ReviewsModule,
     AdminModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [

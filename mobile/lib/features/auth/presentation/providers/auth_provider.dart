@@ -26,9 +26,10 @@ class AuthProvider extends ChangeNotifier {
 
   // ── Multi-perfil de proveedor ─────────────────────────────
   // Almacena los tipos de perfil que tiene el usuario: 'OFICIO', 'NEGOCIO'
-  // TODO Hito 6: sincronizar con backend al iniciar sesión
   final Set<String> _providerProfiles = {};
   String? _activeProfileType;
+  // Estado de verificación sincronizado con el backend
+  String? _providerVerificationStatus; // 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
@@ -38,10 +39,13 @@ class AuthProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
-  Set<String> get providerProfiles => Set.unmodifiable(_providerProfiles);
-  String?     get activeProfileType => _activeProfileType;
+  Set<String> get providerProfiles          => Set.unmodifiable(_providerProfiles);
+  String?     get activeProfileType         => _activeProfileType;
+  String?     get providerVerificationStatus => _providerVerificationStatus;
   bool get hasOficioProfile  => _providerProfiles.contains('OFICIO');
   bool get hasNegocioProfile => _providerProfiles.contains('NEGOCIO');
+  /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO
+  bool get hasApprovedProvider => _providerVerificationStatus == 'APROBADO';
 
   /// Estado calculado para la navegación
   AppNavigationState get navigationState {
@@ -60,8 +64,35 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> initialize() async {
     _user = await _repo.restoreSession();
+    // Si hay sesión activa, sincronizar el estado del proveedor con el backend
+    if (_user != null) {
+      await _syncProviderStatus();
+    }
     _isInitialized = true;
     notifyListeners();
+  }
+
+  /// Sincroniza el estado del proveedor con el backend.
+  /// Silencioso en caso de error (no crítico para el flujo principal).
+  Future<void> _syncProviderStatus() async {
+    final result = await _repo.getMyProviderStatus();
+    result.when(
+      success: (data) {
+        if (data['hasProvider'] == true) {
+          final rawType = data['providerType'] as String? ?? 'OFICIO';
+          // Mapear tipos del backend a tipos internos
+          final internalType = switch (rawType) {
+            'PROFESSIONAL' => 'OFICIO',
+            'BUSINESS'     => 'NEGOCIO',
+            _              => rawType,
+          };
+          _providerProfiles.add(internalType);
+          _activeProfileType         ??= internalType;
+          _providerVerificationStatus = data['verificationStatus'] as String?;
+        }
+      },
+      failure: (_) {}, // Silencioso
+    );
   }
 
   Future<bool> login(String email, String password, {bool rememberSession = false}) async {
@@ -239,6 +270,7 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     _providerProfiles.clear();
     _activeProfileType = null;
+    _providerVerificationStatus = null;
     notifyListeners();
   }
 

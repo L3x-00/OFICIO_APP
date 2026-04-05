@@ -68,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 subtitle: 'Ofrezco mis servicios como independiente y quiero conseguir más clientes.',
                 roleValue: 'OFICIO',
                 isSelected: _selectedRole == 'OFICIO',
-                onTap: () => setState(() => _selectedRole = 'OFICIO'),
+                onTap: () => _goToProviderForm('OFICIO'),
               ),
               const SizedBox(height: 14),
               _RoleOption(
@@ -77,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 subtitle: 'Promociono mi establecimiento y llego a más personas en mi ciudad.',
                 roleValue: 'NEGOCIO',
                 isSelected: _selectedRole == 'NEGOCIO',
-                onTap: () => setState(() => _selectedRole = 'NEGOCIO'),
+                onTap: () => _goToProviderForm('NEGOCIO'),
               ),
 
               const Spacer(),
@@ -113,21 +113,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _continue() {
-    final auth = context.read<AuthProvider>();
+    // Solo llega aquí para el rol 'USUARIO'
+    context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
+    // _AppRoot detectará needsOnboarding = false y mostrará _MainNavigation
+  }
 
-    // Marcar onboarding como completado
-    auth.completeOnboarding(role: _selectedRole!);
-
-    // Si eligió ser proveedor, mostrar formulario de perfil
-    if (_selectedRole == 'OFICIO' || _selectedRole == 'NEGOCIO') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const ProviderOnboardingForm(),
-        ),
-      );
-    }
-    // Si es cliente, ir directo a la app
-    // El _AppRoot detectará needsOnboarding = false
+  /// Navega directamente al formulario de proveedor sin pasar por "Continuar"
+  void _goToProviderForm(String type) {
+    setState(() => _selectedRole = type);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ProviderOnboardingForm(providerType: type),
+      ),
+    );
   }
 }
 
@@ -424,10 +422,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   onPressed: () {
                     Navigator.of(ctx).pop(); // cerrar diálogo
                     if (widget.isStandalone) {
-                      // Volver a la pantalla principal que ya está en el stack
-                      Navigator.of(context).pop();
+                      // Limpiar toda la pila hasta la raíz → vuelve a _MainNavigation
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     } else {
-                      // Completar onboarding → el router lleva al home
+                      // Completar onboarding → _AppRoot muestra _MainNavigation
                       auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
                     }
                   },

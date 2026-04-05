@@ -14,11 +14,48 @@ export function setAdminToken(token: string) {
 export function clearAdminToken() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminRefreshToken');
   localStorage.removeItem('adminLevel');
 }
 
+export function getAdminRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('adminRefreshToken');
+}
+
+export function setAdminRefreshToken(token: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('adminRefreshToken', token);
+}
+
+// Intenta renovar el access token; retorna true si tuvo éxito
+async function tryRefreshToken(): Promise<boolean> {
+  const refreshToken = getAdminRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!res.ok) return false;
+
+    const data = await res.json();
+    if (data.accessToken) {
+      setAdminToken(data.accessToken);
+      if (data.refreshToken) setAdminRefreshToken(data.refreshToken);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 // ── Core fetcher ───────────────────────────────────────────
-async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+async function fetchApi<T>(endpoint: string, options?: RequestInit, isRetry = false): Promise<T> {
   const token = getAdminToken();
 
   const headers: Record<string, string> = {
@@ -34,6 +71,15 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
   });
 
   if (response.status === 401) {
+    // Primer intento: tratar de renovar el token
+    if (!isRetry) {
+      const refreshed = await tryRefreshToken();
+      if (refreshed) {
+        // Reintentar la petición original con el nuevo token
+        return fetchApi<T>(endpoint, options, true);
+      }
+    }
+    // No se pudo renovar → redirigir al login
     clearAdminToken();
     if (typeof window !== 'undefined') window.location.href = '/login';
     throw new Error('Sesión expirada. Redirigiendo al login...');

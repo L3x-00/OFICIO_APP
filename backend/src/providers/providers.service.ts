@@ -34,12 +34,8 @@ export class ProvidersService {
       limit = 20,
     } = filters;
 
-    const where: any = { isVisible: true };
-
-    // Solo proveedores verificados por defecto
-    if (verified) {
-      where.isVerified = true;
-    }
+    // Solo proveedores visibles y aprobados por el admin
+    const where: any = { isVisible: true, verificationStatus: 'APROBADO' };
 
     if (categorySlug) {
       where.category = { slug: categorySlug };

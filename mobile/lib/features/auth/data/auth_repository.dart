@@ -188,6 +188,21 @@ class AuthRepository {
     }
   }
 
+  // ── ESTADO DEL PROVEEDOR ────────────────────────────────────
+  /// Devuelve si el usuario autenticado ya tiene perfil de proveedor y su estado
+  Future<ApiResult<Map<String, dynamic>>> getMyProviderStatus() async {
+    try {
+      final response = await _dio.get('/users/my-provider-status');
+      return Success(Map<String, dynamic>.from(response.data as Map));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al obtener estado del proveedor'),
+      );
+    }
+  }
+
   // ── LOGOUT ─────────────────────────────────────────────────
   Future<void> logout() async {
     await AuthLocalStorage.clearSession();

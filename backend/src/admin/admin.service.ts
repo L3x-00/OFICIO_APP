@@ -3,13 +3,21 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '../generated/client/enums.js';
+import { EventsGateway } from '../events/events.gateway.js';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsGateway: EventsGateway,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @Inject(CACHE_MANAGER) private cacheManager: any,
+  ) {}
 
   // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
@@ -297,6 +305,17 @@ export class AdminService {
       }),
     ]);
 
+    // Invalidar caché para que la app móvil vea al proveedor de inmediato
+    await this.cacheManager.reset();
+
+    // Notificar en tiempo real a todos los clientes conectados
+    this.eventsGateway.emitProviderStatusChanged({
+      id: updated.id,
+      businessName: updated.businessName,
+      verificationStatus: updated.verificationStatus,
+      isVerified: updated.isVerified,
+    });
+
     return updated;
   }
 
@@ -319,6 +338,15 @@ export class AdminService {
         },
       }),
     ]);
+
+    // Notificar en tiempo real (el proveedor dejará de aparecer si estaba visible)
+    await this.cacheManager.reset();
+    this.eventsGateway.emitProviderStatusChanged({
+      id: updated.id,
+      businessName: updated.businessName,
+      verificationStatus: updated.verificationStatus,
+      isVerified: updated.isVerified,
+    });
 
     return updated;
   }
@@ -360,6 +388,15 @@ export class AdminService {
         },
       }),
     ]);
+
+    // Invalidar caché y notificar — el proveedor ya no aparecerá en la app
+    await this.cacheManager.reset();
+    this.eventsGateway.emitProviderStatusChanged({
+      id: updated.id,
+      businessName: updated.businessName,
+      verificationStatus: updated.verificationStatus,
+      isVerified: updated.isVerified,
+    });
 
     return updated;
   }

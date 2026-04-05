@@ -49,6 +49,22 @@ class _ProvidersViewState extends State<_ProvidersView>
       appBar: AppBar(
         backgroundColor: c.bg,
         elevation: 0,
+        // ── Botón refresh (esquina superior izquierda) ─────
+        leading: Consumer<ProvidersProvider>(
+          builder: (_, prov, __) => IconButton(
+            tooltip: 'Actualizar lista',
+            icon: prov.isLoading
+                ? SizedBox(
+                    width: 18, height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: c.textPrimary,
+                    ),
+                  )
+                : Icon(Icons.refresh_rounded, color: c.textPrimary),
+            onPressed: prov.isLoading ? null : prov.loadProviders,
+          ),
+        ),
         title: Row(
           children: [
             Image.asset(
@@ -139,9 +155,11 @@ class _FilterBar extends StatelessWidget {
       ),
     ];
 
-    // Calcula el total de items: tipos + separador + "Todos cat" + categorías
-    final catCount = prov.categories.length;
-    final totalItems = typeChips.length + 1 + 1 + catCount; // +1 separador, +1 "Todos"
+    // Calcula el total: tipos + separador (si hay categorías) + categorías
+    final catCount  = prov.categories.length;
+    // Solo mostramos separador si existen categorías
+    final hasCats   = catCount > 0;
+    final totalItems = typeChips.length + (hasCats ? 1 + catCount : 0);
 
     return SizedBox(
       height: 52,
@@ -175,21 +193,14 @@ class _FilterBar extends StatelessWidget {
             );
           }
 
-          // ── Chips de categoría ────────────────────────
+          // ── Chips de categoría (sin chip "Todas" extra) ─
           final catIndex = i - typeChips.length - 1; // offset por separador
-          if (catIndex == 0) {
-            // "Todas las categorías"
-            return _CategoryChip(
-              label: 'Todas',
-              isSelected: prov.selectedCategory == null,
-              onTap: () => prov.setCategory(null),
-            );
-          }
-          final cat = prov.categories[catIndex - 1];
+          final cat = prov.categories[catIndex];
           final isCatSelected = prov.selectedCategory == cat.slug;
           return _CategoryChip(
             label: cat.name,
             isSelected: isCatSelected,
+            // Toca de nuevo para deseleccionar
             onTap: () => prov.setCategory(isCatSelected ? null : cat.slug),
           );
         },
@@ -339,11 +350,21 @@ class _JoinUsButtonState extends State<_JoinUsButton>
 
   @override
   Widget build(BuildContext context) {
-    final isProvider = context.watch<AuthProvider>().user?.isProvider ?? false;
+    final auth = context.watch<AuthProvider>();
+    final isProvider = auth.user?.isProvider ?? false;
+
+    // Si ya tiene un perfil aprobado → no mostrar ningún FAB de acción
+    if (auth.hasApprovedProvider) {
+      _pulseController.stop();
+      return _buildProviderButton(context);
+    }
+
+    // Si es proveedor (aún pendiente) → mostrar panel
     if (isProvider) {
       _pulseController.stop();
       return _buildProviderButton(context);
     }
+
     if (!_pulseController.isAnimating) _pulseController.repeat(reverse: true);
     return _buildJoinUsButton(context);
   }
@@ -763,7 +784,10 @@ class _ProvidersList extends StatelessWidget {
         : '';
     final sectionTitle = '$typeLabel$catLabel Cerca de Ti';
 
-    return ListView.builder(
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: prov.loadProviders,
+      child: ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
       itemCount: prov.providers.length + 1,
       itemBuilder: (context, index) {
@@ -817,6 +841,7 @@ class _ProvidersList extends StatelessWidget {
           },
         );
       },
+    ),
     );
   }
 }

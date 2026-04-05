@@ -219,20 +219,23 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 10),
-            if (auth.hasOficioProfile && !auth.hasNegocioProfile)
-              _ActionButton(
-                icon: Icons.storefront_rounded,
-                label: 'Agregar perfil de negocio',
-                color: const Color(0xFF8E2DE2),
-                onTap: () => _openAddProfile(context, 'NEGOCIO'),
-              ),
-            if (auth.hasNegocioProfile && !auth.hasOficioProfile)
-              _ActionButton(
-                icon: Icons.handyman_rounded,
-                label: 'Agregar perfil profesional',
-                color: AppColors.primary,
-                onTap: () => _openAddProfile(context, 'OFICIO'),
-              ),
+            // Solo mostrar opción de segundo perfil si el actual ya está APROBADO
+            if (auth.hasApprovedProvider) ...[
+              if (auth.hasOficioProfile && !auth.hasNegocioProfile)
+                _ActionButton(
+                  icon: Icons.storefront_rounded,
+                  label: 'Registrar un Negocio',
+                  color: const Color(0xFF8E2DE2),
+                  onTap: () => _openAddProfile(context, 'NEGOCIO'),
+                ),
+              if (auth.hasNegocioProfile && !auth.hasOficioProfile)
+                _ActionButton(
+                  icon: Icons.handyman_rounded,
+                  label: 'Ofrecer Servicios como Profesional',
+                  color: AppColors.primary,
+                  onTap: () => _openAddProfile(context, 'OFICIO'),
+                ),
+            ],
             const SizedBox(height: 20),
           ],
 

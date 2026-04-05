@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Loader2, Eye, EyeOff } from 'lucide-react';
-import { setAdminToken } from '@/lib/api';
+import { setAdminToken, setAdminRefreshToken } from '@/lib/api';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -39,6 +39,7 @@ export default function LoginPage() {
       }
 
       setAdminToken(data.accessToken);
+      if (data.refreshToken) setAdminRefreshToken(data.refreshToken);
       localStorage.setItem('adminLevel', 'ADMIN');
       router.push('/');
     } catch (err: any) {
@@ -58,7 +59,7 @@ export default function LoginPage() {
               <Zap size={22} className="text-white" />
             </div>
             <div>
-              <p className="font-bold text-white text-lg leading-none">OficioApp</p>
+              <p className="font-bold text-white text-lg leading-none">ConfiServ</p>
               <p className="text-xs text-gray-500">Panel de Administración</p>
             </div>
           </div>

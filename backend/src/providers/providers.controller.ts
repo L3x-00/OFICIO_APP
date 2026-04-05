@@ -19,7 +19,7 @@ export class ProvidersController {
 
   // Cachea el listado general de proveedores por 2 minutos
   @UseInterceptors(CacheInterceptor)
-  @CacheTTL(120)
+  @CacheTTL(30)
   @Get()
   findAll(
     @Query('categorySlug') categorySlug?: string,
