@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
+import { EventsGateway } from '../events/events.gateway.js';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsGateway: EventsGateway,
+  ) {}
 
   // Devuelve TODOS los perfiles de proveedor del usuario (OFICIO y/o NEGOCIO)
   async getMyProviderStatus(userId: number) {
@@ -42,6 +46,19 @@ export class UsersService {
         pendingNotifications: p.notifications,
       })),
     };
+  }
+
+  // ── OBTENER PERFIL PROPIO ────────────────────────────────
+  async getMe(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true, email: true, firstName: true, lastName: true,
+        phone: true, avatarUrl: true, role: true,
+      },
+    });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    return user;
   }
 
   // ── ACTUALIZAR PERFIL ────────────────────────────────────
@@ -99,6 +116,14 @@ export class UsersService {
 
     // Invalidar todos los refresh tokens activos
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
+
+    // Notificar al usuario
+    this.eventsGateway.emitNotification({
+      type: 'PASSWORD_CHANGED',
+      title: 'Contraseña actualizada',
+      body: 'Cambiaste tu contraseña exitosamente. Si no fuiste tú, contacta a soporte.',
+      targetUserId: userId,
+    });
 
     return { message: 'Contraseña actualizada correctamente' };
   }

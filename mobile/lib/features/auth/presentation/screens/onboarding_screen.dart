@@ -6,6 +6,9 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../../../provider_dashboard/data/dashboard_repository.dart';
+import '../../../providers_list/data/providers_repository.dart';
+import '../../../../core/errors/failures.dart';
 
 /// Se muestra la primera vez que el usuario se registra
 /// para elegir qué tipo de perfil quiere crear
@@ -45,10 +48,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 8),
               Text(
                 'Cuéntanos quién eres para personalizar tu experiencia',
-                style: TextStyle(
-                  color: c.textSecondary,
-                  fontSize: 15,
-                ),
+                style: TextStyle(color: c.textSecondary, fontSize: 15),
               ),
               const SizedBox(height: 36),
 
@@ -56,7 +56,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _RoleOption(
                 icon: Icons.search_rounded,
                 title: 'Soy cliente',
-                subtitle: 'Busco, comparo y contrato profesionales o negocios en mi zona.',
+                subtitle:
+                    'Busco, comparo y contrato profesionales o negocios en mi zona.',
                 roleValue: 'USUARIO',
                 isSelected: _selectedRole == 'USUARIO',
                 onTap: () => setState(() => _selectedRole = 'USUARIO'),
@@ -65,7 +66,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _RoleOption(
                 icon: Icons.handyman_rounded,
                 title: 'Soy profesional',
-                subtitle: 'Ofrezco mis servicios como independiente y quiero conseguir más clientes.',
+                subtitle:
+                    'Ofrezco mis servicios como independiente y quiero conseguir más clientes.',
                 roleValue: 'OFICIO',
                 isSelected: _selectedRole == 'OFICIO',
                 onTap: () => _goToProviderForm('OFICIO'),
@@ -74,7 +76,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _RoleOption(
                 icon: Icons.storefront_rounded,
                 title: 'Tengo un negocio',
-                subtitle: 'Promociono mi establecimiento y llego a más personas en mi ciudad.',
+                subtitle:
+                    'Promociono mi establecimiento y llego a más personas en mi ciudad.',
                 roleValue: 'NEGOCIO',
                 isSelected: _selectedRole == 'NEGOCIO',
                 onTap: () => _goToProviderForm('NEGOCIO'),
@@ -159,14 +162,10 @@ class _RoleOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
-              : c.bgCard,
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : c.bgCard,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primary.withOpacity(0.6)
-                : c.border,
+            color: isSelected ? AppColors.primary.withOpacity(0.6) : c.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -194,9 +193,7 @@ class _RoleOption extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      color: isSelected
-                          ? c.textPrimary
-                          : c.textSecondary,
+                      color: isSelected ? c.textPrimary : c.textSecondary,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
@@ -204,10 +201,7 @@ class _RoleOption extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      color: c.textMuted,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: c.textMuted, fontSize: 12),
                   ),
                 ],
               ),
@@ -246,17 +240,121 @@ class ProviderOnboardingForm extends StatefulWidget {
 
 class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   final _businessNameController = TextEditingController();
-  final _dniController          = TextEditingController();
-  final _phoneController        = TextEditingController();
-  final _descriptionController  = TextEditingController();
-  final _addressController      = TextEditingController();
+  final _dniController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _addressController = TextEditingController();
 
   final List<XFile> _photos = [];
   final _picker = ImagePicker();
   bool _isLoading = false;
 
+  // ─── Categoría ────────────────────────────────────────────
+  List<CategoryModel> _categories = [];
+  int? _selectedCategoryId;
+  String _selectedCategoryName = 'Selecciona una categoría';
+
   static const _maxPhotos = 4;
-  static const _maxMB     = 5;
+  static const _maxMB = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final result = await ProvidersRepository().getCategories();
+    if (!mounted) return;
+    result.when(
+      success: (cats) => setState(() => _categories = cats),
+      failure: (_) {},
+    );
+  }
+
+  Future<void> _showCategoryPicker() async {
+    if (_categories.isEmpty) return;
+    final c = context.colors;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: c.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Text(
+                'Selecciona una categoría',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                itemCount: _categories.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 4),
+                itemBuilder: (_, i) {
+                  final cat = _categories[i];
+                  final isSelected = cat.id == _selectedCategoryId;
+                  return ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    tileColor: isSelected
+                        ? AppColors.primary.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    leading: Icon(
+                      Icons.category_outlined,
+                      color: isSelected ? AppColors.primary : c.textMuted,
+                      size: 20,
+                    ),
+                    title: Text(
+                      cat.name,
+                      style: TextStyle(
+                        color: isSelected ? AppColors.primary : c.textPrimary,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        fontSize: 14,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(Icons.check_circle_rounded,
+                            color: AppColors.primary, size: 20)
+                        : null,
+                    onTap: () {
+                      setState(() {
+                        _selectedCategoryId = cat.id;
+                        _selectedCategoryName = cat.name;
+                      });
+                      Navigator.of(ctx).pop();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -273,14 +371,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   String get _formTitle => _isOficio
       ? 'Perfil de Profesional'
       : widget.providerType == 'NEGOCIO'
-          ? 'Perfil de Negocio'
-          : 'Configura tu perfil';
+      ? 'Perfil de Negocio'
+      : 'Configura tu perfil';
 
   String get _formSubtitle => _isOficio
       ? 'Completa los datos de tu servicio independiente'
       : widget.providerType == 'NEGOCIO'
-          ? 'Completa los datos de tu establecimiento'
-          : 'Esta información aparecerá en tu tarjeta de servicio';
+      ? 'Completa los datos de tu establecimiento'
+      : 'Esta información aparecerá en tu tarjeta de servicio';
 
   // ─── Picker de fotos ─────────────────────────────────────
 
@@ -304,7 +402,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     final bytes = await file.readAsBytes();
     if (!mounted) return;
     if (bytes.length > _maxMB * 1024 * 1024) {
-      _showSnack('La imagen supera $_maxMB MB. Elige una más pequeña.', isError: true);
+      _showSnack(
+        'La imagen supera $_maxMB MB. Elige una más pequeña.',
+        isError: true,
+      );
       return;
     }
 
@@ -333,9 +434,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   // ─── Submit ──────────────────────────────────────────────
 
   Future<void> _submit() async {
-    final name  = _businessNameController.text.trim();
+    final name = _businessNameController.text.trim();
     final phone = _phoneController.text.trim();
-    final dni   = _dniController.text.trim();
+    final dni = _dniController.text.trim();
 
     if (name.isEmpty || phone.isEmpty) {
       _showSnack('El nombre y el teléfono son obligatorios.', isError: true);
@@ -348,23 +449,41 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
     setState(() => _isLoading = true);
 
-    final auth   = context.read<AuthProvider>();
+    final auth = context.read<AuthProvider>();
     final result = await auth.registerProvider(
       businessName: name,
-      phone:        phone,
-      type:         widget.providerType ?? 'OFICIO',
-      dni:          dni.isNotEmpty ? dni : null,
-      description:  _descriptionController.text.trim(),
-      address:      _addressController.text.trim(),
+      phone: phone,
+      type: widget.providerType ?? 'OFICIO',
+      dni: dni.isNotEmpty ? dni : null,
+      description: _descriptionController.text.trim(),
+      address: _addressController.text.trim(),
+      categoryId: _selectedCategoryId,
     );
 
     if (!mounted) return;
-    setState(() => _isLoading = false);
 
     if (!result) {
+      setState(() => _isLoading = false);
       _showSnack(auth.error ?? 'Error al crear el perfil', isError: true);
       return;
     }
+
+    // Subir fotos al servidor y vincularlas al proveedor recién creado
+    if (_photos.isNotEmpty) {
+      final repo = DashboardRepository();
+      for (final photo in _photos) {
+        try {
+          final url = await repo.uploadProviderPhoto(photo.path);
+          await repo.saveProviderImage(url);
+        } catch (_) {
+          // Fallo silencioso: el proveedor ya fue creado;
+          // las fotos se pueden agregar desde el panel más adelante.
+        }
+      }
+    }
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
     _showSuccessDialog();
   }
@@ -372,6 +491,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   void _showSuccessDialog() {
     final c = context.colors;
     final auth = context.read<AuthProvider>();
+    final isNegocio = widget.providerType == 'NEGOCIO';
 
     showDialog(
       context: context,
@@ -391,15 +511,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   color: AppColors.available.withOpacity(0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
+                child: Icon(
+                  isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded,
                   color: AppColors.available,
                   size: 44,
                 ),
               ),
               const SizedBox(height: 20),
               Text(
-                '¡Perfil Profesional Creado!',
+                isNegocio ? '¡Negocio Registrado!' : '¡Perfil Profesional Creado!',
                 style: TextStyle(
                   color: c.textPrimary,
                   fontSize: 18,
@@ -409,7 +529,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Tu información está siendo revisada. Te notificaremos cuando esté aprobado.',
+                isNegocio
+                    ? 'Negocio creado con éxito. Se te notificará una vez que sea aprobado por el equipo.'
+                    : 'Tu perfil está siendo revisado. Te notificaremos cuando esté aprobado.',
                 style: TextStyle(
                   color: c.textSecondary,
                   fontSize: 14,
@@ -424,7 +546,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   onPressed: () {
                     Navigator.of(ctx).pop(); // cerrar diálogo
                     // Completar onboarding → _AppRoot rebuild → _MainNavigation
-                    auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
+                    auth.completeOnboarding(
+                      role: widget.providerType ?? 'OFICIO',
+                    );
                     // Pop el formulario (standalone o no) para revelar _AppRoot
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
@@ -465,10 +589,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
-        title: Text(
-          _formTitle,
-          style: TextStyle(color: c.textPrimary),
-        ),
+        title: Text(_formTitle, style: TextStyle(color: c.textPrimary)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
@@ -492,8 +613,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             const SizedBox(height: 4),
             Text(
               _formSubtitle,
-              style: TextStyle(
-                  color: c.textSecondary, fontSize: 14),
+              style: TextStyle(color: c.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 24),
 
@@ -540,6 +660,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               hint: 'Jr. Ejemplo 123, Ciudad',
               icon: Icons.location_on_outlined,
             ),
+            const SizedBox(height: 14),
+
+            // ── Categoría ─────────────────────────────────
+            _buildCategorySelector(context.colors),
             const SizedBox(height: 24),
 
             // ── Sección: Descripción ──────────────────────
@@ -548,9 +672,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
             _buildField(
               controller: _descriptionController,
-              label: _isOficio
-                  ? 'Describe tu servicio'
-                  : 'Describe tu negocio',
+              label: _isOficio ? 'Describe tu servicio' : 'Describe tu negocio',
               hint: _isOficio
                   ? 'Experiencia, especialidades, horario de trabajo...'
                   : 'Qué ofreces, horarios, especialidades...',
@@ -604,9 +726,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   if (widget.isStandalone) {
                     Navigator.of(context).pop();
                   } else {
-                    context
-                        .read<AuthProvider>()
-                        .completeOnboarding(role: 'USUARIO');
+                    context.read<AuthProvider>().completeOnboarding(
+                      role: 'USUARIO',
+                    );
                   }
                 },
                 child: Text(
@@ -615,6 +737,61 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Selector de categoría ────────────────────────────────
+
+  Widget _buildCategorySelector(AppThemeColors c) {
+    final hasCategories = _categories.isNotEmpty;
+    final isSelected = _selectedCategoryId != null;
+    return GestureDetector(
+      onTap: hasCategories ? _showCategoryPicker : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.5)
+                : c.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.category_outlined,
+              color: isSelected ? AppColors.primary : c.textMuted,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _selectedCategoryName,
+                style: TextStyle(
+                  color: isSelected ? c.textPrimary : c.textMuted,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (!hasCategories)
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: c.textMuted,
+                ),
+              )
+            else
+              Icon(
+                Icons.arrow_drop_down,
+                color: c.textMuted,
+              ),
           ],
         ),
       ),
@@ -639,8 +816,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.lightbulb_rounded,
-                  color: AppColors.primary, size: 18),
+              Icon(Icons.lightbulb_rounded, color: AppColors.primary, size: 18),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -689,7 +865,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     final c = context.colors;
     return DragTarget<int>(
       onWillAcceptWithDetails: (d) => d.data != index,
-      onAcceptWithDetails:     (d) => _reorderPhotos(d.data, index),
+      onAcceptWithDetails: (d) => _reorderPhotos(d.data, index),
       builder: (ctx, candidates, _) {
         final isHovered = candidates.isNotEmpty;
         return LongPressDraggable<int>(
@@ -800,7 +976,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                     right: 4,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.amber.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(5),
@@ -838,18 +1016,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           color: c.bgCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isNext
-                ? AppColors.primary.withOpacity(0.35)
-                : c.border,
+            color: isNext ? AppColors.primary.withOpacity(0.35) : c.border,
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isNext
-                  ? Icons.add_photo_alternate_rounded
-                  : Icons.photo_outlined,
+              isNext ? Icons.add_photo_alternate_rounded : Icons.photo_outlined,
               color: isNext
                   ? AppColors.primary.withOpacity(0.6)
                   : c.textMuted.withOpacity(0.25),
@@ -903,8 +1077,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           style: TextStyle(color: c.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-                color: c.textMuted, fontSize: 13),
+            hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
             prefixIcon: maxLines == 1
                 ? Icon(icon, color: c.textMuted, size: 20)
                 : null,
@@ -918,7 +1091,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                  color: AppColors.primary, width: 1.5),
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
             contentPadding: EdgeInsets.all(maxLines > 1 ? 16 : 14),
           ),
@@ -955,8 +1130,7 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        isOficio ? AppColors.primary : const Color(0xFF8E2DE2);
+    final color = isOficio ? AppColors.primary : const Color(0xFF8E2DE2);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(

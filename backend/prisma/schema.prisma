@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   
+  
 }
 
 // ─────────────────────────────────────────
@@ -64,17 +65,31 @@ model User {
   firstName     String
   lastName      String
   avatarUrl     String?
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isActive          Boolean   @default(true)
+  isEmailVerified   Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relaciones
   providers     Provider[]          // Puede tener un perfil OFICIO y/o NEGOCIO
   favorites     Favorite[]          // Proveedores guardados
   reviews       Review[]            // Reseñas que escribió
   refreshTokens RefreshToken[]      // Sesiones activas
+  otpCodes      OtpCode[]           // Códigos OTP de verificación
 
   @@map("users")
+}
+
+model OtpCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("otp_codes")
 }
 
 model RefreshToken {

@@ -3,6 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { EventsGateway } from '../events/events.gateway.js';
+
+// OTP_EXPIRY_MS: 10 minutos
+const OTP_EXPIRY_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
@@ -10,6 +14,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private eventsGateway: EventsGateway,
   ) {}
 
   // ── REGISTRO DE USUARIO NORMAL ──────────────────────────
@@ -29,16 +34,29 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: data.email,
+        email:        data.email,
         passwordHash,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        role: 'USUARIO',
+        firstName:    data.firstName,
+        lastName:     data.lastName,
+        phone:        data.phone,
+        role:         'USUARIO',
+        isEmailVerified: false,
       },
     });
 
-    return this.generateTokens(user.id, user.email, user.role);
+    // Generar y guardar OTP automáticamente tras el registro
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
+    await this.prisma.otpCode.create({ data: { userId: user.id, code: otpCode, expiresAt } });
+
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+    // En producción aquí se enviaría el email; en desarrollo se devuelve el código
+    if (this.config.get('NODE_ENV') !== 'production') {
+      return { ...tokens, requiresEmailVerification: true, _devOtpCode: otpCode };
+    }
+
+    return { ...tokens, requiresEmailVerification: true };
   }
 
   // ── REGISTRO DE PROVEEDOR ────────────────────────────────
@@ -124,6 +142,14 @@ export class AuthService {
       });
 
       return newProvider;
+    });
+
+    // Notificar a admins que hay un nuevo proveedor pendiente de verificación
+    this.eventsGateway.emitNotification({
+      type: 'NEW_PROVIDER',
+      title: 'Nuevo proveedor registrado',
+      body: `${data.businessName} se registró como ${data.type === 'OFICIO' ? 'profesional' : 'negocio'} y está pendiente de verificación.`,
+      targetRole: 'ADMIN',
     });
 
     return { success: true, providerId: provider.id, role: 'PROVEEDOR' };
@@ -269,6 +295,59 @@ export class AuthService {
     await this.prisma.refreshToken.deleteMany({ where: { userId: user.id } });
 
     return { message: 'Contraseña restablecida correctamente' };
+  }
+
+  // ── SEND OTP ────────────────────────────────────────────
+  async sendOtp(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+    if (user.isEmailVerified) {
+      return { message: 'El email ya está verificado' };
+    }
+
+    // Eliminar OTPs previos del usuario
+    await this.prisma.otpCode.deleteMany({ where: { userId } });
+
+    // Generar código de 6 dígitos
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
+
+    await this.prisma.otpCode.create({ data: { userId, code, expiresAt } });
+
+    // TODO: En producción, enviar email con SendGrid:
+    //   await this.mailService.sendOtp(user.email, code);
+    // Por ahora devolvemos el código en desarrollo para facilitar las pruebas
+    if (this.config.get('NODE_ENV') !== 'production') {
+      return { message: 'Código OTP enviado al email registrado', _devCode: code };
+    }
+
+    return { message: 'Código OTP enviado al email registrado' };
+  }
+
+  // ── VERIFY OTP ──────────────────────────────────────────
+  async verifyOtp(userId: number, code: string) {
+    const record = await this.prisma.otpCode.findFirst({
+      where: { userId, code },
+    });
+
+    if (!record) {
+      throw new BadRequestException('Código inválido');
+    }
+
+    if (record.expiresAt < new Date()) {
+      // Eliminar el código expirado
+      await this.prisma.otpCode.delete({ where: { id: record.id } });
+      throw new BadRequestException('El código ha expirado. Solicita uno nuevo.');
+    }
+
+    // Marcar usuario como verificado y eliminar el OTP
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: userId }, data: { isEmailVerified: true } }),
+      this.prisma.otpCode.deleteMany({ where: { userId } }),
+    ]);
+
+    return { message: 'Email verificado correctamente', verified: true };
   }
 
   // ── HELPER: GENERAR TOKENS ───────────────────────────────

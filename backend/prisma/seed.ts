@@ -6,7 +6,11 @@ import * as bcrypt from 'bcrypt';
 
 // Configuración del Pool y Adaptador para Prisma 7
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL 
+  host: 'localhost',
+  port: 5432,
+  database: 'oficio_db',
+  user: 'oficio_user',
+  password: 'oficio_pass_2025',
 });
 const adapter = new PrismaPg(pool);
 

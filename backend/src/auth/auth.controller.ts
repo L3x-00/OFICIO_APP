@@ -6,6 +6,8 @@ import { LoginDto } from './dto/login.dto.js';
 import { RegisterProviderDto } from './dto/register-provider.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { SendOtpDto } from './dto/send-otp.dto.js';
+import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -55,5 +57,19 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.email, dto.token, dto.newPassword);
+  }
+
+  // POST /auth/send-otp — genera y envía un código OTP al email del usuario
+  @Post('send-otp')
+  @HttpCode(HttpStatus.OK)
+  async sendOtp(@Body() dto: SendOtpDto) {
+    return this.authService.sendOtp(dto.userId);
+  }
+
+  // POST /auth/verify-otp — valida el código OTP y marca el email como verificado
+  @Post('verify-otp')
+  @HttpCode(HttpStatus.OK)
+  async verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyOtp(dto.userId, dto.code);
   }
 }

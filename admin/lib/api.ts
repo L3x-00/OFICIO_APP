@@ -127,6 +127,12 @@ export const deleteProvider = (id: number) =>
 export const toggleVisibility = (id: number) =>
   fetchApi(`/admin/providers/${id}/toggle-visibility`, { method: 'PATCH' });
 
+export const updateProviderSubscription = (id: number, plan: string) =>
+  fetchApi(`/admin/providers/${id}/subscription`, {
+    method: 'PATCH',
+    body: JSON.stringify({ plan }),
+  });
+
 // ── VERIFICACIÓN ───────────────────────────────────────────
 export const getPendingVerifications = () =>
   fetchApi<VerificationProvider[]>('/admin/verification/pending');

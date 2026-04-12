@@ -1,3 +1,4 @@
+import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
@@ -34,7 +35,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
             pinned: true,
             title: Text(
               widget.isNegocio ? 'Mis Productos' : 'Mis Servicios',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             actions: [
               if (_isSaving)
@@ -43,7 +47,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                   child: SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(color: AppColors.amber, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: AppColors.amber,
+                      strokeWidth: 2,
+                    ),
                   ),
                 ),
             ],
@@ -73,7 +80,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                       label: Text('Añadir'),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.amber,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                       ),
                     ),
                   ],
@@ -86,7 +96,8 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                 delegate: SliverChildBuilderDelegate(
                   (ctx, i) => _ServiceCard(
                     service: services[i],
-                    onEdit: () => _showServiceForm(context, dash, existing: services[i]),
+                    onEdit: () =>
+                        _showServiceForm(context, dash, existing: services[i]),
                     onDelete: () => _deleteService(context, dash, services[i]),
                   ),
                   childCount: services.length,
@@ -109,6 +120,8 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
   // ── DIALOGO DE SERVICIO ───────────────────────────────────
 
+  // ── DIALOGO DE SERVICIO ───────────────────────────────────
+
   void _showServiceForm(
     BuildContext context,
     DashboardProvider dash, {
@@ -121,7 +134,6 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
     final priceCtrl = TextEditingController(
       text: existing?.price != null ? existing!.price.toString() : '',
     );
-    final unitCtrl = TextEditingController(text: existing?.unit ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -130,120 +142,163 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              isEdit
-                  ? (widget.isNegocio ? 'Editar producto' : 'Editar servicio')
-                  : (widget.isNegocio ? 'Nuevo producto' : 'Nuevo servicio'),
-              style: TextStyle(
-                color: c.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _FormField(
-              controller: nameCtrl,
-              label: widget.isNegocio ? 'Nombre del producto/servicio' : 'Nombre del servicio',
-              hint: widget.isNegocio ? 'Ej: Corte de cabello' : 'Ej: Instalación de cañería',
-            ),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: descCtrl,
-              label: 'Descripción (opcional)',
-              hint: 'Breve descripción de lo que incluye',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: _FormField(
-                    controller: priceCtrl,
-                    label: 'Precio (opcional)',
-                    hint: 'Ej: 5000',
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 3,
-                  child: _FormField(
-                    controller: unitCtrl,
-                    label: 'Unidad',
-                    hint: 'por hora, por trabajo…',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (nameCtrl.text.trim().isEmpty) return;
-                  Navigator.pop(context);
-                  setState(() => _isSaving = true);
+      builder: (_) {
+        // 1. Lee el proveedor DENTRO del builder para obtener el dato más fresco.
+        final authProvider = context.read<AuthProvider>();
+        final userPhone = authProvider.user?.phone ?? '';
 
-                  final updated = List<ServiceItem>.from(dash.services);
-                  final newItem = ServiceItem(
-                    id: existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-                    name: nameCtrl.text.trim(),
-                    description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
-                    price: double.tryParse(priceCtrl.text.trim()),
-                    unit: unitCtrl.text.trim().isEmpty ? null : unitCtrl.text.trim(),
-                  );
+        // 2. Determina el teléfono inicial: si es edición, usa el del servicio; si no, el del perfil.
+        final initialPhone = isEdit
+            ? (existing?.phone ?? userPhone)
+            : userPhone;
 
-                  if (isEdit) {
-                    final idx = updated.indexWhere((s) => s.id == existing!.id);
-                    if (idx >= 0) updated[idx] = newItem;
-                  } else {
-                    updated.add(newItem);
-                  }
+        // 3. Crea el controlador del teléfono con el valor correcto.
+        final phoneCtrl = TextEditingController(text: initialPhone);
 
-                  await dash.saveServices(updated);
-                  if (mounted) setState(() => _isSaving = false);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.amber,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(
-                  isEdit ? 'Actualizar' : 'Guardar',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
+        // 4. Crea el controlador de la unidad.
+        final unitCtrl = TextEditingController(text: existing?.unit ?? '');
+
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+              const SizedBox(height: 16),
+              Text(
+                isEdit
+                    ? (widget.isNegocio ? 'Editar producto' : 'Editar servicio')
+                    : (widget.isNegocio ? 'Nuevo producto' : 'Nuevo servicio'),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _FormField(
+                controller: nameCtrl,
+                label: widget.isNegocio
+                    ? 'Nombre del producto/servicio'
+                    : 'Nombre del servicio',
+                hint: widget.isNegocio
+                    ? 'Ej: Corte de cabello'
+                    : 'Ej: Instalación de cañería',
+              ),
+              const SizedBox(height: 12),
+              _FormField(
+                controller: descCtrl,
+                label: 'Descripción (opcional)',
+                hint: 'Breve descripción de lo que incluye',
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              _FormField(
+                controller:
+                    phoneCtrl, // <-- Usamos el controlador que creamos aquí
+                label: 'Teléfono de Contacto',
+                hint: 'Ej: +51 987 654 321',
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _FormField(
+                      controller: priceCtrl,
+                      label: 'Precio (opcional)',
+                      hint: 'Ej: 5000',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 3,
+                    child: _FormField(
+                      controller:
+                          unitCtrl, // <-- Y el controlador de unidad aquí
+                      label: 'Unidad',
+                      hint: 'por hora, por trabajo…',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (nameCtrl.text.trim().isEmpty) return;
+                    Navigator.pop(context);
+                    setState(() => _isSaving = true);
+
+                    final updated = List<ServiceItem>.from(dash.services);
+                    final newItem = ServiceItem(
+                      id:
+                          existing?.id ??
+                          DateTime.now().millisecondsSinceEpoch.toString(),
+                      name: nameCtrl.text.trim(),
+                      description: descCtrl.text.trim().isEmpty
+                          ? null
+                          : descCtrl.text.trim(),
+                      price: double.tryParse(priceCtrl.text.trim()),
+                      unit: unitCtrl.text.trim().isEmpty
+                          ? null
+                          : unitCtrl.text.trim(),
+                      phone: phoneCtrl.text.trim().isEmpty
+                          ? null
+                          : phoneCtrl.text.trim(),
+                    );
+
+                    if (isEdit) {
+                      final idx = updated.indexWhere(
+                        (s) => s.id == existing!.id,
+                      );
+                      if (idx >= 0) updated[idx] = newItem;
+                    } else {
+                      updated.add(newItem);
+                    }
+
+                    await dash.saveServices(updated);
+                    if (mounted) setState(() => _isSaving = false);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.amber,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    isEdit ? 'Actualizar' : 'Guardar',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -275,7 +330,9 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
             onPressed: () async {
               Navigator.pop(context);
               setState(() => _isSaving = true);
-              final updated = dash.services.where((s) => s.id != service.id).toList();
+              final updated = dash.services
+                  .where((s) => s.id != service.id)
+                  .toList();
               await dash.saveServices(updated);
               if (mounted) setState(() => _isSaving = false);
             },
@@ -321,7 +378,11 @@ class _ServiceCard extends StatelessWidget {
               color: c.warmDeep,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.design_services_rounded, color: AppColors.amber, size: 22),
+            child: Icon(
+              Icons.design_services_rounded,
+              color: AppColors.amber,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -336,7 +397,8 @@ class _ServiceCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (service.description != null && service.description!.isNotEmpty) ...[
+                if (service.description != null &&
+                    service.description!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     service.description!,
@@ -347,7 +409,10 @@ class _ServiceCard extends StatelessWidget {
                 ],
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.amber.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -376,7 +441,11 @@ class _ServiceCard extends StatelessWidget {
               const SizedBox(height: 4),
               IconButton(
                 onPressed: onDelete,
-                icon: Icon(Icons.delete_rounded, size: 18, color: AppColors.busy),
+                icon: Icon(
+                  Icons.delete_rounded,
+                  size: 18,
+                  color: AppColors.busy,
+                ),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 splashRadius: 20,
@@ -416,7 +485,11 @@ class _EmptyServices extends StatelessWidget {
                 color: AppColors.amber.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.design_services_rounded, color: AppColors.amber, size: 40),
+              child: Icon(
+                Icons.design_services_rounded,
+                color: AppColors.amber,
+                size: 40,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -430,7 +503,11 @@ class _EmptyServices extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Añade tus $label para que los clientes\nsepan qué ofreces y a qué precio.',
-              style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                height: 1.5,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -441,8 +518,13 @@ class _EmptyServices extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.amber,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
           ],
@@ -485,7 +567,10 @@ class _FormField extends StatelessWidget {
             hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
             filled: true,
             fillColor: c.bgInput,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,

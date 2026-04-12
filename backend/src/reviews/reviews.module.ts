@@ -3,10 +3,12 @@ import { ReviewsService } from './reviews.service.js';
 import { ReviewsController } from './reviews.controller.js';
 import { UploadController } from './upload.controller.js';
 import { MulterModule } from '@nestjs/platform-express';
+import { EventsModule } from '../events/events.module.js';
 
 @Module({
   imports: [
     MulterModule.register({ dest: './uploads' }),
+    EventsModule,
   ],
   controllers: [ReviewsController, UploadController],
   providers: [ReviewsService],

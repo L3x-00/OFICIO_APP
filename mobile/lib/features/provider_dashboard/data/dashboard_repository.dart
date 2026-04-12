@@ -9,8 +9,12 @@ class DashboardRepository {
 
   // ── PERFIL ────────────────────────────────────────────────
 
-  Future<DashboardProfileModel> getMyProfile() async {
-    final response = await _dio.get('/provider-profile/me');
+  /// [type] = 'OFICIO' | 'NEGOCIO' — null devuelve el primer perfil encontrado.
+  Future<DashboardProfileModel> getMyProfile({String? type}) async {
+    final response = await _dio.get(
+      '/provider-profile/me',
+      queryParameters: type != null ? {'type': type} : null,
+    );
     return DashboardProfileModel.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -182,10 +186,12 @@ class ProviderNotification {
   factory ProviderNotification.fromJson(Map<String, dynamic> json) {
     return ProviderNotification(
       id:      json['id'] as int,
-      type:    json['type'] as String,
-      message: json['message'] as String,
+      type:    json['type'] as String? ?? '',
+      message: json['message'] as String? ?? '',
       isRead:  json['isRead'] as bool? ?? false,
-      sentAt:  DateTime.parse(json['sentAt'] as String),
+      sentAt:  json['sentAt'] is String
+                 ? DateTime.tryParse(json['sentAt'] as String) ?? DateTime.now()
+                 : DateTime.now(),
     );
   }
 }

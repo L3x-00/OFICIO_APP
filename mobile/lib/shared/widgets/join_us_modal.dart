@@ -228,37 +228,176 @@ class _JoinUsModalState extends State<JoinUsModal>
           ),
           const SizedBox(height: 28),
 
-          // Opciones de tipo
-          Text(
-            '¿CÓMO QUIERES APARECER?',
-            style: TextStyle(
-              color: c.textMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 14),
+          // Opciones de tipo — filtradas según perfiles ya existentes
+          Consumer<AuthProvider>(
+            builder: (_, auth, __) {
+              final canOficio  = !auth.isAuthenticated || auth.canBecomeRole('OFICIO');
+              final canNegocio = !auth.isAuthenticated || auth.canBecomeRole('NEGOCIO');
 
-          // Opción: Profesional independiente
-          _TypeCard(
-            icon: Icons.handyman_rounded,
-            title: 'Soy un profesional independiente',
-            subtitle: 'Tu habilidad + nuestra plataforma = más clientes.\nElectricista, gasfitero, pintor, carpintero…',
-            tag: 'OFICIO',
-            gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
-            onTap: () => setState(() => _selectedType = 'OFICIO'),
-          ),
-          const SizedBox(height: 14),
+              if (!canOficio && !canNegocio) {
+                // Usuario ya tiene ambos perfiles
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: c.bgCard,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: c.border),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded,
+                          color: AppColors.available, size: 22),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Ya tienes perfil de Profesional y de Negocio registrados.',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-          // Opción: Negocio establecido
-          _TypeCard(
-            icon: Icons.storefront_rounded,
-            title: 'Tengo un negocio establecido',
-            subtitle: 'Crece con la confianza de tu comunidad.\nRestaurante, peluquería, ferretería, taller…',
-            tag: 'NEGOCIO',
-            gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
-            onTap: () => setState(() => _selectedType = 'NEGOCIO'),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '¿CÓMO QUIERES APARECER?',
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  if (canOficio) ...[
+                    _TypeCard(
+                      icon: Icons.handyman_rounded,
+                      title: 'Soy un profesional independiente',
+                      subtitle: 'Tu habilidad + nuestra plataforma = más clientes.\nElectricista, gasfitero, pintor, carpintero…',
+                      tag: 'OFICIO',
+                      gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
+                      onTap: () => setState(() => _selectedType = 'OFICIO'),
+                    ),
+                    if (canNegocio) const SizedBox(height: 14),
+                  ],
+                  if (canNegocio)
+                    _TypeCard(
+                      icon: Icons.storefront_rounded,
+                      title: 'Tengo un negocio establecido',
+                      subtitle: 'Crece con la confianza de tu comunidad.\nRestaurante, peluquería, ferretería, taller…',
+                      tag: 'NEGOCIO',
+                      gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                      onTap: () => setState(() => _selectedType = 'NEGOCIO'),
+                    ),
+                ],
+              );
+            },
+          ),
+
+          const SizedBox(height: 20),
+
+          // Opción: Registrarse como cliente (solo para no autenticados)
+          Consumer<AuthProvider>(
+            builder: (_, auth, __) {
+              if (auth.isAuthenticated) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: c.border)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'O SIMPLEMENTE',
+                          style: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: c.border)),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LoginScreen(
+                            initialMode: AuthMode.register,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: c.bgCard,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: c.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppColors.available.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.person_add_rounded,
+                              color: AppColors.available,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Quiero ser cliente',
+                                  style: TextStyle(
+                                    color: c.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  'Busca, compara y contrata servicios en tu zona.',
+                                  style: TextStyle(
+                                    color: c.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: c.textMuted,
+                            size: 14,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
 
           const SizedBox(height: 24),

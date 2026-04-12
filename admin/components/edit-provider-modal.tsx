@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { updateProvider } from '@/lib/api'; // Importamos la función que ya arreglamos
+import { updateProvider, updateProviderSubscription } from '@/lib/api';
 
 interface Props {
   provider: any;
@@ -10,6 +10,13 @@ interface Props {
   onClose: () => void;
   onUpdated: () => void;
 }
+
+const PLAN_OPTIONS = [
+  { value: 'GRATIS',   label: '🆓 Gratis',    description: 'Período de gracia' },
+  { value: 'BASICO',   label: '📦 Básico',     description: 'S/ 15/mes' },
+  { value: 'ESTANDAR', label: '✅ Estándar',   description: 'S/ 29/mes' },
+  { value: 'PREMIUM',  label: '⭐ Premium',    description: 'S/ 59/mes' },
+];
 
 export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Props) {
   const [form, setForm] = useState({
@@ -21,6 +28,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
     isVisible: true,
   });
 
+  const [selectedPlan, setSelectedPlan] = useState('GRATIS');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,6 +43,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
         availability: provider.availability || 'DISPONIBLE',
         isVisible: provider.isVisible ?? true,
       });
+      setSelectedPlan(provider.subscription?.plan ?? 'GRATIS');
     }
   }, [provider, isOpen]);
 
@@ -44,11 +53,17 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
     setIsLoading(true);
     setError('');
     try {
-      // Usamos la función del hito 5.7 que ya tiene la ruta /admin/providers
+      // Actualizar datos básicos del proveedor
       await updateProvider(provider.id, form);
-      
-      onUpdated(); 
-      onClose();   
+
+      // Actualizar plan si cambió
+      const currentPlan = provider.subscription?.plan ?? 'GRATIS';
+      if (selectedPlan !== currentPlan) {
+        await updateProviderSubscription(provider.id, selectedPlan);
+      }
+
+      onUpdated();
+      onClose();
     } catch (e: any) {
       setError(e.message || 'Error al actualizar el proveedor');
     } finally {
@@ -139,6 +154,45 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
                 <option value="true">👁️ Visible</option>
                 <option value="false">🚫 Oculto</option>
               </select>
+            </div>
+          </div>
+
+          {/* Plan de suscripción */}
+          <div>
+            <label className="text-xs font-semibold text-gray-400 mb-2 block uppercase tracking-wider">
+              Plan de Suscripción
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {PLAN_OPTIONS.map((plan) => {
+                const isSelected = selectedPlan === plan.value;
+                const colorMap: Record<string, string> = {
+                  GRATIS:   'border-gray-500/40 text-gray-400',
+                  BASICO:   'border-blue-500/40 text-blue-400',
+                  ESTANDAR: 'border-cyan-400/50 text-cyan-400',
+                  PREMIUM:  'border-yellow-400/50 text-yellow-400',
+                };
+                const selectedMap: Record<string, string> = {
+                  GRATIS:   'bg-gray-500/15 border-gray-400/60',
+                  BASICO:   'bg-blue-500/15 border-blue-400/60',
+                  ESTANDAR: 'bg-cyan-400/15 border-cyan-400/60',
+                  PREMIUM:  'bg-yellow-400/15 border-yellow-400/60',
+                };
+                return (
+                  <button
+                    key={plan.value}
+                    type="button"
+                    onClick={() => setSelectedPlan(plan.value)}
+                    className={`flex flex-col items-start px-3 py-2.5 rounded-xl border text-sm transition-all
+                      ${isSelected ? selectedMap[plan.value] : 'bg-black/30 border-white/10 text-gray-400 hover:border-white/20'}
+                    `}
+                  >
+                    <span className={`font-semibold text-sm ${isSelected ? colorMap[plan.value] : ''}`}>
+                      {plan.label}
+                    </span>
+                    <span className="text-xs text-gray-500 mt-0.5">{plan.description}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

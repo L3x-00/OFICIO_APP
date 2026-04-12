@@ -5,14 +5,17 @@ import '../../data/auth_local_storage.dart';
 import '../../data/saved_accounts_storage.dart';
 import '../../domain/models/user_model.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/socket_service.dart';
 
 /// Estado de navegación del usuario
 enum AppNavigationState {
-  loading,         // Verificando sesión guardada
-  unauthenticated, // Sin sesión
-  guest,           // Navega como invitado (sin cuenta)
-  needsOnboarding, // Registrado pero sin elegir rol
-  authenticated,   // Listo para usar la app
+  loading,                // Verificando sesión guardada
+  unauthenticated,        // Sin sesión
+  guest,                  // Navega como invitado (sin cuenta)
+  needsEmailVerification, // Registrado pero email no verificado
+  needsOnboarding,        // Email verificado pero sin elegir rol
+  authenticated,          // Listo para usar la app
 }
 
 class AuthProvider extends ChangeNotifier {
@@ -21,9 +24,20 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   bool _isInitialized = false;
   bool _needsOnboarding = false;
+  bool _needsEmailVerification = false;
   bool _isGuest = false;
   String? _error;
   bool _isLoading = false;
+
+  /// true cuando el servidor notificó que esta cuenta fue desactivada.
+  /// _AppRoot escucha este flag para mostrar el diálogo de desactivación.
+  bool _wasDeactivated = false;
+  bool get wasDeactivated => _wasDeactivated;
+
+  void clearDeactivatedFlag() {
+    _wasDeactivated = false;
+    notifyListeners();
+  }
 
   // ── Multi-perfil de proveedor ─────────────────────────────
   // Almacena los tipos de perfil que tiene el usuario: 'OFICIO', 'NEGOCIO'
@@ -34,9 +48,10 @@ class AuthProvider extends ChangeNotifier {
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _user != null && !_needsOnboarding;
+  bool get isAuthenticated => _user != null && !_needsOnboarding && !_needsEmailVerification;
   bool get isGuest => _isGuest;
   bool get needsOnboarding => _needsOnboarding;
+  bool get needsEmailVerification => _needsEmailVerification;
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
@@ -48,11 +63,20 @@ class AuthProvider extends ChangeNotifier {
   /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO
   bool get hasApprovedProvider => _providerVerificationStatus == 'APROBADO';
 
+  /// Devuelve true si el usuario autenticado puede registrar un nuevo perfil
+  /// del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no lo tiene.
+  bool canBecomeRole(String type) => !_providerProfiles.contains(type);
+
+  /// true si al menos uno de los tipos de proveedor está disponible para registrar.
+  bool get canBecomeAnyProvider =>
+      canBecomeRole('OFICIO') || canBecomeRole('NEGOCIO');
+
   /// Estado calculado para la navegación
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
     if (_user == null && _isGuest) return AppNavigationState.guest;
     if (_user == null) return AppNavigationState.unauthenticated;
+    if (_needsEmailVerification) return AppNavigationState.needsEmailVerification;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
     return AppNavigationState.authenticated;
   }
@@ -65,12 +89,47 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> initialize() async {
     _user = await _repo.restoreSession();
-    // Si hay sesión activa, sincronizar el estado del proveedor con el backend
     if (_user != null) {
       await _syncProviderStatus();
+      _connectSocket();
     }
     _isInitialized = true;
     notifyListeners();
+  }
+
+  // ── Socket ─────────────────────────────────────────────────
+
+  void _connectSocket() {
+    final socket = SocketService.instance;
+    socket.addDeactivationListener(_handleRemoteDeactivation);
+    socket.addNotificationListener(_handleRemoteNotification);
+    if (!socket.isConnected) {
+      socket.connect(DioClient.baseUrl);
+    }
+  }
+
+  /// Callback que el SocketService invoca cuando el servidor emite
+  /// `userDeactivated` con el userId de esta sesión.
+  void _handleRemoteDeactivation(int userId) {
+    if (_user?.id != userId) return;
+    _wasDeactivated = true;
+    // logout() es async pero no necesitamos await aquí;
+    // la UI reacciona al cambio de navigationState.
+    logout();
+  }
+
+  /// Callback que el SocketService invoca cuando el servidor emite
+  /// el evento `notification` genérico.
+  /// Filtra por targetUserId si está presente y reacciona al tipo PROVIDER_APPROVED.
+  void _handleRemoteNotification(Map<String, dynamic> payload) {
+    final targetUserId = payload['targetUserId'];
+    if (targetUserId != null && targetUserId != _user?.id) return;
+
+    final type = payload['type'] as String?;
+    if (type == 'PROVIDER_APPROVED') {
+      // Re-sincronizar estado del proveedor y notificar a la UI
+      _syncProviderStatus().then((_) => notifyListeners());
+    }
   }
 
   /// Sincroniza el estado del proveedor con el backend.
@@ -124,9 +183,10 @@ class AuthProvider extends ChangeNotifier {
       failure: (e) => _error = e.message,
     );
 
-    // Sincronizar perfiles de proveedor tras un login exitoso
+    // Sincronizar perfiles de proveedor tras un login exitoso y conectar socket
     if (result.isSuccess && _user != null) {
       await _syncProviderStatus();
+      _connectSocket();
     }
 
     // Guardar cuenta si el usuario lo solicitó
@@ -156,6 +216,8 @@ class AuthProvider extends ChangeNotifier {
   /// true cuando el último intento de guardar cuenta falló por límite (máx. 3)
   bool _savedAccountLimitReached = false;
   bool get savedAccountLimitReached => _savedAccountLimitReached;
+
+  String? get userRole => null;
   void clearSavedAccountLimitFlag() {
     _savedAccountLimitReached = false;
     notifyListeners();
@@ -177,6 +239,11 @@ class AuthProvider extends ChangeNotifier {
       },
       failure: (e) => _error = e.message,
     );
+
+    if (result.isSuccess && _user != null) {
+      await _syncProviderStatus();
+      _connectSocket();
+    }
 
     _isLoading = false;
     notifyListeners();
@@ -206,7 +273,51 @@ class AuthProvider extends ChangeNotifier {
     result.when(
       success: (user) {
         _user = user;
-        _needsOnboarding = true; // Nuevo registro siempre pasa por onboarding
+        // OTP desactivado temporalmente (sin servicio de correo configurado).
+        // _needsEmailVerification = true;
+        _needsEmailVerification = false;
+        _needsOnboarding = true; // Ir directo al onboarding
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// Envía (o reenvía) el código OTP al email del usuario actual.
+  Future<bool> sendOtp() async {
+    if (_user == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.sendOtp(_user!.id);
+
+    result.when(
+      success: (_) {},
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// Verifica el código OTP. Si es válido, pasa al onboarding.
+  Future<bool> verifyOtp(String code) async {
+    if (_user == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.verifyOtp(userId: _user!.id, code: code);
+
+    result.when(
+      success: (_) {
+        _needsEmailVerification = false;
+        _needsOnboarding = true; // Siguiente paso: elegir rol
       },
       failure: (e) => _error = e.message,
     );
@@ -225,6 +336,7 @@ class AuthProvider extends ChangeNotifier {
     String? dni,
     String? description,
     String? address,
+    int? categoryId,
   }) async {
     _isLoading = true;
     _error = null;
@@ -237,6 +349,7 @@ class AuthProvider extends ChangeNotifier {
       dni:          dni,
       description:  description,
       address:      address,
+      categoryId:   categoryId,
     );
 
     result.when(
@@ -292,10 +405,16 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // Desregistrar listeners antes de limpiar _user para evitar doble trigger
+    SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
+    SocketService.instance.removeNotificationListener(_handleRemoteNotification);
+    SocketService.instance.disconnect();
+
     await _repo.logout();
     _user = null;
     _isGuest = false;
     _needsOnboarding = false;
+    _needsEmailVerification = false;
     _error = null;
     _providerProfiles.clear();
     _activeProfileType = null;

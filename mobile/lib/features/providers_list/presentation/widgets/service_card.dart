@@ -7,6 +7,10 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/models/provider_model.dart';
 
+// ─── Helpers de plan ─────────────────────────────────────────
+bool _isPremium(String plan) => plan == 'PREMIUM';
+bool _isStandard(String plan) => plan == 'ESTANDAR' || plan == 'BASICO';
+
 /// Tarjeta principal de servicio
 class ServiceCard extends StatelessWidget {
   final ProviderModel provider;
@@ -22,7 +26,24 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c       = context.colors;
+    final plan    = provider.subscriptionPlan;
+    final premium  = _isPremium(plan);
+    final standard = _isStandard(plan);
+
+    // Colores de borde y sombra según plan
+    final borderColor = premium
+        ? AppColors.premium.withValues(alpha: 0.7)
+        : standard
+            ? AppColors.standard.withValues(alpha: 0.5)
+            : c.border;
+
+    final shadowColor = premium
+        ? AppColors.premium.withValues(alpha: 0.25)
+        : standard
+            ? AppColors.standard.withValues(alpha: 0.15)
+            : Colors.black.withValues(alpha: c.isDark ? 0.35 : 0.08);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -30,10 +51,29 @@ class ServiceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: c.border),
-          boxShadow: c.isDark
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 8))]
-              : [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4))],
+          border: Border.all(
+            color: borderColor,
+            width: (premium || standard) ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: premium ? 20 : 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          // Gradiente sutil de fondo para premium
+          gradient: premium
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.premium.withValues(alpha: c.isDark ? 0.07 : 0.04),
+                    c.bgCard,
+                    c.bgCard,
+                  ],
+                )
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,6 +129,19 @@ class _CoverImage extends StatelessWidget {
                 )
               : _placeholder(c),
         ),
+        // Badge de plan — arriba a la izquierda (debajo de distancia si hay)
+        if (_isPremium(provider.subscriptionPlan))
+          Positioned(
+            top: provider.distanceKm != null ? 46 : 12,
+            left: 12,
+            child: _PlanBadge.premium(),
+          ),
+        if (_isStandard(provider.subscriptionPlan))
+          Positioned(
+            top: provider.distanceKm != null ? 46 : 12,
+            left: 12,
+            child: _PlanBadge.standard(),
+          ),
         if (provider.isVerified)
           Positioned(top: 12, right: 12, child: _VerifiedBadge()),
         if (provider.distanceKm != null)
@@ -354,6 +407,69 @@ class _DistanceBadge extends StatelessWidget {
           const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 13),
           const SizedBox(width: 3),
           Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Badge de plan de suscripción ────────────────────────────
+
+class _PlanBadge extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color textColor;
+  final bool hasGlow;
+
+  const _PlanBadge({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.textColor,
+    this.hasGlow = false,
+  });
+
+  factory _PlanBadge.premium() => const _PlanBadge(
+    label: 'Premium',
+    icon: Icons.star_rounded,
+    color: AppColors.premium,
+    textColor: Color(0xFF3D2B00),
+    hasGlow: true,
+  );
+
+  factory _PlanBadge.standard() => const _PlanBadge(
+    label: 'Estándar',
+    icon: Icons.verified_rounded,
+    color: AppColors.standard,
+    textColor: Colors.white,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: hasGlow
+            ? [BoxShadow(color: color.withValues(alpha: 0.55), blurRadius: 10, spreadRadius: 1)]
+            : [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 6)],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: textColor, size: 12),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
+          ),
         ],
       ),
     );

@@ -29,13 +29,18 @@ class ReviewModel {
       userId:     json['userId'] as int,
       rating:     json['rating'] as int,
       comment:    json['comment'] as String?,
-      photoUrl:   json['photoUrl'] as String,
+      photoUrl:   json['photoUrl'] is String ? json['photoUrl'] as String : '',
       isVisible:  json['isVisible'] as bool? ?? true,
-      createdAt:  DateTime.parse(json['createdAt'] as String),
-      user: json['user'] != null
+      createdAt:  _parseDate(json['createdAt']),
+      user: json['user'] is Map<String, dynamic>
           ? ReviewUser.fromJson(json['user'] as Map<String, dynamic>)
           : null,
     );
+  }
+
+  static DateTime _parseDate(dynamic value) {
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 }
 

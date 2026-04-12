@@ -142,7 +142,7 @@ class SubscriptionInfo {
     return SubscriptionInfo(
       plan:    json['plan'] as String? ?? 'GRATIS',
       status:  json['status'] as String? ?? 'INACTIVE',
-      endDate: json['endDate'] != null
+      endDate: json['endDate'] is String
                  ? DateTime.tryParse(json['endDate'] as String)
                  : null,
     );

@@ -10,10 +10,13 @@ import { JwtAuthGuard } from '../auth/jwt.guard.js';
 export class ProviderProfileController {
   constructor(private readonly service: ProviderProfileService) {}
 
-  // GET /provider-profile/me
+  // GET /provider-profile/me?type=OFICIO|NEGOCIO
   @Get('me')
-  getMyProfile(@Request() req: any) {
-    return this.service.getMyProfile(req.user.userId);
+  getMyProfile(
+    @Request() req: any,
+    @Query('type') type?: string,
+  ) {
+    return this.service.getMyProfile(req.user.userId, type);
   }
 
   // PATCH /provider-profile/me

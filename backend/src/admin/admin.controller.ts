@@ -68,6 +68,14 @@ export class AdminController {
     return this.adminService.toggleProviderVisibility(id);
   }
 
+  @Patch('providers/:id/subscription')
+  updateSubscription(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { plan: string },
+  ) {
+    return this.adminService.updateProviderSubscription(id, body.plan);
+  }
+
   @Delete('providers/:id')
   @HttpCode(HttpStatus.OK)
   deleteProvider(@Param('id', ParseIntPipe) id: number) {

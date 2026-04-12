@@ -39,4 +39,11 @@ abstract class AppColors {
   // Redes sociales
   static const Color google      = Color(0xFFEA4335);
   static const Color facebook    = Color(0xFF1877F2);
+
+  // Planes de suscripción
+  static const Color premium         = Color(0xFFFFD700);  // Dorado
+  static const Color premiumDark     = Color(0xFFB8860B);  // Dorado oscuro
+  static const Color premiumGlow     = Color(0xFFFFF176);  // Resplandor dorado claro
+  static const Color standard        = Color(0xFF00C6FF);  // Azul primario (igual que primary)
+  static const Color standardBorder  = Color(0xFF0072FF);  // Azul oscuro para borde
 }

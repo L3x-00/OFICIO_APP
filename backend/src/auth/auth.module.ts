@@ -7,10 +7,12 @@ import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { JwtAuthGuard } from './jwt.guard.js';
 import { RolesGuard } from './roles.guard.js';
+import { EventsModule } from '../events/events.module.js';
 
 @Module({
   imports: [
     PassportModule,
+    EventsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

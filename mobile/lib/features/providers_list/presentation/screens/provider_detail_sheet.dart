@@ -119,12 +119,18 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                         _buildHeader(),
                         const SizedBox(height: 12),
                         _buildRating(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildAvailabilityBadge(),
+                        const SizedBox(height: 16),
+                        _buildContactInfo(),
                         const SizedBox(height: 16),
 
                         if (widget.provider.description != null) ...[
-                          _buildSectionTitle('Descripción'),
+                          _buildSectionTitle(
+                            widget.provider.type == ProviderType.oficio
+                                ? 'Sobre el profesional'
+                                : 'Sobre el negocio',
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             widget.provider.description!,
@@ -417,6 +423,98 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     );
   }
 
+  // ─── Información de contacto / identidad ─────────────────
+
+  Widget _buildContactInfo() {
+    final c = context.colors;
+    final p = widget.provider;
+    final isOficio = p.type == ProviderType.oficio;
+
+    final rows = <Widget>[];
+
+    // Para OFICIO: nombre real del profesional con avatar
+    if (isOficio && p.ownerName != null) {
+      rows.add(_InfoChip(
+        leading: _ownerAvatar(p),
+        icon: null,
+        label: p.ownerName!,
+        sublabel: 'Profesional independiente',
+      ));
+    }
+
+    // Teléfono de contacto
+    rows.add(_InfoChip(
+      icon: Icons.phone_outlined,
+      label: p.phone,
+      sublabel: 'Teléfono',
+      onTap: _makeCall,
+    ));
+
+    // Dirección (negocios o quienes la tengan)
+    if (p.address != null && p.address!.isNotEmpty) {
+      rows.add(_InfoChip(
+        icon: Icons.location_on_outlined,
+        label: p.address!,
+        sublabel: 'Dirección',
+      ));
+    }
+
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(
+        children: rows
+            .expand((w) => [w, const Divider(height: 1, thickness: 0.5)])
+            .toList()
+          ..removeLast(),
+      ),
+    );
+  }
+
+  Widget _ownerAvatar(ProviderModel p) {
+    if (p.ownerAvatarUrl != null) {
+      return ClipOval(
+        child: Image.network(
+          p.ownerAvatarUrl!,
+          width: 36,
+          height: 36,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _avatarPlaceholder(p),
+        ),
+      );
+    }
+    return _avatarPlaceholder(p);
+  }
+
+  Widget _avatarPlaceholder(ProviderModel p) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: const BoxDecoration(
+        color: AppColors.primary,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          (p.ownerName ?? p.businessName).isNotEmpty
+              ? (p.ownerName ?? p.businessName)[0].toUpperCase()
+              : '?',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ),
+    );
+  }
+
   // ─── Horarios ─────────────────────────────────────────────
 
   Widget _buildSchedule() {
@@ -702,113 +800,120 @@ class _ReviewCard extends StatelessWidget {
   final ReviewModel review;
   const _ReviewCard({required this.review});
 
+  void _openDetail(BuildContext context) {
+    final c = context.colors;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ReviewDetailSheet(review: review),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: c.bgCard,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: c.bgInput,
-                backgroundImage: review.user?.avatarUrl != null
-                    ? NetworkImage(review.user!.avatarUrl!)
-                    : null,
-                child: review.user?.avatarUrl == null
-                    ? Text(
-                        review.user?.initial ?? '?',
+    return GestureDetector(
+      onTap: () => _openDetail(context),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border.withValues(alpha: 0.5)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: c.bgInput,
+                  backgroundImage: review.user?.avatarUrl != null
+                      ? NetworkImage(review.user!.avatarUrl!)
+                      : null,
+                  child: review.user?.avatarUrl == null
+                      ? Text(
+                          review.user?.initial ?? '?',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        review.user?.fullName ?? 'Usuario',
                         style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
+                          color: c.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
                         ),
-                      )
-                    : null,
+                      ),
+                      RatingBarIndicator(
+                        rating: review.rating.toDouble(),
+                        itemBuilder: (_, __) =>
+                            const Icon(Icons.star_rounded, color: AppColors.star),
+                        itemCount: 5,
+                        itemSize: 14,
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  _formatDate(review.createdAt),
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                ),
+                const SizedBox(width: 6),
+                Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 16),
+              ],
+            ),
+            if (review.comment != null && review.comment!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  review.comment!,
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            if (review.photoUrl.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
                   children: [
-                    Text(
-                      review.user?.fullName ?? 'Usuario',
-                      style: TextStyle(
-                        color: c.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        review.photoUrl,
+                        height: 60,
+                        width: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
-                    RatingBarIndicator(
-                      rating: review.rating.toDouble(),
-                      itemBuilder: (_, __) =>
-                          const Icon(Icons.star_rounded, color: AppColors.star),
-                      itemCount: 5,
-                      itemSize: 14,
+                    const SizedBox(width: 8),
+                    Text(
+                      'Ver foto',
+                      style: TextStyle(color: AppColors.primary, fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              Text(
-                _formatDate(review.createdAt),
-                style: TextStyle(
-                  color: c.textMuted,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-          if (review.comment != null && review.comment!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                review.comment!,
-                style: TextStyle(
-                  color: c.textSecondary,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-              ),
-            ),
-          if (review.photoUrl.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  PageRouteBuilder(
-                    opaque: false,
-                    barrierColor: Colors.black,
-                    pageBuilder: (_, __, ___) => _ReviewImageFullscreen(
-                      imageUrl: review.photoUrl,
-                      heroTag: 'review_photo_${review.id}',
-                    ),
-                    transitionsBuilder: (_, anim, __, child) =>
-                        FadeTransition(opacity: anim, child: child),
-                  ),
-                ),
-                child: Hero(
-                  tag: 'review_photo_${review.id}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      review.photoUrl,
-                      height: 80,
-                      width: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -822,6 +927,225 @@ class _ReviewCard extends StatelessWidget {
     if (diff.inDays < 30) return 'Hace ${(diff.inDays / 7).floor()} sem.';
     if (diff.inDays < 365) return 'Hace ${(diff.inDays / 30).floor()} mes.';
     return 'Hace ${(diff.inDays / 365).floor()} año(s)';
+  }
+}
+
+// ─── Modal de detalle de reseña ───────────────────────────
+
+class _ReviewDetailSheet extends StatelessWidget {
+  final ReviewModel review;
+  const _ReviewDetailSheet({required this.review});
+
+  String _formatDateFull(DateTime date) {
+    const months = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    ];
+    return '${date.day} de ${months[date.month - 1]} de ${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final screenH = MediaQuery.of(context).size.height;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: screenH * 0.85),
+      decoration: BoxDecoration(
+        color: c.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Título
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+            child: Row(
+              children: [
+                Text(
+                  'Detalle de la reseña',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: c.bgInput,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.close_rounded, color: c.textMuted, size: 18),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Cabecera: avatar + nombre + estrellas + fecha
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: c.bgInput,
+                        backgroundImage: review.user?.avatarUrl != null
+                            ? NetworkImage(review.user!.avatarUrl!)
+                            : null,
+                        child: review.user?.avatarUrl == null
+                            ? Text(
+                                review.user?.initial ?? '?',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              review.user?.fullName ?? 'Usuario',
+                              style: TextStyle(
+                                color: c.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            RatingBarIndicator(
+                              rating: review.rating.toDouble(),
+                              itemBuilder: (_, __) => const Icon(
+                                Icons.star_rounded,
+                                color: AppColors.star,
+                              ),
+                              itemCount: 5,
+                              itemSize: 18,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _formatDateFull(review.createdAt),
+                              style: TextStyle(color: c.textMuted, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Comentario completo
+                  if (review.comment != null && review.comment!.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: c.bgCard,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: c.border),
+                      ),
+                      child: Text(
+                        review.comment!,
+                        style: TextStyle(
+                          color: c.textSecondary,
+                          fontSize: 14,
+                          height: 1.6,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // Foto de evidencia a tamaño completo
+                  if (review.photoUrl.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text(
+                      'Foto de evidencia',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        PageRouteBuilder(
+                          opaque: false,
+                          barrierColor: Colors.black,
+                          pageBuilder: (_, __, ___) => _ReviewImageFullscreen(
+                            imageUrl: review.photoUrl,
+                            heroTag: 'review_detail_photo_${review.id}',
+                          ),
+                          transitionsBuilder: (_, anim, __, child) =>
+                              FadeTransition(opacity: anim, child: child),
+                        ),
+                      ),
+                      child: Hero(
+                        tag: 'review_detail_photo_${review.id}',
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            review.photoUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 160,
+                              decoration: BoxDecoration(
+                                color: c.bgInput,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(
+                                Icons.broken_image_rounded,
+                                color: c.textMuted,
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Toca la foto para verla a pantalla completa',
+                        style: TextStyle(color: c.textMuted, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -952,5 +1276,67 @@ class _ReviewImageFullscreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// ─── Fila de información de contacto/identidad ────────────
+
+class _InfoChip extends StatelessWidget {
+  final Widget? leading;
+  final IconData? icon;
+  final String label;
+  final String sublabel;
+  final VoidCallback? onTap;
+
+  const _InfoChip({
+    this.leading,
+    this.icon,
+    required this.label,
+    required this.sublabel,
+    this.onTap,
+  }) : assert(leading != null || icon != null);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          if (leading != null)
+            leading!
+          else
+            Icon(icon, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sublabel,
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            Icon(Icons.arrow_forward_ios_rounded, color: c.textMuted, size: 14),
+        ],
+      ),
+    );
+
+    if (onTap != null) {
+      return GestureDetector(onTap: onTap, child: content);
+    }
+    return content;
   }
 }

@@ -10,7 +10,7 @@ class DioClient {
 
   // Para Flutter Web en Chrome → localhost
   // Para dispositivo físico → IP de tu máquina (ej: 192.168.1.X)
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'http://192.168.1.65:3000';
 
   DioClient._internal() {
     dio = Dio(

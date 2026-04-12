@@ -43,6 +43,13 @@ function imageFilter(_req: any, file: Express.Multer.File, cb: any) {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // GET /users/me
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Request() req: any) {
+    return this.usersService.getMe(req.user.userId);
+  }
+
   // GET /users/my-provider-status
   @UseGuards(JwtAuthGuard)
   @Get('my-provider-status')

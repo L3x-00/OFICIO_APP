@@ -25,11 +25,13 @@ class PanelHomeTab extends StatefulWidget {
 }
 
 class _PanelHomeTabState extends State<PanelHomeTab> {
+  String get _providerType => widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DashboardProvider>().loadDashboard();
+      context.read<DashboardProvider>().loadDashboard(providerType: _providerType);
     });
   }
 
@@ -38,10 +40,11 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
     final c = context.colors;
     final dash = context.watch<DashboardProvider>();
     final auth = context.watch<AuthProvider>();
-    final name = dash.profile?.businessName ?? auth.user?.firstName ?? 'tu negocio';
+    final defaultName = widget.isNegocio ? 'tu negocio' : 'tu servicio';
+    final name = dash.profile?.businessName ?? auth.user?.firstName ?? defaultName;
 
     return RefreshIndicator(
-      onRefresh: () => context.read<DashboardProvider>().loadDashboard(),
+      onRefresh: () => context.read<DashboardProvider>().loadDashboard(providerType: _providerType),
       color: AppColors.amber,
       backgroundColor: c.bgCard,
       child: CustomScrollView(
@@ -116,7 +119,9 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3D2B00), c.bgCard],
+          colors: widget.isNegocio
+              ? [const Color(0xFF2A0A4A), c.bgCard]   // morado oscuro para negocio
+              : [const Color(0xFF3D2B00), c.bgCard],  // ámbar oscuro para profesional
         ),
       ),
       child: Column(

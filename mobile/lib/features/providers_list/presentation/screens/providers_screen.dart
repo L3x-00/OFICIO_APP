@@ -9,6 +9,7 @@ import 'provider_detail_sheet.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/auth/presentation/screens/login_screen.dart';
 import '../../../../features/favorites/presentation/providers/favorites_provider.dart';
+import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';
 
 class ProvidersScreen extends StatelessWidget {
   const ProvidersScreen({super.key});
@@ -232,7 +233,6 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: GestureDetector(
@@ -437,134 +437,13 @@ class _JoinUsButtonState extends State<_JoinUsButton>
   }
 
   void _openProviderPanel(BuildContext context) {
-    final c = context.colors;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: c.bgCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => _ProviderPanelSheet(user: context.read<AuthProvider>().user),
-    );
-  }
-}
-
-// ─── Panel rápido del proveedor ───────────────────────────
-
-class _ProviderPanelSheet extends StatelessWidget {
-  final dynamic user;
-  const _ProviderPanelSheet({this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40, height: 4,
-            decoration: BoxDecoration(
-              color: c.textMuted.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Container(
-                width: 52, height: 52,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [Color(0xFF1E88E5), Color(0xFF1565C0)]),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.store_rounded, color: Colors.white, size: 26),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(user?.fullName ?? 'Mi panel',
-                        style: TextStyle(color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('Proveedor verificado',
-                        style: TextStyle(color: c.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _PanelAction(
-            icon: Icons.edit_rounded,
-            label: 'Editar mi perfil',
-            color: AppColors.primary,
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Editor de perfil próximamente'), behavior: SnackBarBehavior.floating),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _PanelAction(
-            icon: Icons.bar_chart_rounded,
-            label: 'Ver mis estadísticas',
-            color: AppColors.available,
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Estadísticas próximamente'), behavior: SnackBarBehavior.floating),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _PanelAction(
-            icon: Icons.schedule_rounded,
-            label: 'Cambiar disponibilidad',
-            color: AppColors.delayed,
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gestión de disponibilidad próximamente'), behavior: SnackBarBehavior.floating),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PanelAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-  const _PanelAction({required this.icon, required this.label, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 12),
-            Text(label, style: TextStyle(color: c.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
-            const Spacer(),
-            Icon(Icons.arrow_forward_ios_rounded, color: c.textMuted, size: 14),
-          ],
-        ),
+    final auth = context.read<AuthProvider>();
+    // Ir directamente al perfil activo (o al único que tiene)
+    final type = auth.activeProfileType
+        ?? (auth.hasOficioProfile ? 'OFICIO' : 'NEGOCIO');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProviderPanel(providerType: type),
       ),
     );
   }

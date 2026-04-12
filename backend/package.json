@@ -8,6 +8,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "seed": "tsx prisma/seed.ts",
+    "fix:image-urls": "npx tsx scripts/fix-image-urls.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

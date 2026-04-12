@@ -35,7 +35,8 @@ class DashboardProvider extends ChangeNotifier {
 
   // ── CARGA INICIAL ────────────────────────────────────────
 
-  Future<void> loadDashboard() async {
+  /// [providerType] 'OFICIO' | 'NEGOCIO' — si es null, carga el primer perfil.
+  Future<void> loadDashboard({String? providerType}) async {
     if (_status == DashboardStatus.loading) return;
 
     _status = DashboardStatus.loading;
@@ -44,7 +45,7 @@ class DashboardProvider extends ChangeNotifier {
 
     try {
       final results = await Future.wait([
-        _repo.getMyProfile(),
+        _repo.getMyProfile(type: providerType),
         _repo.getMyAnalytics(days: 30),
       ]);
 

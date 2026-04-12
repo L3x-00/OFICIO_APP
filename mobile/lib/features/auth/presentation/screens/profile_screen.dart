@@ -11,7 +11,8 @@ import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
 import 'onboarding_screen.dart';
 import 'saved_accounts_screen.dart';
-import 'welcome_screen.dart';
+import 'login_screen.dart';
+import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,7 +26,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickAndUploadAvatar(ImageSource source) async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, imageQuality: 80, maxWidth: 800);
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 80,
+      maxWidth: 800,
+    );
     if (picked == null || !mounted) return;
 
     setState(() => _uploadingAvatar = true);
@@ -58,7 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             const SizedBox(height: 8),
             Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
                 color: Colors.grey.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
@@ -66,7 +72,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+              leading: const Icon(
+                Icons.camera_alt_rounded,
+                color: AppColors.primary,
+              ),
               title: Text('Tomar foto', style: TextStyle(color: c.textPrimary)),
               onTap: () {
                 Navigator.pop(context);
@@ -74,8 +83,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
-              title: Text('Seleccionar de la galería', style: TextStyle(color: c.textPrimary)),
+              leading: const Icon(
+                Icons.photo_library_rounded,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                'Seleccionar de la galería',
+                style: TextStyle(color: c.textPrimary),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _pickAndUploadAvatar(ImageSource.gallery);
@@ -90,10 +105,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth  = context.watch<AuthProvider>();
+    final auth = context.watch<AuthProvider>();
     final theme = context.watch<ThemeProvider>();
-    final c     = context.colors;
-    final user  = auth.user;
+    final c = context.colors;
+    final user = auth.user;
 
     // ── Estado invitado ────────────────────────────────────
     if (user == null) {
@@ -102,16 +117,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         appBar: AppBar(
           backgroundColor: c.bg,
           elevation: 0,
-          title: Text('Mi perfil', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          title: Text(
+            'Mi perfil',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+          ),
           actions: [
             IconButton(
-              tooltip: theme.isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro',
+              tooltip: theme.isDark
+                  ? 'Cambiar a tema claro'
+                  : 'Cambiar a tema oscuro',
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, anim) =>
-                    RotationTransition(turns: anim, child: FadeTransition(opacity: anim, child: child)),
+                transitionBuilder: (child, anim) => RotationTransition(
+                  turns: anim,
+                  child: FadeTransition(opacity: anim, child: child),
+                ),
                 child: Icon(
-                  theme.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  theme.isDark
+                      ? Icons.light_mode_rounded
+                      : Icons.dark_mode_rounded,
                   key: ValueKey(theme.isDark),
                   color: AppColors.amber,
                   size: 22,
@@ -135,18 +159,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: AppColors.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.person_outline_rounded, color: AppColors.primary, size: 40),
+                  child: const Icon(
+                    Icons.person_outline_rounded,
+                    color: AppColors.primary,
+                    size: 40,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Text(
                   'Tu perfil te espera',
-                  style: TextStyle(color: c.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Inicia sesión para gestionar tu perfil, ver tus notificaciones y ser parte de la comunidad.',
-                  style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
+                  'Inicia sesión o regístrate para gestionar tu perfil, ver tus notificaciones y ser parte de la comunidad.',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 14,
+                    height: 1.6,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -154,17 +190,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: const Text(
                       'Iniciar sesión / Registrarse',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -176,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     // After the null-check guard above, user is guaranteed non-null
-    final u = user!;
+    final u = user;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -192,13 +233,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
-              tooltip: theme.isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro',
+              tooltip: theme.isDark
+                  ? 'Cambiar a tema claro'
+                  : 'Cambiar a tema oscuro',
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, anim) =>
-                    RotationTransition(turns: anim, child: FadeTransition(opacity: anim, child: child)),
+                transitionBuilder: (child, anim) => RotationTransition(
+                  turns: anim,
+                  child: FadeTransition(opacity: anim, child: child),
+                ),
                 child: Icon(
-                  theme.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  theme.isDark
+                      ? Icons.light_mode_rounded
+                      : Icons.dark_mode_rounded,
                   key: ValueKey(theme.isDark),
                   color: AppColors.amber,
                   size: 22,
@@ -229,7 +276,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           shape: BoxShape.circle,
                           gradient: u.avatarUrl == null
                               ? const LinearGradient(
-                                  colors: [AppColors.primary, AppColors.primaryDark])
+                                  colors: [
+                                    AppColors.primary,
+                                    AppColors.primaryDark,
+                                  ],
+                                )
                               : null,
                           color: u.avatarUrl != null ? c.bgCard : null,
                           border: Border.all(
@@ -246,20 +297,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 )
                               : u.avatarUrl != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: u.avatarUrl!,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => const Center(
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                      errorWidget: (_, __, ___) => _InitialsAvatar(
-                                        name: u.firstName,
-                                      ),
-                                    )
-                                  : _InitialsAvatar(name: u.firstName),
+                              ? CachedNetworkImage(
+                                  key: ValueKey('avatar_${u.id}_${u.avatarUrl}'),
+                                  imageUrl: u.avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                  errorWidget: (_, __, ___) =>
+                                      _InitialsAvatar(name: u.firstName),
+                                )
+                              : _InitialsAvatar(name: u.firstName),
                         ),
                       ),
                       // Badge cámara
@@ -274,7 +325,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: c.bg, width: 2),
                           ),
-                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 13),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.white,
+                            size: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -283,7 +338,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 Text(
                   u.fullName,
-                  style: TextStyle(color: c.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -291,22 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: TextStyle(color: c.textSecondary, fontSize: 14),
                 ),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    _accountTypeLabel(auth),
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                _AccountTypeBadge(auth: auth),
               ],
             ),
           ),
@@ -314,18 +358,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           _SectionTitle(title: 'Información de cuenta'),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.email_outlined,  label: 'Correo',          value: u.email),
-          _InfoRow(icon: Icons.person_outline,  label: 'Nombre completo', value: u.fullName),
+          _InfoRow(icon: Icons.email_outlined, label: 'Correo', value: u.email),
+          _InfoRow(
+            icon: Icons.person_outline,
+            label: 'Nombre completo',
+            value: u.fullName,
+          ),
           if (u.phone != null && u.phone!.isNotEmpty)
-            _InfoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: u.phone!),
-          _InfoRow(icon: Icons.shield_outlined, label: 'Tipo de cuenta',  value: _accountTypeLabel(auth)),
+            _InfoRow(
+              icon: Icons.phone_outlined,
+              label: 'Teléfono',
+              value: u.phone!,
+            ),
+          _InfoRow(
+            icon: Icons.shield_outlined,
+            label: 'Tipo de cuenta',
+            value: _accountTypeLabel(auth),
+          ),
           const SizedBox(height: 20),
 
           // ── Acciones de perfil ────────────────────────────
           _SectionTitle(title: 'Gestión de cuenta'),
           const SizedBox(height: 12),
           _ActionButton(
-            icon:  Icons.edit_outlined,
+            icon: Icons.edit_outlined,
             label: 'Editar información',
             color: AppColors.primary,
             onTap: () => Navigator.of(context).push(
@@ -334,7 +390,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 10),
           _ActionButton(
-            icon:  Icons.lock_outline,
+            icon: Icons.lock_outline,
             label: 'Cambiar contraseña',
             color: AppColors.primary,
             onTap: () => Navigator.of(context).push(
@@ -346,27 +402,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (auth.hasOficioProfile || auth.hasNegocioProfile) ...[
             const _SectionTitle(title: 'MIS PERFILES DE PROVEEDOR'),
             const SizedBox(height: 12),
-            if (auth.hasOficioProfile && auth.hasNegocioProfile) ...[
-              _ProfileSwitcher(auth: auth),
-              const SizedBox(height: 12),
-            ],
-            _ActionButton(
-              icon: Icons.tune_rounded,
-              label: auth.activeProfileType == 'NEGOCIO'
-                  ? 'Gestionar mi negocio'
-                  : 'Gestionar mi perfil profesional',
-              color: auth.activeProfileType == 'NEGOCIO'
-                  ? const Color(0xFF8E2DE2)
-                  : AppColors.primary,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edición de perfil — próximamente')),
-                );
-              },
-            ),
-            const SizedBox(height: 10),
-            // Solo mostrar opción de segundo perfil si el actual ya está APROBADO
+            // Botones de panel SOLO si el proveedor está APROBADO
             if (auth.hasApprovedProvider) ...[
+              if (auth.hasOficioProfile)
+                _ActionButton(
+                  icon: Icons.handyman_rounded,
+                  label: 'Panel Profesional',
+                  color: AppColors.primary,
+                  onTap: () => _openProviderPanel(context, 'OFICIO'),
+                ),
+              if (auth.hasOficioProfile && auth.hasNegocioProfile)
+                const SizedBox(height: 10),
+              if (auth.hasNegocioProfile)
+                _ActionButton(
+                  icon: Icons.storefront_rounded,
+                  label: 'Panel de Negocio',
+                  color: const Color(0xFF8E2DE2),
+                  onTap: () => _openProviderPanel(context, 'NEGOCIO'),
+                ),
+              const SizedBox(height: 10),
+              // Opción de segundo perfil solo si el actual ya está APROBADO
               if (auth.hasOficioProfile && !auth.hasNegocioProfile)
                 _ActionButton(
                   icon: Icons.storefront_rounded,
@@ -381,17 +436,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: AppColors.primary,
                   onTap: () => _openAddProfile(context, 'OFICIO'),
                 ),
+            ] else ...[
+              // Registro existe pero está pendiente de aprobación
+              // Se muestra un banner por cada tipo de perfil registrado
+              if (auth.hasOficioProfile)
+                const _PendingApprovalBanner(providerType: 'OFICIO'),
+              if (auth.hasOficioProfile && auth.hasNegocioProfile)
+                const SizedBox(height: 10),
+              if (auth.hasNegocioProfile)
+                const _PendingApprovalBanner(providerType: 'NEGOCIO'),
             ],
             const SizedBox(height: 20),
           ],
 
-          if (!u.isProvider) ...[
-            _ActionButton(
-              icon: Icons.rocket_launch_rounded,
-              label: '¡Quiero ser proveedor!',
-              color: AppColors.amber,
-              onTap: () => _openAddProfile(context, 'OFICIO'),
-            ),
+          // Mostrar botones de alta según los perfiles que faltan
+          if (auth.canBecomeRole('OFICIO') || auth.canBecomeRole('NEGOCIO')) ...[
+            if (auth.canBecomeRole('OFICIO'))
+              _ActionButton(
+                icon: Icons.handyman_rounded,
+                label: 'Ser profesional independiente',
+                color: AppColors.primary,
+                onTap: () => _openAddProfile(context, 'OFICIO'),
+              ),
+            if (auth.canBecomeRole('OFICIO') && auth.canBecomeRole('NEGOCIO'))
+              const SizedBox(height: 10),
+            if (auth.canBecomeRole('NEGOCIO'))
+              _ActionButton(
+                icon: Icons.storefront_rounded,
+                label: 'Registrar un negocio',
+                color: const Color(0xFF8E2DE2),
+                onTap: () => _openAddProfile(context, 'NEGOCIO'),
+              ),
             const SizedBox(height: 12),
           ],
 
@@ -405,8 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Cuentas guardadas en este dispositivo',
             color: AppColors.primary,
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => const SavedAccountsScreen()),
+              MaterialPageRoute(builder: (_) => const SavedAccountsScreen()),
             ),
           ),
           const SizedBox(height: 12),
@@ -423,28 +497,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  String _roleLabel(String role) {
-    return switch (role) {
-      'ADMIN'     => 'Administrador',
-      'PROVEEDOR' => 'Proveedor',
-      _           => 'Cliente',
-    };
-  }
 
-  /// Descripción detallada que incluye todos los perfiles del usuario.
+  /// Tipo de cuenta visible en la UI.
+  /// Solo muestra "Profesional" / "Negocio" cuando el proveedor ha sido APROBADO;
+  /// mientras esté pendiente, el tipo sigue siendo "Cliente".
   String _accountTypeLabel(AuthProvider auth) {
     if (auth.user?.role == 'ADMIN') return 'Administrador';
+    if (!auth.hasApprovedProvider) return 'Cliente';
 
     final parts = <String>['Cliente'];
-    if (auth.hasOficioProfile)  parts.add('Profesional');
+    if (auth.hasOficioProfile) parts.add('Profesional');
     if (auth.hasNegocioProfile) parts.add('Negocio');
     return parts.join(' + ');
+  }
+
+  /// Navega directamente al panel del tipo indicado ('OFICIO' o 'NEGOCIO').
+  void _openProviderPanel(BuildContext context, String type) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProviderPanel(providerType: type),
+      ),
+    );
   }
 
   void _openAddProfile(BuildContext context, String type) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ProviderOnboardingForm(providerType: type, isStandalone: true),
+        builder: (_) =>
+            ProviderOnboardingForm(providerType: type, isStandalone: true),
       ),
     );
   }
@@ -457,7 +537,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Cerrar sesión', style: TextStyle(color: c.textPrimary)),
-        content: Text('¿Estás seguro de que deseas salir?', style: TextStyle(color: c.textSecondary)),
+        content: Text(
+          '¿Estás seguro de que deseas salir?',
+          style: TextStyle(color: c.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
@@ -470,7 +553,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.busy,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Salir', style: TextStyle(color: Colors.white)),
           ),
@@ -531,18 +616,66 @@ class _ThemeToggleRow extends StatelessWidget {
             Expanded(
               child: Text(
                 theme.isDark ? 'Tema oscuro' : 'Tema claro',
-                style: TextStyle(color: c.textPrimary, fontSize: 15, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Switch(
               value: !theme.isDark,
               onChanged: (_) => theme.toggle(),
-              activeColor: AppColors.amber,
+              activeThumbColor: AppColors.amber,
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+/// Badge de tipo de cuenta con color según rol aprobado.
+/// Cliente = azul | Profesional aprobado = verde | Negocio aprobado = morado
+class _AccountTypeBadge extends StatelessWidget {
+  final AuthProvider auth;
+  const _AccountTypeBadge({required this.auth});
+
+  @override
+  Widget build(BuildContext context) {
+    // Color según el tipo aprobado más relevante
+    final Color color;
+    if (auth.user?.role == 'ADMIN') {
+      color = AppColors.amber;
+    } else if (auth.hasApprovedProvider && auth.hasNegocioProfile) {
+      color = const Color(0xFF8E2DE2); // morado
+    } else if (auth.hasApprovedProvider && auth.hasOficioProfile) {
+      color = AppColors.available; // verde
+    } else {
+      color = AppColors.primary; // azul (cliente o pendiente)
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        _label(),
+        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  String _label() {
+    if (auth.user?.role == 'ADMIN') return 'Administrador';
+    if (!auth.hasApprovedProvider) return 'Cliente';
+    final parts = <String>['Cliente'];
+    if (auth.hasOficioProfile) parts.add('Profesional');
+    if (auth.hasNegocioProfile) parts.add('Negocio');
+    return parts.join(' + ');
   }
 }
 
@@ -569,7 +702,11 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -581,7 +718,14 @@ class _InfoRow extends StatelessWidget {
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: c.border),
-        boxShadow: c.isDark ? null : [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+        boxShadow: c.isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                ),
+              ],
       ),
       child: Row(
         children: [
@@ -592,11 +736,242 @@ class _InfoRow extends StatelessWidget {
             children: [
               Text(label, style: TextStyle(color: c.textMuted, fontSize: 11)),
               const SizedBox(height: 2),
-              Text(value, style: TextStyle(color: c.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                value,
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PendingApprovalBanner extends StatelessWidget {
+  /// 'OFICIO' → color azul/primary | 'NEGOCIO' → morado
+  final String providerType;
+  const _PendingApprovalBanner({required this.providerType});
+
+  bool get _isNegocio => providerType == 'NEGOCIO';
+
+  // Negocio = morado | Profesional (OFICIO) = verde
+  Color get _accentColor =>
+      _isNegocio ? const Color(0xFF8E2DE2) : AppColors.available;
+
+  IconData get _icon =>
+      _isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded;
+
+  String get _title =>
+      _isNegocio
+          ? 'Esperando la aprobación del negocio'
+          : 'Esperando la aprobación del perfil profesional';
+
+  String get _dialogTitle =>
+      _isNegocio ? 'Aprobación del Negocio' : 'Aprobación del Perfil Profesional';
+
+  void _showApprovalInfoDialog(BuildContext context) {
+    final c = context.colors;
+    final accent = _accentColor;
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(_icon, color: accent, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      _dialogTitle,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _ApprovalStep(
+                number: '1',
+                title: 'Revisión de datos',
+                description: 'El equipo de OficioApp verifica que la información de tu perfil sea correcta y completa.',
+              ),
+              const SizedBox(height: 14),
+              _ApprovalStep(
+                number: '2',
+                title: 'Verificación de identidad',
+                description: 'Si proporcionaste DNI u otros documentos, se valida su autenticidad.',
+              ),
+              const SizedBox(height: 14),
+              _ApprovalStep(
+                number: '3',
+                title: 'Notificación de aprobación',
+                description: 'Recibirás una notificación en la app cuando tu perfil sea aprobado y esté visible para los clientes.',
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: c.bgInput,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.schedule_rounded, color: AppColors.amber, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'El proceso suele demorar entre 24 y 48 horas hábiles.',
+                        style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final accent = _accentColor;
+    return GestureDetector(
+      onTap: () => _showApprovalInfoDialog(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: accent.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Icon(_icon, color: accent, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _title,
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Toca para conocer el proceso de revisión',
+                    style: TextStyle(color: c.textMuted, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: accent, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ApprovalStep extends StatelessWidget {
+  final String number;
+  final String title;
+  final String description;
+
+  const _ApprovalStep({
+    required this.number,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -607,7 +982,12 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _ActionButton({required this.icon, required this.label, required this.color, required this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -624,7 +1004,14 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(width: 12),
-            Text(label, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const Spacer(),
             Icon(Icons.arrow_forward_ios_rounded, color: color, size: 14),
           ],
@@ -634,72 +1021,3 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-class _ProfileSwitcher extends StatelessWidget {
-  final AuthProvider auth;
-  const _ProfileSwitcher({required this.auth});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: c.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border),
-      ),
-      child: Row(
-        children: [
-          if (auth.hasOficioProfile)
-            Expanded(child: _ProfileTab(icon: Icons.handyman_rounded,  label: 'Profesional', color: AppColors.primary,        isActive: auth.activeProfileType == 'OFICIO',  onTap: () => auth.switchProfile('OFICIO'))),
-          if (auth.hasOficioProfile && auth.hasNegocioProfile)
-            const SizedBox(width: 4),
-          if (auth.hasNegocioProfile)
-            Expanded(child: _ProfileTab(icon: Icons.storefront_rounded, label: 'Mi Negocio',  color: const Color(0xFF8E2DE2), isActive: auth.activeProfileType == 'NEGOCIO', onTap: () => auth.switchProfile('NEGOCIO'))),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileTab extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _ProfileTab({required this.icon, required this.label, required this.color, required this.isActive, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isActive ? color.withValues(alpha: 0.14) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: isActive ? Border.all(color: color.withValues(alpha: 0.4)) : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: isActive ? color : c.textMuted, size: 18),
-            const SizedBox(width: 7),
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive ? color : c.textMuted,
-                fontSize: 13,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/errors/app_exception.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../data/reviews_repository.dart';
 
@@ -96,17 +98,39 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
         comment:    _commentController.text.trim().isNotEmpty ? _commentController.text.trim() : null,
         qrCode:     _validationMethod == 2 ? _qrController.text.trim() : null,
       );
-      if (mounted) {
-        Navigator.of(context).pop(true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Reseña publicada con éxito! Gracias.'), backgroundColor: AppColors.available),
-        );
-      }
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      final msg = _extractErrorMessage(e);
+      // Si el backend dice "ya existe" es porque la reseña SÍ se guardó
+      // en un intento anterior (race condition). Tratarlo como éxito.
+      if (_isAlreadySubmittedError(msg)) {
+        if (mounted) Navigator.of(context).pop(true);
+        return;
+      }
+      if (mounted) setState(() => _errorMessage = msg);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Extrae el mensaje legible de cualquier tipo de excepción.
+  String _extractErrorMessage(Object e) {
+    if (e is DioException) {
+      final inner = e.error;
+      if (inner is AppException) return inner.message;
+      if (e.message != null && e.message!.isNotEmpty) return e.message!;
+    }
+    if (e is AppException) return e.message;
+    return e.toString();
+  }
+
+  /// Detecta si el error indica que la reseña ya fue guardada previamente.
+  bool _isAlreadySubmittedError(String msg) {
+    final lower = msg.toLowerCase();
+    return lower.contains('ya dejaste') ||
+        lower.contains('ya existe') ||
+        lower.contains('already') ||
+        lower.contains('duplicate');
   }
 
   @override

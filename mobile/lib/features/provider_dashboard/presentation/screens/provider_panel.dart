@@ -3,6 +3,7 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
+import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
 import 'panel_home_tab.dart';
 import 'panel_profile_tab.dart';
 import 'panel_services_tab.dart';
@@ -10,7 +11,9 @@ import 'panel_stats_tab.dart';
 import 'panel_settings_tab.dart';
 
 class ProviderPanel extends StatefulWidget {
-  const ProviderPanel({super.key});
+  /// Tipo de perfil que abre el panel: 'OFICIO' | 'NEGOCIO' | null (usa activeProfileType)
+  final String? providerType;
+  const ProviderPanel({super.key, this.providerType});
 
   @override
   State<ProviderPanel> createState() => _ProviderPanelState();
@@ -25,10 +28,25 @@ class _ProviderPanelState extends State<ProviderPanel> {
   void _togglePause(bool paused) => setState(() => _isPaused = paused);
 
   @override
+  void initState() {
+    super.initState();
+    // Si se especifica un tipo, sincronizar el perfil activo y cargar el dashboard correcto
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
+      if (widget.providerType != null) {
+        auth.switchProfile(widget.providerType!);
+      }
+      context.read<DashboardProvider>().loadDashboard(
+        providerType: widget.providerType ?? auth.activeProfileType,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final auth    = context.watch<AuthProvider>();
-    final isNeg   = auth.activeProfileType == 'NEGOCIO';
+    final isNeg   = (widget.providerType ?? auth.activeProfileType) == 'NEGOCIO';
 
     return Scaffold(
       backgroundColor: c.bg,

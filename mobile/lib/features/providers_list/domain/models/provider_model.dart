@@ -22,6 +22,12 @@ class ProviderModel {
   final String? address;
   final Map<String, dynamic>? scheduleJson;
   final List<Map<String, dynamic>>? reviews;
+  /// Nombre real del dueño/profesional (de user.firstName + user.lastName)
+  final String? ownerName;
+  /// Avatar del dueño — relevante sobre todo para tipo OFICIO
+  final String? ownerAvatarUrl;
+  /// Plan de suscripción: 'GRATIS' | 'BASICO' | 'ESTANDAR' | 'PREMIUM'
+  final String subscriptionPlan;
 
   const ProviderModel({
     required this.id,
@@ -45,6 +51,9 @@ class ProviderModel {
     this.address,
     this.scheduleJson,
     this.reviews,
+    this.ownerName,
+    this.ownerAvatarUrl,
+    this.subscriptionPlan = 'GRATIS',
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -82,7 +91,18 @@ class ProviderModel {
       reviews:      (json['reviews'] as List?)
                       ?.map((r) => r as Map<String, dynamic>)
                       .toList(),
+      ownerName:        _buildOwnerName(json['user']),
+      ownerAvatarUrl:   json['user']?['avatarUrl'] as String?,
+      subscriptionPlan: json['subscription']?['plan'] as String? ?? 'GRATIS',
     );
+  }
+
+  static String? _buildOwnerName(dynamic user) {
+    if (user == null) return null;
+    final first = user['firstName'] as String? ?? '';
+    final last  = user['lastName']  as String? ?? '';
+    final full  = '$first $last'.trim();
+    return full.isEmpty ? null : full;
   }
 
   ProviderModel copyWith({
@@ -90,27 +110,30 @@ class ProviderModel {
     List<Map<String, dynamic>>? reviews,
   }) {
     return ProviderModel(
-      id:             id,
-      businessName:   businessName,
-      categoryName:   categoryName,
-      phone:          phone,
-      whatsapp:       whatsapp,
-      averageRating:  averageRating,
-      totalReviews:   totalReviews,
-      availability:   availability,
-      isVerified:     isVerified,
-      hasCleanRecord: hasCleanRecord,
-      type:           type,
-      coverImageUrl:  coverImageUrl,
-      thumbnailUrls:  thumbnailUrls,
-      latitude:       latitude,
-      longitude:      longitude,
-      distanceKm:     distanceKm,
-      isFavorite:     isFavorite ?? this.isFavorite,
-      description:    description,
-      address:        address,
-      scheduleJson:   scheduleJson,
-      reviews:        reviews ?? this.reviews,
+      id:               id,
+      businessName:     businessName,
+      categoryName:     categoryName,
+      phone:            phone,
+      whatsapp:         whatsapp,
+      averageRating:    averageRating,
+      totalReviews:     totalReviews,
+      availability:     availability,
+      isVerified:       isVerified,
+      hasCleanRecord:   hasCleanRecord,
+      type:             type,
+      coverImageUrl:    coverImageUrl,
+      thumbnailUrls:    thumbnailUrls,
+      latitude:         latitude,
+      longitude:        longitude,
+      distanceKm:       distanceKm,
+      isFavorite:       isFavorite ?? this.isFavorite,
+      description:      description,
+      address:          address,
+      scheduleJson:     scheduleJson,
+      reviews:          reviews ?? this.reviews,
+      ownerName:        ownerName,
+      ownerAvatarUrl:   ownerAvatarUrl,
+      subscriptionPlan: subscriptionPlan,
     );
   }
 }

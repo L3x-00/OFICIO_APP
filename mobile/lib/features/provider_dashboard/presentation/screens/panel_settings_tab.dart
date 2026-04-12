@@ -66,8 +66,13 @@ class PanelSettingsTab extends StatelessWidget {
                   if (profile?.subscription != null) ...[
                     _SectionLabel(label: 'Suscripción'),
                     _SubscriptionCard(sub: profile!.subscription!),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                   ],
+
+                  // Planes disponibles (siempre visible para proveedores)
+                  _SectionLabel(label: 'Subir de rango'),
+                  _UpgradePlansSection(currentPlan: profile?.subscription?.plan ?? 'GRATIS'),
+                  const SizedBox(height: 16),
 
                   // Apariencia
                   _SectionLabel(label: 'Apariencia'),
@@ -133,7 +138,9 @@ class PanelSettingsTab extends StatelessWidget {
                   const SizedBox(height: 20),
                   Center(
                     child: Text(
-                      'ConfiServ v1.0.0 — Panel de Profesionales',
+                      profile?.type == 'NEGOCIO'
+                          ? 'ConfiServ v1.0.0 — Panel de Negocios'
+                          : 'ConfiServ v1.0.0 — Panel Profesional',
                       style: TextStyle(color: c.textMuted, fontSize: 11),
                     ),
                   ),
@@ -349,14 +356,12 @@ class _SettingsTile extends StatelessWidget {
   final String label;
   final String? subtitle;
   final VoidCallback? onTap;
-  final Color? iconColor;
 
   const _SettingsTile({
     required this.icon,
     required this.label,
     this.subtitle,
     this.onTap,
-    this.iconColor,
   });
 
   @override
@@ -374,7 +379,7 @@ class _SettingsTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: iconColor ?? c.textSecondary, size: 20),
+            Icon(icon, color: c.textSecondary, size: 20),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -525,6 +530,229 @@ class _SubscriptionCard extends StatelessWidget {
               ),
               child: Text('Renovar', style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold)),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Sección de planes de upgrade ────────────────────────────
+
+class _UpgradePlansSection extends StatelessWidget {
+  final String currentPlan; // GRATIS | BASICO | ESTANDAR | PREMIUM
+
+  const _UpgradePlansSection({required this.currentPlan});
+
+  @override
+  Widget build(BuildContext context) {
+    const plans = [
+      _PlanData(
+        id: 'GRATIS',
+        label: 'Gratis',
+        price: 'S/ 0 / mes',
+        features: ['Perfil básico visible', 'Hasta 2 fotos', 'Sin estadísticas'],
+        color: Color(0xFF6B7280),
+        icon: Icons.free_breakfast_rounded,
+      ),
+      _PlanData(
+        id: 'ESTANDAR',
+        label: 'Estándar',
+        price: 'S/ 29 / mes',
+        features: ['Badge verificado azul', 'Hasta 4 fotos', 'Estadísticas básicas', 'Mayor visibilidad'],
+        color: AppColors.standard,
+        icon: Icons.verified_rounded,
+      ),
+      _PlanData(
+        id: 'PREMIUM',
+        label: 'Premium',
+        price: 'S/ 59 / mes',
+        features: ['Badge dorado Premium', 'Fotos ilimitadas', 'Estadísticas avanzadas', 'Prioridad en búsqueda', 'Soporte prioritario'],
+        color: AppColors.premium,
+        icon: Icons.workspace_premium_rounded,
+      ),
+    ];
+
+    return Column(
+      children: plans.map((plan) {
+        final isCurrent = plan.id == currentPlan;
+        return _PlanCard(plan: plan, isCurrent: isCurrent);
+      }).toList(),
+    );
+  }
+}
+
+class _PlanData {
+  final String id;
+  final String label;
+  final String price;
+  final List<String> features;
+  final Color color;
+  final IconData icon;
+
+  const _PlanData({
+    required this.id,
+    required this.label,
+    required this.price,
+    required this.features,
+    required this.color,
+    required this.icon,
+  });
+}
+
+class _PlanCard extends StatelessWidget {
+  final _PlanData plan;
+  final bool isCurrent;
+
+  const _PlanCard({required this.plan, required this.isCurrent});
+
+  void _showRequestDialog(BuildContext context) {
+    final c = context.colors;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: Icon(plan.icon, color: plan.color, size: 36),
+        title: Text(
+          'Solicitar plan ${plan.label}',
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Tu solicitud para el plan ${plan.label} (${plan.price}) será enviada al administrador. '
+          'Te notificaremos cuando sea procesada.',
+          style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Solicitud enviada. El admin te contactará pronto.'),
+                  backgroundColor: plan.color,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: plan.color,
+              foregroundColor: plan.id == 'PREMIUM' ? const Color(0xFF3D2B00) : Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Confirmar', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isCurrent
+            ? plan.color.withValues(alpha: 0.10)
+            : c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isCurrent
+              ? plan.color.withValues(alpha: 0.5)
+              : c.border,
+          width: isCurrent ? 1.5 : 1.0,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: plan.color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(plan.icon, color: plan.color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      plan.label,
+                      style: TextStyle(
+                        color: plan.color,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isCurrent) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: plan.color.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Actual',
+                          style: TextStyle(color: plan.color, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    Text(
+                      plan.price,
+                      style: TextStyle(color: c.textSecondary, fontSize: 12),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
+                  children: plan.features.take(2).map((f) => Text(
+                    '• $f',
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  )).toList(),
+                ),
+              ],
+            ),
+          ),
+          if (!isCurrent) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _showRequestDialog(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: plan.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: plan.color.withValues(alpha: 0.35)),
+                ),
+                child: Text(
+                  'Solicitar',
+                  style: TextStyle(
+                    color: plan.color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

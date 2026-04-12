@@ -1,9 +1,13 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { EventsGateway } from '../events/events.gateway.js';
 
 @Injectable()
 export class ReviewsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsGateway: EventsGateway,
+  ) {}
 
   // ── CREAR RESEÑA ─────────────────────────────────────────
   async create(data: {
@@ -66,23 +70,51 @@ export class ReviewsService {
       }
     }
 
-    // Crear la reseña
-    const review = await this.prisma.review.create({
-      data: {
-        providerId: data.providerId,
-        userId: data.userId,
-        rating: data.rating,
-        comment: data.comment,
-        photoUrl: data.photoUrl,
-        userLatAtReview: data.userLatAtReview,
-        userLngAtReview: data.userLngAtReview,
-        qrCodeUsed: data.qrCodeUsed,
-        isVisible: true,
-      },
+    // Crear reseña y actualizar rating en una transacción atómica.
+    // Si el rating update falla, la reseña NO queda huérfana en la BD.
+    const review = await this.prisma.$transaction(async (tx) => {
+      const newReview = await tx.review.create({
+        data: {
+          providerId:      data.providerId,
+          userId:          data.userId,
+          rating:          data.rating,
+          comment:         data.comment,
+          photoUrl:        data.photoUrl,
+          userLatAtReview: data.userLatAtReview,
+          userLngAtReview: data.userLngAtReview,
+          qrCodeUsed:      data.qrCodeUsed,
+          isVisible:       true,
+        },
+        include: {
+          user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        },
+      });
+
+      // Recalcular promedio dentro de la transacción
+      const agg = await tx.review.aggregate({
+        where:  { providerId: data.providerId, isVisible: true },
+        _avg:   { rating: true },
+        _count: { rating: true },
+      });
+      await tx.provider.update({
+        where: { id: data.providerId },
+        data:  {
+          averageRating: agg._avg.rating ?? 0,
+          totalReviews:  agg._count.rating,
+        },
+      });
+
+      return newReview;
     });
 
-    // Actualizar el promedio del proveedor en la misma transacción
-    await this.updateProviderRating(data.providerId);
+    // Notificar al proveedor que recibió una nueva reseña
+    const reviewerName = `${review.user?.firstName ?? ''} ${review.user?.lastName ?? ''}`.trim() || 'Un usuario';
+    this.eventsGateway.emitNotification({
+      type: 'NEW_REVIEW',
+      title: 'Nueva reseña recibida ⭐',
+      body: `${reviewerName} te dejó una reseña de ${data.rating} estrella${data.rating === 1 ? '' : 's'}.`,
+      targetUserId: provider.userId,
+    });
 
     return review;
   }

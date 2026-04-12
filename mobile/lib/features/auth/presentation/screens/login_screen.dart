@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'forgot_password_screen.dart';
+import 'otp_verification_screen.dart';
 
 enum AuthMode { login, register }
 
@@ -104,14 +105,10 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Cuenta creada! Elige tu rol para continuar.'),
-            backgroundColor: AppColors.available,
-            duration: Duration(seconds: 3),
-          ),
+        // Navegar a la pantalla de verificación OTP (reemplaza esta ruta)
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const OtpVerificationScreen()),
         );
-        Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

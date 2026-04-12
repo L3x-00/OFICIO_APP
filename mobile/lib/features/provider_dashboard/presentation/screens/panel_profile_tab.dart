@@ -83,7 +83,7 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
       backgroundColor: c.bgCard,
       pinned: true,
       title: Text(
-        'Mi Perfil',
+        widget.isNegocio ? 'Perfil de Negocio' : 'Perfil Profesional',
         style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
       ),
       actions: [

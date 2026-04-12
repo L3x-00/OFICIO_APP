@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User.js'
+export type * from './models/OtpCode.js'
 export type * from './models/RefreshToken.js'
 export type * from './models/Locality.js'
 export type * from './models/Category.js'

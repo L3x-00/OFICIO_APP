@@ -168,23 +168,41 @@ class AuthRepository {
   // ── RESTAURAR SESIÓN DESDE CUENTA GUARDADA ──────────────
   Future<ApiResult<UserModel>> loginFromSaved(SavedAccount account) async {
     try {
-      final user = UserModel(
-        id:        account.userId,
-        email:     account.email,
-        firstName: account.firstName,
-        lastName:  account.lastName,
-        role:      'USUARIO',
+      // Inyectar tokens primero para que las llamadas autenticadas funcionen
+      DioClient.instance.setTokens(
+        accessToken:  account.accessToken,
+        refreshToken: account.refreshToken,
       );
+
+      // Obtener datos frescos del backend (incluye avatarUrl, role real, etc.)
+      UserModel user;
+      try {
+        final response = await _dio.get('/users/me');
+        final data = response.data as Map<String, dynamic>;
+        user = UserModel(
+          id:        data['id']        as int,
+          email:     data['email']     as String,
+          firstName: data['firstName'] as String? ?? account.firstName,
+          lastName:  data['lastName']  as String? ?? account.lastName,
+          role:      data['role']      as String? ?? 'USUARIO',
+          avatarUrl: data['avatarUrl'] as String?,
+          phone:     data['phone']     as String?,
+        );
+      } catch (_) {
+        // Si el backend no responde, usar datos locales como fallback
+        user = UserModel(
+          id:        account.userId,
+          email:     account.email,
+          firstName: account.firstName,
+          lastName:  account.lastName,
+          role:      'USUARIO',
+        );
+      }
 
       await AuthLocalStorage.saveSession(
         accessToken:  account.accessToken,
         refreshToken: account.refreshToken,
         user:         user,
-      );
-
-      DioClient.instance.setTokens(
-        accessToken:  account.accessToken,
-        refreshToken: account.refreshToken,
       );
 
       return Success(user);
@@ -311,6 +329,40 @@ class AuthRepository {
         e.error is AppException
             ? e.error as AppException
             : ServerException(e.message ?? 'Error al restablecer la contraseña'),
+      );
+    }
+  }
+
+  // ── ENVIAR OTP ────────────────────────────────────────────
+  Future<ApiResult<Map<String, dynamic>>> sendOtp(int userId) async {
+    try {
+      final response = await _dio.post('/auth/send-otp', data: {'userId': userId});
+      return Success(Map<String, dynamic>.from(response.data as Map));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al enviar el código'),
+      );
+    }
+  }
+
+  // ── VERIFICAR OTP ─────────────────────────────────────────
+  Future<ApiResult<Map<String, dynamic>>> verifyOtp({
+    required int userId,
+    required String code,
+  }) async {
+    try {
+      final response = await _dio.post('/auth/verify-otp', data: {
+        'userId': userId,
+        'code':   code,
+      });
+      return Success(Map<String, dynamic>.from(response.data as Map));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Código inválido o expirado'),
       );
     }
   }

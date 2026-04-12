@@ -1,0 +1,26 @@
+tarea 1: 
+Errores críticos de UI y Flujo (Overflow y Login bloqueado)
+Analiza los logs de mi terminal móvil. Se detectaron dos errores críticos:
+A RenderFlex overflowed by 39 pixels on the bottom. justo después de POST /auth/register → 201. Esto ocurre en la pantalla de OtpVerificationScreen o en WelcomeScreen. Revisa los layouts que usan Column sin Expanded o SingleChildScrollView, específicamente donde se renderizan los campos de texto OTP (6 cajas) más el botón "Reenviar", ya que en pantallas pequeñas o con el teclado abierto colapsa.
+POST /auth/login → 401. Cuando un usuario se registra, va a OTP, vuelve atrás e intenta loguearse inmediatamente, el backend le da 401. Seguramente porque en auth.service.ts el método registerUser marca el email como verificado (isEmailVerified: true) en la base de datos al crear el OTP, PERO el login válida isEmailVerified y resulta que al verificar el OTP no se actualiza correctamente la sesión local o el backend exige verificación antes de loguearse. Revisa el flujo exacto de register → OTP → volver → login para ver dónde se rompe el estado.
+
+tarea 2:
+Problemas de Lógica de Navegación y Redundancia
+Hay un problema de UX redundante que debe corregirse sin crear widgets nuevos:
+En ProfileScreen, en la sección "Mis perfiles de proveedor", tengo 2 botones: "Profesional" y "Negocio". Cuando el usuario presiona uno, la app actualmente ejecuta _openProviderPanel() el cual invoca ProviderTypeSelectorSheet.show() (un modal que vuelve a preguntar "¿Qué panel deseas abrir?"). Esto es redundante y molesto. Si el usuario YA eligió "Profesional" en el perfil, no debería volver a preguntarle.
+Lo mismo ocurre en providers_screen.dart con _openProviderPanel().
+Fix requerido: En profile_screen.dart, el método _openProviderPanel() debe aceptar el parámetro String type (ej: 'OFICIO' o 'NEGOCIO'). Si auth.providerProfiles.length == 2, recién ahí muestra el ProviderTypeSelectorSheet. Si length == 1 o si viene un type predefinido desde el botón, debe navegar directamente a ProviderPanel(providerType: type) sin mostrar el modal intermedio. Actualizar los botones del perfil para que envíen su tipo correspondiente.
+
+tarea 3:
+ Desactivación temporal de OTP y diferenciación de Paneles
+Se necesitan dos cambios rápidos de lógica de negocio:
+DESACTIVAR OTP TEMPORALMENTE: Como no tengo un servicio de correo configurado, el OTP se genera pero no llega a ninguna parte. Para no bloquear el registro, necesito que la app NO redirija a OtpVerificationScreen después de registrarse, sino que vaya directamente al flujo normal (Onboarding o Home). En auth_provider.dart, en el método register(), donde detecta requiresEmailVerification o donde se establece _needsEmailVerification = true, comenta o ignora esa línea temporalmente para que el registro fluya normal. También en main.dart, omite el caso de needsEmailVerification en el switch de navegación. NO borres los archivos de OTP ni el backend, solo evita que la navegación se quede atrapada ahí.
+PANELES IDÉNTICOS: Cuando abro el panel como "Negocio" y como "Profesional", se ven exactamente iguales. Revisa provider_panel.dart. La única diferencia debería ser el título del AppBar ("Panel Profesional" vs "Panel de Negocio") y quizás el ícono. Verifica si DashboardProvider está cargando los datos correctos según el providerType y si la UI refleja ese tipo (ej: si es negocio, mostrar "Tu Negocio", si es profesional, mostrar "Tu Servicio").
+
+tarea4:
+Falta de fotos y planes de suscripción (Frontend y Admin)
+Hay problemas de datos que no se están mostrando correctamente a pesar de que el backend los retorna:
+
+Fotos de perfil de usuario y fotos de negocio: El backend (GET /users/me y GET /provider-profile/me) incluye las URLs de las imágenes (avatarUrl y images[]), pero no se muestran en la app. Revisa que en profile_screen.dart el CachedNetworkImage esté usando la URL correcta de auth.user?.avatarUrl y en panel_profile_tab.dart se esté iterando profile.images[] para mostrar la galería. Es probable que el modelo en Flutter no esté mapeando el campo images desde el JSON del backend o que no se estén poblando en la consulta Prisma del backend (revisa include: { images: true } en provider-profile.service.ts).
+Falta la opción de "Subir de rango" (Estandar/Premium) en Frontend: Ya se creó la visualización de los badges en service_card.dart, pero falta el lugar donde el proveedor SOLICITA el cambio de plan. Debe haber un botón o sección en panel_settings_tab.dart (dentro del panel de profesional y negocio) que muestre los planes (Gratis, Estándar, Premium) con la información que se mostraba en el modal de JoinUsModal (los recuadros con precios y características) y un botón para "Solicitar upgrade".
+Falta la misma opción en el Admin Panel: En el admin (admin/app/providers/), cuando un admin aprueba a un proveedor, debería existir la posibilidad de asignarle manualmente un plan (Estandar o Premium) en lugar de dejarlo siempre en "Gratis/Gracia". Revisa la vista de edición de proveedor en el admin para añadir un dropdown o botón de "Cambiar Plan de Suscripción".

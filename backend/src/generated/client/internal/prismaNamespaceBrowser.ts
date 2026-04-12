@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  OtpCode: 'OtpCode',
   RefreshToken: 'RefreshToken',
   Locality: 'Locality',
   Category: 'Category',
@@ -92,11 +93,23 @@ export const UserScalarFieldEnum = {
   lastName: 'lastName',
   avatarUrl: 'avatarUrl',
   isActive: 'isActive',
+  isEmailVerified: 'isEmailVerified',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const OtpCodeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  code: 'code',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type OtpCodeScalarFieldEnum = (typeof OtpCodeScalarFieldEnum)[keyof typeof OtpCodeScalarFieldEnum]
 
 
 export const RefreshTokenScalarFieldEnum = {

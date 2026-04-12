@@ -7,11 +7,14 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
+import 'features/auth/presentation/screens/otp_verification_screen.dart';
 import 'features/auth/presentation/screens/profile_screen.dart';
 import 'features/favorites/presentation/providers/favorites_provider.dart';
 import 'features/favorites/presentation/screens/favorites_screen.dart';
 import 'features/providers_list/presentation/screens/providers_screen.dart';
 import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
+import 'features/notifications/presentation/providers/notifications_provider.dart';
+import 'features/notifications/presentation/screens/notifications_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +28,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
       ],
       child: const ConfiServApp(),
     ),
@@ -50,20 +54,117 @@ class ConfiServApp extends StatelessWidget {
   }
 }
 
-/// Árbol de navegación basado en el estado de autenticación
-class _AppRoot extends StatelessWidget {
+/// Árbol de navegación basado en el estado de autenticación.
+/// Stateful para poder detectar el flag [wasDeactivated] y mostrar
+/// el diálogo de cuenta desactivada antes de redirigir al login.
+class _AppRoot extends StatefulWidget {
   const _AppRoot();
+
+  @override
+  State<_AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends State<_AppRoot> {
+  @override
+  void initState() {
+    super.initState();
+    // Escuchar cambios del AuthProvider para detectar desactivación remota
+    context.read<AuthProvider>().addListener(_onAuthChanged);
+  }
+
+  @override
+  void dispose() {
+    context.read<AuthProvider>().removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  void _onAuthChanged() {
+    final auth   = context.read<AuthProvider>();
+    final notifs = context.read<NotificationsProvider>();
+
+    // Sincronizar NotificationsProvider con el estado de autenticación
+    if (auth.user != null) {
+      notifs.setUser(
+        userId: auth.user!.id,
+        role:   auth.user!.role,
+      );
+    } else {
+      notifs.clearUser();
+    }
+
+    if (!auth.wasDeactivated || !mounted) return;
+
+    // Limpiar el flag antes de mostrar el diálogo para evitar re-trigger
+    auth.clearDeactivatedFlag();
+
+    // Mostrar después del frame actual (la UI ya habrá cambiado a WelcomeScreen)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _showDeactivationDialog();
+    });
+  }
+
+  void _showDeactivationDialog() {
+    final c = context.colors;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: AppColors.busy.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.block_rounded, color: AppColors.busy, size: 34),
+        ),
+        title: Text(
+          'Cuenta desactivada',
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Tu cuenta ha sido desactivada por el administrador.\n\n'
+          'Por favor comunícate con soporte para recibir más información.\n\n'
+          '📧 soporte@confiserv.com',
+          style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
     return switch (auth.navigationState) {
-      AppNavigationState.loading         => const SplashScreen(),
-      AppNavigationState.unauthenticated => const WelcomeScreen(),
-      AppNavigationState.guest           => const _MainNavigation(userId: null),
-      AppNavigationState.needsOnboarding => const OnboardingScreen(),
-      AppNavigationState.authenticated   => _MainNavigation(userId: auth.user!.id),
+      AppNavigationState.loading                => const SplashScreen(),
+      AppNavigationState.unauthenticated        => const WelcomeScreen(),
+      AppNavigationState.guest                  => const _MainNavigation(userId: null),
+      AppNavigationState.needsEmailVerification => const OtpVerificationScreen(),
+      AppNavigationState.needsOnboarding        => const OnboardingScreen(),
+      AppNavigationState.authenticated          => _MainNavigation(userId: auth.user!.id),
     };
   }
 }
@@ -104,6 +205,7 @@ class _MainNavigationState extends State<_MainNavigation> {
         children: [
           const ProvidersScreen(),
           FavoritesScreen(userId: _isGuest ? null : widget.userId!),
+          const NotificationsScreen(),
           const ProfileScreen(),
         ],
       ),
@@ -142,10 +244,33 @@ class _BottomNav extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search_rounded),          label: 'Explorar'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded),  activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded),   activeIcon: Icon(Icons.person_rounded),   label: 'Perfil'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'Explorar'),
+          const BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
+          BottomNavigationBarItem(
+            label: 'Alertas',
+            icon: Consumer<NotificationsProvider>(
+              builder: (_, notifs, __) => Badge(
+                isLabelVisible: notifs.unreadCount > 0,
+                label: Text(
+                  notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
+                  style: const TextStyle(fontSize: 10),
+                ),
+                child: const Icon(Icons.notifications_none_rounded),
+              ),
+            ),
+            activeIcon: Consumer<NotificationsProvider>(
+              builder: (_, notifs, __) => Badge(
+                isLabelVisible: notifs.unreadCount > 0,
+                label: Text(
+                  notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
+                  style: const TextStyle(fontSize: 10),
+                ),
+                child: const Icon(Icons.notifications_rounded),
+              ),
+            ),
+          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'Perfil'),
         ],
       ),
     );

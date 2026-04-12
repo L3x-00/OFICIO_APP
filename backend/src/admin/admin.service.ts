@@ -260,6 +260,42 @@ export class AdminService {
     });
   }
 
+  // ── CAMBIAR PLAN DE SUSCRIPCIÓN ────────────────────────────
+  async updateProviderSubscription(id: number, plan: string) {
+    const validPlans = ['GRATIS', 'BASICO', 'ESTANDAR', 'PREMIUM'];
+    if (!validPlans.includes(plan)) {
+      throw new BadRequestException(`Plan inválido. Valores permitidos: ${validPlans.join(', ')}`);
+    }
+
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+      include: { subscription: true },
+    });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    if (provider.subscription) {
+      return this.prisma.subscription.update({
+        where: { providerId: id },
+        data: {
+          plan:   plan as any,
+          status: plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA',
+        },
+      });
+    }
+
+    // Si no tiene suscripción, crear una
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+    return this.prisma.subscription.create({
+      data: {
+        providerId: id,
+        plan:       plan as any,
+        status:     plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA',
+        endDate,
+      },
+    });
+  }
+
   // ── TOGGLE VISIBILIDAD ────────────────────────────────────
   async toggleProviderVisibility(id: number) {
     const provider = await this.prisma.provider.findUnique({ where: { id } });
@@ -329,12 +365,20 @@ export class AdminService {
     // Invalidar caché para que la app móvil vea al proveedor de inmediato
     await this.clearProvidersCache();
 
-    // Notificar en tiempo real a todos los clientes conectados
+    // Notificar en tiempo real a todos los clientes conectados (admin panel)
     this.eventsGateway.emitProviderStatusChanged({
       id: updated.id,
       businessName: updated.businessName,
       verificationStatus: updated.verificationStatus,
       isVerified: updated.isVerified,
+    });
+
+    // Notificar al proveedor específico en la app móvil
+    this.eventsGateway.emitNotification({
+      type: 'PROVIDER_APPROVED',
+      title: '¡Perfil aprobado! ✅',
+      body: `Tu perfil "${updated.businessName}" fue aprobado. ¡Ya apareces en la plataforma!`,
+      targetUserId: provider.userId,
     });
 
     return updated;
@@ -367,6 +411,14 @@ export class AdminService {
       businessName: updated.businessName,
       verificationStatus: updated.verificationStatus,
       isVerified: updated.isVerified,
+    });
+
+    // Notificar al proveedor específico en la app móvil
+    this.eventsGateway.emitNotification({
+      type: 'PROVIDER_REJECTED',
+      title: 'Perfil rechazado',
+      body: `Tu perfil "${updated.businessName}" no fue aprobado. Motivo: ${reason}`,
+      targetUserId: provider.userId,
     });
 
     return updated;
@@ -513,11 +565,18 @@ export class AdminService {
     if (!user) throw new NotFoundException('Usuario no encontrado');
     if (user.role === 'ADMIN') throw new BadRequestException('No se puede modificar el estado de un administrador');
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: { isActive },
       select: { id: true, email: true, isActive: true, role: true },
     });
+
+    // Notificar en tiempo real al dispositivo del usuario para forzar cierre de sesión
+    if (!isActive) {
+      this.eventsGateway.emitUserDeactivated(id);
+    }
+
+    return updated;
   }
 
   // ── NOTIFICACIONES ────────────────────────────────────────

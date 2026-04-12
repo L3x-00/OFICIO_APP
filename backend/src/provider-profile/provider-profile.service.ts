@@ -6,21 +6,29 @@ import { AvailabilityStatus } from '../generated/client/enums.js';
 export class ProviderProfileService {
   constructor(private prisma: PrismaService) {}
 
-  // ── HELPER: obtener proveedor por userId (primer perfil) ──
-  private async findProviderByUser(userId: number) {
-    const provider = await this.prisma.provider.findFirst({ where: { userId } });
+  // ── HELPER: obtener proveedor por userId (y opcionalmente por tipo) ──
+  private async findProviderByUser(userId: number, type?: string) {
+    const where: any = { userId };
+    if (type === 'OFICIO' || type === 'NEGOCIO') where.type = type;
+    const provider = await this.prisma.provider.findFirst({ where });
     if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
     return provider;
   }
 
   // ── OBTENER MI PERFIL DE PROVEEDOR ───────────────────────
-  async getMyProfile(userId: number) {
+  // type = 'OFICIO' | 'NEGOCIO' — si no se pasa, devuelve el primer perfil encontrado
+  async getMyProfile(userId: number, type?: string) {
+    const where: any = { userId };
+    if (type === 'OFICIO' || type === 'NEGOCIO') {
+      where.type = type;
+    }
+
     const provider = await this.prisma.provider.findFirst({
-      where: { userId },
+      where,
       include: {
         category:     { select: { id: true, name: true, slug: true } },
         locality:     { select: { id: true, name: true, department: true } },
-        images:       { select: { id: true, url: true } },
+        images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         subscription: { select: { plan: true, status: true, endDate: true } },
         verificationDocs: {
           select: { id: true, docType: true, status: true },
@@ -53,8 +61,10 @@ export class ProviderProfileService {
       where: { id: provider.id },
       data,
       include: {
-        category: { select: { name: true } },
-        locality:  { select: { name: true } },
+        category:     { select: { id: true, name: true, slug: true } },
+        locality:     { select: { id: true, name: true, department: true } },
+        images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
+        subscription: { select: { plan: true, status: true, endDate: true } },
       },
     });
   }
