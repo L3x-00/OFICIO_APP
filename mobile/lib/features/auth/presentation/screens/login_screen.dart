@@ -248,10 +248,10 @@ class _LoginScreenState extends State<LoginScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: AppColors.primary.withOpacity(0.3)),
+                          color: AppColors.primary.withValues(alpha: 0.3)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -473,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen>
 
                 // ── Botón principal ─────────────────────────
                 Consumer<AuthProvider>(
-                  builder: (_, auth, __) => SizedBox(
+                  builder: (_, auth, _) => SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: auth.isLoading ? null : _submit,

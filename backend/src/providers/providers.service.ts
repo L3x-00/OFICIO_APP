@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 
 @Injectable()
 export class ProvidersService {
@@ -8,6 +9,7 @@ export class ProvidersService {
   // ── LISTAR proveedores con filtros opcionales ────────────
   async findAll(filters: {
     categorySlug?: string;
+    parentCategorySlug?: string; // filtra por macrocategoría (incluye subcategorías)
     availability?: string;
     search?: string;
     localityId?: number;
@@ -23,6 +25,7 @@ export class ProvidersService {
   }) {
     const {
       categorySlug,
+      parentCategorySlug,
       availability,
       search,
       localityId,
@@ -35,37 +38,48 @@ export class ProvidersService {
     } = filters;
 
     // Solo proveedores visibles y aprobados por el admin
-    const where: any = { isVisible: true, verificationStatus: 'APROBADO' };
+    const where: Prisma.ProviderWhereInput = { isVisible: true, verificationStatus: 'APROBADO' };
 
-    if (categorySlug) {
+    if (parentCategorySlug) {
+      // Muestra proveedores cuya categoría es hija de la macrocategoría dada
+      where.category = { parent: { slug: parentCategorySlug } };
+    } else if (categorySlug) {
       where.category = { slug: categorySlug };
     }
     if (availability) {
-      where.availability = availability;
+      where.availability = availability as AvailabilityStatus;
     }
     if (localityId) {
       where.localityId = localityId;
     }
 
-    // Filtro por tipo de proveedor (PROFESSIONAL | BUSINESS)
-    if (type === 'PROFESSIONAL' || type === 'BUSINESS') {
-      where.providerType = type;
+    // Filtro por tipo de proveedor: el frontend envía PROFESSIONAL|BUSINESS
+    // pero la BD almacena OFICIO|NEGOCIO en el campo `type`.
+    if (type === 'PROFESSIONAL') {
+      where.type = 'OFICIO';
+    } else if (type === 'BUSINESS') {
+      where.type = 'NEGOCIO';
     }
 
-    // Búsqueda por texto en nombre, descripción y dirección
-    if (search || location) {
-      const term = search || location;
+    // Búsqueda por texto libre (nombre y descripción)
+    if (search) {
       where.OR = [
-        { businessName: { contains: term, mode: 'insensitive' } },
-        { description:  { contains: term, mode: 'insensitive' } },
-        { address:      { contains: term, mode: 'insensitive' } },
+        { businessName: { contains: search, mode: 'insensitive' } },
+        { description:  { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    // Ordenamiento
-    let orderBy: any = { averageRating: 'desc' }; // default: mejor calificación
+    // Filtro de ubicación: solo busca en la dirección para no mezclar ciudades
+    if (location) {
+      where.address = { contains: location, mode: 'insensitive' };
+    }
+
+    // Ordenamiento y umbral de calidad
+    let orderBy: Prisma.ProviderOrderByWithRelationInput = { averageRating: 'desc' }; // default: mejor calificación
     if (sortBy === 'reviews') {
-      orderBy = { totalReviews: 'desc' };
+      // "Mejores reseñas": solo proveedores con ≥ 3.5 estrellas, ordenados de mayor a menor
+      where.averageRating = { gte: 3.5 };
+      orderBy = { averageRating: 'desc' };
     } else if (sortBy === 'availability') {
       orderBy = { availability: 'asc' };
     } else if (sortBy === 'rating') {
@@ -190,7 +204,7 @@ async getAnalyticsSummary(days: number) {
     });
 
     // 2. Agrupamos los datos por día para la gráfica
-    const dailyData = {};
+    const dailyData: Record<string, { date: string; whatsapp: number; calls: number }> = {};
     
     // Inicializamos los días con 0 para que la gráfica no tenga huecos
     for (let i = 0; i < days; i++) {
@@ -211,9 +225,8 @@ async getAnalyticsSummary(days: number) {
 
     // Devolvemos el array ordenado por fecha
     return {
-      dailyClicks: Object.values(dailyData).sort((a: any, b: any) => 
-        a.date.localeCompare(b.date)
-      )
+      dailyClicks: Object.values(dailyData as Record<string, { date: string; whatsapp: number; calls: number }>)
+        .sort((a, b) => a.date.localeCompare(b.date))
     };
   }
 }

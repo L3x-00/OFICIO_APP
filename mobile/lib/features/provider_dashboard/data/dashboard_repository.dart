@@ -27,12 +27,12 @@ class DashboardRepository {
     Map<String, dynamic>? scheduleJson,
   }) async {
     final body = <String, dynamic>{
-      if (businessName != null) 'businessName': businessName,
-      if (description  != null) 'description':  description,
-      if (phone        != null) 'phone':         phone,
-      if (whatsapp     != null) 'whatsapp':      whatsapp,
-      if (address      != null) 'address':       address,
-      if (scheduleJson != null) 'scheduleJson':  scheduleJson,
+      'businessName': ?businessName,
+      'description':  ?description,
+      'phone':        ?phone,
+      'whatsapp':     ?whatsapp,
+      'address':      ?address,
+      'scheduleJson': ?scheduleJson,
     };
     final response = await _dio.patch('/provider-profile/me', data: body);
     return DashboardProfileModel.fromJson(response.data as Map<String, dynamic>);

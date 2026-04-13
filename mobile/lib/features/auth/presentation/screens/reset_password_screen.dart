@@ -77,8 +77,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
-    final auth = context.watch<AuthProvider>();
+    final c         = context.colors;
+    final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -206,14 +206,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: auth.isLoading ? null : _submit,
+                  onPressed: isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: auth.isLoading
+                  child: isLoading
                       ? const SizedBox(
                           height: 20, width: 20,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),

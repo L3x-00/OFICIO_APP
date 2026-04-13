@@ -26,9 +26,6 @@ class PanelProfileTab extends StatefulWidget {
 class _PanelProfileTabState extends State<PanelProfileTab> {
   bool _isSaving = false;
 
-  // Shortcut so all methods in this State can use dynamic colors
-  AppThemeColors get _c => context.colors;
-
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -242,8 +239,8 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isPaused
-                  ? AppColors.delayed.withOpacity(0.4)
-                  : AppColors.available.withOpacity(0.3),
+                  ? AppColors.delayed.withValues(alpha: 0.4)
+                  : AppColors.available.withValues(alpha: 0.3),
             ),
           ),
           child: Column(
@@ -276,9 +273,9 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                   Switch(
                     value: !isPaused,
                     onChanged: (val) => _togglePause(!val, dash),
-                    activeColor: AppColors.available,
+                    activeThumbColor: AppColors.available,
                     inactiveThumbColor: AppColors.delayed,
-                    inactiveTrackColor: AppColors.delayed.withOpacity(0.3),
+                    inactiveTrackColor: AppColors.delayed.withValues(alpha: 0.3),
                   ),
                 ],
               ),
@@ -287,7 +284,7 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.delayed.withOpacity(0.1),
+                    color: AppColors.delayed.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
@@ -356,7 +353,7 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
           decoration: BoxDecoration(
             color: c.bgCard,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.busy.withOpacity(0.3)),
+            border: Border.all(color: AppColors.busy.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -665,7 +662,7 @@ class _EditCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Row(
           children: [
@@ -716,7 +713,7 @@ class _PhotoTile extends StatelessWidget {
         image: DecorationImage(
           image: NetworkImage(url),
           fit: BoxFit.cover,
-          onError: (_, __) {},
+          onError: (_, _) {},
         ),
       ),
       child: Stack(
@@ -759,7 +756,7 @@ class _AddPhotoTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.amber.withOpacity(0.4), width: 1.5),
+          border: Border.all(color: AppColors.amber.withValues(alpha: 0.4), width: 1.5),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -785,9 +782,9 @@ class _EmptyPhotoTile extends StatelessWidget {
       height: 90,
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
-        color: c.bgCard.withOpacity(0.5),
+        color: c.bgCard.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
     );
   }
@@ -815,9 +812,9 @@ class _AvailabilityChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.2) : c.bgCard,
+          color: selected ? color.withValues(alpha: 0.2) : c.bgCard,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? color : Colors.white.withOpacity(0.1)),
+          border: Border.all(color: selected ? color : Colors.white.withValues(alpha: 0.1)),
         ),
         child: Text(
           label,

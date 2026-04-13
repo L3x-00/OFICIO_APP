@@ -81,7 +81,7 @@ class _JoinUsModalState extends State<JoinUsModal>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: c.textMuted.withOpacity(0.3),
+                    color: c.textMuted.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -115,13 +115,13 @@ class _JoinUsModalState extends State<JoinUsModal>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFFFF6B35).withOpacity(0.15),
-                  const Color(0xFFFFB347).withOpacity(0.05),
+                  const Color(0xFFFF6B35).withValues(alpha: 0.15),
+                  const Color(0xFFFFB347).withValues(alpha: 0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFFF6B35).withOpacity(0.2),
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
               ),
             ),
             child: Column(
@@ -136,7 +136,7 @@ class _JoinUsModalState extends State<JoinUsModal>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF6B35).withOpacity(0.3),
+                        color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
                         blurRadius: 20,
                         spreadRadius: 3,
                       ),
@@ -230,12 +230,20 @@ class _JoinUsModalState extends State<JoinUsModal>
 
           // Opciones de tipo — filtradas según perfiles ya existentes
           Consumer<AuthProvider>(
-            builder: (_, auth, __) {
+            builder: (_, auth, _) {
+              // canBecomeRole = aún no tiene perfil de ese tipo
               final canOficio  = !auth.isAuthenticated || auth.canBecomeRole('OFICIO');
               final canNegocio = !auth.isAuthenticated || auth.canBecomeRole('NEGOCIO');
 
-              if (!canOficio && !canNegocio) {
-                // Usuario ya tiene ambos perfiles
+              // hasPending = tiene perfil de ese tipo y está PENDIENTE (no rechazado ni aprobado)
+              final oficioStatus  = auth.verificationStatusFor('OFICIO');
+              final negocioStatus = auth.verificationStatusFor('NEGOCIO');
+              final hasPendingOficio  = auth.isAuthenticated && !canOficio && oficioStatus == 'PENDIENTE';
+              final hasPendingNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'PENDIENTE';
+
+              // "Ambos registrados" = ninguno disponible para registrar Y al menos uno aprobado
+              if (!canOficio && !canNegocio && auth.hasApprovedProvider) {
+                // Ambos perfiles aprobados
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -266,16 +274,19 @@ class _JoinUsModalState extends State<JoinUsModal>
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '¿CÓMO QUIERES APARECER?',
-                    style: TextStyle(
-                      color: c.textMuted,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
+                  if (canOficio || canNegocio) ...[
+                    Text(
+                      '¿CÓMO QUIERES APARECER?',
+                      style: TextStyle(
+                        color: c.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 14),
+                  ],
+                  // Tarjeta de registro (solo si aún no tiene ese perfil)
                   if (canOficio) ...[
                     _TypeCard(
                       icon: Icons.handyman_rounded,
@@ -285,7 +296,15 @@ class _JoinUsModalState extends State<JoinUsModal>
                       gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
                       onTap: () => setState(() => _selectedType = 'OFICIO'),
                     ),
-                    if (canNegocio) const SizedBox(height: 14),
+                    if (canNegocio || hasPendingNegocio) const SizedBox(height: 14),
+                  ],
+                  // Banner de espera si ya registró OFICIO pero no está aprobado
+                  if (hasPendingOficio) ...[
+                    _PendingBanner(
+                      icon: Icons.handyman_rounded,
+                      label: 'Tu perfil de Profesional está esperando aprobación del administrador.',
+                    ),
+                    if (canNegocio || hasPendingNegocio) const SizedBox(height: 14),
                   ],
                   if (canNegocio)
                     _TypeCard(
@@ -296,6 +315,12 @@ class _JoinUsModalState extends State<JoinUsModal>
                       gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
                       onTap: () => setState(() => _selectedType = 'NEGOCIO'),
                     ),
+                  // Banner de espera si ya registró NEGOCIO pero no está aprobado
+                  if (hasPendingNegocio)
+                    _PendingBanner(
+                      icon: Icons.storefront_rounded,
+                      label: 'Tu negocio está esperando aprobación del administrador.',
+                    ),
                 ],
               );
             },
@@ -305,7 +330,7 @@ class _JoinUsModalState extends State<JoinUsModal>
 
           // Opción: Registrarse como cliente (solo para no autenticados)
           Consumer<AuthProvider>(
-            builder: (_, auth, __) {
+            builder: (_, auth, _) {
               if (auth.isAuthenticated) return const SizedBox.shrink();
               return Column(
                 children: [
@@ -554,7 +579,7 @@ class _JoinUsModalState extends State<JoinUsModal>
 
           // CTA: Registro o formulario directo según autenticación
           Consumer<AuthProvider>(
-            builder: (_, auth, __) {
+            builder: (_, auth, _) {
               final alreadyLoggedIn = auth.isAuthenticated;
 
               return Column(
@@ -687,7 +712,7 @@ class _BenefitRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 20),
@@ -740,9 +765,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -762,6 +787,43 @@ class _StatCard extends StatelessWidget {
               color: c.textMuted,
               fontSize: 10,
               height: 1.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Banner estático que indica que un perfil ya fue registrado y está en espera.
+class _PendingBanner extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _PendingBanner({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.available.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.available.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.hourglass_top_rounded, color: AppColors.available, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -797,7 +859,7 @@ class _TypeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Row(
           children: [
@@ -858,13 +920,13 @@ class _PlanCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: plan.isHighlighted
-            ? AppColors.primary.withOpacity(0.08)
+            ? AppColors.primary.withValues(alpha: 0.08)
             : c.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: plan.isHighlighted
-              ? AppColors.primary.withOpacity(0.4)
-              : Colors.white.withOpacity(0.06),
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.06),
           width: plan.isHighlighted ? 1.5 : 1,
         ),
       ),
@@ -970,9 +1032,9 @@ class _FreePeriodBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.available.withOpacity(0.08),
+        color: AppColors.available.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.available.withOpacity(0.3)),
+        border: Border.all(color: AppColors.available.withValues(alpha: 0.3)),
       ),
       child: const Row(
         children: [
@@ -1028,7 +1090,7 @@ class _ProfilePreviewMock extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1042,8 +1104,8 @@ class _ProfilePreviewMock extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    accentColors[0].withOpacity(0.25),
-                    accentColors[1].withOpacity(0.25),
+                    accentColors[0].withValues(alpha: 0.25),
+                    accentColors[1].withValues(alpha: 0.25),
                   ],
                 ),
               ),
@@ -1123,10 +1185,10 @@ class _ProfilePreviewMock extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.verified.withOpacity(0.15),
+                        color: AppColors.verified.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: AppColors.verified.withOpacity(0.3)),
+                            color: AppColors.verified.withValues(alpha: 0.3)),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -1162,12 +1224,12 @@ class _ProfilePreviewMock extends StatelessWidget {
                             color: c.bgInput,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.06)),
+                                color: Colors.white.withValues(alpha: 0.06)),
                           ),
                           child: Center(
                             child: Icon(
                               Icons.image_rounded,
-                              color: c.textMuted.withOpacity(0.4),
+                              color: c.textMuted.withValues(alpha: 0.4),
                               size: 18,
                             ),
                           ),
@@ -1194,10 +1256,10 @@ class _ProfilePreviewMock extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.whatsapp.withOpacity(0.1),
+                          color: AppColors.whatsapp.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppColors.whatsapp.withOpacity(0.25)),
+                              color: AppColors.whatsapp.withValues(alpha: 0.25)),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1221,10 +1283,10 @@ class _ProfilePreviewMock extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.call.withOpacity(0.1),
+                          color: AppColors.call.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppColors.call.withOpacity(0.25)),
+                              color: AppColors.call.withValues(alpha: 0.25)),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,

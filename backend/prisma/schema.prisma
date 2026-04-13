@@ -196,6 +196,12 @@ model Provider {
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
+  // Índices para los filtros más frecuentes del listado público
+  @@index([isVisible, verificationStatus])          // filtro base de todos los queries públicos
+  @@index([isVisible, verificationStatus, averageRating]) // + ordenamiento por rating
+  @@index([type])                                   // filtro por tipo (OFICIO / NEGOCIO)
+  @@index([categoryId])                             // filtro por categoría
+  @@index([localityId])                             // filtro por localidad
   @@map("providers")
 }
 
@@ -257,7 +263,7 @@ model Review {
   userId      Int
   rating      Int       // 1 a 5
   comment     String?
-  photoUrl    String    // Obligatorio — foto evidencia
+  photoUrl    String?   // Foto de evidencia (opcional si la subida falla)
   isVisible   Boolean   @default(true)  // Admin puede ocultar
   
   // Validación anti-fraude
@@ -272,6 +278,7 @@ model Review {
   provider    Provider  @relation(fields: [providerId], references: [id])
   user        User      @relation(fields: [userId], references: [id])
 
+  @@index([providerId, isVisible])  // listado de reseñas de un proveedor
   @@map("reviews")
 }
 
@@ -323,6 +330,8 @@ model ProviderAnalytic {
 
   provider    Provider  @relation(fields: [providerId], references: [id])
 
+  @@index([providerId, eventType])  // conteo de clics por tipo
+  @@index([createdAt])              // filtros por rango de fechas en analytics
   @@map("provider_analytics")
 }
 

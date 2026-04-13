@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus } from '../generated/client/enums.js';
+import { Prisma } from '../generated/client/client.js';
 
 @Injectable()
 export class ProviderProfileService {
@@ -8,8 +9,8 @@ export class ProviderProfileService {
 
   // ── HELPER: obtener proveedor por userId (y opcionalmente por tipo) ──
   private async findProviderByUser(userId: number, type?: string) {
-    const where: any = { userId };
-    if (type === 'OFICIO' || type === 'NEGOCIO') where.type = type;
+    const where: Prisma.ProviderWhereInput = { userId };
+    if (type === 'OFICIO' || type === 'NEGOCIO') where.type = type as Prisma.EnumProviderTypeFilter;
     const provider = await this.prisma.provider.findFirst({ where });
     if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
     return provider;
@@ -18,9 +19,9 @@ export class ProviderProfileService {
   // ── OBTENER MI PERFIL DE PROVEEDOR ───────────────────────
   // type = 'OFICIO' | 'NEGOCIO' — si no se pasa, devuelve el primer perfil encontrado
   async getMyProfile(userId: number, type?: string) {
-    const where: any = { userId };
+    const where: Prisma.ProviderWhereInput = { userId };
     if (type === 'OFICIO' || type === 'NEGOCIO') {
-      where.type = type;
+      where.type = type as Prisma.EnumProviderTypeFilter;
     }
 
     const provider = await this.prisma.provider.findFirst({

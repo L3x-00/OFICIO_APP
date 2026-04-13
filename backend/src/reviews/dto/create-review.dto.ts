@@ -25,9 +25,10 @@ export class CreateReviewDto {
   @MaxLength(1000)
   comment?: string;
 
+  @IsOptional()
   @IsString()
-  @MaxLength(500) // Es buena práctica poner un límite a las URLs
-  photoUrl: string;
+  @MaxLength(500)
+  photoUrl?: string;
 
   @IsOptional()
   @Type(() => Number)

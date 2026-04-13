@@ -43,6 +43,12 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   bool _reviewsError = false;
   late final PageController _pageController = PageController(keepPage: true);
 
+  /// Color de acento según el tipo de proveedor:
+  /// NEGOCIO → morado | OFICIO → azul primary
+  Color get _accent => widget.provider.type == ProviderType.negocio
+      ? const Color(0xFF8E2DE2)
+      : AppColors.primary;
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -96,7 +102,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: c.textMuted.withOpacity(0.4),
+                color: c.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -143,26 +149,34 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 20),
                         ],
 
-                        if (widget.provider.scheduleJson != null) ...[
+                        // ── Horarios ──────────────────────────
+                        if (widget.provider.scheduleJson != null &&
+                            _hasScheduleData(widget.provider.scheduleJson!)) ...[
                           _buildSectionTitle('Horarios'),
                           const SizedBox(height: 8),
                           _buildSchedule(),
                           const SizedBox(height: 20),
                         ],
 
-                        if (widget.provider.latitude != null &&
-                            widget.provider.longitude != null) ...[
+                        // ── Productos / Servicios (solo NEGOCIO) ─
+                        if (widget.provider.type == ProviderType.negocio) ...[
+                          ..._buildServicesSection(),
+                        ],
+
+                        // ── Ubicación ─────────────────────────
+                        if (widget.provider.address != null ||
+                            (widget.provider.latitude != null &&
+                             widget.provider.longitude != null)) ...[
                           _buildSectionTitle('Ubicación'),
+                          const SizedBox(height: 8),
                           if (widget.provider.address != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4, bottom: 8),
+                              padding: const EdgeInsets.only(bottom: 10),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(
-                                    Icons.location_on_rounded,
-                                    color: AppColors.primary,
-                                    size: 16,
-                                  ),
+                                  Icon(Icons.location_on_rounded,
+                                      color: _accent, size: 16),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
@@ -173,14 +187,44 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                                       ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: _openMaps,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: _accent.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.directions_rounded,
+                                              color: _accent, size: 14),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Cómo llegar',
+                                            style: TextStyle(
+                                              color: _accent,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                          _buildMap(),
+                          if (widget.provider.latitude != null &&
+                              widget.provider.longitude != null)
+                            _buildMap(),
                           const SizedBox(height: 20),
                         ],
 
-                        // ── Sección de reseñas ────────────────
+                        // ── Reseñas ───────────────────────────
                         _buildReviewsSection(),
                       ],
                     ),
@@ -216,7 +260,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                   _allImages[index],
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     color: c.bgInput,
                     child: Icon(
                       Icons.image_not_supported,
@@ -255,8 +299,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                     height: 6,
                     decoration: BoxDecoration(
                       color: i == _currentImageIndex
-                          ? AppColors.primary
-                          : Colors.white.withOpacity(0.4),
+                          ? _accent
+                          : Colors.white.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -270,7 +314,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -330,7 +374,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               Text(
                 widget.provider.categoryName,
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: _accent,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -342,9 +386,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.verified.withOpacity(0.15),
+              color: AppColors.verified.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.verified.withOpacity(0.4)),
+              border: Border.all(color: AppColors.verified.withValues(alpha: 0.4)),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
@@ -370,7 +414,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       children: [
         RatingBarIndicator(
           rating: widget.provider.averageRating,
-          itemBuilder: (_, __) =>
+          itemBuilder: (_, _) =>
               const Icon(Icons.star_rounded, color: AppColors.star),
           itemCount: 5,
           itemSize: 20,
@@ -397,9 +441,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -485,7 +529,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           width: 36,
           height: 36,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _avatarPlaceholder(p),
+          errorBuilder: (_, _, _) => _avatarPlaceholder(p),
         ),
       );
     }
@@ -496,8 +540,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     return Container(
       width: 36,
       height: 36,
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
+      decoration: BoxDecoration(
+        color: _accent,
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -513,6 +557,140 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
         ),
       ),
     );
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────
+
+  /// true si el scheduleJson tiene al menos un día con horario definido
+  bool _hasScheduleData(Map<String, dynamic> schedule) {
+    const dayKeys = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
+    return dayKeys.any((d) => schedule[d] != null);
+  }
+
+  /// Abre Google Maps / Maps con la dirección o coordenadas
+  Future<void> _openMaps() async {
+    final p = widget.provider;
+    Uri uri;
+    if (p.latitude != null && p.longitude != null) {
+      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}');
+    } else if (p.address != null) {
+      final q = Uri.encodeComponent(p.address!);
+      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$q');
+    } else {
+      return;
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  /// Sección de productos/servicios para tipo NEGOCIO.
+  /// Lee la lista "services" del scheduleJson.
+  List<Widget> _buildServicesSection() {
+    final schedule = widget.provider.scheduleJson;
+    final rawServices = schedule?['services'];
+    if (rawServices is! List || rawServices.isEmpty) return [];
+
+    final c = context.colors;
+
+    return [
+      _buildSectionTitle('Productos y servicios'),
+      const SizedBox(height: 10),
+      ...rawServices.map((raw) {
+        if (raw is! Map<String, dynamic>) return const SizedBox.shrink();
+        final name  = raw['name']  as String? ?? '';
+        final desc  = raw['description'] as String?;
+        final price = (raw['price'] as num?)?.toDouble();
+        final unit  = raw['unit']  as String?;
+        final phone = raw['phone'] as String?;
+
+        String priceLabel = 'Consultar precio';
+        if (price != null) {
+          final formatted = price % 1 == 0
+              ? 'S/ ${price.toInt()}'
+              : 'S/ ${price.toStringAsFixed(2)}';
+          priceLabel = unit != null ? '$formatted $unit' : formatted;
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            color: c.bgCard,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _accent.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.inventory_2_rounded,
+                    color: _accent, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name,
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        )),
+                    if (desc != null && desc.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(desc,
+                          style: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 12,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                    ],
+                    if (phone != null && phone.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(Icons.phone_outlined,
+                              color: c.textMuted, size: 12),
+                          const SizedBox(width: 4),
+                          Text(phone,
+                              style: TextStyle(
+                                color: c.textMuted,
+                                fontSize: 11,
+                              )),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  priceLabel,
+                  style: TextStyle(
+                    color: _accent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+      const SizedBox(height: 12),
+    ];
   }
 
   // ─── Horarios ─────────────────────────────────────────────
@@ -599,18 +777,20 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                   height: 48,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: _accent,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.4),
+                          color: _accent.withValues(alpha: 0.4),
                           blurRadius: 12,
                           spreadRadius: 2,
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.storefront_rounded,
+                    child: Icon(
+                      widget.provider.type == ProviderType.negocio
+                          ? Icons.storefront_rounded
+                          : Icons.handyman_rounded,
                       color: Colors.white,
                       size: 24,
                     ),
@@ -700,7 +880,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       decoration: BoxDecoration(
         color: c.bgCard,
         border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.06)),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
       ),
       child: Column(
@@ -759,7 +939,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               label: Text('Dejar una reseña'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.star,
-                side: BorderSide(color: AppColors.star.withOpacity(0.4)),
+                side: BorderSide(color: AppColors.star.withValues(alpha: 0.4)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -801,7 +981,6 @@ class _ReviewCard extends StatelessWidget {
   const _ReviewCard({required this.review});
 
   void _openDetail(BuildContext context) {
-    final c = context.colors;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -859,7 +1038,7 @@ class _ReviewCard extends StatelessWidget {
                       ),
                       RatingBarIndicator(
                         rating: review.rating.toDouble(),
-                        itemBuilder: (_, __) =>
+                        itemBuilder: (_, _) =>
                             const Icon(Icons.star_rounded, color: AppColors.star),
                         itemCount: 5,
                         itemSize: 14,
@@ -901,7 +1080,7 @@ class _ReviewCard extends StatelessWidget {
                         height: 60,
                         width: 60,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1042,7 +1221,7 @@ class _ReviewDetailSheet extends StatelessWidget {
                             const SizedBox(height: 4),
                             RatingBarIndicator(
                               rating: review.rating.toDouble(),
-                              itemBuilder: (_, __) => const Icon(
+                              itemBuilder: (_, _) => const Icon(
                                 Icons.star_rounded,
                                 color: AppColors.star,
                               ),
@@ -1099,11 +1278,11 @@ class _ReviewDetailSheet extends StatelessWidget {
                         PageRouteBuilder(
                           opaque: false,
                           barrierColor: Colors.black,
-                          pageBuilder: (_, __, ___) => _ReviewImageFullscreen(
+                          pageBuilder: (_, _, _) => _ReviewImageFullscreen(
                             imageUrl: review.photoUrl,
                             heroTag: 'review_detail_photo_${review.id}',
                           ),
-                          transitionsBuilder: (_, anim, __, child) =>
+                          transitionsBuilder: (_, anim, _, child) =>
                               FadeTransition(opacity: anim, child: child),
                         ),
                       ),
@@ -1115,7 +1294,7 @@ class _ReviewDetailSheet extends StatelessWidget {
                             review.photoUrl,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
+                            errorBuilder: (_, _, _) => Container(
                               height: 160,
                               decoration: BoxDecoration(
                                 color: c.bgInput,
@@ -1171,9 +1350,9 @@ class _BigContactButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1223,7 +1402,7 @@ class _ReviewImageFullscreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.55),
+                  color: Colors.black.withValues(alpha: 0.55),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -1259,7 +1438,7 @@ class _ReviewImageFullscreen extends StatelessWidget {
                   ),
                 );
               },
-              errorBuilder: (_, __, ___) => const Column(
+              errorBuilder: (_, _, _) => const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.broken_image_rounded,

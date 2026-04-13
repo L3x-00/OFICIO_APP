@@ -167,7 +167,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
     if (dash.notifications.isEmpty) return const SizedBox.shrink();
     final c = context.colors;
 
-    Color _colorForType(String type) {
+    Color colorForType(String type) {
       switch (type) {
         case 'APROBADO':            return const Color(0xFF22C55E);
         case 'RECHAZADO':           return const Color(0xFFEF4444);
@@ -177,7 +177,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
       }
     }
 
-    IconData _iconForType(String type) {
+    IconData iconForType(String type) {
       switch (type) {
         case 'APROBADO':            return Icons.verified_rounded;
         case 'RECHAZADO':           return Icons.cancel_rounded;
@@ -187,7 +187,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
       }
     }
 
-    String _labelForType(String type) {
+    String labelForType(String type) {
       switch (type) {
         case 'APROBADO':            return 'Aprobado';
         case 'RECHAZADO':           return 'Rechazado';
@@ -236,7 +236,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
           ),
           const SizedBox(height: 10),
           ...dash.notifications.take(5).map((n) {
-            final color = _colorForType(n.type);
+            final color = colorForType(n.type);
             final isUnread = !n.isRead;
             return GestureDetector(
               onTap: () {
@@ -248,10 +248,10 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isUnread ? color.withOpacity(0.08) : c.bgCard,
+                  color: isUnread ? color.withValues(alpha: 0.08) : c.bgCard,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isUnread ? color.withOpacity(0.35) : Colors.white.withOpacity(0.06),
+                    color: isUnread ? color.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.06),
                   ),
                 ),
                 child: Row(
@@ -261,10 +261,10 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),
+                        color: color.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(_iconForType(n.type), color: color, size: 18),
+                      child: Icon(iconForType(n.type), color: color, size: 18),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -274,7 +274,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
                           Row(
                             children: [
                               Text(
-                                _labelForType(n.type),
+                                labelForType(n.type),
                                 style: TextStyle(
                                   color: color,
                                   fontSize: 12,
@@ -337,7 +337,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,9 +460,9 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.6)),
+        border: Border.all(color: color.withValues(alpha: 0.6)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -488,9 +488,9 @@ class _SubscriptionBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -541,7 +541,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,7 +552,7 @@ class _StatCard extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 18),
@@ -652,7 +652,7 @@ class _WeeklyBarChart extends StatelessWidget {
                       height: callH + waH,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.5),
+                        color: AppColors.primary.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -704,7 +704,7 @@ class _ReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,7 +787,7 @@ class _EmptyReviews extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Center(
         child: Column(

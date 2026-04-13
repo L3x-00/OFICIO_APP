@@ -84,13 +84,13 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
                     color: _selectedPeriod == d
-                        ? AppColors.amber.withOpacity(0.15)
+                        ? AppColors.amber.withValues(alpha: 0.15)
                         : c.bgCard,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: _selectedPeriod == d
                           ? AppColors.amber
-                          : Colors.white.withOpacity(0.1),
+                          : Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                   child: Text(
@@ -160,7 +160,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +224,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,7 +280,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   AppColors.amber,
-                                  AppColors.amber.withOpacity(0.5),
+                                  AppColors.amber.withValues(alpha: 0.5),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(3),
@@ -315,7 +315,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,7 +363,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,7 +452,7 @@ class _BigStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -461,7 +461,7 @@ class _BigStatCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -517,7 +517,7 @@ class _ContactBar extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

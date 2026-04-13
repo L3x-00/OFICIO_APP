@@ -74,7 +74,7 @@ class AuthRepository {
         'password':  password,
         'firstName': firstName,
         'lastName':  lastName,
-        if (phone != null) 'phone': phone,
+        'phone': ?phone,
       });
 
       final data = response.data as Map<String, dynamic>;
@@ -127,8 +127,8 @@ class AuthRepository {
         if (dni != null && dni.isNotEmpty) 'dni': dni,
         if (description != null && description.isNotEmpty) 'description': description,
         if (address != null && address.isNotEmpty) 'address': address,
-        if (categoryId != null) 'categoryId': categoryId,
-        if (localityId != null) 'localityId': localityId,
+        'categoryId': ?categoryId,
+        'localityId': ?localityId,
       });
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
@@ -234,9 +234,9 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.patch('/users/profile', data: {
-        if (firstName != null) 'firstName': firstName,
-        if (lastName  != null) 'lastName':  lastName,
-        if (phone     != null) 'phone':     phone,
+        'firstName': ?firstName,
+        'lastName':  ?lastName,
+        'phone':     ?phone,
       });
       final data = response.data as Map<String, dynamic>;
       final user = UserModel.fromJson({...data, 'id': data['id']});

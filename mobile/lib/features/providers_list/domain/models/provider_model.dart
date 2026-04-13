@@ -87,7 +87,7 @@ class ProviderModel {
       isFavorite:   json['isFavorite'] as bool? ?? false,
       description:  json['description'] as String?,
       address:      json['address'] as String?,
-      scheduleJson: json['schedule'] as Map<String, dynamic>?,
+      scheduleJson: json['scheduleJson'] as Map<String, dynamic>?,
       reviews:      (json['reviews'] as List?)
                       ?.map((r) => r as Map<String, dynamic>)
                       .toList(),

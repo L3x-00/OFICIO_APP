@@ -8,10 +8,7 @@ import '../domain/models/user_model.dart';
 /// Corregido para Web (IndexedDB) para evitar el error OperationError.
 class AuthLocalStorage {
   static const _storage = FlutterSecureStorage(
-    // Configuración para Android
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(),
     // CONFIGURACIÓN PARA WEB (Soluciona el error de consola)
     webOptions: WebOptions(
       dbName: 'ConfiServ_SecureStore',

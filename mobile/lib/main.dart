@@ -9,6 +9,7 @@ import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
 import 'features/auth/presentation/screens/otp_verification_screen.dart';
 import 'features/auth/presentation/screens/profile_screen.dart';
+import 'features/auth/presentation/screens/welcome_onboarding_modal.dart';
 import 'features/favorites/presentation/providers/favorites_provider.dart';
 import 'features/favorites/presentation/screens/favorites_screen.dart';
 import 'features/providers_list/presentation/screens/providers_screen.dart';
@@ -65,10 +66,12 @@ class _AppRoot extends StatefulWidget {
 }
 
 class _AppRootState extends State<_AppRoot> {
+  /// Último estado de navegación conocido — permite detectar transiciones.
+  AppNavigationState? _prevNavState;
+
   @override
   void initState() {
     super.initState();
-    // Escuchar cambios del AuthProvider para detectar desactivación remota
     context.read<AuthProvider>().addListener(_onAuthChanged);
   }
 
@@ -84,20 +87,35 @@ class _AppRootState extends State<_AppRoot> {
 
     // Sincronizar NotificationsProvider con el estado de autenticación
     if (auth.user != null) {
-      notifs.setUser(
-        userId: auth.user!.id,
-        role:   auth.user!.role,
-      );
+      notifs.setUser(userId: auth.user!.id, role: auth.user!.role);
     } else {
       notifs.clearUser();
     }
 
+    final current = auth.navigationState;
+
+    // ── Mostrar modal de bienvenida al completar onboarding por primera vez ──
+    if (_prevNavState == AppNavigationState.needsOnboarding &&
+        current == AppNavigationState.authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: Colors.black.withValues(alpha: 0.65),
+          builder: (_) => WelcomeOnboardingModal(
+            onDismiss: () =>
+                Navigator.of(context, rootNavigator: true).pop(),
+          ),
+        );
+      });
+    }
+
+    _prevNavState = current;
+
+    // ── Cuenta desactivada remotamente ──────────────────────────────────────
     if (!auth.wasDeactivated || !mounted) return;
-
-    // Limpiar el flag antes de mostrar el diálogo para evitar re-trigger
     auth.clearDeactivatedFlag();
-
-    // Mostrar después del frame actual (la UI ya habrá cambiado a WelcomeScreen)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _showDeactivationDialog();
@@ -250,7 +268,7 @@ class _BottomNav extends StatelessWidget {
           BottomNavigationBarItem(
             label: 'Alertas',
             icon: Consumer<NotificationsProvider>(
-              builder: (_, notifs, __) => Badge(
+              builder: (_, notifs, _) => Badge(
                 isLabelVisible: notifs.unreadCount > 0,
                 label: Text(
                   notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
@@ -260,7 +278,7 @@ class _BottomNav extends StatelessWidget {
               ),
             ),
             activeIcon: Consumer<NotificationsProvider>(
-              builder: (_, notifs, __) => Badge(
+              builder: (_, notifs, _) => Badge(
                 isLabelVisible: notifs.unreadCount > 0,
                 label: Text(
                   notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',

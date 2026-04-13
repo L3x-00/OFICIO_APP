@@ -87,9 +87,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    final auth = context.watch<AuthProvider>();
-    final email = auth.user?.email ?? '';
+    final c         = context.colors;
+    final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
+    final email     = context.select<AuthProvider, String>((a) => a.user?.email ?? '');
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -101,7 +101,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () async {
             // Volver = cancelar registro: limpiar estado antes de navegar
-            await auth.logout();
+            await context.read<AuthProvider>().logout();
           },
         ),
       ),
@@ -177,7 +177,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: (auth.isLoading || !_isComplete) ? null : _verify,
+                  onPressed: (isLoading || !_isComplete) ? null : _verify,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -186,7 +186,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: auth.isLoading
+                  child: isLoading
                       ? const SizedBox(
                           height: 20,
                           width: 20,
@@ -209,7 +209,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               // ── Reenviar código ────────────────────────────
               Center(
                 child: GestureDetector(
-                  onTap: auth.isLoading ? null : _resend,
+                  onTap: isLoading ? null : _resend,
                   child: RichText(
                     text: TextSpan(
                       style: TextStyle(

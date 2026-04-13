@@ -166,7 +166,7 @@ class PanelSettingsTab extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -208,7 +208,7 @@ class PanelSettingsTab extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.amber.withOpacity(0.1),
+                        color: AppColors.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -220,7 +220,7 @@ class PanelSettingsTab extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -375,7 +375,7 @@ class _SettingsTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
@@ -446,7 +446,7 @@ class _SettingsSwitchState extends State<_SettingsSwitch> {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
@@ -468,7 +468,7 @@ class _SettingsSwitchState extends State<_SettingsSwitch> {
               setState(() => _value = v);
               widget.onChanged(v);
             },
-            activeColor: AppColors.amber,
+            activeThumbColor: AppColors.amber,
           ),
         ],
       ),
@@ -489,9 +489,9 @@ class _SubscriptionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

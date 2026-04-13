@@ -241,7 +241,7 @@ export type ReviewGroupByOutputType = {
   userId: number
   rating: number
   comment: string | null
-  photoUrl: string
+  photoUrl: string | null
   isVisible: boolean
   userLatAtReview: number | null
   userLngAtReview: number | null
@@ -278,7 +278,7 @@ export type ReviewWhereInput = {
   userId?: Prisma.IntFilter<"Review"> | number
   rating?: Prisma.IntFilter<"Review"> | number
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
-  photoUrl?: Prisma.StringFilter<"Review"> | string
+  photoUrl?: Prisma.StringNullableFilter<"Review"> | string | null
   isVisible?: Prisma.BoolFilter<"Review"> | boolean
   userLatAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
   userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
@@ -294,7 +294,7 @@ export type ReviewOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
-  photoUrl?: Prisma.SortOrder
+  photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isVisible?: Prisma.SortOrder
   userLatAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
   userLngAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -313,7 +313,7 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.IntFilter<"Review"> | number
   rating?: Prisma.IntFilter<"Review"> | number
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
-  photoUrl?: Prisma.StringFilter<"Review"> | string
+  photoUrl?: Prisma.StringNullableFilter<"Review"> | string | null
   isVisible?: Prisma.BoolFilter<"Review"> | boolean
   userLatAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
   userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
@@ -329,7 +329,7 @@ export type ReviewOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
-  photoUrl?: Prisma.SortOrder
+  photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isVisible?: Prisma.SortOrder
   userLatAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
   userLngAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -351,7 +351,7 @@ export type ReviewScalarWhereWithAggregatesInput = {
   userId?: Prisma.IntWithAggregatesFilter<"Review"> | number
   rating?: Prisma.IntWithAggregatesFilter<"Review"> | number
   comment?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
-  photoUrl?: Prisma.StringWithAggregatesFilter<"Review"> | string
+  photoUrl?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
   isVisible?: Prisma.BoolWithAggregatesFilter<"Review"> | boolean
   userLatAtReview?: Prisma.FloatNullableWithAggregatesFilter<"Review"> | number | null
   userLngAtReview?: Prisma.FloatNullableWithAggregatesFilter<"Review"> | number | null
@@ -362,7 +362,7 @@ export type ReviewScalarWhereWithAggregatesInput = {
 export type ReviewCreateInput = {
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -378,7 +378,7 @@ export type ReviewUncheckedCreateInput = {
   userId: number
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -389,7 +389,7 @@ export type ReviewUncheckedCreateInput = {
 export type ReviewUpdateInput = {
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -405,7 +405,7 @@ export type ReviewUncheckedUpdateInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -419,7 +419,7 @@ export type ReviewCreateManyInput = {
   userId: number
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -430,7 +430,7 @@ export type ReviewCreateManyInput = {
 export type ReviewUpdateManyMutationInput = {
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -444,7 +444,7 @@ export type ReviewUncheckedUpdateManyInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -609,7 +609,7 @@ export type ReviewUncheckedUpdateManyWithoutProviderNestedInput = {
 export type ReviewCreateWithoutUserInput = {
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -623,7 +623,7 @@ export type ReviewUncheckedCreateWithoutUserInput = {
   providerId: number
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -666,7 +666,7 @@ export type ReviewScalarWhereInput = {
   userId?: Prisma.IntFilter<"Review"> | number
   rating?: Prisma.IntFilter<"Review"> | number
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
-  photoUrl?: Prisma.StringFilter<"Review"> | string
+  photoUrl?: Prisma.StringNullableFilter<"Review"> | string | null
   isVisible?: Prisma.BoolFilter<"Review"> | boolean
   userLatAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
   userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
@@ -677,7 +677,7 @@ export type ReviewScalarWhereInput = {
 export type ReviewCreateWithoutProviderInput = {
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -691,7 +691,7 @@ export type ReviewUncheckedCreateWithoutProviderInput = {
   userId: number
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -730,7 +730,7 @@ export type ReviewCreateManyUserInput = {
   providerId: number
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -741,7 +741,7 @@ export type ReviewCreateManyUserInput = {
 export type ReviewUpdateWithoutUserInput = {
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -755,7 +755,7 @@ export type ReviewUncheckedUpdateWithoutUserInput = {
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -768,7 +768,7 @@ export type ReviewUncheckedUpdateManyWithoutUserInput = {
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -781,7 +781,7 @@ export type ReviewCreateManyProviderInput = {
   userId: number
   rating: number
   comment?: string | null
-  photoUrl: string
+  photoUrl?: string | null
   isVisible?: boolean
   userLatAtReview?: number | null
   userLngAtReview?: number | null
@@ -792,7 +792,7 @@ export type ReviewCreateManyProviderInput = {
 export type ReviewUpdateWithoutProviderInput = {
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -806,7 +806,7 @@ export type ReviewUncheckedUpdateWithoutProviderInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -819,7 +819,7 @@ export type ReviewUncheckedUpdateManyWithoutProviderInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -917,7 +917,7 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     userId: number
     rating: number
     comment: string | null
-    photoUrl: string
+    photoUrl: string | null
     isVisible: boolean
     userLatAtReview: number | null
     userLngAtReview: number | null

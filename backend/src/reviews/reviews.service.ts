@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { Prisma } from '../generated/client/client.js';
 
 @Injectable()
 export class ReviewsService {
@@ -15,7 +16,7 @@ export class ReviewsService {
     userId: number;
     rating: number;
     comment?: string;
-    photoUrl: string;
+    photoUrl?: string;
     userLatAtReview?: number;
     userLngAtReview?: number;
     qrCodeUsed?: string;
@@ -108,7 +109,8 @@ export class ReviewsService {
     });
 
     // Notificar al proveedor que recibió una nueva reseña
-    const reviewerName = `${review.user?.firstName ?? ''} ${review.user?.lastName ?? ''}`.trim() || 'Un usuario';
+    const reviewWithUser = review as typeof review & { user?: { firstName: string; lastName: string; avatarUrl: string | null } };
+    const reviewerName = `${reviewWithUser.user?.firstName ?? ''} ${reviewWithUser.user?.lastName ?? ''}`.trim() || 'Un usuario';
     this.eventsGateway.emitNotification({
       type: 'NEW_REVIEW',
       title: 'Nueva reseña recibida ⭐',
@@ -174,7 +176,7 @@ export class ReviewsService {
     const { isVisible, page = 1, limit = 20 } = filters;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.ReviewWhereInput = {};
     if (isVisible !== undefined) where.isVisible = isVisible;
 
     const [reviews, total] = await Promise.all([

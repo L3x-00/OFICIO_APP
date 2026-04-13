@@ -49,7 +49,7 @@ enum SaveAccountResult { ok, limitReached }
 /// el email es nuevo, devuelve [SaveAccountResult.limitReached].
 class SavedAccountsStorage {
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(),
     webOptions: WebOptions(
       dbName:    'ConfiServ_SecureStore',
       publicKey: 'confiserv_auth_key_2026',

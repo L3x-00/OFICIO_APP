@@ -45,6 +45,9 @@ class AuthProvider extends ChangeNotifier {
   String? _activeProfileType;
   // Estado de verificación sincronizado con el backend
   String? _providerVerificationStatus; // 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
+  // Estado y motivo de rechazo por tipo de perfil
+  final Map<String, String> _verificationStatusByType  = {}; // tipo → status
+  final Map<String, String> _rejectionReasonByType     = {}; // tipo → motivo
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
@@ -61,7 +64,14 @@ class AuthProvider extends ChangeNotifier {
   bool get hasOficioProfile  => _providerProfiles.contains('OFICIO');
   bool get hasNegocioProfile => _providerProfiles.contains('NEGOCIO');
   /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO
-  bool get hasApprovedProvider => _providerVerificationStatus == 'APROBADO';
+  bool get hasApprovedProvider =>
+      _verificationStatusByType.values.any((s) => s == 'APROBADO');
+
+  /// Devuelve el status de verificación para un tipo específico ('OFICIO'|'NEGOCIO')
+  String? verificationStatusFor(String type) => _verificationStatusByType[type];
+
+  /// Devuelve el motivo de rechazo para un tipo específico (null si no fue rechazado)
+  String? rejectionReasonFor(String type) => _rejectionReasonByType[type];
 
   /// Devuelve true si el usuario autenticado puede registrar un nuevo perfil
   /// del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no lo tiene.
@@ -120,19 +130,20 @@ class AuthProvider extends ChangeNotifier {
 
   /// Callback que el SocketService invoca cuando el servidor emite
   /// el evento `notification` genérico.
-  /// Filtra por targetUserId si está presente y reacciona al tipo PROVIDER_APPROVED.
+  /// Filtra por targetUserId y reacciona a PROVIDER_APPROVED / PROVIDER_REJECTED.
   void _handleRemoteNotification(Map<String, dynamic> payload) {
     final targetUserId = payload['targetUserId'];
     if (targetUserId != null && targetUserId != _user?.id) return;
 
     final type = payload['type'] as String?;
-    if (type == 'PROVIDER_APPROVED') {
+    if (type == 'PROVIDER_APPROVED' || type == 'PROVIDER_REJECTED') {
       // Re-sincronizar estado del proveedor y notificar a la UI
       _syncProviderStatus().then((_) => notifyListeners());
     }
   }
 
   /// Sincroniza el estado del proveedor con el backend.
+  /// También refresca el rol del usuario para reflejar aprobaciones/rechazos.
   /// Silencioso en caso de error (no crítico para el flujo principal).
   Future<void> _syncProviderStatus() async {
     final result = await _repo.getMyProviderStatus();
@@ -142,6 +153,10 @@ class AuthProvider extends ChangeNotifier {
           final profiles = data['profiles'] as List<dynamic>? ?? [];
           _providerProfiles.clear();
           _providerVerificationStatus = null;
+          _verificationStatusByType.clear();
+          _rejectionReasonByType.clear();
+
+          bool hasAnyApproved = false;
 
           for (final raw in profiles) {
             final profile = raw as Map<String, dynamic>;
@@ -160,6 +175,40 @@ class AuthProvider extends ChangeNotifier {
             if (_providerVerificationStatus == null || status == 'APROBADO') {
               _providerVerificationStatus = status;
             }
+            if (status == 'APROBADO') hasAnyApproved = true;
+
+            // Guardar estado por tipo para que el banner muestre PENDIENTE vs RECHAZADO
+            if (status != null) _verificationStatusByType[internalType] = status;
+
+            // Si fue rechazado, extraer el motivo de la primera notificación RECHAZADO
+            if (status == 'RECHAZADO') {
+              final notifications = profile['pendingNotifications'] as List<dynamic>? ?? [];
+              final rejectionNotif = notifications.firstWhere(
+                (n) => (n as Map<String, dynamic>)['type'] == 'RECHAZADO',
+                orElse: () => null,
+              );
+              if (rejectionNotif != null) {
+                final msg = (rejectionNotif as Map<String, dynamic>)['message'] as String? ?? '';
+                // Extraer el motivo después de "Motivo: "
+                final idx = msg.indexOf('Motivo: ');
+                _rejectionReasonByType[internalType] =
+                    idx >= 0 ? msg.substring(idx + 8) : msg;
+              }
+            }
+          }
+
+          // Sincronizar el rol local del usuario con el que el backend asignó
+          // (el admin lo eleva a PROVEEDOR al aprobar, o lo baja a USUARIO al rechazar)
+          if (_user != null) {
+            final expectedRole = hasAnyApproved ? 'PROVEEDOR' : 'USUARIO';
+            if (_user!.role != expectedRole) {
+              _user = _user!.copyWith(role: expectedRole);
+            }
+          }
+        } else {
+          // Sin perfiles — asegurar que el rol sea USUARIO
+          if (_user != null && _user!.role == 'PROVEEDOR') {
+            _user = _user!.copyWith(role: 'USUARIO');
           }
         }
       },
@@ -354,8 +403,8 @@ class AuthProvider extends ChangeNotifier {
 
     result.when(
       success: (_) {
-        // Actualizar rol localmente; el onboarding finaliza en completeOnboarding()
-        _user = _user?.copyWith(role: 'PROVEEDOR');
+        // El rol sigue siendo USUARIO hasta que el admin apruebe.
+        // Solo actualizamos el estado de perfiles (pendiente).
       },
       failure: (e) => _error = e.message,
     );
@@ -368,9 +417,11 @@ class AuthProvider extends ChangeNotifier {
   /// Llamado desde OnboardingScreen cuando el usuario elige su rol
   void completeOnboarding({required String role}) {
     _needsOnboarding = false;
-    final userRole = (role == 'OFICIO' || role == 'NEGOCIO') ? 'PROVEEDOR' : 'USUARIO';
+    // Para OFICIO/NEGOCIO el rol permanece USUARIO hasta aprobación del admin.
+    final userRole = 'USUARIO';
     if (role == 'OFICIO' || role == 'NEGOCIO') {
       _providerProfiles.add(role);
+      _verificationStatusByType[role] = 'PENDIENTE';
       _activeProfileType = role;
     }
     _user = _user?.copyWith(role: userRole);
@@ -391,8 +442,9 @@ class AuthProvider extends ChangeNotifier {
   /// Agrega un perfil de proveedor adicional (mismo usuario, segundo perfil)
   void addProviderProfile({required String type}) {
     _providerProfiles.add(type);
+    _verificationStatusByType[type] = 'PENDIENTE';
     _activeProfileType = type;
-    _user = _user?.copyWith(role: 'PROVEEDOR');
+    // El rol permanece el que ya tenía (no elevarlo hasta la aprobación)
     notifyListeners();
   }
 

@@ -247,7 +247,7 @@ class _AccountTile extends StatelessWidget {
           style: TextStyle(color: c.textSecondary, fontSize: 13),
         ),
         trailing: Consumer<AuthProvider>(
-          builder: (_, auth, __) => Row(
+          builder: (_, auth, _) => Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               auth.isLoading

@@ -11,6 +11,7 @@ class ProvidersRepository {
   // ── LISTAR proveedores con filtros ───────────────────────
   Future<ApiResult<ProvidersResponse>> getProviders({
     String? categorySlug,
+    String? parentCategorySlug,
     String? availability,
     bool? verified,       // null = solo verificados (backend default), false = mostrar todos
     String? search,
@@ -24,12 +25,13 @@ class ProvidersRepository {
       final queryParams = <String, dynamic>{
         'page': page,
         'limit': limit,
-        if (categorySlug != null) 'categorySlug': categorySlug,
-        if (availability != null) 'availability': availability,
+        'categorySlug':       ?categorySlug,
+        'parentCategorySlug': ?parentCategorySlug,
+        'availability':       ?availability,
         if (verified != null) 'verified': verified.toString(),
         if (search != null && search.isNotEmpty) 'search': search,
-        if (type != null) 'type': type,
-        if (sortBy != null) 'sortBy': sortBy,
+        'type':   ?type,
+        'sortBy': ?sortBy,
         if (location != null && location.isNotEmpty) 'location': location,
       };
 
@@ -126,20 +128,28 @@ class CategoryModel {
   final String name;
   final String slug;
   final String? iconUrl;
+  final List<CategoryModel> children;
 
   const CategoryModel({
     required this.id,
     required this.name,
     required this.slug,
     this.iconUrl,
+    this.children = const [],
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      slug: json['slug'] as String,
-      iconUrl: json['iconUrl'] as String?,
+      id:       json['id'] as int,
+      name:     json['name'] as String,
+      slug:     json['slug'] as String,
+      iconUrl:  json['iconUrl'] as String?,
+      children: (json['children'] as List? ?? [])
+          .map((c) => CategoryModel.fromJson(c as Map<String, dynamic>))
+          .toList(),
     );
   }
+
+  /// Devuelve true si esta categoría es una macrocategoría (tiene hijos)
+  bool get isParent => children.isNotEmpty;
 }

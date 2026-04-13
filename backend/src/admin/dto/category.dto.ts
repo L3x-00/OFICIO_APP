@@ -1,4 +1,5 @@
-import { IsString, IsOptional, MinLength, MaxLength, Matches, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsPositive, MinLength, MaxLength, Matches } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateCategoryDto {
   @IsString()
@@ -14,6 +15,13 @@ export class CreateCategoryDto {
   @IsString()
   @MaxLength(500)
   iconUrl?: string;
+
+  /** Si se provee, esta categoría queda como hija del padre dado. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  parentId?: number;
 }
 
 export class UpdateCategoryDto {
@@ -27,4 +35,9 @@ export class UpdateCategoryDto {
   @IsString()
   @MaxLength(500)
   iconUrl?: string;
+
+  /** null = promover a categoría raíz; number = asignar nuevo padre. */
+  @IsOptional()
+  @Type(() => Number)
+  parentId?: number | null;
 }

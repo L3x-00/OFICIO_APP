@@ -41,7 +41,8 @@
       "Bash(rtk npx:*)",
       "Bash(rtk git:*)",
       "Bash(fvm flutter:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(rtk tsc:*)"
     ]
   }
 }

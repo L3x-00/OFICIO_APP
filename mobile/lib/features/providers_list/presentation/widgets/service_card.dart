@@ -124,8 +124,8 @@ class _CoverImage extends StatelessWidget {
                   height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => _placeholder(c),
-                  errorWidget: (_, __, ___) => _placeholder(c),
+                  placeholder: (_, _) => _placeholder(c),
+                  errorWidget: (_, _, _) => _placeholder(c),
                 )
               : _placeholder(c),
         ),
@@ -204,7 +204,7 @@ class _RatingRowData extends StatelessWidget {
       children: [
         RatingBarIndicator(
           rating: provider.averageRating,
-          itemBuilder: (_, __) => const Icon(Icons.star_rounded, color: AppColors.star),
+          itemBuilder: (_, _) => const Icon(Icons.star_rounded, color: AppColors.star),
           itemCount: 5,
           itemSize: 18,
         ),
@@ -255,8 +255,8 @@ class _ThumbnailRow extends StatelessWidget {
               imageUrl: url,
               width: 64, height: 64,
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(width: 64, height: 64, color: c.bgInput),
-              errorWidget: (_, __, ___) => Container(
+              placeholder: (_, _) => Container(width: 64, height: 64, color: c.bgInput),
+              errorWidget: (_, _, _) => Container(
                 width: 64, height: 64,
                 color: c.bgInput,
                 child: Icon(Icons.image_not_supported, color: c.textMuted, size: 24),

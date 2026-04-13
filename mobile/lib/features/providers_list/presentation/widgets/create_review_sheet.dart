@@ -178,7 +178,7 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
               allowHalfRating: false,
               itemCount: 5,
               itemSize: 40,
-              itemBuilder: (_, __) => const Icon(Icons.star_rounded, color: AppColors.star),
+              itemBuilder: (_, _) => const Icon(Icons.star_rounded, color: AppColors.star),
               onRatingUpdate: (r) => setState(() => _rating = r.toInt()),
             ),
             const SizedBox(height: 20),

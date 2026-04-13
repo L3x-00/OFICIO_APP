@@ -59,7 +59,7 @@ export class AuthService {
     return { ...tokens, requiresEmailVerification: true };
   }
 
-  // ── REGISTRO DE PROVEEDOR ────────────────────────────────
+    // ── REGISTRO DE PROVEEDOR ────────────────────────────────
   async registerProvider(
     userId: number,
     data: {
@@ -97,18 +97,34 @@ export class AuthService {
       }
     }
 
-    // Valores por defecto para categoryId y localityId
-    const categoryId = data.categoryId ?? 1;
-    const localityId = data.localityId ?? 1;
+    // Validar localityId: si no viene o no existe, usar la primera disponible
+    let localityId = data.localityId;
+    if (localityId) {
+      const locExists = await this.prisma.locality.findUnique({ where: { id: localityId } });
+      if (!locExists) localityId = undefined;
+    }
+    if (!localityId) {
+      const firstLocality = await this.prisma.locality.findFirst({ where: { isActive: true } });
+      localityId = firstLocality?.id ?? 1;
+    }
+
+    // Validar categoryId: si no viene o no existe, usar la primera subcategoría disponible
+    let categoryId = data.categoryId;
+    if (categoryId) {
+      const catExists = await this.prisma.category.findUnique({ where: { id: categoryId } });
+      if (!catExists) categoryId = undefined;
+    }
+    if (!categoryId) {
+      const firstCategory = await this.prisma.category.findFirst({
+        where: { parentId: { not: null }, isActive: true },
+      });
+      categoryId = firstCategory?.id ?? 1;
+    }
 
     const provider = await this.prisma.$transaction(async (tx) => {
-      // Actualizar rol del usuario a PROVEEDOR
-      await tx.user.update({
-        where: { id: userId },
-        data: { role: 'PROVEEDOR' },
-      });
-
-      // Crear proveedor
+      // El rol del usuario se mantiene como USUARIO hasta que el admin APRUEBE.
+      // La suscripción de gracia también se crea al momento de la aprobación.
+      // Solo se crea el perfil de proveedor en estado PENDIENTE.
       const newProvider = await tx.provider.create({
         data: {
           userId,
@@ -120,24 +136,14 @@ export class AuthService {
           type:         data.type,
           categoryId,
           localityId,
+          verificationStatus: 'PENDIENTE',
+          isVisible: false, // no aparece en la app hasta ser aprobado
           scheduleJson: {
             lun: '8:00-18:00', mar: '8:00-18:00',
             mie: '8:00-18:00', jue: '8:00-18:00',
             vie: '8:00-18:00', sab: '9:00-13:00',
             dom: 'Cerrado',
           },
-        },
-      });
-
-      // Crear suscripción de gracia por 2 meses
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 2);
-      await tx.subscription.create({
-        data: {
-          providerId: newProvider.id,
-          plan:       'GRATIS',
-          status:     'GRACIA',
-          endDate,
         },
       });
 
@@ -152,7 +158,7 @@ export class AuthService {
       targetRole: 'ADMIN',
     });
 
-    return { success: true, providerId: provider.id, role: 'PROVEEDOR' };
+    return { success: true, providerId: provider.id, role: 'USUARIO' };
   }
 
   // ── LOGIN ────────────────────────────────────────────────

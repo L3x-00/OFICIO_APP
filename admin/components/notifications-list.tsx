@@ -11,6 +11,7 @@ import {
   markAllNotificationsRead,
   NotificationItem,
 } from '@/lib/api';
+import { NotificationDetailModal } from './notification-detail-modal';
 
 const TYPE_CONFIG: Record<
   NotificationItem['type'],
@@ -54,6 +55,7 @@ export function NotificationsList() {
   const [page, setPage]             = useState(1);
   const [isLoading, setIsLoading]   = useState(true);
   const [markingAll, setMarkingAll] = useState(false);
+  const [viewingNotif, setViewingNotif] = useState<NotificationItem | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -144,7 +146,8 @@ export function NotificationsList() {
             return (
               <div
                 key={n.id}
-                className={`bg-[#1a1a1a] rounded-2xl border transition-all ${
+                onClick={() => setViewingNotif(n)}
+                className={`bg-[#1a1a1a] rounded-2xl border transition-all cursor-pointer hover:border-white/15 ${
                   n.isRead ? 'border-white/5' : 'border-orange-500/20 bg-orange-500/[0.03]'
                 }`}
               >
@@ -174,7 +177,7 @@ export function NotificationsList() {
                   {/* Marcar leído */}
                   {!n.isRead && (
                     <button
-                      onClick={() => handleMarkRead(n.id)}
+                      onClick={(e) => { e.stopPropagation(); handleMarkRead(n.id); }}
                       title="Marcar como leído"
                       className="p-1.5 rounded-lg hover:bg-white/5 text-gray-600 hover:text-gray-300 transition-all flex-shrink-0"
                     >
@@ -187,6 +190,15 @@ export function NotificationsList() {
           })}
         </div>
       )}
+
+      <NotificationDetailModal
+        notification={viewingNotif}
+        onClose={() => setViewingNotif(null)}
+        onRead={(id) => {
+          setItems((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+          setUnreadCount((c) => Math.max(0, c - 1));
+        }}
+      />
 
       {/* Paginación */}
       {lastPage > 1 && (

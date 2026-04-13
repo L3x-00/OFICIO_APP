@@ -301,13 +301,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   key: ValueKey('avatar_${u.id}_${u.avatarUrl}'),
                                   imageUrl: u.avatarUrl!,
                                   fit: BoxFit.cover,
-                                  placeholder: (_, __) => const Center(
+                                  placeholder: (_, _) => const Center(
                                     child: CircularProgressIndicator(
                                       color: Colors.white,
                                       strokeWidth: 2,
                                     ),
                                   ),
-                                  errorWidget: (_, __, ___) =>
+                                  errorWidget: (_, _, _) =>
                                       _InitialsAvatar(name: u.firstName),
                                 )
                               : _InitialsAvatar(name: u.firstName),
@@ -440,11 +440,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Registro existe pero está pendiente de aprobación
               // Se muestra un banner por cada tipo de perfil registrado
               if (auth.hasOficioProfile)
-                const _PendingApprovalBanner(providerType: 'OFICIO'),
+                _PendingApprovalBanner(
+                  providerType: 'OFICIO',
+                  status: auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
+                  rejectionReason: auth.rejectionReasonFor('OFICIO'),
+                ),
               if (auth.hasOficioProfile && auth.hasNegocioProfile)
                 const SizedBox(height: 10),
               if (auth.hasNegocioProfile)
-                const _PendingApprovalBanner(providerType: 'NEGOCIO'),
+                _PendingApprovalBanner(
+                  providerType: 'NEGOCIO',
+                  status: auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
+                  rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
+                ),
             ],
             const SizedBox(height: 20),
           ],
@@ -753,26 +761,157 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _PendingApprovalBanner extends StatelessWidget {
-  /// 'OFICIO' → color azul/primary | 'NEGOCIO' → morado
+  /// 'OFICIO' | 'NEGOCIO'
   final String providerType;
-  const _PendingApprovalBanner({required this.providerType});
+  /// 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
+  final String status;
+  /// Motivo de rechazo (solo cuando status == 'RECHAZADO')
+  final String? rejectionReason;
 
-  bool get _isNegocio => providerType == 'NEGOCIO';
+  const _PendingApprovalBanner({
+    required this.providerType,
+    required this.status,
+    this.rejectionReason,
+  });
 
-  // Negocio = morado | Profesional (OFICIO) = verde
-  Color get _accentColor =>
-      _isNegocio ? const Color(0xFF8E2DE2) : AppColors.available;
+  bool get _isNegocio    => providerType == 'NEGOCIO';
+  bool get _isRejected   => status == 'RECHAZADO';
 
-  IconData get _icon =>
-      _isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded;
+  Color get _accentColor {
+    if (_isRejected) return const Color(0xFFEF4444); // rojo
+    return _isNegocio ? const Color(0xFF8E2DE2) : AppColors.available;
+  }
 
-  String get _title =>
-      _isNegocio
-          ? 'Esperando la aprobación del negocio'
-          : 'Esperando la aprobación del perfil profesional';
+  IconData get _icon {
+    if (_isRejected) return Icons.cancel_rounded;
+    return _isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded;
+  }
 
-  String get _dialogTitle =>
-      _isNegocio ? 'Aprobación del Negocio' : 'Aprobación del Perfil Profesional';
+  String get _title {
+    if (_isRejected) {
+      return _isNegocio
+          ? 'Tu negocio fue rechazado'
+          : 'Tu perfil profesional fue rechazado';
+    }
+    return _isNegocio
+        ? 'Esperando la aprobación del negocio'
+        : 'Esperando la aprobación del perfil profesional';
+  }
+
+  String get _subtitle {
+    if (_isRejected) return 'Toca para ver el motivo del rechazo';
+    return 'Toca para conocer el proceso de revisión';
+  }
+
+  void _showDialog(BuildContext context) {
+    if (_isRejected) {
+      _showRejectionDialog(context);
+    } else {
+      _showApprovalInfoDialog(context);
+    }
+  }
+
+  void _showRejectionDialog(BuildContext context) {
+    final c = context.colors;
+    const accent = Color(0xFFEF4444);
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.cancel_rounded, color: accent, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      _isNegocio ? 'Negocio rechazado' : 'Perfil rechazado',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'El administrador ha rechazado tu solicitud por el siguiente motivo:',
+                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: accent.withValues(alpha: 0.25)),
+                ),
+                child: Text(
+                  rejectionReason ?? 'No se especificó un motivo.',
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: c.bgInput,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded, color: AppColors.amber, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Puedes corregir la información e intentar registrarte nuevamente.',
+                        style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showApprovalInfoDialog(BuildContext context) {
     final c = context.colors;
@@ -801,7 +940,7 @@ class _PendingApprovalBanner extends StatelessWidget {
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
-                      _dialogTitle,
+                      _isNegocio ? 'Aprobación del Negocio' : 'Aprobación del Perfil Profesional',
                       style: TextStyle(
                         color: c.textPrimary,
                         fontSize: 17,
@@ -875,7 +1014,7 @@ class _PendingApprovalBanner extends StatelessWidget {
     final c = context.colors;
     final accent = _accentColor;
     return GestureDetector(
-      onTap: () => _showApprovalInfoDialog(context),
+      onTap: () => _showDialog(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -901,7 +1040,7 @@ class _PendingApprovalBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Toca para conocer el proceso de revisión',
+                    _subtitle,
                     style: TextStyle(color: c.textMuted, fontSize: 12),
                   ),
                 ],

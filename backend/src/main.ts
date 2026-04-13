@@ -13,7 +13,7 @@ async function bootstrap() {
 
   // 3. HABILITAR CORS (Manteniendo tus credenciales y métodos)
   app.enableCors({
-    origin: '*', 
+    origin: true, 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

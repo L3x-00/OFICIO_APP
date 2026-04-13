@@ -7,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus } from '../generated/client/enums.js';
+import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus } from '../generated/client/enums.js';
+import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 
 @Injectable()
@@ -120,7 +121,7 @@ export class AdminService {
   // ── LISTAR TODOS LOS PROVEEDORES ──────────────────────────
   async getAllProviders(page = 1, limit = 15, search?: string) {
     const skip  = (page - 1) * limit;
-    const where: any = {};
+    const where: Prisma.ProviderWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -136,10 +137,12 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          category:     { select: { name: true } },
-          locality:     { select: { name: true } },
-          subscription: { select: { plan: true, status: true, endDate: true } },
-          user:         { select: { email: true, firstName: true, lastName: true } },
+          category:         { select: { name: true } },
+          locality:         { select: { name: true } },
+          subscription:     { select: { plan: true, status: true, endDate: true } },
+          user:             { select: { email: true, firstName: true, lastName: true, createdAt: true } },
+          images:           true,
+          verificationDocs: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -209,7 +212,7 @@ export class AdminService {
           address:      data.address ?? null,
           categoryId:   data.categoryId,
           localityId:   data.localityId,
-          type:         data.type as any,
+          type:         data.type as ProviderType,
           scheduleJson: {
             lun: '8:00-18:00', mar: '8:00-18:00',
             mie: '8:00-18:00', jue: '8:00-18:00',
@@ -277,8 +280,8 @@ export class AdminService {
       return this.prisma.subscription.update({
         where: { providerId: id },
         data: {
-          plan:   plan as any,
-          status: plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA',
+          plan:   plan as SubscriptionPlan,
+          status: (plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA') as SubscriptionStatus,
         },
       });
     }
@@ -289,8 +292,8 @@ export class AdminService {
     return this.prisma.subscription.create({
       data: {
         providerId: id,
-        plan:       plan as any,
-        status:     plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA',
+        plan:       plan as SubscriptionPlan,
+        status:     (plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA') as SubscriptionStatus,
         endDate,
       },
     });
@@ -312,7 +315,7 @@ export class AdminService {
   // directamente o a través del store. Intentamos ambas vías.
   private async clearProvidersCache(): Promise<void> {
     try {
-      const cm = this.cacheManager as any;
+      const cm = this.cacheManager;
       if (typeof cm?.reset === 'function') {
         await cm.reset();
       } else if (typeof cm?.store?.reset === 'function') {
@@ -338,29 +341,58 @@ export class AdminService {
         category: { select: { name: true } },
         locality: { select: { name: true } },
         verificationDocs: true,
-        images: { where: { isCover: true }, take: 1 },
+        images: true,
       },
       orderBy: { createdAt: 'asc' },
     });
   }
 
   async approveVerification(id: number) {
-    const provider = await this.prisma.provider.findUnique({ where: { id } });
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+      include: { subscription: true },
+    });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
-    const [updated] = await Promise.all([
-      this.prisma.provider.update({
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 2);
+
+    const [updated] = await this.prisma.$transaction(async (tx) => {
+      // 1. Aprobar proveedor y hacerlo visible
+      const updatedProvider = await tx.provider.update({
         where: { id },
-        data: { isVerified: true, verificationStatus: 'APROBADO' },
-      }),
-      this.prisma.adminNotification.create({
+        data: { isVerified: true, verificationStatus: 'APROBADO', isVisible: true },
+      });
+
+      // 2. Cambiar rol del usuario a PROVEEDOR (ahora sí está aprobado)
+      await tx.user.update({
+        where: { id: provider.userId },
+        data: { role: 'PROVEEDOR' },
+      });
+
+      // 3. Crear suscripción de gracia (solo si no tiene una ya)
+      if (!provider.subscription) {
+        await tx.subscription.create({
+          data: {
+            providerId: id,
+            plan:       'GRATIS',
+            status:     'GRACIA',
+            endDate,
+          },
+        });
+      }
+
+      // 4. Notificación en BD
+      await tx.adminNotification.create({
         data: {
           providerId: id,
           type: 'APROBADO',
           message: '¡Felicidades! Tu perfil ha sido verificado y aprobado. Tu insignia de verificación ya está activa.',
         },
-      }),
-    ]);
+      });
+
+      return [updatedProvider];
+    });
 
     // Invalidar caché para que la app móvil vea al proveedor de inmediato
     await this.clearProvidersCache();
@@ -390,19 +422,30 @@ export class AdminService {
     const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
-    const [updated] = await Promise.all([
-      this.prisma.provider.update({
+    const [updated] = await this.prisma.$transaction(async (tx) => {
+      // 1. Marcar proveedor como rechazado y oculto
+      const updatedProvider = await tx.provider.update({
         where: { id },
-        data: { isVerified: false, verificationStatus: 'RECHAZADO' },
-      }),
-      this.prisma.adminNotification.create({
+        data: { isVerified: false, verificationStatus: 'RECHAZADO', isVisible: false },
+      });
+
+      // 2. Asegurar que el usuario quede como USUARIO (nunca PROVEEDOR si fue rechazado)
+      await tx.user.update({
+        where: { id: provider.userId },
+        data: { role: 'USUARIO' },
+      });
+
+      // 3. Notificación en BD con el motivo exacto
+      await tx.adminNotification.create({
         data: {
           providerId: id,
           type: 'RECHAZADO',
           message: `Tu solicitud de verificación fue rechazada. Motivo: ${reason}`,
         },
-      }),
-    ]);
+      });
+
+      return [updatedProvider];
+    });
 
     // Notificar en tiempo real (el proveedor dejará de aparecer si estaba visible)
     await this.clearProvidersCache();
@@ -484,7 +527,7 @@ export class AdminService {
     isActive?: boolean,
   ) {
     const skip  = (page - 1) * limit;
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -494,7 +537,7 @@ export class AdminService {
       ];
     }
 
-    if (role)             where.role     = role;
+    if (role)             where.role     = role as Prisma.EnumUserRoleFilter;
     if (isActive !== undefined) where.isActive = isActive;
 
     const [users, total] = await Promise.all([

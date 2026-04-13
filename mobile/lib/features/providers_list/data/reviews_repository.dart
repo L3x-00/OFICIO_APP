@@ -45,9 +45,9 @@ class ReviewsRepository {
         'rating': rating,
         'photoUrl': photoUrl,
         if (comment != null && comment.isNotEmpty) 'comment': comment,
-        if (userLat != null) 'userLatAtReview': userLat,
-        if (userLng != null) 'userLngAtReview': userLng,
-        if (qrCode != null) 'qrCodeUsed': qrCode,
+        'userLatAtReview': ?userLat,
+        'userLngAtReview': ?userLng,
+        'qrCodeUsed': ?qrCode,
       },
     );
 

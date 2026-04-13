@@ -9,20 +9,17 @@ import '../errors/app_exception.dart';
 class ApiInterceptor extends Interceptor {
   // Token de acceso actual (se actualiza desde AuthProvider)
   static String? _accessToken;
-  static String? _refreshToken;
 
   static void setTokens({
     required String accessToken,
     required String refreshToken,
   }) {
     _accessToken = accessToken;
-    _refreshToken = refreshToken;
     AppLogger.info('Tokens actualizados en el interceptor');
   }
 
   static void clearTokens() {
     _accessToken = null;
-    _refreshToken = null;
   }
 
   @override

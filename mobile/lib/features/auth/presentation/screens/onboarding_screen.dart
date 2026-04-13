@@ -162,10 +162,10 @@ class _RoleOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : c.bgCard,
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : c.bgCard,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? AppColors.primary.withOpacity(0.6) : c.border,
+            color: isSelected ? AppColors.primary.withValues(alpha: 0.6) : c.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -175,7 +175,7 @@ class _RoleOption extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withOpacity(0.2)
+                    ? AppColors.primary.withValues(alpha: 0.2)
                     : c.bgInput,
                 shape: BoxShape.circle,
               ),
@@ -267,7 +267,21 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     final result = await ProvidersRepository().getCategories();
     if (!mounted) return;
     result.when(
-      success: (cats) => setState(() => _categories = cats),
+      // La API devuelve padres con sus hijos anidados.
+      // Extraemos SOLO las subcategorías (hijas) para que el proveedor
+      // elija su oficio específico, no una macrocategoría genérica.
+      success: (cats) {
+        final leaves = <CategoryModel>[];
+        for (final parent in cats) {
+          if (parent.children.isNotEmpty) {
+            leaves.addAll(parent.children);
+          } else {
+            // Si una categoría no tiene hijos, es seleccionable por sí misma
+            leaves.add(parent);
+          }
+        }
+        setState(() => _categories = leaves);
+      },
       failure: (_) {},
     );
   }
@@ -277,80 +291,84 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     final c = context.colors;
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: c.bgCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36, height: 4,
-              decoration: BoxDecoration(
-                color: c.textMuted.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text(
-                'Selecciona una categoría',
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (_, scrollCtrl) => SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: c.textMuted.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                itemCount: _categories.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 4),
-                itemBuilder: (_, i) {
-                  final cat = _categories[i];
-                  final isSelected = cat.id == _selectedCategoryId;
-                  return ListTile(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    tileColor: isSelected
-                        ? AppColors.primary.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                    leading: Icon(
-                      Icons.category_outlined,
-                      color: isSelected ? AppColors.primary : c.textMuted,
-                      size: 20,
-                    ),
-                    title: Text(
-                      cat.name,
-                      style: TextStyle(
-                        color: isSelected ? AppColors.primary : c.textPrimary,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        fontSize: 14,
-                      ),
-                    ),
-                    trailing: isSelected
-                        ? const Icon(Icons.check_circle_rounded,
-                            color: AppColors.primary, size: 20)
-                        : null,
-                    onTap: () {
-                      setState(() {
-                        _selectedCategoryId = cat.id;
-                        _selectedCategoryName = cat.name;
-                      });
-                      Navigator.of(ctx).pop();
-                    },
-                  );
-                },
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Text(
+                  'Selecciona tu oficio / rubro',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ],
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollCtrl,
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                  itemCount: _categories.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 4),
+                  itemBuilder: (_, i) {
+                    final cat = _categories[i];
+                    final isSelected = cat.id == _selectedCategoryId;
+                    return ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      tileColor: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : Colors.transparent,
+                      leading: Icon(
+                        Icons.handyman_outlined,
+                        color: isSelected ? AppColors.primary : c.textMuted,
+                        size: 20,
+                      ),
+                      title: Text(
+                        cat.name,
+                        style: TextStyle(
+                          color: isSelected ? AppColors.primary : c.textPrimary,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 14,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle_rounded,
+                              color: AppColors.primary, size: 20)
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          _selectedCategoryId = cat.id;
+                          _selectedCategoryName = cat.name;
+                        });
+                        Navigator.of(ctx).pop();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -508,7 +526,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 width: 76,
                 height: 76,
                 decoration: BoxDecoration(
-                  color: AppColors.available.withOpacity(0.12),
+                  color: AppColors.available.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -809,9 +827,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.07),
+            color: AppColors.primary.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
           ),
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -894,7 +912,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               color: c.bgCard,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.4),
+                color: AppColors.primary.withValues(alpha: 0.4),
                 width: 2,
               ),
             ),
@@ -926,7 +944,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.25),
+                        color: AppColors.primary.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
@@ -941,7 +959,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                       width: 22,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.65),
+                        color: Colors.black.withValues(alpha: 0.65),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -959,7 +977,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.55),
+                      color: Colors.black.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: const Icon(
@@ -980,7 +998,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.amber.withOpacity(0.9),
+                        color: AppColors.amber.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: const Text(
@@ -1016,7 +1034,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           color: c.bgCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isNext ? AppColors.primary.withOpacity(0.35) : c.border,
+            color: isNext ? AppColors.primary.withValues(alpha: 0.35) : c.border,
           ),
         ),
         child: Column(
@@ -1025,8 +1043,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             Icon(
               isNext ? Icons.add_photo_alternate_rounded : Icons.photo_outlined,
               color: isNext
-                  ? AppColors.primary.withOpacity(0.6)
-                  : c.textMuted.withOpacity(0.25),
+                  ? AppColors.primary.withValues(alpha: 0.6)
+                  : c.textMuted.withValues(alpha: 0.25),
               size: 28,
             ),
             const SizedBox(height: 4),
@@ -1034,8 +1052,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               'Foto ${index + 1}',
               style: TextStyle(
                 color: isNext
-                    ? AppColors.primary.withOpacity(0.6)
-                    : c.textMuted.withOpacity(0.25),
+                    ? AppColors.primary.withValues(alpha: 0.6)
+                    : c.textMuted.withValues(alpha: 0.25),
                 fontSize: 10,
               ),
             ),
@@ -1134,9 +1152,9 @@ class _TypeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

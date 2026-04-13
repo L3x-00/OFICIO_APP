@@ -3,6 +3,7 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/join_us_modal.dart';
 import 'package:provider/provider.dart';
+import '../../data/providers_repository.dart';
 import '../providers/providers_provider.dart';
 import '../widgets/service_card.dart';
 import 'provider_detail_sheet.dart';
@@ -52,7 +53,7 @@ class _ProvidersViewState extends State<_ProvidersView>
         elevation: 0,
         // ── Botón refresh (esquina superior izquierda) ─────
         leading: Consumer<ProvidersProvider>(
-          builder: (_, prov, __) => IconButton(
+          builder: (_, prov, _) => IconButton(
             tooltip: 'Actualizar lista',
             icon: prov.isLoading
                 ? SizedBox(
@@ -89,7 +90,7 @@ class _ProvidersViewState extends State<_ProvidersView>
         ),
         actions: [
           Consumer<ProvidersProvider>(
-            builder: (_, prov, __) => IconButton(
+            builder: (_, prov, _) => IconButton(
               tooltip: 'Filtros avanzados',
               icon: Badge(
                 isLabelVisible: prov.hasActiveFilters,
@@ -124,88 +125,201 @@ class _ProvidersViewState extends State<_ProvidersView>
 }
 
 // ═══════════════════════════════════════════════════════════
-// BARRA DE FILTROS UNIFICADA (tipo + categoría)
+// BARRA DE FILTROS JERÁRQUICA (tipo + macrocategoría → subcategoría)
 // ═══════════════════════════════════════════════════════════
+
+// Mapa de macrocategoría-slug → icono Flutter
+const _kParentIcons = <String, IconData>{
+  'hogar':               Icons.home_repair_service_rounded,
+  'gastronomia':         Icons.restaurant_rounded,
+  'belleza':             Icons.face_retouching_natural_rounded,
+  'transporte-general':  Icons.directions_car_rounded,
+  'tecnologia':          Icons.computer_rounded,
+  'salud':               Icons.health_and_safety_rounded,
+  'educacion':           Icons.school_rounded,
+  'ingenieria':          Icons.engineering_rounded,
+};
 
 class _FilterBar extends StatelessWidget {
   const _FilterBar();
 
+  static const _typeChips = [
+    _TypeChipData(label: 'Todos',         icon: Icons.apps_rounded,       value: null,           activeColor: AppColors.amber),
+    _TypeChipData(label: 'Profesionales', icon: Icons.handyman_rounded,   value: 'PROFESSIONAL', activeColor: AppColors.primary),
+    _TypeChipData(label: 'Negocios',      icon: Icons.storefront_rounded, value: 'BUSINESS',     activeColor: Color(0xFF8E2DE2)),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final prov = context.watch<ProvidersProvider>();
+    final prov     = context.watch<ProvidersProvider>();
+    final expanded = prov.expandedParentSlug;
 
-    // Definición de los chips de tipo
-    final typeChips = [
-      _TypeChipData(
-        label: 'Todos',
-        icon: Icons.apps_rounded,
-        value: null,
-        activeColor: AppColors.amber,
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Fila 1: tipo chips (siempre visible) ──────
+          SizedBox(
+            height: 46,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              itemCount: _typeChips.length,
+              itemBuilder: (_, i) {
+                final t = _typeChips[i];
+                final isSel = prov.selectedType == t.value;
+                return _TypeChip(
+                  data: t,
+                  isSelected: isSel,
+                  onTap: () => prov.setType(isSel && t.value != null ? null : t.value),
+                );
+              },
+            ),
+          ),
+
+          // ── Fila 2: macrocategorías o subcategorías ───
+          if (prov.categories.isNotEmpty)
+            SizedBox(
+              height: 42,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.06, 0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
+                    child: child,
+                  ),
+                ),
+                child: expanded == null
+                    ? _ParentChipRow(key: const ValueKey('parents'), prov: prov)
+                    : _SubChipRow(key: ValueKey('sub_$expanded'), prov: prov),
+              ),
+            ),
+        ],
       ),
-      _TypeChipData(
-        label: 'Profesionales',
-        icon: Icons.handyman_rounded,
-        value: 'PROFESSIONAL',
-        activeColor: AppColors.primary,
-      ),
-      _TypeChipData(
-        label: 'Negocios',
-        icon: Icons.storefront_rounded,
-        value: 'BUSINESS',
-        activeColor: const Color(0xFF8E2DE2),
-      ),
-    ];
+    );
+  }
+}
 
-    // Calcula el total: tipos + separador (si hay categorías) + categorías
-    final catCount  = prov.categories.length;
-    // Solo mostramos separador si existen categorías
-    final hasCats   = catCount > 0;
-    final totalItems = typeChips.length + (hasCats ? 1 + catCount : 0);
+// ── Fila de macrocategorías ────────────────────────────────
 
-    return SizedBox(
-      height: 52,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: totalItems,
-        itemBuilder: (_, i) {
-          // ── Chips de tipo (0, 1, 2) ───────────────────
-          if (i < typeChips.length) {
-            final t = typeChips[i];
-            final isSelected = prov.selectedType == t.value;
-            return _TypeChip(
-              data: t,
-              isSelected: isSelected,
-              onTap: () => prov.setType(isSelected && t.value != null ? null : t.value),
-            );
-          }
+class _ParentChipRow extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _ParentChipRow({super.key, required this.prov});
 
-          // ── Separador visual ──────────────────────────
-          if (i == typeChips.length) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 12, left: 4),
-              child: Center(
-                child: Container(
-                  width: 1.5,
-                  height: 20,
-                  color: context.colors.border,
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      itemCount: prov.categories.length,
+      itemBuilder: (_, i) {
+        final parent = prov.categories[i];
+        final icon   = _kParentIcons[parent.slug] ?? Icons.category_rounded;
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () => prov.setParentCategory(parent.slug),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: c.bgCard,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: c.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 13, color: c.textSecondary),
+                  const SizedBox(width: 5),
+                  Text(
+                    parent.name,
+                    style: TextStyle(color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 3),
+                  Icon(Icons.chevron_right_rounded, size: 14, color: c.textMuted),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Fila de subcategorías (con botón atrás) ───────────────
+
+class _SubChipRow extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _SubChipRow({super.key, required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c       = context.colors;
+    final parent  = prov.expandedParent;
+    final subs    = prov.expandedChildren;
+    final icon    = _kParentIcons[prov.expandedParentSlug] ?? Icons.category_rounded;
+
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      itemCount: 1 + 1 + subs.length, // back + separator + subcats
+      itemBuilder: (_, i) {
+        // Botón "← Nombre"
+        if (i == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: prov.collapseParent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.arrow_back_ios_new_rounded, size: 11, color: AppColors.primary),
+                    const SizedBox(width: 5),
+                    Icon(icon, size: 13, color: AppColors.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      parent?.name ?? '',
+                      style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
-            );
-          }
-
-          // ── Chips de categoría (sin chip "Todas" extra) ─
-          final catIndex = i - typeChips.length - 1; // offset por separador
-          final cat = prov.categories[catIndex];
-          final isCatSelected = prov.selectedCategory == cat.slug;
-          return _CategoryChip(
-            label: cat.name,
-            isSelected: isCatSelected,
-            // Toca de nuevo para deseleccionar
-            onTap: () => prov.setCategory(isCatSelected ? null : cat.slug),
+            ),
           );
-        },
-      ),
+        }
+        // Separador
+        if (i == 1) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12, left: 4),
+            child: Center(
+              child: Container(width: 1.5, height: 18, color: c.border),
+            ),
+          );
+        }
+        // Subcategorías
+        final sub       = subs[i - 2];
+        final isSel     = prov.selectedCategory == sub.slug;
+        return _CategoryChip(
+          label:      sub.name,
+          isSelected: isSel,
+          onTap:      () => prov.setCategory(isSel ? null : sub.slug),
+        );
+      },
     );
   }
 }
@@ -351,20 +465,14 @@ class _JoinUsButtonState extends State<_JoinUsButton>
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final isProvider = auth.user?.isProvider ?? false;
 
-    // Si ya tiene un perfil aprobado → no mostrar ningún FAB de acción
+    // Solo mostrar "Ir a mi panel" cuando el proveedor está APROBADO
     if (auth.hasApprovedProvider) {
       _pulseController.stop();
       return _buildProviderButton(context);
     }
 
-    // Si es proveedor (aún pendiente) → mostrar panel
-    if (isProvider) {
-      _pulseController.stop();
-      return _buildProviderButton(context);
-    }
-
+    // Pendiente o sin perfil → siempre mostrar "¡Quiero ser parte!"
     if (!_pulseController.isAnimating) _pulseController.repeat(reverse: true);
     return _buildJoinUsButton(context);
   }
@@ -382,7 +490,7 @@ class _JoinUsButtonState extends State<_JoinUsButton>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1E88E5).withOpacity(0.4),
+              color: const Color(0xFF1E88E5).withValues(alpha: 0.4),
               blurRadius: 12, spreadRadius: 2, offset: const Offset(0, 4),
             ),
           ],
@@ -416,7 +524,7 @@ class _JoinUsButtonState extends State<_JoinUsButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF6B35).withOpacity(0.4),
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.4),
                 blurRadius: 12, spreadRadius: 2, offset: const Offset(0, 4),
               ),
             ],
@@ -658,9 +766,16 @@ class _ProvidersList extends StatelessWidget {
       'BUSINESS'     => 'Negocios',
       _              => 'Servicios',
     };
-    final catLabel = prov.selectedCategory != null
-        ? ' · ${prov.categories.firstWhere((c) => c.slug == prov.selectedCategory, orElse: () => prov.categories.first).name}'
-        : '';
+    // Busca nombre en subcategorías hijas
+    String catLabel = '';
+    if (prov.selectedCategory != null) {
+      for (final parent in prov.categories) {
+        final match = parent.children.where((s) => s.slug == prov.selectedCategory);
+        if (match.isNotEmpty) { catLabel = ' · ${match.first.name}'; break; }
+      }
+    } else if (prov.expandedParentSlug != null) {
+      catLabel = ' · ${prov.expandedParent?.name ?? ''}';
+    }
     final sectionTitle = '$typeLabel$catLabel Cerca de Ti';
 
     return RefreshIndicator(
@@ -716,7 +831,16 @@ class _ProvidersList extends StatelessWidget {
               return;
             }
             prov.toggleFavorite(provider.id);
-            favProv.toggle(provider.id);
+            favProv.toggle(provider.id).then((ok) {
+              if (!ok && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(favProv.error ?? 'Error al actualizar favorito'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            });
           },
         );
       },
@@ -742,6 +866,9 @@ class _FilterSheetState extends State<_FilterSheet> {
   late bool    _verifiedOnly;
   late String? _sortBy;
   late final TextEditingController _locationCtrl;
+  // Categoría (estado local del sheet)
+  String? _sheetParentSlug;   // macrocategoría expandida en el sheet
+  String? _sheetCategory;     // subcategoría hoja seleccionada
 
   // Opciones de ordenamiento
   static const _sortOptions = [
@@ -774,10 +901,12 @@ class _FilterSheetState extends State<_FilterSheet> {
   @override
   void initState() {
     super.initState();
-    _availability = widget.prov.selectedAvailability;
-    _verifiedOnly = widget.prov.verifiedOnly;
-    _sortBy       = widget.prov.sortBy;
-    _locationCtrl = TextEditingController(text: widget.prov.location);
+    _availability      = widget.prov.selectedAvailability;
+    _verifiedOnly      = widget.prov.verifiedOnly;
+    _sortBy            = widget.prov.sortBy;
+    _locationCtrl      = TextEditingController(text: widget.prov.location);
+    _sheetParentSlug   = widget.prov.expandedParentSlug;
+    _sheetCategory     = widget.prov.selectedCategory;
   }
 
   @override
@@ -788,27 +917,33 @@ class _FilterSheetState extends State<_FilterSheet> {
 
   void _apply() {
     widget.prov.applyFilters(
-      availability: _availability,
-      verifiedOnly: _verifiedOnly,
-      sortBy: _sortBy,
-      location: _locationCtrl.text.trim(),
+      availability:   _availability,
+      verifiedOnly:   _verifiedOnly,
+      sortBy:         _sortBy,
+      location:       _locationCtrl.text.trim(),
+      category:       _sheetCategory,
+      parentCategory: _sheetCategory == null ? _sheetParentSlug : null,
     );
     Navigator.pop(context);
   }
 
   void _clear() {
     setState(() {
-      _availability = null;
-      _verifiedOnly = true;
-      _sortBy       = null;
+      _availability    = null;
+      _verifiedOnly    = true;
+      _sortBy          = null;
+      _sheetParentSlug = null;
+      _sheetCategory   = null;
       _locationCtrl.clear();
     });
   }
 
   bool get _hasLocalChanges =>
-      _availability != widget.prov.selectedAvailability ||
-      _verifiedOnly != widget.prov.verifiedOnly ||
-      _sortBy != widget.prov.sortBy ||
+      _availability    != widget.prov.selectedAvailability ||
+      _verifiedOnly    != widget.prov.verifiedOnly ||
+      _sortBy          != widget.prov.sortBy ||
+      _sheetCategory   != widget.prov.selectedCategory ||
+      _sheetParentSlug != widget.prov.expandedParentSlug ||
       _locationCtrl.text.trim() != widget.prov.location;
 
   @override
@@ -832,7 +967,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                   child: Container(
                     width: 40, height: 4,
                     decoration: BoxDecoration(
-                      color: c.textMuted.withOpacity(0.3),
+                      color: c.textMuted.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -879,6 +1014,23 @@ class _FilterSheetState extends State<_FilterSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── CATEGORÍAS ───────────────────────
+                  _SectionLabel(label: 'CATEGORÍA'),
+                  const SizedBox(height: 10),
+                  _CategorySheetSection(
+                    categories:      widget.prov.categories,
+                    selectedParent:  _sheetParentSlug,
+                    selectedLeaf:    _sheetCategory,
+                    onParentTap:     (slug) => setState(() {
+                      _sheetParentSlug = _sheetParentSlug == slug ? null : slug;
+                      _sheetCategory   = null;
+                    }),
+                    onLeafTap:       (slug) => setState(() {
+                      _sheetCategory = _sheetCategory == slug ? null : slug;
+                    }),
+                  ),
+                  const SizedBox(height: 20),
+
                   // ── DISPONIBILIDAD ────────────────────
                   _SectionLabel(label: 'DISPONIBILIDAD'),
                   const SizedBox(height: 10),
@@ -958,7 +1110,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                             value: _verifiedOnly,
                             onChanged: (v) =>
                                 setState(() => _verifiedOnly = v),
-                            activeColor: AppColors.verified,
+                            activeThumbColor: AppColors.verified,
                           ),
                         ],
                       ),
@@ -1258,10 +1410,10 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : c.bgCard,
+          color: isSelected ? color.withValues(alpha: 0.15) : c.bgCard,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.4) : c.border,
+            color: isSelected ? color.withValues(alpha: 0.4) : c.border,
           ),
         ),
         child: Text(
@@ -1273,6 +1425,182 @@ class _FilterChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECCIÓN DE CATEGORÍAS JERÁRQUICA PARA EL FILTER SHEET
+// ═══════════════════════════════════════════════════════════
+
+class _CategorySheetSection extends StatelessWidget {
+  final List<CategoryModel> categories;
+  final String? selectedParent;
+  final String? selectedLeaf;
+  final ValueChanged<String> onParentTap;
+  final ValueChanged<String> onLeafTap;
+
+  const _CategorySheetSection({
+    required this.categories,
+    required this.selectedParent,
+    required this.selectedLeaf,
+    required this.onParentTap,
+    required this.onLeafTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Grid de macrocategorías ──────────────────────
+        GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: categories.length,
+          itemBuilder: (_, i) {
+            final parent   = categories[i];
+            final icon     = _kParentIcons[parent.slug] ?? Icons.category_rounded;
+            final isSel    = selectedParent == parent.slug;
+            final hasLeaf  = isSel && selectedLeaf != null;
+
+            return GestureDetector(
+              onTap: () => onParentTap(parent.slug),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                decoration: BoxDecoration(
+                  color: isSel
+                      ? AppColors.primary.withValues(alpha: 0.12)
+                      : c.bgCard,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSel
+                        ? AppColors.primary.withValues(alpha: 0.4)
+                        : c.border,
+                    width: isSel ? 1.5 : 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          icon,
+                          size: 26,
+                          color: isSel ? AppColors.primary : c.textMuted,
+                        ),
+                        if (hasLeaf)
+                          Positioned(
+                            top: -4, right: -6,
+                            child: Container(
+                              width: 10, height: 10,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: c.bgCard, width: 1.5),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      parent.name,
+                      style: TextStyle(
+                        color: isSel ? AppColors.primary : c.textSecondary,
+                        fontSize: 10,
+                        fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+
+        // ── Subcategorías (se expanden al seleccionar padre) ─
+        if (selectedParent != null) ...[
+          const SizedBox(height: 12),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            child: Builder(builder: (context) {
+              final parent = categories.where((p) => p.slug == selectedParent).firstOrNull;
+              final subs   = parent?.children ?? [];
+              if (subs.isEmpty) return const SizedBox.shrink();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    parent!.name,
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 7,
+                    runSpacing: 7,
+                    children: subs.map((sub) {
+                      final isSel = selectedLeaf == sub.slug;
+                      return GestureDetector(
+                        onTap: () => onLeafTap(sub.slug),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: isSel
+                                ? AppColors.primary
+                                : context.colors.bgCard,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSel
+                                  ? AppColors.primary
+                                  : context.colors.border,
+                            ),
+                          ),
+                          child: Text(
+                            sub.name,
+                            style: TextStyle(
+                              color: isSel
+                                  ? Colors.white
+                                  : context.colors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: isSel
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ],
+      ],
     );
   }
 }

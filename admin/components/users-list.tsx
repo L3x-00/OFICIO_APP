@@ -6,6 +6,7 @@ import {
   ShieldCheck, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { getUsers, deleteUser, updateUserStatus, UserItem } from '@/lib/api';
+import { UserDetailModal } from './user-detail-modal';
 import { toast } from 'sonner';
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
@@ -25,6 +26,7 @@ export function UsersList() {
   const [isLoading, setIsLoading]   = useState(true);
   const [actionId, setActionId]     = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<UserItem | null>(null);
+  const [viewingUser, setViewingUser] = useState<UserItem | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -147,7 +149,11 @@ export function UsersList() {
               ) : users.map((u) => {
                 const role = ROLE_LABELS[u.role] ?? { label: u.role, color: 'text-gray-400 bg-white/5 border-white/10' };
                 return (
-                  <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={u.id}
+                    onClick={() => setViewingUser(u)}
+                    className="hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  >
                     <td className="p-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-white text-sm">
@@ -190,7 +196,7 @@ export function UsersList() {
                       </div>
                     </td>
 
-                    <td className="p-4">
+                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1.5">
                         {u.role !== 'ADMIN' && (
                           <>
@@ -252,6 +258,12 @@ export function UsersList() {
           </button>
         </div>
       )}
+
+      <UserDetailModal
+        user={viewingUser}
+        onClose={() => setViewingUser(null)}
+        onUpdated={() => { setViewingUser(null); load(); }}
+      />
 
       {/* Modal de confirmación de borrado */}
       {confirmDelete && (

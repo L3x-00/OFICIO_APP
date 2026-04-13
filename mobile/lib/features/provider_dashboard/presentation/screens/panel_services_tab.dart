@@ -129,11 +129,23 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
   }) {
     final c = context.colors;
     final isEdit = existing != null;
-    final nameCtrl = TextEditingController(text: existing?.name ?? '');
-    final descCtrl = TextEditingController(text: existing?.description ?? '');
+
+    // Teléfono inicial: si es edición usa el del servicio; si no, el del perfil del proveedor.
+    // Prioridad: provider.phone > user.phone > vacío.
+    final providerPhone = dash.profile?.phone
+        ?? context.read<AuthProvider>().user?.phone
+        ?? '';
+    final initialPhone = isEdit ? (existing.phone ?? providerPhone) : providerPhone;
+
+    // Todos los controladores se crean FUERA del builder para que no se
+    // reinicien cuando Flutter reconstruye el sheet (p.ej. al abrir el teclado).
+    final nameCtrl  = TextEditingController(text: existing?.name ?? '');
+    final descCtrl  = TextEditingController(text: existing?.description ?? '');
     final priceCtrl = TextEditingController(
       text: existing?.price != null ? existing!.price.toString() : '',
     );
+    final phoneCtrl = TextEditingController(text: initialPhone);
+    final unitCtrl  = TextEditingController(text: existing?.unit ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -143,21 +155,6 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) {
-        // 1. Lee el proveedor DENTRO del builder para obtener el dato más fresco.
-        final authProvider = context.read<AuthProvider>();
-        final userPhone = authProvider.user?.phone ?? '';
-
-        // 2. Determina el teléfono inicial: si es edición, usa el del servicio; si no, el del perfil.
-        final initialPhone = isEdit
-            ? (existing?.phone ?? userPhone)
-            : userPhone;
-
-        // 3. Crea el controlador del teléfono con el valor correcto.
-        final phoneCtrl = TextEditingController(text: initialPhone);
-
-        // 4. Crea el controlador de la unidad.
-        final unitCtrl = TextEditingController(text: existing?.unit ?? '');
-
         return Padding(
           padding: EdgeInsets.only(
             left: 20,
@@ -174,7 +171,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -268,7 +265,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
                     if (isEdit) {
                       final idx = updated.indexWhere(
-                        (s) => s.id == existing!.id,
+                        (s) => s.id == existing.id,
                       );
                       if (idx >= 0) updated[idx] = newItem;
                     } else {
@@ -367,7 +364,7 @@ class _ServiceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -414,7 +411,7 @@ class _ServiceCard extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.amber.withOpacity(0.1),
+                    color: AppColors.amber.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -482,7 +479,7 @@ class _EmptyServices extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.amber.withOpacity(0.1),
+                color: AppColors.amber.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

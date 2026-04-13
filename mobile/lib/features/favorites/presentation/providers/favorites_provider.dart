@@ -13,11 +13,13 @@ class FavoritesProvider extends ChangeNotifier {
   List<ProviderModel> _favorites = [];
   Set<int> _favoriteIds = {}; // Para verificación O(1)
   bool _isLoading = false;
+  String? _error;
   int? _userId;
 
   List<ProviderModel> get favorites    => _favorites;
   Set<int>  get favoriteIds  => _favoriteIds;
   bool      get isLoading    => _isLoading;
+  String?   get error        => _error;
 
   bool isFavorite(int providerId) => _favoriteIds.contains(providerId);
 
@@ -54,9 +56,10 @@ class FavoritesProvider extends ChangeNotifier {
     }
   }
 
-  // ── Toggle favorito ───────────────────────────────────────
-  Future<void> toggle(int providerId) async {
-    if (_userId == null) return;
+  // ── Toggle favorito ─────────────────────────────────────────
+  // Retorna true si la operación fue exitosa, false si falló.
+  Future<bool> toggle(int providerId) async {
+    if (_userId == null) return false;
 
     // Optimistic update: actualizar UI antes de la respuesta
     final wasAdded = _favoriteIds.contains(providerId);
@@ -77,9 +80,11 @@ class FavoritesProvider extends ChangeNotifier {
         await loadFavorites();
       }
 
+      _error = null;
       AppLogger.success(
         wasAdded ? 'Favorito eliminado' : 'Favorito agregado',
       );
+      return true;
     } catch (e) {
       // Revertir el optimistic update si falló
       if (wasAdded) {
@@ -88,8 +93,10 @@ class FavoritesProvider extends ChangeNotifier {
         _favoriteIds.remove(providerId);
         _favorites.removeWhere((p) => p.id == providerId);
       }
+      _error = 'No se pudo actualizar el favorito. Verifica tu conexión.';
       notifyListeners();
       AppLogger.error('Error en toggle favorito', e);
+      return false;
     }
   }
 

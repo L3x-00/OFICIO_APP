@@ -8,6 +8,7 @@ import {
 import { StatusBadge } from './status-badge';
 import { CreateProviderModal } from './create-provider-modal';
 import { EditProviderModal } from './edit-provider-modal';
+import { ProviderDetailModal } from './provider-detail-modal';
 // Importamos las funciones unificadas
 import { getProviders, deleteProvider, toggleVisibility, Provider } from '@/lib/api';
 
@@ -24,6 +25,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
+  const [viewingProvider, setViewingProvider] = useState<Provider | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const lastPage = Math.ceil(total / 15);
@@ -94,6 +96,15 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
     return map[av] ?? { label: av, variant: 'muted' };
   };
 
+  const verificationBadge = (status: string) => {
+    const map: Record<string, { label: string; variant: any }> = {
+      APROBADO:  { label: 'Aprobado',      variant: 'success' },
+      PENDIENTE: { label: 'En revisión',   variant: 'warning' },
+      RECHAZADO: { label: 'Rechazado',     variant: 'danger'  },
+    };
+    return map[status] ?? { label: status, variant: 'muted' };
+  };
+
   return (
     <div className="space-y-4">
       {/* Herramientas */}
@@ -139,7 +150,11 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
               ) : providers.map((p) => {
                 const tb = typeBadge(p.type);
                 return (
-                <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
+                <tr
+                  key={p.id}
+                  onClick={() => setViewingProvider(p)}
+                  className="hover:bg-white/[0.03] transition-colors cursor-pointer"
+                >
                   <td className="p-4">
                     <div className="flex flex-col">
                       <span className="font-bold text-white text-sm">{p.businessName}</span>
@@ -157,10 +172,13 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                   </td>
                   <td className="p-4">
                     <div className="flex flex-col gap-1.5">
-                      <StatusBadge {...availabilityBadge(p.availability)} />
-                      <StatusBadge 
-                        label={p.isVisible ? 'Público' : 'Privado'} 
-                        variant={p.isVisible ? 'success' : 'muted'} 
+                      <StatusBadge {...verificationBadge(p.verificationStatus)} />
+                      {p.verificationStatus === 'APROBADO' && (
+                        <StatusBadge {...availabilityBadge(p.availability)} />
+                      )}
+                      <StatusBadge
+                        label={p.isVisible ? 'Público' : 'Privado'}
+                        variant={p.isVisible ? 'success' : 'muted'}
                       />
                     </div>
                   </td>
@@ -180,22 +198,22 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                       </div>
                     ) : <span className="text-gray-700">-</span>}
                   </td>
-                  <td className="p-4">
+                  <td className="p-4" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => setEditingProvider(p)}
                         className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all"
                       >
                         <Edit size={14} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleToggleVisibility(p.id)}
                         disabled={actionLoading === p.id}
                         className={`p-2 rounded-lg transition-all ${p.isVisible ? 'bg-orange-500/10 text-orange-400' : 'bg-green-500/10 text-green-400'}`}
                       >
                         {p.isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(p.id)}
                         disabled={actionLoading === p.id}
                         className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
@@ -242,6 +260,16 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
         isOpen={!!editingProvider}
         onClose={() => setEditingProvider(null)}
         onUpdated={() => { setEditingProvider(null); load(); }}
+      />
+
+      <ProviderDetailModal
+        provider={viewingProvider}
+        onClose={() => setViewingProvider(null)}
+        onEdit={viewingProvider ? () => {
+          const p = viewingProvider;
+          setViewingProvider(null);
+          setEditingProvider(p);
+        } : undefined}
       />
     </div>
   );

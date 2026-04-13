@@ -208,10 +208,10 @@ export const getCategories = (search?: string) => {
   return fetchApi<Category[]>(`/admin/categories?${params}`);
 };
 
-export const createCategory = (data: { name: string; slug: string; iconUrl?: string }) =>
+export const createCategory = (data: { name: string; slug: string; iconUrl?: string; parentId?: number }) =>
   fetchApi<Category>('/admin/categories', { method: 'POST', body: JSON.stringify(data) });
 
-export const updateCategory = (id: number, data: { name?: string; slug?: string; iconUrl?: string }) =>
+export const updateCategory = (id: number, data: { name?: string; slug?: string; iconUrl?: string; parentId?: number | null }) =>
   fetchApi<Category>(`/admin/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const deleteCategory = (id: number) =>
@@ -372,6 +372,11 @@ export interface Category {
   name: string;
   slug: string;
   iconUrl?: string;
+  isActive: boolean;
+  parentId?: number | null;
+  parent?: { id: number; name: string } | null;
+  children?: Category[];
+  _count?: { providers: number };
   providerCount?: number;
 }
 

@@ -14,27 +14,38 @@ class ProvidersProvider extends ChangeNotifier {
   String _errorMessage = '';
 
   // Filtros activos
-  String? _selectedCategory;
+  String? _selectedCategory;      // slug de subcategoría (hoja)
+  String? _expandedParentSlug;    // macrocategoría seleccionada en la barra
   String? _selectedAvailability;
-  String? _selectedType;      // null | 'PROFESSIONAL' | 'BUSINESS'
-  String? _sortBy;            // null | 'reviews' | 'availability' | 'rating'
+  String? _selectedType;          // null | 'PROFESSIONAL' | 'BUSINESS'
+  String? _sortBy;                // null | 'reviews' | 'availability' | 'rating'
   String  _location = '';
-  bool    _verifiedOnly = true; // true = solo verificados (default)
+  bool    _verifiedOnly = true;   // true = solo verificados (default)
   String  _searchQuery = '';
 
   // ── Getters ───────────────────────────────────────────────
-  List<ProviderModel> get providers       => _providers;
-  List<CategoryModel> get categories      => _categories;
-  bool                get isLoading       => _isLoading;
-  bool                get hasError        => _hasError;
-  String              get errorMessage    => _errorMessage;
-  String?             get selectedCategory    => _selectedCategory;
+  List<ProviderModel> get providers            => _providers;
+  List<CategoryModel> get categories           => _categories;
+  bool                get isLoading            => _isLoading;
+  bool                get hasError             => _hasError;
+  String              get errorMessage         => _errorMessage;
+  String?             get selectedCategory     => _selectedCategory;
+  String?             get expandedParentSlug   => _expandedParentSlug;
   String?             get selectedAvailability => _selectedAvailability;
-  String?             get selectedType    => _selectedType;
-  String?             get sortBy          => _sortBy;
-  String              get location        => _location;
-  bool                get verifiedOnly    => _verifiedOnly;
-  String              get searchQuery     => _searchQuery;
+  String?             get selectedType         => _selectedType;
+  String?             get sortBy               => _sortBy;
+  String              get location             => _location;
+  bool                get verifiedOnly         => _verifiedOnly;
+  String              get searchQuery          => _searchQuery;
+
+  /// Devuelve la CategoryModel del padre expandido (o null)
+  CategoryModel? get expandedParent => _expandedParentSlug == null
+      ? null
+      : _categories.where((c) => c.slug == _expandedParentSlug).firstOrNull;
+
+  /// Devuelve las subcategorías del padre expandido (o lista vacía)
+  List<CategoryModel> get expandedChildren =>
+      expandedParent?.children ?? [];
 
   /// true cuando hay algún filtro no-default activo (para el badge)
   /// 'rating' no cuenta porque es el orden por defecto del backend
@@ -66,13 +77,14 @@ class ProvidersProvider extends ChangeNotifier {
     notifyListeners();
 
     final result = await _repo.getProviders(
-      categorySlug: _selectedCategory,
-      availability: _selectedAvailability,
-      verified:     _verifiedOnly ? null : false, // null → backend default (solo verificados)
-      search:       _searchQuery.isNotEmpty ? _searchQuery : null,
-      type:         _selectedType,
-      sortBy:       _sortBy,
-      location:     _location.isNotEmpty ? _location : null,
+      categorySlug:       _selectedCategory,
+      parentCategorySlug: _selectedCategory == null ? _expandedParentSlug : null,
+      availability:       _selectedAvailability,
+      verified:           _verifiedOnly ? null : false,
+      search:             _searchQuery.isNotEmpty ? _searchQuery : null,
+      type:               _selectedType,
+      sortBy:             _sortBy,
+      location:           _location.isNotEmpty ? _location : null,
     );
 
     result.when(
@@ -93,17 +105,37 @@ class ProvidersProvider extends ChangeNotifier {
     bool verifiedOnly = true,
     String? sortBy,
     String location = '',
+    String? category,        // subcategoría hoja (desde el sheet)
+    String? parentCategory,  // macrocategoría (desde el sheet)
   }) async {
     _selectedAvailability = availability;
-    _verifiedOnly = verifiedOnly;
-    _sortBy = sortBy;
-    _location = location;
+    _verifiedOnly         = verifiedOnly;
+    _sortBy               = sortBy;
+    _location             = location;
+    _selectedCategory     = category;
+    _expandedParentSlug   = category != null ? (parentCategory ?? _expandedParentSlug) : parentCategory;
     await loadProviders();
   }
 
   // ── Setters individuales ──────────────────────────────────
+
+  /// Expande una macrocategoría en la barra de filtros y filtra por ella.
+  Future<void> setParentCategory(String slug) async {
+    _expandedParentSlug = slug;
+    _selectedCategory   = null;
+    await loadProviders();
+  }
+
+  /// Colapsa la vista de subcategorías y limpia el filtro de categoría.
+  Future<void> collapseParent() async {
+    _expandedParentSlug = null;
+    _selectedCategory   = null;
+    await loadProviders();
+  }
+
   Future<void> setCategory(String? slug) async {
     _selectedCategory = slug;
+    // Mantiene _expandedParentSlug para que el usuario siga viendo subcategorías
     await loadProviders();
   }
 
@@ -138,13 +170,14 @@ class ProvidersProvider extends ChangeNotifier {
   }
 
   void clearFilters() {
-    _selectedCategory    = null;
+    _selectedCategory     = null;
+    _expandedParentSlug   = null;
     _selectedAvailability = null;
-    _selectedType        = null;
-    _sortBy              = null;
-    _location            = '';
-    _verifiedOnly        = true;
-    _searchQuery         = '';
+    _selectedType         = null;
+    _sortBy               = null;
+    _location             = '';
+    _verifiedOnly         = true;
+    _searchQuery          = '';
     loadProviders();
   }
 

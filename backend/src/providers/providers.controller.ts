@@ -23,6 +23,7 @@ export class ProvidersController {
   @Get()
   findAll(
     @Query('categorySlug') categorySlug?: string,
+    @Query('parentCategorySlug') parentCategorySlug?: string,
     @Query('availability') availability?: string,
     @Query('search') search?: string,
     @Query('localityId') localityId?: string,
@@ -35,6 +36,7 @@ export class ProvidersController {
   ) {
     return this.providersService.findAll({
       categorySlug,
+      parentCategorySlug,
       availability,
       search,
       localityId: localityId ? parseInt(localityId) : undefined,

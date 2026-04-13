@@ -18,225 +18,163 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Iniciando seed...');
+  console.log('🌱 Iniciando seed limpio...');
 
-  // ── Localidades ──────────────────────────────────────────
-  const huancayo = await prisma.locality.upsert({
-    where: { id: 1 },
-    update: {},
-    create: { name: 'Huancayo', department: 'Junín', country: 'Perú' },
+  // ── 1. LIMPIEZA TOTAL (orden respetando foreign keys) ──────
+  console.log('🗑️  Borrando datos existentes...');
+
+  // Tablas sin dependencias
+  await prisma.providerAnalytic.deleteMany();
+  await prisma.adminNotification.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.favorite.deleteMany();
+  await prisma.verificationDoc.deleteMany();
+  await prisma.providerImage.deleteMany();
+  await prisma.subscription.deleteMany();
+
+  // Providers (depende de users, categories, localities)
+  await prisma.provider.deleteMany();
+
+  // Users (depende de sí mismo por relaciones)
+  await prisma.otpCode.deleteMany();
+  await prisma.refreshToken.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Categorías: primero quitar parentId de hijos, luego borrar todo
+  await prisma.category.updateMany({ data: { parentId: null } });
+  await prisma.category.deleteMany();
+
+  // Localidades (sin dependencias)
+  await prisma.locality.deleteMany();
+
+  console.log('✅ Base de datos limpia');
+
+  // ── 2. LOCALIDADES ──────────────────────────────────────────
+  console.log('📍 Creando localidades...');
+
+  const huancayo = await prisma.locality.create({
+    data: { name: 'Huancayo', department: 'Junín', country: 'Perú' },
   });
 
-  // ── Categorías ───────────────────────────────────────────
-  const catNames = [
-    { name: 'Electricistas', slug: 'electricistas' },
-    { name: 'Gasfiteros', slug: 'gasfiteros' },
-    { name: 'Pintores', slug: 'pintores' },
-    { name: 'Restaurantes', slug: 'restaurantes' },
-    { name: 'Peluquerías', slug: 'peluquerias' },
-    { name: 'Transporte', slug: 'transporte' },
+  await prisma.locality.create({
+    data: { name: 'Lima', department: 'Lima', country: 'Perú' },
+  });
+
+  await prisma.locality.create({
+    data: { name: 'Cusco', department: 'Cusco', country: 'Perú' },
+  });
+
+  console.log(`  ✓ 3 localidades creadas`);
+
+  // ── 3. CATEGORÍAS JERÁRQUICAS ──────────────────────────────
+  console.log('📂 Creando categorías...');
+
+  const parentDefs = [
+    { name: 'Hogar y Construcción', slug: 'hogar' },
+    { name: 'Gastronomía',          slug: 'gastronomia' },
+    { name: 'Belleza y Estética',   slug: 'belleza' },
+    { name: 'Transporte',           slug: 'transporte-general' },
+    { name: 'Tecnología',           slug: 'tecnologia' },
+    { name: 'Salud y Bienestar',    slug: 'salud' },
+    { name: 'Educación',            slug: 'educacion' },
+    { name: 'Ingeniería',           slug: 'ingenieria' },
   ];
 
-  const cats = await Promise.all(
-    catNames.map((c) =>
-      prisma.category.upsert({
-        where: { slug: c.slug },
-        update: {},
-        create: { name: c.name, slug: c.slug },
-      }),
-    ),
-  );
-  // ── Administrador ───────────────────────────────────────────
+  const parents: Record<string, number> = {};
+  for (const p of parentDefs) {
+    const created = await prisma.category.create({
+      data: { name: p.name, slug: p.slug },
+    });
+    parents[p.slug] = created.id;
+  }
+
+  const subDefs = [
+    // Hogar y Construcción
+    { name: 'Electricistas',       slug: 'electricistas',   parent: 'hogar' },
+    { name: 'Gasfiteros',          slug: 'gasfiteros',      parent: 'hogar' },
+    { name: 'Pintores',            slug: 'pintores',        parent: 'hogar' },
+    { name: 'Carpintería',         slug: 'carpinteria',     parent: 'hogar' },
+    { name: 'Albañilería',         slug: 'albanileria',     parent: 'hogar' },
+    { name: 'Jardinería',          slug: 'jardineria',      parent: 'hogar' },
+    { name: 'Limpieza del Hogar',  slug: 'limpieza',        parent: 'hogar' },
+    // Gastronomía
+    { name: 'Restaurantes',        slug: 'restaurantes',    parent: 'gastronomia' },
+    { name: 'Cafeterías',          slug: 'cafeterias',      parent: 'gastronomia' },
+    { name: 'Pastelería',          slug: 'pasteleria',      parent: 'gastronomia' },
+    // Belleza y Estética
+    { name: 'Peluquerías',         slug: 'peluquerias',     parent: 'belleza' },
+    { name: 'Barbería',            slug: 'barberia',        parent: 'belleza' },
+    { name: 'Spa y Masajes',       slug: 'spa',             parent: 'belleza' },
+    { name: 'Manicure / Pedicure', slug: 'manicure',        parent: 'belleza' },
+    // Transporte
+    { name: 'Transporte',          slug: 'transporte',      parent: 'transporte-general' },
+    { name: 'Taxi y Remisse',      slug: 'taxi',            parent: 'transporte-general' },
+    { name: 'Mudanzas',            slug: 'mudanzas',        parent: 'transporte-general' },
+    // Tecnología
+    { name: 'Técnico en PC',       slug: 'tecnico-pc',      parent: 'tecnologia' },
+    { name: 'Técnico Celular',     slug: 'tecnico-celular', parent: 'tecnologia' },
+    { name: 'Redes e Internet',    slug: 'redes',           parent: 'tecnologia' },
+    // Salud y Bienestar
+    { name: 'Médico a Domicilio',  slug: 'medico',          parent: 'salud' },
+    { name: 'Enfermería',          slug: 'enfermeria',      parent: 'salud' },
+    { name: 'Fisioterapia',        slug: 'fisioterapia',    parent: 'salud' },
+    { name: 'Nutricionista',       slug: 'nutricionista',   parent: 'salud' },
+    // Educación
+    { name: 'Clases Particulares', slug: 'clases',          parent: 'educacion' },
+    { name: 'Idiomas',             slug: 'idiomas',         parent: 'educacion' },
+    { name: 'Música',              slug: 'musica',          parent: 'educacion' },
+    // Ingeniería
+    { name: 'Ing. Civil',          slug: 'ing-civil',       parent: 'ingenieria' },
+    { name: 'Ing. de Sistemas',    slug: 'ing-sistemas',    parent: 'ingenieria' },
+    { name: 'Ing. Eléctrica',      slug: 'ing-electrica',   parent: 'ingenieria' },
+    { name: 'Ing. de Minas',       slug: 'ing-minas',       parent: 'ingenieria' },
+  ];
+
+  for (const s of subDefs) {
+    await prisma.category.create({
+      data: { name: s.name, slug: s.slug, parentId: parents[s.parent] },
+    });
+  }
+
+  console.log(`  ✓ ${parentDefs.length} categorías padre`);
+  console.log(`  ✓ ${subDefs.length} subcategorías`);
+
+  // ── 4. ADMINISTRADOR (únicamente 1) ────────────────────────
+  console.log('👤 Creando administrador...');
+
   const adminEmail = 'admin@oficio.com';
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail },
+  const adminPasswordHash = await bcrypt.hash('Admin2025.', 10);
+
+  await prisma.user.create({
+    data: {
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
+      firstName: 'Administrador',
+      lastName: 'Principal',
+      role: 'ADMIN',
+      isEmailVerified: true,
+      isActive: true,
+    },
   });
 
-  if (!existingAdmin) {
-    const adminPasswordHash = await bcrypt.hash('admin123', 10);
-    await prisma.user.create({
-      data: {
-        email: adminEmail,
-        passwordHash: adminPasswordHash,
-        firstName: 'Administrador',
-        lastName: 'Principal',
-        role: 'ADMIN',
-      },
-    });
-    console.log(`✅ Creado usuario administrador: ${adminEmail}`);
-  } else {
-    console.log(`ℹ️  Usuario administrador ya existe: ${adminEmail}`);
-  }
-  // ── Datos de Proveedores ─────────────────────
-  const proveedoresData = [
-    {
-      email: 'juan.elec@test.com',
-      firstName: 'Juan',
-      lastName: 'Pérez',
-      businessName: 'Juan Electricista',
-      phone: '+51987654321',
-      whatsapp: '+51987654321',
-      description: 'Electricista certificado con 10 años de experiencia.',
-      categoryIndex: 0,
-      availability: 'DISPONIBLE',
-      isVerified: true,
-      averageRating: 4.8,
-      totalReviews: 23,
-      latitude: -12.0664,
-      longitude: -75.2049,
-      address: 'Jr. Ancash 456, Huancayo',
-      type: 'OFICIO',
-    },
-    {
-      email: 'carlos.gas@test.com',
-      firstName: 'Carlos',
-      lastName: 'López',
-      businessName: 'Carlos Gasfitero',
-      phone: '+51998877665',
-      description: 'Gasfitería en general: reparación de fugas y termas.',
-      categoryIndex: 1,
-      availability: 'OCUPADO',
-      isVerified: true,
-      averageRating: 4.2,
-      totalReviews: 11,
-      latitude: -12.0712,
-      longitude: -75.2130,
-      address: 'Av. Real 789, Huancayo',
-      type: 'OFICIO',
-    },
-    {
-      email: 'sabor@test.com',
-      firstName: 'María',
-      lastName: 'García',
-      businessName: 'Restaurante El Sabor',
-      phone: '+51912345678',
-      description: 'Comida peruana tradicional. Especialidad en platos típicos.',
-      categoryIndex: 3,
-      availability: 'CON_DEMORA',
-      isVerified: false,
-      averageRating: 4.1,
-      totalReviews: 57,
-      latitude: -12.0598,
-      longitude: -75.1978,
-      address: 'Calle Real 123, Huancayo',
-      type: 'NEGOCIO',
-    },
-  ];
-
-  for (const data of proveedoresData) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
-
-    if (!existingUser) {
-      const passwordHash = await bcrypt.hash('123456', 10);
-      const user = await prisma.user.create({
-        data: {
-          email: data.email,
-          passwordHash,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: 'PROVEEDOR',
-        },
-      });
-
-      const provider = await prisma.provider.create({
-        data: {
-          userId: user.id,
-          businessName: data.businessName,
-          phone: data.phone,
-          whatsapp: (data as any).whatsapp ?? null,
-          description: data.description,
-          categoryId: cats[data.categoryIndex].id,
-          localityId: huancayo.id,
-          availability: data.availability as any,
-          isVerified: data.isVerified,
-          averageRating: data.averageRating,
-          totalReviews: data.totalReviews,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          address: data.address,
-          type: data.type as any,
-          scheduleJson: {
-            lun: '8:00-18:00',
-            mar: '8:00-18:00',
-            mie: '8:00-18:00',
-            jue: '8:00-18:00',
-            vie: '8:00-18:00',
-            sab: '9:00-13:00',
-            dom: 'Cerrado',
-          },
-        },
-      });
-
-      // Suscripción inicial
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 2);
-      await prisma.subscription.create({
-        data: {
-          providerId: provider.id,
-          plan: 'GRATIS',
-          status: 'GRACIA',
-          endDate,
-        },
-      });
-
-      console.log(`✅ Creado: ${data.businessName}`);
-    }
-  }
-
-  console.log('🏁 Seed completado exitosamente');
+  console.log(`  ✓ Admin creado`);
+  console.log('');
+  console.log('═══════════════════════════════════════════');
+  console.log('  CREDENCIALES DE ACCESO ADMIN');
+  console.log('  Correo:  admin@oficio.com');
+  console.log('  Clave:   Admin2025.');
+  console.log('═══════════════════════════════════════════');
+  console.log('');
+  console.log('🏁 Seed completado — base de datos limpia y lista');
 }
-// ── Reseñas de prueba ──────────────────────────────────────
-async function seedReviews(prisma: PrismaClient) {
-  const providers = await prisma.provider.findMany({ take: 3 });
-  const users = await prisma.user.findMany({
-    where: { role: 'USUARIO' },
-    take: 2,
-  });
 
-  if (users.length === 0) {
-    // Crear un usuario normal para las reseñas
-    const user = await prisma.user.create({
-      data: {
-        email: 'cliente@test.com',
-        passwordHash: await bcrypt.hash('123456', 10),
-        firstName: 'Ana',
-        lastName: 'Usuaria',
-        role: 'USUARIO',
-      },
-    });
-    users.push(user);
-  }
-
-  for (const provider of providers) {
-    const existing = await prisma.review.findFirst({
-      where: { providerId: provider.id },
-    });
-    if (!existing) {
-      await prisma.review.create({
-        data: {
-          providerId: provider.id,
-          userId: users[0].id,
-          rating: 5,
-          comment: 'Excelente servicio, muy puntual y profesional.',
-          photoUrl: 'https://picsum.photos/400/300?random=1',
-          isVisible: true,
-        },
-      });
-      await seedReviews(prisma);
-      console.log(`⭐ Reseña creada para: ${provider.businessName}`);
-    }
-  }
-}
 main()
-
   .catch((e) => {
-    
     console.error('❌ Error en el seed:', e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end(); // Cerramos también el pool de pg
+    await pool.end();
   });
