@@ -36,6 +36,7 @@ dependencies:
 
   # Tiempo real — WebSocket con el backend
   socket_io_client: ^2.0.3
+  flutter_svg: ^2.2.4
 
 dev_dependencies:
   flutter_test:

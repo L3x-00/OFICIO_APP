@@ -1,28 +1,41 @@
-import { getAnalytics } from '@/lib/api';
-import { AnalyticsChart } from '@/components/analytics-chart';
+"use client"; // <--- ESTO ES VITAL
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useState } from 'react';
+import { getAnalytics, AnalyticsResponse } from '@/lib/api';
+// Importa tus componentes de gráficos o tablas aquí
 
-export default async function AnalyticsPage() {
-  // Ahora TypeScript sabe que 'analytics' tiene la propiedad 'dailyClicks'
-  const analytics = await getAnalytics(30);
+export default function AnalyticsPage() {
+  const [data, setData] = useState<AnalyticsResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const result = await getAnalytics(30);
+        setData(result);
+      } catch (err: any) {
+        console.error("Fallo en analytics:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) return <div className="p-8">Cargando estadísticas...</div>;
+  if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
+  if (!data) return <div className="p-8">No hay datos disponibles</div>;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Analytics</h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Actividad de los últimos 30 días
-        </p>
-      </div>
-
-      <div className="bg-[#15192B] rounded-2xl border border-white/5 p-6">
-        <h2 className="text-base font-semibold text-white mb-4">
-          Clics en WhatsApp y Llamadas
-        </h2>
-        {/* Usamos un fallback [] por seguridad */}
-        <AnalyticsChart data={analytics?.dailyClicks || []} />
-      </div>
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Panel de Analíticas</h1>
+      {/* Aquí renderizas tus gráficas usando el objeto 'data' */}
+      <pre className="bg-gray-100 p-4 rounded">
+        {JSON.stringify(data.dailyClicks, null, 2)}
+      </pre>
     </div>
   );
 }

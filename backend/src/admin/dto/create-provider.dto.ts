@@ -27,6 +27,10 @@ export class CreateProviderDto {
   @MinLength(6)
   @MaxLength(20)
   phone: string;
+  
+  @IsString()
+  @IsOptional() // <--- Agrega esto
+  whatsapp?: string;
 
   @IsEnum(['OFICIO', 'NEGOCIO'], { message: 'El tipo debe ser OFICIO o NEGOCIO' })
   type: 'OFICIO' | 'NEGOCIO';

@@ -76,19 +76,21 @@ export class UsersController {
   )
   updateProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    const base = process.env.API_BASE_URL ?? 'http://localhost:3000';
-    const avatarUrl = `${base}/uploads/clients/profiles/${file.filename}`;
-    return this.usersService.updateProfilePicture(req.user.userId, avatarUrl);
-  }
 
-  // PATCH /users/change-password
-  @UseGuards(JwtAuthGuard)
-  @Patch('change-password')
-  changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
-    return this.usersService.changePassword(
-      req.user.userId,
-      dto.currentPassword,
-      dto.newPassword,
-    );
+    // Obtenemos el valor del env
+    let base = process.env.API_BASE_URL ?? 'http://localhost:3000';
+
+    // LIMPIEZA AGRESIVA: 
+    // 1. Quitamos comillas
+    // 2. Quitamos el texto "API_BASE_URL=" si es que se coló por error
+    // 3. Quitamos espacios en blanco
+    const cleanBase = base.replace(/"/g, '').replace('API_BASE_URL=', '').trim();
+
+    const avatarUrl = `${cleanBase}/uploads/clients/profiles/${file.filename}`;
+    
+    // Imprime esto en tu consola de NestJS para verificar que salga bien:
+    console.log('--- URL GENERADA ---', avatarUrl);
+
+    return this.usersService.updateProfilePicture(req.user.id || req.user.userId, avatarUrl);
   }
 }

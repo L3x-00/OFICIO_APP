@@ -56,6 +56,7 @@ async function tryRefreshToken(): Promise<boolean> {
 
 // ── Core fetcher ───────────────────────────────────────────
 async function fetchApi<T>(endpoint: string, options?: RequestInit, isRetry = false): Promise<T> {
+  // CORRECCIÓN: Obtener el token actualizado SIEMPRE al inicio de la función
   const token = getAdminToken();
 
   const headers: Record<string, string> = {
@@ -63,34 +64,49 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit, isRetry = fa
     ...(options?.headers as Record<string, string>),
   };
 
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  // CORRECCIÓN: Asegurar que el header se añada si el token existe
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  if (response.status === 401) {
-    // Primer intento: tratar de renovar el token
-    if (!isRetry) {
-      const refreshed = await tryRefreshToken();
-      if (refreshed) {
-        // Reintentar la petición original con el nuevo token
-        return fetchApi<T>(endpoint, options, true);
+    if (response.status === 401) {
+      // Si recibimos 401, intentamos refrescar token una sola vez
+      if (!isRetry) {
+        const refreshed = await tryRefreshToken();
+        if (refreshed) {
+          // Reintentar con el nuevo token llamando recursivamente con isRetry = true
+          return fetchApi<T>(endpoint, options, true);
+        }
       }
+      
+      // Si el refresh falla o ya era un reintento
+      clearAdminToken();
+      if (typeof window !== 'undefined') {
+        // CORRECCIÓN: Solo redirigir si no estamos ya en la página de login
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+      throw new Error('No autorizado. Sesión finalizada.');
     }
-    // No se pudo renovar → redirigir al login
-    clearAdminToken();
-    if (typeof window !== 'undefined') window.location.href = '/login';
-    throw new Error('Sesión expirada. Redirigiendo al login...');
-  }
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `API Error: ${response.status}`);
-  }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+    }
 
-  return response.json();
+    return await response.json();
+  } catch (error: any) {
+    // CORRECCIÓN: Manejar errores de red o DNS para evitar crashes
+    console.error(`Fetch error en ${endpoint}:`, error);
+    throw error;
+  }
 }
 
 // ── MÉTRICAS Y ANALYTICS ───────────────────────────────────
@@ -100,10 +116,11 @@ export const getDashboardMetrics = () =>
 export const getGraceProviders = () =>
   fetchApi<GraceProvider[]>('/admin/grace-providers');
 
-export const getAnalytics = (days: number = 30) =>
-  fetchApi<AnalyticsResponse>(`/admin/analytics?days=${days}`, {
-    next: { revalidate: 60 } as any,
-  });
+// En admin/lib/api.ts
+export const getAnalytics = (days: number = 30) => {
+  const params = new URLSearchParams({ days: String(days) });
+  return fetchApi<AnalyticsResponse>(`/admin/analytics?${params.toString()}`);
+};
 
 // ── PROVEEDORES ────────────────────────────────────────────
 export const getProviders = (page = 1, search?: string) => {

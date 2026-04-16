@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Copy, CheckCircle2 } from 'lucide-react'; // Añadidos para el botón de copiar
+import { X, Copy, CheckCircle2 } from 'lucide-react';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -26,15 +26,34 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/admin/form-options`)
-      .then((r) => r.json())
+    // 1. Obtener el token del localStorage
+    const token = localStorage.getItem('adminToken');
+
+    fetch(`${BASE_URL}/admin/form-options`, {
+      headers: {
+        'Authorization': `Bearer ${token}` // <--- INDISPENSABLE para evitar el 401
+      }
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error('Error al cargar opciones');
+        return r.json();
+      })
       .then((d) => {
-        setCategories(d.categories);
-        setLocalities(d.localities);
-        if (d.categories.length > 0)
-          setForm((f) => ({ ...f, categoryId: d.categories[0].id.toString() }));
-        if (d.localities.length > 0)
-          setForm((f) => ({ ...f, localityId: d.localities[0].id.toString() }));
+        // 2. Validación defensiva para evitar el error de 'length' o 'map'
+        const cats = d?.categories || [];
+        const locs = d?.localities || [];
+
+        setCategories(cats);
+        setLocalities(locs);
+
+        if (cats.length > 0)
+          setForm((f) => ({ ...f, categoryId: cats[0].id.toString() }));
+        if (locs.length > 0)
+          setForm((f) => ({ ...f, localityId: locs[0].id.toString() }));
+      })
+      .catch(err => {
+        console.error(err);
+        setError('No se pudieron cargar las categorías. Sesión expirada?');
       });
   }, []);
 
@@ -54,9 +73,13 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
     setError('');
 
     try {
+      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${BASE_URL}/admin/providers`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // <--- También aquí para crear el proveedor
+        },
         body: JSON.stringify({
           ...form,
           categoryId: parseInt(form.categoryId),
@@ -80,8 +103,8 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card rounded-2xl border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#1a1c1e] rounded-2xl border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <h2 className="text-lg font-bold text-white">Nuevo proveedor</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white">
@@ -123,15 +146,6 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
             <button
               onClick={() => {
                 setTempPassword('');
-                setError('');
-                setForm({
-                  email: '', firstName: '', lastName: '',
-                  businessName: '', phone: '', whatsapp: '',
-                  description: '', address: '',
-                  categoryId: categories[0]?.id.toString() || '',
-                  localityId: localities[0]?.id.toString() || '',
-                  type: 'OFICIO',
-                });
                 onSuccess();
               }}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold transition-all"
@@ -181,13 +195,13 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
               <div>
                 <label className="text-xs font-semibold text-gray-400 mb-2 block">Categoría *</label>
                 <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50">
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-400 mb-2 block">Localidad *</label>
                 <select value={form.localityId} onChange={(e) => setForm({ ...form, localityId: e.target.value })} className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50">
-                  {localities.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  {localities?.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
               </div>
             </div>

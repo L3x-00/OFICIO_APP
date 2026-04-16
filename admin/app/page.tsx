@@ -2,60 +2,108 @@
 
 import { useEffect, useState } from 'react';
 import {
-  Users,
-  Star,
-  ShieldCheck,
-  MessageCircle,
-  Phone,
-  AlertTriangle,
-  TrendingUp,
-  UserCheck,
+  Users, Star, ShieldCheck, MessageCircle,
+  Phone, AlertTriangle, TrendingUp, UserCheck,
+  RefreshCw, ArrowUpRight, Clock, CheckCircle2,
 } from 'lucide-react';
 import { MetricCard } from '@/components/metric-card';
 import { GraceProvidersTable } from '@/components/grace-providers-table';
 import { PendingApprovalsTable } from '@/components/pending-approvals-table';
-import { DashboardRefreshButton } from '@/components/dashboard-refresh';
 import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
 import type { DashboardMetrics, GraceProvider } from '@/lib/api';
+
+function SectionHeader({
+  title,
+  subtitle,
+  count,
+  countAlert,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  count?: number;
+  countAlert?: boolean;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h2>
+          {count !== undefined && count > 0 && (
+            <span style={{
+              padding: '2px 8px',
+              borderRadius: '99px',
+              fontSize: '11px',
+              fontWeight: 700,
+              background: countAlert ? 'rgba(239,68,68,0.12)' : 'rgba(249,115,22,0.12)',
+              border: `1px solid ${countAlert ? 'rgba(239,68,68,0.25)' : 'rgba(249,115,22,0.25)'}`,
+              color: countAlert ? '#F87171' : '#FB923C',
+            }}>
+              {count}
+            </span>
+          )}
+        </div>
+        {subtitle && (
+          <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '2px' }}>{subtitle}</p>
+        )}
+      </div>
+      {action}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const [metrics, setMetrics]           = useState<DashboardMetrics | null>(null);
   const [graceProviders, setGraceProviders] = useState<GraceProvider[]>([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState<string | null>(null);
+  const [refreshing, setRefreshing]     = useState(false);
+  const [lastUpdated, setLastUpdated]   = useState<Date | null>(null);
 
-  // Decrementa el badge de pendientes cuando el admin aprueba/rechaza desde el dashboard
   function handlePendingAction() {
     setMetrics(m => m ? { ...m, pendingVerifications: Math.max(0, m.pendingVerifications - 1) } : m);
   }
 
-  async function loadData() {
-    setLoading(true);
+  async function loadData(isRefresh = false) {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     setError(null);
     try {
-      const [m, gp] = await Promise.all([
-        getDashboardMetrics(),
-        getGraceProviders(),
-      ]);
+      const [m, gp] = await Promise.all([getDashboardMetrics(), getGraceProviders()]);
       setMetrics(m);
       setGraceProviders(gp);
+      setLastUpdated(new Date());
     } catch (err: any) {
       setError(err.message || 'Error al cargar el dashboard');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">Cargando dashboard...</p>
+      <div>
+        {/* Header skeleton */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
+          <div>
+            <div className="skeleton" style={{ width: '180px', height: '28px', marginBottom: '8px' }} />
+            <div className="skeleton" style={{ width: '260px', height: '16px' }} />
+          </div>
+        </div>
+        {/* Cards skeleton */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} className="skeleton" style={{ height: '132px', borderRadius: '16px' }} />
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} className="skeleton" style={{ height: '132px', borderRadius: '16px' }} />
+          ))}
         </div>
       </div>
     );
@@ -63,36 +111,97 @@ export default function DashboardPage() {
 
   if (error || !metrics) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3" />
-          <p className="text-red-400 text-sm mb-4">{error || 'Error desconocido'}</p>
-          <button
-            onClick={loadData}
-            className="px-4 py-2 bg-amber-500 text-black rounded-lg text-sm font-medium hover:bg-amber-400 transition-colors"
-          >
-            Reintentar
-          </button>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        gap: '16px',
+      }}>
+        <div style={{
+          width: '52px', height: '52px',
+          borderRadius: '14px',
+          background: 'rgba(239,68,68,0.08)',
+          border: '1px solid rgba(239,68,68,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <AlertTriangle size={22} color="#EF4444" />
         </div>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            Error al cargar el dashboard
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>{error}</p>
+        </div>
+        <button
+          onClick={() => loadData()}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '9px 18px',
+            background: 'var(--surface-4)',
+            border: '1px solid var(--border-strong)',
+            borderRadius: '8px',
+            color: 'var(--text-primary)',
+            fontSize: '13px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'var(--transition)',
+          }}
+        >
+          <RefreshCw size={14} />
+          Reintentar
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
+    <div className="animate-fade-in">
+      {/* Page Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Resumen general de OficioApp
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '4px' }}>
+            Dashboard
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>
+            Resumen operacional de OficioApp
+            {lastUpdated && (
+              <span style={{ marginLeft: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={11} />
+                Actualizado {lastUpdated.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </p>
         </div>
-        <DashboardRefreshButton onRefresh={loadData} />
+        <button
+          onClick={() => loadData(true)}
+          disabled={refreshing}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '7px',
+            padding: '8px 16px',
+            background: 'var(--surface-3)',
+            border: '1px solid var(--border-default)',
+            borderRadius: '8px',
+            color: 'var(--text-secondary)',
+            fontSize: '13px',
+            fontWeight: 500,
+            cursor: refreshing ? 'not-allowed' : 'pointer',
+            opacity: refreshing ? 0.6 : 1,
+            transition: 'var(--transition)',
+          }}
+          onMouseEnter={e => !refreshing && ((e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)')}
+          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'}
+        >
+          <RefreshCw size={13} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+          {refreshing ? 'Actualizando...' : 'Actualizar'}
+        </button>
       </div>
 
-      {/* Métricas principales */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Primary metrics */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px', marginBottom: '16px' }}>
         <MetricCard
           title="Proveedores activos"
           value={metrics.activeProviders}
@@ -123,8 +232,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Métricas secundarias */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Secondary metrics */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px', marginBottom: '32px' }}>
         <MetricCard
           title="Total reseñas"
           value={metrics.totalReviews}
@@ -153,37 +262,96 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* ── Proveedores pendientes de aprobación ───────────── */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
+      {/* Pending approvals */}
+      <div style={{
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border-default)',
+        borderRadius: '18px',
+        overflow: 'hidden',
+        marginBottom: '24px',
+      }}>
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid var(--border-default)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              Proveedores Pendientes de Aprobación
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '8px', height: '8px',
+                borderRadius: '50%',
+                background: metrics.pendingVerifications > 0 ? '#F97316' : '#10B981',
+                boxShadow: metrics.pendingVerifications > 0
+                  ? '0 0 8px rgba(249,115,22,0.5)'
+                  : '0 0 8px rgba(16,185,129,0.5)',
+              }} />
+              <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                Proveedores Pendientes de Aprobación
+              </h2>
               {metrics.pendingVerifications > 0 && (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-500 text-white text-xs font-bold animate-pulse">
+                <span style={{
+                  padding: '2px 8px',
+                  borderRadius: '99px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  background: 'rgba(249,115,22,0.12)',
+                  border: '1px solid rgba(249,115,22,0.25)',
+                  color: '#FB923C',
+                }}>
                   {metrics.pendingVerifications}
                 </span>
               )}
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Aprobar o rechazar directamente sin salir del dashboard
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '3px' }}>
+              Aprobar o rechazar directamente desde aquí
             </p>
           </div>
+          <ShieldCheck size={18} color="var(--text-tertiary)" />
         </div>
-        <PendingApprovalsTable onAction={handlePendingAction} />
+        <div style={{ padding: '8px 0' }}>
+          <PendingApprovalsTable onAction={handlePendingAction} />
+        </div>
       </div>
 
-      {/* ── Tabla de proveedores en gracia ─────────────────── */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white">
-            Proveedores en periodo de gracia
-          </h2>
-          <span className="text-sm text-gray-400">
-            {graceProviders.length} proveedor(es)
+      {/* Grace providers */}
+      <div style={{
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border-default)',
+        borderRadius: '18px',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid var(--border-default)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div>
+            <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Proveedores en periodo de gracia
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '3px' }}>
+              {graceProviders.length} proveedor(es) monitoreados
+            </p>
+          </div>
+          <span style={{
+            padding: '4px 12px',
+            borderRadius: '99px',
+            fontSize: '12px',
+            fontWeight: 600,
+            background: 'rgba(139,92,246,0.08)',
+            border: '1px solid rgba(139,92,246,0.2)',
+            color: '#A78BFA',
+          }}>
+            {graceProviders.length} activos
           </span>
         </div>
-        <GraceProvidersTable providers={graceProviders} />
+        <div>
+          <GraceProvidersTable providers={graceProviders} />
+        </div>
       </div>
     </div>
   );
