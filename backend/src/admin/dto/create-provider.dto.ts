@@ -59,4 +59,12 @@ export class CreateProviderDto {
   @IsNumber()
   @IsPositive()
   localityId: number;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 }

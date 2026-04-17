@@ -356,25 +356,51 @@ class AuthProvider extends ChangeNotifier {
 
   /// Verifica el código OTP. Si es válido, pasa al onboarding.
   Future<bool> verifyOtp(String code) async {
-    if (_user == null) return false;
+    print("DEBUG: Iniciando verificación para el código: $code");
+    
+    if (_user == null) {
+      print("DEBUG: Error - El usuario es nulo en el Provider");
+      return false;
+    }
+
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    final result = await _repo.verifyOtp(userId: _user!.id, code: code);
+    try {
+      final result = await _repo.verifyOtp(userId: _user!.id, code: code);
 
-    result.when(
-      success: (_) {
-        _needsEmailVerification = false;
-        _needsOnboarding = true; // Siguiente paso: elegir rol
-      },
-      failure: (e) => _error = e.message,
-    );
+      result.when(
+        success: (_) {
+          print("DEBUG: ¡Éxito en Backend!");
+          _needsEmailVerification = false;
+          _needsOnboarding = true; // Siguiente paso: elegir rol
+          
+          if (_user != null) {
+            _user = _user!.copyWith(isEmailVerified: true);
+            print("DEBUG: UserModel actualizado localmente: isEmailVerified = true");
+          }
+          notifyListeners(); 
+        },
+        failure: (e) {
+          print("DEBUG: Error en Backend: ${e.message}");
+          _error = e.message;
+        },
+      );
 
-    _isLoading = false;
-    notifyListeners();
-    return result.isSuccess;
+      _isLoading = false;
+      notifyListeners();
+      return result.isSuccess;
+
+    } catch (e) {
+      print("DEBUG: Error excepcional en verifyOtp: $e");
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
+  
 
   /// Registra el perfil de proveedor en el backend y actualiza el estado local.
   /// Devuelve true si se creó con éxito, false si hubo error (ver [error]).
@@ -616,4 +642,6 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+  
 }
+

@@ -352,6 +352,7 @@ export class AuthService {
       this.prisma.user.update({ where: { id: userId }, data: { isEmailVerified: true } }),
       this.prisma.otpCode.deleteMany({ where: { userId } }),
     ]);
+    
 
     return { message: 'Email verificado correctamente', verified: true };
   }

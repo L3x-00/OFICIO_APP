@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/features/auth/presentation/screens/onboarding_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -13,6 +14,54 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+    // ignore: unused_element
+    void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.green, size: 80),
+            const SizedBox(height: 20),
+            const Text(
+              '¡Cuenta Verificada!',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Tu correo ha sido validado correctamente.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                // DENTRO DEL BOTÓN 'CONTINUAR' DEL MODAL
+                onPressed: () {
+                  // 1. Cerramos el modal primero
+                  Navigator.of(context, rootNavigator: true).pop();
+
+                  // 2. Forzamos la navegación manual para romper el estancamiento
+                  // Esto llevará al usuario al OnboardingScreen ignorando el switch por un momento
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Continuar', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   final List<TextEditingController> _controllers =
       List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
@@ -30,32 +79,31 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool get _isComplete => _fullCode.length == 6;
 
   Future<void> _verify() async {
-    if (!_isComplete) return;
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.verifyOtp(_fullCode);
-    if (!mounted) return;
+  if (!_isComplete) return;
 
-    if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Código validado ✓'),
-          backgroundColor: AppColors.available,
-          duration: Duration(seconds: 2),
-        ),
-      );
-      // La redirección la maneja _AppRoot al detectar el cambio de navigationState
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error ?? 'Código inválido o expirado'),
-          backgroundColor: AppColors.busy,
-        ),
-      );
-      // Limpiar campos en caso de error
-      for (final c in _controllers) { c.clear(); }
-      _focusNodes.first.requestFocus();
+  final authProvider = context.read<AuthProvider>();
+  final success = await authProvider.verifyOtp(_fullCode); // _fullCode es el string de 6 dígitos
+
+  if (!mounted) return;
+
+  if (success) {
+    // Si el backend dijo OK, mostramos el modal de éxito
+    _showSuccessDialog();
+  } else {
+    // Si falló, mostramos el error que guardó el provider
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(authProvider.error ?? 'Código incorrecto'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    // Opcional: limpiar los cuadritos para reintentar
+    for (var controller in _controllers) {
+      controller.clear();
     }
+    _focusNodes[0].requestFocus();
   }
+}
 
   Future<void> _resend() async {
     final auth = context.read<AuthProvider>();

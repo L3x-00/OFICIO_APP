@@ -162,106 +162,132 @@ export class AdminService {
   }
 
   // ── CREAR PROVEEDOR ───────────────────────────────────────
-  async createProvider(data: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    businessName: string;
-    phone: string;
-    whatsapp?: string;
-    description?: string;
-    address?: string;
-    categoryId: number;
-    localityId: number;
-    type: string;
-  }) {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: data.email },
-    });
-    if (existing) {
-      throw new ConflictException(
-        'El correo electrónico ya está registrado en el sistema.',
-      );
-    }
-
-    const bcrypt = await import('bcrypt');
-    const chars  = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const tempPassword = Array.from(
-      { length: 8 },
-      () => chars[Math.floor(Math.random() * chars.length)],
-    ).join('');
-
-    const result = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email:        data.email,
-          passwordHash: await bcrypt.hash(tempPassword, 10),
-          firstName:    data.firstName,
-          lastName:     data.lastName,
-          role:         'PROVEEDOR',
-        },
-      });
-
-      const provider = await tx.provider.create({
-        data: {
-          userId:       user.id,
-          businessName: data.businessName,
-          phone:        data.phone,
-          whatsapp:     data.whatsapp ?? null,
-          description:  data.description ?? null,
-          address:      data.address ?? null,
-          categoryId:   data.categoryId,
-          localityId:   data.localityId,
-          type:         data.type as ProviderType,
-          scheduleJson: {
-            lun: '8:00-18:00', mar: '8:00-18:00',
-            mie: '8:00-18:00', jue: '8:00-18:00',
-            vie: '8:00-18:00', sab: '9:00-13:00',
-            dom: 'Cerrado',
-          },
-        },
-        include: { category: true, locality: true },
-      });
-
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 2);
-      await tx.subscription.create({
-        data: {
-          providerId: provider.id,
-          plan:       'GRATIS',
-          status:     'GRACIA',
-          endDate,
-        },
-      });
-
-      return { provider, userId: user.id };
-    });
-
-    return { ...result, tempPassword };
+async createProvider(data: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  businessName: string;
+  phone: string;
+  whatsapp?: string;
+  description?: string;
+  address?: string;
+  categoryId: number | string; // FormData envía strings
+  localityId: number | string; // FormData envía strings
+  type: string;
+}, files: Express.Multer.File[]) {
+  
+  const existing = await this.prisma.user.findUnique({
+    where: { email: data.email },
+  });
+  
+  if (existing) {
+    throw new ConflictException('El correo electrónico ya está registrado.');
   }
 
-  // ── ACTUALIZAR PROVEEDOR ──────────────────────────────────
-  async updateProvider(
-    id: number,
-    data: {
-      businessName?: string;
-      phone?: string;
-      description?: string;
-      address?: string;
-      isVisible?: boolean;
-      isVerified?: boolean;
-      availability?: AvailabilityStatus;
-    },
-  ) {
-    const exists = await this.prisma.provider.findUnique({ where: { id } });
-    if (!exists) throw new NotFoundException('Proveedor no encontrado');
+  const bcrypt = await import('bcrypt');
+  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const tempPassword = Array.from(
+    { length: 8 },
+    () => chars[Math.floor(Math.random() * chars.length)],
+  ).join('');
 
-    return this.prisma.provider.update({
-      where: { id },
-      data,
+  const result = await this.prisma.$transaction(async (tx) => {
+    // 1. Crear Usuario
+    const user = await tx.user.create({
+      data: {
+        email: data.email,
+        passwordHash: await bcrypt.hash(tempPassword, 10),
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: 'PROVEEDOR',
+      },
+    });
+
+    // 2. Crear Proveedor
+    const provider = await tx.provider.create({
+      data: {
+        userId: user.id,
+        businessName: data.businessName,
+        phone: data.phone,
+        whatsapp: data.whatsapp ?? null,
+        description: data.description ?? null,
+        address: data.address ?? null,
+        // Convertimos a Number porque FormData suele enviarlos como string
+        categoryId: Number(data.categoryId),
+        localityId: Number(data.localityId),
+        type: data.type as any, // 'OFICIO' o 'NEGOCIO'
+        scheduleJson: {
+          lun: '8:00-18:00', mar: '8:00-18:00',
+          mie: '8:00-18:00', jue: '8:00-18:00',
+          vie: '8:00-18:00', sab: '9:00-13:00',
+          dom: 'Cerrado',
+        },
+      },
       include: { category: true, locality: true },
     });
-  }
+
+    // 3. NUEVO: GUARDAR IMÁGENES EN LA TABLA provider_images
+    if (files && files.length > 0) {
+      const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000';
+      
+      await tx.providerImage.createMany({
+        data: files.map((file, index) => ({
+          providerId: provider.id,
+          url: `${baseUrl}/uploads/providers/gallery/${file.filename}`,
+          isCover: index === 0, // La primera foto es la de portada por defecto
+          order: index,
+        })),
+      });
+    }
+
+    // 4. Crear Suscripción (tu lógica actual)
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 2);
+    await tx.subscription.create({
+      data: {
+        providerId: provider.id,
+        plan: 'GRATIS',
+        status: 'GRACIA',
+        endDate,
+      },
+    });
+
+    return { provider, userId: user.id };
+  });
+
+  return { ...result, tempPassword };
+}
+
+  // ── ACTUALIZAR PROVEEDOR ──────────────────────────────────
+async updateProvider(
+  id: number,
+  data: {
+    businessName?: string;
+    phone?: string;
+    description?: string;
+    address?: string;
+    isVisible?: boolean;
+    isVerified?: boolean;
+    availability?: any; // Usa tu enum AvailabilityStatus
+  },
+) {
+  const exists = await this.prisma.provider.findUnique({ 
+    where: { id },
+    include: { images: true } // Incluimos imágenes por si quieres verlas
+  });
+  
+  if (!exists) throw new NotFoundException('Proveedor no encontrado');
+
+  return this.prisma.provider.update({
+    where: { id },
+    data,
+    include: { 
+      category: true, 
+      locality: true,
+      images: true // Para que el admin vea las fotos actuales al actualizar
+    },
+  });
+}
 
   // ── CAMBIAR PLAN DE SUSCRIPCIÓN ────────────────────────────
   async updateProviderSubscription(id: number, plan: string) {

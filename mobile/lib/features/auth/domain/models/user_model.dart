@@ -8,6 +8,7 @@ class UserModel {
   final String? avatarUrl;
   final String? phone;
   final String? dni;
+  final bool isEmailVerified;
 
   const UserModel({
     required this.id,
@@ -18,6 +19,7 @@ class UserModel {
     this.avatarUrl,
     this.phone,
     this.dni,
+    this.isEmailVerified = false,
   });
 
   String get fullName => '$firstName $lastName';
@@ -34,6 +36,7 @@ class UserModel {
       avatarUrl: json['avatarUrl'] as String?,
       phone:     json['phone'] as String?,
       dni:       json['dni'] as String?,
+      isEmailVerified: json['isEmailVerified'] ?? false,
     );
   }
 
@@ -43,7 +46,8 @@ class UserModel {
     String? role,
     String? dni,
     String? phone,
-    String? avatarUrl,
+    String? avatarUrl, 
+    bool? isEmailVerified,
   }) {
     return UserModel(
       id:        id,
@@ -54,6 +58,7 @@ class UserModel {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       phone:     phone     ?? this.phone,
       dni:       dni       ?? this.dni,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
     );
   }
 
