@@ -16,12 +16,15 @@ class ServiceCard extends StatelessWidget {
   final ProviderModel provider;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteToggle;
+  /// true cuando el usuario autenticado es dueño de esta tarjeta
+  final bool isOwnCard;
 
   const ServiceCard({
     super.key,
     required this.provider,
     this.onTap,
     this.onFavoriteToggle,
+    this.isOwnCard = false,
   });
 
   @override
@@ -94,7 +97,11 @@ class ServiceCard extends StatelessWidget {
               ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: _ActionButtons(provider: provider, onFavoriteToggle: onFavoriteToggle),
+              child: _ActionButtons(
+                provider: provider,
+                onFavoriteToggle: onFavoriteToggle,
+                isOwnCard: isOwnCard,
+              ),
             ),
           ],
         ),
@@ -274,7 +281,8 @@ class _ThumbnailRow extends StatelessWidget {
 class _ActionButtons extends StatelessWidget {
   final ProviderModel provider;
   final VoidCallback? onFavoriteToggle;
-  const _ActionButtons({required this.provider, this.onFavoriteToggle});
+  final bool isOwnCard;
+  const _ActionButtons({required this.provider, this.onFavoriteToggle, this.isOwnCard = false});
 
   @override
   Widget build(BuildContext context) {
@@ -284,7 +292,10 @@ class _ActionButtons extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(child: _ContactButton(label: 'Llamar',   icon: Icons.call_rounded,  color: AppColors.call,     onTap: () => _makeCall())),
         const SizedBox(width: 8),
-        _FavoriteButton(isFavorite: provider.isFavorite, onToggle: onFavoriteToggle),
+        if (isOwnCard)
+          _OwnCardBadge()
+        else
+          _FavoriteButton(isFavorite: provider.isFavorite, onToggle: onFavoriteToggle),
       ],
     );
   }
@@ -334,6 +345,21 @@ class _ContactButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _OwnCardBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+      ),
+      child: Icon(Icons.store_rounded, color: AppColors.primary, size: 22),
     );
   }
 }

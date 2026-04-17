@@ -402,26 +402,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (auth.hasOficioProfile || auth.hasNegocioProfile) ...[
             const _SectionTitle(title: 'MIS PERFILES DE PROVEEDOR'),
             const SizedBox(height: 12),
-            // Botones de panel SOLO si el proveedor está APROBADO
-            if (auth.hasApprovedProvider) ...[
-              if (auth.hasOficioProfile)
+
+            // ── Decisión por perfil independiente ─────────────────────
+            // APROBADO → botón de panel | otro estado → banner
+            if (auth.hasOficioProfile) ...[
+              if (auth.verificationStatusFor('OFICIO') == 'APROBADO')
                 _ActionButton(
                   icon: Icons.handyman_rounded,
                   label: 'Panel Profesional',
                   color: AppColors.primary,
                   onTap: () => _openProviderPanel(context, 'OFICIO'),
+                )
+              else
+                _PendingApprovalBanner(
+                  providerType: 'OFICIO',
+                  status: auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
+                  rejectionReason: auth.rejectionReasonFor('OFICIO'),
                 ),
-              if (auth.hasOficioProfile && auth.hasNegocioProfile)
-                const SizedBox(height: 10),
-              if (auth.hasNegocioProfile)
+            ],
+
+            if (auth.hasOficioProfile && auth.hasNegocioProfile)
+              const SizedBox(height: 10),
+
+            if (auth.hasNegocioProfile) ...[
+              if (auth.verificationStatusFor('NEGOCIO') == 'APROBADO')
                 _ActionButton(
                   icon: Icons.storefront_rounded,
                   label: 'Panel de Negocio',
                   color: const Color(0xFF8E2DE2),
                   onTap: () => _openProviderPanel(context, 'NEGOCIO'),
+                )
+              else
+                _PendingApprovalBanner(
+                  providerType: 'NEGOCIO',
+                  status: auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
+                  rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
                 ),
+            ],
+
+            // Opción de segundo perfil — solo si al menos uno está APROBADO
+            if (auth.hasApprovedProvider) ...[
               const SizedBox(height: 10),
-              // Opción de segundo perfil solo si el actual ya está APROBADO
               if (auth.hasOficioProfile && !auth.hasNegocioProfile)
                 _ActionButton(
                   icon: Icons.storefront_rounded,
@@ -436,24 +457,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: AppColors.primary,
                   onTap: () => _openAddProfile(context, 'OFICIO'),
                 ),
-            ] else ...[
-              // Registro existe pero está pendiente de aprobación
-              // Se muestra un banner por cada tipo de perfil registrado
-              if (auth.hasOficioProfile)
-                _PendingApprovalBanner(
-                  providerType: 'OFICIO',
-                  status: auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
-                  rejectionReason: auth.rejectionReasonFor('OFICIO'),
-                ),
-              if (auth.hasOficioProfile && auth.hasNegocioProfile)
-                const SizedBox(height: 10),
-              if (auth.hasNegocioProfile)
-                _PendingApprovalBanner(
-                  providerType: 'NEGOCIO',
-                  status: auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
-                  rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
-                ),
             ],
+
             const SizedBox(height: 20),
           ],
 

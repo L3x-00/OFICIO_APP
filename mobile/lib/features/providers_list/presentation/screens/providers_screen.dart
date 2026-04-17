@@ -546,13 +546,94 @@ class _JoinUsButtonState extends State<_JoinUsButton>
 
   void _openProviderPanel(BuildContext context) {
     final auth = context.read<AuthProvider>();
-    // Ir directamente al perfil activo (o al único que tiene)
-    final type = auth.activeProfileType
-        ?? (auth.hasOficioProfile ? 'OFICIO' : 'NEGOCIO');
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ProviderPanel(providerType: type),
-      ),
+    final oficioApproved  = auth.verificationStatusFor('OFICIO')  == 'APROBADO';
+    final negocioApproved = auth.verificationStatusFor('NEGOCIO') == 'APROBADO';
+
+    if (oficioApproved && negocioApproved) {
+      _showPanelChoiceModal(context);
+    } else {
+      final type = oficioApproved ? 'OFICIO' : 'NEGOCIO';
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ProviderPanel(providerType: type)),
+      );
+    }
+  }
+
+  void _showPanelChoiceModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        final c = sheetCtx.colors;
+        return Container(
+          decoration: BoxDecoration(
+            color: c.bg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            20, 12, 20,
+            MediaQuery.of(sheetCtx).padding.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: c.textMuted.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                '¿A qué panel deseas ir?',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tienes dos perfiles activos',
+                style: TextStyle(color: c.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              _PanelChoiceCard(
+                icon: Icons.handyman_rounded,
+                title: 'Panel Profesional',
+                subtitle: 'Gestiona tus oficios y servicios',
+                color: AppColors.primary,
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProviderPanel(providerType: 'OFICIO'),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _PanelChoiceCard(
+                icon: Icons.storefront_rounded,
+                title: 'Panel de Negocio',
+                subtitle: 'Administra tu negocio local',
+                color: const Color(0xFF8E2DE2),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProviderPanel(providerType: 'NEGOCIO'),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -822,8 +903,12 @@ class _ProvidersList extends StatelessWidget {
         final provider = prov.providers[index - 1].copyWith(
           isFavorite: favProv.isFavorite(prov.providers[index - 1].id),
         );
+        final isOwnCard = auth.user != null &&
+            provider.userId != null &&
+            provider.userId == auth.user!.id;
         return ServiceCard(
           provider: provider,
+          isOwnCard: isOwnCard,
           onTap: () => ProviderDetailSheet.show(context, provider),
           onFavoriteToggle: () {
             if (auth.user == null) {
@@ -1384,6 +1469,71 @@ class _SectionLabel extends StatelessWidget {
         fontSize: 11,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
+      ),
+    );
+  }
+}
+
+class _PanelChoiceCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _PanelChoiceCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(color: c.textSecondary, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: color, size: 22),
+          ],
+        ),
       ),
     );
   }

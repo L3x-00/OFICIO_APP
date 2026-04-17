@@ -9,6 +9,8 @@ export interface NotificationPayload {
   targetUserId?: number;
   /** Si está presente, solo usuarios con este rol deben mostrarlo (ej: 'ADMIN') */
   targetRole?: string;
+  /** Si está presente, solo el perfil de este tipo (OFICIO|NEGOCIO) debe procesarlo */
+  targetProfileType?: string;
 }
 
 @WebSocketGateway({

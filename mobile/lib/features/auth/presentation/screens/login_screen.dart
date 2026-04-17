@@ -4,6 +4,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/social_login_button.dart';
 import 'forgot_password_screen.dart';
 import 'otp_verification_screen.dart';
 
@@ -299,17 +300,13 @@ class _LoginScreenState extends State<LoginScreen>
 
                 // ── Botones de login social (solo en registro) ──
                 if (isRegister) ...[
-                  _SocialButton(
-                    label: 'Continuar con Google',
-                    brandLetter: 'G',
-                    brandColor: AppColors.google,
+                  SocialLoginButton(
+                    provider: SocialProvider.google,
                     onTap: () => _socialLoginPlaceholder('Google'),
                   ),
                   const SizedBox(height: 10),
-                  _SocialButton(
-                    label: 'Continuar con Facebook',
-                    brandLetter: 'f',
-                    brandColor: AppColors.facebook,
+                  SocialLoginButton(
+                    provider: SocialProvider.facebook,
                     onTap: () => _socialLoginPlaceholder('Facebook'),
                   ),
                   const SizedBox(height: 20),
@@ -541,71 +538,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// ─── Botón de login social ────────────────────────────────
-
-class _SocialButton extends StatelessWidget {
-  final String label;
-  final String brandLetter;
-  final Color brandColor;
-  final VoidCallback onTap;
-
-  const _SocialButton({
-    required this.label,
-    required this.brandLetter,
-    required this.brandColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: c.bgCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.border),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Ícono de marca
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: brandColor,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  brandLetter,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                color: c.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─── Checkbox de términos y condiciones ──────────────────
 

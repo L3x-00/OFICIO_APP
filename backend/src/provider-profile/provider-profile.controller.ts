@@ -19,25 +19,34 @@ export class ProviderProfileController {
     return this.service.getMyProfile(req.user.userId, type);
   }
 
-  // PATCH /provider-profile/me
+  // PATCH /provider-profile/me?type=OFICIO|NEGOCIO
   @Patch('me')
-  updateMyProfile(@Request() req: any, @Body() body: any) {
-    return this.service.updateMyProfile(req.user.userId, body);
+  updateMyProfile(
+    @Request() req: any,
+    @Body() body: any,
+    @Query('type') type?: string,
+  ) {
+    return this.service.updateMyProfile(req.user.userId, body, type);
   }
 
-  // PATCH /provider-profile/me/availability
+  // PATCH /provider-profile/me/availability?type=OFICIO|NEGOCIO
   @Patch('me/availability')
-  setAvailability(@Request() req: any, @Body() body: { availability: any }) {
-    return this.service.setAvailability(req.user.userId, body.availability);
+  setAvailability(
+    @Request() req: any,
+    @Body() body: { availability: any },
+    @Query('type') type?: string,
+  ) {
+    return this.service.setAvailability(req.user.userId, body.availability, type);
   }
 
-  // GET /provider-profile/me/analytics?days=30
+  // GET /provider-profile/me/analytics?days=30&type=OFICIO|NEGOCIO
   @Get('me/analytics')
   getMyAnalytics(
     @Request() req: any,
     @Query('days') days?: string,
+    @Query('type') type?: string,
   ) {
-    return this.service.getMyAnalytics(req.user.userId, days ? parseInt(days) : 30);
+    return this.service.getMyAnalytics(req.user.userId, days ? parseInt(days) : 30, type);
   }
 
   // GET /provider-profile/me/notifications
@@ -55,21 +64,33 @@ export class ProviderProfileController {
     return this.service.markNotificationRead(req.user.userId, id);
   }
 
-  // POST /provider-profile/me/images — vincula imagen subida al perfil del proveedor
+  // POST /provider-profile/me/images?type=OFICIO|NEGOCIO — vincula imagen subida al perfil del proveedor
   @Post('me/images')
   addImage(
     @Request() req: any,
     @Body() body: { url: string; isCover?: boolean },
+    @Query('type') type?: string,
   ) {
-    return this.service.addImage(req.user.userId, body.url, body.isCover ?? false);
+    return this.service.addImage(req.user.userId, body.url, body.isCover ?? false, type);
   }
 
-  // DELETE /provider-profile/me/images/:id — elimina imagen del perfil
+  // DELETE /provider-profile/me/images/:id?type=OFICIO|NEGOCIO — elimina imagen del perfil
   @Delete('me/images/:id')
   deleteImage(
     @Request() req: any,
     @Param('id', ParseIntPipe) id: number,
+    @Query('type') type?: string,
   ) {
-    return this.service.deleteImage(req.user.userId, id);
+    return this.service.deleteImage(req.user.userId, id, type);
+  }
+
+  // POST /provider-profile/me/plan-request?type=OFICIO|NEGOCIO
+  @Post('me/plan-request')
+  requestPlanUpgrade(
+    @Request() req: any,
+    @Body() body: { plan: string },
+    @Query('type') type?: string,
+  ) {
+    return this.service.requestPlanUpgrade(req.user.userId, body.plan, type);
   }
 }

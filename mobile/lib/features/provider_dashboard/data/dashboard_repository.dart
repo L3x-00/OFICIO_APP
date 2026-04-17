@@ -25,6 +25,7 @@ class DashboardRepository {
     String? whatsapp,
     String? address,
     Map<String, dynamic>? scheduleJson,
+    String? type,
   }) async {
     final body = <String, dynamic>{
       'businessName': ?businessName,
@@ -34,23 +35,31 @@ class DashboardRepository {
       'address':      ?address,
       'scheduleJson': ?scheduleJson,
     };
-    final response = await _dio.patch('/provider-profile/me', data: body);
+    final response = await _dio.patch(
+      '/provider-profile/me',
+      queryParameters: type != null ? {'type': type} : null,
+      data: body,
+    );
     return DashboardProfileModel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> setAvailability(String status) async {
+  Future<void> setAvailability(String status, {String? type}) async {
     await _dio.patch(
       '/provider-profile/me/availability',
+      queryParameters: type != null ? {'type': type} : null,
       data: {'availability': status},
     );
   }
 
   // ── ANALÍTICAS ────────────────────────────────────────────
 
-  Future<DashboardAnalytics> getMyAnalytics({int days = 30}) async {
+  Future<DashboardAnalytics> getMyAnalytics({int days = 30, String? type}) async {
     final response = await _dio.get(
       '/provider-profile/me/analytics',
-      queryParameters: {'days': days},
+      queryParameters: {
+        'days': days,
+        'type': ?type,
+      },
     );
     return DashboardAnalytics.fromJson(response.data as Map<String, dynamic>);
   }
@@ -73,12 +82,14 @@ class DashboardRepository {
 
   Future<void> saveServices(
     List<ServiceItem> services,
-    Map<String, dynamic>? existingSchedule,
-  ) async {
+    Map<String, dynamic>? existingSchedule, {
+    String? type,
+  }) async {
     final scheduleJson = Map<String, dynamic>.from(existingSchedule ?? {});
     scheduleJson['services'] = services.map((s) => s.toJson()).toList();
     await _dio.patch(
       '/provider-profile/me',
+      queryParameters: type != null ? {'type': type} : null,
       data: {'scheduleJson': scheduleJson},
     );
   }
@@ -110,17 +121,34 @@ class DashboardRepository {
   }
 
   /// Vincula la URL de una imagen subida al perfil del proveedor en la BD.
-  Future<ProfileImageRef> saveProviderImage(String url) async {
+  Future<ProfileImageRef> saveProviderImage(String url, {String? type}) async {
     final response = await _dio.post(
       '/provider-profile/me/images',
+      queryParameters: type != null ? {'type': type} : null,
       data: {'url': url},
     );
     return ProfileImageRef.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Elimina una imagen del perfil del proveedor de la BD.
-  Future<void> deleteProviderImage(int imageId) async {
-    await _dio.delete('/provider-profile/me/images/$imageId');
+  Future<void> deleteProviderImage(int imageId, {String? type}) async {
+    await _dio.delete(
+      '/provider-profile/me/images/$imageId',
+      queryParameters: type != null ? {'type': type} : null,
+    );
+  }
+
+  // ── SOLICITUD DE UPGRADE DE PLAN ─────────────────────────
+
+  /// Envía solicitud de cambio de plan al backend.
+  /// [plan] = 'ESTANDAR' | 'PREMIUM'
+  /// [type] = 'OFICIO' | 'NEGOCIO'
+  Future<void> requestPlanUpgrade(String plan, {String? type}) async {
+    await _dio.post(
+      '/provider-profile/me/plan-request',
+      queryParameters: type != null ? {'type': type} : null,
+      data: {'plan': plan},
+    );
   }
 
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────

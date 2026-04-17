@@ -29,19 +29,24 @@ export type AggregateAdminNotification = {
 export type AdminNotificationAvgAggregateOutputType = {
   id: number | null
   providerId: number | null
+  targetUserId: number | null
 }
 
 export type AdminNotificationSumAggregateOutputType = {
   id: number | null
   providerId: number | null
+  targetUserId: number | null
 }
 
 export type AdminNotificationMinAggregateOutputType = {
   id: number | null
   providerId: number | null
   type: $Enums.NotificationType | null
+  title: string | null
   message: string | null
   isRead: boolean | null
+  targetUserId: number | null
+  targetProfileType: string | null
   sentAt: Date | null
 }
 
@@ -49,8 +54,11 @@ export type AdminNotificationMaxAggregateOutputType = {
   id: number | null
   providerId: number | null
   type: $Enums.NotificationType | null
+  title: string | null
   message: string | null
   isRead: boolean | null
+  targetUserId: number | null
+  targetProfileType: string | null
   sentAt: Date | null
 }
 
@@ -58,8 +66,11 @@ export type AdminNotificationCountAggregateOutputType = {
   id: number
   providerId: number
   type: number
+  title: number
   message: number
   isRead: number
+  targetUserId: number
+  targetProfileType: number
   sentAt: number
   _all: number
 }
@@ -68,19 +79,24 @@ export type AdminNotificationCountAggregateOutputType = {
 export type AdminNotificationAvgAggregateInputType = {
   id?: true
   providerId?: true
+  targetUserId?: true
 }
 
 export type AdminNotificationSumAggregateInputType = {
   id?: true
   providerId?: true
+  targetUserId?: true
 }
 
 export type AdminNotificationMinAggregateInputType = {
   id?: true
   providerId?: true
   type?: true
+  title?: true
   message?: true
   isRead?: true
+  targetUserId?: true
+  targetProfileType?: true
   sentAt?: true
 }
 
@@ -88,8 +104,11 @@ export type AdminNotificationMaxAggregateInputType = {
   id?: true
   providerId?: true
   type?: true
+  title?: true
   message?: true
   isRead?: true
+  targetUserId?: true
+  targetProfileType?: true
   sentAt?: true
 }
 
@@ -97,8 +116,11 @@ export type AdminNotificationCountAggregateInputType = {
   id?: true
   providerId?: true
   type?: true
+  title?: true
   message?: true
   isRead?: true
+  targetUserId?: true
+  targetProfileType?: true
   sentAt?: true
   _all?: true
 }
@@ -193,8 +215,11 @@ export type AdminNotificationGroupByOutputType = {
   id: number
   providerId: number
   type: $Enums.NotificationType
+  title: string
   message: string
   isRead: boolean
+  targetUserId: number | null
+  targetProfileType: string | null
   sentAt: Date
   _count: AdminNotificationCountAggregateOutputType | null
   _avg: AdminNotificationAvgAggregateOutputType | null
@@ -225,8 +250,11 @@ export type AdminNotificationWhereInput = {
   id?: Prisma.IntFilter<"AdminNotification"> | number
   providerId?: Prisma.IntFilter<"AdminNotification"> | number
   type?: Prisma.EnumNotificationTypeFilter<"AdminNotification"> | $Enums.NotificationType
+  title?: Prisma.StringFilter<"AdminNotification"> | string
   message?: Prisma.StringFilter<"AdminNotification"> | string
   isRead?: Prisma.BoolFilter<"AdminNotification"> | boolean
+  targetUserId?: Prisma.IntNullableFilter<"AdminNotification"> | number | null
+  targetProfileType?: Prisma.StringNullableFilter<"AdminNotification"> | string | null
   sentAt?: Prisma.DateTimeFilter<"AdminNotification"> | Date | string
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }
@@ -235,8 +263,11 @@ export type AdminNotificationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetProfileType?: Prisma.SortOrderInput | Prisma.SortOrder
   sentAt?: Prisma.SortOrder
   provider?: Prisma.ProviderOrderByWithRelationInput
 }
@@ -248,8 +279,11 @@ export type AdminNotificationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.AdminNotificationWhereInput | Prisma.AdminNotificationWhereInput[]
   providerId?: Prisma.IntFilter<"AdminNotification"> | number
   type?: Prisma.EnumNotificationTypeFilter<"AdminNotification"> | $Enums.NotificationType
+  title?: Prisma.StringFilter<"AdminNotification"> | string
   message?: Prisma.StringFilter<"AdminNotification"> | string
   isRead?: Prisma.BoolFilter<"AdminNotification"> | boolean
+  targetUserId?: Prisma.IntNullableFilter<"AdminNotification"> | number | null
+  targetProfileType?: Prisma.StringNullableFilter<"AdminNotification"> | string | null
   sentAt?: Prisma.DateTimeFilter<"AdminNotification"> | Date | string
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }, "id">
@@ -258,8 +292,11 @@ export type AdminNotificationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetProfileType?: Prisma.SortOrderInput | Prisma.SortOrder
   sentAt?: Prisma.SortOrder
   _count?: Prisma.AdminNotificationCountOrderByAggregateInput
   _avg?: Prisma.AdminNotificationAvgOrderByAggregateInput
@@ -275,15 +312,21 @@ export type AdminNotificationScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"AdminNotification"> | number
   providerId?: Prisma.IntWithAggregatesFilter<"AdminNotification"> | number
   type?: Prisma.EnumNotificationTypeWithAggregatesFilter<"AdminNotification"> | $Enums.NotificationType
+  title?: Prisma.StringWithAggregatesFilter<"AdminNotification"> | string
   message?: Prisma.StringWithAggregatesFilter<"AdminNotification"> | string
   isRead?: Prisma.BoolWithAggregatesFilter<"AdminNotification"> | boolean
+  targetUserId?: Prisma.IntNullableWithAggregatesFilter<"AdminNotification"> | number | null
+  targetProfileType?: Prisma.StringNullableWithAggregatesFilter<"AdminNotification"> | string | null
   sentAt?: Prisma.DateTimeWithAggregatesFilter<"AdminNotification"> | Date | string
 }
 
 export type AdminNotificationCreateInput = {
   type: $Enums.NotificationType
+  title?: string
   message: string
   isRead?: boolean
+  targetUserId?: number | null
+  targetProfileType?: string | null
   sentAt?: Date | string
   provider: Prisma.ProviderCreateNestedOneWithoutNotificationsInput
 }
@@ -292,15 +335,21 @@ export type AdminNotificationUncheckedCreateInput = {
   id?: number
   providerId: number
   type: $Enums.NotificationType
+  title?: string
   message: string
   isRead?: boolean
+  targetUserId?: number | null
+  targetProfileType?: string | null
   sentAt?: Date | string
 }
 
 export type AdminNotificationUpdateInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   provider?: Prisma.ProviderUpdateOneRequiredWithoutNotificationsNestedInput
 }
@@ -309,8 +358,11 @@ export type AdminNotificationUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -318,15 +370,21 @@ export type AdminNotificationCreateManyInput = {
   id?: number
   providerId: number
   type: $Enums.NotificationType
+  title?: string
   message: string
   isRead?: boolean
+  targetUserId?: number | null
+  targetProfileType?: string | null
   sentAt?: Date | string
 }
 
 export type AdminNotificationUpdateManyMutationInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -334,8 +392,11 @@ export type AdminNotificationUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -353,22 +414,29 @@ export type AdminNotificationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrder
+  targetProfileType?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
 }
 
 export type AdminNotificationAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrder
 }
 
 export type AdminNotificationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrder
+  targetProfileType?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
 }
 
@@ -376,14 +444,18 @@ export type AdminNotificationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrder
+  targetProfileType?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
 }
 
 export type AdminNotificationSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
+  targetUserId?: Prisma.SortOrder
 }
 
 export type AdminNotificationCreateNestedManyWithoutProviderInput = {
@@ -434,16 +506,22 @@ export type EnumNotificationTypeFieldUpdateOperationsInput = {
 
 export type AdminNotificationCreateWithoutProviderInput = {
   type: $Enums.NotificationType
+  title?: string
   message: string
   isRead?: boolean
+  targetUserId?: number | null
+  targetProfileType?: string | null
   sentAt?: Date | string
 }
 
 export type AdminNotificationUncheckedCreateWithoutProviderInput = {
   id?: number
   type: $Enums.NotificationType
+  title?: string
   message: string
   isRead?: boolean
+  targetUserId?: number | null
+  targetProfileType?: string | null
   sentAt?: Date | string
 }
 
@@ -480,39 +558,54 @@ export type AdminNotificationScalarWhereInput = {
   id?: Prisma.IntFilter<"AdminNotification"> | number
   providerId?: Prisma.IntFilter<"AdminNotification"> | number
   type?: Prisma.EnumNotificationTypeFilter<"AdminNotification"> | $Enums.NotificationType
+  title?: Prisma.StringFilter<"AdminNotification"> | string
   message?: Prisma.StringFilter<"AdminNotification"> | string
   isRead?: Prisma.BoolFilter<"AdminNotification"> | boolean
+  targetUserId?: Prisma.IntNullableFilter<"AdminNotification"> | number | null
+  targetProfileType?: Prisma.StringNullableFilter<"AdminNotification"> | string | null
   sentAt?: Prisma.DateTimeFilter<"AdminNotification"> | Date | string
 }
 
 export type AdminNotificationCreateManyProviderInput = {
   id?: number
   type: $Enums.NotificationType
+  title?: string
   message: string
   isRead?: boolean
+  targetUserId?: number | null
+  targetProfileType?: string | null
   sentAt?: Date | string
 }
 
 export type AdminNotificationUpdateWithoutProviderInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminNotificationUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminNotificationUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sentAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -522,8 +615,11 @@ export type AdminNotificationSelect<ExtArgs extends runtime.Types.Extensions.Int
   id?: boolean
   providerId?: boolean
   type?: boolean
+  title?: boolean
   message?: boolean
   isRead?: boolean
+  targetUserId?: boolean
+  targetProfileType?: boolean
   sentAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["adminNotification"]>
@@ -532,8 +628,11 @@ export type AdminNotificationSelectCreateManyAndReturn<ExtArgs extends runtime.T
   id?: boolean
   providerId?: boolean
   type?: boolean
+  title?: boolean
   message?: boolean
   isRead?: boolean
+  targetUserId?: boolean
+  targetProfileType?: boolean
   sentAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["adminNotification"]>
@@ -542,8 +641,11 @@ export type AdminNotificationSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   id?: boolean
   providerId?: boolean
   type?: boolean
+  title?: boolean
   message?: boolean
   isRead?: boolean
+  targetUserId?: boolean
+  targetProfileType?: boolean
   sentAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["adminNotification"]>
@@ -552,12 +654,15 @@ export type AdminNotificationSelectScalar = {
   id?: boolean
   providerId?: boolean
   type?: boolean
+  title?: boolean
   message?: boolean
   isRead?: boolean
+  targetUserId?: boolean
+  targetProfileType?: boolean
   sentAt?: boolean
 }
 
-export type AdminNotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "type" | "message" | "isRead" | "sentAt", ExtArgs["result"]["adminNotification"]>
+export type AdminNotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "type" | "title" | "message" | "isRead" | "targetUserId" | "targetProfileType" | "sentAt", ExtArgs["result"]["adminNotification"]>
 export type AdminNotificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
@@ -577,8 +682,11 @@ export type $AdminNotificationPayload<ExtArgs extends runtime.Types.Extensions.I
     id: number
     providerId: number
     type: $Enums.NotificationType
+    title: string
     message: string
     isRead: boolean
+    targetUserId: number | null
+    targetProfileType: string | null
     sentAt: Date
   }, ExtArgs["result"]["adminNotification"]>
   composites: {}
@@ -1007,8 +1115,11 @@ export interface AdminNotificationFieldRefs {
   readonly id: Prisma.FieldRef<"AdminNotification", 'Int'>
   readonly providerId: Prisma.FieldRef<"AdminNotification", 'Int'>
   readonly type: Prisma.FieldRef<"AdminNotification", 'NotificationType'>
+  readonly title: Prisma.FieldRef<"AdminNotification", 'String'>
   readonly message: Prisma.FieldRef<"AdminNotification", 'String'>
   readonly isRead: Prisma.FieldRef<"AdminNotification", 'Boolean'>
+  readonly targetUserId: Prisma.FieldRef<"AdminNotification", 'Int'>
+  readonly targetProfileType: Prisma.FieldRef<"AdminNotification", 'String'>
   readonly sentAt: Prisma.FieldRef<"AdminNotification", 'DateTime'>
 }
     

@@ -909,44 +909,48 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             ],
           ),
           const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () async {
-                // Obtener userId del AuthProvider
-                final authProvider = context.read<AuthProvider>();
-                final userId = authProvider.user?.id ?? 0;
-
-                final created = await CreateReviewSheet.show(
-                  context,
-                  providerId: widget.provider.id,
-                  providerName: widget.provider.businessName,
-                  userId: userId,
-                );
-                if (created == true && mounted) {
-                  // Recargar reseñas inmediatamente tras publicar
-                  await _loadReviews();
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('¡Reseña publicada!'),
-                      backgroundColor: AppColors.available,
-                    ),
+          Builder(builder: (context) {
+            final authProvider = context.read<AuthProvider>();
+            final isOwnCard = authProvider.user != null &&
+                widget.provider.userId != null &&
+                widget.provider.userId == authProvider.user!.id;
+            if (isOwnCard) return const SizedBox.shrink();
+            return SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final userId = authProvider.user?.id ?? 0;
+                  final messenger = ScaffoldMessenger.of(context);
+                  final created = await CreateReviewSheet.show(
+                    context,
+                    providerId: widget.provider.id,
+                    providerName: widget.provider.businessName,
+                    userId: userId,
                   );
-                }
-              },
-              icon: const Icon(Icons.star_rounded, size: 18),
-              label: Text('Dejar una reseña'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.star,
-                side: BorderSide(color: AppColors.star.withValues(alpha: 0.4)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  if (created == true && mounted) {
+                    await _loadReviews();
+                    if (!mounted) return;
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('¡Reseña publicada!'),
+                        backgroundColor: AppColors.available,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.star_rounded, size: 18),
+                label: const Text('Dejar una reseña'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.star,
+                  side: BorderSide(color: AppColors.star.withValues(alpha: 0.4)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );

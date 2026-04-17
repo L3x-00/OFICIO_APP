@@ -53,11 +53,11 @@ export class ProvidersService {
       where.localityId = localityId;
     }
 
-    // Filtro por tipo de proveedor: el frontend envía PROFESSIONAL|BUSINESS
-    // pero la BD almacena OFICIO|NEGOCIO en el campo `type`.
-    if (type === 'PROFESSIONAL') {
+    // Filtro por tipo de proveedor. Acepta tanto los nombres canónicos
+    // (OFICIO|NEGOCIO) como los alias legacy que aún puede enviar Flutter.
+    if (type === 'OFICIO' || type === 'PROFESSIONAL') {
       where.type = 'OFICIO';
-    } else if (type === 'BUSINESS') {
+    } else if (type === 'NEGOCIO' || type === 'BUSINESS') {
       where.type = 'NEGOCIO';
     }
 

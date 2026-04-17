@@ -239,20 +239,28 @@ class ProviderOnboardingForm extends StatefulWidget {
 }
 
 class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
-  final _businessNameController = TextEditingController();
-  final _dniController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _addressController = TextEditingController();
+  final _businessNameController    = TextEditingController();
+  final _dniController             = TextEditingController();
+  final _phoneController           = TextEditingController();
+  final _descriptionController     = TextEditingController();
+  final _addressController         = TextEditingController();
+  // NEGOCIO-only
+  final _rucController             = TextEditingController();
+  final _nombreComercialController = TextEditingController();
+  final _razonSocialController     = TextEditingController();
+  bool _hasDelivery       = false;
+  bool _plenaCoordinacion = false;
 
   final List<XFile> _photos = [];
   final _picker = ImagePicker();
   bool _isLoading = false;
 
   // ─── Categoría ────────────────────────────────────────────
-  List<CategoryModel> _categories = [];
-  int? _selectedCategoryId;
+  List<CategoryModel> _categories = [];   // árbol completo (padres + hijos)
+  int?   _selectedCategoryId;             // id de la hoja seleccionada
   String _selectedCategoryName = 'Selecciona una categoría';
+  int?   _selectedParentId;               // para mostrar breadcrumb
+  String _selectedParentName = '';
 
   static const _maxPhotos = 4;
   static const _maxMB = 5;
@@ -266,22 +274,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   Future<void> _loadCategories() async {
     final result = await ProvidersRepository().getCategories();
     if (!mounted) return;
+    // Mantener árbol completo (padres con hijos) para selector jerárquico
     result.when(
-      // La API devuelve padres con sus hijos anidados.
-      // Extraemos SOLO las subcategorías (hijas) para que el proveedor
-      // elija su oficio específico, no una macrocategoría genérica.
-      success: (cats) {
-        final leaves = <CategoryModel>[];
-        for (final parent in cats) {
-          if (parent.children.isNotEmpty) {
-            leaves.addAll(parent.children);
-          } else {
-            // Si una categoría no tiene hijos, es seleccionable por sí misma
-            leaves.add(parent);
-          }
-        }
-        setState(() => _categories = leaves);
-      },
+      success: (cats) => setState(() => _categories = cats),
       failure: (_) {},
     );
   }
@@ -289,6 +284,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   Future<void> _showCategoryPicker() async {
     if (_categories.isEmpty) return;
     final c = context.colors;
+
+    // Estado local del picker: null = vista de padres, != null = vista de hijos
+    CategoryModel? pickerParent;
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -296,80 +295,130 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.92,
-        expand: false,
-        builder: (_, scrollCtrl) => SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36, height: 4,
-                decoration: BoxDecoration(
-                  color: c.textMuted.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Text(
-                  'Selecciona tu oficio / rubro',
-                  style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) {
+          final items = pickerParent == null
+              ? _categories
+              : pickerParent!.children;
+          final title = pickerParent == null
+              ? 'Selecciona una categoría'
+              : pickerParent!.name;
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.92,
+            expand: false,
+            builder: (_, scrollCtrl) => SafeArea(
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                      color: c.textMuted.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-              ),
-              Expanded(
-                child: ListView.separated(
-                  controller: scrollCtrl,
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                  itemCount: _categories.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 4),
-                  itemBuilder: (_, i) {
-                    final cat = _categories[i];
-                    final isSelected = cat.id == _selectedCategoryId;
-                    return ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      tileColor: isSelected
-                          ? AppColors.primary.withValues(alpha: 0.1)
-                          : Colors.transparent,
-                      leading: Icon(
-                        Icons.handyman_outlined,
-                        color: isSelected ? AppColors.primary : c.textMuted,
-                        size: 20,
-                      ),
-                      title: Text(
-                        cat.name,
-                        style: TextStyle(
-                          color: isSelected ? AppColors.primary : c.textPrimary,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          fontSize: 14,
+                  // Header con botón "atrás" en fase de hijos
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 12, 20, 8),
+                    child: Row(
+                      children: [
+                        if (pickerParent != null)
+                          IconButton(
+                            icon: Icon(Icons.arrow_back_rounded, color: c.textSecondary),
+                            onPressed: () => setModal(() => pickerParent = null),
+                          )
+                        else
+                          const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                  if (pickerParent != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                      child: Text(
+                        'Elige la especialidad específica',
+                        style: TextStyle(color: c.textMuted, fontSize: 12),
                       ),
-                      trailing: isSelected
-                          ? const Icon(Icons.check_circle_rounded,
-                              color: AppColors.primary, size: 20)
-                          : null,
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryId = cat.id;
-                          _selectedCategoryName = cat.name;
-                        });
-                        Navigator.of(ctx).pop();
+                    ),
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollCtrl,
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                      itemCount: items.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 4),
+                      itemBuilder: (_, i) {
+                        final cat = items[i];
+                        final isSelected = cat.id == _selectedCategoryId;
+                        final hasChildren = cat.children.isNotEmpty;
+
+                        return ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          tileColor: isSelected
+                              ? AppColors.primary.withValues(alpha: 0.1)
+                              : Colors.transparent,
+                          leading: Icon(
+                            hasChildren
+                                ? Icons.category_outlined
+                                : Icons.handyman_outlined,
+                            color: isSelected ? AppColors.primary : c.textMuted,
+                            size: 20,
+                          ),
+                          title: Text(
+                            cat.name,
+                            style: TextStyle(
+                              color: isSelected ? AppColors.primary : c.textPrimary,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              fontSize: 14,
+                            ),
+                          ),
+                          trailing: hasChildren
+                              ? Icon(Icons.chevron_right_rounded,
+                                  color: c.textMuted, size: 20)
+                              : isSelected
+                                  ? const Icon(Icons.check_circle_rounded,
+                                      color: AppColors.primary, size: 20)
+                                  : null,
+                          onTap: () {
+                            if (hasChildren) {
+                              // Fase 1 → Fase 2: entrar en hijos
+                              setModal(() => pickerParent = cat);
+                            } else {
+                              // Selección final de hoja
+                              setState(() {
+                                _selectedCategoryId   = cat.id;
+                                _selectedCategoryName = cat.name;
+                                _selectedParentId     = pickerParent?.id;
+                                _selectedParentName   = pickerParent?.name ?? '';
+                              });
+                              Navigator.of(ctx).pop();
+                            }
+                          },
+                        );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -381,6 +430,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _phoneController.dispose();
     _descriptionController.dispose();
     _addressController.dispose();
+    _rucController.dispose();
+    _nombreComercialController.dispose();
+    _razonSocialController.dispose();
     super.dispose();
   }
 
@@ -449,19 +501,109 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     );
   }
 
+  // ─── Sección de delivery (solo NEGOCIO) ───────────────────
+
+  Widget _buildDeliverySection() {
+    final c = context.colors;
+    return Container(
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(
+        children: [
+          // Toggle principal: Servicio de Delivery
+          _buildToggleRow(
+            icon: Icons.delivery_dining_rounded,
+            title: 'Servicio de Delivery',
+            subtitle: 'Tu negocio realiza entregas a domicilio',
+            value: _hasDelivery,
+            onChanged: (val) => setState(() {
+              _hasDelivery = val;
+              if (!val) _plenaCoordinacion = false;
+            }),
+          ),
+          // Sub-toggle: Plena Coordinación (solo visible cuando delivery activo)
+          if (_hasDelivery) ...[
+            Divider(height: 1, color: c.border),
+            _buildToggleRow(
+              icon: Icons.handshake_outlined,
+              title: 'Plena Coordinación',
+              subtitle: 'Coordinas todo el proceso de entrega con el cliente',
+              value: _plenaCoordinacion,
+              onChanged: (val) => setState(() => _plenaCoordinacion = val),
+              isSubItem: true,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    bool isSubItem = false,
+  }) {
+    final c = context.colors;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(isSubItem ? 28 : 16, 12, 12, 12),
+      child: Row(
+        children: [
+          Icon(icon, color: value ? AppColors.primary : c.textMuted, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.primary,
+            activeTrackColor: AppColors.primary.withValues(alpha: 0.4),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ─── Submit ──────────────────────────────────────────────
 
   Future<void> _submit() async {
-    final name = _businessNameController.text.trim();
+    final name  = _businessNameController.text.trim();
     final phone = _phoneController.text.trim();
-    final dni = _dniController.text.trim();
+    final dni   = _dniController.text.trim();
+    final ruc   = _rucController.text.trim();
 
     if (name.isEmpty || phone.isEmpty) {
       _showSnack('El nombre y el teléfono son obligatorios.', isError: true);
       return;
     }
-    if (dni.isNotEmpty && !RegExp(r'^\d{8}$').hasMatch(dni)) {
+    if (_isOficio && dni.isNotEmpty && !RegExp(r'^\d{8}$').hasMatch(dni)) {
       _showSnack('El DNI debe tener exactamente 8 dígitos.', isError: true);
+      return;
+    }
+    if (!_isOficio && ruc.isNotEmpty && !RegExp(r'^\d{11}$').hasMatch(ruc)) {
+      _showSnack('El RUC debe tener exactamente 11 dígitos.', isError: true);
       return;
     }
 
@@ -469,13 +611,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
     final auth = context.read<AuthProvider>();
     final result = await auth.registerProvider(
-      businessName: name,
-      phone: phone,
-      type: widget.providerType ?? 'OFICIO',
-      dni: dni.isNotEmpty ? dni : null,
-      description: _descriptionController.text.trim(),
-      address: _addressController.text.trim(),
-      categoryId: _selectedCategoryId,
+      businessName:     name,
+      phone:            phone,
+      type:             widget.providerType ?? 'OFICIO',
+      dni:              _isOficio && dni.isNotEmpty ? dni : null,
+      ruc:              !_isOficio && ruc.isNotEmpty ? ruc : null,
+      nombreComercial:  !_isOficio ? _nombreComercialController.text.trim() : null,
+      razonSocial:      !_isOficio ? _razonSocialController.text.trim() : null,
+      hasDelivery:      !_isOficio ? _hasDelivery : false,
+      plenaCoordinacion: !_isOficio && _hasDelivery ? _plenaCoordinacion : false,
+      description:      _descriptionController.text.trim(),
+      address:          _addressController.text.trim(),
+      categoryId:       _selectedCategoryId,
     );
 
     if (!mounted) return;
@@ -653,15 +800,45 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 14),
 
-            _buildField(
-              controller: _dniController,
-              label: 'DNI del titular',
-              hint: '12345678',
-              icon: Icons.badge_outlined,
-              keyboardType: TextInputType.number,
-              maxLength: 8,
-            ),
-            const SizedBox(height: 14),
+            // ── OFICIO: DNI ───────────────────────────────
+            if (_isOficio) ...[
+              _buildField(
+                controller: _dniController,
+                label: 'DNI del titular (opcional)',
+                hint: '12345678',
+                icon: Icons.badge_outlined,
+                keyboardType: TextInputType.number,
+                maxLength: 8,
+              ),
+              const SizedBox(height: 14),
+            ],
+
+            // ── NEGOCIO: RUC, Nombre Comercial, Razón Social ──
+            if (!_isOficio) ...[
+              _buildField(
+                controller: _rucController,
+                label: 'RUC (opcional)',
+                hint: '20123456789',
+                icon: Icons.receipt_long_outlined,
+                keyboardType: TextInputType.number,
+                maxLength: 11,
+              ),
+              const SizedBox(height: 14),
+              _buildField(
+                controller: _nombreComercialController,
+                label: 'Nombre Comercial (opcional)',
+                hint: 'Ej: El Sabor Peruano',
+                icon: Icons.label_outline,
+              ),
+              const SizedBox(height: 14),
+              _buildField(
+                controller: _razonSocialController,
+                label: 'Razón Social (opcional)',
+                hint: 'Ej: Inversiones El Sabor S.A.C.',
+                icon: Icons.business_outlined,
+              ),
+              const SizedBox(height: 14),
+            ],
 
             _buildField(
               controller: _phoneController,
@@ -698,6 +875,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               maxLines: 4,
             ),
             const SizedBox(height: 24),
+
+            // ── NEGOCIO: Sección Delivery ─────────────────
+            if (!_isOficio) ...[
+              _FormSectionHeader(label: 'SERVICIO DE DELIVERY'),
+              const SizedBox(height: 12),
+              _buildDeliverySection(),
+              const SizedBox(height: 24),
+            ],
 
             // ── Sección: Fotos ────────────────────────────
             _FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
@@ -765,7 +950,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
   Widget _buildCategorySelector(AppThemeColors c) {
     final hasCategories = _categories.isNotEmpty;
-    final isSelected = _selectedCategoryId != null;
+    final isSelected    = _selectedCategoryId != null;
+    // Breadcrumb: "Hogar > Electricista" o solo "Electricista"
+    final displayText   = isSelected && _selectedParentName.isNotEmpty
+        ? '$_selectedParentName › $_selectedCategoryName'
+        : _selectedCategoryName;
+
     return GestureDetector(
       onTap: hasCategories ? _showCategoryPicker : null,
       child: Container(
@@ -789,7 +979,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                _selectedCategoryName,
+                displayText,
                 style: TextStyle(
                   color: isSelected ? c.textPrimary : c.textMuted,
                   fontSize: 14,
@@ -806,10 +996,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 ),
               )
             else
-              Icon(
-                Icons.arrow_drop_down,
-                color: c.textMuted,
-              ),
+              Icon(Icons.arrow_drop_down, color: c.textMuted),
           ],
         ),
       ),

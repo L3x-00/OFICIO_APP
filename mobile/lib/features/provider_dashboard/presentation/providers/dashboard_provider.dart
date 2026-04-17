@@ -21,6 +21,7 @@ class DashboardProvider extends ChangeNotifier {
   DashboardStatus             _status = DashboardStatus.idle;
   String?                     _error;
   bool                        _isUploadingPhoto = false;
+  String?                     _currentProviderType;
 
   DashboardProfileModel?     get profile              => _profile;
   DashboardAnalytics?        get analytics            => _analytics;
@@ -32,6 +33,7 @@ class DashboardProvider extends ChangeNotifier {
   String?                    get error                => _error;
   bool                       get isLoading            => _status == DashboardStatus.loading;
   bool                       get isUploadingPhoto     => _isUploadingPhoto;
+  String?                    get currentProviderType  => _currentProviderType;
 
   // ── CARGA INICIAL ────────────────────────────────────────
 
@@ -39,6 +41,7 @@ class DashboardProvider extends ChangeNotifier {
   Future<void> loadDashboard({String? providerType}) async {
     if (_status == DashboardStatus.loading) return;
 
+    _currentProviderType = providerType;
     _status = DashboardStatus.loading;
     _error  = null;
     notifyListeners();
@@ -46,7 +49,7 @@ class DashboardProvider extends ChangeNotifier {
     try {
       final results = await Future.wait([
         _repo.getMyProfile(type: providerType),
-        _repo.getMyAnalytics(days: 30),
+        _repo.getMyAnalytics(days: 30, type: providerType),
       ]);
 
       _profile   = results[0] as DashboardProfileModel;
@@ -121,6 +124,7 @@ class DashboardProvider extends ChangeNotifier {
         phone:        phone,
         whatsapp:     whatsapp,
         address:      address,
+        type:         _currentProviderType,
       );
       _profile = updated;
       notifyListeners();
@@ -140,7 +144,7 @@ class DashboardProvider extends ChangeNotifier {
       notifyListeners();
     }
     try {
-      await _repo.setAvailability(status);
+      await _repo.setAvailability(status, type: _currentProviderType);
       return true;
     } catch (e) {
       // Revertir en caso de error
@@ -157,7 +161,7 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<bool> saveServices(List<ServiceItem> services) async {
     try {
-      await _repo.saveServices(services, _profile?.scheduleJson);
+      await _repo.saveServices(services, _profile?.scheduleJson, type: _currentProviderType);
       _services = List.from(services);
       // Actualizar en el perfil local
       final updated = Map<String, dynamic>.from(_profile?.scheduleJson ?? {});
@@ -187,7 +191,7 @@ class DashboardProvider extends ChangeNotifier {
       // 1. Subir archivo al disco
       final url = await _repo.uploadProviderPhoto(filePath);
       // 2. Crear registro en la BD (ProviderImage)
-      final saved = await _repo.saveProviderImage(url);
+      final saved = await _repo.saveProviderImage(url, type: _currentProviderType);
       // 3. Actualizar estado local
       final updatedImages = List<ProfileImage>.from(_profile?.images ?? [])
         ..add(ProfileImage(id: saved.id, url: saved.url));
@@ -206,12 +210,24 @@ class DashboardProvider extends ChangeNotifier {
   /// Elimina una imagen del perfil de la BD y actualiza el estado local.
   Future<bool> deleteProviderImage(int imageId) async {
     try {
-      await _repo.deleteProviderImage(imageId);
+      await _repo.deleteProviderImage(imageId, type: _currentProviderType);
       final updatedImages = (_profile?.images ?? [])
           .where((img) => img.id != imageId)
           .toList();
       _profile = _profile?.copyWith(images: updatedImages);
       notifyListeners();
+      return true;
+    } catch (e) {
+      _error = _formatError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Solicita upgrade de plan. Devuelve true si se envió con éxito.
+  Future<bool> requestPlanUpgrade(String plan) async {
+    try {
+      await _repo.requestPlanUpgrade(plan, type: _currentProviderType);
       return true;
     } catch (e) {
       _error = _formatError(e);

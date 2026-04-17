@@ -52,10 +52,14 @@ export type ProviderMinAggregateOutputType = {
   id: number | null
   userId: number | null
   type: $Enums.ProviderType | null
-  providerType: $Enums.ProviderType | null
   businessName: string | null
   description: string | null
   dni: string | null
+  ruc: string | null
+  nombreComercial: string | null
+  razonSocial: string | null
+  hasDelivery: boolean | null
+  plenaCoordinacion: boolean | null
   phone: string | null
   whatsapp: string | null
   address: string | null
@@ -78,10 +82,14 @@ export type ProviderMaxAggregateOutputType = {
   id: number | null
   userId: number | null
   type: $Enums.ProviderType | null
-  providerType: $Enums.ProviderType | null
   businessName: string | null
   description: string | null
   dni: string | null
+  ruc: string | null
+  nombreComercial: string | null
+  razonSocial: string | null
+  hasDelivery: boolean | null
+  plenaCoordinacion: boolean | null
   phone: string | null
   whatsapp: string | null
   address: string | null
@@ -104,10 +112,14 @@ export type ProviderCountAggregateOutputType = {
   id: number
   userId: number
   type: number
-  providerType: number
   businessName: number
   description: number
   dni: number
+  ruc: number
+  nombreComercial: number
+  razonSocial: number
+  hasDelivery: number
+  plenaCoordinacion: number
   phone: number
   whatsapp: number
   address: number
@@ -155,10 +167,14 @@ export type ProviderMinAggregateInputType = {
   id?: true
   userId?: true
   type?: true
-  providerType?: true
   businessName?: true
   description?: true
   dni?: true
+  ruc?: true
+  nombreComercial?: true
+  razonSocial?: true
+  hasDelivery?: true
+  plenaCoordinacion?: true
   phone?: true
   whatsapp?: true
   address?: true
@@ -181,10 +197,14 @@ export type ProviderMaxAggregateInputType = {
   id?: true
   userId?: true
   type?: true
-  providerType?: true
   businessName?: true
   description?: true
   dni?: true
+  ruc?: true
+  nombreComercial?: true
+  razonSocial?: true
+  hasDelivery?: true
+  plenaCoordinacion?: true
   phone?: true
   whatsapp?: true
   address?: true
@@ -207,10 +227,14 @@ export type ProviderCountAggregateInputType = {
   id?: true
   userId?: true
   type?: true
-  providerType?: true
   businessName?: true
   description?: true
   dni?: true
+  ruc?: true
+  nombreComercial?: true
+  razonSocial?: true
+  hasDelivery?: true
+  plenaCoordinacion?: true
   phone?: true
   whatsapp?: true
   address?: true
@@ -321,10 +345,14 @@ export type ProviderGroupByOutputType = {
   id: number
   userId: number
   type: $Enums.ProviderType
-  providerType: $Enums.ProviderType
   businessName: string
   description: string | null
   dni: string | null
+  ruc: string | null
+  nombreComercial: string | null
+  razonSocial: string | null
+  hasDelivery: boolean
+  plenaCoordinacion: boolean
   phone: string
   whatsapp: string | null
   address: string | null
@@ -371,10 +399,14 @@ export type ProviderWhereInput = {
   id?: Prisma.IntFilter<"Provider"> | number
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
+  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
+  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -402,16 +434,21 @@ export type ProviderWhereInput = {
   verificationDocs?: Prisma.VerificationDocListRelationFilter
   analytics?: Prisma.ProviderAnalyticListRelationFilter
   notifications?: Prisma.AdminNotificationListRelationFilter
+  planRequests?: Prisma.PlanRequestListRelationFilter
 }
 
 export type ProviderOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   dni?: Prisma.SortOrderInput | Prisma.SortOrder
+  ruc?: Prisma.SortOrderInput | Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrderInput | Prisma.SortOrder
+  razonSocial?: Prisma.SortOrderInput | Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -439,6 +476,7 @@ export type ProviderOrderByWithRelationInput = {
   verificationDocs?: Prisma.VerificationDocOrderByRelationAggregateInput
   analytics?: Prisma.ProviderAnalyticOrderByRelationAggregateInput
   notifications?: Prisma.AdminNotificationOrderByRelationAggregateInput
+  planRequests?: Prisma.PlanRequestOrderByRelationAggregateInput
 }
 
 export type ProviderWhereUniqueInput = Prisma.AtLeast<{
@@ -449,10 +487,14 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProviderWhereInput | Prisma.ProviderWhereInput[]
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
+  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
+  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -480,16 +522,21 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   verificationDocs?: Prisma.VerificationDocListRelationFilter
   analytics?: Prisma.ProviderAnalyticListRelationFilter
   notifications?: Prisma.AdminNotificationListRelationFilter
+  planRequests?: Prisma.PlanRequestListRelationFilter
 }, "id" | "userId_type">
 
 export type ProviderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   dni?: Prisma.SortOrderInput | Prisma.SortOrder
+  ruc?: Prisma.SortOrderInput | Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrderInput | Prisma.SortOrder
+  razonSocial?: Prisma.SortOrderInput | Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -521,10 +568,14 @@ export type ProviderScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   userId?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeWithAggregatesFilter<"Provider"> | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeWithAggregatesFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringWithAggregatesFilter<"Provider"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  nombreComercial?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  razonSocial?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  plenaCoordinacion?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   phone?: Prisma.StringWithAggregatesFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
@@ -546,10 +597,14 @@ export type ProviderScalarWhereWithAggregatesInput = {
 
 export type ProviderCreateInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -575,16 +630,21 @@ export type ProviderCreateInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -609,14 +669,19 @@ export type ProviderUncheckedCreateInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUpdateInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -642,16 +707,21 @@ export type ProviderUpdateInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -676,16 +746,21 @@ export type ProviderUncheckedUpdateInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -707,10 +782,14 @@ export type ProviderCreateManyInput = {
 
 export type ProviderUpdateManyMutationInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -732,10 +811,14 @@ export type ProviderUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -774,10 +857,14 @@ export type ProviderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
+  ruc?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
@@ -812,10 +899,14 @@ export type ProviderMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
+  ruc?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
@@ -838,10 +929,14 @@ export type ProviderMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  providerType?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
+  ruc?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
@@ -1058,6 +1153,20 @@ export type ProviderUpdateOneRequiredWithoutSubscriptionNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutSubscriptionInput, Prisma.ProviderUpdateWithoutSubscriptionInput>, Prisma.ProviderUncheckedUpdateWithoutSubscriptionInput>
 }
 
+export type ProviderCreateNestedOneWithoutPlanRequestsInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutPlanRequestsInput, Prisma.ProviderUncheckedCreateWithoutPlanRequestsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutPlanRequestsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+}
+
+export type ProviderUpdateOneRequiredWithoutPlanRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutPlanRequestsInput, Prisma.ProviderUncheckedCreateWithoutPlanRequestsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutPlanRequestsInput
+  upsert?: Prisma.ProviderUpsertWithoutPlanRequestsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutPlanRequestsInput, Prisma.ProviderUpdateWithoutPlanRequestsInput>, Prisma.ProviderUncheckedUpdateWithoutPlanRequestsInput>
+}
+
 export type ProviderCreateNestedOneWithoutReviewsInput = {
   create?: Prisma.XOR<Prisma.ProviderCreateWithoutReviewsInput, Prisma.ProviderUncheckedCreateWithoutReviewsInput>
   connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutReviewsInput
@@ -1130,10 +1239,14 @@ export type ProviderUpdateOneRequiredWithoutNotificationsNestedInput = {
 
 export type ProviderCreateWithoutUserInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1158,15 +1271,20 @@ export type ProviderCreateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutUserInput = {
   id?: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1191,6 +1309,7 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutUserInput = {
@@ -1226,10 +1345,14 @@ export type ProviderScalarWhereInput = {
   id?: Prisma.IntFilter<"Provider"> | number
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
+  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
+  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -1251,10 +1374,14 @@ export type ProviderScalarWhereInput = {
 
 export type ProviderCreateWithoutLocalityInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1279,16 +1406,21 @@ export type ProviderCreateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutLocalityInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1312,6 +1444,7 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutLocalityInput = {
@@ -1342,10 +1475,14 @@ export type ProviderUpdateManyWithWhereWithoutLocalityInput = {
 
 export type ProviderCreateWithoutCategoryInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1370,16 +1507,21 @@ export type ProviderCreateWithoutCategoryInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutCategoryInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1403,6 +1545,7 @@ export type ProviderUncheckedCreateWithoutCategoryInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutCategoryInput = {
@@ -1433,10 +1576,14 @@ export type ProviderUpdateManyWithWhereWithoutCategoryInput = {
 
 export type ProviderCreateWithoutImagesInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1461,16 +1608,21 @@ export type ProviderCreateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutImagesInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1494,6 +1646,7 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutImagesInput = {
@@ -1514,10 +1667,14 @@ export type ProviderUpdateToOneWithWhereWithoutImagesInput = {
 
 export type ProviderUpdateWithoutImagesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1542,16 +1699,21 @@ export type ProviderUpdateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutImagesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1575,14 +1737,19 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutSubscriptionInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1607,16 +1774,21 @@ export type ProviderCreateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1640,6 +1812,7 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutSubscriptionInput = {
@@ -1660,10 +1833,14 @@ export type ProviderUpdateToOneWithWhereWithoutSubscriptionInput = {
 
 export type ProviderUpdateWithoutSubscriptionInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1688,16 +1865,21 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1721,14 +1903,185 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderCreateWithoutPlanRequestsInput = {
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+}
+
+export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
+  id?: number
+  userId: number
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  localityId: number
+  categoryId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+}
+
+export type ProviderCreateOrConnectWithoutPlanRequestsInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutPlanRequestsInput, Prisma.ProviderUncheckedCreateWithoutPlanRequestsInput>
+}
+
+export type ProviderUpsertWithoutPlanRequestsInput = {
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutPlanRequestsInput, Prisma.ProviderUncheckedUpdateWithoutPlanRequestsInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutPlanRequestsInput, Prisma.ProviderUncheckedCreateWithoutPlanRequestsInput>
+  where?: Prisma.ProviderWhereInput
+}
+
+export type ProviderUpdateToOneWithWhereWithoutPlanRequestsInput = {
+  where?: Prisma.ProviderWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateWithoutPlanRequestsInput, Prisma.ProviderUncheckedUpdateWithoutPlanRequestsInput>
+}
+
+export type ProviderUpdateWithoutPlanRequestsInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReviewsInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1753,16 +2106,21 @@ export type ProviderCreateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReviewsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1786,6 +2144,7 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReviewsInput = {
@@ -1806,10 +2165,14 @@ export type ProviderUpdateToOneWithWhereWithoutReviewsInput = {
 
 export type ProviderUpdateWithoutReviewsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1834,16 +2197,21 @@ export type ProviderUpdateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReviewsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1867,14 +2235,19 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutFavoritesInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1899,16 +2272,21 @@ export type ProviderCreateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutFavoritesInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -1932,6 +2310,7 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutFavoritesInput = {
@@ -1952,10 +2331,14 @@ export type ProviderUpdateToOneWithWhereWithoutFavoritesInput = {
 
 export type ProviderUpdateWithoutFavoritesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1980,16 +2363,21 @@ export type ProviderUpdateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2013,14 +2401,19 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutVerificationDocsInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2045,16 +2438,21 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2078,6 +2476,7 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutVerificationDocsInput = {
@@ -2098,10 +2497,14 @@ export type ProviderUpdateToOneWithWhereWithoutVerificationDocsInput = {
 
 export type ProviderUpdateWithoutVerificationDocsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2126,16 +2529,21 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2159,14 +2567,19 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutAnalyticsInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2191,16 +2604,21 @@ export type ProviderCreateWithoutAnalyticsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2224,6 +2642,7 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutAnalyticsInput = {
@@ -2244,10 +2663,14 @@ export type ProviderUpdateToOneWithWhereWithoutAnalyticsInput = {
 
 export type ProviderUpdateWithoutAnalyticsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2272,16 +2695,21 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2305,14 +2733,19 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutNotificationsInput = {
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2337,16 +2770,21 @@ export type ProviderCreateWithoutNotificationsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutNotificationsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2370,6 +2808,7 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutNotificationsInput = {
@@ -2390,10 +2829,14 @@ export type ProviderUpdateToOneWithWhereWithoutNotificationsInput = {
 
 export type ProviderUpdateWithoutNotificationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2418,16 +2861,21 @@ export type ProviderUpdateWithoutNotificationsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2451,15 +2899,20 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyUserInput = {
   id?: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2481,10 +2934,14 @@ export type ProviderCreateManyUserInput = {
 
 export type ProviderUpdateWithoutUserInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2509,15 +2966,20 @@ export type ProviderUpdateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2542,15 +3004,20 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2574,10 +3041,14 @@ export type ProviderCreateManyLocalityInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2598,10 +3069,14 @@ export type ProviderCreateManyLocalityInput = {
 
 export type ProviderUpdateWithoutLocalityInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2626,16 +3101,21 @@ export type ProviderUpdateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutLocalityInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2659,16 +3139,21 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2691,10 +3176,14 @@ export type ProviderCreateManyCategoryInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
-  providerType?: $Enums.ProviderType
   businessName: string
   description?: string | null
   dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
@@ -2715,10 +3204,14 @@ export type ProviderCreateManyCategoryInput = {
 
 export type ProviderUpdateWithoutCategoryInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2743,16 +3236,21 @@ export type ProviderUpdateWithoutCategoryInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2776,16 +3274,21 @@ export type ProviderUncheckedUpdateWithoutCategoryInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
-  providerType?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2816,6 +3319,7 @@ export type ProviderCountOutputType = {
   verificationDocs: number
   analytics: number
   notifications: number
+  planRequests: number
 }
 
 export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2825,6 +3329,7 @@ export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensio
   verificationDocs?: boolean | ProviderCountOutputTypeCountVerificationDocsArgs
   analytics?: boolean | ProviderCountOutputTypeCountAnalyticsArgs
   notifications?: boolean | ProviderCountOutputTypeCountNotificationsArgs
+  planRequests?: boolean | ProviderCountOutputTypeCountPlanRequestsArgs
 }
 
 /**
@@ -2879,15 +3384,26 @@ export type ProviderCountOutputTypeCountNotificationsArgs<ExtArgs extends runtim
   where?: Prisma.AdminNotificationWhereInput
 }
 
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountPlanRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlanRequestWhereInput
+}
+
 
 export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
   type?: boolean
-  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
+  ruc?: boolean
+  nombreComercial?: boolean
+  razonSocial?: boolean
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
@@ -2915,6 +3431,7 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
   analytics?: boolean | Prisma.Provider$analyticsArgs<ExtArgs>
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
+  planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["provider"]>
 
@@ -2922,10 +3439,14 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   userId?: boolean
   type?: boolean
-  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
+  ruc?: boolean
+  nombreComercial?: boolean
+  razonSocial?: boolean
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
@@ -2952,10 +3473,14 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   userId?: boolean
   type?: boolean
-  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
+  ruc?: boolean
+  nombreComercial?: boolean
+  razonSocial?: boolean
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
@@ -2982,10 +3507,14 @@ export type ProviderSelectScalar = {
   id?: boolean
   userId?: boolean
   type?: boolean
-  providerType?: boolean
   businessName?: boolean
   description?: boolean
   dni?: boolean
+  ruc?: boolean
+  nombreComercial?: boolean
+  razonSocial?: boolean
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
@@ -3005,7 +3534,7 @@ export type ProviderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "providerType" | "businessName" | "description" | "dni" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -3017,6 +3546,7 @@ export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
   analytics?: boolean | Prisma.Provider$analyticsArgs<ExtArgs>
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
+  planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProviderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3043,15 +3573,20 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     verificationDocs: Prisma.$VerificationDocPayload<ExtArgs>[]
     analytics: Prisma.$ProviderAnalyticPayload<ExtArgs>[]
     notifications: Prisma.$AdminNotificationPayload<ExtArgs>[]
+    planRequests: Prisma.$PlanRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     userId: number
     type: $Enums.ProviderType
-    providerType: $Enums.ProviderType
     businessName: string
     description: string | null
     dni: string | null
+    ruc: string | null
+    nombreComercial: string | null
+    razonSocial: string | null
+    hasDelivery: boolean
+    plenaCoordinacion: boolean
     phone: string
     whatsapp: string | null
     address: string | null
@@ -3473,6 +4008,7 @@ export interface Prisma__ProviderClient<T, Null = never, ExtArgs extends runtime
   verificationDocs<T extends Prisma.Provider$verificationDocsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$verificationDocsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerificationDocPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   analytics<T extends Prisma.Provider$analyticsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$analyticsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderAnalyticPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.Provider$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  planRequests<T extends Prisma.Provider$planRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$planRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlanRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3505,10 +4041,14 @@ export interface ProviderFieldRefs {
   readonly id: Prisma.FieldRef<"Provider", 'Int'>
   readonly userId: Prisma.FieldRef<"Provider", 'Int'>
   readonly type: Prisma.FieldRef<"Provider", 'ProviderType'>
-  readonly providerType: Prisma.FieldRef<"Provider", 'ProviderType'>
   readonly businessName: Prisma.FieldRef<"Provider", 'String'>
   readonly description: Prisma.FieldRef<"Provider", 'String'>
   readonly dni: Prisma.FieldRef<"Provider", 'String'>
+  readonly ruc: Prisma.FieldRef<"Provider", 'String'>
+  readonly nombreComercial: Prisma.FieldRef<"Provider", 'String'>
+  readonly razonSocial: Prisma.FieldRef<"Provider", 'String'>
+  readonly hasDelivery: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly plenaCoordinacion: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly phone: Prisma.FieldRef<"Provider", 'String'>
   readonly whatsapp: Prisma.FieldRef<"Provider", 'String'>
   readonly address: Prisma.FieldRef<"Provider", 'String'>
@@ -4087,6 +4627,30 @@ export type Provider$notificationsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.AdminNotificationScalarFieldEnum | Prisma.AdminNotificationScalarFieldEnum[]
+}
+
+/**
+ * Provider.planRequests
+ */
+export type Provider$planRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PlanRequest
+   */
+  select?: Prisma.PlanRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PlanRequest
+   */
+  omit?: Prisma.PlanRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlanRequestInclude<ExtArgs> | null
+  where?: Prisma.PlanRequestWhereInput
+  orderBy?: Prisma.PlanRequestOrderByWithRelationInput | Prisma.PlanRequestOrderByWithRelationInput[]
+  cursor?: Prisma.PlanRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlanRequestScalarFieldEnum | Prisma.PlanRequestScalarFieldEnum[]
 }
 
 /**

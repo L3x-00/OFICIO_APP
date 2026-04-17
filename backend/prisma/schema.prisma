@@ -42,8 +42,6 @@ enum SubscriptionStatus {
 enum ProviderType {
   OFICIO          // Electricista, gasfitero, etc.
   NEGOCIO         // Restaurante, peluquería, etc.
-  PROFESSIONAL    // Alias moderno de OFICIO
-  BUSINESS        // Alias moderno de NEGOCIO
 }
 
 enum VerificationStatus {
@@ -148,10 +146,14 @@ model Provider {
   id                  Int                 @id @default(autoincrement())
   userId              Int                 // sin @unique: un usuario puede tener OFICIO y NEGOCIO
   type                ProviderType        @default(OFICIO)
-  providerType        ProviderType        @default(PROFESSIONAL) // Clasificación UI: PROFESSIONAL | BUSINESS
   businessName        String              // Nombre del servicio o negocio
   description         String?
-  dni                 String?             // DNI del titular — ya no globalmente único
+  dni                 String?             // DNI del titular — solo OFICIO
+  ruc                 String?             // RUC del negocio — solo NEGOCIO (11 dígitos)
+  nombreComercial     String?             // Nombre Comercial — solo NEGOCIO
+  razonSocial         String?             // Razón Social — solo NEGOCIO
+  hasDelivery         Boolean             @default(false) // Servicio de delivery
+  plenaCoordinacion   Boolean             @default(false) // Coordinación full de entrega
   phone               String
   whatsapp            String?
   address             String?
@@ -193,6 +195,7 @@ model Provider {
   verificationDocs    VerificationDoc[]
   analytics           ProviderAnalytic[]
   notifications       AdminNotification[]
+  planRequests        PlanRequest[]
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
@@ -251,6 +254,26 @@ model Payment {
   subscription    Subscription  @relation(fields: [subscriptionId], references: [id])
 
   @@map("payments")
+}
+
+// ─────────────────────────────────────────
+// SOLICITUDES DE PLAN
+// ─────────────────────────────────────────
+
+model PlanRequest {
+  id         Int              @id @default(autoincrement())
+  providerId Int
+  plan       SubscriptionPlan // Plan solicitado
+  status     String           @default("PENDIENTE") // PENDIENTE | APROBADO | RECHAZADO
+  reason     String?          // Motivo de rechazo (solo si RECHAZADO)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  provider   Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([status])
+  @@map("plan_requests")
 }
 
 // ─────────────────────────────────────────
@@ -344,17 +367,23 @@ enum NotificationType {
   RECHAZADO
   MAS_INFO
   VERIFICACION_REVOCADA
+  PLAN_SOLICITADO
+  PLAN_APROBADO
+  PLAN_RECHAZADO
 }
 
 model AdminNotification {
-  id          Int              @id @default(autoincrement())
-  providerId  Int
-  type        NotificationType
-  message     String
-  isRead      Boolean          @default(false)
-  sentAt      DateTime         @default(now())
+  id                Int              @id @default(autoincrement())
+  providerId        Int
+  type              NotificationType
+  title             String           @default("")
+  message           String
+  isRead            Boolean          @default(false)
+  targetUserId      Int?             // Para filtro en tiempo real
+  targetProfileType String?          // OFICIO | NEGOCIO — aísla notif por tipo de perfil
+  sentAt            DateTime         @default(now())
 
-  provider    Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider     Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("admin_notifications")
 }

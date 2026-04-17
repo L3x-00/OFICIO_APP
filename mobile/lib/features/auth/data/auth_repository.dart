@@ -113,7 +113,15 @@ class AuthRepository {
     required String businessName,
     required String phone,
     required String type,
+    // OFICIO
     String? dni,
+    // NEGOCIO
+    String? ruc,
+    String? nombreComercial,
+    String? razonSocial,
+    bool hasDelivery = false,
+    bool plenaCoordinacion = false,
+    // comunes
     String? description,
     String? address,
     int? categoryId,
@@ -125,6 +133,11 @@ class AuthRepository {
         'phone':        phone,
         'type':         type,
         if (dni != null && dni.isNotEmpty) 'dni': dni,
+        if (ruc != null && ruc.isNotEmpty) 'ruc': ruc,
+        if (nombreComercial != null && nombreComercial.isNotEmpty) 'nombreComercial': nombreComercial,
+        if (razonSocial != null && razonSocial.isNotEmpty) 'razonSocial': razonSocial,
+        if (type == 'NEGOCIO') 'hasDelivery': hasDelivery,
+        if (type == 'NEGOCIO' && hasDelivery) 'plenaCoordinacion': plenaCoordinacion,
         if (description != null && description.isNotEmpty) 'description': description,
         if (address != null && address.isNotEmpty) 'address': address,
         'categoryId': ?categoryId,

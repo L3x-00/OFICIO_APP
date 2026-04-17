@@ -243,4 +243,24 @@ export class AdminController {
   toggleCategoryActive(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.toggleCategoryActive(id);
   }
+
+  // ── SOLICITUDES DE PLAN ───────────────────────────────────
+
+  @Get('plan-requests')
+  getPlanRequests(@Query('status') status?: string) {
+    return this.adminService.getPlanRequests(status);
+  }
+
+  @Patch('plan-requests/:id/approve')
+  approvePlanRequest(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.approvePlanRequest(id);
+  }
+
+  @Patch('plan-requests/:id/reject')
+  rejectPlanRequest(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { reason?: string },
+  ) {
+    return this.adminService.rejectPlanRequest(id, body.reason);
+  }
 }

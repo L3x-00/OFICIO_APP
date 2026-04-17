@@ -60,6 +60,7 @@ export const ModelName = {
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
   Payment: 'Payment',
+  PlanRequest: 'PlanRequest',
   Review: 'Review',
   Favorite: 'Favorite',
   VerificationDoc: 'VerificationDoc',
@@ -151,10 +152,14 @@ export const ProviderScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   type: 'type',
-  providerType: 'providerType',
   businessName: 'businessName',
   description: 'description',
   dni: 'dni',
+  ruc: 'ruc',
+  nombreComercial: 'nombreComercial',
+  razonSocial: 'razonSocial',
+  hasDelivery: 'hasDelivery',
+  plenaCoordinacion: 'plenaCoordinacion',
   phone: 'phone',
   whatsapp: 'whatsapp',
   address: 'address',
@@ -217,6 +222,19 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
+export const PlanRequestScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  plan: 'plan',
+  status: 'status',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlanRequestScalarFieldEnum = (typeof PlanRequestScalarFieldEnum)[keyof typeof PlanRequestScalarFieldEnum]
+
+
 export const ReviewScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
@@ -272,8 +290,11 @@ export const AdminNotificationScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
   type: 'type',
+  title: 'title',
   message: 'message',
   isRead: 'isRead',
+  targetUserId: 'targetUserId',
+  targetProfileType: 'targetProfileType',
   sentAt: 'sentAt'
 } as const
 

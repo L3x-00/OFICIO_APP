@@ -65,10 +65,18 @@ export class AuthService {
     data: {
       businessName: string;
       phone: string;
-      dni?: string;
+      type: 'OFICIO' | 'NEGOCIO';
+      // OFICIO
+      dni?: string | null;
+      // NEGOCIO
+      ruc?: string | null;
+      nombreComercial?: string | null;
+      razonSocial?: string | null;
+      hasDelivery?: boolean;
+      plenaCoordinacion?: boolean;
+      // comunes
       description?: string;
       address?: string;
-      type: 'OFICIO' | 'NEGOCIO';
       categoryId?: number;
       localityId?: number;
     },
@@ -128,12 +136,20 @@ export class AuthService {
       const newProvider = await tx.provider.create({
         data: {
           userId,
-          businessName: data.businessName,
-          phone:        data.phone,
-          dni:          data.dni?.trim() || null,
-          description:  data.description || null,
-          address:      data.address || null,
-          type:         data.type,
+          businessName:     data.businessName,
+          phone:            data.phone,
+          // OFICIO-only
+          dni:              data.type === 'OFICIO' ? (data.dni?.trim() || null) : null,
+          // NEGOCIO-only
+          ruc:              data.type === 'NEGOCIO' ? (data.ruc?.trim() || null) : null,
+          nombreComercial:  data.type === 'NEGOCIO' ? (data.nombreComercial?.trim() || null) : null,
+          razonSocial:      data.type === 'NEGOCIO' ? (data.razonSocial?.trim() || null) : null,
+          hasDelivery:      data.type === 'NEGOCIO' ? (data.hasDelivery ?? false) : false,
+          plenaCoordinacion: data.type === 'NEGOCIO' ? (data.plenaCoordinacion ?? false) : false,
+          // comunes
+          description:      data.description || null,
+          address:          data.address || null,
+          type:             data.type,
           categoryId,
           localityId,
           verificationStatus: 'PENDIENTE',

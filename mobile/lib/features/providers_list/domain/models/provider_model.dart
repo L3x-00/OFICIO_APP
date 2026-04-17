@@ -28,6 +28,8 @@ class ProviderModel {
   final String? ownerAvatarUrl;
   /// Plan de suscripción: 'GRATIS' | 'BASICO' | 'ESTANDAR' | 'PREMIUM'
   final String subscriptionPlan;
+  /// ID del usuario propietario — para detectar auto-interacción
+  final int? userId;
 
   const ProviderModel({
     required this.id,
@@ -54,6 +56,7 @@ class ProviderModel {
     this.ownerName,
     this.ownerAvatarUrl,
     this.subscriptionPlan = 'GRATIS',
+    this.userId,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -94,6 +97,7 @@ class ProviderModel {
       ownerName:        _buildOwnerName(json['user']),
       ownerAvatarUrl:   json['user']?['avatarUrl'] as String?,
       subscriptionPlan: json['subscription']?['plan'] as String? ?? 'GRATIS',
+      userId:           json['userId'] as int?,
     );
   }
 
@@ -134,6 +138,7 @@ class ProviderModel {
       ownerName:        ownerName,
       ownerAvatarUrl:   ownerAvatarUrl,
       subscriptionPlan: subscriptionPlan,
+      userId:           userId,
     );
   }
 }

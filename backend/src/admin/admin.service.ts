@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus } from '../generated/client/enums.js';
+import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus, NotificationType } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 
@@ -922,5 +922,120 @@ async updateProvider(
     });
 
     return { success: true, message: 'Proveedor eliminado correctamente' };
+  }
+
+  // ── SOLICITUDES DE PLAN ───────────────────────────────────
+
+  async getPlanRequests(status?: string) {
+    return this.prisma.planRequest.findMany({
+      where: status ? { status } : undefined,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        provider: {
+          select: {
+            id: true,
+            businessName: true,
+            type: true,
+            phone: true,
+            subscription: { select: { plan: true, status: true } },
+            user: { select: { id: true, firstName: true, lastName: true, email: true } },
+          },
+        },
+      },
+    });
+  }
+
+  async approvePlanRequest(requestId: number) {
+    const req = await this.prisma.planRequest.findUnique({
+      where: { id: requestId },
+      include: { provider: { include: { subscription: true, user: true } } },
+    });
+    if (!req) throw new NotFoundException('Solicitud no encontrada');
+    if (req.status !== 'PENDIENTE') throw new BadRequestException('La solicitud ya fue procesada');
+
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    // Update or create subscription
+    if (req.provider.subscription) {
+      await this.prisma.subscription.update({
+        where: { providerId: req.providerId },
+        data: { plan: req.plan, status: 'ACTIVA', endDate },
+      });
+    } else {
+      await this.prisma.subscription.create({
+        data: { providerId: req.providerId, plan: req.plan, status: 'ACTIVA', endDate },
+      });
+    }
+
+    // Mark request approved
+    await this.prisma.planRequest.update({
+      where: { id: requestId },
+      data: { status: 'APROBADO' },
+    });
+
+    // Persist notification for provider
+    await this.prisma.adminNotification.create({
+      data: {
+        providerId:        req.providerId,
+        type:              NotificationType.PLAN_APROBADO,
+        title:             `¡Plan ${req.plan} aprobado!`,
+        message:           `¡Felicidades! Tu solicitud para el plan ${req.plan} ha sido aprobada. Ya puedes disfrutar de todos los beneficios.`,
+        isRead:            false,
+        targetUserId:      req.provider.userId,
+        targetProfileType: req.provider.type,
+      },
+    });
+
+    // Real-time notification to provider
+    this.eventsGateway.emitNotification({
+      type:              'PLAN_APROBADO',
+      title:             `¡Plan ${req.plan} aprobado!`,
+      body:              `¡Felicidades! Tu plan ${req.plan} ha sido aprobado.`,
+      targetUserId:      req.provider.userId,
+      targetProfileType: req.provider.type,
+    });
+
+    return { success: true };
+  }
+
+  async rejectPlanRequest(requestId: number, reason?: string) {
+    const req = await this.prisma.planRequest.findUnique({
+      where: { id: requestId },
+      include: { provider: { select: { userId: true, businessName: true, type: true } } },
+    });
+    if (!req) throw new NotFoundException('Solicitud no encontrada');
+    if (req.status !== 'PENDIENTE') throw new BadRequestException('La solicitud ya fue procesada');
+
+    await this.prisma.planRequest.update({
+      where: { id: requestId },
+      data: { status: 'RECHAZADO', reason: reason ?? null },
+    });
+
+    const msg = reason
+      ? `Tu solicitud de plan ${req.plan} fue rechazada. Motivo: ${reason}`
+      : `Tu solicitud de plan ${req.plan} fue rechazada.`;
+
+    await this.prisma.adminNotification.create({
+      data: {
+        providerId:        req.providerId,
+        type:              NotificationType.PLAN_RECHAZADO,
+        title:             `Solicitud de plan ${req.plan} rechazada`,
+        message:           msg,
+        isRead:            false,
+        targetUserId:      req.provider.userId,
+        targetProfileType: req.provider.type,
+      },
+    });
+
+    this.eventsGateway.emitNotification({
+      type:              'PLAN_RECHAZADO',
+      title:             'Solicitud rechazada',
+      body:              msg,
+      targetUserId:      req.provider.userId,
+      targetProfileType: req.provider.type,
+    });
+
+    return { success: true };
   }
 }

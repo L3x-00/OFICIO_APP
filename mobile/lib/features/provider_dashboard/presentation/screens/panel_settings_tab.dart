@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
@@ -536,44 +537,87 @@ class _SubscriptionCard extends StatelessWidget {
   }
 }
 
+// ─── Datos de plan ────────────────────────────────────────────
+
+class _PlanData {
+  final String id;
+  final String label;
+  final String price;
+  final String priceNote;
+  final List<String> features;
+  final Color color;
+  final IconData icon;
+  final bool isPopular;
+
+  const _PlanData({
+    required this.id,
+    required this.label,
+    required this.price,
+    required this.priceNote,
+    required this.features,
+    required this.color,
+    required this.icon,
+    this.isPopular = false,
+  });
+}
+
+const _kPlans = [
+  _PlanData(
+    id: 'GRATIS',
+    label: 'Gratis',
+    price: 'S/ 0',
+    priceNote: 'Para siempre',
+    features: [
+      'Perfil básico visible',
+      'Hasta 2 fotos',
+      'Sin estadísticas',
+      'Posición estándar en búsqueda',
+    ],
+    color: Color(0xFF6B7280),
+    icon: Icons.storefront_rounded,
+  ),
+  _PlanData(
+    id: 'ESTANDAR',
+    label: 'Estándar',
+    price: 'S/ 29',
+    priceNote: 'por mes',
+    features: [
+      'Badge verificado azul',
+      'Hasta 4 fotos',
+      'Estadísticas básicas',
+      'Mayor visibilidad en búsqueda',
+    ],
+    color: AppColors.standard,
+    icon: Icons.verified_rounded,
+    isPopular: true,
+  ),
+  _PlanData(
+    id: 'PREMIUM',
+    label: 'Premium',
+    price: 'S/ 59',
+    priceNote: 'por mes',
+    features: [
+      'Badge dorado Premium',
+      'Fotos ilimitadas',
+      'Estadísticas avanzadas',
+      'Posición #1 garantizada',
+      'Soporte prioritario 24/7',
+    ],
+    color: AppColors.premium,
+    icon: Icons.workspace_premium_rounded,
+  ),
+];
+
 // ─── Sección de planes de upgrade ────────────────────────────
 
 class _UpgradePlansSection extends StatelessWidget {
-  final String currentPlan; // GRATIS | BASICO | ESTANDAR | PREMIUM
-
+  final String currentPlan;
   const _UpgradePlansSection({required this.currentPlan});
 
   @override
   Widget build(BuildContext context) {
-    const plans = [
-      _PlanData(
-        id: 'GRATIS',
-        label: 'Gratis',
-        price: 'S/ 0 / mes',
-        features: ['Perfil básico visible', 'Hasta 2 fotos', 'Sin estadísticas'],
-        color: Color(0xFF6B7280),
-        icon: Icons.free_breakfast_rounded,
-      ),
-      _PlanData(
-        id: 'ESTANDAR',
-        label: 'Estándar',
-        price: 'S/ 29 / mes',
-        features: ['Badge verificado azul', 'Hasta 4 fotos', 'Estadísticas básicas', 'Mayor visibilidad'],
-        color: AppColors.standard,
-        icon: Icons.verified_rounded,
-      ),
-      _PlanData(
-        id: 'PREMIUM',
-        label: 'Premium',
-        price: 'S/ 59 / mes',
-        features: ['Badge dorado Premium', 'Fotos ilimitadas', 'Estadísticas avanzadas', 'Prioridad en búsqueda', 'Soporte prioritario'],
-        color: AppColors.premium,
-        icon: Icons.workspace_premium_rounded,
-      ),
-    ];
-
     return Column(
-      children: plans.map((plan) {
+      children: _kPlans.map((plan) {
         final isCurrent = plan.id == currentPlan;
         return _PlanCard(plan: plan, isCurrent: isCurrent);
       }).toList(),
@@ -581,178 +625,419 @@ class _UpgradePlansSection extends StatelessWidget {
   }
 }
 
-class _PlanData {
-  final String id;
-  final String label;
-  final String price;
-  final List<String> features;
-  final Color color;
-  final IconData icon;
+// ─── Tarjeta de plan interactiva ─────────────────────────────
 
-  const _PlanData({
-    required this.id,
-    required this.label,
-    required this.price,
-    required this.features,
-    required this.color,
-    required this.icon,
-  });
-}
-
-class _PlanCard extends StatelessWidget {
+class _PlanCard extends StatefulWidget {
   final _PlanData plan;
   final bool isCurrent;
-
   const _PlanCard({required this.plan, required this.isCurrent});
 
-  void _showRequestDialog(BuildContext context) {
-    final c = context.colors;
-    showDialog(
+  @override
+  State<_PlanCard> createState() => _PlanCardState();
+}
+
+class _PlanCardState extends State<_PlanCard> {
+  bool _pressed = false;
+
+  Future<void> _openConfirmSheet() async {
+    if (widget.isCurrent || widget.plan.id == 'GRATIS') return;
+    await showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: c.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        icon: Icon(plan.icon, color: plan.color, size: 36),
-        title: Text(
-          'Solicitar plan ${plan.label}',
-          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17),
-          textAlign: TextAlign.center,
-        ),
-        content: Text(
-          'Tu solicitud para el plan ${plan.label} (${plan.price}) será enviada al administrador. '
-          'Te notificaremos cuando sea procesada.',
-          style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
-          textAlign: TextAlign.center,
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Solicitud enviada. El admin te contactará pronto.'),
-                  backgroundColor: plan.color,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: plan.color,
-              foregroundColor: plan.id == 'PREMIUM' ? const Color(0xFF3D2B00) : Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Confirmar', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _PlanConfirmSheet(plan: widget.plan),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c       = context.colors;
+    final plan    = widget.plan;
+    final current = widget.isCurrent;
+    final isFree  = plan.id == 'GRATIS';
+    final tappable = !current && !isFree;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isCurrent
-            ? plan.color.withValues(alpha: 0.10)
-            : c.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCurrent
-              ? plan.color.withValues(alpha: 0.5)
-              : c.border,
-          width: isCurrent ? 1.5 : 1.0,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: plan.color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(plan.icon, color: plan.color, size: 22),
+    return GestureDetector(
+      onTapDown:   tappable ? (_) => setState(() => _pressed = true)  : null,
+      onTapUp:     tappable ? (_) => setState(() => _pressed = false) : null,
+      onTapCancel: tappable ? ()  => setState(() => _pressed = false) : null,
+      onTap:       tappable ? _openConfirmSheet : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: current
+              ? plan.color.withValues(alpha: c.isDark ? 0.12 : 0.06)
+              : _pressed
+                  ? plan.color.withValues(alpha: 0.08)
+                  : c.bgCard,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: current
+                ? plan.color.withValues(alpha: 0.55)
+                : _pressed
+                    ? plan.color.withValues(alpha: 0.4)
+                    : c.border,
+            width: current ? 1.8 : 1.0,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          boxShadow: current
+              ? [BoxShadow(color: plan.color.withValues(alpha: 0.18), blurRadius: 16, offset: const Offset(0, 4))]
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header ─────────────────────────────────────
+            Row(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      plan.label,
-                      style: TextStyle(
-                        color: plan.color,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: plan.color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(plan.icon, color: plan.color, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            plan.label,
+                            style: TextStyle(
+                              color: plan.color,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (current) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: plan.color.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Plan actual',
+                                style: TextStyle(color: plan.color, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                          if (plan.isPopular && !current) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.standard.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppColors.standard.withValues(alpha: 0.4)),
+                              ),
+                              child: Text(
+                                '⭐ Popular',
+                                style: TextStyle(color: AppColors.standard, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                    if (isCurrent) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: plan.color.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'Actual',
-                          style: TextStyle(color: plan.color, fontSize: 10, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 2),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: plan.price,
+                              style: TextStyle(
+                                color: c.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' ${plan.priceNote}',
+                              style: TextStyle(color: c.textMuted, fontSize: 12),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                    const Spacer(),
-                    Text(
-                      plan.price,
-                      style: TextStyle(color: c.textSecondary, fontSize: 12),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 2,
-                  children: plan.features.take(2).map((f) => Text(
-                    '• $f',
-                    style: TextStyle(color: c.textMuted, fontSize: 11),
-                  )).toList(),
+                if (tappable)
+                  Icon(Icons.chevron_right_rounded, color: plan.color.withValues(alpha: 0.6), size: 22),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // ── Features con SVG check ──────────────────────
+            ...plan.features.map((f) => Padding(
+              padding: const EdgeInsets.only(bottom: 7),
+              child: Row(
+                children: [
+                  _SvgCheckIcon(color: plan.color),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      f,
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+
+            // ── CTA button (solo si no es actual ni gratis) ─
+            if (tappable) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _openConfirmSheet,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: plan.color,
+                    foregroundColor: plan.id == 'PREMIUM' ? const Color(0xFF3D2B00) : Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Solicitar plan ${plan.label}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Icono de check en SVG inline ────────────────────────────
+
+class _SvgCheckIcon extends StatelessWidget {
+  final Color color;
+  const _SvgCheckIcon({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.string(
+      '''<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="9" fill="${_hex(color)}" fill-opacity="0.18"/>
+        <path d="M6 10.5L8.8 13.5L14 7.5" stroke="${_hex(color)}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>''',
+      width: 18,
+      height: 18,
+    );
+  }
+
+  String _hex(Color c) {
+    return '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+  }
+}
+
+// ─── Bottom sheet de confirmación ────────────────────────────
+
+class _PlanConfirmSheet extends StatefulWidget {
+  final _PlanData plan;
+  const _PlanConfirmSheet({required this.plan});
+
+  @override
+  State<_PlanConfirmSheet> createState() => _PlanConfirmSheetState();
+}
+
+class _PlanConfirmSheetState extends State<_PlanConfirmSheet> {
+  bool _loading = false;
+
+  Future<void> _submit() async {
+    setState(() => _loading = true);
+    final dash      = context.read<DashboardProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final nav       = Navigator.of(context);
+
+    final ok = await dash.requestPlanUpgrade(widget.plan.id);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+    nav.pop();
+
+    if (ok) {
+      messenger.showSnackBar(SnackBar(
+        content: Text('Solicitud enviada. Te notificaremos cuando sea procesada.'),
+        backgroundColor: widget.plan.color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    } else {
+      messenger.showSnackBar(SnackBar(
+        content: Text(dash.error ?? 'Error al enviar la solicitud'),
+        backgroundColor: AppColors.busy,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c    = context.colors;
+    final plan = widget.plan;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 8, 24, MediaQuery.of(context).viewInsets.bottom + 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            width: 36, height: 4,
+            margin: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              color: c.textMuted.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Icono del plan
+          Container(
+            width: 70, height: 70,
+            decoration: BoxDecoration(
+              color: plan.color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: plan.color.withValues(alpha: 0.4), width: 1.5),
+            ),
+            child: Icon(plan.icon, color: plan.color, size: 34),
+          ),
+          const SizedBox(height: 16),
+
+          // Título
+          Text(
+            'Plan ${plan.label}',
+            style: TextStyle(
+              color: plan.color,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: plan.price,
+                  style: TextStyle(color: c.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: ' ${plan.priceNote}',
+                  style: TextStyle(color: c.textMuted, fontSize: 14),
                 ),
               ],
             ),
           ),
-          if (!isCurrent) ...[
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () => _showRequestDialog(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                decoration: BoxDecoration(
-                  color: plan.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: plan.color.withValues(alpha: 0.35)),
-                ),
-                child: Text(
-                  'Solicitar',
+          const SizedBox(height: 20),
+
+          // Lista completa de beneficios
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: plan.color.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: plan.color.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Beneficios incluidos',
                   style: TextStyle(
                     color: plan.color,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
                   ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                ...plan.features.map((f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    children: [
+                      _SvgCheckIcon(color: plan.color),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          f,
+                          style: TextStyle(color: c.textPrimary, fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+              ],
             ),
-          ],
+          ),
+          const SizedBox(height: 16),
+
+          // Nota informativa
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: c.textMuted, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Tu solicitud será revisada por el administrador. Te notificaremos el resultado.',
+                  style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Botón de acción
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _loading ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: plan.color,
+                foregroundColor: plan.id == 'PREMIUM' ? const Color(0xFF3D2B00) : Colors.white,
+                disabledBackgroundColor: plan.color.withValues(alpha: 0.4),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              child: _loading
+                  ? SizedBox(
+                      height: 20, width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: plan.id == 'PREMIUM' ? const Color(0xFF3D2B00) : Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Solicitar este plan',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+          ),
         ],
       ),
     );

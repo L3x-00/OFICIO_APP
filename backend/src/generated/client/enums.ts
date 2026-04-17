@@ -49,9 +49,7 @@ export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof Subscr
 
 export const ProviderType = {
   OFICIO: 'OFICIO',
-  NEGOCIO: 'NEGOCIO',
-  PROFESSIONAL: 'PROFESSIONAL',
-  BUSINESS: 'BUSINESS'
+  NEGOCIO: 'NEGOCIO'
 } as const
 
 export type ProviderType = (typeof ProviderType)[keyof typeof ProviderType]
@@ -70,7 +68,10 @@ export const NotificationType = {
   APROBADO: 'APROBADO',
   RECHAZADO: 'RECHAZADO',
   MAS_INFO: 'MAS_INFO',
-  VERIFICACION_REVOCADA: 'VERIFICACION_REVOCADA'
+  VERIFICACION_REVOCADA: 'VERIFICACION_REVOCADA',
+  PLAN_SOLICITADO: 'PLAN_SOLICITADO',
+  PLAN_APROBADO: 'PLAN_APROBADO',
+  PLAN_RECHAZADO: 'PLAN_RECHAZADO'
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

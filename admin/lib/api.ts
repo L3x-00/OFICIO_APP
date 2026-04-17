@@ -150,6 +150,19 @@ export const updateProviderSubscription = (id: number, plan: string) =>
     body: JSON.stringify({ plan }),
   });
 
+// ── SOLICITUDES DE PLAN ────────────────────────────────────
+export const getPlanRequests = (status?: string) =>
+  fetchApi<any[]>(`/admin/plan-requests${status ? `?status=${status}` : ''}`);
+
+export const approvePlanRequest = (id: number) =>
+  fetchApi(`/admin/plan-requests/${id}/approve`, { method: 'PATCH' });
+
+export const rejectPlanRequest = (id: number, reason?: string) =>
+  fetchApi(`/admin/plan-requests/${id}/reject`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
+  });
+
 // ── VERIFICACIÓN ───────────────────────────────────────────
 export const getPendingVerifications = () =>
   fetchApi<VerificationProvider[]>('/admin/verification/pending');

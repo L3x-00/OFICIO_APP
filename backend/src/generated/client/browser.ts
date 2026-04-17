@@ -63,6 +63,11 @@ export type Subscription = Prisma.SubscriptionModel
  */
 export type Payment = Prisma.PaymentModel
 /**
+ * Model PlanRequest
+ * 
+ */
+export type PlanRequest = Prisma.PlanRequestModel
+/**
  * Model Review
  * 
  */

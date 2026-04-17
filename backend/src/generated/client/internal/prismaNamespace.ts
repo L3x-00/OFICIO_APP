@@ -393,6 +393,7 @@ export const ModelName = {
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
   Payment: 'Payment',
+  PlanRequest: 'PlanRequest',
   Review: 'Review',
   Favorite: 'Favorite',
   VerificationDoc: 'VerificationDoc',
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "provider" | "providerImage" | "subscription" | "payment" | "review" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "provider" | "providerImage" | "subscription" | "payment" | "planRequest" | "review" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1083,6 +1084,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PlanRequest: {
+      payload: Prisma.$PlanRequestPayload<ExtArgs>
+      fields: Prisma.PlanRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PlanRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PlanRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.PlanRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PlanRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>
+        }
+        findMany: {
+          args: Prisma.PlanRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>[]
+        }
+        create: {
+          args: Prisma.PlanRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>
+        }
+        createMany: {
+          args: Prisma.PlanRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PlanRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.PlanRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>
+        }
+        update: {
+          args: Prisma.PlanRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.PlanRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PlanRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PlanRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.PlanRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlanRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.PlanRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePlanRequest>
+        }
+        groupBy: {
+          args: Prisma.PlanRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlanRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PlanRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlanRequestCountAggregateOutputType> | number
+        }
+      }
+    }
     Review: {
       payload: Prisma.$ReviewPayload<ExtArgs>
       fields: Prisma.ReviewFieldRefs
@@ -1560,10 +1635,14 @@ export const ProviderScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   type: 'type',
-  providerType: 'providerType',
   businessName: 'businessName',
   description: 'description',
   dni: 'dni',
+  ruc: 'ruc',
+  nombreComercial: 'nombreComercial',
+  razonSocial: 'razonSocial',
+  hasDelivery: 'hasDelivery',
+  plenaCoordinacion: 'plenaCoordinacion',
   phone: 'phone',
   whatsapp: 'whatsapp',
   address: 'address',
@@ -1626,6 +1705,19 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
+export const PlanRequestScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  plan: 'plan',
+  status: 'status',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlanRequestScalarFieldEnum = (typeof PlanRequestScalarFieldEnum)[keyof typeof PlanRequestScalarFieldEnum]
+
+
 export const ReviewScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
@@ -1681,8 +1773,11 @@ export const AdminNotificationScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
   type: 'type',
+  title: 'title',
   message: 'message',
   isRead: 'isRead',
+  targetUserId: 'targetUserId',
+  targetProfileType: 'targetProfileType',
   sentAt: 'sentAt'
 } as const
 
@@ -2014,6 +2109,7 @@ export type GlobalOmitConfig = {
   providerImage?: Prisma.ProviderImageOmit
   subscription?: Prisma.SubscriptionOmit
   payment?: Prisma.PaymentOmit
+  planRequest?: Prisma.PlanRequestOmit
   review?: Prisma.ReviewOmit
   favorite?: Prisma.FavoriteOmit
   verificationDoc?: Prisma.VerificationDocOmit

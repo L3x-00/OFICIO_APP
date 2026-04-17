@@ -136,8 +136,17 @@ class AuthProvider extends ChangeNotifier {
     if (targetUserId != null && targetUserId != _user?.id) return;
 
     final type = payload['type'] as String?;
+
+    if (type == 'PLAN_APROBADO' || type == 'PLAN_RECHAZADO') {
+      // Aislamiento por perfil: solo procesar si coincide con el perfil activo.
+      // Evita que la aprobación del perfil NEGOCIO limpie el estado de OFICIO.
+      final targetProfileType = payload['targetProfileType'] as String?;
+      if (targetProfileType != null && targetProfileType != _activeProfileType) return;
+      _syncProviderStatus().then((_) => notifyListeners());
+      return;
+    }
+
     if (type == 'PROVIDER_APPROVED' || type == 'PROVIDER_REJECTED') {
-      // Re-sincronizar estado del proveedor y notificar a la UI
       _syncProviderStatus().then((_) => notifyListeners());
     }
   }
@@ -206,7 +215,12 @@ class AuthProvider extends ChangeNotifier {
             }
           }
         } else {
-          // Sin perfiles — asegurar que el rol sea USUARIO
+          // Sin perfiles — limpiar TODOS los mapas para evitar contaminación multicuentas
+          _providerProfiles.clear();
+          _activeProfileType = null;
+          _providerVerificationStatus = null;
+          _verificationStatusByType.clear();
+          _rejectionReasonByType.clear();
           if (_user != null && _user!.role == 'PROVEEDOR') {
             _user = _user!.copyWith(role: 'USUARIO');
           }
@@ -232,8 +246,13 @@ class AuthProvider extends ChangeNotifier {
       failure: (e) => _error = e.message,
     );
 
-    // Sincronizar perfiles de proveedor tras un login exitoso y conectar socket
+    // Limpiar estado de cuenta anterior antes de sincronizar nueva
     if (result.isSuccess && _user != null) {
+      _providerProfiles.clear();
+      _activeProfileType = null;
+      _providerVerificationStatus = null;
+      _verificationStatusByType.clear();
+      _rejectionReasonByType.clear();
       await _syncProviderStatus();
       _connectSocket();
     }
@@ -290,6 +309,11 @@ class AuthProvider extends ChangeNotifier {
     );
 
     if (result.isSuccess && _user != null) {
+      _providerProfiles.clear();
+      _activeProfileType = null;
+      _providerVerificationStatus = null;
+      _verificationStatusByType.clear();
+      _rejectionReasonByType.clear();
       await _syncProviderStatus();
       _connectSocket();
     }
@@ -356,10 +380,10 @@ class AuthProvider extends ChangeNotifier {
 
   /// Verifica el código OTP. Si es válido, pasa al onboarding.
   Future<bool> verifyOtp(String code) async {
-    print("DEBUG: Iniciando verificación para el código: $code");
+    debugPrint("DEBUG: Iniciando verificación para el código: $code");
     
     if (_user == null) {
-      print("DEBUG: Error - El usuario es nulo en el Provider");
+      debugPrint("DEBUG: Error - El usuario es nulo en el Provider");
       return false;
     }
 
@@ -372,18 +396,18 @@ class AuthProvider extends ChangeNotifier {
 
       result.when(
         success: (_) {
-          print("DEBUG: ¡Éxito en Backend!");
+          debugPrint("DEBUG: ¡Éxito en Backend!");
           _needsEmailVerification = false;
           _needsOnboarding = true; // Siguiente paso: elegir rol
           
           if (_user != null) {
             _user = _user!.copyWith(isEmailVerified: true);
-            print("DEBUG: UserModel actualizado localmente: isEmailVerified = true");
+            debugPrint("DEBUG: UserModel actualizado localmente: isEmailVerified = true");
           }
           notifyListeners(); 
         },
         failure: (e) {
-          print("DEBUG: Error en Backend: ${e.message}");
+          debugPrint("DEBUG: Error en Backend: ${e.message}");
           _error = e.message;
         },
       );
@@ -393,7 +417,7 @@ class AuthProvider extends ChangeNotifier {
       return result.isSuccess;
 
     } catch (e) {
-      print("DEBUG: Error excepcional en verifyOtp: $e");
+      debugPrint("DEBUG: Error excepcional en verifyOtp: $e");
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -408,7 +432,15 @@ class AuthProvider extends ChangeNotifier {
     required String businessName,
     required String phone,
     required String type,
+    // OFICIO
     String? dni,
+    // NEGOCIO
+    String? ruc,
+    String? nombreComercial,
+    String? razonSocial,
+    bool hasDelivery = false,
+    bool plenaCoordinacion = false,
+    // comunes
     String? description,
     String? address,
     int? categoryId,
@@ -418,13 +450,18 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     final result = await _repo.registerProvider(
-      businessName: businessName,
-      phone:        phone,
-      type:         type,
-      dni:          dni,
-      description:  description,
-      address:      address,
-      categoryId:   categoryId,
+      businessName:     businessName,
+      phone:            phone,
+      type:             type,
+      dni:              dni,
+      ruc:              ruc,
+      nombreComercial:  nombreComercial,
+      razonSocial:      razonSocial,
+      hasDelivery:      hasDelivery,
+      plenaCoordinacion: plenaCoordinacion,
+      description:      description,
+      address:          address,
+      categoryId:       categoryId,
     );
 
     result.when(
@@ -497,6 +534,8 @@ class AuthProvider extends ChangeNotifier {
     _providerProfiles.clear();
     _activeProfileType = null;
     _providerVerificationStatus = null;
+    _verificationStatusByType.clear();
+    _rejectionReasonByType.clear();
     notifyListeners();
   }
 

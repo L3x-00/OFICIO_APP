@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus } from '../generated/client/enums.js';
+import { AvailabilityStatus, SubscriptionPlan, NotificationType } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
+import { EventsGateway } from '../events/events.gateway.js';
 
 @Injectable()
 export class ProviderProfileService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private events: EventsGateway,
+  ) {}
 
   // ── HELPER: obtener proveedor por userId (y opcionalmente por tipo) ──
   private async findProviderByUser(userId: number, type?: string) {
@@ -55,8 +59,9 @@ export class ProviderProfileService {
       address?:      string;
       scheduleJson?: Record<string, string>;
     },
+    type?: string,
   ) {
-    const provider = await this.findProviderByUser(userId);
+    const provider = await this.findProviderByUser(userId, type);
 
     return this.prisma.provider.update({
       where: { id: provider.id },
@@ -71,8 +76,8 @@ export class ProviderProfileService {
   }
 
   // ── CAMBIAR DISPONIBILIDAD ───────────────────────────────
-  async setAvailability(userId: number, availability: AvailabilityStatus) {
-    const provider = await this.findProviderByUser(userId);
+  async setAvailability(userId: number, availability: AvailabilityStatus, type?: string) {
+    const provider = await this.findProviderByUser(userId, type);
 
     return this.prisma.provider.update({
       where: { id: provider.id },
@@ -116,8 +121,8 @@ export class ProviderProfileService {
 
   // ── IMÁGENES DEL PROVEEDOR ───────────────────────────────
 
-  async addImage(userId: number, url: string, isCover = false) {
-    const provider = await this.findProviderByUser(userId);
+  async addImage(userId: number, url: string, isCover = false, type?: string) {
+    const provider = await this.findProviderByUser(userId, type);
     const existingCount = await this.prisma.providerImage.count({
       where: { providerId: provider.id },
     });
@@ -136,8 +141,8 @@ export class ProviderProfileService {
     });
   }
 
-  async deleteImage(userId: number, imageId: number) {
-    const provider = await this.findProviderByUser(userId);
+  async deleteImage(userId: number, imageId: number, type?: string) {
+    const provider = await this.findProviderByUser(userId, type);
     const img = await this.prisma.providerImage.findFirst({
       where: { id: imageId, providerId: provider.id },
     });
@@ -163,8 +168,8 @@ export class ProviderProfileService {
   }
 
   // ── OBTENER MIS ANALÍTICAS ────────────────────────────────
-  async getMyAnalytics(userId: number, days = 30) {
-    const provider = await this.findProviderByUser(userId);
+  async getMyAnalytics(userId: number, days = 30, type?: string) {
+    const provider = await this.findProviderByUser(userId, type);
 
     const since = new Date();
     since.setDate(since.getDate() - days);
@@ -195,5 +200,70 @@ export class ProviderProfileService {
       summary: { whatsappClicks, callClicks, totalClicks: whatsappClicks + callClicks },
       dailyClicks: Object.entries(byDay).map(([date, counts]) => ({ date, ...counts })),
     };
+  }
+
+  // ── SOLICITUD DE UPGRADE DE PLAN ─────────────────────────
+  async requestPlanUpgrade(userId: number, plan: string, type?: string) {
+    const validPlans = ['ESTANDAR', 'PREMIUM'];
+    if (!validPlans.includes(plan)) {
+      throw new BadRequestException('Solo puedes solicitar plan ESTANDAR o PREMIUM');
+    }
+
+    const provider = await this.findProviderByUser(userId, type);
+
+    // No permitir solicitar si ya tiene ese plan
+    const sub = await this.prisma.subscription.findUnique({ where: { providerId: provider.id } });
+    if (sub?.plan === plan) {
+      throw new ConflictException('Ya tienes este plan activo');
+    }
+
+    // Bloquear si ya existe una solicitud PENDIENTE (evitar spam de requests)
+    const existingPending = await this.prisma.planRequest.findFirst({
+      where: { providerId: provider.id, status: 'PENDIENTE' },
+    });
+    if (existingPending) {
+      throw new ConflictException('Ya tienes una solicitud en proceso. Espera a que sea revisada.');
+    }
+
+    const request = await this.prisma.planRequest.create({
+      data: {
+        providerId: provider.id,
+        plan: plan as SubscriptionPlan,
+        status: 'PENDIENTE',
+      },
+      include: { provider: { select: { businessName: true, type: true } } },
+    });
+
+    // Crear notificación interna en AdminNotification para el proveedor
+    await this.prisma.adminNotification.create({
+      data: {
+        providerId:       provider.id,
+        type:             NotificationType.PLAN_SOLICITADO,
+        title:            `Solicitud de plan ${plan} enviada`,
+        message:          `Tu solicitud para el plan ${plan} está siendo evaluada por el administrador.`,
+        isRead:           false,
+        targetUserId:     userId,
+        targetProfileType: provider.type,
+      },
+    });
+
+    // Notificación en tiempo real al proveedor
+    this.events.emitNotification({
+      type:              'PLAN_SOLICITADO',
+      title:             'Solicitud enviada',
+      body:              `Tu solicitud para el plan ${plan} está siendo evaluada.`,
+      targetUserId:      userId,
+      targetProfileType: provider.type,
+    });
+
+    // Notificación en tiempo real a admins
+    this.events.emitNotification({
+      type:       'NEW_PLAN_REQUEST',
+      title:      'Nueva solicitud de plan',
+      body:       `${request.provider.businessName} solicitó el plan ${plan}.`,
+      targetRole: 'ADMIN',
+    });
+
+    return { success: true, requestId: request.id };
   }
 }
