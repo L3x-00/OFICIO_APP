@@ -1,12 +1,40 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from './sidebar';
-import { useState, useEffect } from 'react';
-import { Bell, Search, ChevronRight, Moon } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, Search, ChevronRight } from 'lucide-react';
+import { useAdminSocket } from '@/hooks/useAdminSocket';
+import { AdminNotificationPayload } from '@/lib/socket';
+import { toast } from 'sonner';
+
+// Mapa: tipo de evento → ruta del panel que debe actualizarse
+const EVENT_ROUTES: Record<string, string> = {
+  NEW_PROVIDER:     '/verification',
+  NEW_PLAN_REQUEST: '/plan-requests',
+};
 
 function Topbar() {
-  const pathname = usePathname();
+  const pathname  = usePathname();
+  const router    = useRouter();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const handleAdminEvent = useCallback((payload: AdminNotificationPayload) => {
+    // Incrementar badge
+    setPendingCount(n => n + 1);
+
+    // Toast con link a la página relevante
+    const route = EVENT_ROUTES[payload.type];
+    toast(payload.title, {
+      description: payload.body,
+      duration: 6000,
+      action: route
+        ? { label: 'Ver', onClick: () => router.push(route) }
+        : undefined,
+    });
+  }, [router]);
+
+  useAdminSocket(handleAdminEvent);
 
   const breadcrumbs: Record<string, string[]> = {
     '/': ['Dashboard'],
@@ -15,6 +43,7 @@ function Topbar() {
     '/categories': ['Gestión', 'Categorías'],
     '/reviews': ['Gestión', 'Reseñas'],
     '/verification': ['Operaciones', 'Verificación'],
+    '/plan-requests': ['Operaciones', 'Solicitudes de Plan'],
     '/notifications': ['Operaciones', 'Notificaciones'],
     '/reports': ['Principal', 'Reportes'],
     '/analytics': ['Principal', 'Analytics'],
@@ -83,31 +112,44 @@ function Topbar() {
         </div>
 
         {/* Notifications */}
-        <button style={{
-          width: '34px', height: '34px',
-          borderRadius: '8px',
-          background: 'var(--surface-3)',
-          border: '1px solid var(--border-default)',
-          color: 'var(--text-secondary)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          transition: 'var(--transition)',
-        }}
-        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)'}
-        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'}
+        <button
+          onClick={() => { router.push('/notifications'); setPendingCount(0); }}
+          style={{
+            width: '34px', height: '34px',
+            borderRadius: '8px',
+            background: 'var(--surface-3)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            transition: 'var(--transition)',
+          }}
+          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)'}
+          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'}
         >
           <Bell size={14} />
-          <span style={{
-            position: 'absolute',
-            top: '5px', right: '5px',
-            width: '6px', height: '6px',
-            borderRadius: '50%',
-            background: 'var(--danger)',
-            border: '1.5px solid var(--surface-1)',
-          }} />
+          {pendingCount > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: '4px', right: '4px',
+              minWidth: '14px', height: '14px',
+              borderRadius: '7px',
+              background: 'var(--danger)',
+              border: '1.5px solid var(--surface-1)',
+              fontSize: '8px',
+              fontWeight: 700,
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 2px',
+            }}>
+              {pendingCount > 9 ? '9+' : pendingCount}
+            </span>
+          )}
         </button>
 
         {/* Admin avatar */}

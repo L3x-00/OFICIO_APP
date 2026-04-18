@@ -477,29 +477,30 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
-  /// Llamado desde OnboardingScreen cuando el usuario elige su rol
-  void completeOnboarding({required String role}) {
+  void completeOnboarding({required String role}) async {
     _needsOnboarding = false;
-    // Para OFICIO/NEGOCIO el rol permanece USUARIO hasta aprobación del admin.
     final userRole = 'USUARIO';
+
     if (role == 'OFICIO' || role == 'NEGOCIO') {
       _providerProfiles.add(role);
       _verificationStatusByType[role] = 'PENDIENTE';
       _activeProfileType = role;
     }
+
     _user = _user?.copyWith(role: userRole);
-    // Persistir rol actualizado para que sobreviva reinicios de la app
-    if (_user != null) {
-      AuthLocalStorage.getAccessToken().then((at) async {
-        final rt = await AuthLocalStorage.getRefreshToken();
-        if (at != null && rt != null) {
-          await AuthLocalStorage.saveSession(
-            accessToken: at, refreshToken: rt, user: _user!,
-          );
-        }
-      });
+
+    // PERSISTENCIA INMEDIATA
+    final at = await AuthLocalStorage.getAccessToken();
+    final rt = await AuthLocalStorage.getRefreshToken();
+    if (at != null && rt != null && _user != null) {
+      await AuthLocalStorage.saveSession(
+        accessToken: at, 
+        refreshToken: rt, 
+        user: _user!,
+      );
     }
-    notifyListeners();
+    
+    notifyListeners(); // Ahora sí, el estado es sólido
   }
 
   /// Agrega un perfil de proveedor adicional (mismo usuario, segundo perfil)

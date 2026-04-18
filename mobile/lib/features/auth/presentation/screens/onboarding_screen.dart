@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/core/utils/permission_service.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../../../provider_dashboard/data/dashboard_repository.dart';
 import '../../../providers_list/data/providers_repository.dart';
@@ -116,10 +119,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _continue() {
-    // Solo llega aquí para el rol 'USUARIO'
-    context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
-    // _AppRoot detectará needsOnboarding = false y mostrará _MainNavigation
-  }
+  // 1. Notificamos al provider. Esto cambia navigationState a 'authenticated'
+  context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
+
+  // 2. Simplemente cerramos la pantalla actual.
+  // El switch de tu main.dart se encargará de reconstruir la UI 
+  // y mostrar _MainNavigation automáticamente.
+  Navigator.of(context).pop(); 
+}
 
   /// Navega directamente al formulario de proveedor sin pasar por "Continuar"
   void _goToProviderForm(String type) {
@@ -262,6 +269,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   int?   _selectedParentId;               // para mostrar breadcrumb
   String _selectedParentName = '';
 
+  // ─── Ubicación GPS / URL Maps ─────────────────────────────
+  final _mapsUrlController = TextEditingController();
+  Position? _gpsPosition;
+  bool      _gpsLoading = false;
+
   static const _maxPhotos = 4;
   static const _maxMB = 5;
 
@@ -272,9 +284,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   }
 
   Future<void> _loadCategories() async {
-    final result = await ProvidersRepository().getCategories();
+    // Filtrar categorías por tipo: OFICIO = servicios profesionales, NEGOCIO = establecimientos
+    final result = await ProvidersRepository().getCategories(forType: widget.providerType);
     if (!mounted) return;
-    // Mantener árbol completo (padres con hijos) para selector jerárquico
     result.when(
       success: (cats) => setState(() => _categories = cats),
       failure: (_) {},
@@ -284,6 +296,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   Future<void> _showCategoryPicker() async {
     if (_categories.isEmpty) return;
     final c = context.colors;
+    final isNegocio = !_isOficio;
 
     // Estado local del picker: null = vista de padres, != null = vista de hijos
     CategoryModel? pickerParent;
@@ -301,7 +314,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               ? _categories
               : pickerParent!.children;
           final title = pickerParent == null
-              ? 'Selecciona una categoría'
+              ? (isNegocio ? 'Sector de tu negocio' : 'Selecciona una categoría')
               : pickerParent!.name;
 
           return DraggableScrollableSheet(
@@ -349,7 +362,17 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                       child: Text(
-                        'Elige la especialidad específica',
+                        isNegocio
+                            ? 'Elige el tipo específico de negocio'
+                            : 'Elige la especialidad específica',
+                        style: TextStyle(color: c.textMuted, fontSize: 12),
+                      ),
+                    ),
+                  if (pickerParent == null && isNegocio)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                      child: Text(
+                        'Selecciona el rubro al que pertenece tu establecimiento',
                         style: TextStyle(color: c.textMuted, fontSize: 12),
                       ),
                     ),
@@ -364,6 +387,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                         final isSelected = cat.id == _selectedCategoryId;
                         final hasChildren = cat.children.isNotEmpty;
 
+                        // Icono diferente para NEGOCIO vs OFICIO
+                        IconData leadIcon;
+                        if (hasChildren) {
+                          leadIcon = isNegocio ? Icons.storefront_outlined : Icons.category_outlined;
+                        } else {
+                          leadIcon = isNegocio ? Icons.business_center_outlined : Icons.handyman_outlined;
+                        }
+
                         return ListTile(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -372,9 +403,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                               ? AppColors.primary.withValues(alpha: 0.1)
                               : Colors.transparent,
                           leading: Icon(
-                            hasChildren
-                                ? Icons.category_outlined
-                                : Icons.handyman_outlined,
+                            leadIcon,
                             color: isSelected ? AppColors.primary : c.textMuted,
                             size: 20,
                           ),
@@ -433,7 +462,69 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _rucController.dispose();
     _nombreComercialController.dispose();
     _razonSocialController.dispose();
+    _mapsUrlController.dispose();
     super.dispose();
+  }
+
+  // ─── GPS: obtener ubicación actual ───────────────────────
+
+  Future<void> _fetchGpsLocation() async {
+    setState(() => _gpsLoading = true);
+    final pos = await PermissionService.getCurrentLocation(context);
+    if (!mounted) return;
+    setState(() {
+      _gpsPosition = pos;
+      _gpsLoading  = false;
+    });
+    // Si se obtuvo posición y la dirección está vacía, rellenar con coords
+    if (pos != null && _addressController.text.trim().isEmpty) {
+      _addressController.text =
+          '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}';
+    }
+  }
+
+  // ─── Parsear URL de Google Maps para extraer lat/lng ────
+
+  /// Soporta formatos:
+  ///   https://maps.app.goo.gl/...        (short link — no extraíble sin HTTP)
+  ///   https://www.google.com/maps?q=lat,lng
+  ///   https://www.google.com/maps/@lat,lng,zoom
+  ///   https://maps.google.com/?ll=lat,lng
+  void _parseMapsUrl() {
+    final url = _mapsUrlController.text.trim();
+    if (url.isEmpty) return;
+
+    // Intentar extraer lat,lng del URL
+    final patterns = [
+      RegExp(r'@(-?\d+\.\d+),(-?\d+\.\d+)'),          // @lat,lng
+      RegExp(r'[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)'),      // ?q=lat,lng
+      RegExp(r'll=(-?\d+\.\d+),(-?\d+\.\d+)'),          // ll=lat,lng
+      RegExp(r'[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)'),  // center=lat,lng
+    ];
+
+    for (final re in patterns) {
+      final m = re.firstMatch(url);
+      if (m != null) {
+        final lat = double.tryParse(m.group(1)!);
+        final lng = double.tryParse(m.group(2)!);
+        if (lat != null && lng != null) {
+          setState(() {
+            _gpsPosition = null; // reset GPS manual
+          });
+          // Rellenar dirección con coords extraídas
+          if (_addressController.text.trim().isEmpty) {
+            _addressController.text =
+                '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}';
+          }
+          _showSnack('Coordenadas extraídas: $lat, $lng', isError: false);
+          return;
+        }
+      }
+    }
+
+    // No se pudo extraer → abrir el link en el navegador para que el usuario copie
+    _showSnack('No se pudo extraer coordenadas. Copia la URL completa desde Google Maps.', isError: true);
+    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
   bool get _isOficio => widget.providerType == 'OFICIO';
@@ -639,7 +730,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       for (final photo in _photos) {
         try {
           final url = await repo.uploadProviderPhoto(photo.path);
-          await repo.saveProviderImage(url);
+          await repo.saveProviderImage(url, type: widget.providerType);
         } catch (_) {
           // Fallo silencioso: el proveedor ya fue creado;
           // las fotos se pueden agregar desde el panel más adelante.
@@ -849,15 +940,13 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 14),
 
-            _buildField(
-              controller: _addressController,
-              label: 'Dirección (opcional)',
-              hint: 'Jr. Ejemplo 123, Ciudad',
-              icon: Icons.location_on_outlined,
-            ),
+            // ── Dirección + GPS + URL Maps ────────────────
+            _buildAddressSection(context.colors),
             const SizedBox(height: 14),
 
             // ── Categoría ─────────────────────────────────
+            _FormSectionHeader(label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO'),
+            const SizedBox(height: 12),
             _buildCategorySelector(context.colors),
             const SizedBox(height: 24),
 
@@ -946,15 +1035,180 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     );
   }
 
+  // ─── Dirección con GPS y URL de Maps ─────────────────────
+
+  Widget _buildAddressSection(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Campo de texto de dirección
+        _buildField(
+          controller: _addressController,
+          label: 'Dirección (opcional)',
+          hint: 'Jr. Ejemplo 123, Ciudad',
+          icon: Icons.location_on_outlined,
+        ),
+        const SizedBox(height: 8),
+
+        // Fila: botón GPS + estado
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: _gpsLoading ? null : _fetchGpsLocation,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: _gpsPosition != null
+                        ? AppColors.available.withValues(alpha: 0.08)
+                        : AppColors.primary.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gpsPosition != null
+                          ? AppColors.available.withValues(alpha: 0.4)
+                          : AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_gpsLoading)
+                        const SizedBox(
+                          width: 16, height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.primary,
+                          ),
+                        )
+                      else
+                        Icon(
+                          _gpsPosition != null
+                              ? Icons.check_circle_rounded
+                              : Icons.my_location_rounded,
+                          size: 16,
+                          color: _gpsPosition != null
+                              ? AppColors.available
+                              : AppColors.primary,
+                        ),
+                      const SizedBox(width: 7),
+                      Flexible(
+                        child: Text(
+                          _gpsLoading
+                              ? 'Obteniendo ubicación...'
+                              : _gpsPosition != null
+                                  ? 'GPS obtenido ✓'
+                                  : 'Usar mi ubicación actual',
+                          style: TextStyle(
+                            color: _gpsPosition != null
+                                ? AppColors.available
+                                : AppColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (_gpsPosition != null) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => setState(() {
+                  _gpsPosition = null;
+                  _addressController.clear();
+                }),
+                child: Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: c.bgCard,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: c.border),
+                  ),
+                  child: Icon(Icons.close_rounded, size: 16, color: c.textMuted),
+                ),
+              ),
+            ],
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // Tip separador
+        Row(
+          children: [
+            Expanded(child: Divider(color: c.border, height: 1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text('ó', style: TextStyle(color: c.textMuted, fontSize: 12)),
+            ),
+            Expanded(child: Divider(color: c.border, height: 1)),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // Campo URL de Google Maps
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _mapsUrlController,
+                style: TextStyle(color: c.textPrimary, fontSize: 13),
+                decoration: InputDecoration(
+                  labelText: 'URL de Google Maps (opcional)',
+                  labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
+                  hintText: 'Pega el enlace de tu ubicación en Maps',
+                  hintStyle: TextStyle(color: c.textMuted, fontSize: 12),
+                  prefixIcon: const Icon(Icons.map_outlined, color: AppColors.primary, size: 20),
+                  filled: true,
+                  fillColor: c.bgCard,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _parseMapsUrl,
+              child: Container(
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Abre Google Maps → Comparte → Copia enlace → Pégalo aquí',
+          style: TextStyle(color: c.textMuted, fontSize: 11),
+        ),
+      ],
+    );
+  }
+
   // ─── Selector de categoría ────────────────────────────────
 
   Widget _buildCategorySelector(AppThemeColors c) {
     final hasCategories = _categories.isNotEmpty;
     final isSelected    = _selectedCategoryId != null;
-    // Breadcrumb: "Hogar > Electricista" o solo "Electricista"
+    final isNegocio     = !_isOficio;
+    // Breadcrumb: "Alimentación > Restaurantes" o "Hogar > Electricista"
     final displayText   = isSelected && _selectedParentName.isNotEmpty
         ? '$_selectedParentName › $_selectedCategoryName'
-        : _selectedCategoryName;
+        : isNegocio
+            ? 'Selecciona el tipo de negocio'
+            : 'Selecciona una categoría';
 
     return GestureDetector(
       onTap: hasCategories ? _showCategoryPicker : null,
@@ -972,18 +1226,29 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         child: Row(
           children: [
             Icon(
-              Icons.category_outlined,
+              isNegocio ? Icons.storefront_outlined : Icons.category_outlined,
               color: isSelected ? AppColors.primary : c.textMuted,
               size: 20,
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                displayText,
-                style: TextStyle(
-                  color: isSelected ? c.textPrimary : c.textMuted,
-                  fontSize: 14,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    isNegocio ? 'Tipo de negocio *' : 'Categoría del servicio',
+                    style: TextStyle(color: c.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    displayText,
+                    style: TextStyle(
+                      color: isSelected ? c.textPrimary : c.textMuted,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
             ),
             if (!hasCategories)

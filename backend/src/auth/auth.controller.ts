@@ -8,6 +8,10 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { SendOtpDto } from './dto/send-otp.dto.js';
 import { VerifyOtpDto } from './dto/verify-otp.dto.js';
+import { UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('auth')
 export class AuthController {
@@ -26,9 +30,23 @@ export class AuthController {
   // Registro de perfil de proveedor (usuario ya autenticado)
   @UseGuards(JwtAuthGuard)
   @Post('register/provider')
+  @UseInterceptors(FilesInterceptor('images', 4, { // 'images' es la clave que usaremos en Flutter
+    storage: diskStorage({
+      destination: './uploads', // Asegúrate de que esta carpeta exista en la raíz del backend
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
   @HttpCode(HttpStatus.CREATED)
-  async registerProvider(@Request() req: any, @Body() dto: RegisterProviderDto) {
-    return this.authService.registerProvider(req.user.userId, dto);
+  async registerProvider(
+    @Request() req: any, 
+    @Body() dto: RegisterProviderDto,
+    @UploadedFiles() files: Express.Multer.File[] // <── AQUÍ recibimos las fotos
+  ) {
+    // Pasamos los archivos al servicio
+    return this.authService.registerProvider(req.user.userId, dto, files);
   }
 
   // Renueva el access token usando el refresh token

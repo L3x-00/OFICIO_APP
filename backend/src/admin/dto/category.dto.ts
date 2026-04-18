@@ -22,6 +22,11 @@ export class CreateCategoryDto {
   @IsInt()
   @IsPositive()
   parentId?: number;
+
+  /** 'OFICIO' | 'NEGOCIO' | null — si null aplica a ambos tipos */
+  @IsOptional()
+  @IsString()
+  forType?: string;
 }
 
 export class UpdateCategoryDto {
@@ -40,4 +45,8 @@ export class UpdateCategoryDto {
   @IsOptional()
   @Type(() => Number)
   parentId?: number | null;
+
+  @IsOptional()
+  @IsString()
+  forType?: string | null;
 }

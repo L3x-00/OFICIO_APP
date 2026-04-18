@@ -156,6 +156,11 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
             const SizedBox(height: 12),
             _SubscriptionBanner(sub: dash.profile!.subscription!),
           ],
+          // Badge "Va a domicilio" — solo OFICIO cuando está activo
+          if (!widget.isNegocio && (dash.profile?.hasHomeService ?? false)) ...[
+            const SizedBox(height: 10),
+            _HomeServiceBadge(),
+          ],
         ],
       ),
     );
@@ -806,6 +811,39 @@ class _EmptyReviews extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Badge "Va a domicilio" ──────────────────────────────────
+
+class _HomeServiceBadge extends StatelessWidget {
+  const _HomeServiceBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.available.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.available.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.home_repair_service_rounded, color: AppColors.available, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            'Va a domicilio',
+            style: TextStyle(
+              color: AppColors.available,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

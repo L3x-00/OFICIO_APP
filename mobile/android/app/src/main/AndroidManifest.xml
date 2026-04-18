@@ -5,21 +5,49 @@
             <action android:name="android.intent.action.DIAL" />
         </intent>
         <package android:name="com.whatsapp" />
+        <!-- Permite abrir Google Maps y apps de mapas -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
 
+    <!-- ── Red ──────────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ── Teléfono ──────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- ── Ubicación ─────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Ubicación en segundo plano (opcional, para futuras features) -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
+
+    <!-- ── Cámara y almacenamiento ───────────────────────────── -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Android 12 e inferior -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <!-- Android 13+ (lectura granular de imágenes) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- ── Features de hardware (no bloquean instalación) ───── -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <application
         android:label="ConfiServ"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="@xml/network_security_config">
-        
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,7 +57,7 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
-            
+
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
@@ -43,6 +71,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-            
+
     </application>
 </manifest>

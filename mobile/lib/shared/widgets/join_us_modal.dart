@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
+import '../../features/provider_dashboard/presentation/screens/provider_panel.dart';
 
 /// Modal informativo "¡Quiero ser parte de ConfiServ!"
 /// Se abre desde el botón flotante en la pantalla principal
@@ -96,6 +97,73 @@ class _JoinUsModalState extends State<JoinUsModal>
           ),
         ),
       ),
+    );
+  }
+
+  // ─── Navegación a panel ─────────────────────────────────
+
+  void _openPanel(BuildContext ctx, String type) {
+    Navigator.of(ctx).push(
+      MaterialPageRoute(builder: (_) => ProviderPanel(providerType: type)),
+    );
+  }
+
+  void _showPanelChoiceModal(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        final c = sheetCtx.colors;
+        return Container(
+          decoration: BoxDecoration(
+            color: c.bg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            20, 12, 20,
+            MediaQuery.of(sheetCtx).padding.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: c.textMuted.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                '¿A qué panel deseas ir?',
+                style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              _PanelChoiceOption(
+                icon: Icons.handyman_rounded,
+                label: 'Panel Profesional',
+                color: AppColors.primary,
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _openPanel(ctx, 'OFICIO');
+                },
+              ),
+              const SizedBox(height: 12),
+              _PanelChoiceOption(
+                icon: Icons.storefront_rounded,
+                label: 'Panel de Negocio',
+                color: const Color(0xFF8E2DE2),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _openPanel(ctx, 'NEGOCIO');
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -228,48 +296,81 @@ class _JoinUsModalState extends State<JoinUsModal>
           ),
           const SizedBox(height: 28),
 
-          // Opciones de tipo — filtradas según perfiles ya existentes
+          // Opciones de tipo — reactivas al estado de aprobación en tiempo real
           Consumer<AuthProvider>(
             builder: (_, auth, _) {
-              // canBecomeRole = aún no tiene perfil de ese tipo
               final canOficio  = !auth.isAuthenticated || auth.canBecomeRole('OFICIO');
               final canNegocio = !auth.isAuthenticated || auth.canBecomeRole('NEGOCIO');
 
-              // hasPending = tiene perfil de ese tipo y está PENDIENTE (no rechazado ni aprobado)
               final oficioStatus  = auth.verificationStatusFor('OFICIO');
               final negocioStatus = auth.verificationStatusFor('NEGOCIO');
-              final hasPendingOficio  = auth.isAuthenticated && !canOficio && oficioStatus == 'PENDIENTE';
-              final hasPendingNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'PENDIENTE';
 
-              // "Ambos registrados" = ninguno disponible para registrar Y al menos uno aprobado
-              if (!canOficio && !canNegocio && auth.hasApprovedProvider) {
-                // Ambos perfiles aprobados
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: c.bgCard,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: c.border),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle_rounded,
-                          color: AppColors.available, size: 22),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Ya tienes perfil de Profesional y de Negocio registrados.',
-                          style: TextStyle(
-                            color: c.textSecondary,
-                            fontSize: 13,
-                            height: 1.4,
+              final hasPendingOficio   = auth.isAuthenticated && !canOficio  && oficioStatus  == 'PENDIENTE';
+              final hasPendingNegocio  = auth.isAuthenticated && !canNegocio && negocioStatus == 'PENDIENTE';
+              final hasApprovedOficio  = auth.isAuthenticated && !canOficio  && oficioStatus  == 'APROBADO';
+              final hasApprovedNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'APROBADO';
+
+              // Ambos aprobados → botón único de panel con selección
+              if (hasApprovedOficio && hasApprovedNegocio) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showPanelChoiceModal(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF1E88E5).withValues(alpha: 0.12),
+                          const Color(0xFF1565C0).withValues(alpha: 0.06),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF1E88E5).withValues(alpha: 0.35)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E88E5).withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.dashboard_rounded, color: Color(0xFF1E88E5), size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Ir a mi panel',
+                                style: TextStyle(
+                                  color: c.textPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Tienes perfil de Profesional y Negocio activos',
+                                style: TextStyle(color: c.textMuted, fontSize: 12),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                        const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF1E88E5), size: 14),
+                      ],
+                    ),
                   ),
                 );
               }
+
+              final hasAnyItem = canOficio || canNegocio || hasPendingOficio ||
+                  hasPendingNegocio || hasApprovedOficio || hasApprovedNegocio;
+
+              if (!hasAnyItem) return const SizedBox.shrink();
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +387,8 @@ class _JoinUsModalState extends State<JoinUsModal>
                     ),
                     const SizedBox(height: 14),
                   ],
-                  // Tarjeta de registro (solo si aún no tiene ese perfil)
+
+                  // ── OFICIO ────────────────────────────────
                   if (canOficio) ...[
                     _TypeCard(
                       icon: Icons.handyman_rounded,
@@ -296,17 +398,30 @@ class _JoinUsModalState extends State<JoinUsModal>
                       gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
                       onTap: () => setState(() => _selectedType = 'OFICIO'),
                     ),
-                    if (canNegocio || hasPendingNegocio) const SizedBox(height: 14),
+                    const SizedBox(height: 14),
                   ],
-                  // Banner de espera si ya registró OFICIO pero no está aprobado
                   if (hasPendingOficio) ...[
                     _PendingBanner(
                       icon: Icons.handyman_rounded,
                       label: 'Tu perfil de Profesional está esperando aprobación del administrador.',
                     ),
-                    if (canNegocio || hasPendingNegocio) const SizedBox(height: 14),
+                    const SizedBox(height: 14),
                   ],
-                  if (canNegocio)
+                  if (hasApprovedOficio) ...[
+                    _ApprovedProfileBanner(
+                      icon: Icons.handyman_rounded,
+                      label: 'Perfil Profesional aprobado',
+                      gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openPanel(context, 'OFICIO');
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // ── NEGOCIO ───────────────────────────────
+                  if (canNegocio) ...[
                     _TypeCard(
                       icon: Icons.storefront_rounded,
                       title: 'Tengo un negocio establecido',
@@ -315,11 +430,21 @@ class _JoinUsModalState extends State<JoinUsModal>
                       gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
                       onTap: () => setState(() => _selectedType = 'NEGOCIO'),
                     ),
-                  // Banner de espera si ya registró NEGOCIO pero no está aprobado
+                  ],
                   if (hasPendingNegocio)
                     _PendingBanner(
                       icon: Icons.storefront_rounded,
                       label: 'Tu negocio está esperando aprobación del administrador.',
+                    ),
+                  if (hasApprovedNegocio)
+                    _ApprovedProfileBanner(
+                      icon: Icons.storefront_rounded,
+                      label: 'Negocio aprobado',
+                      gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openPanel(context, 'NEGOCIO');
+                      },
                     ),
                 ],
               );
@@ -790,6 +915,130 @@ class _StatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Banner verde con botón "Ir a mi panel" para perfil aprobado.
+class _ApprovedProfileBanner extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _ApprovedProfileBanner({
+    required this.icon,
+    required this.label,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.available.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.available.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: gradient),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Ir a mi panel →',
+                    style: TextStyle(
+                      color: AppColors.available,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.check_circle_rounded, color: AppColors.available, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Opción dentro del modal de selección de panel.
+class _PanelChoiceOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _PanelChoiceOption({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, color: color, size: 14),
+          ],
+        ),
       ),
     );
   }

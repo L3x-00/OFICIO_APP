@@ -9,7 +9,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service.js';
-import { CreateReviewDto, ModerateReviewDto, ValidateQrDto } from './dto/create-review.dto.js';
+import { CreateReviewDto, ModerateReviewDto, ValidateQrDto, CreateReviewReplyDto, UpdateReviewDto } from './dto/create-review.dto.js';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -49,6 +49,16 @@ export class ReviewsController {
     });
   }
 
+  // PATCH /reviews/:id — Editar una reseña (autor)
+  @Patch(':id')
+  updateReview(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateReviewDto,
+  ) {
+    const { userId, ...data } = body;
+    return this.reviewsService.updateReview(id, userId, data);
+  }
+
   // PATCH /reviews/:id/moderate — Ocultar o mostrar reseña
   @Patch(':id/moderate')
   moderate(
@@ -56,6 +66,21 @@ export class ReviewsController {
     @Body() body: ModerateReviewDto,
   ) {
     return this.reviewsService.moderate(id, body.isVisible);
+  }
+
+  // POST /reviews/:id/replies — Responder una reseña
+  @Post(':id/replies')
+  createReply(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: CreateReviewReplyDto,
+  ) {
+    return this.reviewsService.createReply({ reviewId: id, ...body });
+  }
+
+  // GET /reviews/:id/replies — Listar respuestas de una reseña
+  @Get(':id/replies')
+  getReplies(@Param('id', ParseIntPipe) id: number) {
+    return this.reviewsService.getReplies(id);
   }
 
   // GET /reviews/qr/:providerId — Generar QR para el proveedor

@@ -62,10 +62,13 @@ export const ModelName = {
   Payment: 'Payment',
   PlanRequest: 'PlanRequest',
   Review: 'Review',
+  ReviewReply: 'ReviewReply',
   Favorite: 'Favorite',
   VerificationDoc: 'VerificationDoc',
   ProviderAnalytic: 'ProviderAnalytic',
-  AdminNotification: 'AdminNotification'
+  AdminNotification: 'AdminNotification',
+  Recommendation: 'Recommendation',
+  ProviderReport: 'ProviderReport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -142,6 +145,7 @@ export const CategoryScalarFieldEnum = {
   slug: 'slug',
   iconUrl: 'iconUrl',
   parentId: 'parentId',
+  forType: 'forType',
   isActive: 'isActive'
 } as const
 
@@ -160,6 +164,7 @@ export const ProviderScalarFieldEnum = {
   razonSocial: 'razonSocial',
   hasDelivery: 'hasDelivery',
   plenaCoordinacion: 'plenaCoordinacion',
+  hasHomeService: 'hasHomeService',
   phone: 'phone',
   whatsapp: 'whatsapp',
   address: 'address',
@@ -173,6 +178,8 @@ export const ProviderScalarFieldEnum = {
   hasCleanRecord: 'hasCleanRecord',
   averageRating: 'averageRating',
   totalReviews: 'totalReviews',
+  totalRecommendations: 'totalRecommendations',
+  planPriority: 'planPriority',
   localityId: 'localityId',
   categoryId: 'categoryId',
   createdAt: 'createdAt',
@@ -252,6 +259,18 @@ export const ReviewScalarFieldEnum = {
 export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
 
 
+export const ReviewReplyScalarFieldEnum = {
+  id: 'id',
+  reviewId: 'reviewId',
+  userId: 'userId',
+  content: 'content',
+  photoUrl: 'photoUrl',
+  createdAt: 'createdAt'
+} as const
+
+export type ReviewReplyScalarFieldEnum = (typeof ReviewReplyScalarFieldEnum)[keyof typeof ReviewReplyScalarFieldEnum]
+
+
 export const FavoriteScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -299,6 +318,29 @@ export const AdminNotificationScalarFieldEnum = {
 } as const
 
 export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]
+
+
+export const RecommendationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  providerId: 'providerId',
+  createdAt: 'createdAt'
+} as const
+
+export type RecommendationScalarFieldEnum = (typeof RecommendationScalarFieldEnum)[keyof typeof RecommendationScalarFieldEnum]
+
+
+export const ProviderReportScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  userId: 'userId',
+  reason: 'reason',
+  description: 'description',
+  isReviewed: 'isReviewed',
+  createdAt: 'createdAt'
+} as const
+
+export type ProviderReportScalarFieldEnum = (typeof ProviderReportScalarFieldEnum)[keyof typeof ProviderReportScalarFieldEnum]
 
 
 export const SortOrder = {

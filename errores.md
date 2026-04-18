@@ -130,6 +130,242 @@ obsoletos del enum ni el campo de BD que los usaba.
 > no como valor de enum. Ejecutar `prisma db push` después de cada cambio de schema.
 
 ---
+## ERROR 5
+Error de Estancamiento en Flujos de Onboarding/Auth
+Problema: Al completar el registro, validación OTP o selección de rol, la aplicación se quedaba "estancada" en la pantalla actual (OnboardingScreen o OtpScreen) a pesar de que el estado del Provider ya había cambiado.
+
+Causa: Confiar exclusivamente en el notifyListeners() del Provider sin gestionar manualmente el stack de navegación de Flutter. El switch del main.dart no siempre tiene prioridad sobre las rutas que están "encima" en el Navigator.
+
+Regla de Oro: > "Al finalizar un proceso de autenticación o configuración inicial, SIEMPRE se debe ejecutar un comando de navegación explícito después de llamar al método del Provider.
+
+Si la lógica de la pantalla principal reside en un switch en main.dart, usa Navigator.of(context).pop() para limpiar la pantalla actual y permitir que el AppRoot se reconstruya.
+
+Si se requiere una limpieza total del historial, usa Navigator.of(context).pushAndRemoveUntil hacia la pantalla de destino para evitar que el usuario regrese a pantallas de login/onboarding con el botón atrás."
+
+Evitar: Dejar la función de navegación vacía esperando que el Provider haga todo el trabajo de cambio de pantalla por sí solo.
+---
+
+## Error 6 — pubspec.yaml con config de flutter_launcher_icons dentro de `flutter:`
+
+**Archivo**: `mobile/pubspec.yaml`
+
+**Qué pasó**:
+Se añadió la configuración de `flutter_launcher_icons` como bloque hijo de `flutter:` en lugar de
+como sección raíz independiente. Causó el error: `Unexpected child "flutter_launcher_icons" found under "flutter"`.
+`flutter pub get` falló completamente, bloqueando la instalación de nuevas dependencias.
+
+**Regla de oro**:
+> `flutter_launcher_icons:` es una sección raíz del YAML, **nunca** va dentro de `flutter:`.
+> También removerlo de `dev_dependencies:` si no se va a usar activamente.
+> Cualquier configuración de herramientas de build va al nivel raíz, no anidada bajo `flutter:`.
+
+---
+
+## Error 7 — Permisos no declarados crashean en runtime (Android/iOS)
+
+**Archivos**: `android/AndroidManifest.xml`, `ios/Runner/Info.plist`
+
+**Qué pasó**:
+`image_picker` y `geolocator` funcionan internamente, pero en Android ≥13 y en iOS,
+el sistema operativo requiere declaraciones explícitas. Sin ellas: crash silencioso o
+denegación automática de permisos sin dialog al usuario.
+
+**Permisos requeridos por feature**:
+- Cámara: `CAMERA` (Android) + `NSCameraUsageDescription` (iOS)
+- Galería: `READ_MEDIA_IMAGES` (Android ≥13), `READ_EXTERNAL_STORAGE` maxSdk=32, `NSPhotoLibraryUsageDescription` (iOS)
+- GPS: `ACCESS_FINE_LOCATION` + `ACCESS_COARSE_LOCATION` (Android) + `NSLocationWhenInUseUsageDescription` (iOS)
+
+**Regla de oro**:
+> Todo feature que acceda a hardware (cámara, GPS, almacenamiento) necesita:
+> 1. Declaración en `AndroidManifest.xml` Y `Info.plist`
+> 2. Solicitud explícita en runtime via `permission_handler` o `geolocator`
+> 3. Manejo del estado "denegado permanentemente" → guiar al usuario a Ajustes
+
+---
+
+---
+
+## Error 8 — `use_build_context_synchronously` en ternario tras `await`
+
+**Archivo**: `mobile/lib/features/providers_list/presentation/screens/provider_detail_sheet.dart`
+
+**Qué pasó**:
+El linter de Dart reporta `use_build_context_synchronously` incluso cuando hay un guard `if (!context.mounted) return;` antes de un ternario que pasa `context` a funciones async. El flow-analysis del linter no reconoce el guard como dominante en ambas ramas del ternario.
+
+**Regla de oro**:
+> Ante un ternario `? await f1(context) : await f2(context)`, el guard
+> `if (!context.mounted) return;` no silencia el lint. Añadir
+> `// ignore: use_build_context_synchronously` en la línea del ternario,
+> o refactorizar a `if/else` con un guard antes de cada rama.
+
+---
+
+---
+
+## Error 9 — Ordenamiento por campo de relación en Prisma (plan priority)
+
+**Archivo**: `backend/src/providers/providers.service.ts`
+
+**Qué pasó**:
+Intentar `orderBy: { subscription: { plan: 'asc' } }` en Prisma falla porque no es una
+relación 1:1 trivialmente ordenable por un campo de enum (el orden léxico de PREMIUM/ESTANDAR/BASICO
+no corresponde al orden de prioridad de negocio). Además Prisma no permite mezclar un sort primario
+de relación con uno secundario de campo propio en el mismo `orderBy`.
+
+**Raíz del error**:
+Confiar en que Prisma puede ordenar por campo de relación con semántica de negocio arbitraria.
+El sort de enum sigue el orden de declaración en el schema, no el valor semántico del negocio.
+
+**Solución aplicada**:
+Campo denormalizado `planPriority Int @default(4)` en `Provider`.
+Se actualiza solo en `admin.service.ts` (dos puntos: `approvePlanRequest` y `updateProviderSubscription`).
+`findAll` usa `orderBy: [{ planPriority: 'asc' }, secondarySort]`.
+
+**Regla de oro**:
+> Para ordenar por una jerarquía de negocio derivada de una relación, desnormaliza un campo
+> entero en la tabla principal. Actualízalo en todos los puntos donde cambia el estado fuente.
+> Nunca confíes en el orden léxico de un enum para representar prioridad de negocio.
+
+---
+
+---
+
+## Error 10 — Categorías mezcladas para OFICIO y NEGOCIO
+
+**Archivos**: `backend/prisma/schema.prisma`, `backend/prisma/seed.ts`,
+`backend/src/providers/providers.service.ts`, `mobile/.../onboarding_screen.dart`
+
+**Qué pasó**:
+OFICIO y NEGOCIO compartían el mismo árbol de categorías. Un negocio (restaurante, farmacia) aparecía junto a profesionales independientes (electricistas, gasfiteros) en el mismo picker. El UX era confuso y las categorías no correspondían a la realidad del mercado peruano.
+
+**Raíz del error**:
+La arquitectura de categorías fue diseñada cuando solo existía un tipo de proveedor. Al agregar NEGOCIO no se segregó el catálogo.
+
+**Parche aplicado**:
+- Campo `forType String?` en modelo `Category`: `'OFICIO'` | `'NEGOCIO'` | `null` (ambos).
+- Seed rediseñado con 2 árboles independientes: 7 padres × ~35 subs para OFICIO (profesionales Perú), 7 padres × ~38 subs para NEGOCIO (establecimientos Perú).
+- `GET /providers/categories?type=OFICIO|NEGOCIO` filtra por `forType`.
+- Flutter `_loadCategories()` pasa `forType: widget.providerType`.
+- Admin `create-provider-modal`: OFICIO = 2 dropdowns en cascada; NEGOCIO = accordion jerárquico visual.
+- Admin `categories/page`: badge OFICIO/NEGOCIO + campo `forType` en formulario.
+
+**Regla de oro**:
+> Cuando dos tipos de entidad comparten una tabla de clasificación pero su catálogo es semánticamente distinto, añadir un campo discriminador (`forType`) desde el inicio. Nunca forzar un catálogo único para dominios diferentes.
+
+---
+
+## Error 11 — Fotos no vinculadas al perfil correcto en onboarding multi-perfil
+
+**Archivo**: `mobile/lib/features/auth/presentation/screens/onboarding_screen.dart`
+
+**Qué pasó**:
+Tras registrar un perfil profesional (OFICIO) desde la pantalla standalone, las fotos
+se subían al servidor pero no aparecían en el panel. `saveProviderImage(url)` se llamaba
+sin el parámetro `type`, por lo que el backend ejecutaba `findProviderByUser(userId)`
+sin discriminador y devolvía el **primer** perfil encontrado — que podía ser NEGOCIO si
+el usuario tenía ambos. La imagen quedaba vinculada al perfil equivocado.
+
+**Raíz del error**:
+Se asumió que `saveProviderImage(url)` sin `type` siempre apunta al perfil recién creado.
+No es cierto cuando el usuario tiene múltiples perfiles.
+
+**Parche aplicado**:
+```dart
+await repo.saveProviderImage(url, type: widget.providerType);
+```
+
+**Regla de oro**:
+> Toda llamada a `saveProviderImage`, `updateMyProfile`, `saveServices` o cualquier método
+> del `DashboardRepository` que opere sobre "mi perfil" **debe** pasar `type: widget.providerType`
+> cuando se ejecuta desde un contexto que conoce el tipo (onboarding, panel, settings).
+> Sin `type`, el backend retorna el primer perfil del usuario, no el correcto.
+
+---
+
+## Error 12 — Favoritos persisten entre sesiones (no se limpian en logout)
+
+**Archivos**: `mobile/lib/main.dart`, `mobile/lib/features/favorites/presentation/providers/favorites_provider.dart`
+
+**Qué pasó**:
+Al cerrar sesión, el corazón de favorito permanecía marcado en las tarjetas.
+Al iniciar sesión con otra cuenta, los favoritos de la cuenta anterior seguían visibles.
+Causa: `FavoritesProvider.clear()` existe pero nunca se llamaba.
+`AuthProvider.logout()` limpia el estado de usuario pero no tiene acceso a `FavoritesProvider`
+(no tiene `BuildContext`). `_MainNavigationState.initState()` solo llamaba
+`favs.initialize(userId)` una vez en el primer build, no cuando cambiaba la cuenta.
+
+**Raíz del error**:
+El ciclo de vida de `FavoritesProvider` no estaba acoplado al ciclo de vida de auth.
+Se asumió que `_MainNavigation` se reconstruye con un userId nuevo automáticamente —
+pero el `IndexedStack` preserva el estado de los widgets hijos.
+
+**Parche aplicado**:
+En `_AppRootState._onAuthChanged()` (main.dart):
+```dart
+final favs = context.read<FavoritesProvider>();
+if (auth.user != null) {
+  favs.initialize(auth.user!.id);   // restaura favoritos al hacer login
+} else {
+  favs.clear();                      // limpia favoritos al hacer logout
+}
+```
+
+**Regla de oro**:
+> El ciclo de vida de cualquier provider que almacene datos **por usuario** (`FavoritesProvider`,
+> notificaciones personales, carrito, etc.) debe estar acoplado a `_onAuthChanged()` en `_AppRootState`.
+> Login → `initialize(userId)`. Logout → `clear()`. Nunca depender de `initState()` de un widget
+> hijo para este propósito, porque ese widget puede no reconstruirse cuando cambia la cuenta.
+
+---
+
+## Error 13 — UI de "Quiero ser parte" no reacciona al cambio de estado de aprobación
+
+**Archivo**: `mobile/lib/shared/widgets/join_us_modal.dart`
+
+**Qué pasó**:
+El modal `JoinUsModal` mostraba un `_PendingBanner` estático para perfiles en espera.
+Cuando el administrador aprobaba un perfil en tiempo real (WebSocket `PROVIDER_APPROVED` →
+`AuthProvider._syncProviderStatus()` → `notifyListeners()`), el `Consumer<AuthProvider>` reconstruía
+correctamente, pero la lógica de condición solo chequeaba `oficioStatus == 'PENDIENTE'`.
+Al cambiar a `'APROBADO'`, ni el banner ni una nueva acción se mostraban — el proveedor
+recién aprobado no veía ningún botón de "Ir a mi panel" en el modal.
+
+Adicionalmente, cuando ambos perfiles estaban aprobados, el modal mostraba texto estático
+"Ya tienes perfil de Profesional y de Negocio registrados." sin opción de navegar.
+
+**Raíz del error**:
+Las condiciones del `Consumer` solo contemplaban `PENDIENTE` y "puede registrarse".
+Los estados `APROBADO` y `RECHAZADO` no tenían rama de UI.
+
+**Parche aplicado**:
+- Añadidas condiciones `hasApprovedOficio` / `hasApprovedNegocio` que muestran `_ApprovedProfileBanner`
+  con botón "Ir a mi panel [tipo]" que navega directamente a `ProviderPanel`.
+- Cuando ambos aprobados: botón único "Ir a mi panel" que abre `_showPanelChoiceModal`.
+- `_showPanelChoiceModal` replicado en `_JoinUsModalState` para independencia de contexto.
+
+**Regla de oro**:
+> En cualquier widget que use `Consumer<AuthProvider>` para mostrar estado de proveedor,
+> deben existir ramas explícitas para TODOS los valores posibles: `canRegister`, `PENDIENTE`,
+> `APROBADO`, `RECHAZADO`. Un estado no contemplado produce UI vacía invisible al usuario.
+
+---
+
+## Error 14 — Tipos de notificación `REVIEW_REPLY` y `PLAN_*` sin ícono/color en la bandeja
+
+**Archivo**: `mobile/lib/features/notifications/domain/models/notification_model.dart`
+
+**Qué pasó**:
+`AppNotification.iconColor` y `AppNotification.icon` solo manejaban `PROVIDER_APPROVED`,
+`PROVIDER_REJECTED`, `NEW_REVIEW`, `PASSWORD_CHANGED`, `NEW_PROVIDER`.
+Los tipos `REVIEW_REPLY`, `PLAN_APROBADO`, `PLAN_RECHAZADO` caían en el caso `_` (genérico),
+mostrando el ícono y color por defecto en lugar de uno semánticamente correcto.
+
+**Regla de oro**:
+> Cada nuevo tipo de notificación emitido por el backend debe tener entrada explícita
+> en `AppNotification.icon` y `AppNotification.iconColor`. Al añadir un tipo en el backend,
+> actualizar el modelo Dart en el mismo commit.
+
+---
 
 ## Resumen de Reglas de Oro
 
@@ -139,3 +375,15 @@ obsoletos del enum ni el campo de BD que los usaba.
 | 2 | Notificaciones | Con multi-perfil, toda notif de perfil necesita `targetProfileType` |
 | 3 | Concurrencia | Recursos singleton-por-estado: verificar antes de crear, no cancelar-y-crear |
 | 4 | Schema | Solo valores reales en enums Prisma. Alias de código = constantes TS, no enum values |
+| 5 | Navegación | Siempre navegación explícita al terminar auth/onboarding, no solo `notifyListeners` |
+| 6 | pubspec | `flutter_launcher_icons:` va a nivel raíz, nunca dentro de `flutter:` |
+| 7 | Permisos | Hardware (cámara, GPS, galería) requiere manifest + runtime request + fallback a Ajustes |
+| 8 | Async/Context | Guard `mounted` no silencia lint en ternarios. Usar `// ignore` o refactorizar a if/else |
+| 9 | Ordenamiento | Jerarquía de negocio → campo entero denormalizado. Nunca sort por enum léxico ni relación |
+| 10 | Relaciones Prisma | Todo modelo nuevo necesita campo inverso (`relation`) en AMBOS lados. `prisma format` lo detecta |
+| 11 | Categorías duales | Catálogos de entidades distintas (OFICIO vs NEGOCIO) necesitan discriminador `forType`. Nunca catálogo único para dominios semánticamente diferentes |
+| 12 | Multi-perfil imágenes | `saveProviderImage` sin `type` apunta al primer perfil. Siempre pasar `type: widget.providerType` en contextos multi-perfil |
+| 13 | Favoritos por sesión | Providers con estado por usuario: `initialize(userId)` en login y `clear()` en logout, acoplado a `_onAuthChanged()`. Nunca solo en `initState()` |
+| 14 | UI estado aprobación | `Consumer<AuthProvider>` para proveedor: ramas para TODOS los estados (canRegister, PENDIENTE, APROBADO, RECHAZADO). Estado no contemplado = UI vacía |
+| 15 | Tipos de notificación | Cada tipo nuevo en backend necesita entrada en `AppNotification.icon` y `iconColor`. Actualizar en el mismo commit |
+

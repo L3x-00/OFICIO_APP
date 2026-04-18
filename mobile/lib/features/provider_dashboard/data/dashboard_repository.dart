@@ -25,6 +25,7 @@ class DashboardRepository {
     String? whatsapp,
     String? address,
     Map<String, dynamic>? scheduleJson,
+    bool? hasHomeService,
     String? type,
   }) async {
     final body = <String, dynamic>{
@@ -34,6 +35,7 @@ class DashboardRepository {
       'whatsapp':     ?whatsapp,
       'address':      ?address,
       'scheduleJson': ?scheduleJson,
+      'hasHomeService': ?hasHomeService,
     };
     final response = await _dio.patch(
       '/provider-profile/me',

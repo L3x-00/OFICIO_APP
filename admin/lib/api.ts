@@ -225,6 +225,15 @@ export const markAllNotificationsRead = () =>
 export const getReports = () =>
   fetchApi<ReportsResponse>('/admin/reports');
 
+export const getProviderReports = (page = 1, isReviewed?: boolean) => {
+  const params = new URLSearchParams({ page: String(page), limit: '20' });
+  if (isReviewed !== undefined) params.append('isReviewed', String(isReviewed));
+  return fetchApi<ProviderReportsResponse>(`/admin/provider-reports?${params}`);
+};
+
+export const markReportReviewed = (id: number) =>
+  fetchApi(`/admin/provider-reports/${id}/review`, { method: 'PATCH' });
+
 export const exportUsersCSV = () =>
   `${BASE_URL}/admin/reports/export/users`;
 
@@ -238,10 +247,10 @@ export const getCategories = (search?: string) => {
   return fetchApi<Category[]>(`/admin/categories?${params}`);
 };
 
-export const createCategory = (data: { name: string; slug: string; iconUrl?: string; parentId?: number }) =>
+export const createCategory = (data: { name: string; slug: string; iconUrl?: string; parentId?: number; forType?: string }) =>
   fetchApi<Category>('/admin/categories', { method: 'POST', body: JSON.stringify(data) });
 
-export const updateCategory = (id: number, data: { name?: string; slug?: string; iconUrl?: string; parentId?: number | null }) =>
+export const updateCategory = (id: number, data: { name?: string; slug?: string; iconUrl?: string; parentId?: number | null; forType?: string | null }) =>
   fetchApi<Category>(`/admin/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const deleteCategory = (id: number) =>
@@ -404,10 +413,29 @@ export interface Category {
   iconUrl?: string;
   isActive: boolean;
   parentId?: number | null;
+  forType?: string | null;   // 'OFICIO' | 'NEGOCIO' | null
   parent?: { id: number; name: string } | null;
   children?: Category[];
   _count?: { providers: number };
   providerCount?: number;
+}
+
+export interface ProviderReport {
+  id: number;
+  reason: string;
+  description?: string | null;
+  isReviewed: boolean;
+  createdAt: string;
+  provider: { id: number; businessName: string; type: string };
+  user: { id: number; firstName: string; lastName: string; email: string };
+}
+
+export interface ProviderReportsResponse {
+  data: ProviderReport[];
+  total: number;
+  page: number;
+  lastPage: number;
+  pendingCount: number;
 }
 
 export interface ReviewsResponse {

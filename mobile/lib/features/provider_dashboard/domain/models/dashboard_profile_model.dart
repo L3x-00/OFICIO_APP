@@ -12,6 +12,7 @@ class DashboardProfileModel {
   final bool isVerified;
   final bool hasCleanRecord;
   final String type; // OFICIO | NEGOCIO
+  final bool hasHomeService; // solo OFICIO: atiende a domicilio
   final String? categoryName;
   final String? localityName;
   final List<ProfileImage> images;
@@ -32,6 +33,7 @@ class DashboardProfileModel {
     required this.isVerified,
     required this.hasCleanRecord,
     required this.type,
+    this.hasHomeService = false,
     this.categoryName,
     this.localityName,
     required this.images,
@@ -55,7 +57,8 @@ class DashboardProfileModel {
       availability:  json['availability'] as String? ?? 'DISPONIBLE',
       isVerified:    json['isVerified'] as bool? ?? false,
       hasCleanRecord: json['hasCleanRecord'] as bool? ?? false,
-      type:          json['type'] as String? ?? 'OFICIO',
+      type:           json['type'] as String? ?? 'OFICIO',
+      hasHomeService: json['hasHomeService'] as bool? ?? false,
       categoryName:  json['category']?['name'] as String?,
       localityName:  json['locality']?['name'] as String?,
       images:        (json['images'] as List?)
@@ -76,27 +79,29 @@ class DashboardProfileModel {
     String? whatsapp,
     String? address,
     String? availability,
+    bool? hasHomeService,
     List<ProfileImage>? images,
     Map<String, dynamic>? scheduleJson,
   }) {
     return DashboardProfileModel(
-      id:            id,
-      businessName:  businessName   ?? this.businessName,
-      description:   description    ?? this.description,
-      phone:         phone          ?? this.phone,
-      whatsapp:      whatsapp       ?? this.whatsapp,
-      address:       address        ?? this.address,
-      averageRating: averageRating,
-      totalReviews:  totalReviews,
-      availability:  availability   ?? this.availability,
-      isVerified:    isVerified,
+      id:             id,
+      businessName:   businessName    ?? this.businessName,
+      description:    description     ?? this.description,
+      phone:          phone           ?? this.phone,
+      whatsapp:       whatsapp        ?? this.whatsapp,
+      address:        address         ?? this.address,
+      averageRating:  averageRating,
+      totalReviews:   totalReviews,
+      availability:   availability    ?? this.availability,
+      isVerified:     isVerified,
       hasCleanRecord: hasCleanRecord,
-      type:          type,
-      categoryName:  categoryName,
-      localityName:  localityName,
-      images:        images         ?? this.images,
-      subscription:  subscription,
-      scheduleJson:  scheduleJson   ?? this.scheduleJson,
+      type:           type,
+      hasHomeService: hasHomeService  ?? this.hasHomeService,
+      categoryName:   categoryName,
+      localityName:   localityName,
+      images:         images          ?? this.images,
+      subscription:   subscription,
+      scheduleJson:   scheduleJson    ?? this.scheduleJson,
       totalFavorites: totalFavorites,
     );
   }

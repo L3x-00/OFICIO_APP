@@ -221,6 +221,27 @@ export class AdminController {
     res.send('\uFEFF' + csv);
   }
 
+  // ── REPORTES DE USUARIOS A PROVEEDORES ───────────────────
+
+  @Get('provider-reports')
+  getProviderReports(
+    @Query('page')        page?:        string,
+    @Query('limit')       limit?:       string,
+    @Query('isReviewed')  isReviewed?:  string,
+  ) {
+    return this.adminService.getProviderReports(
+      page  ? parseInt(page)  : 1,
+      limit ? parseInt(limit) : 20,
+      isReviewed !== undefined ? isReviewed === 'true' : undefined,
+    );
+  }
+
+  @Patch('provider-reports/:id/review')
+  @HttpCode(HttpStatus.OK)
+  markReportReviewed(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.markReportReviewed(id);
+  }
+
   // ── CRUD DE CATEGORÍAS ────────────────────────────────────
 
   @Get('categories')

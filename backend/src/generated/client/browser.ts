@@ -73,6 +73,11 @@ export type PlanRequest = Prisma.PlanRequestModel
  */
 export type Review = Prisma.ReviewModel
 /**
+ * Model ReviewReply
+ * 
+ */
+export type ReviewReply = Prisma.ReviewReplyModel
+/**
  * Model Favorite
  * 
  */
@@ -92,3 +97,13 @@ export type ProviderAnalytic = Prisma.ProviderAnalyticModel
  * 
  */
 export type AdminNotification = Prisma.AdminNotificationModel
+/**
+ * Model Recommendation
+ * 
+ */
+export type Recommendation = Prisma.RecommendationModel
+/**
+ * Model ProviderReport
+ * 
+ */
+export type ProviderReport = Prisma.ProviderReportModel

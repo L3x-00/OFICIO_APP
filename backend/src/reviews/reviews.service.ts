@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { Prisma } from '../generated/client/client.js';
@@ -213,6 +213,125 @@ export class ReviewsService {
       `${providerId}-${today}-oficio`,
     ).toString('base64');
     return code === expectedCode;
+  }
+
+  // ── EDITAR RESEÑA ────────────────────────────────────────
+  async updateReview(
+    reviewId: number,
+    userId: number,
+    data: { rating?: number; comment?: string; photoUrl?: string },
+  ) {
+    const review = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    if (!review) throw new NotFoundException('Reseña no encontrada');
+    if (review.userId !== userId)
+      throw new ForbiddenException('No puedes editar esta reseña');
+
+    if (data.rating !== undefined && (data.rating < 1 || data.rating > 5)) {
+      throw new BadRequestException('La calificación debe ser entre 1 y 5');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.review.update({
+        where: { id: reviewId },
+        data: {
+          ...(data.rating    !== undefined && { rating:   data.rating }),
+          ...(data.comment   !== undefined && { comment:  data.comment }),
+          ...(data.photoUrl  !== undefined && { photoUrl: data.photoUrl }),
+        },
+        include: {
+          user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        },
+      });
+
+      // Recalcular promedio del proveedor
+      const agg = await tx.review.aggregate({
+        where:  { providerId: review.providerId, isVisible: true },
+        _avg:   { rating: true },
+        _count: { rating: true },
+      });
+      await tx.provider.update({
+        where: { id: review.providerId },
+        data:  { averageRating: agg._avg.rating ?? 0, totalReviews: agg._count.rating },
+      });
+
+      return updated;
+    });
+  }
+
+  // ── CREAR RESPUESTA A RESEÑA ─────────────────────────────
+  async createReply(data: {
+    reviewId: number;
+    userId: number;
+    content: string;
+    photoUrl?: string;
+  }) {
+    // Cargar reseña + proveedor para verificar permisos y obtener businessName
+    const review = await this.prisma.review.findUnique({
+      where: { id: data.reviewId },
+      include: { provider: { select: { userId: true, businessName: true, type: true } } },
+    });
+    if (!review) throw new NotFoundException('Reseña no encontrada');
+
+    const isReviewer = review.userId === data.userId;
+    const isProviderOwner = review.provider.userId === data.userId;
+    if (!isReviewer && !isProviderOwner) {
+      throw new ForbiddenException(
+        'Solo el autor de la reseña o el titular del negocio/servicio pueden responder',
+      );
+    }
+
+    const reply = await this.prisma.reviewReply.create({
+      data: {
+        reviewId: data.reviewId,
+        userId:   data.userId,
+        content:  data.content,
+        photoUrl: data.photoUrl,
+      },
+      include: {
+        user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+      },
+    });
+
+    // Notificación cruzada: proveedor → revisor y viceversa
+    const replierUser = reply as typeof reply & { user?: { firstName: string; lastName: string } };
+    const replierName =
+      `${replierUser.user?.firstName ?? ''} ${replierUser.user?.lastName ?? ''}`.trim() ||
+      'Alguien';
+
+    if (isProviderOwner) {
+      // Proveedor respondió → notificar al autor de la reseña con nombre del negocio
+      const businessName = review.provider.businessName;
+      this.eventsGateway.emitNotification({
+        type: 'REVIEW_REPLY',
+        title: '💬 El proveedor respondió tu reseña',
+        body: `${businessName} ha respondido a tu reseña.`,
+        targetUserId: review.userId,
+      });
+    } else {
+      // Cliente respondió al comentario del proveedor → notificar al proveedor
+      this.eventsGateway.emitNotification({
+        type: 'REVIEW_REPLY',
+        title: '💬 Nueva respuesta en tu reseña',
+        body: `El cliente ${replierName} ha respondido a tu comentario.`,
+        targetUserId: review.provider.userId,
+      });
+    }
+
+    return reply;
+  }
+
+  // ── LISTAR RESPUESTAS DE UNA RESEÑA ──────────────────────
+  async getReplies(reviewId: number) {
+    const exists = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    if (!exists) throw new NotFoundException('Reseña no encontrada');
+
+    return this.prisma.reviewReply.findMany({
+      where: { reviewId },
+      include: {
+        user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
   }
 
   // ── HELPERS ───────────────────────────────────────────────

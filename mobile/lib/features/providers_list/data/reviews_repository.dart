@@ -75,4 +75,49 @@ class ReviewsRepository {
       return false;
     }
   }
+
+  // ── EDITAR RESEÑA ────────────────────────────────────────
+  Future<ReviewModel> updateReview({
+    required int reviewId,
+    required int userId,
+    required int rating,
+    required String photoUrl,
+    String? comment,
+  }) async {
+    final response = await _dio.patch(
+      '/reviews/$reviewId',
+      data: {
+        'userId':   userId,
+        'rating':   rating,
+        'photoUrl': photoUrl,
+        'comment':  comment,
+      },
+    );
+    return ReviewModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  // ── RESPUESTAS A RESEÑAS ──────────────────────────────────
+  Future<List<ReviewReplyModel>> getReplies(int reviewId) async {
+    final response = await _dio.get('/reviews/$reviewId/replies');
+    return (response.data as List)
+        .map((r) => ReviewReplyModel.fromJson(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<ReviewReplyModel> createReply({
+    required int reviewId,
+    required int userId,
+    required String content,
+    String? photoUrl,
+  }) async {
+    final response = await _dio.post(
+      '/reviews/$reviewId/replies',
+      data: {
+        'userId': userId,
+        'content': content,
+        if (photoUrl != null && photoUrl.isNotEmpty) 'photoUrl': photoUrl,
+      },
+    );
+    return ReviewReplyModel.fromJson(response.data as Map<String, dynamic>);
+  }
 }

@@ -136,6 +136,27 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
+  /// Activa o desactiva el servicio a domicilio (solo OFICIO).
+  /// Usa optimistic update: revierte si el servidor falla.
+  Future<bool> setHomeService(bool value) async {
+    final prev = _profile?.hasHomeService ?? false;
+    if (_profile != null) {
+      _profile = _profile!.copyWith(hasHomeService: value);
+      notifyListeners();
+    }
+    try {
+      await _repo.updateMyProfile(hasHomeService: value, type: _currentProviderType);
+      return true;
+    } catch (e) {
+      if (_profile != null) {
+        _profile = _profile!.copyWith(hasHomeService: prev);
+      }
+      _error = _formatError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> setAvailability(String status) async {
     final prev = _profile?.availability;
     // Optimistic update

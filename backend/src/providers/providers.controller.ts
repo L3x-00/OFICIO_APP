@@ -53,8 +53,8 @@ export class ProvidersController {
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(600)
   @Get('categories')
-  getCategories() {
-    return this.providersService.getCategories();
+  getCategories(@Query('type') type?: string) {
+    return this.providersService.getCategories(type);
   }
 
   @Get('admin/metrics')
@@ -87,5 +87,47 @@ export class ProvidersController {
     @Body() body: TrackEventDto,
   ) {
     return this.providersService.trackEvent(id, body.eventType, body.userId);
+  }
+
+  // Máximo 5 recomendaciones por minuto por IP (anti-spam)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @Post(':id/recommend')
+  addRecommendation(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('userId') userId: number,
+  ) {
+    return this.providersService.addRecommendation(+userId, id);
+  }
+
+  // POST /providers/:id/report — Cliente reporta un proveedor
+  @Post(':id/report')
+  createReport(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { userId: number; reason: string; description?: string },
+  ) {
+    return this.providersService.createReport({
+      providerId:  id,
+      userId:      +body.userId,
+      reason:      body.reason,
+      description: body.description,
+    });
+  }
+
+  // GET /providers/:id/recommendation-status?userId=X
+  @Get(':id/recommendation-status')
+  getRecommendationStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('userId') userId: string,
+  ) {
+    return this.providersService.getRecommendationStatus(+userId, id);
+  }
+
+  // POST /providers/:id/recommend-toggle
+  @Post(':id/recommend-toggle')
+  toggleRecommendation(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('userId') userId: number,
+  ) {
+    return this.providersService.toggleRecommendation(+userId, id);
   }
 }

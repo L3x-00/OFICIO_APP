@@ -1,3 +1,43 @@
+/// Modelo de una respuesta a reseña
+class ReviewReplyModel {
+  final int id;
+  final int reviewId;
+  final int userId;
+  final String content;
+  final String? photoUrl;
+  final DateTime createdAt;
+  final ReviewUser? user;
+
+  const ReviewReplyModel({
+    required this.id,
+    required this.reviewId,
+    required this.userId,
+    required this.content,
+    this.photoUrl,
+    required this.createdAt,
+    this.user,
+  });
+
+  factory ReviewReplyModel.fromJson(Map<String, dynamic> json) {
+    return ReviewReplyModel(
+      id:        json['id'] as int,
+      reviewId:  json['reviewId'] as int,
+      userId:    json['userId'] as int,
+      content:   json['content'] as String,
+      photoUrl:  json['photoUrl'] as String?,
+      createdAt: _parseDate(json['createdAt']),
+      user: json['user'] is Map<String, dynamic>
+          ? ReviewUser.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  static DateTime _parseDate(dynamic value) {
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
+  }
+}
+
 /// Modelo de una reseña
 class ReviewModel {
   final int id;
@@ -9,6 +49,7 @@ class ReviewModel {
   final bool isVisible;
   final DateTime createdAt;
   final ReviewUser? user;
+  final List<ReviewReplyModel> replies;
 
   const ReviewModel({
     required this.id,
@@ -20,6 +61,7 @@ class ReviewModel {
     required this.isVisible,
     required this.createdAt,
     this.user,
+    this.replies = const [],
   });
 
   factory ReviewModel.fromJson(Map<String, dynamic> json) {
@@ -35,12 +77,32 @@ class ReviewModel {
       user: json['user'] is Map<String, dynamic>
           ? ReviewUser.fromJson(json['user'] as Map<String, dynamic>)
           : null,
+      replies: json['replies'] is List
+          ? (json['replies'] as List)
+              .map((r) => ReviewReplyModel.fromJson(r as Map<String, dynamic>))
+              .toList()
+          : const [],
     );
   }
 
   static DateTime _parseDate(dynamic value) {
     if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
     return DateTime.now();
+  }
+
+  ReviewModel copyWithReplies(List<ReviewReplyModel> replies) {
+    return ReviewModel(
+      id: id,
+      providerId: providerId,
+      userId: userId,
+      rating: rating,
+      comment: comment,
+      photoUrl: photoUrl,
+      isVisible: isVisible,
+      createdAt: createdAt,
+      user: user,
+      replies: replies,
+    );
   }
 }
 

@@ -4,6 +4,24 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
+	<!-- ── Permisos de ubicación ──────────────────────────── -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ConfiServ necesita tu ubicación para verificar que estuviste en el lugar del servicio al dejar una reseña.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ConfiServ usa tu ubicación para validar reseñas y mostrar servicios cercanos.</string>
+
+	<!-- ── Permisos de cámara y galería ───────────────────── -->
+	<key>NSCameraUsageDescription</key>
+	<string>ConfiServ necesita acceso a la cámara para tomar fotos de evidencia al dejar una reseña o registrar tu negocio.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ConfiServ necesita acceso a tu galería para seleccionar fotos de evidencia o imágenes de tu perfil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>ConfiServ puede guardar fotos en tu galería.</string>
+
+	<!-- ── Permiso de micrófono (para video en futuras versiones) -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ConfiServ puede necesitar el micrófono para grabar videos de evidencia.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

@@ -42,6 +42,7 @@ export type CategoryMinAggregateOutputType = {
   slug: string | null
   iconUrl: string | null
   parentId: number | null
+  forType: string | null
   isActive: boolean | null
 }
 
@@ -51,6 +52,7 @@ export type CategoryMaxAggregateOutputType = {
   slug: string | null
   iconUrl: string | null
   parentId: number | null
+  forType: string | null
   isActive: boolean | null
 }
 
@@ -60,6 +62,7 @@ export type CategoryCountAggregateOutputType = {
   slug: number
   iconUrl: number
   parentId: number
+  forType: number
   isActive: number
   _all: number
 }
@@ -81,6 +84,7 @@ export type CategoryMinAggregateInputType = {
   slug?: true
   iconUrl?: true
   parentId?: true
+  forType?: true
   isActive?: true
 }
 
@@ -90,6 +94,7 @@ export type CategoryMaxAggregateInputType = {
   slug?: true
   iconUrl?: true
   parentId?: true
+  forType?: true
   isActive?: true
 }
 
@@ -99,6 +104,7 @@ export type CategoryCountAggregateInputType = {
   slug?: true
   iconUrl?: true
   parentId?: true
+  forType?: true
   isActive?: true
   _all?: true
 }
@@ -195,6 +201,7 @@ export type CategoryGroupByOutputType = {
   slug: string
   iconUrl: string | null
   parentId: number | null
+  forType: string | null
   isActive: boolean
   _count: CategoryCountAggregateOutputType | null
   _avg: CategoryAvgAggregateOutputType | null
@@ -227,6 +234,7 @@ export type CategoryWhereInput = {
   slug?: Prisma.StringFilter<"Category"> | string
   iconUrl?: Prisma.StringNullableFilter<"Category"> | string | null
   parentId?: Prisma.IntNullableFilter<"Category"> | number | null
+  forType?: Prisma.StringNullableFilter<"Category"> | string | null
   isActive?: Prisma.BoolFilter<"Category"> | boolean
   parent?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
   children?: Prisma.CategoryListRelationFilter
@@ -239,6 +247,7 @@ export type CategoryOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  forType?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   parent?: Prisma.CategoryOrderByWithRelationInput
   children?: Prisma.CategoryOrderByRelationAggregateInput
@@ -254,6 +263,7 @@ export type CategoryWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Category"> | string
   iconUrl?: Prisma.StringNullableFilter<"Category"> | string | null
   parentId?: Prisma.IntNullableFilter<"Category"> | number | null
+  forType?: Prisma.StringNullableFilter<"Category"> | string | null
   isActive?: Prisma.BoolFilter<"Category"> | boolean
   parent?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
   children?: Prisma.CategoryListRelationFilter
@@ -266,6 +276,7 @@ export type CategoryOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  forType?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   _count?: Prisma.CategoryCountOrderByAggregateInput
   _avg?: Prisma.CategoryAvgOrderByAggregateInput
@@ -283,6 +294,7 @@ export type CategoryScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Category"> | string
   iconUrl?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   parentId?: Prisma.IntNullableWithAggregatesFilter<"Category"> | number | null
+  forType?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Category"> | boolean
 }
 
@@ -290,6 +302,7 @@ export type CategoryCreateInput = {
   name: string
   slug: string
   iconUrl?: string | null
+  forType?: string | null
   isActive?: boolean
   parent?: Prisma.CategoryCreateNestedOneWithoutChildrenInput
   children?: Prisma.CategoryCreateNestedManyWithoutParentInput
@@ -302,6 +315,7 @@ export type CategoryUncheckedCreateInput = {
   slug: string
   iconUrl?: string | null
   parentId?: number | null
+  forType?: string | null
   isActive?: boolean
   children?: Prisma.CategoryUncheckedCreateNestedManyWithoutParentInput
   providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutCategoryInput
@@ -311,6 +325,7 @@ export type CategoryUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parent?: Prisma.CategoryUpdateOneWithoutChildrenNestedInput
   children?: Prisma.CategoryUpdateManyWithoutParentNestedInput
@@ -323,6 +338,7 @@ export type CategoryUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   children?: Prisma.CategoryUncheckedUpdateManyWithoutParentNestedInput
   providers?: Prisma.ProviderUncheckedUpdateManyWithoutCategoryNestedInput
@@ -334,6 +350,7 @@ export type CategoryCreateManyInput = {
   slug: string
   iconUrl?: string | null
   parentId?: number | null
+  forType?: string | null
   isActive?: boolean
 }
 
@@ -341,6 +358,7 @@ export type CategoryUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -350,6 +368,7 @@ export type CategoryUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -374,6 +393,7 @@ export type CategoryCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
+  forType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
 }
 
@@ -388,6 +408,7 @@ export type CategoryMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
+  forType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
 }
 
@@ -397,6 +418,7 @@ export type CategoryMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
+  forType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
 }
 
@@ -494,6 +516,7 @@ export type CategoryCreateWithoutChildrenInput = {
   name: string
   slug: string
   iconUrl?: string | null
+  forType?: string | null
   isActive?: boolean
   parent?: Prisma.CategoryCreateNestedOneWithoutChildrenInput
   providers?: Prisma.ProviderCreateNestedManyWithoutCategoryInput
@@ -505,6 +528,7 @@ export type CategoryUncheckedCreateWithoutChildrenInput = {
   slug: string
   iconUrl?: string | null
   parentId?: number | null
+  forType?: string | null
   isActive?: boolean
   providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutCategoryInput
 }
@@ -518,6 +542,7 @@ export type CategoryCreateWithoutParentInput = {
   name: string
   slug: string
   iconUrl?: string | null
+  forType?: string | null
   isActive?: boolean
   children?: Prisma.CategoryCreateNestedManyWithoutParentInput
   providers?: Prisma.ProviderCreateNestedManyWithoutCategoryInput
@@ -528,6 +553,7 @@ export type CategoryUncheckedCreateWithoutParentInput = {
   name: string
   slug: string
   iconUrl?: string | null
+  forType?: string | null
   isActive?: boolean
   children?: Prisma.CategoryUncheckedCreateNestedManyWithoutParentInput
   providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutCategoryInput
@@ -558,6 +584,7 @@ export type CategoryUpdateWithoutChildrenInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parent?: Prisma.CategoryUpdateOneWithoutChildrenNestedInput
   providers?: Prisma.ProviderUpdateManyWithoutCategoryNestedInput
@@ -569,6 +596,7 @@ export type CategoryUncheckedUpdateWithoutChildrenInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   providers?: Prisma.ProviderUncheckedUpdateManyWithoutCategoryNestedInput
 }
@@ -598,6 +626,7 @@ export type CategoryScalarWhereInput = {
   slug?: Prisma.StringFilter<"Category"> | string
   iconUrl?: Prisma.StringNullableFilter<"Category"> | string | null
   parentId?: Prisma.IntNullableFilter<"Category"> | number | null
+  forType?: Prisma.StringNullableFilter<"Category"> | string | null
   isActive?: Prisma.BoolFilter<"Category"> | boolean
 }
 
@@ -605,6 +634,7 @@ export type CategoryCreateWithoutProvidersInput = {
   name: string
   slug: string
   iconUrl?: string | null
+  forType?: string | null
   isActive?: boolean
   parent?: Prisma.CategoryCreateNestedOneWithoutChildrenInput
   children?: Prisma.CategoryCreateNestedManyWithoutParentInput
@@ -616,6 +646,7 @@ export type CategoryUncheckedCreateWithoutProvidersInput = {
   slug: string
   iconUrl?: string | null
   parentId?: number | null
+  forType?: string | null
   isActive?: boolean
   children?: Prisma.CategoryUncheckedCreateNestedManyWithoutParentInput
 }
@@ -640,6 +671,7 @@ export type CategoryUpdateWithoutProvidersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parent?: Prisma.CategoryUpdateOneWithoutChildrenNestedInput
   children?: Prisma.CategoryUpdateManyWithoutParentNestedInput
@@ -651,6 +683,7 @@ export type CategoryUncheckedUpdateWithoutProvidersInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   children?: Prisma.CategoryUncheckedUpdateManyWithoutParentNestedInput
 }
@@ -660,6 +693,7 @@ export type CategoryCreateManyParentInput = {
   name: string
   slug: string
   iconUrl?: string | null
+  forType?: string | null
   isActive?: boolean
 }
 
@@ -667,6 +701,7 @@ export type CategoryUpdateWithoutParentInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   children?: Prisma.CategoryUpdateManyWithoutParentNestedInput
   providers?: Prisma.ProviderUpdateManyWithoutCategoryNestedInput
@@ -677,6 +712,7 @@ export type CategoryUncheckedUpdateWithoutParentInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   children?: Prisma.CategoryUncheckedUpdateManyWithoutParentNestedInput
   providers?: Prisma.ProviderUncheckedUpdateManyWithoutCategoryNestedInput
@@ -687,6 +723,7 @@ export type CategoryUncheckedUpdateManyWithoutParentInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  forType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -736,6 +773,7 @@ export type CategorySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   slug?: boolean
   iconUrl?: boolean
   parentId?: boolean
+  forType?: boolean
   isActive?: boolean
   parent?: boolean | Prisma.Category$parentArgs<ExtArgs>
   children?: boolean | Prisma.Category$childrenArgs<ExtArgs>
@@ -749,6 +787,7 @@ export type CategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   slug?: boolean
   iconUrl?: boolean
   parentId?: boolean
+  forType?: boolean
   isActive?: boolean
   parent?: boolean | Prisma.Category$parentArgs<ExtArgs>
 }, ExtArgs["result"]["category"]>
@@ -759,6 +798,7 @@ export type CategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   slug?: boolean
   iconUrl?: boolean
   parentId?: boolean
+  forType?: boolean
   isActive?: boolean
   parent?: boolean | Prisma.Category$parentArgs<ExtArgs>
 }, ExtArgs["result"]["category"]>
@@ -769,10 +809,11 @@ export type CategorySelectScalar = {
   slug?: boolean
   iconUrl?: boolean
   parentId?: boolean
+  forType?: boolean
   isActive?: boolean
 }
 
-export type CategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "iconUrl" | "parentId" | "isActive", ExtArgs["result"]["category"]>
+export type CategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "iconUrl" | "parentId" | "forType" | "isActive", ExtArgs["result"]["category"]>
 export type CategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   parent?: boolean | Prisma.Category$parentArgs<ExtArgs>
   children?: boolean | Prisma.Category$childrenArgs<ExtArgs>
@@ -799,6 +840,7 @@ export type $CategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     slug: string
     iconUrl: string | null
     parentId: number | null
+    forType: string | null
     isActive: boolean
   }, ExtArgs["result"]["category"]>
   composites: {}
@@ -1231,6 +1273,7 @@ export interface CategoryFieldRefs {
   readonly slug: Prisma.FieldRef<"Category", 'String'>
   readonly iconUrl: Prisma.FieldRef<"Category", 'String'>
   readonly parentId: Prisma.FieldRef<"Category", 'Int'>
+  readonly forType: Prisma.FieldRef<"Category", 'String'>
   readonly isActive: Prisma.FieldRef<"Category", 'Boolean'>
 }
     

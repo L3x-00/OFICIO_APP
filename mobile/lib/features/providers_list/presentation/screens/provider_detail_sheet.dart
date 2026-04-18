@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -9,11 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/constans/app_strings.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../core/utils/permission_service.dart';
 import '../../data/reviews_repository.dart';
 import '../../domain/models/provider_model.dart';
 import '../../domain/models/review_model.dart';
+import '../../data/providers_repository.dart';
 import '../../presentation/widgets/create_review_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 
 /// Modal de detalle completo del proveedor
 class ProviderDetailSheet extends StatefulWidget {
@@ -35,13 +40,22 @@ class ProviderDetailSheet extends StatefulWidget {
 }
 
 class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
-  final _reviewsRepo = ReviewsRepository();
+  final _reviewsRepo    = ReviewsRepository();
+  final _providersRepo  = ProvidersRepository();
 
   int _currentImageIndex = 0;
   List<ReviewModel> _reviews = [];
-  bool _reviewsLoading = false;
-  bool _reviewsError = false;
+  bool _reviewsLoading  = false;
+  bool _reviewsError    = false;
+  bool _isRecommended   = false;
   late final PageController _pageController = PageController(keepPage: true);
+
+  bool get _isOwnCard {
+    final auth = context.read<AuthProvider>();
+    return auth.user != null &&
+        widget.provider.userId != null &&
+        widget.provider.userId == auth.user!.id;
+  }
 
   /// Color de acento según el tipo de proveedor:
   /// NEGOCIO → morado | OFICIO → azul primary
@@ -61,11 +75,31 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     _loadReviews();
   }
 
+  /// Reseña del usuario actual para este proveedor (null si no ha reseñado).
+  ReviewModel? get _myReview {
+    final uid = context.read<AuthProvider>().user?.id ?? 0;
+    if (uid == 0) return null;
+    try {
+      return _reviews.firstWhere((r) => r.userId == uid);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _loadReviews() async {
     setState(() { _reviewsLoading = true; _reviewsError = false; });
     try {
       final reviews = await _reviewsRepo.getProviderReviews(widget.provider.id);
-      if (mounted) setState(() => _reviews = reviews);
+      if (!mounted) return;
+      setState(() => _reviews = reviews);
+
+      // Cargar estado de recomendación del usuario actual
+      final uid = context.read<AuthProvider>().user?.id ?? 0;
+      if (uid != 0) {
+        final recommended = await _providersRepo.checkRecommendation(
+            widget.provider.id, uid);
+        if (mounted) setState(() => _isRecommended = recommended);
+      }
     } catch (_) {
       if (mounted) setState(() => _reviewsError = true);
     } finally {
@@ -226,6 +260,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
                         // ── Reseñas ───────────────────────────
                         _buildReviewsSection(),
+
+                        // ── Reportar (solo clientes, no el propio proveedor) ──
+                        if (!_isOwnCard) _buildReportButton(),
                       ],
                     ),
                   ),
@@ -402,6 +439,28 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               ],
             ),
           ),
+        // Badge "Va a domicilio" — solo OFICIO
+        if (widget.provider.type == ProviderType.oficio &&
+            widget.provider.hasHomeService)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.available.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.available.withValues(alpha: 0.4)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.home_repair_service_rounded, color: AppColors.available, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  'Va a domicilio',
+                  style: TextStyle(color: AppColors.available, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -410,21 +469,41 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
   Widget _buildRating() {
     final c = context.colors;
-    return Row(
+    final p = widget.provider;
+    return Wrap(
+      spacing: 12,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        RatingBarIndicator(
-          rating: widget.provider.averageRating,
-          itemBuilder: (_, _) =>
-              const Icon(Icons.star_rounded, color: AppColors.star),
-          itemCount: 5,
-          itemSize: 20,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RatingBarIndicator(
+              rating: p.averageRating,
+              itemBuilder: (_, _) =>
+                  const Icon(Icons.star_rounded, color: AppColors.star),
+              itemCount: 5,
+              itemSize: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${p.averageRating.toStringAsFixed(1)} · ${p.totalReviews} reseñas',
+              style: TextStyle(color: c.textSecondary, fontSize: 13),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Text(
-          '${widget.provider.averageRating.toStringAsFixed(1)} · '
-          '${widget.provider.totalReviews} reseñas',
-          style: TextStyle(color: c.textSecondary, fontSize: 13),
-        ),
+        if (p.totalRecommendations > 0)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.thumb_up_rounded, size: 14, color: c.textMuted),
+              const SizedBox(width: 5),
+              Text(
+                'Recomendado por ${p.totalRecommendations} ${p.totalRecommendations == 1 ? 'persona' : 'personas'}',
+                style: TextStyle(color: c.textMuted, fontSize: 12),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -851,7 +930,10 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       children: [
         _buildSectionTitle('Reseñas (${_reviews.length})'),
         const SizedBox(height: 12),
-        ..._reviews.take(5).map((r) => _ReviewCard(review: r)),
+        ..._reviews.take(5).map((r) => _ReviewCard(
+              review: r,
+              providerUserId: widget.provider.userId ?? 0,
+            )),
         const SizedBox(height: 8),
       ],
     );
@@ -875,6 +957,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
   Widget _buildContactButtons() {
     final c = context.colors;
+    final ownCard = _isOwnCard;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
       decoration: BoxDecoration(
@@ -886,60 +970,112 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: _BigContactButton(
-                  label: 'WhatsApp',
-                  icon: Icons.chat_rounded,
-                  color: AppColors.whatsapp,
-                  onTap: _openWhatsApp,
+          if (ownCard)
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ProviderPanel(
+                      providerType: widget.provider.type == ProviderType.negocio
+                          ? 'NEGOCIO'
+                          : 'OFICIO',
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Ir a mi panel',
+                      style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _BigContactButton(
-                  label: 'Llamar',
-                  icon: Icons.call_rounded,
-                  color: AppColors.call,
-                  onTap: _makeCall,
+            )
+          else ...[
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _BigContactButton(
+                    label: 'WhatsApp',
+                    icon: Icons.chat_rounded,
+                    color: AppColors.whatsapp,
+                    onTap: _openWhatsApp,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Builder(builder: (context) {
-            final authProvider = context.read<AuthProvider>();
-            final isOwnCard = authProvider.user != null &&
-                widget.provider.userId != null &&
-                widget.provider.userId == authProvider.user!.id;
-            if (isOwnCard) return const SizedBox.shrink();
-            return SizedBox(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _BigContactButton(
+                    label: 'Llamar',
+                    icon: Icons.call_rounded,
+                    color: AppColors.call,
+                    onTap: _makeCall,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () async {
-                  final userId = authProvider.user?.id ?? 0;
-                  final messenger = ScaffoldMessenger.of(context);
-                  final created = await CreateReviewSheet.show(
-                    context,
-                    providerId: widget.provider.id,
-                    providerName: widget.provider.businessName,
-                    userId: userId,
-                  );
-                  if (created == true && mounted) {
-                    await _loadReviews();
-                    if (!mounted) return;
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('¡Reseña publicada!'),
-                        backgroundColor: AppColors.available,
-                      ),
+                  final auth   = context.read<AuthProvider>();
+                  final userId = auth.user?.id ?? 0;
+                  final myReview = _myReview;
+
+                  if (myReview != null) {
+                    // ── EDITAR reseña existente ──────────────
+                    final updated = await CreateReviewSheet.show(
+                      context,
+                      providerId:           widget.provider.id,
+                      providerName:         widget.provider.businessName,
+                      userId:               userId,
+                      existingReview:       myReview,
+                      initiallyRecommended: _isRecommended,
                     );
+                    if (updated == true && mounted) {
+                      await _loadReviews(); // recarga reseñas + estado recomendación
+                    }
+                  } else {
+                    // ── CREAR nueva reseña ───────────────────
+                    final created = await CreateReviewSheet.show(
+                      context,
+                      providerId:   widget.provider.id,
+                      providerName: widget.provider.businessName,
+                      userId:       userId,
+                    );
+                    if (created == true && mounted) {
+                      await _loadReviews();
+                      if (!mounted) return;
+                      // Modal de recomendación solo en la primera reseña
+                      await _RecommendModal.show(
+                        context,
+                        providerId: widget.provider.id,
+                        userId:     userId,
+                        repo:       _providersRepo,
+                      );
+                    }
                   }
                 },
-                icon: const Icon(Icons.star_rounded, size: 18),
-                label: const Text('Dejar una reseña'),
+                icon: Icon(
+                  _myReview != null ? Icons.edit_rounded : Icons.star_rounded,
+                  size: 18,
+                ),
+                label: Text(_myReview != null ? 'Editar mi reseña' : 'Dejar una reseña'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.star,
                   side: BorderSide(color: AppColors.star.withValues(alpha: 0.4)),
@@ -949,9 +1085,41 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                   ),
                 ),
               ),
-            );
-          }),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  // ─── Botón reportar ──────────────────────────────────────
+
+  Widget _buildReportButton() {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 4),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: () {
+            final userId = context.read<AuthProvider>().user?.id ?? 0;
+            if (userId == 0) return;
+            _ReportSheet.show(
+              context,
+              providerId:    widget.provider.id,
+              providerName:  widget.provider.businessName,
+              userId:        userId,
+              repo:          _providersRepo,
+            );
+          },
+          icon: Icon(Icons.flag_outlined, size: 15, color: c.textMuted),
+          label: Text(
+            'Reportar este servicio',
+            style: TextStyle(color: c.textMuted, fontSize: 12),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          ),
+        ),
       ),
     );
   }
@@ -978,18 +1146,173 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 }
 
+// ─── Modal de recomendación post-reseña ──────────────────
+
+class _RecommendModal {
+  static Future<void> show(
+    BuildContext context, {
+    required int providerId,
+    required int userId,
+    required ProvidersRepository repo,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      builder: (_) => _RecommendModalSheet(
+        providerId: providerId,
+        userId: userId,
+        repo: repo,
+      ),
+    );
+  }
+}
+
+class _RecommendModalSheet extends StatefulWidget {
+  final int providerId;
+  final int userId;
+  final ProvidersRepository repo;
+  const _RecommendModalSheet({
+    required this.providerId,
+    required this.userId,
+    required this.repo,
+  });
+
+  @override
+  State<_RecommendModalSheet> createState() => _RecommendModalSheetState();
+}
+
+class _RecommendModalSheetState extends State<_RecommendModalSheet> {
+  bool _loading = false;
+
+  Future<void> _recommend() async {
+    if (widget.userId == 0) { Navigator.of(context).pop(); return; }
+    setState(() => _loading = true);
+    try {
+      await widget.repo.recommend(widget.providerId, widget.userId);
+    } catch (_) {
+      // silencioso — no bloquear UX
+    }
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        24, 20, 24,
+        MediaQuery.of(context).padding.bottom + 24,
+      ),
+      decoration: BoxDecoration(
+        color: c.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Ícono
+          Container(
+            width: 64, height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.thumb_up_rounded, color: AppColors.primary, size: 30),
+          ),
+          const SizedBox(height: 16),
+
+          Text(
+            '¿Recomendarías este servicio?',
+            style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tu recomendación ayuda a otros usuarios a elegir mejor.',
+            style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+
+          // Sí, recomendar
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _loading ? null : _recommend,
+              icon: _loading
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Icon(Icons.thumb_up_rounded, size: 18),
+              label: const Text('Sí, recomendar', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Después
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _loading ? null : () => Navigator.of(context).pop(),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: c.textSecondary,
+                side: BorderSide(color: c.border),
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              child: const Text('Después', style: TextStyle(fontSize: 14)),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // No lo recomiendo
+          TextButton(
+            onPressed: _loading ? null : () => Navigator.of(context).pop(),
+            child: Text(
+              'No lo recomiendo',
+              style: TextStyle(color: c.textMuted, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Tarjeta de reseña ────────────────────────────────────
 
 class _ReviewCard extends StatelessWidget {
   final ReviewModel review;
-  const _ReviewCard({required this.review});
+  final int providerUserId;
+  const _ReviewCard({required this.review, required this.providerUserId});
 
   void _openDetail(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ReviewDetailSheet(review: review),
+      builder: (_) => _ReviewDetailSheet(
+        review: review,
+        providerUserId: providerUserId,
+      ),
     );
   }
 
@@ -1113,11 +1436,141 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
-// ─── Modal de detalle de reseña ───────────────────────────
+// ─── Modal de detalle de reseña (con hilo de respuestas) ─
 
-class _ReviewDetailSheet extends StatelessWidget {
+class _ReviewDetailSheet extends StatefulWidget {
   final ReviewModel review;
-  const _ReviewDetailSheet({required this.review});
+  final int providerUserId;
+  const _ReviewDetailSheet({required this.review, required this.providerUserId});
+
+  @override
+  State<_ReviewDetailSheet> createState() => _ReviewDetailSheetState();
+}
+
+class _ReviewDetailSheetState extends State<_ReviewDetailSheet> {
+  final _reviewsRepo     = ReviewsRepository();
+  final _replyController = TextEditingController();
+  final _scrollController = ScrollController();
+
+  List<ReviewReplyModel> _replies = [];
+  bool _repliesLoading = false;
+  bool _sending        = false;
+  File? _replyPhoto;
+
+  int get _currentUserId =>
+      context.read<AuthProvider>().user?.id ?? 0;
+
+  bool get _canReply =>
+      _currentUserId == widget.review.userId ||
+      _currentUserId == widget.providerUserId;
+
+  bool get _isMine => _currentUserId == widget.review.userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReplies();
+  }
+
+  @override
+  void dispose() {
+    _replyController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadReplies() async {
+    setState(() => _repliesLoading = true);
+    try {
+      final replies = await _reviewsRepo.getReplies(widget.review.id);
+      if (mounted) setState(() => _replies = replies);
+    } catch (_) {
+      // silencioso — thread vacío
+    } finally {
+      if (mounted) setState(() => _repliesLoading = false);
+    }
+  }
+
+  Future<void> _pickReplyPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded),
+              title: const Text('Cámara'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Galería'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+    if (!context.mounted) return;
+
+    // ignore: use_build_context_synchronously
+    final ok = source == ImageSource.camera
+        // ignore: use_build_context_synchronously
+        ? await PermissionService.requestCamera(context)
+        // ignore: use_build_context_synchronously
+        : await PermissionService.requestGallery(context);
+    if (!ok || !context.mounted) return;
+
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 75);
+    if (picked != null && mounted) setState(() => _replyPhoto = File(picked.path));
+  }
+
+  Future<void> _sendReply() async {
+    final text = _replyController.text.trim();
+    if (text.isEmpty && _replyPhoto == null) return;
+    if (_currentUserId == 0) return;
+
+    setState(() => _sending = true);
+    try {
+      String? photoUrl;
+      if (_replyPhoto != null) {
+        photoUrl = await _reviewsRepo.uploadPhoto(_replyPhoto!);
+      }
+      final reply = await _reviewsRepo.createReply(
+        reviewId: widget.review.id,
+        userId:   _currentUserId,
+        content:  text.isNotEmpty ? text : '📷',
+        photoUrl: photoUrl,
+      );
+      if (mounted) {
+        setState(() {
+          _replies.add(reply);
+          _replyController.clear();
+          _replyPhoto = null;
+        });
+        // Scroll al final del thread
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al enviar: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
 
   String _formatDateFull(DateTime date) {
     const months = [
@@ -1127,13 +1580,24 @@ class _ReviewDetailSheet extends StatelessWidget {
     return '${date.day} de ${months[date.month - 1]} de ${date.year}';
   }
 
+  String _formatDateShort(DateTime date) {
+    final now  = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inMinutes < 1)  return 'Ahora';
+    if (diff.inHours   < 1)  return 'Hace ${diff.inMinutes} min';
+    if (diff.inDays    < 1)  return 'Hace ${diff.inHours} h';
+    if (diff.inDays    < 7)  return 'Hace ${diff.inDays} d';
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c       = context.colors;
     final screenH = MediaQuery.of(context).size.height;
+    final bottomPad = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: screenH * 0.85),
+      constraints: BoxConstraints(maxHeight: screenH * 0.92),
       decoration: BoxDecoration(
         color: c.bg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1141,7 +1605,7 @@ class _ReviewDetailSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
+          // ── Handle ──────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Container(
@@ -1153,28 +1617,21 @@ class _ReviewDetailSheet extends StatelessWidget {
             ),
           ),
 
-          // Título
+          // ── Título ──────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Row(
               children: [
                 Text(
-                  'Detalle de la reseña',
-                  style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Reseña',
+                  style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: c.bgInput,
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: BoxDecoration(color: c.bgInput, shape: BoxShape.circle),
                     child: Icon(Icons.close_rounded, color: c.textMuted, size: 18),
                   ),
                 ),
@@ -1182,150 +1639,366 @@ class _ReviewDetailSheet extends StatelessWidget {
             ),
           ),
 
+          // ── Contenido scrollable ────────────────────────────
           Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Cabecera: avatar + nombre + estrellas + fecha
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
+              controller: _scrollController,
+              padding: EdgeInsets.fromLTRB(20, 0, 20, _canReply ? 8 : 32),
+              children: [
+                // Cabecera reseña original
+                _buildReviewHeader(c),
+
+                // Comentario
+                if (widget.review.comment != null && widget.review.comment!.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  _buildCommentBubble(c),
+                ],
+
+                // Foto de evidencia
+                if (widget.review.photoUrl.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  _buildEvidencePhoto(c),
+                ],
+
+                // ── Hilo de respuestas ───────────────────────
+                if (_repliesLoading) ...[
+                  const SizedBox(height: 20),
+                  const Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+                ] else if (_replies.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  Divider(color: c.border, height: 1),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Respuestas (${_replies.length})',
+                    style: TextStyle(color: c.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 10),
+                  ..._replies.map((r) => _buildReplyBubble(r, c)),
+                ],
+
+                // Preview foto adjunta
+                if (_replyPhoto != null) ...[
+                  const SizedBox(height: 12),
+                  Stack(
+                    alignment: Alignment.topRight,
                     children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: c.bgInput,
-                        backgroundImage: review.user?.avatarUrl != null
-                            ? NetworkImage(review.user!.avatarUrl!)
-                            : null,
-                        child: review.user?.avatarUrl == null
-                            ? Text(
-                                review.user?.initial ?? '?',
-                                style: const TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              )
-                            : null,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(_replyPhoto!, height: 100, fit: BoxFit.cover),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              review.user?.fullName ?? 'Usuario',
-                              style: TextStyle(
-                                color: c.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            RatingBarIndicator(
-                              rating: review.rating.toDouble(),
-                              itemBuilder: (_, _) => const Icon(
-                                Icons.star_rounded,
-                                color: AppColors.star,
-                              ),
-                              itemCount: 5,
-                              itemSize: 18,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatDateFull(review.createdAt),
-                              style: TextStyle(color: c.textMuted, fontSize: 12),
-                            ),
-                          ],
+                      GestureDetector(
+                        onTap: () => setState(() => _replyPhoto = null),
+                        child: Container(
+                          margin: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                          child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
                         ),
                       ),
                     ],
                   ),
+                ],
 
-                  // Comentario completo
-                  if (review.comment != null && review.comment!.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+
+          // ── Input de respuesta (solo autorizado) ────────────
+          if (_canReply)
+            Padding(
+              padding: EdgeInsets.fromLTRB(12, 8, 12, 12 + bottomPad),
+              child: Row(
+                children: [
+                  // Adjuntar foto
+                  GestureDetector(
+                    onTap: _pickReplyPhoto,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: c.bgCard,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: c.border),
                       ),
-                      child: Text(
-                        review.comment!,
+                      child: Icon(Icons.attach_file_rounded, color: c.textMuted, size: 20),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Campo de texto
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: c.bgCard,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: c.border),
+                      ),
+                      child: TextField(
+                        controller: _replyController,
+                        style: TextStyle(color: c.textPrimary, fontSize: 14),
+                        maxLines: 3,
+                        minLines: 1,
+                        decoration: InputDecoration(
+                          hintText: _isMine ? 'Responde al proveedor…' : 'Responde a esta reseña…',
+                          hintStyle: TextStyle(color: c.textMuted, fontSize: 14),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                        onSubmitted: (_) => _sendReply(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Botón enviar
+                  GestureDetector(
+                    onTap: _sending ? null : _sendReply,
+                    child: Container(
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: _sending
+                          ? const SizedBox(
+                              width: 18, height: 18,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── Cabecera de la reseña original ───────────────────────
+  Widget _buildReviewHeader(AppThemeColors c) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 22,
+          backgroundColor: c.bgInput,
+          backgroundImage: widget.review.user?.avatarUrl != null
+              ? NetworkImage(widget.review.user!.avatarUrl!)
+              : null,
+          child: widget.review.user?.avatarUrl == null
+              ? Text(
+                  widget.review.user?.initial ?? '?',
+                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16),
+                )
+              : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.review.user?.fullName ?? 'Usuario',
+                style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 3),
+              RatingBarIndicator(
+                rating: widget.review.rating.toDouble(),
+                itemBuilder: (_, _) => const Icon(Icons.star_rounded, color: AppColors.star),
+                itemCount: 5,
+                itemSize: 16,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                _formatDateFull(widget.review.createdAt),
+                style: TextStyle(color: context.colors.textMuted, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Burbuja del comentario original ──────────────────────
+  Widget _buildCommentBubble(AppThemeColors c) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.border),
+      ),
+      child: Text(
+        widget.review.comment!,
+        style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
+      ),
+    );
+  }
+
+  // ── Foto de evidencia ─────────────────────────────────────
+  Widget _buildEvidencePhoto(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Foto de evidencia',
+            style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            PageRouteBuilder(
+              opaque: false,
+              barrierColor: Colors.black,
+              pageBuilder: (_, _, _) => _ReviewImageFullscreen(
+                imageUrl: widget.review.photoUrl,
+                heroTag: 'review_detail_photo_${widget.review.id}',
+              ),
+              transitionsBuilder: (_, anim, _, child) =>
+                  FadeTransition(opacity: anim, child: child),
+            ),
+          ),
+          child: Hero(
+            tag: 'review_detail_photo_${widget.review.id}',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Image.network(
+                widget.review.photoUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(
+                  height: 140,
+                  decoration: BoxDecoration(color: c.bgInput, borderRadius: BorderRadius.circular(14)),
+                  child: Icon(Icons.broken_image_rounded, color: c.textMuted, size: 36),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text('Toca para ver a pantalla completa',
+            style: TextStyle(color: c.textMuted, fontSize: 11)),
+      ],
+    );
+  }
+
+  // ── Burbuja de respuesta ──────────────────────────────────
+  Widget _buildReplyBubble(ReviewReplyModel reply, AppThemeColors c) {
+    final isMe      = reply.userId == _currentUserId;
+    final isProvider = reply.userId == widget.providerUserId;
+    final bubbleColor = isMe ? AppColors.primary.withValues(alpha: 0.12) : c.bgCard;
+    final borderColor = isMe ? AppColors.primary.withValues(alpha: 0.3) : c.border;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isMe) ...[
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: c.bgInput,
+              backgroundImage: reply.user?.avatarUrl != null
+                  ? NetworkImage(reply.user!.avatarUrl!)
+                  : null,
+              child: reply.user?.avatarUrl == null
+                  ? Text(
+                      reply.user?.initial ?? '?',
+                      style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: bubbleColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(14),
+                  topRight: const Radius.circular(14),
+                  bottomLeft: Radius.circular(isMe ? 14 : 4),
+                  bottomRight: Radius.circular(isMe ? 4 : 14),
+                ),
+                border: Border.all(color: borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nombre + badge proveedor
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isMe ? 'Tú' : (reply.user?.fullName ?? 'Usuario'),
                         style: TextStyle(
-                          color: c.textSecondary,
-                          fontSize: 14,
-                          height: 1.6,
+                          color: isMe ? AppColors.primary : c.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-
-                  // Foto de evidencia a tamaño completo
-                  if (review.photoUrl.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    Text(
-                      'Foto de evidencia',
-                      style: TextStyle(
-                        color: c.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                      if (isProvider && !isMe) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Proveedor',
+                            style: TextStyle(color: AppColors.primary, fontSize: 9, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Texto del mensaje
+                  if (reply.content != '📷' || reply.photoUrl == null)
+                    Text(reply.content, style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4)),
+                  // Foto adjunta
+                  if (reply.photoUrl != null) ...[
+                    if (reply.content != '📷') const SizedBox(height: 6),
                     GestureDetector(
                       onTap: () => Navigator.of(context).push(
                         PageRouteBuilder(
                           opaque: false,
                           barrierColor: Colors.black,
                           pageBuilder: (_, _, _) => _ReviewImageFullscreen(
-                            imageUrl: review.photoUrl,
-                            heroTag: 'review_detail_photo_${review.id}',
+                            imageUrl: reply.photoUrl!,
+                            heroTag: 'reply_photo_${reply.id}',
                           ),
                           transitionsBuilder: (_, anim, _, child) =>
                               FadeTransition(opacity: anim, child: child),
                         ),
                       ),
                       child: Hero(
-                        tag: 'review_detail_photo_${review.id}',
+                        tag: 'reply_photo_${reply.id}',
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(10),
                           child: Image.network(
-                            review.photoUrl,
-                            width: double.infinity,
+                            reply.photoUrl!,
+                            height: 120,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Container(
-                              height: 160,
-                              decoration: BoxDecoration(
-                                color: c.bgInput,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Icon(
-                                Icons.broken_image_rounded,
-                                color: c.textMuted,
-                                size: 40,
-                              ),
-                            ),
+                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        'Toca la foto para verla a pantalla completa',
-                        style: TextStyle(color: c.textMuted, fontSize: 11),
-                      ),
-                    ),
                   ],
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDateShort(reply.createdAt),
+                    style: TextStyle(color: c.textMuted, fontSize: 10),
+                  ),
                 ],
               ),
             ),
           ),
+          if (isMe) const SizedBox(width: 8),
         ],
       ),
     );
@@ -1521,5 +2194,288 @@ class _InfoChip extends StatelessWidget {
       return GestureDetector(onTap: onTap, child: content);
     }
     return content;
+  }
+}
+
+// ─── Sheet de reporte ─────────────────────────────────────
+
+class _ReportSheet {
+  static const _reasons = [
+    ('INFORMACION_FALSA',  'Información falsa o engañosa'),
+    ('COMPORTAMIENTO',     'Comportamiento inapropiado'),
+    ('FRAUDE',             'Posible fraude o estafa'),
+    ('FOTO_INAPROPIADA',   'Fotos inapropiadas'),
+    ('NO_PRESTO',          'No prestó el servicio'),
+    ('OTRO',               'Otro motivo'),
+  ];
+
+  static Future<void> show(
+    BuildContext context, {
+    required int providerId,
+    required String providerName,
+    required int userId,
+    required ProvidersRepository repo,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ReportSheetContent(
+        providerId:   providerId,
+        providerName: providerName,
+        userId:       userId,
+        repo:         repo,
+        reasons:      _reasons,
+      ),
+    );
+  }
+}
+
+class _ReportSheetContent extends StatefulWidget {
+  final int providerId;
+  final String providerName;
+  final int userId;
+  final ProvidersRepository repo;
+  final List<(String, String)> reasons;
+
+  const _ReportSheetContent({
+    required this.providerId,
+    required this.providerName,
+    required this.userId,
+    required this.repo,
+    required this.reasons,
+  });
+
+  @override
+  State<_ReportSheetContent> createState() => _ReportSheetContentState();
+}
+
+class _ReportSheetContentState extends State<_ReportSheetContent> {
+  String? _selectedReason;
+  final _descController = TextEditingController();
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _descController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_selectedReason == null) return;
+    setState(() => _sending = true);
+    try {
+      await widget.repo.reportProvider(
+        providerId:  widget.providerId,
+        userId:      widget.userId,
+        reason:      _selectedReason!,
+        description: _descController.text.trim(),
+      );
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reporte enviado. Lo revisaremos pronto. Gracias.'),
+            backgroundColor: Color(0xFF2E7D32),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString().toLowerCase().contains('ya enviaste')
+          ? 'Ya enviaste un reporte para este proveedor.'
+          : 'No se pudo enviar el reporte. Intenta de nuevo.';
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: Colors.red.shade700),
+      );
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c          = context.colors;
+    final bottomPad  = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + bottomPad),
+      decoration: BoxDecoration(
+        color: c.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Título
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.busy.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.flag_rounded, color: AppColors.busy, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Reportar proveedor',
+                      style: TextStyle(
+                        color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      widget.providerName,
+                      style: TextStyle(color: c.textMuted, fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Icon(Icons.close_rounded, color: c.textMuted, size: 20),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          Text(
+            '¿Cuál es el motivo del reporte?',
+            style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+
+          // Motivos
+          ...widget.reasons.map(((String, String) r) {
+            final (key, label) = r;
+            final selected = _selectedReason == key;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedReason = key),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppColors.busy.withValues(alpha: 0.08)
+                      : c.bgCard,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected
+                        ? AppColors.busy.withValues(alpha: 0.5)
+                        : c.border,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(
+                        selected
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_unchecked_rounded,
+                        color: selected ? AppColors.busy : c.textMuted,
+                        size: 18,
+                        key: ValueKey(selected),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: selected ? c.textPrimary : c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+
+          const SizedBox(height: 4),
+
+          // Detalle opcional
+          TextField(
+            controller: _descController,
+            style: TextStyle(color: c.textPrimary, fontSize: 13),
+            maxLines: 2,
+            maxLength: 300,
+            decoration: InputDecoration(
+              hintText: 'Detalle adicional (opcional)…',
+              hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+              filled: true,
+              fillColor: c.bgCard,
+              counterStyle: TextStyle(color: c.textMuted, fontSize: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Botones
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _sending ? null : () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: c.textSecondary,
+                    side: BorderSide(color: c.border),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Cancelar'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: (_selectedReason == null || _sending) ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.busy,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.busy.withValues(alpha: 0.4),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: _sending
+                      ? const SizedBox(
+                          width: 18, height: 18,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('Enviar reporte', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

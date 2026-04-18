@@ -69,11 +69,14 @@ model User {
   updatedAt         DateTime  @updatedAt
 
   // Relaciones
-  providers     Provider[]          // Puede tener un perfil OFICIO y/o NEGOCIO
-  favorites     Favorite[]          // Proveedores guardados
-  reviews       Review[]            // Reseñas que escribió
-  refreshTokens RefreshToken[]      // Sesiones activas
-  otpCodes      OtpCode[]           // Códigos OTP de verificación
+  providers       Provider[]          // Puede tener un perfil OFICIO y/o NEGOCIO
+  favorites       Favorite[]          // Proveedores guardados
+  reviews         Review[]            // Reseñas que escribió
+  reviewReplies   ReviewReply[]       // Respuestas a reseñas
+  providerReports ProviderReport[]    // Reportes enviados a proveedores
+  refreshTokens   RefreshToken[]      // Sesiones activas
+  otpCodes        OtpCode[]           // Códigos OTP de verificación
+  recommendations Recommendation[]   // Proveedores recomendados
 
   @@map("users")
 }
@@ -129,6 +132,7 @@ model Category {
   slug          String      @unique  // "electricistas"
   iconUrl       String?
   parentId      Int?        // Para subcategorías
+  forType       String?     // 'OFICIO' | 'NEGOCIO' | null (ambos)
   isActive      Boolean     @default(true)
 
   parent        Category?   @relation("SubCategories", fields: [parentId], references: [id])
@@ -152,8 +156,9 @@ model Provider {
   ruc                 String?             // RUC del negocio — solo NEGOCIO (11 dígitos)
   nombreComercial     String?             // Nombre Comercial — solo NEGOCIO
   razonSocial         String?             // Razón Social — solo NEGOCIO
-  hasDelivery         Boolean             @default(false) // Servicio de delivery
-  plenaCoordinacion   Boolean             @default(false) // Coordinación full de entrega
+  hasDelivery         Boolean             @default(false) // Servicio de delivery — solo NEGOCIO
+  plenaCoordinacion   Boolean             @default(false) // Coordinación full de entrega — solo NEGOCIO
+  hasHomeService      Boolean             @default(false) // Servicio a domicilio — solo OFICIO
   phone               String
   whatsapp            String?
   address             String?
@@ -175,9 +180,14 @@ model Provider {
   isVerified          Boolean             @default(false)
   hasCleanRecord      Boolean             @default(false) // Sin antecedentes
 
-  // Calificación (desnormalizada para velocidad)
-  averageRating       Float               @default(0)
-  totalReviews        Int                 @default(0)
+  // Calificación y recomendaciones (desnormalizadas para velocidad)
+  averageRating           Float               @default(0)
+  totalReviews            Int                 @default(0)
+  totalRecommendations    Int                 @default(0)
+
+  // Prioridad de plan para ordenamiento: 1=PREMIUM, 2=ESTANDAR, 3=BASICO, 4=GRATIS/GRACIA
+  // Se actualiza cuando el admin aprueba o cambia el plan. Nunca lo toca el proveedor.
+  planPriority            Int                 @default(4)
 
   localityId          Int
   categoryId          Int
@@ -196,6 +206,8 @@ model Provider {
   analytics           ProviderAnalytic[]
   notifications       AdminNotification[]
   planRequests        PlanRequest[]
+  recommendations     Recommendation[]
+  reports             ProviderReport[]
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
@@ -298,11 +310,27 @@ model Review {
 
   createdAt   DateTime  @default(now())
 
-  provider    Provider  @relation(fields: [providerId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
+  provider    Provider      @relation(fields: [providerId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+  replies     ReviewReply[]
 
   @@index([providerId, isVisible])  // listado de reseñas de un proveedor
   @@map("reviews")
+}
+
+model ReviewReply {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  userId    Int      // Quien escribió la respuesta
+  content   String
+  photoUrl  String?
+  createdAt DateTime @default(now())
+
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([reviewId])
+  @@map("review_replies")
 }
 
 // ─────────────────────────────────────────
@@ -386,4 +414,45 @@ model AdminNotification {
   provider     Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("admin_notifications")
+}
+
+// ─────────────────────────────────────────
+// RECOMENDACIONES
+// ─────────────────────────────────────────
+
+model Recommendation {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  providerId Int
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId],     references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+  @@index([providerId])
+  @@map("recommendations")
+}
+
+// ─────────────────────────────────────────
+// REPORTES DE PROVEEDORES (por clientes)
+// ─────────────────────────────────────────
+
+model ProviderReport {
+  id          Int      @id @default(autoincrement())
+  providerId  Int
+  userId      Int      // Cliente que reporta
+  reason      String   // INFORMACION_FALSA | COMPORTAMIENTO | FRAUDE | FOTO_INAPROPIADA | NO_PRESTO | OTRO
+  description String?  // Detalle adicional opcional
+  isReviewed  Boolean  @default(false) // Admin lo revisó
+  createdAt   DateTime @default(now())
+
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId],     references: [id])
+
+  // Un cliente reporta un proveedor como máximo una vez
+  @@unique([userId, providerId])
+  @@index([providerId])
+  @@index([isReviewed])
+  @@map("provider_reports")
 }

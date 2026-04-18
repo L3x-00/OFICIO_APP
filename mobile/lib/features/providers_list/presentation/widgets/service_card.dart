@@ -18,6 +18,8 @@ class ServiceCard extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
   /// true cuando el usuario autenticado es dueño de esta tarjeta
   final bool isOwnCard;
+  /// Navega al panel del proveedor (solo cuando isOwnCard == true)
+  final VoidCallback? onGoToDashboard;
 
   const ServiceCard({
     super.key,
@@ -25,6 +27,7 @@ class ServiceCard extends StatelessWidget {
     this.onTap,
     this.onFavoriteToggle,
     this.isOwnCard = false,
+    this.onGoToDashboard,
   });
 
   @override
@@ -101,6 +104,7 @@ class ServiceCard extends StatelessWidget {
                 provider: provider,
                 onFavoriteToggle: onFavoriteToggle,
                 isOwnCard: isOwnCard,
+                onGoToDashboard: onGoToDashboard,
               ),
             ),
           ],
@@ -220,6 +224,12 @@ class _RatingRowData extends StatelessWidget {
           '${provider.averageRating.toStringAsFixed(1)} (${provider.totalReviews})',
           style: TextStyle(color: c.textSecondary, fontSize: 12),
         ),
+        if (provider.totalRecommendations > 0) ...[
+          const SizedBox(width: 8),
+          Icon(Icons.thumb_up_rounded, size: 12, color: c.textMuted),
+          const SizedBox(width: 3),
+          Text('${provider.totalRecommendations}', style: TextStyle(color: c.textMuted, fontSize: 11)),
+        ],
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -282,20 +292,40 @@ class _ActionButtons extends StatelessWidget {
   final ProviderModel provider;
   final VoidCallback? onFavoriteToggle;
   final bool isOwnCard;
-  const _ActionButtons({required this.provider, this.onFavoriteToggle, this.isOwnCard = false});
+  final VoidCallback? onGoToDashboard;
+  const _ActionButtons({required this.provider, this.onFavoriteToggle, this.isOwnCard = false, this.onGoToDashboard});
 
   @override
   Widget build(BuildContext context) {
+    if (isOwnCard) {
+      return GestureDetector(
+        onTap: onGoToDashboard,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 11),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 18),
+              SizedBox(width: 7),
+              Text('Ir a mi panel', style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+      );
+    }
     return Row(
       children: [
-        Expanded(child: _ContactButton(label: 'WhatsApp', icon: Icons.chat_rounded,  color: AppColors.whatsapp, onTap: () => _openWhatsApp())),
+        Expanded(child: _ContactButton(label: 'WhatsApp', icon: Icons.chat_rounded, color: AppColors.whatsapp, onTap: () => _openWhatsApp())),
         const SizedBox(width: 8),
-        Expanded(child: _ContactButton(label: 'Llamar',   icon: Icons.call_rounded,  color: AppColors.call,     onTap: () => _makeCall())),
+        Expanded(child: _ContactButton(label: 'Llamar',   icon: Icons.call_rounded,  color: AppColors.call,    onTap: () => _makeCall())),
         const SizedBox(width: 8),
-        if (isOwnCard)
-          _OwnCardBadge()
-        else
-          _FavoriteButton(isFavorite: provider.isFavorite, onToggle: onFavoriteToggle),
+        _FavoriteButton(isFavorite: provider.isFavorite, onToggle: onFavoriteToggle),
       ],
     );
   }
@@ -349,20 +379,6 @@ class _ContactButton extends StatelessWidget {
   }
 }
 
-class _OwnCardBadge extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: Icon(Icons.store_rounded, color: AppColors.primary, size: 22),
-    );
-  }
-}
 
 class _FavoriteButton extends StatelessWidget {
   final bool isFavorite;

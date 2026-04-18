@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 
@@ -74,17 +74,24 @@ export class ProvidersService {
       where.address = { contains: location, mode: 'insensitive' };
     }
 
-    // Ordenamiento y umbral de calidad
-    let orderBy: Prisma.ProviderOrderByWithRelationInput = { averageRating: 'desc' }; // default: mejor calificación
+    // Ordenamiento secundario según filtro del usuario
+    let secondaryOrder: Prisma.ProviderOrderByWithRelationInput = { averageRating: 'desc' };
     if (sortBy === 'reviews') {
-      // "Mejores reseñas": solo proveedores con ≥ 3.5 estrellas, ordenados de mayor a menor
+      // "Mejores reseñas": solo proveedores con ≥ 3.5 estrellas
       where.averageRating = { gte: 3.5 };
-      orderBy = { averageRating: 'desc' };
+      secondaryOrder = { averageRating: 'desc' };
     } else if (sortBy === 'availability') {
-      orderBy = { availability: 'asc' };
+      secondaryOrder = { availability: 'asc' };
     } else if (sortBy === 'rating') {
-      orderBy = { averageRating: 'desc' };
+      secondaryOrder = { averageRating: 'desc' };
     }
+
+    // planPriority SIEMPRE primero: los planes de pago activos aparecen antes
+    // que GRATIS/GRACIA, sin importar reseñas ni disponibilidad.
+    const orderBy: Prisma.ProviderOrderByWithRelationInput[] = [
+      { planPriority: 'asc' },
+      secondaryOrder,
+    ];
 
     const skip = (page - 1) * limit;
 
@@ -140,9 +147,13 @@ export class ProvidersService {
   }
 
   // ── LISTAR CATEGORÍAS ────────────────────────────────────
-  async getCategories() {
+  async getCategories(forType?: string) {
     return this.prisma.category.findMany({
-      where: { isActive: true, parentId: null },
+      where: {
+        isActive: true,
+        parentId: null,
+        ...(forType ? { forType } : {}),
+      },
       include: {
         children: {
           where: { isActive: true },
@@ -159,7 +170,111 @@ export class ProvidersService {
       data: { providerId, eventType, userId },
     });
   }
-  // backend/src/providers/providers.service.ts
+
+  // ── RECOMENDAR PROVEEDOR ─────────────────────────────────
+  async addRecommendation(userId: number, providerId: number) {
+    const provider = await this.prisma.provider.findUnique({ where: { id: providerId } });
+    if (!provider) throw new Error('Proveedor no encontrado');
+
+    // Si ya recomendó, devolver el total actual sin crear duplicado
+    const existing = await this.prisma.recommendation.findUnique({
+      where: { userId_providerId: { userId, providerId } },
+    });
+    if (existing) {
+      return { success: true, totalRecommendations: provider.totalRecommendations, alreadyRecommended: true };
+    }
+
+    // Crear recomendación e incrementar contador atómicamente
+    const [, updated] = await this.prisma.$transaction([
+      this.prisma.recommendation.create({ data: { userId, providerId } }),
+      this.prisma.provider.update({
+        where: { id: providerId },
+        data: { totalRecommendations: { increment: 1 } },
+        select: { totalRecommendations: true },
+      }),
+    ]);
+
+    return { success: true, totalRecommendations: updated.totalRecommendations };
+  }
+
+  // ── REPORTAR PROVEEDOR ───────────────────────────────────
+  async createReport(data: {
+    providerId: number;
+    userId: number;
+    reason: string;
+    description?: string;
+  }) {
+    const validReasons = [
+      'INFORMACION_FALSA', 'COMPORTAMIENTO', 'FRAUDE',
+      'FOTO_INAPROPIADA', 'NO_PRESTO', 'OTRO',
+    ];
+    if (!validReasons.includes(data.reason)) {
+      throw new BadRequestException('Motivo de reporte inválido');
+    }
+
+    const provider = await this.prisma.provider.findUnique({ where: { id: data.providerId } });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    try {
+      return await this.prisma.providerReport.create({
+        data: {
+          providerId:  data.providerId,
+          userId:      data.userId,
+          reason:      data.reason,
+          description: data.description,
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        throw new ConflictException('Ya enviaste un reporte para este proveedor.');
+      }
+      throw e;
+    }
+  }
+
+  // ── ESTADO DE RECOMENDACIÓN ──────────────────────────────
+  async getRecommendationStatus(userId: number, providerId: number) {
+    const existing = await this.prisma.recommendation.findUnique({
+      where: { userId_providerId: { userId, providerId } },
+    });
+    return { recommended: !!existing };
+  }
+
+  // ── TOGGLE RECOMENDACIÓN (añadir o quitar) ───────────────
+  async toggleRecommendation(userId: number, providerId: number) {
+    const provider = await this.prisma.provider.findUnique({ where: { id: providerId } });
+    if (!provider) throw new Error('Proveedor no encontrado');
+
+    const existing = await this.prisma.recommendation.findUnique({
+      where: { userId_providerId: { userId, providerId } },
+    });
+
+    if (existing) {
+      // Quitar recomendación
+      const [, updated] = await this.prisma.$transaction([
+        this.prisma.recommendation.delete({
+          where: { userId_providerId: { userId, providerId } },
+        }),
+        this.prisma.provider.update({
+          where: { id: providerId },
+          data: { totalRecommendations: { decrement: 1 } },
+          select: { totalRecommendations: true },
+        }),
+      ]);
+      return { recommended: false, totalRecommendations: updated.totalRecommendations };
+    }
+
+    // Añadir recomendación
+    const [, updated] = await this.prisma.$transaction([
+      this.prisma.recommendation.create({ data: { userId, providerId } }),
+      this.prisma.provider.update({
+        where: { id: providerId },
+        data: { totalRecommendations: { increment: 1 } },
+        select: { totalRecommendations: true },
+      }),
+    ]);
+    return { recommended: true, totalRecommendations: updated.totalRecommendations };
+  }
 
   async getAdminMetrics() {
     const [totalProviders, totalUsers, totalReviews] = await Promise.all([

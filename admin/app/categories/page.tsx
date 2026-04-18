@@ -36,7 +36,7 @@ function buildTree(flat: Category[]): Category[] {
   return roots;
 }
 
-const EMPTY_FORM = { name: '', slug: '', iconUrl: '', parentId: '' };
+const EMPTY_FORM = { name: '', slug: '', iconUrl: '', parentId: '', forType: '' };
 
 // ── Popover "Mover a…" ────────────────────────────────────────
 
@@ -203,6 +203,7 @@ export default function CategoriesPage() {
         slug:     form.slug.trim(),
         iconUrl:  form.iconUrl.trim() || undefined,
         parentId: form.parentId ? Number(form.parentId) : undefined,
+        forType:  form.forType || undefined,
       });
       resetForm();
       await load();
@@ -222,6 +223,7 @@ export default function CategoriesPage() {
       slug:     cat.slug,
       iconUrl:  cat.iconUrl ?? '',
       parentId: cat.parentId != null ? String(cat.parentId) : '',
+      forType:  cat.forType ?? '',
     });
     setFormError(null);
     setShowCreateForm(false);
@@ -239,6 +241,7 @@ export default function CategoriesPage() {
         slug:     form.slug.trim(),
         iconUrl:  form.iconUrl.trim() || undefined,
         parentId: form.parentId ? Number(form.parentId) : null,
+        forType:  form.forType || null,
       });
       resetForm();
       await load();
@@ -417,7 +420,7 @@ export default function CategoriesPage() {
               </div>
             </td>
 
-            {/* Slug + padre actual */}
+            {/* Slug + padre actual + forType badge */}
             <td className="p-4">
               <span className="text-xs font-mono text-gray-400 bg-white/5 px-2 py-1 rounded-lg">
                 {cat.slug}
@@ -425,6 +428,15 @@ export default function CategoriesPage() {
               {cat.parent && (
                 <span className="ml-2 text-xs text-gray-600">
                   en {cat.parent.name}
+                </span>
+              )}
+              {cat.forType && (
+                <span className={`ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  cat.forType === 'OFICIO'
+                    ? 'bg-blue-500/15 text-blue-400'
+                    : 'bg-purple-500/15 text-purple-400'
+                }`}>
+                  {cat.forType}
                 </span>
               )}
             </td>
@@ -545,7 +557,7 @@ export default function CategoriesPage() {
       {showCreateForm && (
         <div className="bg-[#1a1a1a] rounded-2xl border border-blue-500/30 p-6 space-y-4">
           <h2 className="text-white font-bold text-sm uppercase tracking-wider">Nueva Categoría</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Nombre *</label>
               <input
@@ -587,6 +599,18 @@ export default function CategoriesPage() {
                 {parentOptions.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Tipo de proveedor</label>
+              <select
+                value={form.forType}
+                onChange={(e) => setForm((f) => ({ ...f, forType: e.target.value }))}
+                className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none"
+              >
+                <option value="">— Ambos —</option>
+                <option value="OFICIO">Solo OFICIO</option>
+                <option value="NEGOCIO">Solo NEGOCIO</option>
               </select>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAdminSocket } from '@/hooks/useAdminSocket';
 import { 
   Plus, Search, Eye, EyeOff, 
   CheckCircle, XCircle, Edit, Star, Trash2, Loader2 
@@ -48,9 +49,14 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
     // Implementamos un pequeño debounce manual para la búsqueda
     const timer = setTimeout(() => {
       load();
-    }, 300); 
+    }, 300);
     return () => clearTimeout(timer);
   }, [load]);
+
+  // Recargar cuando llega un nuevo proveedor registrado en tiempo real
+  useAdminSocket(useCallback(payload => {
+    if (payload.type === 'NEW_PROVIDER') load();
+  }, [load]));
 
   const handleToggleVisibility = async (id: number) => {
     setActionLoading(id);

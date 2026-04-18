@@ -59,3 +59,43 @@ export class ValidateQrDto {
   @IsString()
   code: string;
 }
+
+export class UpdateReviewDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1, { message: 'La calificación mínima es 1' })
+  @Max(5, { message: 'La calificación máxima es 5' })
+  rating?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  comment?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  photoUrl?: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsPositive()
+  userId: number;
+}
+
+export class CreateReviewReplyDto {
+  @Type(() => Number)
+  @IsNumber()
+  @IsPositive()
+  userId: number;
+
+  @IsString()
+  @MaxLength(1000)
+  content: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  photoUrl?: string;
+}

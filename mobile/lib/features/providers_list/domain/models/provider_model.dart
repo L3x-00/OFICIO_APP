@@ -30,6 +30,10 @@ class ProviderModel {
   final String subscriptionPlan;
   /// ID del usuario propietario — para detectar auto-interacción
   final int? userId;
+  /// Número de usuarios que recomendaron este proveedor
+  final int totalRecommendations;
+  /// Solo OFICIO: indica que el profesional atiende a domicilio
+  final bool hasHomeService;
 
   const ProviderModel({
     required this.id,
@@ -57,6 +61,8 @@ class ProviderModel {
     this.ownerAvatarUrl,
     this.subscriptionPlan = 'GRATIS',
     this.userId,
+    this.totalRecommendations = 0,
+    this.hasHomeService = false,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -94,10 +100,12 @@ class ProviderModel {
       reviews:      (json['reviews'] as List?)
                       ?.map((r) => r as Map<String, dynamic>)
                       .toList(),
-      ownerName:        _buildOwnerName(json['user']),
-      ownerAvatarUrl:   json['user']?['avatarUrl'] as String?,
-      subscriptionPlan: json['subscription']?['plan'] as String? ?? 'GRATIS',
-      userId:           json['userId'] as int?,
+      ownerName:              _buildOwnerName(json['user']),
+      ownerAvatarUrl:         json['user']?['avatarUrl'] as String?,
+      subscriptionPlan:       json['subscription']?['plan'] as String? ?? 'GRATIS',
+      userId:                 json['userId'] as int?,
+      totalRecommendations:   json['totalRecommendations'] as int? ?? 0,
+      hasHomeService:         json['hasHomeService'] as bool? ?? false,
     );
   }
 
@@ -135,10 +143,12 @@ class ProviderModel {
       address:          address,
       scheduleJson:     scheduleJson,
       reviews:          reviews ?? this.reviews,
-      ownerName:        ownerName,
-      ownerAvatarUrl:   ownerAvatarUrl,
-      subscriptionPlan: subscriptionPlan,
-      userId:           userId,
+      ownerName:              ownerName,
+      ownerAvatarUrl:         ownerAvatarUrl,
+      subscriptionPlan:       subscriptionPlan,
+      userId:                 userId,
+      totalRecommendations:   totalRecommendations,
+      hasHomeService:         hasHomeService,
     );
   }
 }

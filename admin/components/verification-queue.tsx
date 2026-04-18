@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAdminSocket } from '@/hooks/useAdminSocket';
 import {
   CheckCircle, XCircle, HelpCircle, ShieldOff,
   Loader2, FileText, Image, Phone, Mail, MapPin,
@@ -66,6 +67,11 @@ export function VerificationQueue() {
     if (tab === 'pending') loadPending();
     else loadVerified();
   }, [tab, loadPending, loadVerified]);
+
+  // Recargar cola de pendientes cuando llega un nuevo proveedor en tiempo real
+  useAdminSocket(useCallback(payload => {
+    if (payload.type === 'NEW_PROVIDER' && tab === 'pending') loadPending();
+  }, [tab, loadPending]));
 
   const handleApprove = async (id: number) => {
     setActionId(id);

@@ -84,12 +84,15 @@ class _AppRootState extends State<_AppRoot> {
   void _onAuthChanged() {
     final auth   = context.read<AuthProvider>();
     final notifs = context.read<NotificationsProvider>();
+    final favs   = context.read<FavoritesProvider>();
 
-    // Sincronizar NotificationsProvider con el estado de autenticación
+    // Sincronizar NotificationsProvider y FavoritesProvider con auth
     if (auth.user != null) {
       notifs.setUser(userId: auth.user!.id, role: auth.user!.role);
+      favs.initialize(auth.user!.id);
     } else {
       notifs.clearUser();
+      favs.clear();
     }
 
     final current = auth.navigationState;

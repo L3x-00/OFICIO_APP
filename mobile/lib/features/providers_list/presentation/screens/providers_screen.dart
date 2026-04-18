@@ -4,6 +4,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/join_us_modal.dart';
 import 'package:provider/provider.dart';
 import '../../data/providers_repository.dart';
+import '../../domain/models/provider_model.dart';
 import '../providers/providers_provider.dart';
 import '../widgets/service_card.dart';
 import 'provider_detail_sheet.dart';
@@ -910,6 +911,11 @@ class _ProvidersList extends StatelessWidget {
           provider: provider,
           isOwnCard: isOwnCard,
           onTap: () => ProviderDetailSheet.show(context, provider),
+          onGoToDashboard: isOwnCard ? () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ProviderPanel(providerType: provider.type == ProviderType.negocio ? 'NEGOCIO' : 'OFICIO'),
+            ),
+          ) : null,
           onFavoriteToggle: () {
             if (auth.user == null) {
               _showLoginRequiredDialog(context);

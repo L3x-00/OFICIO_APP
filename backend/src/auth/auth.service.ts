@@ -61,25 +61,25 @@ export class AuthService {
 
     // ── REGISTRO DE PROVEEDOR ────────────────────────────────
   async registerProvider(
-    userId: number,
-    data: {
-      businessName: string;
-      phone: string;
-      type: 'OFICIO' | 'NEGOCIO';
-      // OFICIO
-      dni?: string | null;
-      // NEGOCIO
-      ruc?: string | null;
-      nombreComercial?: string | null;
-      razonSocial?: string | null;
-      hasDelivery?: boolean;
-      plenaCoordinacion?: boolean;
-      // comunes
-      description?: string;
-      address?: string;
-      categoryId?: number;
-      localityId?: number;
-    },
+userId: number, 
+data: {
+  businessName: string;
+  phone: string;
+  type: 'OFICIO' | 'NEGOCIO';
+  // OFICIO
+  dni?: string | null;
+  // NEGOCIO
+  ruc?: string | null;
+  nombreComercial?: string | null;
+  razonSocial?: string | null;
+  hasDelivery?: boolean;
+  plenaCoordinacion?: boolean;
+  // comunes
+  description?: string;
+  address?: string;
+  categoryId?: number;
+  localityId?: number;
+}, files: Express.Multer.File[],
   ) {
     // Verificar que el usuario existe
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -162,6 +162,19 @@ export class AuthService {
           },
         },
       });
+      // ─── BLOQUE NUEVO PARA LAS FOTOS ───────────────────────
+    // 3. Si vienen archivos, los guardamos usando el modelo ProviderImage
+    if (files && files.length > 0) {
+      await tx.providerImage.createMany({
+        data: files.map((file, index) => ({
+          providerId: newProvider.id,
+          url: `/uploads/${file.filename}`, // Ruta relativa a la carpeta de uploads
+          isCover: index === 0,             // La primera foto será la de portada
+          order: index,                     // Mantiene el orden enviado desde el celular
+        })),
+      });
+    }
+    // ───────────────────────────────────────────────────────
 
       return newProvider;
     });

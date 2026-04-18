@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getPlanRequests, approvePlanRequest, rejectPlanRequest } from '@/lib/api';
 import { toast } from 'sonner';
+import { useAdminSocket } from '@/hooks/useAdminSocket';
 import { CheckCircle, XCircle, Clock, CreditCard, ChevronDown } from 'lucide-react';
 
 const PLAN_COLORS: Record<string, string> = {
@@ -38,6 +39,12 @@ export default function PlanRequestsPage() {
   };
 
   useEffect(() => { load(); }, [filter]);
+
+  // Recargar automáticamente cuando llega una nueva solicitud de plan en tiempo real
+  const onSocketEvent = useCallback(() => { load(); }, [filter]);
+  useAdminSocket(payload => {
+    if (payload.type === 'NEW_PLAN_REQUEST') onSocketEvent();
+  });
 
   const handleApprove = async (id: number) => {
     try {

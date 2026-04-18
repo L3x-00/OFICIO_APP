@@ -52,12 +52,13 @@ export class ProviderProfileService {
   async updateMyProfile(
     userId: number,
     data: {
-      businessName?: string;
-      description?:  string;
-      phone?:        string;
-      whatsapp?:     string;
-      address?:      string;
-      scheduleJson?: Record<string, string>;
+      businessName?:   string;
+      description?:    string;
+      phone?:          string;
+      whatsapp?:       string;
+      address?:        string;
+      scheduleJson?:   Record<string, string>;
+      hasHomeService?: boolean;  // solo OFICIO
     },
     type?: string,
   ) {

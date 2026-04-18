@@ -1,7 +1,7 @@
 # OficioApp — Estado Actual del Proyecto
 
 **Última actualización**: 2026-04-17
-**Estado**: Hito 6.0 — Panel completo, suscripciones interactivas, SVG icons
+**Estado**: Hito 6.6 — Reportar proveedor desde modal de detalle
 
 ---
 
@@ -35,6 +35,13 @@ OficioApp es un marketplace de servicios locales para ciudades intermedias del P
 | **5.9.2** | ✅ | Suscripciones interactivas: PlanRequest, admin approval, notifs tiempo real |
 | **6.0** | ✅ | Migración SVG de íconos sociales (Google/Facebook/Apple), widget reutilizable |
 | **6.1** | ✅ | 4 parches de arquitectura: validación DTO, aislamiento notifs, anti-spam PlanRequest, limpieza enum |
+| **6.2** | ✅ | Panel tiempo real: socket.io-client admin, toasts live, bell badge, auto-reload páginas |
+| **6.2.1** | ✅ | Detección tarjeta propia: oculta WhatsApp/Llamar, muestra "Ir a mi panel" (list + detail) |
+| **6.2.2** | ✅ | Sistema recomendaciones: modal post-reseña, contador en tarjetas, endpoint backend |
+| **6.3** | ✅ | Permisos explícitos: GPS real en reseñas, URL Maps en onboarding, PermissionService centralizado |
+| **6.4** | ✅ | Respuestas a reseñas: hilo chat, autorización revisor+proveedor, notifs cruzadas, foto adjunta |
+| **6.5** | ✅ | Prioridad de plan: PREMIUM→ESTANDAR→BASICO→GRATIS en listado; reseña editable (1 por usuario) |
+| **6.6** | ✅ | Reportar proveedor: botón en detail sheet, 6 motivos, detalle opcional, 1 reporte por usuario |
 
 ---
 

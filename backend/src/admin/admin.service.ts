@@ -155,7 +155,11 @@ export class AdminService {
   // ── OPCIONES PARA FORMULARIOS ─────────────────────────────
   async getFormOptions() {
     const [categories, localities] = await Promise.all([
-      this.prisma.category.findMany({ where: { isActive: true } }),
+      this.prisma.category.findMany({
+        where:   { isActive: true, parentId: null },
+        include: { children: { where: { isActive: true }, select: { id: true, name: true, slug: true, forType: true } } },
+        orderBy: { name: 'asc' },
+      }),
       this.prisma.locality.findMany({ where: { isActive: true } }),
     ]);
     return { categories, localities };
@@ -289,6 +293,17 @@ async updateProvider(
   });
 }
 
+  // ── HELPER: plan → prioridad de listado ──────────────────
+  private planToPriority(plan: string, status: string): number {
+    if (status !== 'ACTIVA') return 4;
+    switch (plan) {
+      case 'PREMIUM':  return 1;
+      case 'ESTANDAR': return 2;
+      case 'BASICO':   return 3;
+      default:         return 4;
+    }
+  }
+
   // ── CAMBIAR PLAN DE SUSCRIPCIÓN ────────────────────────────
   async updateProviderSubscription(id: number, plan: string) {
     const validPlans = ['GRATIS', 'BASICO', 'ESTANDAR', 'PREMIUM'];
@@ -302,12 +317,21 @@ async updateProvider(
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
+    const status = plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA';
+    const priority = this.planToPriority(plan, status);
+
+    // Actualizar prioridad del proveedor
+    await this.prisma.provider.update({
+      where: { id },
+      data: { planPriority: priority },
+    });
+
     if (provider.subscription) {
       return this.prisma.subscription.update({
         where: { providerId: id },
         data: {
           plan:   plan as SubscriptionPlan,
-          status: (plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA') as SubscriptionStatus,
+          status: status as SubscriptionStatus,
         },
       });
     }
@@ -319,7 +343,7 @@ async updateProvider(
       data: {
         providerId: id,
         plan:       plan as SubscriptionPlan,
-        status:     (plan === 'GRATIS' ? 'GRACIA' : 'ACTIVA') as SubscriptionStatus,
+        status:     status as SubscriptionStatus,
         endDate,
       },
     });
@@ -870,6 +894,7 @@ async updateProvider(
       slug?:     string;
       iconUrl?:  string;
       parentId?: number | null;
+      forType?:  string | null;
       isActive?: boolean;
     },
   ) {
@@ -956,22 +981,32 @@ async updateProvider(
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1);
 
-    // Update or create subscription
-    if (req.provider.subscription) {
-      await this.prisma.subscription.update({
-        where: { providerId: req.providerId },
-        data: { plan: req.plan, status: 'ACTIVA', endDate },
-      });
-    } else {
-      await this.prisma.subscription.create({
-        data: { providerId: req.providerId, plan: req.plan, status: 'ACTIVA', endDate },
-      });
-    }
+    const priority = this.planToPriority(req.plan, 'ACTIVA');
 
-    // Mark request approved
-    await this.prisma.planRequest.update({
-      where: { id: requestId },
-      data: { status: 'APROBADO' },
+    // Update or create subscription + actualizar prioridad (transacción atómica)
+    await this.prisma.$transaction(async (tx) => {
+      if (req.provider.subscription) {
+        await tx.subscription.update({
+          where: { providerId: req.providerId },
+          data: { plan: req.plan, status: 'ACTIVA', endDate },
+        });
+      } else {
+        await tx.subscription.create({
+          data: { providerId: req.providerId, plan: req.plan, status: 'ACTIVA', endDate },
+        });
+      }
+
+      // Subir en el ranking de listado
+      await tx.provider.update({
+        where: { id: req.providerId },
+        data: { planPriority: priority },
+      });
+
+      // Mark request approved
+      await tx.planRequest.update({
+        where: { id: requestId },
+        data: { status: 'APROBADO' },
+      });
     });
 
     // Persist notification for provider
@@ -1037,5 +1072,45 @@ async updateProvider(
     });
 
     return { success: true };
+  }
+
+  // ── REPORTES DE USUARIOS A PROVEEDORES ───────────────────
+
+  async getProviderReports(page = 1, limit = 20, isReviewed?: boolean) {
+    const skip  = (page - 1) * limit;
+    const where = isReviewed !== undefined ? { isReviewed } : {};
+
+    const [data, total, pendingCount] = await Promise.all([
+      this.prisma.providerReport.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          provider: { select: { id: true, businessName: true, type: true } },
+          user:     { select: { id: true, firstName: true, lastName: true, email: true } },
+        },
+      }),
+      this.prisma.providerReport.count({ where }),
+      this.prisma.providerReport.count({ where: { isReviewed: false } }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+      pendingCount,
+    };
+  }
+
+  async markReportReviewed(reportId: number) {
+    const report = await this.prisma.providerReport.findUnique({ where: { id: reportId } });
+    if (!report) throw new NotFoundException('Reporte no encontrado');
+
+    return this.prisma.providerReport.update({
+      where: { id: reportId },
+      data:  { isReviewed: true },
+    });
   }
 }
