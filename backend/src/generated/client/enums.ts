@@ -64,6 +64,16 @@ export const VerificationStatus = {
 export type VerificationStatus = (typeof VerificationStatus)[keyof typeof VerificationStatus]
 
 
+export const TrustStatus = {
+  NONE: 'NONE',
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type TrustStatus = (typeof TrustStatus)[keyof typeof TrustStatus]
+
+
 export const NotificationType = {
   APROBADO: 'APROBADO',
   RECHAZADO: 'RECHAZADO',

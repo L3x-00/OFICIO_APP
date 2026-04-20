@@ -18,6 +18,10 @@ class ProvidersRepository {
     String? type,         // 'PROFESSIONAL' | 'BUSINESS'
     String? sortBy,       // 'reviews' | 'availability'
     String? location,     // búsqueda por texto en dirección
+    // Filtros de ubicación estructurados (jerarquía peruana)
+    String? department,
+    String? province,
+    String? district,
     int page = 1,
     int limit = 20,
   }) async {
@@ -30,9 +34,12 @@ class ProvidersRepository {
         'availability':       ?availability,
         if (verified != null) 'verified': verified.toString(),
         if (search != null && search.isNotEmpty) 'search': search,
-        'type':   ?type,
-        'sortBy': ?sortBy,
-        if (location != null && location.isNotEmpty) 'location': location,
+        'type':       ?type,
+        'sortBy':     ?sortBy,
+        if (location   != null && location.isNotEmpty)   'location':   location,
+        if (department != null && department.isNotEmpty) 'department': department,
+        if (province   != null && province.isNotEmpty)   'province':   province,
+        if (district   != null && district.isNotEmpty)   'district':   district,
       };
 
       final response = await _dio.get('/providers', queryParameters: queryParams);

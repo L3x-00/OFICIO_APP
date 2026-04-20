@@ -43,6 +43,9 @@ export type UserMinAggregateOutputType = {
   firstName: string | null
   lastName: string | null
   avatarUrl: string | null
+  department: string | null
+  province: string | null
+  district: string | null
   isActive: boolean | null
   isEmailVerified: boolean | null
   createdAt: Date | null
@@ -58,6 +61,9 @@ export type UserMaxAggregateOutputType = {
   firstName: string | null
   lastName: string | null
   avatarUrl: string | null
+  department: string | null
+  province: string | null
+  district: string | null
   isActive: boolean | null
   isEmailVerified: boolean | null
   createdAt: Date | null
@@ -73,6 +79,9 @@ export type UserCountAggregateOutputType = {
   firstName: number
   lastName: number
   avatarUrl: number
+  department: number
+  province: number
+  district: number
   isActive: number
   isEmailVerified: number
   createdAt: number
@@ -98,6 +107,9 @@ export type UserMinAggregateInputType = {
   firstName?: true
   lastName?: true
   avatarUrl?: true
+  department?: true
+  province?: true
+  district?: true
   isActive?: true
   isEmailVerified?: true
   createdAt?: true
@@ -113,6 +125,9 @@ export type UserMaxAggregateInputType = {
   firstName?: true
   lastName?: true
   avatarUrl?: true
+  department?: true
+  province?: true
+  district?: true
   isActive?: true
   isEmailVerified?: true
   createdAt?: true
@@ -128,6 +143,9 @@ export type UserCountAggregateInputType = {
   firstName?: true
   lastName?: true
   avatarUrl?: true
+  department?: true
+  province?: true
+  district?: true
   isActive?: true
   isEmailVerified?: true
   createdAt?: true
@@ -230,6 +248,9 @@ export type UserGroupByOutputType = {
   firstName: string
   lastName: string
   avatarUrl: string | null
+  department: string | null
+  province: string | null
+  district: string | null
   isActive: boolean
   isEmailVerified: boolean
   createdAt: Date
@@ -268,6 +289,9 @@ export type UserWhereInput = {
   firstName?: Prisma.StringFilter<"User"> | string
   lastName?: Prisma.StringFilter<"User"> | string
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
+  department?: Prisma.StringNullableFilter<"User"> | string | null
+  province?: Prisma.StringNullableFilter<"User"> | string | null
+  district?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
   isEmailVerified?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -277,6 +301,7 @@ export type UserWhereInput = {
   reviews?: Prisma.ReviewListRelationFilter
   reviewReplies?: Prisma.ReviewReplyListRelationFilter
   providerReports?: Prisma.ProviderReportListRelationFilter
+  platformIssues?: Prisma.PlatformIssueListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
   otpCodes?: Prisma.OtpCodeListRelationFilter
   recommendations?: Prisma.RecommendationListRelationFilter
@@ -291,6 +316,9 @@ export type UserOrderByWithRelationInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  department?: Prisma.SortOrderInput | Prisma.SortOrder
+  province?: Prisma.SortOrderInput | Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -300,6 +328,7 @@ export type UserOrderByWithRelationInput = {
   reviews?: Prisma.ReviewOrderByRelationAggregateInput
   reviewReplies?: Prisma.ReviewReplyOrderByRelationAggregateInput
   providerReports?: Prisma.ProviderReportOrderByRelationAggregateInput
+  platformIssues?: Prisma.PlatformIssueOrderByRelationAggregateInput
   refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
   otpCodes?: Prisma.OtpCodeOrderByRelationAggregateInput
   recommendations?: Prisma.RecommendationOrderByRelationAggregateInput
@@ -317,6 +346,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   firstName?: Prisma.StringFilter<"User"> | string
   lastName?: Prisma.StringFilter<"User"> | string
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
+  department?: Prisma.StringNullableFilter<"User"> | string | null
+  province?: Prisma.StringNullableFilter<"User"> | string | null
+  district?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
   isEmailVerified?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -326,6 +358,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   reviews?: Prisma.ReviewListRelationFilter
   reviewReplies?: Prisma.ReviewReplyListRelationFilter
   providerReports?: Prisma.ProviderReportListRelationFilter
+  platformIssues?: Prisma.PlatformIssueListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
   otpCodes?: Prisma.OtpCodeListRelationFilter
   recommendations?: Prisma.RecommendationListRelationFilter
@@ -340,6 +373,9 @@ export type UserOrderByWithAggregationInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  department?: Prisma.SortOrderInput | Prisma.SortOrder
+  province?: Prisma.SortOrderInput | Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -363,6 +399,9 @@ export type UserScalarWhereWithAggregatesInput = {
   firstName?: Prisma.StringWithAggregatesFilter<"User"> | string
   lastName?: Prisma.StringWithAggregatesFilter<"User"> | string
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  department?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  province?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  district?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   isEmailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -377,6 +416,9 @@ export type UserCreateInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -386,6 +428,7 @@ export type UserCreateInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
@@ -400,6 +443,9 @@ export type UserUncheckedCreateInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -409,6 +455,7 @@ export type UserUncheckedCreateInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
@@ -422,6 +469,9 @@ export type UserUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -431,6 +481,7 @@ export type UserUpdateInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
@@ -445,6 +496,9 @@ export type UserUncheckedUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -454,6 +508,7 @@ export type UserUncheckedUpdateInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
@@ -468,6 +523,9 @@ export type UserCreateManyInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -482,6 +540,9 @@ export type UserUpdateManyMutationInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -497,6 +558,9 @@ export type UserUncheckedUpdateManyInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -512,6 +576,9 @@ export type UserCountOrderByAggregateInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  department?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  district?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -531,6 +598,9 @@ export type UserMaxOrderByAggregateInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  department?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  district?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -546,6 +616,9 @@ export type UserMinOrderByAggregateInput = {
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
+  department?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  district?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -701,6 +774,20 @@ export type UserUpdateOneRequiredWithoutProviderReportsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProviderReportsInput, Prisma.UserUpdateWithoutProviderReportsInput>, Prisma.UserUncheckedUpdateWithoutProviderReportsInput>
 }
 
+export type UserCreateNestedOneWithoutPlatformIssuesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPlatformIssuesInput, Prisma.UserUncheckedCreateWithoutPlatformIssuesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlatformIssuesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPlatformIssuesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPlatformIssuesInput, Prisma.UserUncheckedCreateWithoutPlatformIssuesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlatformIssuesInput
+  upsert?: Prisma.UserUpsertWithoutPlatformIssuesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPlatformIssuesInput, Prisma.UserUpdateWithoutPlatformIssuesInput>, Prisma.UserUncheckedUpdateWithoutPlatformIssuesInput>
+}
+
 export type UserCreateWithoutOtpCodesInput = {
   email: string
   phone?: string | null
@@ -709,6 +796,9 @@ export type UserCreateWithoutOtpCodesInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -718,6 +808,7 @@ export type UserCreateWithoutOtpCodesInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
 }
@@ -731,6 +822,9 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -740,6 +834,7 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
 }
@@ -768,6 +863,9 @@ export type UserUpdateWithoutOtpCodesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -777,6 +875,7 @@ export type UserUpdateWithoutOtpCodesInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
 }
@@ -790,6 +889,9 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -799,6 +901,7 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -811,6 +914,9 @@ export type UserCreateWithoutRefreshTokensInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -820,6 +926,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
 }
@@ -833,6 +940,9 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -842,6 +952,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
 }
@@ -870,6 +981,9 @@ export type UserUpdateWithoutRefreshTokensInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -879,6 +993,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
 }
@@ -892,6 +1007,9 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -901,6 +1019,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -913,6 +1032,9 @@ export type UserCreateWithoutProvidersInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -921,6 +1043,7 @@ export type UserCreateWithoutProvidersInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
@@ -935,6 +1058,9 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -943,6 +1069,7 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
@@ -972,6 +1099,9 @@ export type UserUpdateWithoutProvidersInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -980,6 +1110,7 @@ export type UserUpdateWithoutProvidersInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
@@ -994,6 +1125,9 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1002,6 +1136,7 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
@@ -1015,6 +1150,9 @@ export type UserCreateWithoutReviewsInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1023,6 +1161,7 @@ export type UserCreateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
@@ -1037,6 +1176,9 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1045,6 +1187,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
@@ -1074,6 +1217,9 @@ export type UserUpdateWithoutReviewsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1082,6 +1228,7 @@ export type UserUpdateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
@@ -1096,6 +1243,9 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1104,6 +1254,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
@@ -1117,6 +1268,9 @@ export type UserCreateWithoutReviewRepliesInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1125,6 +1279,7 @@ export type UserCreateWithoutReviewRepliesInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
@@ -1139,6 +1294,9 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1147,6 +1305,7 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
@@ -1176,6 +1335,9 @@ export type UserUpdateWithoutReviewRepliesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1184,6 +1346,7 @@ export type UserUpdateWithoutReviewRepliesInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
@@ -1198,6 +1361,9 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1206,6 +1372,7 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
@@ -1219,6 +1386,9 @@ export type UserCreateWithoutFavoritesInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1227,6 +1397,7 @@ export type UserCreateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
@@ -1241,6 +1412,9 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1249,6 +1423,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
@@ -1278,6 +1453,9 @@ export type UserUpdateWithoutFavoritesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1286,6 +1464,7 @@ export type UserUpdateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
@@ -1300,6 +1479,9 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1308,6 +1490,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
@@ -1321,6 +1504,9 @@ export type UserCreateWithoutRecommendationsInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1330,6 +1516,7 @@ export type UserCreateWithoutRecommendationsInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
 }
@@ -1343,6 +1530,9 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1352,6 +1542,7 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
   providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1380,6 +1571,9 @@ export type UserUpdateWithoutRecommendationsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1389,6 +1583,7 @@ export type UserUpdateWithoutRecommendationsInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
 }
@@ -1402,6 +1597,9 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1411,6 +1609,7 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
   providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1423,6 +1622,9 @@ export type UserCreateWithoutProviderReportsInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1431,6 +1633,7 @@ export type UserCreateWithoutProviderReportsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
@@ -1445,6 +1648,9 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   firstName: string
   lastName: string
   avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1453,6 +1659,7 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
@@ -1482,6 +1689,9 @@ export type UserUpdateWithoutProviderReportsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1490,6 +1700,7 @@ export type UserUpdateWithoutProviderReportsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
@@ -1504,6 +1715,9 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1512,6 +1726,125 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPlatformIssuesInput = {
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  isActive?: boolean
+  isEmailVerified?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  providers?: Prisma.ProviderCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPlatformIssuesInput = {
+  id?: number
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  isActive?: boolean
+  isEmailVerified?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPlatformIssuesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPlatformIssuesInput, Prisma.UserUncheckedCreateWithoutPlatformIssuesInput>
+}
+
+export type UserUpsertWithoutPlatformIssuesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPlatformIssuesInput, Prisma.UserUncheckedUpdateWithoutPlatformIssuesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPlatformIssuesInput, Prisma.UserUncheckedCreateWithoutPlatformIssuesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPlatformIssuesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPlatformIssuesInput, Prisma.UserUncheckedUpdateWithoutPlatformIssuesInput>
+}
+
+export type UserUpdateWithoutPlatformIssuesInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providers?: Prisma.ProviderUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providers?: Prisma.ProviderUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
@@ -1528,6 +1861,7 @@ export type UserCountOutputType = {
   reviews: number
   reviewReplies: number
   providerReports: number
+  platformIssues: number
   refreshTokens: number
   otpCodes: number
   recommendations: number
@@ -1539,6 +1873,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reviews?: boolean | UserCountOutputTypeCountReviewsArgs
   reviewReplies?: boolean | UserCountOutputTypeCountReviewRepliesArgs
   providerReports?: boolean | UserCountOutputTypeCountProviderReportsArgs
+  platformIssues?: boolean | UserCountOutputTypeCountPlatformIssuesArgs
   refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
   otpCodes?: boolean | UserCountOutputTypeCountOtpCodesArgs
   recommendations?: boolean | UserCountOutputTypeCountRecommendationsArgs
@@ -1592,6 +1927,13 @@ export type UserCountOutputTypeCountProviderReportsArgs<ExtArgs extends runtime.
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountPlatformIssuesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlatformIssueWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountRefreshTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.RefreshTokenWhereInput
 }
@@ -1620,6 +1962,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   firstName?: boolean
   lastName?: boolean
   avatarUrl?: boolean
+  department?: boolean
+  province?: boolean
+  district?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
@@ -1629,6 +1974,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
   reviewReplies?: boolean | Prisma.User$reviewRepliesArgs<ExtArgs>
   providerReports?: boolean | Prisma.User$providerReportsArgs<ExtArgs>
+  platformIssues?: boolean | Prisma.User$platformIssuesArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   otpCodes?: boolean | Prisma.User$otpCodesArgs<ExtArgs>
   recommendations?: boolean | Prisma.User$recommendationsArgs<ExtArgs>
@@ -1644,6 +1990,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   firstName?: boolean
   lastName?: boolean
   avatarUrl?: boolean
+  department?: boolean
+  province?: boolean
+  district?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
@@ -1659,6 +2008,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   firstName?: boolean
   lastName?: boolean
   avatarUrl?: boolean
+  department?: boolean
+  province?: boolean
+  district?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
@@ -1674,19 +2026,23 @@ export type UserSelectScalar = {
   firstName?: boolean
   lastName?: boolean
   avatarUrl?: boolean
+  department?: boolean
+  province?: boolean
+  district?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "isActive" | "isEmailVerified" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "department" | "province" | "district" | "isActive" | "isEmailVerified" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   providers?: boolean | Prisma.User$providersArgs<ExtArgs>
   favorites?: boolean | Prisma.User$favoritesArgs<ExtArgs>
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
   reviewReplies?: boolean | Prisma.User$reviewRepliesArgs<ExtArgs>
   providerReports?: boolean | Prisma.User$providerReportsArgs<ExtArgs>
+  platformIssues?: boolean | Prisma.User$platformIssuesArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   otpCodes?: boolean | Prisma.User$otpCodesArgs<ExtArgs>
   recommendations?: boolean | Prisma.User$recommendationsArgs<ExtArgs>
@@ -1703,6 +2059,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     reviews: Prisma.$ReviewPayload<ExtArgs>[]
     reviewReplies: Prisma.$ReviewReplyPayload<ExtArgs>[]
     providerReports: Prisma.$ProviderReportPayload<ExtArgs>[]
+    platformIssues: Prisma.$PlatformIssuePayload<ExtArgs>[]
     refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
     otpCodes: Prisma.$OtpCodePayload<ExtArgs>[]
     recommendations: Prisma.$RecommendationPayload<ExtArgs>[]
@@ -1716,6 +2073,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     firstName: string
     lastName: string
     avatarUrl: string | null
+    department: string | null
+    province: string | null
+    district: string | null
     isActive: boolean
     isEmailVerified: boolean
     createdAt: Date
@@ -2119,6 +2479,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   reviews<T extends Prisma.User$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviewReplies<T extends Prisma.User$reviewRepliesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewRepliesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewReplyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   providerReports<T extends Prisma.User$providerReportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$providerReportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  platformIssues<T extends Prisma.User$platformIssuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$platformIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlatformIssuePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   otpCodes<T extends Prisma.User$otpCodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$otpCodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OtpCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   recommendations<T extends Prisma.User$recommendationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$recommendationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecommendationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2159,6 +2520,9 @@ export interface UserFieldRefs {
   readonly firstName: Prisma.FieldRef<"User", 'String'>
   readonly lastName: Prisma.FieldRef<"User", 'String'>
   readonly avatarUrl: Prisma.FieldRef<"User", 'String'>
+  readonly department: Prisma.FieldRef<"User", 'String'>
+  readonly province: Prisma.FieldRef<"User", 'String'>
+  readonly district: Prisma.FieldRef<"User", 'String'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
   readonly isEmailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
@@ -2673,6 +3037,30 @@ export type User$providerReportsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.ProviderReportScalarFieldEnum | Prisma.ProviderReportScalarFieldEnum[]
+}
+
+/**
+ * User.platformIssues
+ */
+export type User$platformIssuesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PlatformIssue
+   */
+  select?: Prisma.PlatformIssueSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PlatformIssue
+   */
+  omit?: Prisma.PlatformIssueOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlatformIssueInclude<ExtArgs> | null
+  where?: Prisma.PlatformIssueWhereInput
+  orderBy?: Prisma.PlatformIssueOrderByWithRelationInput | Prisma.PlatformIssueOrderByWithRelationInput[]
+  cursor?: Prisma.PlatformIssueWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlatformIssueScalarFieldEnum | Prisma.PlatformIssueScalarFieldEnum[]
 }
 
 /**

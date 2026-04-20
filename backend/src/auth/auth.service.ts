@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
@@ -44,6 +45,14 @@ export class AuthService {
       },
     });
 
+    // Notificar a admins del nuevo registro
+    this.eventsGateway.emitNotification({
+      type: 'NEW_USER',
+      title: 'Nuevo usuario registrado',
+      body: `${data.firstName} ${data.lastName} (${data.email}) se registró en la plataforma.`,
+      targetRole: 'ADMIN',
+    });
+
     // Generar y guardar OTP automáticamente tras el registro
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
@@ -75,10 +84,13 @@ data: {
   hasDelivery?: boolean;
   plenaCoordinacion?: boolean;
   // comunes
+  whatsapp?: string | null;
   description?: string;
   address?: string;
   categoryId?: number;
   localityId?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  scheduleJson?: any;
 }, files: Express.Multer.File[],
   ) {
     // Verificar que el usuario existe
@@ -147,6 +159,7 @@ data: {
           hasDelivery:      data.type === 'NEGOCIO' ? (data.hasDelivery ?? false) : false,
           plenaCoordinacion: data.type === 'NEGOCIO' ? (data.plenaCoordinacion ?? false) : false,
           // comunes
+          whatsapp:         data.whatsapp?.trim() || null,
           description:      data.description || null,
           address:          data.address || null,
           type:             data.type,
@@ -154,12 +167,14 @@ data: {
           localityId,
           verificationStatus: 'PENDIENTE',
           isVisible: false, // no aparece en la app hasta ser aprobado
-          scheduleJson: {
-            lun: '8:00-18:00', mar: '8:00-18:00',
-            mie: '8:00-18:00', jue: '8:00-18:00',
-            vie: '8:00-18:00', sab: '9:00-13:00',
-            dom: 'Cerrado',
-          },
+          scheduleJson: data.type === 'NEGOCIO' && data.scheduleJson
+            ? data.scheduleJson
+            : {
+                lun: '8:00-18:00', mar: '8:00-18:00',
+                mie: '8:00-18:00', jue: '8:00-18:00',
+                vie: '8:00-18:00', sab: '9:00-13:00',
+                dom: 'Cerrado',
+              },
         },
       });
       // ─── BLOQUE NUEVO PARA LAS FOTOS ───────────────────────
@@ -220,13 +235,16 @@ data: {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
-        id:        true,
-        email:     true,
-        firstName: true,
-        lastName:  true,
-        phone:     true,
-        avatarUrl: true,
-        role:      true,
+        id:         true,
+        email:      true,
+        firstName:  true,
+        lastName:   true,
+        phone:      true,
+        avatarUrl:  true,
+        role:       true,
+        department: true,
+        province:   true,
+        district:   true,
         providers: {
           select: {
             id:                 true,

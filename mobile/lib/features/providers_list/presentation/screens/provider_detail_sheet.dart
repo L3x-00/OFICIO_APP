@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constans/app_colors.dart';
+import '../../../../shared/widgets/phone_input_section.dart' show formatForWhatsApp;
 import '../../../../core/constans/app_strings.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/permission_service.dart';
@@ -183,8 +184,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 20),
                         ],
 
-                        // ── Horarios ──────────────────────────
-                        if (widget.provider.scheduleJson != null &&
+                        // ── Horarios (solo NEGOCIO) ───────────
+                        if (widget.provider.type == ProviderType.negocio &&
+                            widget.provider.scheduleJson != null &&
                             _hasScheduleData(widget.provider.scheduleJson!)) ...[
                           _buildSectionTitle('Horarios'),
                           const SizedBox(height: 8),
@@ -192,15 +194,14 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           const SizedBox(height: 20),
                         ],
 
-                        // ── Productos / Servicios (solo NEGOCIO) ─
-                        if (widget.provider.type == ProviderType.negocio) ...[
-                          ..._buildServicesSection(),
-                        ],
+                        // ── Productos (NEGOCIO) / Servicios (OFICIO) ─
+                        ..._buildServicesSection(),
 
-                        // ── Ubicación ─────────────────────────
-                        if (widget.provider.address != null ||
+                        // ── Ubicación (solo NEGOCIO — profesionales no exponen dirección) ──
+                        if (widget.provider.type == ProviderType.negocio &&
+                            (widget.provider.address != null ||
                             (widget.provider.latitude != null &&
-                             widget.provider.longitude != null)) ...[
+                             widget.provider.longitude != null))) ...[
                           _buildSectionTitle('Ubicación'),
                           const SizedBox(height: 8),
                           if (widget.provider.address != null)
@@ -419,7 +420,10 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             ],
           ),
         ),
-        if (widget.provider.isVerified)
+        if (widget.provider.isVerified &&
+            (widget.provider.subscriptionPlan == 'PREMIUM' ||
+             widget.provider.subscriptionPlan == 'ESTANDAR' ||
+             widget.provider.subscriptionPlan == 'BASICO'))
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
@@ -436,6 +440,24 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                   'Verificado',
                   style: TextStyle(color: AppColors.verified, fontSize: 11),
                 ),
+              ],
+            ),
+          ),
+        // Badge "Confiable" — validación de documentos aprobada
+        if (widget.provider.isTrusted)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 14),
+                SizedBox(width: 4),
+                Text('Confiable', style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -661,17 +683,18 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  /// Sección de productos/servicios para tipo NEGOCIO.
+  /// Sección de productos (NEGOCIO) o servicios (OFICIO).
   /// Lee la lista "services" del scheduleJson.
   List<Widget> _buildServicesSection() {
     final schedule = widget.provider.scheduleJson;
     final rawServices = schedule?['services'];
     if (rawServices is! List || rawServices.isEmpty) return [];
 
+    final isNegocio = widget.provider.type == ProviderType.negocio;
     final c = context.colors;
 
     return [
-      _buildSectionTitle('Productos y servicios'),
+      _buildSectionTitle(isNegocio ? 'Productos' : 'Servicios'),
       const SizedBox(height: 10),
       ...rawServices.map((raw) {
         if (raw is! Map<String, dynamic>) return const SizedBox.shrink();
@@ -706,7 +729,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                   color: _accent.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.inventory_2_rounded,
+                child: Icon(
+                    isNegocio ? Icons.inventory_2_rounded : Icons.build_circle_outlined,
                     color: _accent, size: 20),
               ),
               const SizedBox(width: 12),
@@ -1125,8 +1149,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   Future<void> _openWhatsApp() async {
-    final number = (widget.provider.whatsapp ?? widget.provider.phone)
-        .replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    final raw    = widget.provider.whatsapp ?? widget.provider.phone;
+    final number = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
     final message = Uri.encodeComponent(
       AppStrings.whatsappMessage(widget.provider.businessName),
     );

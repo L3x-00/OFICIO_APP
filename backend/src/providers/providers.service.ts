@@ -18,6 +18,10 @@ export class ProvidersService {
     sortBy?: string;     // 'reviews' | 'availability' | 'rating' (default)
     verified?: boolean;  // true = solo verificados (por defecto true)
     location?: string;   // búsqueda por texto en dirección
+    // Filtros de ubicación estructurados (jerarquía peruana)
+    department?: string; // Ej: "Junín"
+    province?: string;   // Ej: "Huancayo"
+    district?: string;   // Ej: "El Tambo"
     lat?: number;
     lng?: number;
     page?: number;
@@ -33,6 +37,9 @@ export class ProvidersService {
       sortBy,
       verified = true,
       location,
+      department,
+      province,
+      district,
       page = 1,
       limit = 20,
     } = filters;
@@ -51,6 +58,16 @@ export class ProvidersService {
     }
     if (localityId) {
       where.localityId = localityId;
+    }
+
+    // Filtro de ubicación estructurado (jerarquía: departamento → provincia → distrito)
+    // Si se pasa distrito, filtra con máxima precisión. Si solo provincia, filtra por ella.
+    if (department || province || district) {
+      const localityFilter: Prisma.LocalityWhereInput = {};
+      if (department) localityFilter.department = { equals: department, mode: 'insensitive' };
+      if (province)   localityFilter.province   = { equals: province,   mode: 'insensitive' };
+      if (district)   localityFilter.district   = { equals: district,   mode: 'insensitive' };
+      where.locality = localityFilter;
     }
 
     // Filtro por tipo de proveedor. Acepta tanto los nombres canónicos
@@ -104,7 +121,7 @@ export class ProvidersService {
           category:     { select: { name: true, slug: true, iconUrl: true } },
           images:       { orderBy: { order: 'asc' } },
           user:         { select: { firstName: true, lastName: true, avatarUrl: true } },
-          locality:     { select: { name: true } },
+          locality:     { select: { name: true, department: true, province: true, district: true } },
           subscription: { select: { plan: true, status: true } },
         },
         orderBy,
@@ -230,6 +247,16 @@ export class ProvidersService {
       }
       throw e;
     }
+  }
+
+  // ── REPORTE DE PROBLEMA DE PLATAFORMA ───────────────────
+  async createPlatformIssue(userId: number, description: string) {
+    if (!description || description.trim().length < 5) {
+      throw new BadRequestException('La descripción del problema es demasiado corta.');
+    }
+    return this.prisma.platformIssue.create({
+      data: { userId, description: description.trim() },
+    });
   }
 
   // ── ESTADO DE RECOMENDACIÓN ──────────────────────────────

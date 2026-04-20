@@ -234,6 +234,15 @@ export const getProviderReports = (page = 1, isReviewed?: boolean) => {
 export const markReportReviewed = (id: number) =>
   fetchApi(`/admin/provider-reports/${id}/review`, { method: 'PATCH' });
 
+export const getPlatformIssues = (page = 1, isReviewed?: boolean) => {
+  const params = new URLSearchParams({ page: String(page), limit: '20' });
+  if (isReviewed !== undefined) params.append('isReviewed', String(isReviewed));
+  return fetchApi<PlatformIssuesResponse>(`/admin/platform-issues?${params}`);
+};
+
+export const markPlatformIssueReviewed = (id: number) =>
+  fetchApi(`/admin/platform-issues/${id}/review`, { method: 'PATCH' });
+
 export const exportUsersCSV = () =>
   `${BASE_URL}/admin/reports/export/users`;
 
@@ -267,6 +276,22 @@ export const moderateReview = (reviewId: number, isVisible: boolean) =>
   fetchApi(`/reviews/${reviewId}/moderate`, {
     method: 'PATCH',
     body: JSON.stringify({ isVisible }),
+  });
+
+// ── TRUST VALIDATION ──────────────────────────────────────
+export const getTrustValidationList = (status = 'PENDING') =>
+  fetchApi<TrustValidationItem[]>(`/trust-validation/admin/list?status=${status}`);
+
+export const getTrustValidationDetail = (id: number) =>
+  fetchApi<TrustValidationDetail>(`/trust-validation/admin/${id}`);
+
+export const approveTrustValidation = (id: number) =>
+  fetchApi(`/trust-validation/admin/${id}/approve`, { method: 'PATCH' });
+
+export const rejectTrustValidation = (id: number, reason: string) =>
+  fetchApi(`/trust-validation/admin/${id}/reject`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
   });
 
 // ── INTERFACES ─────────────────────────────────────────────
@@ -438,6 +463,22 @@ export interface ProviderReportsResponse {
   pendingCount: number;
 }
 
+export interface PlatformIssue {
+  id: number;
+  description: string;
+  isReviewed: boolean;
+  createdAt: string;
+  user: { id: number; firstName: string; lastName: string; email: string; role: string };
+}
+
+export interface PlatformIssuesResponse {
+  data: PlatformIssue[];
+  total: number;
+  page: number;
+  lastPage: number;
+  pendingCount: number;
+}
+
 export interface ReviewsResponse {
   data: Review[];
   total: number;
@@ -454,4 +495,52 @@ export interface Review {
   createdAt: string;
   user: { firstName: string; lastName: string };
   provider: { businessName: string };
+}
+
+export interface TrustValidationItem {
+  id: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  providerId: number;
+  businessName: string;
+  providerType: string;
+  ownerName: string;
+  email: string;
+}
+
+export interface TrustValidationDetail {
+  request: {
+    id: number;
+    status: string;
+    createdAt: string;
+    rejectionReason?: string;
+    reviewedAt?: string;
+    dniNumber?: string;
+    dniFirstName?: string;
+    dniLastName?: string;
+    dniAddress?: string;
+    rucNumber?: string;
+    businessAddress?: string;
+    dniPhotoFrontUrl?: string;
+    dniPhotoBackUrl?: string;
+    selfieWithDniUrl?: string;
+    businessPhotoUrl?: string;
+    ownerDniPhotoUrl?: string;
+  };
+  provider: {
+    id: number;
+    type: string;
+    businessName: string;
+    description?: string;
+    dni?: string;
+    ruc?: string;
+    nombreComercial?: string;
+    razonSocial?: string;
+    phone: string;
+    address?: string;
+    ownerName: string;
+    email: string;
+    trustStatus: string;
+    isTrusted: boolean;
+  };
 }

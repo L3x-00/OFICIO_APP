@@ -50,6 +50,13 @@ enum VerificationStatus {
   RECHAZADO
 }
 
+enum TrustStatus {
+  NONE      // Sin solicitud de confianza
+  PENDING   // Solicitud enviada, pendiente de revisión
+  APPROVED  // Datos validados — badge "Profesional Verificado"
+  REJECTED  // Solicitud rechazada por el administrador
+}
+
 // ─────────────────────────────────────────
 // USUARIOS
 // ─────────────────────────────────────────
@@ -63,6 +70,10 @@ model User {
   firstName     String
   lastName      String
   avatarUrl     String?
+  // Ubicación del usuario (para filtrar servicios disponibles en su zona)
+  department    String?   // Departamento, ej: "Junín"
+  province      String?   // Provincia, ej: "Huancayo"
+  district      String?   // Distrito, ej: "El Tambo"
   isActive          Boolean   @default(true)
   isEmailVerified   Boolean   @default(false)
   createdAt         DateTime  @default(now())
@@ -74,6 +85,7 @@ model User {
   reviews         Review[]            // Reseñas que escribió
   reviewReplies   ReviewReply[]       // Respuestas a reseñas
   providerReports ProviderReport[]    // Reportes enviados a proveedores
+  platformIssues  PlatformIssue[]     // Problemas reportados desde el panel del proveedor
   refreshTokens   RefreshToken[]      // Sesiones activas
   otpCodes        OtpCode[]           // Códigos OTP de verificación
   recommendations Recommendation[]   // Proveedores recomendados
@@ -111,14 +123,17 @@ model RefreshToken {
 
 model Locality {
   id          Int        @id @default(autoincrement())
-  name        String     // "Huancayo", "Lima", etc.
-  department  String
+  name        String     // Nombre de la ciudad/distrito, ej: "Huancayo"
+  department  String     // Ej: "Junín"
+  province    String?    // Ej: "Huancayo"
+  district    String?    // Ej: "El Tambo"
   country     String     @default("Perú")
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
 
   providers   Provider[]
 
+  @@index([department, province, district])
   @@map("localities")
 }
 
@@ -175,10 +190,14 @@ model Provider {
   availability        AvailabilityStatus  @default(DISPONIBLE)
   isVisible           Boolean             @default(true) // false cuando suscripción vence
 
-  // Verificación
+  // Verificación de identidad (admin aprueba el registro)
   verificationStatus  VerificationStatus  @default(PENDIENTE)
   isVerified          Boolean             @default(false)
-  hasCleanRecord      Boolean             @default(false) // Sin antecedentes
+  hasCleanRecord      Boolean             @default(false)
+
+  // Confianza (proceso adicional de validación de documentos)
+  trustStatus         TrustStatus         @default(NONE)
+  isTrusted           Boolean             @default(false)
 
   // Calificación y recomendaciones (desnormalizadas para velocidad)
   averageRating           Float               @default(0)
@@ -208,6 +227,7 @@ model Provider {
   planRequests        PlanRequest[]
   recommendations     Recommendation[]
   reports             ProviderReport[]
+  trustValidations    TrustValidationRequest[]
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
@@ -455,4 +475,58 @@ model ProviderReport {
   @@index([providerId])
   @@index([isReviewed])
   @@map("provider_reports")
+}
+
+model PlatformIssue {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  description String
+  isReviewed  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([isReviewed])
+  @@map("platform_issues")
+}
+
+// ─────────────────────────────────────────
+// VALIDACIÓN DE CONFIANZA
+// ─────────────────────────────────────────
+
+model TrustValidationRequest {
+  id            Int         @id @default(autoincrement())
+  providerId    Int
+
+  // Campos comunes
+  status        TrustStatus @default(PENDING)
+
+  // Datos del formulario — OFICIO (profesional independiente)
+  dniNumber     String?     // Número de DNI (8 dígitos)
+  dniFirstName  String?     // Nombre tal como aparece en el DNI
+  dniLastName   String?     // Apellido tal como aparece en el DNI
+  dniAddress    String?     // Dirección registrada en el DNI
+  dniPhotoFrontUrl String?  // Foto frontal del DNI (cámara)
+  dniPhotoBackUrl  String?  // Foto posterior del DNI (cámara)
+  selfieWithDniUrl String?  // Selfie sosteniendo el DNI (cámara)
+
+  // Campos adicionales — NEGOCIO
+  rucNumber        String?  // RUC del negocio (11 dígitos)
+  businessAddress  String?  // Dirección física del establecimiento
+  businessPhotoUrl String?  // Foto del frente del local (cámara)
+  ownerDniPhotoUrl String?  // Foto del DNI del titular del negocio
+
+  // Revisión por el administrador
+  rejectionReason String?
+  reviewedByAdminId Int?
+  reviewedAt      DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  provider        Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([providerId])
+  @@map("trust_validation_requests")
 }

@@ -11,7 +11,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../../../provider_dashboard/data/dashboard_repository.dart';
 import '../../../providers_list/data/providers_repository.dart';
+import '../../../providers_list/presentation/providers/providers_provider.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../shared/widgets/location_picker_sheet.dart';
+import '../../../../shared/widgets/phone_input_section.dart';
+import '../../../../shared/widgets/schedule_editor.dart';
 
 /// Se muestra la primera vez que el usuario se registra
 /// para elegir qué tipo de perfil quiere crear
@@ -118,15 +122,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void _continue() {
-  // 1. Notificamos al provider. Esto cambia navigationState a 'authenticated'
-  context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
-
-  // 2. Simplemente cerramos la pantalla actual.
-  // El switch de tu main.dart se encargará de reconstruir la UI 
-  // y mostrar _MainNavigation automáticamente.
-  Navigator.of(context).pop(); 
-}
+  Future<void> _continue() async {
+    // Si el usuario eligió ser solo cliente, pedirle su ubicación antes de entrar
+    if (_selectedRole == 'USUARIO') {
+      final result = await LocationPickerSheet.show(context);
+      if (!mounted) return;
+      if (result != null) {
+        // Guardar ubicación en backend (sin bloquear — se hace en background)
+        context.read<AuthProvider>().updateLocation(
+          department: result.department,
+          province:   result.province,
+          district:   result.district,
+        ).then((_) {
+          if (mounted) {
+            context.read<ProvidersProvider>().setUserLocation(
+              department: result.department,
+              province:   result.province,
+              district:   result.district,
+            );
+          }
+        });
+      }
+    }
+    if (!mounted) return;
+    // Notificamos al provider. Esto cambia navigationState a 'authenticated'
+    context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
+    Navigator.of(context).pop();
+  }
 
   /// Navega directamente al formulario de proveedor sin pasar por "Continuar"
   void _goToProviderForm(String type) {
@@ -234,11 +256,14 @@ class _RoleOption extends StatelessWidget {
 class ProviderOnboardingForm extends StatefulWidget {
   final String? providerType;
   final bool isStandalone;
+  /// Pre-fill data for re-registration after rejection
+  final Map<String, dynamic>? initialData;
 
   const ProviderOnboardingForm({
     super.key,
     this.providerType,
     this.isStandalone = false,
+    this.initialData,
   });
 
   @override
@@ -248,8 +273,11 @@ class ProviderOnboardingForm extends StatefulWidget {
 class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   final _businessNameController    = TextEditingController();
   final _dniController             = TextEditingController();
-  final _phoneController           = TextEditingController();
+  final _phoneController           = TextEditingController(); // kept for backward compat
   final _descriptionController     = TextEditingController();
+  // Phone/WhatsApp managed by PhoneInputSection
+  String _phone    = '';
+  String? _whatsapp;
   final _addressController         = TextEditingController();
   // NEGOCIO-only
   final _rucController             = TextEditingController();
@@ -257,6 +285,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   final _razonSocialController     = TextEditingController();
   bool _hasDelivery       = false;
   bool _plenaCoordinacion = false;
+  Map<String, dynamic> _scheduleJson = {};
 
   final List<XFile> _photos = [];
   final _picker = ImagePicker();
@@ -274,6 +303,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   Position? _gpsPosition;
   bool      _gpsLoading = false;
 
+  // ─── Ubicación administrativa (departamento / provincia / distrito) ───
+  String? _department;
+  String? _province;
+  String? _district;
+  bool get _hasAdminLocation => _department != null && _province != null && _district != null;
+
+  // ─── Toggle: mostrar sección dirección/GPS/Maps ───────────
+  bool _showAddressSection = false;
+
   static const _maxPhotos = 4;
   static const _maxMB = 5;
 
@@ -281,6 +319,44 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   void initState() {
     super.initState();
     _loadCategories();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Always pre-fill location from user profile
+      final user = context.read<AuthProvider>().user;
+      if (user != null && user.hasLocation) {
+        _department = user.department;
+        _province   = user.province;
+        _district   = user.district;
+      }
+
+      final d = widget.initialData;
+      if (d != null) {
+        setState(() {
+          _businessNameController.text    = d['businessName'] as String? ?? '';
+          _descriptionController.text     = d['description']  as String? ?? '';
+          _dniController.text             = d['dni']          as String? ?? '';
+          _addressController.text         = d['address']      as String? ?? '';
+          _rucController.text             = d['ruc']          as String? ?? '';
+          _nombreComercialController.text = d['nombreComercial'] as String? ?? '';
+          _razonSocialController.text     = d['razonSocial']  as String? ?? '';
+          _phone                          = d['phone']        as String? ?? '';
+          _whatsapp                       = d['whatsapp']     as String?;
+          _hasDelivery                    = d['hasDelivery']  as bool? ?? false;
+          _plenaCoordinacion              = d['plenaCoordinacion'] as bool? ?? false;
+          final sched = d['scheduleJson'];
+          if (sched is Map) _scheduleJson = Map<String, dynamic>.from(sched);
+          final catId = d['categoryId'] as int?;
+          if (catId != null) {
+            _selectedCategoryId   = catId;
+            _selectedCategoryName = d['categoryName'] as String? ?? 'Categoría seleccionada';
+            _selectedParentId     = d['parentCategoryId'] as int?;
+            _selectedParentName   = d['parentCategoryName'] as String? ?? '';
+          }
+        });
+      } else {
+        setState(() {});
+      }
+    });
   }
 
   Future<void> _loadCategories() async {
@@ -592,6 +668,26 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     );
   }
 
+  // ─── Sección domicilio (OFICIO) ──────────────────────────
+
+  Widget _buildOficioDomicilioSection() {
+    final c = context.colors;
+    return Container(
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+      ),
+      child: _buildToggleRow(
+        icon: Icons.home_work_outlined,
+        title: 'Atiendo a domicilio',
+        subtitle: 'Me desplazo hasta el cliente para realizar el servicio',
+        value: _hasDelivery,
+        onChanged: (val) => setState(() => _hasDelivery = val),
+      ),
+    );
+  }
+
   // ─── Sección de delivery (solo NEGOCIO) ───────────────────
 
   Widget _buildDeliverySection() {
@@ -680,13 +776,26 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   // ─── Submit ──────────────────────────────────────────────
 
   Future<void> _submit() async {
-    final name  = _businessNameController.text.trim();
-    final phone = _phoneController.text.trim();
-    final dni   = _dniController.text.trim();
-    final ruc   = _rucController.text.trim();
+    final name = _businessNameController.text.trim();
+    final dni  = _dniController.text.trim();
+    final ruc  = _rucController.text.trim();
 
-    if (name.isEmpty || phone.isEmpty) {
-      _showSnack('El nombre y el teléfono son obligatorios.', isError: true);
+    if (name.isEmpty) {
+      _showSnack('El nombre es obligatorio.', isError: true);
+      return;
+    }
+    if (_phone.isEmpty) {
+      _showSnack('El teléfono de contacto es obligatorio.', isError: true);
+      return;
+    }
+    // Validar teléfono peruano (9 dígitos sin +51) — si es extranjero tiene "+" y es libre
+    if (!_phone.startsWith('+') && !RegExp(r'^\d{9}$').hasMatch(_phone)) {
+      _showSnack('El teléfono debe tener 9 dígitos (número peruano).', isError: true);
+      return;
+    }
+    // Para NEGOCIO la ubicación es obligatoria; para OFICIO es opcional
+    if (!_isOficio && !_hasAdminLocation) {
+      _showSnack('Selecciona tu departamento, provincia y distrito.', isError: true);
       return;
     }
     if (_isOficio && dni.isNotEmpty && !RegExp(r'^\d{8}$').hasMatch(dni)) {
@@ -703,17 +812,19 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     final auth = context.read<AuthProvider>();
     final result = await auth.registerProvider(
       businessName:     name,
-      phone:            phone,
+      phone:            _phone,
+      whatsapp:         _whatsapp,
       type:             widget.providerType ?? 'OFICIO',
       dni:              _isOficio && dni.isNotEmpty ? dni : null,
       ruc:              !_isOficio && ruc.isNotEmpty ? ruc : null,
       nombreComercial:  !_isOficio ? _nombreComercialController.text.trim() : null,
       razonSocial:      !_isOficio ? _razonSocialController.text.trim() : null,
-      hasDelivery:      !_isOficio ? _hasDelivery : false,
+      hasDelivery:      _hasDelivery,
       plenaCoordinacion: !_isOficio && _hasDelivery ? _plenaCoordinacion : false,
       description:      _descriptionController.text.trim(),
       address:          _addressController.text.trim(),
       categoryId:       _selectedCategoryId,
+      scheduleJson:     !_isOficio && _scheduleJson.isNotEmpty ? _scheduleJson : null,
     );
 
     if (!mounted) return;
@@ -727,19 +838,36 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     // Subir fotos al servidor y vincularlas al proveedor recién creado
     if (_photos.isNotEmpty) {
       final repo = DashboardRepository();
+      int uploadErrors = 0;
       for (final photo in _photos) {
         try {
-          final url = await repo.uploadProviderPhoto(photo.path);
+          // Usar método bytes para compatibilidad multiplataforma (web + native)
+          final url = await repo.uploadProviderPhotoFile(photo);
           await repo.saveProviderImage(url, type: widget.providerType);
-        } catch (_) {
-          // Fallo silencioso: el proveedor ya fue creado;
-          // las fotos se pueden agregar desde el panel más adelante.
+        } catch (e) {
+          uploadErrors++;
+          debugPrint('[Onboarding] Error subiendo foto: $e');
         }
+      }
+      if (!mounted) return;
+      if (uploadErrors > 0 && uploadErrors < _photos.length) {
+        _showSnack('Algunas fotos no se subieron. Puedes agregarlas desde el panel.');
+      } else if (uploadErrors == _photos.length) {
+        _showSnack('No se pudieron subir las fotos. Agrégalas desde tu panel.', isError: true);
       }
     }
 
     if (!mounted) return;
     setState(() => _isLoading = false);
+
+    // Guardar ubicación administrativa en el perfil de usuario
+    if (_hasAdminLocation) {
+      auth.updateLocation(
+        department: _department!,
+        province:   _province!,
+        district:   _district!,
+      );
+    }
 
     _showSuccessDialog();
   }
@@ -931,17 +1059,24 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               const SizedBox(height: 14),
             ],
 
-            _buildField(
-              controller: _phoneController,
-              label: 'Teléfono de contacto *',
-              hint: '+51 987 654 321',
-              icon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
+            PhoneInputSection(
+              onChange: (phone, wap) => setState(() {
+                _phone    = phone;
+                _whatsapp = wap;
+              }),
             ),
             const SizedBox(height: 14),
 
             // ── Dirección + GPS + URL Maps ────────────────
-            _buildAddressSection(context.colors),
+            // Para OFICIO: colapsable (opcional). Para NEGOCIO: siempre visible.
+            if (_isOficio) ...[
+              _buildAddressToggle(context.colors),
+              if (_showAddressSection) ...[
+                const SizedBox(height: 10),
+                _buildAddressSection(context.colors),
+              ],
+            ] else
+              _buildAddressSection(context.colors),
             const SizedBox(height: 14),
 
             // ── Categoría ─────────────────────────────────
@@ -965,13 +1100,35 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 24),
 
-            // ── NEGOCIO: Sección Delivery ─────────────────
+            // ── Servicios a domicilio (OFICIO) / Delivery (NEGOCIO) ──
+            _FormSectionHeader(
+              label: _isOficio ? 'SERVICIOS A DOMICILIO' : 'SERVICIO DE DELIVERY',
+            ),
+            const SizedBox(height: 12),
+            _isOficio
+                ? _buildOficioDomicilioSection()
+                : _buildDeliverySection(),
+            const SizedBox(height: 24),
+
+            // ── Horario de atención (solo NEGOCIO) ───────
             if (!_isOficio) ...[
-              _FormSectionHeader(label: 'SERVICIO DE DELIVERY'),
+              _FormSectionHeader(label: 'HORARIO DE ATENCIÓN'),
               const SizedBox(height: 12),
-              _buildDeliverySection(),
+              ScheduleEditor(
+                initialSchedule: _scheduleJson.isEmpty ? null : _scheduleJson,
+                saveLabel: 'Confirmar horario',
+                onSave: (schedule) async {
+                  setState(() => _scheduleJson = schedule);
+                },
+              ),
               const SizedBox(height: 24),
             ],
+
+            // ── Ubicación administrativa ──────────────────
+            _FormSectionHeader(label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *'),
+            const SizedBox(height: 12),
+            _buildLocationSection(context.colors),
+            const SizedBox(height: 24),
 
             // ── Sección: Fotos ────────────────────────────
             _FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
@@ -1027,6 +1184,50 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                   'Completar después',
                   style: TextStyle(color: c.textMuted),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Toggle para mostrar/ocultar sección de dirección (OFICIO) ──────────
+
+  Widget _buildAddressToggle(AppThemeColors c) {
+    return GestureDetector(
+      onTap: () => setState(() => _showAddressSection = !_showAddressSection),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          color: _showAddressSection
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : c.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _showAddressSection
+                ? AppColors.primary.withValues(alpha: 0.35)
+                : c.textMuted.withValues(alpha: 0.25),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _showAddressSection
+                  ? Icons.expand_less_rounded
+                  : Icons.add_location_alt_outlined,
+              color: _showAddressSection ? AppColors.primary : c.textMuted,
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              _showAddressSection
+                  ? 'Ocultar dirección / Maps'
+                  : 'Agregar dirección / URL Google Maps (opcional)',
+              style: TextStyle(
+                color: _showAddressSection ? AppColors.primary : c.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -1194,6 +1395,74 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           style: TextStyle(color: c.textMuted, fontSize: 11),
         ),
       ],
+    );
+  }
+
+  // ─── Ubicación administrativa (departamento/provincia/distrito) ──────────
+
+  Widget _buildLocationSection(AppThemeColors c) {
+    final hasLoc = _hasAdminLocation;
+    return GestureDetector(
+      onTap: () async {
+        final result = await LocationPickerSheet.show(
+          context,
+          initialDepartment: _department,
+          initialProvince:   _province,
+          initialDistrict:   _district,
+        );
+        if (result != null && mounted) {
+          setState(() {
+            _department = result.department;
+            _province   = result.province;
+            _district   = result.district;
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: c.bg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasLoc
+                ? AppColors.primary.withValues(alpha: 0.4)
+                : AppColors.busy.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hasLoc ? Icons.location_on_rounded : Icons.location_off_rounded,
+              color: hasLoc ? AppColors.primary : AppColors.busy,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasLoc
+                        ? '$_district, $_province'
+                        : 'Seleccionar ubicación *',
+                    style: TextStyle(
+                      color: hasLoc ? c.textPrimary : AppColors.busy,
+                      fontSize: 14,
+                      fontWeight: hasLoc ? FontWeight.w500 : FontWeight.normal,
+                    ),
+                  ),
+                  if (hasLoc)
+                    Text(
+                      _department!,
+                      style: TextStyle(color: c.textSecondary, fontSize: 12),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.edit_rounded, color: c.textMuted, size: 16),
+          ],
+        ),
+      ),
     );
   }
 

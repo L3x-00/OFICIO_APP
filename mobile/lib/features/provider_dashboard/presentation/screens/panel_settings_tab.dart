@@ -7,6 +7,7 @@ import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
+import '../../data/dashboard_repository.dart';
 
 class PanelSettingsTab extends StatelessWidget {
   const PanelSettingsTab({super.key});
@@ -283,54 +284,23 @@ class PanelSettingsTab extends StatelessWidget {
   }
 
   void _showReportDialog(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
     final ctrl = TextEditingController();
+    final auth = context.read<AuthProvider>();
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: c.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Reportar un problema',
-          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
-        ),
-        content: TextField(
-          controller: ctrl,
-          maxLines: 4,
-          style: TextStyle(color: c.textPrimary, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: 'Describe el problema que encontraste...',
-            hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
-            filled: true,
-            fillColor: c.bgInput,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Reporte enviado. ¡Gracias por ayudarnos a mejorar!'),
-                  backgroundColor: c.bgCard,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.amber,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: Text('Enviar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-          ),
-        ],
+      builder: (ctx) => _ReportProblemDialog(
+        colors: c,
+        ctrl: ctrl,
+        onSend: (description) async {
+          final userId = auth.user?.id;
+          if (userId == null) return;
+          await DashboardRepository().reportPlatformIssue(
+            userId:      userId,
+            description: description,
+          );
+        },
       ),
     );
   }
@@ -414,6 +384,105 @@ class _SettingsTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// ─── Dialog de reporte de problema ───────────────────────────
+
+class _ReportProblemDialog extends StatefulWidget {
+  final AppThemeColors colors;
+  final TextEditingController ctrl;
+  final Future<void> Function(String description) onSend;
+
+  const _ReportProblemDialog({
+    required this.colors,
+    required this.ctrl,
+    required this.onSend,
+  });
+
+  @override
+  State<_ReportProblemDialog> createState() => _ReportProblemDialogState();
+}
+
+class _ReportProblemDialogState extends State<_ReportProblemDialog> {
+  bool _sending = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.colors;
+    return AlertDialog(
+      backgroundColor: c.bgCard,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text(
+        'Reportar un problema',
+        style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+      ),
+      content: TextField(
+        controller: widget.ctrl,
+        maxLines: 4,
+        style: TextStyle(color: c.textPrimary, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: 'Describe el problema que encontraste...',
+          hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+          filled: true,
+          fillColor: c.bgInput,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _sending ? null : () => Navigator.pop(context),
+          child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+        ),
+        ElevatedButton(
+          onPressed: _sending ? null : _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.amber,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: _sending
+              ? const SizedBox(
+                  width: 16, height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                )
+              : const Text('Enviar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    final text = widget.ctrl.text.trim();
+    if (text.length < 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Describe el problema con más detalle.')),
+      );
+      return;
+    }
+    setState(() => _sending = true);
+    try {
+      await widget.onSend(text);
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Reporte enviado. ¡Gracias por ayudarnos a mejorar!'),
+          backgroundColor: AppColors.available,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('No se pudo enviar el reporte. Intenta de nuevo.'),
+          backgroundColor: AppColors.busy,
+        ),
+      );
+    }
   }
 }
 

@@ -22,6 +22,10 @@ class ProvidersProvider extends ChangeNotifier {
   String  _location = '';
   bool    _verifiedOnly = true;   // true = solo verificados (default)
   String  _searchQuery = '';
+  // Ubicación estructurada para filtrar por zona
+  String? _department;
+  String? _province;
+  String? _district;
 
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers            => _providers;
@@ -37,6 +41,10 @@ class ProvidersProvider extends ChangeNotifier {
   String              get location             => _location;
   bool                get verifiedOnly         => _verifiedOnly;
   String              get searchQuery          => _searchQuery;
+  String?             get department           => _department;
+  String?             get province             => _province;
+  String?             get district             => _district;
+  bool                get hasLocationFilter    => _department != null;
 
   /// Devuelve la CategoryModel del padre expandido (o null)
   CategoryModel? get expandedParent => _expandedParentSlug == null
@@ -53,10 +61,20 @@ class ProvidersProvider extends ChangeNotifier {
       _selectedAvailability != null ||
       !_verifiedOnly ||
       (_sortBy != null && _sortBy != 'rating') ||
-      _location.isNotEmpty;
+      _location.isNotEmpty ||
+      _department != null;
 
   // ── Carga inicial ─────────────────────────────────────────
-  Future<void> init() async {
+  /// [department] / [province] / [district]: ubicación del usuario registrada.
+  /// Se aplican desde la primera carga — no hay flash de "todos los proveedores".
+  Future<void> init({
+    String? department,
+    String? province,
+    String? district,
+  }) async {
+    _department = department;
+    _province   = province;
+    _district   = district;
     await Future.wait([loadCategories(), loadProviders()]);
   }
 
@@ -85,6 +103,9 @@ class ProvidersProvider extends ChangeNotifier {
       type:               _selectedType,
       sortBy:             _sortBy,
       location:           _location.isNotEmpty ? _location : null,
+      department:         _department,
+      province:           _province,
+      district:           _district,
     );
 
     result.when(
@@ -159,6 +180,19 @@ class ProvidersProvider extends ChangeNotifier {
     await loadProviders();
   }
 
+  /// Aplica el filtro de ubicación estructurado (jerarquía peruana).
+  /// Llamar desde AuthProvider cuando el usuario actualiza su ubicación.
+  Future<void> setUserLocation({
+    String? department,
+    String? province,
+    String? district,
+  }) async {
+    _department = department;
+    _province   = province;
+    _district   = district;
+    await loadProviders();
+  }
+
   Future<void> setVerifiedOnly(bool value) async {
     _verifiedOnly = value;
     await loadProviders();
@@ -178,6 +212,15 @@ class ProvidersProvider extends ChangeNotifier {
     _location             = '';
     _verifiedOnly         = true;
     _searchQuery          = '';
+    // No limpia _department/_province/_district — son del perfil del usuario
+    loadProviders();
+  }
+
+  /// Limpia también los filtros de ubicación del usuario
+  void clearLocationFilter() {
+    _department = null;
+    _province   = null;
+    _district   = null;
     loadProviders();
   }
 

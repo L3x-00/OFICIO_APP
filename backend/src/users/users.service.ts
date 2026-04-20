@@ -17,10 +17,25 @@ export class UsersService {
       select: {
         id:                 true,
         businessName:       true,
-        type:               true, // OFICIO | NEGOCIO — tipo real de registro
+        type:               true,
         verificationStatus: true,
         isVerified:         true,
         createdAt:          true,
+        phone:              true,
+        whatsapp:           true,
+        description:        true,
+        dni:                true,
+        ruc:                true,
+        nombreComercial:    true,
+        razonSocial:        true,
+        hasDelivery:        true,
+        plenaCoordinacion:  true,
+        scheduleJson:       true,
+        address:            true,
+        categoryId:         true,
+        category: {
+          select: { id: true, name: true, parentId: true, parent: { select: { id: true, name: true } } },
+        },
         notifications: {
           where:   { isRead: false },
           select:  { id: true, type: true, message: true, sentAt: true },
@@ -39,10 +54,25 @@ export class UsersService {
       profiles: providers.map((p) => ({
         providerId:          p.id,
         businessName:        p.businessName,
-        type:                p.type,           // 'OFICIO' | 'NEGOCIO'
+        type:                p.type,
         verificationStatus:  p.verificationStatus,
         isVerified:          p.isVerified,
         createdAt:           p.createdAt,
+        phone:               p.phone,
+        whatsapp:            p.whatsapp,
+        description:         p.description,
+        dni:                 p.dni,
+        ruc:                 p.ruc,
+        nombreComercial:     p.nombreComercial,
+        razonSocial:         p.razonSocial,
+        hasDelivery:         p.hasDelivery,
+        plenaCoordinacion:   p.plenaCoordinacion,
+        scheduleJson:        p.scheduleJson,
+        address:             p.address,
+        categoryId:          p.categoryId,
+        categoryName:        p.category?.name,
+        parentCategoryId:    p.category?.parentId,
+        parentCategoryName:  p.category?.parent?.name,
         pendingNotifications: p.notifications,
       })),
     };
@@ -55,6 +85,7 @@ export class UsersService {
       select: {
         id: true, email: true, firstName: true, lastName: true,
         phone: true, avatarUrl: true, role: true,
+        department: true, province: true, district: true,
       },
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
@@ -64,18 +95,29 @@ export class UsersService {
   // ── ACTUALIZAR PERFIL ────────────────────────────────────
   async updateProfile(
     userId: number,
-    data: { firstName?: string; lastName?: string; phone?: string },
+    data: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      department?: string;
+      province?: string;
+      district?: string;
+    },
   ) {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        ...(data.firstName !== undefined && { firstName: data.firstName }),
-        ...(data.lastName  !== undefined && { lastName:  data.lastName  }),
-        ...(data.phone     !== undefined && { phone:     data.phone     }),
+        ...(data.firstName  !== undefined && { firstName:  data.firstName  }),
+        ...(data.lastName   !== undefined && { lastName:   data.lastName   }),
+        ...(data.phone      !== undefined && { phone:      data.phone      }),
+        ...(data.department !== undefined && { department: data.department }),
+        ...(data.province   !== undefined && { province:   data.province   }),
+        ...(data.district   !== undefined && { district:   data.district   }),
       },
       select: {
         id: true, email: true, firstName: true, lastName: true,
         phone: true, avatarUrl: true, role: true,
+        department: true, province: true, district: true,
       },
     });
     return user;

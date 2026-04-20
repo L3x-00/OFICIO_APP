@@ -23,8 +23,8 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
     final c = context.colors;
     final dash = context.watch<DashboardProvider>();
     final services = dash.services;
-    final label = widget.isNegocio ? 'productos/servicios' : 'servicios';
-    final labelSingular = widget.isNegocio ? 'producto o servicio' : 'servicio';
+    final label = widget.isNegocio ? 'productos' : 'servicios';
+    final labelSingular = widget.isNegocio ? 'producto' : 'servicio';
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -60,6 +60,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
               child: _EmptyServices(
                 label: label,
                 labelSingular: labelSingular,
+                isNegocio: widget.isNegocio,
                 onAdd: () => _showServiceForm(context, dash),
               ),
             )
@@ -96,6 +97,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                 delegate: SliverChildBuilderDelegate(
                   (ctx, i) => _ServiceCard(
                     service: services[i],
+                    isNegocio: widget.isNegocio,
                     onEdit: () =>
                         _showServiceForm(context, dash, existing: services[i]),
                     onDelete: () => _deleteService(context, dash, services[i]),
@@ -190,12 +192,8 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
               const SizedBox(height: 20),
               _FormField(
                 controller: nameCtrl,
-                label: widget.isNegocio
-                    ? 'Nombre del producto/servicio'
-                    : 'Nombre del servicio',
-                hint: widget.isNegocio
-                    ? 'Ej: Corte de cabello'
-                    : 'Ej: Instalación de cañería',
+                label: widget.isNegocio ? 'Nombre del producto' : 'Nombre del servicio',
+                hint: widget.isNegocio ? 'Ej: Corte de cabello' : 'Ej: Instalación de cañería',
               ),
               const SizedBox(height: 12),
               _FormField(
@@ -346,11 +344,13 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
 class _ServiceCard extends StatelessWidget {
   final ServiceItem service;
+  final bool isNegocio;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _ServiceCard({
     required this.service,
+    this.isNegocio = false,
     required this.onEdit,
     required this.onDelete,
   });
@@ -376,7 +376,7 @@ class _ServiceCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              Icons.design_services_rounded,
+              isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
               color: AppColors.amber,
               size: 22,
             ),
@@ -458,12 +458,14 @@ class _ServiceCard extends StatelessWidget {
 class _EmptyServices extends StatelessWidget {
   final String label;
   final String labelSingular;
+  final bool isNegocio;
   final VoidCallback onAdd;
 
   const _EmptyServices({
     required this.label,
     required this.labelSingular,
     required this.onAdd,
+    this.isNegocio = false,
   });
 
   @override
@@ -483,7 +485,7 @@ class _EmptyServices extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.design_services_rounded,
+                isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
                 color: AppColors.amber,
                 size: 40,
               ),

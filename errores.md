@@ -367,6 +367,30 @@ mostrando el ícono y color por defecto en lugar de uno semánticamente correcto
 
 ---
 
+## Error 15 — Ubicación no capturada en registro → filtros de localización vacíos
+
+**Archivos**: `onboarding_screen.dart`, `backend/prisma/schema.prisma`, `mobile/lib/features/auth/domain/models/user_model.dart`
+
+**Qué pasó**:
+Los registros de cliente, profesional y negocio no pedían departamento/provincia/distrito.
+Al abrir la pantalla principal, `ProvidersProvider` filtraba sin ubicación y devolvía
+todos los proveedores del país, haciendo irrelevante la búsqueda local.
+La carga de ubicación desde `AuthProvider` no se propagaba a `ProvidersProvider` al init,
+así que incluso usuarios con ubicación guardada veían resultados globales.
+
+**Raíz del error**:
+La ubicación se diseñó como campo opcional de perfil, no como requisito de registro.
+`ProvidersProvider` no tenía mecanismo de pre-seed con la ubicación del usuario autenticado.
+
+**Regla de oro**:
+> Departamento, provincia y distrito son obligatorios en TODOS los formularios de registro
+> (cliente, profesional, negocio). Al completar onboarding, llamar siempre a
+> `ProvidersProvider.setUserLocation(...)` para que el filtro quede activo desde la primera carga.
+> En `_AppRootState._onAuthChanged()`: si `auth.user?.hasLocation == true`, pre-seed
+> `ProvidersProvider` con la ubicación guardada para que el usuario siempre vea resultados locales.
+
+---
+
 ## Resumen de Reglas de Oro
 
 | # | Área | Regla |
@@ -386,4 +410,10 @@ mostrando el ícono y color por defecto en lugar de uno semánticamente correcto
 | 13 | Favoritos por sesión | Providers con estado por usuario: `initialize(userId)` en login y `clear()` en logout, acoplado a `_onAuthChanged()`. Nunca solo en `initState()` |
 | 14 | UI estado aprobación | `Consumer<AuthProvider>` para proveedor: ramas para TODOS los estados (canRegister, PENDIENTE, APROBADO, RECHAZADO). Estado no contemplado = UI vacía |
 | 15 | Tipos de notificación | Cada tipo nuevo en backend necesita entrada en `AppNotification.icon` y `iconColor`. Actualizar en el mismo commit |
+| 16 | Ubicación en registro | `department`/`province`/`district` obligatorios en TODO registro. Al completar onboarding, pre-seed `ProvidersProvider` con la ubicación. En `_onAuthChanged`, restaurar el filtro si el usuario ya tiene ubicación guardada |
+| 17 | Extension methods — import obligatorio | `when()` en `ApiResult` es un extension method definido en `failures.dart`. Cualquier screen que llame `.when()` directamente sobre un `ApiResult` **debe** importar `failures.dart` explícitamente. Sin el import, el compilador reporta "method not defined" aunque el tipo sea correcto |
+| 18 | `when()` en `ApiResult` — firma failure | El callback `failure` recibe `AppException`, no `String`. Acceder al mensaje con `.message`. Patrón: `failure: (e) => _showError(e.message)` |
+| 19 | Enums nuevos en Prisma — shadow DB | Al agregar un enum nuevo con `prisma migrate dev`, la shadow database puede fallar por "unsafe use of new enum value". Usar `prisma db push` para esquemas en desarrollo activo, reservar `migrate dev` para producción con SQL manual |
+| 20 | AdminGuard inexistente | No existe `AdminGuard` en el proyecto. Proteger rutas de admin con `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles('ADMIN')`. Nunca referenciar guards que no estén en `src/auth/` |
+| 21 | `TrustRejectionPayload` — definir fuera de clase | Clases de payload/DTO usadas como tipos en `AuthProvider` deben declararse **antes** de la clase, no dentro. Dart no soporta clases anidadas públicas |
 

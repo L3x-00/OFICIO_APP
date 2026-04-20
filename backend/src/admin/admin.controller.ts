@@ -242,6 +242,27 @@ export class AdminController {
     return this.adminService.markReportReviewed(id);
   }
 
+  // ── PROBLEMAS DE PLATAFORMA ──────────────────────────────
+
+  @Get('platform-issues')
+  getPlatformIssues(
+    @Query('page')       page?:       string,
+    @Query('limit')      limit?:      string,
+    @Query('isReviewed') isReviewed?: string,
+  ) {
+    return this.adminService.getPlatformIssues(
+      page  ? parseInt(page)  : 1,
+      limit ? parseInt(limit) : 20,
+      isReviewed !== undefined ? isReviewed === 'true' : undefined,
+    );
+  }
+
+  @Patch('platform-issues/:id/review')
+  @HttpCode(HttpStatus.OK)
+  markPlatformIssueReviewed(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.markPlatformIssueReviewed(id);
+  }
+
   // ── CRUD DE CATEGORÍAS ────────────────────────────────────
 
   @Get('categories')

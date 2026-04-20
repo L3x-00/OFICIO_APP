@@ -75,6 +75,8 @@ export type ProviderMinAggregateOutputType = {
   verificationStatus: $Enums.VerificationStatus | null
   isVerified: boolean | null
   hasCleanRecord: boolean | null
+  trustStatus: $Enums.TrustStatus | null
+  isTrusted: boolean | null
   averageRating: number | null
   totalReviews: number | null
   totalRecommendations: number | null
@@ -108,6 +110,8 @@ export type ProviderMaxAggregateOutputType = {
   verificationStatus: $Enums.VerificationStatus | null
   isVerified: boolean | null
   hasCleanRecord: boolean | null
+  trustStatus: $Enums.TrustStatus | null
+  isTrusted: boolean | null
   averageRating: number | null
   totalReviews: number | null
   totalRecommendations: number | null
@@ -142,6 +146,8 @@ export type ProviderCountAggregateOutputType = {
   verificationStatus: number
   isVerified: number
   hasCleanRecord: number
+  trustStatus: number
+  isTrusted: number
   averageRating: number
   totalReviews: number
   totalRecommendations: number
@@ -203,6 +209,8 @@ export type ProviderMinAggregateInputType = {
   verificationStatus?: true
   isVerified?: true
   hasCleanRecord?: true
+  trustStatus?: true
+  isTrusted?: true
   averageRating?: true
   totalReviews?: true
   totalRecommendations?: true
@@ -236,6 +244,8 @@ export type ProviderMaxAggregateInputType = {
   verificationStatus?: true
   isVerified?: true
   hasCleanRecord?: true
+  trustStatus?: true
+  isTrusted?: true
   averageRating?: true
   totalReviews?: true
   totalRecommendations?: true
@@ -270,6 +280,8 @@ export type ProviderCountAggregateInputType = {
   verificationStatus?: true
   isVerified?: true
   hasCleanRecord?: true
+  trustStatus?: true
+  isTrusted?: true
   averageRating?: true
   totalReviews?: true
   totalRecommendations?: true
@@ -391,6 +403,8 @@ export type ProviderGroupByOutputType = {
   verificationStatus: $Enums.VerificationStatus
   isVerified: boolean
   hasCleanRecord: boolean
+  trustStatus: $Enums.TrustStatus
+  isTrusted: boolean
   averageRating: number
   totalReviews: number
   totalRecommendations: number
@@ -448,6 +462,8 @@ export type ProviderWhereInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
+  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatFilter<"Provider"> | number
   totalReviews?: Prisma.IntFilter<"Provider"> | number
   totalRecommendations?: Prisma.IntFilter<"Provider"> | number
@@ -469,6 +485,7 @@ export type ProviderWhereInput = {
   planRequests?: Prisma.PlanRequestListRelationFilter
   recommendations?: Prisma.RecommendationListRelationFilter
   reports?: Prisma.ProviderReportListRelationFilter
+  trustValidations?: Prisma.TrustValidationRequestListRelationFilter
 }
 
 export type ProviderOrderByWithRelationInput = {
@@ -495,6 +512,8 @@ export type ProviderOrderByWithRelationInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
   totalRecommendations?: Prisma.SortOrder
@@ -516,6 +535,7 @@ export type ProviderOrderByWithRelationInput = {
   planRequests?: Prisma.PlanRequestOrderByRelationAggregateInput
   recommendations?: Prisma.RecommendationOrderByRelationAggregateInput
   reports?: Prisma.ProviderReportOrderByRelationAggregateInput
+  trustValidations?: Prisma.TrustValidationRequestOrderByRelationAggregateInput
 }
 
 export type ProviderWhereUniqueInput = Prisma.AtLeast<{
@@ -546,6 +566,8 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
+  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatFilter<"Provider"> | number
   totalReviews?: Prisma.IntFilter<"Provider"> | number
   totalRecommendations?: Prisma.IntFilter<"Provider"> | number
@@ -567,6 +589,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   planRequests?: Prisma.PlanRequestListRelationFilter
   recommendations?: Prisma.RecommendationListRelationFilter
   reports?: Prisma.ProviderReportListRelationFilter
+  trustValidations?: Prisma.TrustValidationRequestListRelationFilter
 }, "id" | "userId_type">
 
 export type ProviderOrderByWithAggregationInput = {
@@ -593,6 +616,8 @@ export type ProviderOrderByWithAggregationInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
   totalRecommendations?: Prisma.SortOrder
@@ -635,6 +660,8 @@ export type ProviderScalarWhereWithAggregatesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusWithAggregatesFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  trustStatus?: Prisma.EnumTrustStatusWithAggregatesFilter<"Provider"> | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatWithAggregatesFilter<"Provider"> | number
   totalReviews?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   totalRecommendations?: Prisma.IntWithAggregatesFilter<"Provider"> | number
@@ -667,6 +694,8 @@ export type ProviderCreateInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -686,6 +715,7 @@ export type ProviderCreateInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateInput = {
@@ -712,6 +742,8 @@ export type ProviderUncheckedCreateInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -730,6 +762,7 @@ export type ProviderUncheckedCreateInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUpdateInput = {
@@ -754,6 +787,8 @@ export type ProviderUpdateInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -773,6 +808,7 @@ export type ProviderUpdateInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateInput = {
@@ -799,6 +835,8 @@ export type ProviderUncheckedUpdateInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -817,6 +855,7 @@ export type ProviderUncheckedUpdateInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyInput = {
@@ -843,6 +882,8 @@ export type ProviderCreateManyInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -875,6 +916,8 @@ export type ProviderUpdateManyMutationInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -907,6 +950,8 @@ export type ProviderUncheckedUpdateManyInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -956,6 +1001,8 @@ export type ProviderCountOrderByAggregateInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
   totalRecommendations?: Prisma.SortOrder
@@ -1002,6 +1049,8 @@ export type ProviderMaxOrderByAggregateInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
   totalRecommendations?: Prisma.SortOrder
@@ -1035,6 +1084,8 @@ export type ProviderMinOrderByAggregateInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
   totalRecommendations?: Prisma.SortOrder
@@ -1209,6 +1260,10 @@ export type EnumVerificationStatusFieldUpdateOperationsInput = {
   set?: $Enums.VerificationStatus
 }
 
+export type EnumTrustStatusFieldUpdateOperationsInput = {
+  set?: $Enums.TrustStatus
+}
+
 export type FloatFieldUpdateOperationsInput = {
   set?: number
   increment?: number
@@ -1357,6 +1412,20 @@ export type ProviderUpdateOneRequiredWithoutReportsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutReportsInput, Prisma.ProviderUpdateWithoutReportsInput>, Prisma.ProviderUncheckedUpdateWithoutReportsInput>
 }
 
+export type ProviderCreateNestedOneWithoutTrustValidationsInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutTrustValidationsInput, Prisma.ProviderUncheckedCreateWithoutTrustValidationsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutTrustValidationsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+}
+
+export type ProviderUpdateOneRequiredWithoutTrustValidationsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutTrustValidationsInput, Prisma.ProviderUncheckedCreateWithoutTrustValidationsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutTrustValidationsInput
+  upsert?: Prisma.ProviderUpsertWithoutTrustValidationsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutTrustValidationsInput, Prisma.ProviderUpdateWithoutTrustValidationsInput>, Prisma.ProviderUncheckedUpdateWithoutTrustValidationsInput>
+}
+
 export type ProviderCreateWithoutUserInput = {
   type?: $Enums.ProviderType
   businessName: string
@@ -1379,6 +1448,8 @@ export type ProviderCreateWithoutUserInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1397,6 +1468,7 @@ export type ProviderCreateWithoutUserInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutUserInput = {
@@ -1422,6 +1494,8 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1440,6 +1514,7 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutUserInput = {
@@ -1495,6 +1570,8 @@ export type ProviderScalarWhereInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
+  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatFilter<"Provider"> | number
   totalReviews?: Prisma.IntFilter<"Provider"> | number
   totalRecommendations?: Prisma.IntFilter<"Provider"> | number
@@ -1527,6 +1604,8 @@ export type ProviderCreateWithoutLocalityInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1545,6 +1624,7 @@ export type ProviderCreateWithoutLocalityInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutLocalityInput = {
@@ -1571,6 +1651,8 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1588,6 +1670,7 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutLocalityInput = {
@@ -1638,6 +1721,8 @@ export type ProviderCreateWithoutCategoryInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1656,6 +1741,7 @@ export type ProviderCreateWithoutCategoryInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutCategoryInput = {
@@ -1682,6 +1768,8 @@ export type ProviderUncheckedCreateWithoutCategoryInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1699,6 +1787,7 @@ export type ProviderUncheckedCreateWithoutCategoryInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutCategoryInput = {
@@ -1749,6 +1838,8 @@ export type ProviderCreateWithoutImagesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1767,6 +1858,7 @@ export type ProviderCreateWithoutImagesInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutImagesInput = {
@@ -1793,6 +1885,8 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1810,6 +1904,7 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutImagesInput = {
@@ -1850,6 +1945,8 @@ export type ProviderUpdateWithoutImagesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1868,6 +1965,7 @@ export type ProviderUpdateWithoutImagesInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutImagesInput = {
@@ -1894,6 +1992,8 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1911,6 +2011,7 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutSubscriptionInput = {
@@ -1935,6 +2036,8 @@ export type ProviderCreateWithoutSubscriptionInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1953,6 +2056,7 @@ export type ProviderCreateWithoutSubscriptionInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutSubscriptionInput = {
@@ -1979,6 +2083,8 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -1996,6 +2102,7 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutSubscriptionInput = {
@@ -2036,6 +2143,8 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2054,6 +2163,7 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
@@ -2080,6 +2190,8 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2097,6 +2209,7 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutPlanRequestsInput = {
@@ -2121,6 +2234,8 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2139,6 +2254,7 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
@@ -2165,6 +2281,8 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2182,6 +2300,7 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutPlanRequestsInput = {
@@ -2222,6 +2341,8 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2240,6 +2361,7 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
@@ -2266,6 +2388,8 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2283,6 +2407,7 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReviewsInput = {
@@ -2307,6 +2432,8 @@ export type ProviderCreateWithoutReviewsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2325,6 +2452,7 @@ export type ProviderCreateWithoutReviewsInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReviewsInput = {
@@ -2351,6 +2479,8 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2368,6 +2498,7 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReviewsInput = {
@@ -2408,6 +2539,8 @@ export type ProviderUpdateWithoutReviewsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2426,6 +2559,7 @@ export type ProviderUpdateWithoutReviewsInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReviewsInput = {
@@ -2452,6 +2586,8 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2469,6 +2605,7 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutFavoritesInput = {
@@ -2493,6 +2630,8 @@ export type ProviderCreateWithoutFavoritesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2511,6 +2650,7 @@ export type ProviderCreateWithoutFavoritesInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutFavoritesInput = {
@@ -2537,6 +2677,8 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2554,6 +2696,7 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutFavoritesInput = {
@@ -2594,6 +2737,8 @@ export type ProviderUpdateWithoutFavoritesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2612,6 +2757,7 @@ export type ProviderUpdateWithoutFavoritesInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutFavoritesInput = {
@@ -2638,6 +2784,8 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2655,6 +2803,7 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutVerificationDocsInput = {
@@ -2679,6 +2828,8 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2697,6 +2848,7 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
@@ -2723,6 +2875,8 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2740,6 +2894,7 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutVerificationDocsInput = {
@@ -2780,6 +2935,8 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2798,6 +2955,7 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
@@ -2824,6 +2982,8 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2841,6 +3001,7 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutAnalyticsInput = {
@@ -2865,6 +3026,8 @@ export type ProviderCreateWithoutAnalyticsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2883,6 +3046,7 @@ export type ProviderCreateWithoutAnalyticsInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutAnalyticsInput = {
@@ -2909,6 +3073,8 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -2926,6 +3092,7 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutAnalyticsInput = {
@@ -2966,6 +3133,8 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2984,6 +3153,7 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
@@ -3010,6 +3180,8 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3027,6 +3199,7 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutNotificationsInput = {
@@ -3051,6 +3224,8 @@ export type ProviderCreateWithoutNotificationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3069,6 +3244,7 @@ export type ProviderCreateWithoutNotificationsInput = {
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutNotificationsInput = {
@@ -3095,6 +3271,8 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3112,6 +3290,7 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutNotificationsInput = {
@@ -3152,6 +3331,8 @@ export type ProviderUpdateWithoutNotificationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3170,6 +3351,7 @@ export type ProviderUpdateWithoutNotificationsInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutNotificationsInput = {
@@ -3196,6 +3378,8 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3213,6 +3397,7 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutRecommendationsInput = {
@@ -3237,6 +3422,8 @@ export type ProviderCreateWithoutRecommendationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3255,6 +3442,7 @@ export type ProviderCreateWithoutRecommendationsInput = {
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutRecommendationsInput = {
@@ -3281,6 +3469,8 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3298,6 +3488,7 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutRecommendationsInput = {
@@ -3338,6 +3529,8 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3356,6 +3549,7 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
@@ -3382,6 +3576,8 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3399,6 +3595,7 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReportsInput = {
@@ -3423,6 +3620,8 @@ export type ProviderCreateWithoutReportsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3441,6 +3640,7 @@ export type ProviderCreateWithoutReportsInput = {
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReportsInput = {
@@ -3467,6 +3667,8 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3484,6 +3686,7 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReportsInput = {
@@ -3524,6 +3727,8 @@ export type ProviderUpdateWithoutReportsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3542,6 +3747,7 @@ export type ProviderUpdateWithoutReportsInput = {
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReportsInput = {
@@ -3568,6 +3774,8 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3585,6 +3793,205 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderCreateWithoutTrustValidationsInput = {
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
+  hasHomeService?: boolean
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
+  averageRating?: number
+  totalReviews?: number
+  totalRecommendations?: number
+  planPriority?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  category: Prisma.CategoryCreateNestedOneWithoutProvidersInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+}
+
+export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
+  id?: number
+  userId: number
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  dni?: string | null
+  ruc?: string | null
+  nombreComercial?: string | null
+  razonSocial?: string | null
+  hasDelivery?: boolean
+  plenaCoordinacion?: boolean
+  hasHomeService?: boolean
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
+  averageRating?: number
+  totalReviews?: number
+  totalRecommendations?: number
+  planPriority?: number
+  localityId: number
+  categoryId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+}
+
+export type ProviderCreateOrConnectWithoutTrustValidationsInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutTrustValidationsInput, Prisma.ProviderUncheckedCreateWithoutTrustValidationsInput>
+}
+
+export type ProviderUpsertWithoutTrustValidationsInput = {
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutTrustValidationsInput, Prisma.ProviderUncheckedUpdateWithoutTrustValidationsInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutTrustValidationsInput, Prisma.ProviderUncheckedCreateWithoutTrustValidationsInput>
+  where?: Prisma.ProviderWhereInput
+}
+
+export type ProviderUpdateToOneWithWhereWithoutTrustValidationsInput = {
+  where?: Prisma.ProviderWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateWithoutTrustValidationsInput, Prisma.ProviderUncheckedUpdateWithoutTrustValidationsInput>
+}
+
+export type ProviderUpdateWithoutTrustValidationsInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutProvidersNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyUserInput = {
@@ -3610,6 +4017,8 @@ export type ProviderCreateManyUserInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3642,6 +4051,8 @@ export type ProviderUpdateWithoutUserInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3660,6 +4071,7 @@ export type ProviderUpdateWithoutUserInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutUserInput = {
@@ -3685,6 +4097,8 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3703,6 +4117,7 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutUserInput = {
@@ -3728,6 +4143,8 @@ export type ProviderUncheckedUpdateManyWithoutUserInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3762,6 +4179,8 @@ export type ProviderCreateManyLocalityInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3793,6 +4212,8 @@ export type ProviderUpdateWithoutLocalityInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3811,6 +4232,7 @@ export type ProviderUpdateWithoutLocalityInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutLocalityInput = {
@@ -3837,6 +4259,8 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3854,6 +4278,7 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
@@ -3880,6 +4305,8 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3913,6 +4340,8 @@ export type ProviderCreateManyCategoryInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: $Enums.TrustStatus
+  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
   totalRecommendations?: number
@@ -3944,6 +4373,8 @@ export type ProviderUpdateWithoutCategoryInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3962,6 +4393,7 @@ export type ProviderUpdateWithoutCategoryInput = {
   planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutCategoryInput = {
@@ -3988,6 +4420,8 @@ export type ProviderUncheckedUpdateWithoutCategoryInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4005,6 +4439,7 @@ export type ProviderUncheckedUpdateWithoutCategoryInput = {
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutCategoryInput = {
@@ -4031,6 +4466,8 @@ export type ProviderUncheckedUpdateManyWithoutCategoryInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
   totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4055,6 +4492,7 @@ export type ProviderCountOutputType = {
   planRequests: number
   recommendations: number
   reports: number
+  trustValidations: number
 }
 
 export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4067,6 +4505,7 @@ export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensio
   planRequests?: boolean | ProviderCountOutputTypeCountPlanRequestsArgs
   recommendations?: boolean | ProviderCountOutputTypeCountRecommendationsArgs
   reports?: boolean | ProviderCountOutputTypeCountReportsArgs
+  trustValidations?: boolean | ProviderCountOutputTypeCountTrustValidationsArgs
 }
 
 /**
@@ -4142,6 +4581,13 @@ export type ProviderCountOutputTypeCountReportsArgs<ExtArgs extends runtime.Type
   where?: Prisma.ProviderReportWhereInput
 }
 
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountTrustValidationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TrustValidationRequestWhereInput
+}
+
 
 export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4167,6 +4613,8 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: boolean
+  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
   totalRecommendations?: boolean
@@ -4188,6 +4636,7 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
   recommendations?: boolean | Prisma.Provider$recommendationsArgs<ExtArgs>
   reports?: boolean | Prisma.Provider$reportsArgs<ExtArgs>
+  trustValidations?: boolean | Prisma.Provider$trustValidationsArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["provider"]>
 
@@ -4215,6 +4664,8 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: boolean
+  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
   totalRecommendations?: boolean
@@ -4252,6 +4703,8 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: boolean
+  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
   totalRecommendations?: boolean
@@ -4289,6 +4742,8 @@ export type ProviderSelectScalar = {
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
+  trustStatus?: boolean
+  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
   totalRecommendations?: boolean
@@ -4299,7 +4754,7 @@ export type ProviderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "trustStatus" | "isTrusted" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -4314,6 +4769,7 @@ export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
   recommendations?: boolean | Prisma.Provider$recommendationsArgs<ExtArgs>
   reports?: boolean | Prisma.Provider$reportsArgs<ExtArgs>
+  trustValidations?: boolean | Prisma.Provider$trustValidationsArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProviderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4343,6 +4799,7 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     planRequests: Prisma.$PlanRequestPayload<ExtArgs>[]
     recommendations: Prisma.$RecommendationPayload<ExtArgs>[]
     reports: Prisma.$ProviderReportPayload<ExtArgs>[]
+    trustValidations: Prisma.$TrustValidationRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -4368,6 +4825,8 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     verificationStatus: $Enums.VerificationStatus
     isVerified: boolean
     hasCleanRecord: boolean
+    trustStatus: $Enums.TrustStatus
+    isTrusted: boolean
     averageRating: number
     totalReviews: number
     totalRecommendations: number
@@ -4783,6 +5242,7 @@ export interface Prisma__ProviderClient<T, Null = never, ExtArgs extends runtime
   planRequests<T extends Prisma.Provider$planRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$planRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlanRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   recommendations<T extends Prisma.Provider$recommendationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$recommendationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecommendationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reports<T extends Prisma.Provider$reportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  trustValidations<T extends Prisma.Provider$trustValidationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$trustValidationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TrustValidationRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4835,6 +5295,8 @@ export interface ProviderFieldRefs {
   readonly verificationStatus: Prisma.FieldRef<"Provider", 'VerificationStatus'>
   readonly isVerified: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly hasCleanRecord: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly trustStatus: Prisma.FieldRef<"Provider", 'TrustStatus'>
+  readonly isTrusted: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly averageRating: Prisma.FieldRef<"Provider", 'Float'>
   readonly totalReviews: Prisma.FieldRef<"Provider", 'Int'>
   readonly totalRecommendations: Prisma.FieldRef<"Provider", 'Int'>
@@ -5476,6 +5938,30 @@ export type Provider$reportsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.ProviderReportScalarFieldEnum | Prisma.ProviderReportScalarFieldEnum[]
+}
+
+/**
+ * Provider.trustValidations
+ */
+export type Provider$trustValidationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TrustValidationRequest
+   */
+  select?: Prisma.TrustValidationRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TrustValidationRequest
+   */
+  omit?: Prisma.TrustValidationRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TrustValidationRequestInclude<ExtArgs> | null
+  where?: Prisma.TrustValidationRequestWhereInput
+  orderBy?: Prisma.TrustValidationRequestOrderByWithRelationInput | Prisma.TrustValidationRequestOrderByWithRelationInput[]
+  cursor?: Prisma.TrustValidationRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TrustValidationRequestScalarFieldEnum | Prisma.TrustValidationRequestScalarFieldEnum[]
 }
 
 /**

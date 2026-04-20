@@ -16,6 +16,7 @@ import { AdminModule } from './admin/admin.module.js';
 import { FavoritesModule } from './favorites/favorites.module.js';
 import { ProviderProfileModule } from './provider-profile/provider-profile.module.js';
 import { EventsModule } from './events/events.module.js';
+import { TrustValidationModule } from './trust-validation/trust-validation.module.js';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { EventsModule } from './events/events.module.js';
     ReviewsModule,
     AdminModule,
     EventsModule,
+    TrustValidationModule,
   ],
   controllers: [AppController],
   providers: [

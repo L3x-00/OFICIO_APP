@@ -1,5 +1,5 @@
 import {
-  IsString, IsOptional, IsEnum, IsNumber, IsPositive, IsBoolean,
+  IsString, IsOptional, IsEnum, IsNumber, IsPositive, IsBoolean, IsObject,
   MinLength, MaxLength, Matches, ValidateIf,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
@@ -62,6 +62,12 @@ export class RegisterProviderDto {
   plenaCoordinacion?: boolean;
 
   // ── Comunes ───────────────────────────────────────────────
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  whatsapp?: string | null;
+
   @IsOptional()
   @IsString()
   @MaxLength(1000)
@@ -83,4 +89,9 @@ export class RegisterProviderDto {
   @IsNumber()
   @IsPositive()
   localityId?: number;
+
+  @IsOptional()
+  @IsObject()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  scheduleJson?: any;
 }

@@ -250,6 +250,13 @@ export type EnumVerificationStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumVerificationStatusFilter<$PrismaModel> | $Enums.VerificationStatus
 }
 
+export type EnumTrustStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.TrustStatus | Prisma.EnumTrustStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTrustStatusFilter<$PrismaModel> | $Enums.TrustStatus
+}
+
 export type FloatFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -332,6 +339,16 @@ export type EnumVerificationStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumVerificationStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumVerificationStatusFilter<$PrismaModel>
+}
+
+export type EnumTrustStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TrustStatus | Prisma.EnumTrustStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTrustStatusWithAggregatesFilter<$PrismaModel> | $Enums.TrustStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTrustStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTrustStatusFilter<$PrismaModel>
 }
 
 export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -640,6 +657,13 @@ export type NestedEnumVerificationStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumVerificationStatusFilter<$PrismaModel> | $Enums.VerificationStatus
 }
 
+export type NestedEnumTrustStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.TrustStatus | Prisma.EnumTrustStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTrustStatusFilter<$PrismaModel> | $Enums.TrustStatus
+}
+
 export type NestedEnumProviderTypeWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ProviderType | Prisma.EnumProviderTypeFieldRefInput<$PrismaModel>
   in?: $Enums.ProviderType[] | Prisma.ListEnumProviderTypeFieldRefInput<$PrismaModel>
@@ -708,6 +732,16 @@ export type NestedEnumVerificationStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumVerificationStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumVerificationStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumTrustStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TrustStatus | Prisma.EnumTrustStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TrustStatus[] | Prisma.ListEnumTrustStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTrustStatusWithAggregatesFilter<$PrismaModel> | $Enums.TrustStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTrustStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTrustStatusFilter<$PrismaModel>
 }
 
 export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {

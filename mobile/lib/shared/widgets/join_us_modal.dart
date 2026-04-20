@@ -309,6 +309,8 @@ class _JoinUsModalState extends State<JoinUsModal>
               final hasPendingNegocio  = auth.isAuthenticated && !canNegocio && negocioStatus == 'PENDIENTE';
               final hasApprovedOficio  = auth.isAuthenticated && !canOficio  && oficioStatus  == 'APROBADO';
               final hasApprovedNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'APROBADO';
+              final hasRejectedOficio  = auth.isAuthenticated && !canOficio  && oficioStatus  == 'RECHAZADO';
+              final hasRejectedNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'RECHAZADO';
 
               // Ambos aprobados → botón único de panel con selección
               if (hasApprovedOficio && hasApprovedNegocio) {
@@ -368,7 +370,8 @@ class _JoinUsModalState extends State<JoinUsModal>
               }
 
               final hasAnyItem = canOficio || canNegocio || hasPendingOficio ||
-                  hasPendingNegocio || hasApprovedOficio || hasApprovedNegocio;
+                  hasPendingNegocio || hasApprovedOficio || hasApprovedNegocio ||
+                  hasRejectedOficio || hasRejectedNegocio;
 
               if (!hasAnyItem) return const SizedBox.shrink();
 
@@ -419,6 +422,24 @@ class _JoinUsModalState extends State<JoinUsModal>
                     ),
                     const SizedBox(height: 14),
                   ],
+                  if (hasRejectedOficio) ...[
+                    _RejectedBanner(
+                      icon: Icons.handyman_rounded,
+                      label: 'Tu perfil de Profesional fue rechazado',
+                      reason: auth.rejectionReasonFor('OFICIO'),
+                      onReRegister: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => ProviderOnboardingForm(
+                            providerType: 'OFICIO',
+                            isStandalone: true,
+                            initialData: auth.providerDataFor('OFICIO'),
+                          ),
+                        ));
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                  ],
 
                   // ── NEGOCIO ───────────────────────────────
                   if (canNegocio) ...[
@@ -446,6 +467,24 @@ class _JoinUsModalState extends State<JoinUsModal>
                         _openPanel(context, 'NEGOCIO');
                       },
                     ),
+                  if (hasRejectedNegocio) ...[
+                    const SizedBox(height: 14),
+                    _RejectedBanner(
+                      icon: Icons.storefront_rounded,
+                      label: 'Tu negocio fue rechazado',
+                      reason: auth.rejectionReasonFor('NEGOCIO'),
+                      onReRegister: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => ProviderOnboardingForm(
+                            providerType: 'NEGOCIO',
+                            isStandalone: true,
+                            initialData: auth.providerDataFor('NEGOCIO'),
+                          ),
+                        ));
+                      },
+                    ),
+                  ],
                 ],
               );
             },
@@ -1072,6 +1111,79 @@ class _PendingBanner extends StatelessWidget {
                 color: c.textSecondary,
                 fontSize: 13,
                 height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Banner rojo que indica rechazo + botón "Volver a registrarse".
+class _RejectedBanner extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String? reason;
+  final VoidCallback onReRegister;
+
+  const _RejectedBanner({
+    required this.icon,
+    required this.label,
+    required this.onReRegister,
+    this.reason,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    const accent = Color(0xFFEF4444);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accent.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.cancel_rounded, color: accent, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: accent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (reason != null && reason!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Motivo: $reason',
+              style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+            ),
+          ],
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onReRegister,
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Volver a registrarse'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               ),
             ),
           ),

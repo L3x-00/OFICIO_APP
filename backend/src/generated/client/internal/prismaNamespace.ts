@@ -401,7 +401,9 @@ export const ModelName = {
   ProviderAnalytic: 'ProviderAnalytic',
   AdminNotification: 'AdminNotification',
   Recommendation: 'Recommendation',
-  ProviderReport: 'ProviderReport'
+  ProviderReport: 'ProviderReport',
+  PlatformIssue: 'PlatformIssue',
+  TrustValidationRequest: 'TrustValidationRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -417,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "provider" | "providerImage" | "subscription" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "provider" | "providerImage" | "subscription" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1753,6 +1755,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PlatformIssue: {
+      payload: Prisma.$PlatformIssuePayload<ExtArgs>
+      fields: Prisma.PlatformIssueFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PlatformIssueFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PlatformIssueFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>
+        }
+        findFirst: {
+          args: Prisma.PlatformIssueFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PlatformIssueFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>
+        }
+        findMany: {
+          args: Prisma.PlatformIssueFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>[]
+        }
+        create: {
+          args: Prisma.PlatformIssueCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>
+        }
+        createMany: {
+          args: Prisma.PlatformIssueCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PlatformIssueCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>[]
+        }
+        delete: {
+          args: Prisma.PlatformIssueDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>
+        }
+        update: {
+          args: Prisma.PlatformIssueUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>
+        }
+        deleteMany: {
+          args: Prisma.PlatformIssueDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PlatformIssueUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PlatformIssueUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>[]
+        }
+        upsert: {
+          args: Prisma.PlatformIssueUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlatformIssuePayload>
+        }
+        aggregate: {
+          args: Prisma.PlatformIssueAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePlatformIssue>
+        }
+        groupBy: {
+          args: Prisma.PlatformIssueGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlatformIssueGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PlatformIssueCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlatformIssueCountAggregateOutputType> | number
+        }
+      }
+    }
+    TrustValidationRequest: {
+      payload: Prisma.$TrustValidationRequestPayload<ExtArgs>
+      fields: Prisma.TrustValidationRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TrustValidationRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TrustValidationRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.TrustValidationRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TrustValidationRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>
+        }
+        findMany: {
+          args: Prisma.TrustValidationRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>[]
+        }
+        create: {
+          args: Prisma.TrustValidationRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>
+        }
+        createMany: {
+          args: Prisma.TrustValidationRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TrustValidationRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.TrustValidationRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>
+        }
+        update: {
+          args: Prisma.TrustValidationRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.TrustValidationRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TrustValidationRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TrustValidationRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.TrustValidationRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TrustValidationRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.TrustValidationRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTrustValidationRequest>
+        }
+        groupBy: {
+          args: Prisma.TrustValidationRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TrustValidationRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TrustValidationRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TrustValidationRequestCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1801,6 +1951,9 @@ export const UserScalarFieldEnum = {
   firstName: 'firstName',
   lastName: 'lastName',
   avatarUrl: 'avatarUrl',
+  department: 'department',
+  province: 'province',
+  district: 'district',
   isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
   createdAt: 'createdAt',
@@ -1836,6 +1989,8 @@ export const LocalityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   department: 'department',
+  province: 'province',
+  district: 'district',
   country: 'country',
   isActive: 'isActive',
   createdAt: 'createdAt'
@@ -1881,6 +2036,8 @@ export const ProviderScalarFieldEnum = {
   verificationStatus: 'verificationStatus',
   isVerified: 'isVerified',
   hasCleanRecord: 'hasCleanRecord',
+  trustStatus: 'trustStatus',
+  isTrusted: 'isTrusted',
   averageRating: 'averageRating',
   totalReviews: 'totalReviews',
   totalRecommendations: 'totalRecommendations',
@@ -2046,6 +2203,42 @@ export const ProviderReportScalarFieldEnum = {
 } as const
 
 export type ProviderReportScalarFieldEnum = (typeof ProviderReportScalarFieldEnum)[keyof typeof ProviderReportScalarFieldEnum]
+
+
+export const PlatformIssueScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  description: 'description',
+  isReviewed: 'isReviewed',
+  createdAt: 'createdAt'
+} as const
+
+export type PlatformIssueScalarFieldEnum = (typeof PlatformIssueScalarFieldEnum)[keyof typeof PlatformIssueScalarFieldEnum]
+
+
+export const TrustValidationRequestScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  status: 'status',
+  dniNumber: 'dniNumber',
+  dniFirstName: 'dniFirstName',
+  dniLastName: 'dniLastName',
+  dniAddress: 'dniAddress',
+  dniPhotoFrontUrl: 'dniPhotoFrontUrl',
+  dniPhotoBackUrl: 'dniPhotoBackUrl',
+  selfieWithDniUrl: 'selfieWithDniUrl',
+  rucNumber: 'rucNumber',
+  businessAddress: 'businessAddress',
+  businessPhotoUrl: 'businessPhotoUrl',
+  ownerDniPhotoUrl: 'ownerDniPhotoUrl',
+  rejectionReason: 'rejectionReason',
+  reviewedByAdminId: 'reviewedByAdminId',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TrustValidationRequestScalarFieldEnum = (typeof TrustValidationRequestScalarFieldEnum)[keyof typeof TrustValidationRequestScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2229,6 +2422,20 @@ export type ListEnumVerificationStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'TrustStatus'
+ */
+export type EnumTrustStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TrustStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'TrustStatus[]'
+ */
+export type ListEnumTrustStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TrustStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'SubscriptionPlan'
  */
 export type EnumSubscriptionPlanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionPlan'>
@@ -2382,6 +2589,8 @@ export type GlobalOmitConfig = {
   adminNotification?: Prisma.AdminNotificationOmit
   recommendation?: Prisma.RecommendationOmit
   providerReport?: Prisma.ProviderReportOmit
+  platformIssue?: Prisma.PlatformIssueOmit
+  trustValidationRequest?: Prisma.TrustValidationRequestOmit
 }
 
 /* Types for Logging */

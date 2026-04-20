@@ -116,6 +116,7 @@ class DashboardProvider extends ChangeNotifier {
     String? phone,
     String? whatsapp,
     String? address,
+    Map<String, dynamic>? scheduleJson,
   }) async {
     try {
       final updated = await _repo.updateMyProfile(
@@ -124,6 +125,7 @@ class DashboardProvider extends ChangeNotifier {
         phone:        phone,
         whatsapp:     whatsapp,
         address:      address,
+        scheduleJson: scheduleJson,
         type:         _currentProviderType,
       );
       _profile = updated;

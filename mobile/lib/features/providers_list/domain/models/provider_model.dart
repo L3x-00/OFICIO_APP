@@ -1,3 +1,5 @@
+import '../../../provider_dashboard/domain/models/service_item_model.dart';
+
 /// Modelo que representa un proveedor de servicios en la app
 /// Mapea exactamente con la tabla `providers` del backend
 class ProviderModel {
@@ -34,6 +36,10 @@ class ProviderModel {
   final int totalRecommendations;
   /// Solo OFICIO: indica que el profesional atiende a domicilio
   final bool hasHomeService;
+  /// Servicios/productos del proveedor (parseados de scheduleJson['services'])
+  final List<ServiceItem> services;
+  /// true cuando el admin validó los documentos de identidad del proveedor
+  final bool isTrusted;
 
   const ProviderModel({
     required this.id,
@@ -63,6 +69,8 @@ class ProviderModel {
     this.userId,
     this.totalRecommendations = 0,
     this.hasHomeService = false,
+    this.services = const [],
+    this.isTrusted = false,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -106,7 +114,19 @@ class ProviderModel {
       userId:                 json['userId'] as int?,
       totalRecommendations:   json['totalRecommendations'] as int? ?? 0,
       hasHomeService:         json['hasHomeService'] as bool? ?? false,
+      services:               _parseServices(json['scheduleJson']),
+      isTrusted:              json['isTrusted'] as bool? ?? false,
     );
+  }
+
+  static List<ServiceItem> _parseServices(dynamic scheduleJson) {
+    if (scheduleJson == null) return const [];
+    final raw = (scheduleJson as Map<String, dynamic>)['services'];
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map(ServiceItem.fromJson)
+        .toList();
   }
 
   static String? _buildOwnerName(dynamic user) {
@@ -120,6 +140,7 @@ class ProviderModel {
   ProviderModel copyWith({
     bool? isFavorite,
     List<Map<String, dynamic>>? reviews,
+    List<ServiceItem>? services,
   }) {
     return ProviderModel(
       id:               id,
@@ -149,6 +170,8 @@ class ProviderModel {
       userId:                 userId,
       totalRecommendations:   totalRecommendations,
       hasHomeService:         hasHomeService,
+      services:               services ?? this.services,
+      isTrusted:              isTrusted,
     );
   }
 }

@@ -117,12 +117,104 @@ class _AppRootState extends State<_AppRoot> {
     _prevNavState = current;
 
     // ── Cuenta desactivada remotamente ──────────────────────────────────────
-    if (!auth.wasDeactivated || !mounted) return;
-    auth.clearDeactivatedFlag();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _showDeactivationDialog();
-    });
+    if (auth.wasDeactivated && mounted) {
+      auth.clearDeactivatedFlag();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showDeactivationDialog();
+      });
+    }
+
+    // ── Validación de confianza rechazada ────────────────────────────────────
+    if (auth.pendingTrustRejection != null && mounted) {
+      final rejection = auth.pendingTrustRejection!;
+      auth.clearTrustRejection();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showTrustRejectionDialog(rejection);
+      });
+    }
+  }
+
+  void _showTrustRejectionDialog(TrustRejectionPayload rejection) {
+    final c = context.colors;
+    const accent = Color(0xFFEF4444);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.7),
+      builder: (ctx) => Dialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64, height: 64,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.shield_outlined, color: accent, size: 34),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Solicitud de validación rechazada',
+                style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: accent.withValues(alpha: 0.25)),
+                ),
+                child: Text(
+                  rejection.reason.isNotEmpty ? rejection.reason : 'No se especificó un motivo.',
+                  style: const TextStyle(color: accent, fontSize: 13, height: 1.5),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: accent,
+                        side: BorderSide(color: accent.withValues(alpha: 0.5)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Cerrar', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Ver detalles', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showDeactivationDialog() {

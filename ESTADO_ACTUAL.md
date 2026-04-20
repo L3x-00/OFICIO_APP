@@ -1,7 +1,7 @@
 # OficioApp — Estado Actual del Proyecto
 
-**Última actualización**: 2026-04-17
-**Estado**: Hito 6.6 — Reportar proveedor desde modal de detalle
+**Última actualización**: 2026-04-19
+**Estado**: Hito 6.8 — Sistema de Confianza + Flujo de Rechazo Re-registro
 
 ---
 
@@ -42,6 +42,8 @@ OficioApp es un marketplace de servicios locales para ciudades intermedias del P
 | **6.4** | ✅ | Respuestas a reseñas: hilo chat, autorización revisor+proveedor, notifs cruzadas, foto adjunta |
 | **6.5** | ✅ | Prioridad de plan: PREMIUM→ESTANDAR→BASICO→GRATIS en listado; reseña editable (1 por usuario) |
 | **6.6** | ✅ | Reportar proveedor: botón en detail sheet, 6 motivos, detalle opcional, 1 reporte por usuario |
+| **6.7** | ✅ | Flujo re-registro tras rechazo: banner rojo + botón "Volver a registrarse" con datos pre-llenados; badge separado verificación vs confianza |
+| **6.8** | ✅ | Sistema de Confianza: formulario cámara-only DNI/negocio, backend trust-validation module, badge "Confiable", panel admin /trust-validation con comparativa, notif rechazo tiempo real |
 
 ---
 

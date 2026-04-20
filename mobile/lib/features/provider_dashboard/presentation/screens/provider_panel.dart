@@ -108,6 +108,7 @@ class _ProviderPanelState extends State<ProviderPanel> {
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
         isPaused: _isPaused,
+        isNegocio: isNeg,
       ),
     );
   }
@@ -119,11 +120,13 @@ class _PanelBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final bool isPaused;
+  final bool isNegocio;
 
   const _PanelBottomNav({
     required this.currentIndex,
     required this.onTap,
     required this.isPaused,
+    this.isNegocio = false,
   });
 
   @override
@@ -163,9 +166,9 @@ class _PanelBottomNav extends StatelessWidget {
             ),
             label: 'Perfil',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.design_services_rounded),
-            label: 'Servicios',
+          BottomNavigationBarItem(
+            icon: Icon(isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded),
+            label: isNegocio ? 'Productos' : 'Servicios',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart_rounded),

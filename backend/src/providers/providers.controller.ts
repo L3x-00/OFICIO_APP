@@ -31,6 +31,9 @@ export class ProvidersController {
     @Query('sortBy') sortBy?: string,
     @Query('verified') verified?: string,
     @Query('location') location?: string,
+    @Query('department') department?: string,
+    @Query('province') province?: string,
+    @Query('district') district?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -44,6 +47,9 @@ export class ProvidersController {
       sortBy,
       verified: verified !== undefined ? verified === 'true' : undefined,
       location,
+      department,
+      province,
+      district,
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 20,
     });
@@ -97,6 +103,14 @@ export class ProvidersController {
     @Body('userId') userId: number,
   ) {
     return this.providersService.addRecommendation(+userId, id);
+  }
+
+  // POST /providers/report-issue — Proveedor reporta un problema de plataforma
+  @Post('report-issue')
+  createPlatformIssue(
+    @Body() body: { userId: number; description: string },
+  ) {
+    return this.providersService.createPlatformIssue(+body.userId, body.description);
   }
 
   // POST /providers/:id/report — Cliente reporta un proveedor

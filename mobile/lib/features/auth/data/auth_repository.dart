@@ -113,6 +113,7 @@ class AuthRepository {
     required String businessName,
     required String phone,
     required String type,
+    String? whatsapp,
     // OFICIO
     String? dni,
     // NEGOCIO
@@ -126,12 +127,14 @@ class AuthRepository {
     String? address,
     int? categoryId,
     int? localityId,
+    Map<String, dynamic>? scheduleJson,
   }) async {
     try {
       final response = await _dio.post('/auth/register/provider', data: {
         'businessName': businessName,
         'phone':        phone,
         'type':         type,
+        if (whatsapp != null && whatsapp.isNotEmpty) 'whatsapp': whatsapp,
         if (dni != null && dni.isNotEmpty) 'dni': dni,
         if (ruc != null && ruc.isNotEmpty) 'ruc': ruc,
         if (nombreComercial != null && nombreComercial.isNotEmpty) 'nombreComercial': nombreComercial,
@@ -142,6 +145,7 @@ class AuthRepository {
         if (address != null && address.isNotEmpty) 'address': address,
         'categoryId': ?categoryId,
         'localityId': ?localityId,
+        if (scheduleJson != null && scheduleJson.isNotEmpty) 'scheduleJson': scheduleJson,
       });
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
@@ -244,12 +248,18 @@ class AuthRepository {
     String? firstName,
     String? lastName,
     String? phone,
+    String? department,
+    String? province,
+    String? district,
   }) async {
     try {
       final response = await _dio.patch('/users/profile', data: {
-        'firstName': ?firstName,
-        'lastName':  ?lastName,
-        'phone':     ?phone,
+        'firstName':  ?firstName,
+        'lastName':   ?lastName,
+        'phone':      ?phone,
+        'department': ?department,
+        'province':   ?province,
+        'district':   ?district,
       });
       final data = response.data as Map<String, dynamic>;
       final user = UserModel.fromJson({...data, 'id': data['id']});

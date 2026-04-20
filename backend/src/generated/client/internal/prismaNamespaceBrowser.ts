@@ -68,7 +68,9 @@ export const ModelName = {
   ProviderAnalytic: 'ProviderAnalytic',
   AdminNotification: 'AdminNotification',
   Recommendation: 'Recommendation',
-  ProviderReport: 'ProviderReport'
+  ProviderReport: 'ProviderReport',
+  PlatformIssue: 'PlatformIssue',
+  TrustValidationRequest: 'TrustValidationRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -96,6 +98,9 @@ export const UserScalarFieldEnum = {
   firstName: 'firstName',
   lastName: 'lastName',
   avatarUrl: 'avatarUrl',
+  department: 'department',
+  province: 'province',
+  district: 'district',
   isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
   createdAt: 'createdAt',
@@ -131,6 +136,8 @@ export const LocalityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   department: 'department',
+  province: 'province',
+  district: 'district',
   country: 'country',
   isActive: 'isActive',
   createdAt: 'createdAt'
@@ -176,6 +183,8 @@ export const ProviderScalarFieldEnum = {
   verificationStatus: 'verificationStatus',
   isVerified: 'isVerified',
   hasCleanRecord: 'hasCleanRecord',
+  trustStatus: 'trustStatus',
+  isTrusted: 'isTrusted',
   averageRating: 'averageRating',
   totalReviews: 'totalReviews',
   totalRecommendations: 'totalRecommendations',
@@ -341,6 +350,42 @@ export const ProviderReportScalarFieldEnum = {
 } as const
 
 export type ProviderReportScalarFieldEnum = (typeof ProviderReportScalarFieldEnum)[keyof typeof ProviderReportScalarFieldEnum]
+
+
+export const PlatformIssueScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  description: 'description',
+  isReviewed: 'isReviewed',
+  createdAt: 'createdAt'
+} as const
+
+export type PlatformIssueScalarFieldEnum = (typeof PlatformIssueScalarFieldEnum)[keyof typeof PlatformIssueScalarFieldEnum]
+
+
+export const TrustValidationRequestScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  status: 'status',
+  dniNumber: 'dniNumber',
+  dniFirstName: 'dniFirstName',
+  dniLastName: 'dniLastName',
+  dniAddress: 'dniAddress',
+  dniPhotoFrontUrl: 'dniPhotoFrontUrl',
+  dniPhotoBackUrl: 'dniPhotoBackUrl',
+  selfieWithDniUrl: 'selfieWithDniUrl',
+  rucNumber: 'rucNumber',
+  businessAddress: 'businessAddress',
+  businessPhotoUrl: 'businessPhotoUrl',
+  ownerDniPhotoUrl: 'ownerDniPhotoUrl',
+  rejectionReason: 'rejectionReason',
+  reviewedByAdminId: 'reviewedByAdminId',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TrustValidationRequestScalarFieldEnum = (typeof TrustValidationRequestScalarFieldEnum)[keyof typeof TrustValidationRequestScalarFieldEnum]
 
 
 export const SortOrder = {

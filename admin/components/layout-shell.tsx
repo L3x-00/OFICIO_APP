@@ -10,8 +10,10 @@ import { toast } from 'sonner';
 
 // Mapa: tipo de evento → ruta del panel que debe actualizarse
 const EVENT_ROUTES: Record<string, string> = {
-  NEW_PROVIDER:     '/verification',
-  NEW_PLAN_REQUEST: '/plan-requests',
+  NEW_PROVIDER:              '/verification',
+  NEW_PLAN_REQUEST:          '/plan-requests',
+  NEW_USER:                  '/users',
+  TRUST_VALIDATION_REQUEST:  '/trust-validation',
 };
 
 function Topbar() {
@@ -43,6 +45,7 @@ function Topbar() {
     '/categories': ['Gestión', 'Categorías'],
     '/reviews': ['Gestión', 'Reseñas'],
     '/verification': ['Operaciones', 'Verificación'],
+    '/trust-validation': ['Operaciones', 'Validación de Confianza'],
     '/plan-requests': ['Operaciones', 'Solicitudes de Plan'],
     '/notifications': ['Operaciones', 'Notificaciones'],
     '/reports': ['Principal', 'Reportes'],

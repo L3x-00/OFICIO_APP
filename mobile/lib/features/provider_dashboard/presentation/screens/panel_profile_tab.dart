@@ -3,7 +3,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../shared/widgets/phone_input_section.dart';
+import '../../../../shared/widgets/schedule_editor.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../trust_validation/presentation/screens/trust_validation_form_screen.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
@@ -25,6 +28,7 @@ class PanelProfileTab extends StatefulWidget {
 
 class _PanelProfileTabState extends State<PanelProfileTab> {
   bool _isSaving = false;
+  bool _showAddressCard = false;
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +58,14 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                     // Info básica
                     _buildInfoSection(profile, dash),
                     const SizedBox(height: 20),
-                    // Control de disponibilidad
-                    _buildAvailabilitySection(profile, dash),
+                    // OFICIO: disponibilidad  |  NEGOCIO: horario de atención
+                    if (!widget.isNegocio)
+                      _buildAvailabilitySection(profile, dash)
+                    else
+                      _buildScheduleSection(profile, dash),
+                    const SizedBox(height: 20),
+                    // Validación de confianza
+                    _buildTrustSection(context),
                     const SizedBox(height: 20),
                     // Zona peligrosa
                     _buildDangerZone(context, dash),
@@ -166,41 +176,63 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
             onSave: (val) => dash.updateProfile(businessName: val),
           ),
         ),
-        _EditCard(
-          title: 'Teléfono',
-          value: profile?.phone ?? '',
-          icon: Icons.phone_rounded,
-          onTap: () => _showEditDialog(
-            context: context,
-            title: 'Teléfono',
-            initialValue: profile?.phone ?? '',
-            keyboardType: TextInputType.phone,
-            onSave: (val) => dash.updateProfile(phone: val),
-          ),
+        _ContactCard(
+          phone: profile?.phone ?? '',
+          whatsapp: profile?.whatsapp,
+          onTap: () => _showPhoneDialog(context, profile, dash),
         ),
-        _EditCard(
-          title: 'WhatsApp',
-          value: profile?.whatsapp ?? 'No configurado',
-          icon: Icons.chat_rounded,
-          onTap: () => _showEditDialog(
-            context: context,
-            title: 'WhatsApp',
-            initialValue: profile?.whatsapp ?? '',
-            keyboardType: TextInputType.phone,
-            onSave: (val) => dash.updateProfile(whatsapp: val),
+        // OFICIO: dirección oculta por defecto, toggle para mostrar
+        if (!widget.isNegocio) ...[
+          GestureDetector(
+            onTap: () => setState(() => _showAddressCard = !_showAddressCard),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    _showAddressCard
+                        ? Icons.expand_less_rounded
+                        : Icons.add_location_alt_outlined,
+                    size: 16,
+                    color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _showAddressCard ? 'Ocultar dirección' : 'Agregar dirección (opcional)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        _EditCard(
-          title: 'Dirección',
-          value: profile?.address ?? 'No configurada',
-          icon: Icons.location_on_rounded,
-          onTap: () => _showEditDialog(
-            context: context,
+          if (_showAddressCard)
+            _EditCard(
+              title: 'Dirección',
+              value: profile?.address ?? 'No configurada',
+              icon: Icons.location_on_rounded,
+              onTap: () => _showEditDialog(
+                context: context,
+                title: 'Dirección',
+                initialValue: profile?.address ?? '',
+                onSave: (val) => dash.updateProfile(address: val),
+              ),
+            ),
+        ] else
+          _EditCard(
             title: 'Dirección',
-            initialValue: profile?.address ?? '',
-            onSave: (val) => dash.updateProfile(address: val),
+            value: profile?.address ?? 'No configurada',
+            icon: Icons.location_on_rounded,
+            onTap: () => _showEditDialog(
+              context: context,
+              title: 'Dirección',
+              initialValue: profile?.address ?? '',
+              onSave: (val) => dash.updateProfile(address: val),
+            ),
           ),
-        ),
         _EditCard(
           title: 'Descripción',
           value: profile?.description ?? 'Sin descripción',
@@ -339,7 +371,118 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
     );
   }
 
+  // ── HORARIO DE ATENCIÓN (solo NEGOCIO) ───────────────────
+
+  Widget _buildScheduleSection(DashboardProfileModel? profile, DashboardProvider dash) {
+    return ScheduleEditor(
+      initialSchedule: profile?.scheduleJson,
+      onSave: (schedule) async {
+        final ok = await dash.updateProfile(scheduleJson: schedule);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ok ? 'Horario guardado' : dash.error ?? 'Error al guardar'),
+          backgroundColor: ok ? AppColors.available : AppColors.busy,
+        ));
+      },
+    );
+  }
+
   // ── ZONA PELIGROSA ────────────────────────────────────────
+
+  Widget _buildTrustSection(BuildContext context) {
+    final c    = context.colors;
+    final auth = context.watch<AuthProvider>();
+    final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+    final trustStatus = auth.providerDataFor(type)?['trustStatus'] as String? ?? 'NONE';
+    final isTrusted   = auth.providerDataFor(type)?['isTrusted']   as bool?   ?? false;
+
+    // Colores y textos según estado
+    final Color accent;
+    final IconData icon;
+    final String title;
+    final String subtitle;
+
+    if (isTrusted) {
+      accent   = const Color(0xFF10B981);
+      icon     = Icons.verified_rounded;
+      title    = '¡Perfil verificado como confiable!';
+      subtitle = 'Tu perfil cuenta con el badge de "Profesional Confiable". Los clientes pueden contratarte con total seguridad.';
+    } else if (trustStatus == 'PENDING') {
+      accent   = AppColors.amber;
+      icon     = Icons.hourglass_top_rounded;
+      title    = 'Validación en proceso';
+      subtitle = 'Tu solicitud está siendo revisada por nuestro equipo. Te notificaremos cuando tengamos una respuesta.';
+    } else if (trustStatus == 'REJECTED') {
+      accent   = const Color(0xFFEF4444);
+      icon     = Icons.cancel_rounded;
+      title    = 'Solicitud rechazada';
+      subtitle = 'Tu solicitud fue rechazada. Puedes enviar una nueva solicitud corrigiendo la información.';
+    } else {
+      accent   = AppColors.primary;
+      icon     = Icons.shield_outlined;
+      title    = 'Solicitar validación de datos';
+      subtitle = 'Valida tu identidad para obtener el badge de "Profesional Confiable" y generar más confianza en los clientes.';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(icon: Icons.shield_rounded, title: 'Confianza y Validación', color: accent),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: accent.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: accent, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(title,
+                      style: TextStyle(color: accent, fontSize: 14, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(subtitle,
+                style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.5)),
+              if (!isTrusted && trustStatus != 'PENDING') ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => TrustValidationFormScreen(providerType: type),
+                    )),
+                    icon: Icon(
+                      trustStatus == 'REJECTED' ? Icons.refresh_rounded : Icons.verified_user_rounded,
+                      size: 16,
+                    ),
+                    label: Text(
+                      trustStatus == 'REJECTED' ? 'Reintentar validación' : 'Solicitar validación de datos',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildDangerZone(BuildContext context, DashboardProvider dash) {
     final c = context.colors;
@@ -534,6 +677,82 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showPhoneDialog(
+    BuildContext context,
+    DashboardProfileModel? profile,
+    DashboardProvider dash,
+  ) async {
+    final c = context.colors;
+    String phone    = profile?.phone    ?? '';
+    String? whatsapp = profile?.whatsapp;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: c.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20, right: 20, top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: StatefulBuilder(
+            builder: (_, setLocal) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.phone_rounded, color: AppColors.amber, size: 18),
+                    const SizedBox(width: 8),
+                    Text('Números de contacto',
+                        style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                    const Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, color: c.textMuted),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                PhoneInputSection(
+                  initialPhone: profile?.phone,
+                  initialWhatsapp: profile?.whatsapp,
+                  onChange: (p, w) {
+                    phone    = p;
+                    whatsapp = w;
+                  },
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      setState(() => _isSaving = true);
+                      await dash.updateProfile(phone: phone, whatsapp: whatsapp);
+                      if (mounted) setState(() => _isSaving = false);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.amber,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -823,6 +1042,62 @@ class _AvailabilityChip extends StatelessWidget {
             fontSize: 12,
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContactCard extends StatelessWidget {
+  final String  phone;
+  final String? whatsapp;
+  final VoidCallback onTap;
+
+  const _ContactCard({required this.phone, required this.whatsapp, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.phone_rounded, color: AppColors.amber, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Contacto', style: TextStyle(color: c.textMuted, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text(
+                    phone.isEmpty ? 'Sin teléfono' : phone,
+                    style: TextStyle(color: phone.isEmpty ? c.textMuted : c.textPrimary, fontSize: 14),
+                  ),
+                  if (whatsapp != null && whatsapp!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(Icons.chat_rounded, size: 12, color: AppColors.whatsapp),
+                        const SizedBox(width: 4),
+                        Text(whatsapp!, style: TextStyle(color: AppColors.whatsapp, fontSize: 12)),
+                      ],
+                    ),
+                  ] else
+                    Text('WhatsApp: mismo número', style: TextStyle(color: c.textMuted, fontSize: 12)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 18),
+          ],
         ),
       ),
     );

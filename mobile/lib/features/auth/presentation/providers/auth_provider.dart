@@ -18,6 +18,12 @@ enum AppNavigationState {
   authenticated,          // Listo para usar la app
 }
 
+class TrustRejectionPayload {
+  final String reason;
+  final String profileType;
+  const TrustRejectionPayload({required this.reason, required this.profileType});
+}
+
 class AuthProvider extends ChangeNotifier {
   final _repo = AuthRepository();
 
@@ -46,8 +52,9 @@ class AuthProvider extends ChangeNotifier {
   // Estado de verificación sincronizado con el backend
   String? _providerVerificationStatus; // 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
   // Estado y motivo de rechazo por tipo de perfil
-  final Map<String, String> _verificationStatusByType  = {}; // tipo → status
-  final Map<String, String> _rejectionReasonByType     = {}; // tipo → motivo
+  final Map<String, String>              _verificationStatusByType = {}; // tipo → status
+  final Map<String, String>              _rejectionReasonByType    = {}; // tipo → motivo
+  final Map<String, Map<String, dynamic>> _providerDataByType      = {}; // tipo → datos completos
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
@@ -72,6 +79,9 @@ class AuthProvider extends ChangeNotifier {
 
   /// Devuelve el motivo de rechazo para un tipo específico (null si no fue rechazado)
   String? rejectionReasonFor(String type) => _rejectionReasonByType[type];
+
+  /// Devuelve los datos completos del perfil de proveedor para pre-llenar el formulario
+  Map<String, dynamic>? providerDataFor(String type) => _providerDataByType[type];
 
   /// Devuelve true si el usuario autenticado puede registrar un nuevo perfil
   /// del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no lo tiene.
@@ -149,6 +159,27 @@ class AuthProvider extends ChangeNotifier {
     if (type == 'PROVIDER_APPROVED' || type == 'PROVIDER_REJECTED') {
       _syncProviderStatus().then((_) => notifyListeners());
     }
+
+    if (type == 'TRUST_APPROVED' || type == 'TRUST_REJECTED') {
+      _syncProviderStatus().then((_) {
+        if (type == 'TRUST_REJECTED') {
+          _pendingTrustRejection = TrustRejectionPayload(
+            reason: payload['body'] as String? ?? '',
+            profileType: payload['targetProfileType'] as String? ?? 'OFICIO',
+          );
+        }
+        notifyListeners();
+      });
+    }
+  }
+
+  // ── Trust rejection overlay ───────────────────────────────
+  TrustRejectionPayload? _pendingTrustRejection;
+  TrustRejectionPayload? get pendingTrustRejection => _pendingTrustRejection;
+
+  void clearTrustRejection() {
+    _pendingTrustRejection = null;
+    notifyListeners();
   }
 
   /// Sincroniza el estado del proveedor con el backend.
@@ -164,6 +195,7 @@ class AuthProvider extends ChangeNotifier {
           _providerVerificationStatus = null;
           _verificationStatusByType.clear();
           _rejectionReasonByType.clear();
+          _providerDataByType.clear();
 
           bool hasAnyApproved = false;
 
@@ -178,6 +210,7 @@ class AuthProvider extends ChangeNotifier {
             };
             _providerProfiles.add(internalType);
             _activeProfileType ??= internalType;
+            _providerDataByType[internalType] = profile;
 
             // Priorizar estado APROBADO; si ninguno aprobado, mostrar el último
             final status = profile['verificationStatus'] as String?;
@@ -221,6 +254,7 @@ class AuthProvider extends ChangeNotifier {
           _providerVerificationStatus = null;
           _verificationStatusByType.clear();
           _rejectionReasonByType.clear();
+          _providerDataByType.clear();
           if (_user != null && _user!.role == 'PROVEEDOR') {
             _user = _user!.copyWith(role: 'USUARIO');
           }
@@ -432,6 +466,7 @@ class AuthProvider extends ChangeNotifier {
     required String businessName,
     required String phone,
     required String type,
+    String? whatsapp,
     // OFICIO
     String? dni,
     // NEGOCIO
@@ -444,6 +479,7 @@ class AuthProvider extends ChangeNotifier {
     String? description,
     String? address,
     int? categoryId,
+    Map<String, dynamic>? scheduleJson,
   }) async {
     _isLoading = true;
     _error = null;
@@ -453,6 +489,7 @@ class AuthProvider extends ChangeNotifier {
       businessName:     businessName,
       phone:            phone,
       type:             type,
+      whatsapp:         whatsapp,
       dni:              dni,
       ruc:              ruc,
       nombreComercial:  nombreComercial,
@@ -462,12 +499,54 @@ class AuthProvider extends ChangeNotifier {
       description:      description,
       address:          address,
       categoryId:       categoryId,
+      scheduleJson:     scheduleJson,
     );
 
     result.when(
       success: (_) {
         // El rol sigue siendo USUARIO hasta que el admin apruebe.
         // Solo actualizamos el estado de perfiles (pendiente).
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
+  /// Guarda la ubicación del usuario en el backend y actualiza el estado local.
+  Future<bool> updateLocation({
+    required String department,
+    required String province,
+    required String district,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.updateProfile(
+      department: department,
+      province:   province,
+      district:   district,
+    );
+
+    result.when(
+      success: (userData) {
+        _user = _user?.copyWith(
+          department: department,
+          province:   province,
+          district:   district,
+        );
+        // Persistir cambio en almacenamiento local
+        AuthLocalStorage.getAccessToken().then((at) async {
+          final rt = await AuthLocalStorage.getRefreshToken();
+          if (at != null && rt != null && _user != null) {
+            await AuthLocalStorage.saveSession(
+              accessToken: at, refreshToken: rt, user: _user!,
+            );
+          }
+        });
       },
       failure: (e) => _error = e.message,
     );

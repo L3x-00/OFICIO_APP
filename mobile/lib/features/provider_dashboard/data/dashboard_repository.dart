@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/models/dashboard_profile_model.dart';
 import '../domain/models/service_item_model.dart';
@@ -122,6 +123,27 @@ class DashboardRepository {
     return response.data['url'] as String;
   }
 
+  /// Versión bytes-based de [uploadProviderPhoto] — funciona en todas las
+  /// plataformas (web, Android, iOS). Usar en el formulario de registro.
+  Future<String> uploadProviderPhotoFile(XFile file) async {
+    final bytes = await file.readAsBytes();
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(
+        bytes,
+        filename: file.name.isNotEmpty ? file.name : 'photo.jpg',
+      ),
+    });
+    final response = await _dio.post(
+      '/upload/provider-photo',
+      data: formData,
+      options: Options(
+        sendTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+    return response.data['url'] as String;
+  }
+
   /// Vincula la URL de una imagen subida al perfil del proveedor en la BD.
   Future<ProfileImageRef> saveProviderImage(String url, {String? type}) async {
     final response = await _dio.post(
@@ -164,6 +186,18 @@ class DashboardRepository {
 
   Future<void> markNotificationRead(int id) async {
     await _dio.patch('/provider-profile/me/notifications/$id/read');
+  }
+
+  // ── REPORTE DE PROBLEMA DE PLATAFORMA ────────────────────
+
+  Future<void> reportPlatformIssue({
+    required int userId,
+    required String description,
+  }) async {
+    await _dio.post(
+      '/providers/report-issue',
+      data: {'userId': userId, 'description': description},
+    );
   }
 }
 

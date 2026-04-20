@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, Star, ShieldCheck, BarChart2,
   Tag, Zap, Bell, FileBarChart, UserCog, ChevronRight,
-  Activity, CreditCard,
+  Activity, CreditCard, Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -32,6 +32,7 @@ const navGroups = [
     label: 'Operaciones',
     items: [
       { href: '/verification', label: 'Verificación', icon: ShieldCheck },
+      { href: '/trust-validation', label: 'Validación', icon: Shield },
       { href: '/plan-requests', label: 'Solicitudes de Plan', icon: CreditCard },
       { href: '/notifications', label: 'Notificaciones', icon: Bell },
     ],

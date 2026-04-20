@@ -131,3 +131,13 @@ export type Recommendation = Prisma.RecommendationModel
  * 
  */
 export type ProviderReport = Prisma.ProviderReportModel
+/**
+ * Model PlatformIssue
+ * 
+ */
+export type PlatformIssue = Prisma.PlatformIssueModel
+/**
+ * Model TrustValidationRequest
+ * 
+ */
+export type TrustValidationRequest = Prisma.TrustValidationRequestModel

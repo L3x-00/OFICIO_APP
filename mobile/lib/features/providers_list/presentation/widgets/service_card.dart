@@ -6,6 +6,8 @@ import 'package:mobile/core/constans/app_strings.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/models/provider_model.dart';
+import '../../../../shared/widgets/phone_input_section.dart' show formatForWhatsApp;
+import '../../../provider_dashboard/domain/models/service_item_model.dart';
 
 // ─── Helpers de plan ─────────────────────────────────────────
 bool _isPremium(String plan) => plan == 'PREMIUM';
@@ -98,6 +100,15 @@ class ServiceCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: _ThumbnailRow(urls: provider.thumbnailUrls),
               ),
+            // Chips de servicios (OFICIO) o productos (NEGOCIO)
+            if (provider.services.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: _ServicesRow(
+                  services: provider.services,
+                  isNegocio: provider.type == ProviderType.negocio,
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: _ActionButtons(
@@ -153,8 +164,11 @@ class _CoverImage extends StatelessWidget {
             left: 12,
             child: _PlanBadge.standard(),
           ),
-        if (provider.isVerified)
+        if (provider.isVerified &&
+            (_isPremium(provider.subscriptionPlan) || _isStandard(provider.subscriptionPlan)))
           Positioned(top: 12, right: 12, child: _VerifiedBadge()),
+        if (provider.isTrusted)
+          Positioned(top: provider.isVerified ? 44 : 12, right: 12, child: _TrustedBadge()),
         if (provider.distanceKm != null)
           Positioned(top: 12, left: 12, child: _DistanceBadge(km: provider.distanceKm!)),
       ],
@@ -331,7 +345,8 @@ class _ActionButtons extends StatelessWidget {
   }
 
   Future<void> _openWhatsApp() async {
-    final number  = (provider.whatsapp ?? provider.phone).replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    final raw    = provider.whatsapp ?? provider.phone;
+    final number = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
     final message = Uri.encodeComponent(AppStrings.whatsappMessage(provider.businessName));
     final native  = Uri.parse('whatsapp://send?phone=$number&text=$message');
     final web     = Uri.parse('https://wa.me/$number?text=$message');
@@ -408,6 +423,107 @@ class _FavoriteButton extends StatelessWidget {
   }
 }
 
+// ─── Chips de servicios del profesional ──────────────────────
+
+class _ServicesRow extends StatelessWidget {
+  final List<ServiceItem> services;
+  final bool isNegocio;
+  const _ServicesRow({required this.services, this.isNegocio = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    const maxVisible = 3;
+    final visible = services.take(maxVisible).toList();
+    final extra   = services.length - maxVisible;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              isNegocio ? Icons.inventory_2_outlined : Icons.build_circle_outlined,
+              size: 13,
+              color: isNegocio ? AppColors.amber : AppColors.primary,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              isNegocio ? 'Productos' : 'Servicios',
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 5,
+          children: [
+            ...visible.map((s) => _ServiceChip(item: s)),
+            if (extra > 0)
+              _ServiceChip(label: '+$extra más', isExtra: true),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ServiceChip extends StatelessWidget {
+  final ServiceItem? item;
+  final String? label;
+  final bool isExtra;
+
+  const _ServiceChip({this.item, this.label, this.isExtra = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final c    = context.colors;
+    final text = label ?? item!.name;
+    final price = (!isExtra && item?.price != null) ? item!.priceLabel : null;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: isExtra
+            ? c.bgInput
+            : AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isExtra
+              ? c.border
+              : AppColors.primary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              color: isExtra ? c.textMuted : AppColors.primary,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (price != null) ...[
+            const SizedBox(width: 4),
+            Text(
+              '· $price',
+              style: TextStyle(color: c.textMuted, fontSize: 10),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _VerifiedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -424,6 +540,28 @@ class _VerifiedBadge extends StatelessWidget {
           Icon(Icons.verified_rounded, color: Colors.white, size: 14),
           SizedBox(width: 4),
           Text('Verificado', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrustedBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.4), blurRadius: 8)],
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.shield_rounded, color: Colors.white, size: 13),
+          SizedBox(width: 4),
+          Text('Confiable', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
         ],
       ),
     );

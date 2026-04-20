@@ -1113,4 +1113,32 @@ async updateProvider(
       data:  { isReviewed: true },
     });
   }
+
+  // ── PROBLEMAS DE PLATAFORMA ──────────────────────────────
+  async getPlatformIssues(page = 1, limit = 20, isReviewed?: boolean) {
+    const where = isReviewed !== undefined ? { isReviewed } : {};
+    const skip  = (page - 1) * limit;
+
+    const [data, total, pendingCount] = await Promise.all([
+      this.prisma.platformIssue.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
+        },
+      }),
+      this.prisma.platformIssue.count({ where }),
+      this.prisma.platformIssue.count({ where: { isReviewed: false } }),
+    ]);
+
+    return { data, total, page, lastPage: Math.ceil(total / limit), pendingCount };
+  }
+
+  async markPlatformIssueReviewed(issueId: number) {
+    const issue = await this.prisma.platformIssue.findUnique({ where: { id: issueId } });
+    if (!issue) throw new NotFoundException('Reporte no encontrado');
+    return this.prisma.platformIssue.update({ where: { id: issueId }, data: { isReviewed: true } });
+  }
 }

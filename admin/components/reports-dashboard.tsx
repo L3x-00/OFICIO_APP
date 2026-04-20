@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import {
   getReports, exportUsersCSV, exportProvidersCSV, ReportsResponse,
   getProviderReports, markReportReviewed, ProviderReport, ProviderReportsResponse,
+  getPlatformIssues, markPlatformIssueReviewed, PlatformIssue, PlatformIssuesResponse,
 } from '@/lib/api';
 
 const REASON_LABELS: Record<string, string> = {
@@ -25,7 +26,7 @@ export function ReportsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError]         = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'top_rated' | 'most_reviewed' | 'active_users' | 'categories' | 'registrations' | 'verification' | 'user_reports'
+    'top_rated' | 'most_reviewed' | 'active_users' | 'categories' | 'registrations' | 'verification' | 'user_reports' | 'platform_issues'
   >('top_rated');
 
   // ── Estado de reportes de usuarios ─────────────────────────
@@ -34,6 +35,13 @@ export function ReportsDashboard() {
   const [reportsFilter, setReportsFilter] = useState<'all' | 'pending' | 'reviewed'>('all');
   const [reportsLoading, setReportsLoading] = useState(false);
   const [markingId, setMarkingId]         = useState<number | null>(null);
+
+  // ── Estado de problemas de plataforma ──────────────────────
+  const [issues, setIssues]               = useState<PlatformIssuesResponse | null>(null);
+  const [issuesPage, setIssuesPage]       = useState(1);
+  const [issuesFilter, setIssuesFilter]   = useState<'all' | 'pending' | 'reviewed'>('all');
+  const [issuesLoading, setIssuesLoading] = useState(false);
+  const [markingIssueId, setMarkingIssueId] = useState<number | null>(null);
 
   useEffect(() => {
     getReports()
@@ -56,6 +64,38 @@ export function ReportsDashboard() {
       .catch(() => toast.error('No se pudieron cargar los reportes de usuarios'))
       .finally(() => setReportsLoading(false));
   }, [activeTab, reportsPage, reportsFilter]);
+
+  // Carga problemas de plataforma cuando se activa esa pestaña
+  useEffect(() => {
+    if (activeTab !== 'platform_issues') return;
+    setIssuesLoading(true);
+    const isReviewed = issuesFilter === 'all' ? undefined : issuesFilter === 'reviewed';
+    getPlatformIssues(issuesPage, isReviewed)
+      .then(setIssues)
+      .catch(() => toast.error('No se pudieron cargar los problemas reportados'))
+      .finally(() => setIssuesLoading(false));
+  }, [activeTab, issuesPage, issuesFilter]);
+
+  const handleMarkIssueReviewed = async (issue: PlatformIssue) => {
+    if (issue.isReviewed) return;
+    setMarkingIssueId(issue.id);
+    try {
+      await markPlatformIssueReviewed(issue.id);
+      setIssues((prev) => prev
+        ? {
+            ...prev,
+            pendingCount: Math.max(0, prev.pendingCount - 1),
+            data: prev.data.map((i) => i.id === issue.id ? { ...i, isReviewed: true } : i),
+          }
+        : prev
+      );
+      toast.success('Problema marcado como revisado');
+    } catch {
+      toast.error('Error al marcar el problema');
+    } finally {
+      setMarkingIssueId(null);
+    }
+  };
 
   const handleMarkReviewed = async (report: ProviderReport) => {
     if (report.isReviewed) return;
@@ -95,6 +135,7 @@ export function ReportsDashboard() {
     { id: 'registrations',   label: 'Registros',         icon: TrendingUp     },
     { id: 'verification',    label: 'Verificación',      icon: ShieldCheck    },
     { id: 'user_reports',    label: 'Reportes',          icon: Flag           },
+    { id: 'platform_issues', label: 'Problemas',         icon: AlertTriangle  },
   ] as const;
 
   const VERIFICATION_COLORS: Record<string, string> = {
@@ -467,6 +508,122 @@ export function ReportsDashboard() {
                       >
                         Siguiente
                       </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'platform_issues' && (
+          <div>
+            <div className="flex items-center justify-between gap-3 p-4 border-b border-white/5 flex-wrap">
+              <div className="flex gap-2">
+                {(['all', 'pending', 'reviewed'] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => { setIssuesFilter(f); setIssuesPage(1); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      issuesFilter === f
+                        ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
+                        : 'bg-white/5 text-gray-400 border border-white/5 hover:border-white/15'
+                    }`}
+                  >
+                    {f === 'all' ? 'Todos' : f === 'pending' ? 'Pendientes' : 'Revisados'}
+                  </button>
+                ))}
+              </div>
+              {issues && issues.pendingCount > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-yellow-400">
+                  <Clock size={12} />
+                  <span className="font-bold">{issues.pendingCount}</span> sin revisar
+                </div>
+              )}
+            </div>
+
+            {issuesLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="animate-spin text-yellow-400" size={24} />
+              </div>
+            ) : !issues || issues.data.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <CheckCircle2 size={32} className="text-green-500/40" />
+                <p className="text-gray-500 text-sm">No hay problemas reportados{issuesFilter !== 'all' ? ' en este filtro' : ''}</p>
+              </div>
+            ) : (
+              <>
+                <table className="w-full text-left">
+                  <thead className="bg-white/[0.02] border-b border-white/5">
+                    <tr>
+                      {['ID', 'Usuario', 'Rol', 'Descripción', 'Fecha', 'Estado'].map((h) => (
+                        <th key={h} className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {issues.data.map((issue) => (
+                      <tr key={issue.id} className={`hover:bg-white/[0.02] transition-colors ${!issue.isReviewed ? 'bg-yellow-500/[0.03]' : ''}`}>
+                        <td className="p-4 text-gray-600 font-mono text-xs">#{issue.id}</td>
+                        <td className="p-4">
+                          <p className="text-white font-semibold text-sm">{issue.user.firstName} {issue.user.lastName}</p>
+                          <p className="text-gray-600 text-xs mt-0.5">{issue.user.email}</p>
+                        </td>
+                        <td className="p-4">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            issue.user.role === 'PROVEEDOR'
+                              ? 'bg-blue-500/15 text-blue-400'
+                              : 'bg-gray-500/15 text-gray-400'
+                          }`}>
+                            {issue.user.role === 'PROVEEDOR' ? 'Proveedor' : issue.user.role}
+                          </span>
+                        </td>
+                        <td className="p-4 max-w-[280px]">
+                          <p className="text-gray-300 text-sm line-clamp-2" title={issue.description}>
+                            {issue.description}
+                          </p>
+                        </td>
+                        <td className="p-4 text-gray-500 text-xs whitespace-nowrap">
+                          {new Date(issue.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td className="p-4">
+                          {issue.isReviewed ? (
+                            <span className="flex items-center gap-1 text-green-400 text-xs font-bold">
+                              <CheckCircle2 size={13} /> Revisado
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleMarkIssueReviewed(issue)}
+                              disabled={markingIssueId === issue.id}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold hover:bg-yellow-500/20 transition-all disabled:opacity-50"
+                            >
+                              {markingIssueId === issue.id
+                                ? <Loader2 size={11} className="animate-spin" />
+                                : <Clock size={11} />}
+                              Marcar revisado
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {issues.lastPage > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
+                    <p className="text-gray-600 text-xs">
+                      Página {issues.page} de {issues.lastPage} · {issues.total} problemas
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setIssuesPage((p) => Math.max(1, p - 1))}
+                        disabled={issues.page === 1}
+                        className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 text-xs hover:bg-white/10 transition-all disabled:opacity-30"
+                      >Anterior</button>
+                      <button
+                        onClick={() => setIssuesPage((p) => Math.min(issues.lastPage, p + 1))}
+                        disabled={issues.page === issues.lastPage}
+                        className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 text-xs hover:bg-white/10 transition-all disabled:opacity-30"
+                      >Siguiente</button>
                     </div>
                   </div>
                 )}
