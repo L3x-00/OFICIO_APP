@@ -61,7 +61,8 @@ class AuthRepository {
   }
 
   // ── REGISTRO ──────────────────────────────────────────────
-  Future<ApiResult<UserModel>> register({
+  // Devuelve pendingId para usar en verifyOtp. NO crea sesión aún.
+  Future<ApiResult<Map<String, dynamic>>> register({
     required String email,
     required String password,
     required String firstName,
@@ -76,29 +77,7 @@ class AuthRepository {
         'lastName':  lastName,
         'phone': ?phone,
       });
-
-      final data = response.data as Map<String, dynamic>;
-      final user = UserModel(
-        id:        data['userId'] as int,
-        email:     email,
-        firstName: firstName,
-        lastName:  lastName,
-        role:      'USUARIO',
-        phone:     phone,
-      );
-
-      await AuthLocalStorage.saveSession(
-        accessToken:  data['accessToken']  as String,
-        refreshToken: data['refreshToken'] as String,
-        user:         user,
-      );
-
-      DioClient.instance.setTokens(
-        accessToken:  data['accessToken']  as String,
-        refreshToken: data['refreshToken'] as String,
-      );
-
-      return Success(user);
+      return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       return Failure(
         e.error is AppException
@@ -370,17 +349,44 @@ class AuthRepository {
     }
   }
 
-  // ── VERIFICAR OTP ─────────────────────────────────────────
-  Future<ApiResult<Map<String, dynamic>>> verifyOtp({
-    required int userId,
+  // ── VERIFICAR OTP (registro pendiente) ───────────────────
+  // Valida OTP, backend crea el usuario y devuelve tokens + datos.
+  // Aquí guardamos la sesión completa.
+  Future<ApiResult<UserModel>> verifyOtp({
+    required String pendingId,
     required String code,
   }) async {
     try {
       final response = await _dio.post('/auth/verify-otp', data: {
-        'userId': userId,
-        'code':   code,
+        'pendingId': pendingId,
+        'code':      code,
       });
-      return Success(Map<String, dynamic>.from(response.data as Map));
+
+      final data         = response.data as Map<String, dynamic>;
+      final accessToken  = data['accessToken']  as String;
+      final refreshToken = data['refreshToken'] as String;
+
+      final user = UserModel(
+        id:        data['userId']    as int,
+        email:     data['email']     as String? ?? '',
+        firstName: data['firstName'] as String? ?? '',
+        lastName:  data['lastName']  as String? ?? '',
+        role:      data['role']      as String? ?? 'USUARIO',
+        phone:     data['phone']     as String?,
+        avatarUrl: data['avatarUrl'] as String?,
+      );
+
+      await AuthLocalStorage.saveSession(
+        accessToken:  accessToken,
+        refreshToken: refreshToken,
+        user:         user,
+      );
+      DioClient.instance.setTokens(
+        accessToken:  accessToken,
+        refreshToken: refreshToken,
+      );
+
+      return Success(user);
     } on DioException catch (e) {
       return Failure(
         e.error is AppException
@@ -390,7 +396,65 @@ class AuthRepository {
     }
   }
 
+  // ── REENVIAR OTP (registro pendiente) ─────────────────────
+  Future<ApiResult<Map<String, dynamic>>> resendOtp(String pendingId) async {
+    try {
+      final response = await _dio.post('/auth/resend-otp', data: {'pendingId': pendingId});
+      return Success(Map<String, dynamic>.from(response.data as Map));
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al reenviar código'),
+      );
+    }
+  }
+
   // ── LOGOUT ─────────────────────────────────────────────────
+  // ── REFRESH TOKENS ────────────────────────────────────────
+  /// Intercambia el refresh token almacenado por un par nuevo.
+  /// Útil tras aprobación de proveedor para obtener JWT con role:PROVEEDOR.
+  Future<ApiResult<UserModel>> refreshTokens() async {
+    try {
+      final storedRefresh = await AuthLocalStorage.getRefreshToken();
+      if (storedRefresh == null) {
+        return Failure(ServerException('No hay refresh token almacenado'));
+      }
+
+      final response = await _dio.post('/auth/refresh', data: {
+        'refreshToken': storedRefresh,
+      });
+
+      final data = response.data as Map<String, dynamic>;
+      final accessToken  = data['accessToken']  as String;
+      final refreshToken = data['refreshToken'] as String;
+      final role         = data['role']         as String? ?? 'USUARIO';
+
+      // Restaurar usuario local con el nuevo rol y guardar sesión completa
+      final current = await AuthLocalStorage.getUser();
+      final updated = current?.copyWith(role: role) ??
+          UserModel(id: data['userId'] as int, email: '', firstName: '', lastName: '', role: role);
+
+      DioClient.instance.setTokens(
+        accessToken:  accessToken,
+        refreshToken: refreshToken,
+      );
+      await AuthLocalStorage.saveSession(
+        accessToken:  accessToken,
+        refreshToken: refreshToken,
+        user:         updated,
+      );
+
+      return Success(updated);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al refrescar token'),
+      );
+    }
+  }
+
   Future<void> logout() async {
     await AuthLocalStorage.clearSession();
     DioClient.instance.clearTokens();

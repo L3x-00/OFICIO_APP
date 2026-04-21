@@ -1,13 +1,17 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '../generated/client/client.js';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { EventsGateway } from '../events/events.gateway.js';
+import { randomUUID } from 'crypto';
 
 // OTP_EXPIRY_MS: 10 minutos
 const OTP_EXPIRY_MS = 10 * 60 * 1000;
+// Registro pendiente: 15 minutos (tiempo para completar el OTP)
+const PENDING_REG_TTL_MS = 15 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
@@ -16,9 +20,12 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private eventsGateway: EventsGateway,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   // ── REGISTRO DE USUARIO NORMAL ──────────────────────────
+  // El usuario NO se guarda en BD hasta verificar OTP.
+  // Se almacena temporalmente en Redis con pendingId como clave.
   async registerUser(data: {
     email: string;
     password: string;
@@ -26,46 +33,50 @@ export class AuthService {
     lastName: string;
     phone?: string;
   }) {
-    const exists = await this.prisma.user.findUnique({
-      where: { email: data.email },
-    });
+    // Guardia: email ya en BD
+    const exists = await this.prisma.user.findUnique({ where: { email: data.email } });
     if (exists) throw new ConflictException('El email ya está registrado');
 
+    // Guardia: ya hay un registro pendiente para ese email
+    const emailKey = `pending_email:${data.email}`;
+    const existingPending = await this.cacheManager.get<string>(emailKey);
+    if (existingPending) throw new ConflictException('Ya hay un proceso de verificación en curso para este email');
+
     const passwordHash = await bcrypt.hash(data.password, 10);
+    const pendingId    = randomUUID();
+    const otpCode      = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    const ttlMs        = PENDING_REG_TTL_MS;
+    const otpTtlMs     = OTP_EXPIRY_MS;
 
-    const user = await this.prisma.user.create({
-      data: {
-        email:        data.email,
-        passwordHash,
-        firstName:    data.firstName,
-        lastName:     data.lastName,
-        phone:        data.phone,
-        role:         'USUARIO',
-        isEmailVerified: false,
-      },
-    });
+    // Guardar datos de registro + OTP en Redis
+    await this.cacheManager.set(
+      `pending_reg:${pendingId}`,
+      JSON.stringify({ email: data.email, passwordHash, firstName: data.firstName, lastName: data.lastName, phone: data.phone ?? null }),
+      ttlMs,
+    );
+    await this.cacheManager.set(`pending_otp:${pendingId}`, otpCode, otpTtlMs);
+    await this.cacheManager.set(emailKey, pendingId, ttlMs);
 
-    // Notificar a admins del nuevo registro
+    // Notificar admin: usuario en proceso de validación
     this.eventsGateway.emitNotification({
-      type: 'NEW_USER',
-      title: 'Nuevo usuario registrado',
-      body: `${data.firstName} ${data.lastName} (${data.email}) se registró en la plataforma.`,
+      type: 'USER_PENDING',
+      title: 'Nuevo registro en proceso',
+      body: `${data.firstName} ${data.lastName} (${data.email}) está completando la verificación de email.`,
       targetRole: 'ADMIN',
     });
+    this.eventsGateway.emitAdminEvent('USER_PENDING', { firstName: data.firstName, lastName: data.lastName, email: data.email });
 
-    // Generar y guardar OTP automáticamente tras el registro
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
-    await this.prisma.otpCode.create({ data: { userId: user.id, code: otpCode, expiresAt } });
+    // Consola para depuración
+    console.log('------------------------------------------------');
+    console.log(`🔥 [MODO DESARROLLO] Código OTP para ${data.email}: ${otpCode}`);
+    console.log(`🆔 PendingID: ${pendingId}`);
+    console.log('------------------------------------------------');
 
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
-
-    // En producción aquí se enviaría el email; en desarrollo se devuelve el código
     if (this.config.get('NODE_ENV') !== 'production') {
-      return { ...tokens, requiresEmailVerification: true, _devOtpCode: otpCode };
+      return { pendingId, requiresEmailVerification: true, _devOtpCode: otpCode };
     }
-
-    return { ...tokens, requiresEmailVerification: true };
+    return { pendingId, requiresEmailVerification: true };
   }
 
     // ── REGISTRO DE PROVEEDOR ────────────────────────────────
@@ -201,6 +212,7 @@ data: {
       body: `${data.businessName} se registró como ${data.type === 'OFICIO' ? 'profesional' : 'negocio'} y está pendiente de verificación.`,
       targetRole: 'ADMIN',
     });
+    this.eventsGateway.emitAdminEvent('NEW_PROVIDER', { providerId: provider.id, businessName: data.businessName, type: data.type });
 
     return { success: true, providerId: provider.id, role: 'USUARIO' };
   }
@@ -378,30 +390,89 @@ data: {
     return { message: 'Código OTP enviado al email registrado' };
   }
 
-  // ── VERIFY OTP ──────────────────────────────────────────
-  async verifyOtp(userId: number, code: string) {
-    const record = await this.prisma.otpCode.findFirst({
-      where: { userId, code },
+  // ── VERIFY OTP (registro pendiente) ─────────────────────
+  // pendingId viene del paso de registro. Valida OTP en Redis,
+  // crea el usuario en BD y devuelve tokens completos.
+  async verifyOtp(pendingId: string, code: string) {
+    const otpKey  = `pending_otp:${pendingId}`;
+    const regKey  = `pending_reg:${pendingId}`;
+
+    const storedCode = await this.cacheManager.get<string>(otpKey);
+    if (!storedCode) throw new BadRequestException('El código ha expirado o el registro es inválido. Vuelve a registrarte.');
+    if (storedCode !== code) throw new BadRequestException('Código inválido');
+
+    const rawData = await this.cacheManager.get<string>(regKey);
+    if (!rawData) throw new BadRequestException('Datos de registro expirados. Vuelve a registrarte.');
+
+    const reg = JSON.parse(rawData) as { email: string; passwordHash: string; firstName: string; lastName: string; phone: string | null };
+
+    // Guardia de carrera: email ya registrado por otro flujo concurrente
+    const raceCheck = await this.prisma.user.findUnique({ where: { email: reg.email } });
+    if (raceCheck) throw new ConflictException('El email ya está registrado');
+
+    // Crear usuario en BD con email ya verificado
+    const user = await this.prisma.user.create({
+      data: {
+        email:           reg.email,
+        passwordHash:    reg.passwordHash,
+        firstName:       reg.firstName,
+        lastName:        reg.lastName,
+        phone:           reg.phone,
+        role:            'USUARIO',
+        isEmailVerified: true,
+      },
     });
 
-    if (!record) {
-      throw new BadRequestException('Código inválido');
-    }
-
-    if (record.expiresAt < new Date()) {
-      // Eliminar el código expirado
-      await this.prisma.otpCode.delete({ where: { id: record.id } });
-      throw new BadRequestException('El código ha expirado. Solicita uno nuevo.');
-    }
-
-    // Marcar usuario como verificado y eliminar el OTP
-    await this.prisma.$transaction([
-      this.prisma.user.update({ where: { id: userId }, data: { isEmailVerified: true } }),
-      this.prisma.otpCode.deleteMany({ where: { userId } }),
+    // Limpiar Redis
+    await Promise.all([
+      this.cacheManager.del(otpKey),
+      this.cacheManager.del(regKey),
+      this.cacheManager.del(`pending_email:${reg.email}`),
     ]);
-    
 
-    return { message: 'Email verificado correctamente', verified: true };
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+    // Notificar admin: usuario registrado correctamente
+    this.eventsGateway.emitNotification({
+      type: 'NEW_USER_VERIFIED',
+      title: 'Usuario registrado correctamente',
+      body: `${reg.firstName} ${reg.lastName} (${reg.email}) completó la verificación y está activo.`,
+      targetRole: 'ADMIN',
+    });
+    this.eventsGateway.emitAdminEvent('NEW_USER_VERIFIED', { userId: user.id, firstName: reg.firstName, lastName: reg.lastName, email: reg.email });
+
+    return {
+      ...tokens,
+      verified:  true,
+      firstName: user.firstName,
+      lastName:  user.lastName,
+      phone:     user.phone,
+      avatarUrl: user.avatarUrl,
+    };
+  }
+
+  // ── REENVIAR OTP (registro pendiente) ───────────────────
+  async resendPendingOtp(pendingId: string) {
+    const regKey = `pending_reg:${pendingId}`;
+    const rawData = await this.cacheManager.get<string>(regKey);
+    if (!rawData) throw new BadRequestException('Registro expirado. Vuelve a registrarte.');
+
+    const newCode   = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // CORRECCIÓN 1: Se usa el TTL en milisegundos directamente
+    const otpTtlMs  = OTP_EXPIRY_MS;
+    await this.cacheManager.set(`pending_otp:${pendingId}`, newCode, otpTtlMs);
+
+    // CORRECCIÓN 2: Añadido Log para ver el nuevo código en consola
+    console.log('------------------------------------------------');
+    console.log(`🔄 [REENVÍO] Nuevo código OTP generado: ${newCode}`);
+    console.log(`🆔 PendingID asociado: ${pendingId}`);
+    console.log('------------------------------------------------');
+
+    if (this.config.get('NODE_ENV') !== 'production') {
+      return { message: 'Nuevo código enviado', _devCode: newCode };
+    }
+    return { message: 'Nuevo código enviado al email registrado' };
   }
 
   // ── HELPER: GENERAR TOKENS ───────────────────────────────

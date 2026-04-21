@@ -1,7 +1,7 @@
 # OficioApp — Estado Actual del Proyecto
 
 **Última actualización**: 2026-04-19
-**Estado**: Hito 6.8 — Sistema de Confianza + Flujo de Rechazo Re-registro
+**Estado**: Hito 7.0 — Auditoría Admin Completa + Real-time + Analytics Estratégico
 
 ---
 
@@ -44,6 +44,7 @@ OficioApp es un marketplace de servicios locales para ciudades intermedias del P
 | **6.6** | ✅ | Reportar proveedor: botón en detail sheet, 6 motivos, detalle opcional, 1 reporte por usuario |
 | **6.7** | ✅ | Flujo re-registro tras rechazo: banner rojo + botón "Volver a registrarse" con datos pre-llenados; badge separado verificación vs confianza |
 | **6.8** | ✅ | Sistema de Confianza: formulario cámara-only DNI/negocio, backend trust-validation module, badge "Confiable", panel admin /trust-validation con comparativa, notif rechazo tiempo real |
+| **7.0** | ✅ | Auditoría admin completa: real-time WebSocket integrado en dashboard, analytics estratégico con 13 KPIs reales, 4 variantes de tarjeta en listado mobile |
 
 ---
 
@@ -75,7 +76,8 @@ mobile/lib/
 │   │   ├── domain/   provider_model.dart, review_model.dart
 │   │   └── presentation/
 │   │       ├── providers/   providers_provider.dart
-│   │       └── screens/     providers_screen, provider_detail_sheet
+│   │       └── screens/     providers_screen (toggle 4 vistas: Lista/Mosaico/Contenido/Detalle), provider_detail_sheet
+│   │       └── widgets/     service_card.dart ← NUEVO: ServiceCard, ServiceCardList, ServiceCardMosaic, ServiceCardContent
 │   ├── favorites/            favorites_screen, favorites_provider.dart
 │   ├── notifications/        notifications_screen, notifications_provider.dart, notification_model.dart
 │   └── provider_dashboard/
@@ -114,14 +116,14 @@ mobile/lib/
 
 ```
 backend/src/
-├── auth/            JWT, registro, login, OTP, forgot-password, reset-password
+├── auth/            JWT, registro, login, OTP, forgot-password, reset-password; emite emitAdminEvent('NEW_PROVIDER') al registrar
 ├── users/           Perfil de usuario, cambio de contraseña, foto de perfil
 ├── providers/       Listado público, detalle, analytics, métricas admin
 ├── reviews/         Reseñas, validación GPS+QR, upload de fotos
 ├── provider-profile/ Panel personal del proveedor, imágenes, notificaciones, plan-request
 ├── favorites/       Guardar/quitar proveedores favoritos
-├── admin/           CRUD completo, verificación, moderación, plan requests
-├── events/          WebSocket Gateway (Socket.io) — notificaciones tiempo real
+├── admin/           CRUD completo, verificación, moderación, plan requests; emite emitAdminEvent en approve/reject/plan-approve
+├── events/          WebSocket Gateway (Socket.io); emitAdminEvent() ← NUEVO método para canal admin
 └── common/          Guards, interceptors, filtros globales
 ```
 
@@ -170,14 +172,14 @@ PORT, NODE_ENV, API_BASE_URL
 ```
 admin/
 ├── app/
-│   ├── page.tsx              Dashboard (8 métricas KPI)
+│   ├── page.tsx              Dashboard (8 métricas KPI) + EN VIVO indicator + pendingCount badge + liveAlert banner
 │   ├── providers/            CRUD + cola de aprobación
 │   ├── verification/         Cola de verificación documental
 │   ├── reviews/              Moderación de reseñas
-│   ├── plan-requests/        ← NUEVO — Solicitudes de plan (aprobar/rechazar)
+│   ├── plan-requests/        Solicitudes de plan (aprobar/rechazar)
 │   ├── users/                Gestión de usuarios (activar/bannear)
 │   ├── categories/           CRUD de categorías
-│   ├── analytics/            Gráficas con Recharts
+│   ├── analytics/            ← REESCRITO — Dashboard estratégico: LineChart diario, 2 PieChart donuts, BarChart geo, funnel conversión, top providers; periodos 7d/30d/90d
 │   ├── notifications/        Log de notificaciones enviadas
 │   ├── reports/              Export CSV/JSON
 │   └── login/                Autenticación admin
@@ -197,7 +199,9 @@ admin/
 │   ├── status-badge.tsx
 │   └── layout-shell.tsx
 └── lib/
-    ├── api.ts    (incluye getPlanRequests, approvePlanRequest, rejectPlanRequest)
+    ├── api.ts              (incluye getPlanRequests, approvePlanRequest, rejectPlanRequest, getAnalytics — 13 KPIs)
+    ├── socket.ts           Singleton socket.io-client para admin
+    ├── use-admin-realtime.ts  ← NUEVO — hook React: connected/pendingCount/clearPending/onEvent
     └── utils.ts
 ```
 
@@ -311,6 +315,36 @@ admin/
 
 ---
 
+## 🆕 Cambios Recientes (2026-04-19 — Hito 7.0: Auditoría Admin)
+
+### Feature: Real-time WebSocket integrado en dashboard admin
+- `admin/lib/use-admin-realtime.ts` — nuevo hook React. Envuelve `getAdminSocket()` singleton. Expone `connected`, `lastEvent`, `pendingCount`, `clearPending`.
+- `admin/app/page.tsx` — integrado: indicador "EN VIVO / SIN CONEXIÓN" (Wifi/WifiOff icons), badge naranja con `pendingCount`, banner `liveAlert` con fade de 4 segundos, `autoRefresh` on every event.
+- `backend/src/events/events.gateway.ts` — nuevo método `emitAdminEvent(event, data?)` que emite al canal `adminEvent` con timestamp.
+- `backend/src/auth/auth.service.ts` — llama `emitAdminEvent('NEW_PROVIDER', ...)` tras crear proveedor.
+- `backend/src/admin/admin.service.ts` — llama `emitAdminEvent('PROVIDER_APPROVED'|'PROVIDER_REJECTED'|'PLAN_APPROVED', ...)` en cada acción de moderación.
+
+### Feature: Analytics estratégico con 13 KPIs reales
+- `backend/src/admin/admin.service.ts` — `getAnalytics(days)` reescrito: 13 queries Prisma en paralelo (`Promise.all`).
+  - **Engagement diario**: agrupación por día de `ProviderAnalytic` (whatsapp_click, call_click, view).
+  - **KPIs con delta**: total del período vs período anterior → flechas de tendencia (`whatsappDelta`, `callsDelta`, `viewsDelta`).
+  - **Distribución de planes**: `groupBy` en `Subscription` activas.
+  - **Funnel de conversión**: total → aprobado → activo → `conversionRate`.
+  - **Distribución de disponibilidad**: estados DISPONIBLE/OCUPADO/CON_DEMORA.
+  - **Distribución geográfica**: count por departamento.
+  - **Top 10 proveedores**: ranking por clics del período.
+- `admin/lib/api.ts` — interfaces `AnalyticsKPIs`, `PlanDistItem`, `ProviderFunnel`, `AvailabilityItem`, `GeoItem`, `TopProvider` añadidas; `AnalyticsResponse` extendida.
+- `admin/app/analytics/page.tsx` — reescrita desde placeholder `<pre>JSON</pre>` a dashboard completo (~450 líneas): `LineChart` engagement diario, 2 `PieChart` donuts (planes + disponibilidad), `BarChart` horizontal geografía, funnel con barra de progreso, ranking top proveedores, insight texto auto-generado, selector de período 7d/30d/90d.
+
+### Feature: 4 variantes de tarjeta en listado mobile
+- `mobile/.../widgets/service_card.dart` — 3 nuevas clases públicas:
+  - `ServiceCardList`: fila compacta 72px — avatar 48×48, nombre+categoría, estrellas, dot disponibilidad, ícono favorito, badge de plan.
+  - `ServiceCardMosaic`: tile grid — imagen portada cubre 60%, badges plan/verificado/confiable superpuestos, nombre+estrellas+categoría abajo.
+  - `ServiceCardContent`: tarjeta horizontal ~115px — imagen 95×115 izquierda, columna derecha con nombre+badge+categoría+rating+2 chips de servicio+botones compactos (WA/llamar/favorito).
+- `providers_screen.dart` — toggle de 4 vistas: `lista`, `mosaico`, `contenido`, `detalle` (ServiceCard original).
+
+---
+
 ## ⚠️ Gaps Conocidos (Pendientes)
 
 | # | Área | Problema | Impacto |
@@ -321,6 +355,7 @@ admin/
 | 4 | General | Sin CI/CD pipeline configurado | Deployments manuales |
 | 5 | General | Sin tests unitarios/integración relevantes | Riesgo de regresiones |
 | 6 | Admin | Panel de pagos no implementado | Cobros manuales |
+| 7 | Backend | Email no integrado en OTP/forgot-password (código devuelto en respuesta dev) | Seguridad en producción |
 
 ---
 
@@ -374,3 +409,7 @@ cd mobile && flutter pub get && flutter run -d chrome
 | WebSocket gateway | `backend/src/events/events.gateway.ts` |
 | Social icons SVG | `mobile/assets/icons/{google,facebook,apple}.svg` |
 | Social login widget | `mobile/lib/features/auth/presentation/widgets/social_login_button.dart` |
+| Admin real-time hook | `admin/lib/use-admin-realtime.ts` |
+| Admin socket singleton | `admin/lib/socket.ts` |
+| Service card variants | `mobile/lib/features/providers_list/presentation/widgets/service_card.dart` |
+| Analytics estratégico | `admin/app/analytics/page.tsx` |

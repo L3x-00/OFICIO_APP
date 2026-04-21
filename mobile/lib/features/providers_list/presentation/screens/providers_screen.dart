@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/join_us_modal.dart';
+import 'package:mobile/shared/widgets/location_picker_sheet.dart';
 import 'package:provider/provider.dart';
 import '../../data/providers_repository.dart';
 import '../../domain/models/provider_model.dart';
@@ -760,24 +761,68 @@ class _GreetingHeader extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: c.bgCard,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: c.border),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.location_on_rounded, color: AppColors.amber, size: 14),
-                const SizedBox(width: 4),
-                Text('Cerca de ti',
-                    style: TextStyle(color: c.textSecondary, fontSize: 11, fontWeight: FontWeight.w500)),
-              ],
-            ),
-          ),
+          _LocationButton(),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Botón de ubicación ───────────────────────────────────
+
+class _LocationButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final c    = context.colors;
+    final prov = context.watch<ProvidersProvider>();
+
+    final parts = [
+      if (prov.district   != null) prov.district!,
+      if (prov.province   != null) prov.province!,
+      if (prov.department != null) prov.department!,
+    ];
+    final label = parts.isNotEmpty ? parts.first : 'Ubicación';
+
+    return GestureDetector(
+      onTap: () async {
+        final result = await LocationPickerSheet.show(
+          context,
+          initialDepartment: prov.department,
+          initialProvince:   prov.province,
+          initialDistrict:   prov.district,
+        );
+        if (result != null && context.mounted) {
+          context.read<ProvidersProvider>().setUserLocation(
+            department: result.department,
+            province:   result.province,
+            district:   result.district,
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: prov.hasLocationFilter ? AppColors.primary.withValues(alpha: 0.4) : c.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_on_rounded,
+                color: prov.hasLocationFilter ? AppColors.primary : AppColors.amber, size: 14),
+            const SizedBox(width: 4),
+            Text(label,
+                style: TextStyle(
+                  color: prov.hasLocationFilter ? AppColors.primary : c.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                )),
+            const SizedBox(width: 4),
+            Icon(Icons.expand_more_rounded,
+                color: prov.hasLocationFilter ? AppColors.primary : c.textMuted, size: 13),
+          ],
+        ),
       ),
     );
   }
@@ -896,13 +941,12 @@ class _ProvidersList extends StatelessWidget {
       );
     }
 
-    // Título dinámico según filtros activos
+    // Título dinámico
     final typeLabel = switch (prov.selectedType) {
       'PROFESSIONAL' => 'Profesionales',
       'BUSINESS'     => 'Negocios',
       _              => 'Servicios',
     };
-    // Busca nombre en subcategorías hijas
     String catLabel = '';
     if (prov.selectedCategory != null) {
       for (final parent in prov.categories) {
@@ -912,84 +956,185 @@ class _ProvidersList extends StatelessWidget {
     } else if (prov.expandedParentSlug != null) {
       catLabel = ' · ${prov.expandedParent?.name ?? ''}';
     }
-    final sectionTitle = '$typeLabel$catLabel Cerca de Ti';
+    final sectionTitle = '$typeLabel$catLabel';
+
+    // Header row: title + count + view mode toggle
+    final headerSliver = SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 12, 8),
+        child: Row(
+          children: [
+            Container(
+              width: 3, height: 18,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.amber, AppColors.primary],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                sectionTitle,
+                style: TextStyle(color: c.textPrimary, fontSize: 15, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '${prov.providers.length}',
+              style: TextStyle(color: c.textMuted, fontSize: 12),
+            ),
+            const SizedBox(width: 8),
+            _ViewModeToggle(),
+          ],
+        ),
+      ),
+    );
+
+    // Per-item builder (lista / detalles / contenido)
+    Widget buildItem(int i) {
+      final p = prov.providers[i].copyWith(
+        isFavorite: favProv.isFavorite(prov.providers[i].id),
+      );
+      final isOwnCard = auth.user != null && p.userId != null && p.userId == auth.user!.id;
+
+      void handleFav() {
+        if (auth.user == null) { _showLoginRequiredDialog(context); return; }
+        final adding = !favProv.isFavorite(p.id);
+        prov.toggleFavorite(p.id);
+        favProv.toggle(p.id).then((ok) {
+          if (!context.mounted) return;
+          if (!ok) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(favProv.error ?? 'Error al actualizar favorito'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (adding) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${p.businessName} se añadió a favoritos'),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        });
+      }
+
+      void goToDashboard() => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ProviderPanel(
+          providerType: p.type == ProviderType.negocio ? 'NEGOCIO' : 'OFICIO',
+        ),
+      ));
+
+      return switch (prov.viewMode) {
+        ViewMode.lista => ServiceCardList(
+          provider: p,
+          isOwnCard: isOwnCard,
+          onTap: () => ProviderDetailSheet.show(context, p),
+          onFavoriteToggle: isOwnCard ? null : handleFav,
+        ),
+        ViewMode.contenido => ServiceCardContent(
+          provider: p,
+          isOwnCard: isOwnCard,
+          onTap: () => ProviderDetailSheet.show(context, p),
+          onFavoriteToggle: isOwnCard ? null : handleFav,
+          onGoToDashboard: isOwnCard ? goToDashboard : null,
+        ),
+        ViewMode.mosaicos => ServiceCardMosaic(
+          provider: p,
+          isOwnCard: isOwnCard,
+          onTap: () => ProviderDetailSheet.show(context, p),
+        ),
+        _ => ServiceCard(
+          provider: p,
+          isOwnCard: isOwnCard,
+          onTap: () => ProviderDetailSheet.show(context, p),
+          onGoToDashboard: isOwnCard ? goToDashboard : null,
+          onFavoriteToggle: isOwnCard ? null : handleFav,
+        ),
+      };
+    }
+
+    final isMosaicos = prov.viewMode == ViewMode.mosaicos;
+    final contentSliver = isMosaicos
+        ? SliverPadding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
+            sliver: SliverGrid.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.70,
+              ),
+              itemCount: prov.providers.length,
+              itemBuilder: (ctx, i) => buildItem(i),
+            ),
+          )
+        : SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+            sliver: SliverList.builder(
+              itemCount: prov.providers.length,
+              itemBuilder: (ctx, i) => buildItem(i),
+            ),
+          );
 
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: prov.loadProviders,
-      child: ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-      itemCount: prov.providers.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12, top: 4),
-            child: Row(
-              children: [
-                Container(
-                  width: 3, height: 18,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.amber, AppColors.primary],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    sectionTitle,
-                    style: TextStyle(
-                        color: c.textPrimary, fontSize: 15, fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  '${prov.providers.length} resultado${prov.providers.length == 1 ? '' : 's'}',
-                  style: TextStyle(color: c.textMuted, fontSize: 12),
-                ),
-              ],
-            ),
-          );
-        }
+      child: CustomScrollView(
+        slivers: [headerSliver, contentSliver],
+      ),
+    );
+  }
+}
 
-        final provider = prov.providers[index - 1].copyWith(
-          isFavorite: favProv.isFavorite(prov.providers[index - 1].id),
-        );
-        final isOwnCard = auth.user != null &&
-            provider.userId != null &&
-            provider.userId == auth.user!.id;
-        return ServiceCard(
-          provider: provider,
-          isOwnCard: isOwnCard,
-          onTap: () => ProviderDetailSheet.show(context, provider),
-          onGoToDashboard: isOwnCard ? () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ProviderPanel(providerType: provider.type == ProviderType.negocio ? 'NEGOCIO' : 'OFICIO'),
+// ─── Toggle de modo de vista ──────────────────────────────
+
+class _ViewModeToggle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final c    = context.colors;
+    final prov = context.watch<ProvidersProvider>();
+
+    const modes = [
+      (ViewMode.lista,     Icons.view_list_rounded,   'Lista'),
+      (ViewMode.detalles,  Icons.view_agenda_rounded, 'Detalles'),
+      (ViewMode.mosaicos,  Icons.grid_view_rounded,   'Mosaicos'),
+      (ViewMode.contenido, Icons.view_stream_rounded, 'Contenido'),
+    ];
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: modes.map((entry) {
+        final (mode, icon, label) = entry;
+        final active = prov.viewMode == mode;
+        return Tooltip(
+          message: label,
+          child: GestureDetector(
+            onTap: () => context.read<ProvidersProvider>().setViewMode(mode),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 30, height: 30,
+              margin: const EdgeInsets.only(left: 4),
+              decoration: BoxDecoration(
+                color: active ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(
+                  color: active ? AppColors.primary.withValues(alpha: 0.45) : Colors.transparent,
+                ),
+              ),
+              child: Icon(icon, size: 15,
+                color: active ? AppColors.primary : c.textMuted),
             ),
-          ) : null,
-          onFavoriteToggle: () {
-            if (auth.user == null) {
-              _showLoginRequiredDialog(context);
-              return;
-            }
-            prov.toggleFavorite(provider.id);
-            favProv.toggle(provider.id).then((ok) {
-              if (!ok && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(favProv.error ?? 'Error al actualizar favorito'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            });
-          },
+          ),
         );
-      },
-    ),
+      }).toList(),
     );
   }
 }

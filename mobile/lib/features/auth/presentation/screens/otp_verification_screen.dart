@@ -107,7 +107,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   Future<void> _resend() async {
     final auth = context.read<AuthProvider>();
-    final ok = await auth.sendOtp();
+    final ok = await auth.resendOtp();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -137,7 +137,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Widget build(BuildContext context) {
     final c         = context.colors;
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
-    final email     = context.select<AuthProvider, String>((a) => a.user?.email ?? '');
+    final email     = context.select<AuthProvider, String>((a) => a.pendingEmail ?? a.user?.email ?? '');
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -147,9 +147,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         iconTheme: IconThemeData(color: c.textSecondary),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () async {
-            // Volver = cancelar registro: limpiar estado antes de navegar
-            await context.read<AuthProvider>().logout();
+          onPressed: () {
+            // 1. Limpiamos el ID de registro pendiente en el Provider
+            context.read<AuthProvider>().clearPendingRegistration();
+            // 2. Volvemos a la pantalla anterior
+            Navigator.pop(context);
           },
         ),
       ),

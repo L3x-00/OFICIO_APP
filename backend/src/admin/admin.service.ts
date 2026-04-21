@@ -93,28 +93,155 @@ export class AdminService {
 
   // ── ANALYTICS ─────────────────────────────────────────────
   async getAnalytics(days = 30) {
-    const since = new Date();
+    const since    = new Date();
     since.setDate(since.getDate() - days);
+    const prevSince = new Date(since);
+    prevSince.setDate(prevSince.getDate() - days);
 
-    const dailyClicks = await this.prisma.providerAnalytic.findMany({
-      where: { createdAt: { gte: since } },
-      select: { eventType: true, createdAt: true },
-      orderBy: { createdAt: 'asc' },
-    });
+    const [
+      allEvents,
+      prevWA, prevCalls, prevViews,
+      planDist,
+      totalProviders, approvedProviders, pendingProviders, rejectedProviders, activeProviders,
+      availDist,
+      geoDist,
+      topProviderClicks,
+    ] = await Promise.all([
+      // Todos los eventos del período actual
+      this.prisma.providerAnalytic.findMany({
+        where: { createdAt: { gte: since } },
+        select: { eventType: true, createdAt: true, providerId: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      // Período anterior para comparación
+      this.prisma.providerAnalytic.count({ where: { eventType: 'whatsapp_click', createdAt: { gte: prevSince, lt: since } } }),
+      this.prisma.providerAnalytic.count({ where: { eventType: 'call_click',     createdAt: { gte: prevSince, lt: since } } }),
+      this.prisma.providerAnalytic.count({ where: { eventType: 'view',           createdAt: { gte: prevSince, lt: since } } }),
+      // Distribución de planes
+      this.prisma.subscription.groupBy({
+        by: ['plan'],
+        _count: { id: true },
+        where: { provider: { verificationStatus: 'APROBADO' } },
+      }),
+      // Funnel de proveedores
+      this.prisma.provider.count(),
+      this.prisma.provider.count({ where: { verificationStatus: 'APROBADO' } }),
+      this.prisma.provider.count({ where: { verificationStatus: 'PENDIENTE' } }),
+      this.prisma.provider.count({ where: { verificationStatus: 'RECHAZADO' } }),
+      this.prisma.provider.count({ where: { isVisible: true } }),
+      // Distribución de disponibilidad
+      this.prisma.provider.groupBy({
+        by: ['availability'],
+        _count: { id: true },
+        where: { verificationStatus: 'APROBADO' },
+      }),
+      // Distribución geográfica (top 10 localidades)
+      this.prisma.provider.groupBy({
+        by: ['localityId'],
+        _count: { id: true },
+        where: { localityId: { not: undefined } },
+        orderBy: { _count: { id: 'desc' } },
+        take: 10,
+      }),
+      // Top proveedores por clicks en el período
+      this.prisma.providerAnalytic.groupBy({
+        by: ['providerId'],
+        _count: { id: true },
+        where: { createdAt: { gte: since }, eventType: { in: ['whatsapp_click', 'call_click'] } },
+        orderBy: { _count: { id: 'desc' } },
+        take: 10,
+      }),
+    ]);
 
-    const byDay: Record<string, { whatsapp: number; calls: number }> = {};
-    for (const click of dailyClicks) {
-      const day = click.createdAt.toISOString().split('T')[0];
-      if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0 };
-      if (click.eventType === 'whatsapp_click') byDay[day].whatsapp++;
-      if (click.eventType === 'call_click') byDay[day].calls++;
+    // Construir dailyClicks agrupado por día
+    const byDay: Record<string, { whatsapp: number; calls: number; views: number }> = {};
+    let totalWA = 0, totalCalls = 0, totalViews = 0;
+    for (const ev of allEvents) {
+      const day = ev.createdAt.toISOString().split('T')[0];
+      if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0, views: 0 };
+      if (ev.eventType === 'whatsapp_click') { byDay[day].whatsapp++; totalWA++; }
+      if (ev.eventType === 'call_click')     { byDay[day].calls++;    totalCalls++; }
+      if (ev.eventType === 'view')           { byDay[day].views++;    totalViews++; }
     }
 
+    // Delta % vs período anterior
+    const pctDelta = (curr: number, prev: number) =>
+      prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100);
+
+    // Obtener nombres de localidades para geo
+    const localityIds = geoDist.map((g) => g.localityId).filter((id): id is number => id != null);
+    const localityData = localityIds.length > 0
+      ? await this.prisma.locality.findMany({
+          where: { id: { in: localityIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+    const localityMap = new Map(localityData.map((l) => [l.id, l.name]));
+
+    // Obtener nombres de top proveedores
+    const topProviderIds = topProviderClicks.map((t) => t.providerId);
+    const topProviderData = topProviderIds.length > 0
+      ? await this.prisma.provider.findMany({
+          where: { id: { in: topProviderIds } },
+          select: { id: true, businessName: true, type: true, category: { select: { name: true } } },
+        })
+      : [];
+    const topProviderMap = new Map(topProviderData.map((p) => [p.id, p]));
+
     return {
-      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({
-        date,
-        ...counts,
+      // Daily engagement con views
+      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({ date, ...counts })),
+
+      // KPIs del período con comparación
+      kpis: {
+        whatsappTotal: totalWA,
+        callsTotal:    totalCalls,
+        viewsTotal:    totalViews,
+        whatsappDelta: pctDelta(totalWA,    prevWA),
+        callsDelta:    pctDelta(totalCalls, prevCalls),
+        viewsDelta:    pctDelta(totalViews, prevViews),
+      },
+
+      // Distribución de planes
+      planDistribution: planDist.map((p) => ({
+        plan:  p.plan,
+        count: p._count.id,
       })),
+
+      // Funnel de proveedores
+      providerFunnel: {
+        total:    totalProviders,
+        approved: approvedProviders,
+        pending:  pendingProviders,
+        rejected: rejectedProviders,
+        active:   activeProviders,
+        conversionRate: totalProviders > 0
+          ? Math.round((approvedProviders / totalProviders) * 100)
+          : 0,
+      },
+
+      // Distribución de disponibilidad
+      availabilityDistribution: availDist.map((a) => ({
+        status: a.availability,
+        count:  a._count.id,
+      })),
+
+      // Distribución geográfica
+      geoDistribution: geoDist
+        .filter((g) => g.localityId != null)
+        .map((g) => ({ department: localityMap.get(g.localityId!) ?? `Loc #${g.localityId}`, count: g._count.id })),
+
+      // Top proveedores por engagement
+      topProviders: topProviderClicks.map((t) => {
+        const p = topProviderMap.get(t.providerId);
+        return {
+          providerId:   t.providerId,
+          businessName: p?.businessName ?? `Proveedor #${t.providerId}`,
+          type:         p?.type ?? 'OFICIO',
+          categoryName: p?.category?.name ?? '—',
+          clicks:       t._count.id,
+        };
+      }),
     };
   }
 
@@ -306,14 +433,14 @@ async updateProvider(
 
   // ── CAMBIAR PLAN DE SUSCRIPCIÓN ────────────────────────────
   async updateProviderSubscription(id: number, plan: string) {
-    const validPlans = ['GRATIS', 'BASICO', 'ESTANDAR', 'PREMIUM'];
+    const validPlans = ['GRATIS', 'ESTANDAR', 'PREMIUM'];
     if (!validPlans.includes(plan)) {
       throw new BadRequestException(`Plan inválido. Valores permitidos: ${validPlans.join(', ')}`);
     }
 
     const provider = await this.prisma.provider.findUnique({
       where: { id },
-      include: { subscription: true },
+      include: { subscription: true, user: true },
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
@@ -326,27 +453,57 @@ async updateProvider(
       data: { planPriority: priority },
     });
 
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+
     if (provider.subscription) {
-      return this.prisma.subscription.update({
+      await this.prisma.subscription.update({
         where: { providerId: id },
         data: {
-          plan:   plan as SubscriptionPlan,
-          status: status as SubscriptionStatus,
+          plan:    plan as SubscriptionPlan,
+          status:  status as SubscriptionStatus,
+          endDate: plan !== 'GRATIS' ? endDate : undefined,
+        },
+      });
+    } else {
+      await this.prisma.subscription.create({
+        data: {
+          providerId: id,
+          plan:       plan as SubscriptionPlan,
+          status:     status as SubscriptionStatus,
+          endDate,
         },
       });
     }
 
-    // Si no tiene suscripción, crear una
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 1);
-    return this.prisma.subscription.create({
-      data: {
-        providerId: id,
-        plan:       plan as SubscriptionPlan,
-        status:     status as SubscriptionStatus,
-        endDate,
-      },
-    });
+    // Solo notificar si es una promoción real (ESTANDAR o PREMIUM)
+    if (plan === 'ESTANDAR' || plan === 'PREMIUM') {
+      const planLabel = plan === 'PREMIUM' ? 'Premium' : 'Estándar';
+      const title     = `¡Has sido promovido al plan ${planLabel}!`;
+      const body      = `¡Felicidades! El administrador te ha promovido al plan ${planLabel}. Ahora disfrutas de todos sus beneficios.`;
+
+      await this.prisma.adminNotification.create({
+        data: {
+          providerId:        id,
+          type:              NotificationType.PLAN_APROBADO,
+          title,
+          message:           body,
+          isRead:            false,
+          targetUserId:      provider.userId,
+          targetProfileType: provider.type,
+        },
+      });
+
+      this.eventsGateway.emitNotification({
+        type:              'PLAN_APROBADO',
+        title,
+        body,
+        targetUserId:      provider.userId,
+        targetProfileType: provider.type,
+      });
+    }
+
+    return { success: true, plan, status };
   }
 
   // ── TOGGLE VISIBILIDAD ────────────────────────────────────
@@ -454,6 +611,7 @@ async updateProvider(
       verificationStatus: updated.verificationStatus,
       isVerified: updated.isVerified,
     });
+    this.eventsGateway.emitAdminEvent('PROVIDER_APPROVED', { providerId: id, businessName: updated.businessName });
 
     // Notificar al proveedor específico en la app móvil
     this.eventsGateway.emitNotification({
@@ -505,6 +663,7 @@ async updateProvider(
       verificationStatus: updated.verificationStatus,
       isVerified: updated.isVerified,
     });
+    this.eventsGateway.emitAdminEvent('PROVIDER_REJECTED', { providerId: id, businessName: updated.businessName });
 
     // Notificar al proveedor específico en la app móvil
     this.eventsGateway.emitNotification({
@@ -1030,6 +1189,7 @@ async updateProvider(
       targetUserId:      req.provider.userId,
       targetProfileType: req.provider.type,
     });
+    this.eventsGateway.emitAdminEvent('PLAN_APPROVED', { requestId, plan: req.plan });
 
     return { success: true };
   }

@@ -424,6 +424,78 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
       subtitle = 'Valida tu identidad para obtener el badge de "Profesional Confiable" y generar más confianza en los clientes.';
     }
 
+    // isTrusted → banner verde prominente, sin botón
+    if (isTrusted) {
+      const green = Color(0xFF10B981);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionTitle(icon: Icons.shield_rounded, title: 'Confianza y Validación', color: green),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF065F46), Color(0xFF047857)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: green.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6)),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 52, height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.verified_rounded, color: Colors.white, size: 30),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'DATOS VALIDADOS',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  widget.isNegocio
+                    ? 'Tu negocio es confiable. Los clientes pueden contratarte con total seguridad.'
+                    : 'Tu perfil profesional es confiable. Los clientes pueden contratarte con total seguridad.',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12, height: 1.5),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shield_rounded, color: Colors.white, size: 13),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Badge "Confiable" activo',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -452,7 +524,7 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
               const SizedBox(height: 8),
               Text(subtitle,
                 style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.5)),
-              if (!isTrusted && trustStatus != 'PENDING') ...[
+              if (trustStatus != 'PENDING') ...[
                 const SizedBox(height: 14),
                 SizedBox(
                   width: double.infinity,

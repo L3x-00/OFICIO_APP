@@ -595,6 +595,600 @@ class _DistanceBadge extends StatelessWidget {
 
 // ─── Badge de plan de suscripción ────────────────────────────
 
+// ═══════════════════════════════════════════════════════════
+// VISTA: LISTA (fila compacta ~72px)
+// ═══════════════════════════════════════════════════════════
+
+class ServiceCardList extends StatelessWidget {
+  final ProviderModel provider;
+  final VoidCallback? onTap;
+  final VoidCallback? onFavoriteToggle;
+  final bool isOwnCard;
+
+  const ServiceCardList({
+    super.key,
+    required this.provider,
+    this.onTap,
+    this.onFavoriteToggle,
+    this.isOwnCard = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c         = context.colors;
+    final plan      = provider.subscriptionPlan;
+    final premium   = _isPremium(plan);
+    final standard  = _isStandard(plan);
+    final availColor = switch (provider.availability) {
+      AvailabilityStatus.disponible => AppColors.available,
+      AvailabilityStatus.ocupado    => AppColors.busy,
+      AvailabilityStatus.conDemora  => AppColors.delayed,
+    };
+
+    final borderColor = premium
+        ? AppColors.premium.withValues(alpha: 0.6)
+        : standard
+            ? AppColors.standard.withValues(alpha: 0.4)
+            : c.border;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: borderColor),
+        ),
+        child: Row(
+          children: [
+            // Avatar: foto de portada o inicial
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: provider.coverImageUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: provider.coverImageUrl!,
+                      width: 48, height: 48,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => _avatarFallback(c),
+                      errorWidget: (_, _, _) => _avatarFallback(c),
+                    )
+                  : _avatarFallback(c),
+            ),
+            const SizedBox(width: 12),
+            // Nombre + categoría
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          provider.businessName,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (premium)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(Icons.star_rounded, color: AppColors.premium, size: 13),
+                        ),
+                      if (provider.isVerified && !premium)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(Icons.verified_rounded, color: AppColors.verified, size: 13),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    provider.categoryName,
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.star_rounded, color: AppColors.star, size: 12),
+                      const SizedBox(width: 2),
+                      Text(
+                        provider.averageRating.toStringAsFixed(1),
+                        style: TextStyle(color: c.textSecondary, fontSize: 11),
+                      ),
+                      Text(
+                        ' (${provider.totalReviews})',
+                        style: TextStyle(color: c.textMuted, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Disponibilidad dot + favorito (oculto si es tarjeta propia)
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 8, height: 8,
+                  decoration: BoxDecoration(color: availColor, shape: BoxShape.circle),
+                ),
+                if (!isOwnCard) ...[
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: onFavoriteToggle,
+                    child: Icon(
+                      provider.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      color: provider.isFavorite ? AppColors.favorite : c.textMuted,
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarFallback(AppThemeColors c) {
+    final initial = provider.businessName.isNotEmpty
+        ? provider.businessName[0].toUpperCase()
+        : '?';
+    return Container(
+      width: 48, height: 48,
+      color: AppColors.primary.withValues(alpha: 0.15),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            color: AppColors.primary,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// VISTA: MOSAICO (tile de grilla 2 columnas)
+// ═══════════════════════════════════════════════════════════
+
+class ServiceCardMosaic extends StatelessWidget {
+  final ProviderModel provider;
+  final VoidCallback? onTap;
+  final bool isOwnCard;
+
+  const ServiceCardMosaic({
+    super.key,
+    required this.provider,
+    this.onTap,
+    this.isOwnCard = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c        = context.colors;
+    final plan     = provider.subscriptionPlan;
+    final premium  = _isPremium(plan);
+    final standard = _isStandard(plan);
+
+    final borderColor = premium
+        ? AppColors.premium.withValues(alpha: 0.65)
+        : standard
+            ? AppColors.standard.withValues(alpha: 0.45)
+            : c.border;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: premium ? 1.5 : 1.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: c.isDark ? 0.3 : 0.07),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Imagen de portada con badges superpuestos
+            Expanded(
+              flex: 6,
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    child: provider.coverImageUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: provider.coverImageUrl!,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (_, _) => _mosaicPlaceholder(c),
+                            errorWidget: (_, _, _) => _mosaicPlaceholder(c),
+                          )
+                        : _mosaicPlaceholder(c),
+                  ),
+                  // Badge de plan
+                  if (premium)
+                    Positioned(
+                      top: 6, left: 6,
+                      child: _PlanBadge.premium(),
+                    ),
+                  if (standard && !premium)
+                    Positioned(
+                      top: 6, left: 6,
+                      child: _PlanBadge.standard(),
+                    ),
+                  // Verified + trusted badges
+                  if (provider.isVerified)
+                    Positioned(
+                      top: 6, right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.verified.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.verified_rounded, color: Colors.white, size: 12),
+                      ),
+                    ),
+                  if (provider.isTrusted)
+                    Positioned(
+                      top: provider.isVerified ? 32 : 6, right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.shield_rounded, color: Colors.white, size: 12),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Info bajo imagen
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      provider.businessName,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.star_rounded, color: AppColors.star, size: 11),
+                        const SizedBox(width: 2),
+                        Text(
+                          provider.averageRating.toStringAsFixed(1),
+                          style: TextStyle(color: c.textSecondary, fontSize: 10),
+                        ),
+                        const Spacer(),
+                        Text(
+                          provider.categoryName,
+                          style: TextStyle(color: c.textMuted, fontSize: 9),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _mosaicPlaceholder(AppThemeColors c) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: c.bgInput,
+      child: Icon(Icons.storefront_rounded, size: 32, color: c.textMuted),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// VISTA: CONTENIDO (tarjeta horizontal ~115px)
+// ═══════════════════════════════════════════════════════════
+
+class ServiceCardContent extends StatelessWidget {
+  final ProviderModel provider;
+  final VoidCallback? onTap;
+  final VoidCallback? onFavoriteToggle;
+  final bool isOwnCard;
+  final VoidCallback? onGoToDashboard;
+
+  const ServiceCardContent({
+    super.key,
+    required this.provider,
+    this.onTap,
+    this.onFavoriteToggle,
+    this.isOwnCard = false,
+    this.onGoToDashboard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c         = context.colors;
+    final plan      = provider.subscriptionPlan;
+    final premium   = _isPremium(plan);
+    final standard  = _isStandard(plan);
+    final availColor = switch (provider.availability) {
+      AvailabilityStatus.disponible => AppColors.available,
+      AvailabilityStatus.ocupado    => AppColors.busy,
+      AvailabilityStatus.conDemora  => AppColors.delayed,
+    };
+
+    final borderColor = premium
+        ? AppColors.premium.withValues(alpha: 0.6)
+        : standard
+            ? AppColors.standard.withValues(alpha: 0.4)
+            : c.border;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: premium ? 1.5 : 1.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: c.isDark ? 0.3 : 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Imagen cuadrada izquierda
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+              child: provider.coverImageUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: provider.coverImageUrl!,
+                      width: 95, height: 115,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => _contentPlaceholder(c),
+                      errorWidget: (_, _, _) => _contentPlaceholder(c),
+                    )
+                  : _contentPlaceholder(c),
+            ),
+            // Contenido derecho
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Nombre + plan badge
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            provider.businessName,
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (premium)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Icon(Icons.star_rounded, color: AppColors.premium, size: 14),
+                          ),
+                        if (provider.isVerified)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3),
+                            child: Icon(Icons.verified_rounded, color: AppColors.verified, size: 14),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    // Categoría + disponibilidad
+                    Row(
+                      children: [
+                        Text(
+                          provider.categoryName,
+                          style: TextStyle(color: c.textMuted, fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 6, height: 6,
+                          decoration: BoxDecoration(color: availColor, shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          provider.availability.label,
+                          style: TextStyle(color: availColor, fontSize: 10, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // Rating
+                    Row(
+                      children: [
+                        Icon(Icons.star_rounded, color: AppColors.star, size: 12),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${provider.averageRating.toStringAsFixed(1)} (${provider.totalReviews})',
+                          style: TextStyle(color: c.textSecondary, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                    // Chips de servicios (máx 2)
+                    if (provider.services.isNotEmpty) ...[
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 5,
+                        runSpacing: 4,
+                        children: provider.services.take(2).map((s) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.07),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                          ),
+                          child: Text(
+                            s.name,
+                            style: const TextStyle(color: AppColors.primary, fontSize: 9.5, fontWeight: FontWeight.w500),
+                          ),
+                        )).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    // Tarjeta propia → botón panel; ajena → WA + llamar + favorito
+                    if (isOwnCard)
+                      GestureDetector(
+                        onTap: onGoToDashboard,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 13),
+                              SizedBox(width: 5),
+                              Text('Mi panel', style: TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      Row(
+                        children: [
+                          _CompactActionBtn(
+                            icon: Icons.chat_rounded,
+                            color: AppColors.whatsapp,
+                            onTap: () => _openWhatsApp(),
+                          ),
+                          const SizedBox(width: 6),
+                          _CompactActionBtn(
+                            icon: Icons.call_rounded,
+                            color: AppColors.call,
+                            onTap: () => _makeCall(),
+                          ),
+                          const SizedBox(width: 6),
+                          _CompactActionBtn(
+                            icon: provider.isFavorite
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            color: provider.isFavorite ? AppColors.favorite : c.textMuted,
+                            onTap: onFavoriteToggle,
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _contentPlaceholder(AppThemeColors c) {
+    return Container(
+      width: 95, height: 115,
+      color: c.bgInput,
+      child: Icon(Icons.storefront_rounded, size: 28, color: c.textMuted),
+    );
+  }
+
+  Future<void> _openWhatsApp() async {
+    final raw     = provider.whatsapp ?? provider.phone;
+    final number  = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    final message = Uri.encodeComponent(AppStrings.whatsappMessage(provider.businessName));
+    final native  = Uri.parse('whatsapp://send?phone=$number&text=$message');
+    final web     = Uri.parse('https://wa.me/$number?text=$message');
+    if (await canLaunchUrl(native)) {
+      await launchUrl(native);
+    } else {
+      await launchUrl(web, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _makeCall() async {
+    final uri = Uri.parse('tel:${provider.phone}');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+}
+
+class _CompactActionBtn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
+  const _CompactActionBtn({required this.icon, required this.color, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 30, height: 30,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Icon(icon, color: color, size: 15),
+      ),
+    );
+  }
+}
+
+// ─── Badge de plan de suscripción ────────────────────────────
+
 class _PlanBadge extends StatelessWidget {
   final String label;
   final IconData icon;

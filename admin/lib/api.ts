@@ -150,6 +150,12 @@ export const updateProviderSubscription = (id: number, plan: string) =>
     body: JSON.stringify({ plan }),
   });
 
+export const promotePlan = (id: number, plan: 'ESTANDAR' | 'PREMIUM') =>
+  fetchApi(`/admin/providers/${id}/subscription`, {
+    method: 'PATCH',
+    body: JSON.stringify({ plan }),
+  });
+
 // ── SOLICITUDES DE PLAN ────────────────────────────────────
 export const getPlanRequests = (status?: string) =>
   fetchApi<any[]>(`/admin/plan-requests${status ? `?status=${status}` : ''}`);
@@ -328,10 +334,45 @@ export interface DailyClick {
   date: string;
   whatsapp: number;
   calls: number;
+  views: number;
+}
+
+export interface AnalyticsKPIs {
+  whatsappTotal: number;
+  callsTotal: number;
+  viewsTotal: number;
+  whatsappDelta: number;
+  callsDelta: number;
+  viewsDelta: number;
+}
+
+export interface PlanDistItem { plan: string; count: number; }
+export interface ProviderFunnel {
+  total: number;
+  approved: number;
+  pending: number;
+  rejected: number;
+  active: number;
+  conversionRate: number;
+}
+export interface AvailabilityItem { status: string; count: number; }
+export interface GeoItem { department: string; count: number; }
+export interface TopProvider {
+  providerId: number;
+  businessName: string;
+  type: string;
+  categoryName: string;
+  clicks: number;
 }
 
 export interface AnalyticsResponse {
   dailyClicks: DailyClick[];
+  kpis: AnalyticsKPIs;
+  planDistribution: PlanDistItem[];
+  providerFunnel: ProviderFunnel;
+  availabilityDistribution: AvailabilityItem[];
+  geoDistribution: GeoItem[];
+  topProviders: TopProvider[];
 }
 
 export interface ProvidersResponse {
@@ -346,17 +387,29 @@ export interface Provider {
   id: number;
   businessName: string;
   phone: string;
+  whatsapp?: string;
   address?: string;
   description?: string;
+  dni?: string;
+  ruc?: string;
+  nombreComercial?: string;
+  razonSocial?: string;
+  hasDelivery?: boolean;
+  department?: string;
+  province?: string;
+  district?: string;
+  isTrusted?: boolean;
+  trustStatus?: string;
   isVerified: boolean;
   isVisible: boolean;
   availability: string;
   verificationStatus: string;
-  type: string;           // 'OFICIO' | 'NEGOCIO' | 'PROFESSIONAL' | 'BUSINESS'
+  type: string;           // 'OFICIO' | 'NEGOCIO'
   category: { name: string };
   locality: { name: string };
-  user?: { email: string; firstName: string; lastName: string };
+  user?: { email: string; firstName: string; lastName: string; phone?: string };
   subscription?: { plan: string; status: string; endDate: string };
+  createdAt?: string;
 }
 
 export interface VerificationProvider {
@@ -404,7 +457,8 @@ export interface NotificationsResponse {
 
 export interface NotificationItem {
   id: number;
-  type: 'APROBADO' | 'RECHAZADO' | 'MAS_INFO' | 'VERIFICACION_REVOCADA';
+  type: 'APROBADO' | 'RECHAZADO' | 'MAS_INFO' | 'VERIFICACION_REVOCADA' | 'PLAN_APROBADO' | 'PLAN_RECHAZADO' | 'PLAN_SOLICITADO';
+  title?: string;
   message: string;
   isRead: boolean;
   sentAt: string;

@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAdminSocket } from '@/hooks/useAdminSocket';
-import { 
-  Plus, Search, Eye, EyeOff, 
-  CheckCircle, XCircle, Edit, Star, Trash2, Loader2 
+import {
+  Plus, Search, Eye, EyeOff,
+  CheckCircle, XCircle, Edit, Star, Trash2, Loader2, Crown, X,
 } from 'lucide-react';
 import { StatusBadge } from './status-badge';
 import { CreateProviderModal } from './create-provider-modal';
 import { EditProviderModal } from './edit-provider-modal';
 import { ProviderDetailModal } from './provider-detail-modal';
-// Importamos las funciones unificadas
-import { getProviders, deleteProvider, toggleVisibility, Provider } from '@/lib/api';
+import { getProviders, deleteProvider, toggleVisibility, promotePlan, Provider } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface Props {
   initialPage: number;
@@ -27,6 +27,8 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   const [showCreate, setShowCreate] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
   const [viewingProvider, setViewingProvider] = useState<Provider | null>(null);
+  const [promotingProvider, setPromotingProvider] = useState<Provider | null>(null);
+  const [promotePlanLoading, setPromotePlanLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const lastPage = Math.ceil(total / 15);
@@ -79,6 +81,20 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
       alert(e.message || 'Error al eliminar');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handlePromotePlan = async (id: number, plan: 'ESTANDAR' | 'PREMIUM') => {
+    setPromotePlanLoading(true);
+    try {
+      await promotePlan(id, plan);
+      toast.success(`Plan ${plan === 'PREMIUM' ? 'Premium' : 'Estándar'} activado · notificación enviada`);
+      setPromotingProvider(null);
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Error al promover plan');
+    } finally {
+      setPromotePlanLoading(false);
     }
   };
 
@@ -209,13 +225,22 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                       <button
                         onClick={() => setEditingProvider(p)}
                         className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all"
+                        title="Editar"
                       >
                         <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => setPromotingProvider(p)}
+                        className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-all"
+                        title="Promover plan"
+                      >
+                        <Crown size={14} />
                       </button>
                       <button
                         onClick={() => handleToggleVisibility(p.id)}
                         disabled={actionLoading === p.id}
                         className={`p-2 rounded-lg transition-all ${p.isVisible ? 'bg-orange-500/10 text-orange-400' : 'bg-green-500/10 text-green-400'}`}
+                        title={p.isVisible ? 'Ocultar' : 'Mostrar'}
                       >
                         {p.isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -223,6 +248,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                         onClick={() => handleDelete(p.id)}
                         disabled={actionLoading === p.id}
                         className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
+                        title="Eliminar"
                       >
                         {actionLoading === p.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                       </button>
@@ -277,6 +303,72 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
           setEditingProvider(p);
         } : undefined}
       />
+
+      {/* Modal de promoción de plan */}
+      {promotingProvider && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setPromotingProvider(null)}
+        >
+          <div
+            className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-yellow-500/15 border border-yellow-500/25 flex items-center justify-center">
+                    <Crown size={16} className="text-yellow-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-sm">Promover Plan</h3>
+                    <p className="text-gray-500 text-xs truncate max-w-[160px]">{promotingProvider.businessName}</p>
+                  </div>
+                </div>
+                <button onClick={() => setPromotingProvider(null)} className="p-1.5 rounded-lg hover:bg-white/5 text-gray-500 transition-all">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <p className="text-gray-400 text-xs mb-4">
+                Plan actual: <span className="text-white font-semibold">{promotingProvider.subscription?.plan ?? 'GRATIS'}</span>
+                {' · '}{promotingProvider.subscription?.status ?? '—'}
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handlePromotePlan(promotingProvider.id, 'ESTANDAR')}
+                  disabled={promotePlanLoading}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all group"
+                >
+                  <Crown size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-cyan-400 font-bold text-sm">Estándar</span>
+                  <span className="text-cyan-400/60 text-[10px]">Visibilidad media</span>
+                </button>
+                <button
+                  onClick={() => handlePromotePlan(promotingProvider.id, 'PREMIUM')}
+                  disabled={promotePlanLoading}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20 transition-all group"
+                >
+                  <Crown size={20} className="text-yellow-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-yellow-400 font-bold text-sm">Premium</span>
+                  <span className="text-yellow-400/60 text-[10px]">Máxima visibilidad</span>
+                </button>
+              </div>
+
+              {promotePlanLoading && (
+                <div className="flex justify-center mt-4">
+                  <Loader2 size={18} className="animate-spin text-white/40" />
+                </div>
+              )}
+
+              <p className="text-gray-600 text-[10px] text-center mt-4">
+                El cambio es inmediato · Se notifica al proveedor por app
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

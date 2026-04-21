@@ -84,10 +84,17 @@ export class AuthController {
     return this.authService.sendOtp(dto.userId);
   }
 
-  // POST /auth/verify-otp — valida el código OTP y marca el email como verificado
+  // POST /auth/verify-otp — valida OTP, crea usuario en BD y devuelve tokens
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
   async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto.userId, dto.code);
+    return this.authService.verifyOtp(dto.pendingId, dto.code);
+  }
+
+  // POST /auth/resend-otp — reenvía OTP para un registro pendiente
+  @Post('resend-otp')
+  @HttpCode(HttpStatus.OK)
+  async resendOtp(@Body() body: { pendingId: string }) {
+    return this.authService.resendPendingOtp(body.pendingId);
   }
 }

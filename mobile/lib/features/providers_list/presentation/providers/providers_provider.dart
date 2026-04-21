@@ -3,6 +3,8 @@ import '../../../../core/errors/failures.dart';
 import '../../data/providers_repository.dart';
 import '../../domain/models/provider_model.dart';
 
+enum ViewMode { lista, detalles, mosaicos, contenido }
+
 /// Estado global de la lista de proveedores
 class ProvidersProvider extends ChangeNotifier {
   final ProvidersRepository _repo = ProvidersRepository();
@@ -12,6 +14,7 @@ class ProvidersProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _hasError = false;
   String _errorMessage = '';
+  ViewMode _viewMode = ViewMode.detalles;
 
   // Filtros activos
   String? _selectedCategory;      // slug de subcategoría (hoja)
@@ -45,6 +48,13 @@ class ProvidersProvider extends ChangeNotifier {
   String?             get province             => _province;
   String?             get district             => _district;
   bool                get hasLocationFilter    => _department != null;
+  ViewMode            get viewMode             => _viewMode;
+
+  void setViewMode(ViewMode mode) {
+    if (_viewMode == mode) return;
+    _viewMode = mode;
+    notifyListeners();
+  }
 
   /// Devuelve la CategoryModel del padre expandido (o null)
   CategoryModel? get expandedParent => _expandedParentSlug == null

@@ -391,6 +391,176 @@ La ubicación se diseñó como campo opcional de perfil, no como requisito de re
 
 ---
 
+## Error 22 — Página de analytics con solo JSON crudo (sin gráficos)
+
+**Archivo**: `admin/app/analytics/page.tsx`
+
+**Qué pasó**:
+La página `/analytics` del panel admin solo mostraba `<pre>{JSON.stringify(data.dailyClicks)}</pre>`.
+Era imposible interpretar tendencias, comparar períodos o tomar decisiones estratégicas.
+Recharts 3.8.1 ya estaba instalado en el proyecto pero nunca se había usado.
+
+**Raíz del error**:
+La página fue creada como placeholder de desarrollo (`// Aquí renderizas tus gráficas`)
+y nunca se implementó correctamente.
+
+**Parche aplicado**:
+Reescritura completa con:
+- 6 KPI cards (WA clicks, llamadas, vistas, activos, tasa aprobación, pendientes verificación)
+- `LineChart` Recharts: engagement diario (WA + calls + views) con selector 7/30/90 días
+- `PieChart` donut: distribución de planes (PREMIUM/ESTANDAR/BASICO/GRATIS)
+- `PieChart` donut: disponibilidad de proveedores (DISPONIBLE/OCUPADO/CON_DEMORA)
+- Funnel visual de proveedores (registrados → aprobados → activos) con barra de progreso
+- Ranking top 10 proveedores por clicks (barras horizontales proporcionales)
+- `BarChart` horizontal: distribución geográfica por departamento
+- Insight automático generado del período (texto contextual)
+- Comparación vs período anterior con delta % y flechas TrendingUp/Down
+
+**Regla de oro**:
+> Toda página de analytics DEBE tener al menos: KPIs con comparación temporal, al menos
+> un gráfico de tendencia temporal, y contexto semántico (insight generado). Un `<pre>JSON</pre>`
+> no es analytics — es debug output disfrazado de feature.
+
+---
+
+## Error 23 — Backend `getAnalytics()` solo devolvía 2 métricas
+
+**Archivo**: `backend/src/admin/admin.service.ts`
+
+**Qué pasó**:
+`getAnalytics(days)` solo devolvía `{ dailyClicks: [{date, whatsapp, calls}] }`.
+Faltaban todas las dimensiones para toma de decisiones estratégica:
+- Sin comparación vs período anterior (imposible saber si mejora o empeora)
+- Sin distribución de planes (no se sabe qué % es PREMIUM vs GRATIS)
+- Sin funnel de conversión (registro → aprobación → activo)
+- Sin top performers por engagement
+- Sin distribución geográfica
+- Sin vistas de perfil (solo WA y llamadas, ignorando `view` eventType)
+
+**Parche aplicado**:
+`getAnalytics()` ahora ejecuta 13 queries en paralelo (`Promise.all`) y retorna:
+```typescript
+{
+  dailyClicks,          // Con campo 'views' añadido
+  kpis: { whatsappTotal, callsTotal, viewsTotal, *Delta },  // con delta %
+  planDistribution,     // groupBy plan
+  providerFunnel,       // total/approved/pending/rejected/active + conversionRate
+  availabilityDistribution,
+  geoDistribution,      // top 10 departamentos
+  topProviders,         // top 10 por clicks en el período, con businessName/category
+}
+```
+
+**Regla de oro**:
+> Un endpoint de analytics para toma de decisiones debe incluir: métricas del período,
+> comparación con período anterior, distribuciones (planes, estados, geografía) y
+> rankings de top performers. Un endpoint que solo cuenta clicks no es analytics estratégico.
+
+---
+
+## Error 24 — WebSocket admin instalado pero no conectado a ninguna página
+
+**Archivo**: `admin/lib/socket.ts`, `admin/app/page.tsx`
+
+**Qué pasó**:
+`lib/socket.ts` exportaba `getAdminSocket()` — un singleton de Socket.io correctamente
+configurado con `reconnection: true` y `reconnectionAttempts: Infinity`.
+Sin embargo, **ninguna página del admin llamaba `getAdminSocket()`**. El socket existía
+en código pero estaba completamente desconectado del runtime. Resultado:
+- Cuando un admin aprobaba un proveedor, la tabla de pendientes no se actualizaba sola
+- Cuando llegaba un nuevo proveedor, el contador de verificaciones pendientes no aumentaba
+- El backend emitía eventos (`providerStatusChanged`, `notification`) que nadie escuchaba
+
+**Raíz del error**:
+El socket fue añadido como infraestructura pero su integración en los componentes
+React/Next.js se dejó pendiente y nunca se completó.
+
+**Parche aplicado**:
+1. Añadido `emitAdminEvent()` al `EventsGateway` con tipo discriminado:
+   `'NEW_PROVIDER' | 'PROVIDER_APPROVED' | 'PROVIDER_REJECTED' | 'NEW_PLAN_REQUEST' | 'PLAN_APPROVED'`
+2. Backend llama `emitAdminEvent()` desde: `approveVerification`, `rejectVerification`,
+   `approvePlanRequest`, `auth.service.registerProvider`
+3. Hook `useAdminRealtime` creado en `admin/lib/use-admin-realtime.ts`:
+   escucha `adminEvent` + `providerStatusChanged`, expone `connected`, `pendingCount`, `lastEvent`
+4. Dashboard integra el hook con `autoRefresh: true` → recarga métricas automáticamente
+5. Indicador visual "EN VIVO" / "SIN CONEXIÓN" en el header del dashboard
+6. Toast banner temporal al recibir eventos (desaparece en 4 segundos)
+
+**Regla de oro**:
+> Instalar una dependencia de comunicación en tiempo real (Socket.io, SSE, WebSocket)
+> sin conectarla a al menos un componente de UI es código muerto. Si se añade el socket
+> client al proyecto, en el mismo PR debe haber al menos un `socket.on()` que lo use.
+> Verificar integración con: ¿algún componente llama `getAdminSocket()`?
+
+---
+
+---
+
+## Error 25 — `groupBy` sobre campo inexistente `department` en `Provider` (TS2339)
+
+**Archivos**: `backend/src/admin/admin.service.ts`
+
+**Qué pasó**:
+`getAnalytics()` intentaba `prisma.provider.groupBy({ by: ['department'] })` para distribución geográfica. El campo `department` no existe en el modelo `Provider` — pertenece a `User`. TypeScript lanzó TS2339 bloqueando compilación.
+
+**Raíz del error**:
+Al escribir la query de analytics, se asumió que `Provider` tenía campos de ubicación directos. La ubicación geográfica en `Provider` se maneja a través de la relación `localityId → Locality`. Los campos `department`/`province`/`district` son del modelo `User`.
+
+**Parche aplicado**:
+```typescript
+// ❌ ANTES — campo inexistente
+this.prisma.provider.groupBy({ by: ['department'], ... })
+
+// ✅ DESPUÉS — agrupar por FK de relación
+this.prisma.provider.groupBy({
+  by: ['localityId'],
+  _count: { id: true },
+  where: { localityId: { not: undefined } },
+  orderBy: { _count: { id: 'desc' } },
+  take: 10,
+})
+// Luego fetch de nombres y mapeo:
+const localityData = await this.prisma.locality.findMany({ where: { id: { in: localityIds } } });
+const localityMap = new Map(localityData.map((l) => [l.id, l.name]));
+// map: g => ({ department: localityMap.get(g.localityId!), count: g._count.id })
+```
+
+**Regla de oro**:
+> Antes de usar un campo en `groupBy` o `where`, verificar que pertenece al modelo **directamente** en `schema.prisma`, no a una relación. Si se necesita agrupar por dato de relación, usar `groupBy` por la FK y resolver nombres en un segundo query.
+
+---
+
+## Error 26 — Propiedad extra `rejectedAt` en `NotificationPayload` (TS2353)
+
+**Archivo**: `backend/src/trust-validation/trust-validation.service.ts`
+
+**Qué pasó**:
+`rejectRequest()` pasaba `rejectedAt: new Date().toISOString()` dentro del objeto a `emitNotification()`. La interfaz `NotificationPayload` (en `events.gateway.ts`) no incluye ese campo. TypeScript lanzó TS2353 ("Object literal may only specify known properties").
+
+**Raíz del error**:
+Querer incluir metadatos de auditoría (fecha de rechazo) en el payload del socket. Ese dato ya se persiste en `TrustValidationRequest.reviewedAt` en la BD; duplicarlo en el socket crea acoplamiento innecesario y rompe el tipo.
+
+**Parche aplicado**:
+```typescript
+// ❌ ANTES
+this.eventsGateway.emitNotification({
+  type: 'TRUST_REJECTED', title: '...', body: reason,
+  targetUserId: ..., targetProfileType: ...,
+  rejectedAt: new Date().toISOString(), // ← campo no existe en interfaz
+});
+
+// ✅ DESPUÉS — solo campos definidos en NotificationPayload
+this.eventsGateway.emitNotification({
+  type: 'TRUST_REJECTED', title: '...', body: reason,
+  targetUserId: ..., targetProfileType: ...,
+});
+```
+
+**Regla de oro**:
+> Metadatos de auditoría (fechas, razones, IDs internos) se guardan en BD, no se envían por socket. El payload del socket es solo lo mínimo para que el cliente muestre la notificación. Si `NotificationPayload` no tiene el campo, no añadirlo al objeto — añadirlo a la interfaz o eliminarlo del objeto.
+
+---
+
 ## Resumen de Reglas de Oro
 
 | # | Área | Regla |
@@ -416,4 +586,9 @@ La ubicación se diseñó como campo opcional de perfil, no como requisito de re
 | 19 | Enums nuevos en Prisma — shadow DB | Al agregar un enum nuevo con `prisma migrate dev`, la shadow database puede fallar por "unsafe use of new enum value". Usar `prisma db push` para esquemas en desarrollo activo, reservar `migrate dev` para producción con SQL manual |
 | 20 | AdminGuard inexistente | No existe `AdminGuard` en el proyecto. Proteger rutas de admin con `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles('ADMIN')`. Nunca referenciar guards que no estén en `src/auth/` |
 | 21 | `TrustRejectionPayload` — definir fuera de clase | Clases de payload/DTO usadas como tipos en `AuthProvider` deben declararse **antes** de la clase, no dentro. Dart no soporta clases anidadas públicas |
+| 22 | Analytics page vacía — solo JSON crudo | `app/analytics/page.tsx` solo mostraba `<pre>{JSON.stringify(data)}</pre>`. Requiere Recharts + KPIs + gráficos para ser útil estratégicamente |
+| 23 | `getAnalytics()` backend incompleto — solo 2 columnas | Devolvía solo `dailyClicks: [{date, whatsapp, calls}]`. Sin KPIs de comparación, sin distribución de planes, sin funnel de proveedores, sin geografía, sin top performers |
+| 24 | Socket admin sin suscriptores — real-time muerto | `lib/socket.ts` existía pero ninguna página llamaba `getAdminSocket()`. El admin nunca recibía actualizaciones en tiempo real a pesar de tener Socket.io instalado |
+| 25 | `groupBy` en campo de relación (`department`) — TS2339 | `admin.service.ts` agrupaba por `department` en `Provider`, pero ese campo no existe. Pertenece a `User`. Groupby debe ser por `localityId` (FK que sí existe) + fetch posterior de nombres |
+| 26 | Propiedad extra en `NotificationPayload` — TS2353 | `trust-validation.service.ts` pasaba `rejectedAt` a `emitNotification()`. El campo no está en `NotificationPayload`. Datos de auditoría van en BD, no en el payload del socket |
 

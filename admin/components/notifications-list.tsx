@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle, XCircle, HelpCircle, ShieldOff,
   Bell, BellOff, Loader2, ChevronLeft, ChevronRight, CheckCheck,
+  CreditCard, RefreshCw, AlertCircle,
 } from 'lucide-react';
 import {
   getNotifications,
@@ -13,10 +14,7 @@ import {
 } from '@/lib/api';
 import { NotificationDetailModal } from './notification-detail-modal';
 
-const TYPE_CONFIG: Record<
-  NotificationItem['type'],
-  { icon: any; label: string; color: string; bg: string; border: string }
-> = {
+const TYPE_CONFIG: Record<string, { icon: any; label: string; color: string; bg: string; border: string }> = {
   APROBADO: {
     icon: CheckCircle,
     label: 'Aprobado',
@@ -45,6 +43,35 @@ const TYPE_CONFIG: Record<
     bg: 'bg-orange-500/10',
     border: 'border-orange-500/20',
   },
+  PLAN_APROBADO: {
+    icon: CreditCard,
+    label: 'Plan aprobado',
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/20',
+  },
+  PLAN_RECHAZADO: {
+    icon: XCircle,
+    label: 'Plan rechazado',
+    color: 'text-red-400',
+    bg: 'bg-red-500/10',
+    border: 'border-red-500/20',
+  },
+  PLAN_SOLICITADO: {
+    icon: CreditCard,
+    label: 'Plan solicitado',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
+  },
+};
+
+const DEFAULT_TYPE_CFG = {
+  icon: Bell,
+  label: 'Notificación',
+  color: 'text-gray-400',
+  bg: 'bg-white/5',
+  border: 'border-white/10',
 };
 
 export function NotificationsList() {
@@ -54,17 +81,21 @@ export function NotificationsList() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [page, setPage]             = useState(1);
   const [isLoading, setIsLoading]   = useState(true);
+  const [error, setError]           = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
   const [viewingNotif, setViewingNotif] = useState<NotificationItem | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const data = await getNotifications(page);
       setItems(data.data);
       setTotal(data.total);
       setLastPage(data.lastPage);
       setUnreadCount(data.unreadCount);
+    } catch (err: any) {
+      setError(err?.message ?? 'Error al conectar con el servidor');
     } finally {
       setIsLoading(false);
     }
@@ -116,32 +147,58 @@ export function NotificationsList() {
           <span className="text-gray-700 text-xs">/ {total} total</span>
         </div>
 
-        {unreadCount > 0 && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={handleMarkAll}
-            disabled={markingAll}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1a1a1a] border border-white/10 text-gray-400 text-sm hover:text-white hover:border-white/20 transition-all"
+            onClick={load}
+            className="p-2 rounded-xl bg-[#1a1a1a] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all"
+            title="Actualizar"
           >
-            {markingAll ? <Loader2 size={13} className="animate-spin" /> : <CheckCheck size={13} />}
-            Marcar todo como leído
+            <RefreshCw size={13} />
           </button>
-        )}
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAll}
+              disabled={markingAll}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1a1a1a] border border-white/10 text-gray-400 text-sm hover:text-white hover:border-white/20 transition-all"
+            >
+              {markingAll ? <Loader2 size={13} className="animate-spin" /> : <CheckCheck size={13} />}
+              Marcar todo como leído
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Lista */}
+      {/* Error state */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 flex items-center gap-4">
+          <AlertCircle size={20} className="text-red-400 shrink-0" />
+          <div className="flex-1">
+            <p className="text-red-400 font-semibold text-sm">Error de conexión</p>
+            <p className="text-red-400/70 text-xs mt-0.5">{error}</p>
+          </div>
+          <button
+            onClick={load}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/20 text-red-400 text-xs font-medium hover:bg-red-500/30 transition-all"
+          >
+            <RefreshCw size={12} /> Reintentar
+          </button>
+        </div>
+      )}
+
+      {/* Lista / Contenedor principal */}
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="animate-spin text-blue-500" size={28} />
         </div>
-      ) : items.length === 0 ? (
+      ) : !error && items.length === 0 ? (
         <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 p-12 text-center">
           <Bell className="mx-auto mb-3 text-gray-700" size={28} />
           <p className="text-gray-600">No hay notificaciones</p>
         </div>
-      ) : (
+      ) : !error ? (
         <div className="space-y-2">
           {items.map((n) => {
-            const cfg = TYPE_CONFIG[n.type];
+            const cfg = TYPE_CONFIG[n.type] ?? DEFAULT_TYPE_CFG;
             const Icon = cfg.icon;
             return (
               <div
@@ -152,29 +209,27 @@ export function NotificationsList() {
                 }`}
               >
                 <div className="flex items-start gap-4 p-4">
-                  {/* Icono tipo */}
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bg} border ${cfg.border}`}>
                     <Icon size={15} className={cfg.color} />
                   </div>
 
-                  {/* Contenido */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${cfg.bg} ${cfg.color} border ${cfg.border}`}>
                         {cfg.label}
                       </span>
                       <span className="text-sm font-semibold text-white truncate">
-                        {n.provider.businessName}
+                        {n.provider?.businessName ?? '—'}
                       </span>
                       <span className="text-xs text-gray-600">
-                        {n.provider.user.firstName} {n.provider.user.lastName}
+                        {n.provider?.user?.firstName} {n.provider?.user?.lastName}
                       </span>
                     </div>
+                    {n.title && <p className="text-sm font-medium text-white/80 mb-0.5">{n.title}</p>}
                     <p className="text-sm text-gray-400 line-clamp-2">{n.message}</p>
                     <p className="text-xs text-gray-700 mt-1">{fmt(n.sentAt)}</p>
                   </div>
 
-                  {/* Marcar leído */}
                   {!n.isRead && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleMarkRead(n.id); }}
@@ -189,7 +244,7 @@ export function NotificationsList() {
             );
           })}
         </div>
-      )}
+      ) : null}
 
       <NotificationDetailModal
         notification={viewingNotif}
@@ -202,7 +257,7 @@ export function NotificationsList() {
 
       {/* Paginación */}
       {lastPage > 1 && (
-        <div className="flex justify-center items-center gap-2">
+        <div className="flex justify-center items-center gap-2 mt-4">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}

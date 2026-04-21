@@ -1067,17 +1067,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 14),
 
-            // ── Dirección + GPS + URL Maps ────────────────
-            // Para OFICIO: colapsable (opcional). Para NEGOCIO: siempre visible.
-            if (_isOficio) ...[
-              _buildAddressToggle(context.colors),
-              if (_showAddressSection) ...[
-                const SizedBox(height: 10),
-                _buildAddressSection(context.colors),
-              ],
-            ] else
-              _buildAddressSection(context.colors),
-            const SizedBox(height: 14),
+            // ── Dirección (NEGOCIO: campo siempre visible + toggle GPS/Maps) ──
+            if (!_isOficio) ...[
+              _buildNegocioAddressSection(context.colors),
+              const SizedBox(height: 14),
+            ],
 
             // ── Categoría ─────────────────────────────────
             _FormSectionHeader(label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO'),
@@ -1192,208 +1186,191 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     );
   }
 
-  // ─── Toggle para mostrar/ocultar sección de dirección (OFICIO) ──────────
+  // ─── Dirección de negocio: campo visible + toggle globe para GPS/Maps ──
 
-  Widget _buildAddressToggle(AppThemeColors c) {
-    return GestureDetector(
-      onTap: () => setState(() => _showAddressSection = !_showAddressSection),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        decoration: BoxDecoration(
-          color: _showAddressSection
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : c.bgCard,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: _showAddressSection
-                ? AppColors.primary.withValues(alpha: 0.35)
-                : c.textMuted.withValues(alpha: 0.25),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              _showAddressSection
-                  ? Icons.expand_less_rounded
-                  : Icons.add_location_alt_outlined,
-              color: _showAddressSection ? AppColors.primary : c.textMuted,
-              size: 18,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              _showAddressSection
-                  ? 'Ocultar dirección / Maps'
-                  : 'Agregar dirección / URL Google Maps (opcional)',
-              style: TextStyle(
-                color: _showAddressSection ? AppColors.primary : c.textMuted,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─── Dirección con GPS y URL de Maps ─────────────────────
-
-  Widget _buildAddressSection(AppThemeColors c) {
+  Widget _buildNegocioAddressSection(AppThemeColors c) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Campo de texto de dirección
+        // Dirección siempre visible
         _buildField(
           controller: _addressController,
-          label: 'Dirección (opcional)',
+          label: 'Dirección del negocio',
           hint: 'Jr. Ejemplo 123, Ciudad',
           icon: Icons.location_on_outlined,
         ),
         const SizedBox(height: 8),
 
-        // Fila: botón GPS + estado
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: _gpsLoading ? null : _fetchGpsLocation,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: _gpsPosition != null
-                        ? AppColors.available.withValues(alpha: 0.08)
-                        : AppColors.primary.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _gpsPosition != null
-                          ? AppColors.available.withValues(alpha: 0.4)
-                          : AppColors.primary.withValues(alpha: 0.3),
-                    ),
+        // Toggle globe para GPS + URL Maps
+        GestureDetector(
+          onTap: () => setState(() => _showAddressSection = !_showAddressSection),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _showAddressSection
+                  ? AppColors.primary.withValues(alpha: 0.08)
+                  : c.bgCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _showAddressSection
+                    ? AppColors.primary.withValues(alpha: 0.35)
+                    : c.textMuted.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _showAddressSection ? Icons.expand_less_rounded : Icons.language_rounded,
+                  color: _showAddressSection ? AppColors.primary : c.textMuted,
+                  size: 17,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  _showAddressSection
+                      ? 'Ocultar opciones de ubicación'
+                      : 'Agregar GPS / URL Google Maps (opcional)',
+                  style: TextStyle(
+                    color: _showAddressSection ? AppColors.primary : c.textMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (_gpsLoading)
-                        const SizedBox(
-                          width: 16, height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.primary,
-                          ),
-                        )
-                      else
-                        Icon(
-                          _gpsPosition != null
-                              ? Icons.check_circle_rounded
-                              : Icons.my_location_rounded,
-                          size: 16,
-                          color: _gpsPosition != null
-                              ? AppColors.available
-                              : AppColors.primary,
-                        ),
-                      const SizedBox(width: 7),
-                      Flexible(
-                        child: Text(
-                          _gpsLoading
-                              ? 'Obteniendo ubicación...'
-                              : _gpsPosition != null
-                                  ? 'GPS obtenido ✓'
-                                  : 'Usar mi ubicación actual',
-                          style: TextStyle(
-                            color: _gpsPosition != null
-                                ? AppColors.available
-                                : AppColors.primary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        if (_showAddressSection) ...[
+          const SizedBox(height: 10),
+
+          // Botón GPS
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: _gpsLoading ? null : _fetchGpsLocation,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: _gpsPosition != null
+                          ? AppColors.available.withValues(alpha: 0.08)
+                          : AppColors.primary.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _gpsPosition != null
+                            ? AppColors.available.withValues(alpha: 0.4)
+                            : AppColors.primary.withValues(alpha: 0.3),
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_gpsLoading)
+                          const SizedBox(
+                            width: 16, height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                          )
+                        else
+                          Icon(
+                            _gpsPosition != null ? Icons.check_circle_rounded : Icons.my_location_rounded,
+                            size: 16,
+                            color: _gpsPosition != null ? AppColors.available : AppColors.primary,
+                          ),
+                        const SizedBox(width: 7),
+                        Flexible(
+                          child: Text(
+                            _gpsLoading
+                                ? 'Obteniendo ubicación...'
+                                : _gpsPosition != null ? 'GPS obtenido ✓' : 'Obtener ubicación actual',
+                            style: TextStyle(
+                              color: _gpsPosition != null ? AppColors.available : AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (_gpsPosition != null) ...[
+              if (_gpsPosition != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => setState(() { _gpsPosition = null; _addressController.clear(); }),
+                  child: Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: c.bgCard,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: c.border),
+                    ),
+                    child: Icon(Icons.close_rounded, size: 16, color: c.textMuted),
+                  ),
+                ),
+              ],
+            ],
+          ),
+
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: Divider(color: c.border, height: 1)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text('ó', style: TextStyle(color: c.textMuted, fontSize: 12)),
+              ),
+              Expanded(child: Divider(color: c.border, height: 1)),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // URL de Google Maps
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _mapsUrlController,
+                  style: TextStyle(color: c.textPrimary, fontSize: 13),
+                  decoration: InputDecoration(
+                    labelText: 'URL de Google Maps (opcional)',
+                    labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
+                    hintText: 'Pega el enlace de tu ubicación en Maps',
+                    hintStyle: TextStyle(color: c.textMuted, fontSize: 12),
+                    prefixIcon: const Icon(Icons.map_outlined, color: AppColors.primary, size: 20),
+                    filled: true,
+                    fillColor: c.bgCard,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => setState(() {
-                  _gpsPosition = null;
-                  _addressController.clear();
-                }),
+                onTap: _parseMapsUrl,
                 child: Container(
-                  padding: const EdgeInsets.all(9),
+                  padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(
-                    color: c.bgCard,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: c.border),
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.close_rounded, size: 16, color: c.textMuted),
+                  child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
                 ),
               ),
             ],
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        // Tip separador
-        Row(
-          children: [
-            Expanded(child: Divider(color: c.border, height: 1)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text('ó', style: TextStyle(color: c.textMuted, fontSize: 12)),
-            ),
-            Expanded(child: Divider(color: c.border, height: 1)),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        // Campo URL de Google Maps
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _mapsUrlController,
-                style: TextStyle(color: c.textPrimary, fontSize: 13),
-                decoration: InputDecoration(
-                  labelText: 'URL de Google Maps (opcional)',
-                  labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
-                  hintText: 'Pega el enlace de tu ubicación en Maps',
-                  hintStyle: TextStyle(color: c.textMuted, fontSize: 12),
-                  prefixIcon: const Icon(Icons.map_outlined, color: AppColors.primary, size: 20),
-                  filled: true,
-                  fillColor: c.bgCard,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: _parseMapsUrl,
-              child: Container(
-                padding: const EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Abre Google Maps → Comparte → Copia enlace → Pégalo aquí',
-          style: TextStyle(color: c.textMuted, fontSize: 11),
-        ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Abre Google Maps → Comparte → Copia enlace → Pégalo aquí',
+            style: TextStyle(color: c.textMuted, fontSize: 11),
+          ),
+        ],
       ],
     );
   }

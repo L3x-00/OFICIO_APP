@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Users, Star, ShieldCheck, MessageCircle,
   Phone, AlertTriangle, TrendingUp, UserCheck,
-  RefreshCw, ArrowUpRight, Clock, CheckCircle2,
+  RefreshCw, Clock, Wifi, WifiOff,
 } from 'lucide-react';
 import { MetricCard } from '@/components/metric-card';
 import { GraceProvidersTable } from '@/components/grace-providers-table';
 import { PendingApprovalsTable } from '@/components/pending-approvals-table';
 import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
 import type { DashboardMetrics, GraceProvider } from '@/lib/api';
+import { useAdminRealtime } from '@/lib/use-admin-realtime';
 
 function SectionHeader({
   title,
@@ -60,12 +61,13 @@ export default function DashboardPage() {
   const [error, setError]               = useState<string | null>(null);
   const [refreshing, setRefreshing]     = useState(false);
   const [lastUpdated, setLastUpdated]   = useState<Date | null>(null);
+  const [liveAlert, setLiveAlert]       = useState<string | null>(null);
 
   function handlePendingAction() {
     setMetrics(m => m ? { ...m, pendingVerifications: Math.max(0, m.pendingVerifications - 1) } : m);
   }
 
-  async function loadData(isRefresh = false) {
+  const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
     setError(null);
@@ -80,9 +82,31 @@ export default function DashboardPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
+  // ── Real-time via WebSocket ────────────────────────────
+  const { connected, pendingCount, clearPending } = useAdminRealtime({
+    autoRefresh: true,
+    onRefresh: () => loadData(true),
+    onEvent: (ev) => {
+      const ALERT_MSGS: Record<string, string> = {
+        NEW_PROVIDER:      '🆕 Nuevo proveedor registrado — revisión pendiente',
+        PROVIDER_APPROVED: '✅ Proveedor aprobado',
+        PROVIDER_REJECTED: '❌ Proveedor rechazado',
+        NEW_PLAN_REQUEST:  '📋 Nueva solicitud de plan',
+        PLAN_APPROVED:     '💎 Plan aprobado a un proveedor',
+        USER_PENDING:      '⏳ Nuevo usuario en proceso de validación de email',
+        NEW_USER_VERIFIED: '✅ Usuario registrado correctamente — email verificado',
+      };
+      const msg = ALERT_MSGS[ev.event];
+      if (msg) {
+        setLiveAlert(msg);
+        setTimeout(() => setLiveAlert(null), 4000);
+      }
+    },
+  });
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   if (loading) {
     return (
@@ -160,12 +184,66 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-in">
+      {/* Live alert banner */}
+      {liveAlert && (
+        <div style={{
+          padding: '10px 16px',
+          background: 'rgba(59,130,246,0.08)',
+          border: '1px solid rgba(59,130,246,0.25)',
+          borderRadius: '10px',
+          fontSize: '13px',
+          color: '#93C5FD',
+          fontWeight: 500,
+          marginBottom: '16px',
+          animation: 'fadeIn 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3B82F6', flexShrink: 0, animation: 'pulse 1s ease infinite' }} />
+          {liveAlert}
+        </div>
+      )}
+
       {/* Page Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '4px' }}>
-            Dashboard
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              Dashboard
+            </h1>
+            {/* Indicador de conexión en tiempo real */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '5px',
+              padding: '3px 9px',
+              borderRadius: '99px',
+              background: connected ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+              border: `1px solid ${connected ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+            }}>
+              {connected
+                ? <Wifi size={11} color="#10B981" />
+                : <WifiOff size={11} color="#EF4444" />}
+              <span style={{ fontSize: '10px', fontWeight: 700, color: connected ? '#10B981' : '#EF4444' }}>
+                {connected ? 'EN VIVO' : 'SIN CONEXIÓN'}
+              </span>
+              {pendingCount > 0 && (
+                <span
+                  onClick={clearPending}
+                  style={{
+                    marginLeft: '3px', padding: '1px 6px',
+                    borderRadius: '99px',
+                    background: '#F97316',
+                    color: '#fff',
+                    fontSize: '10px', fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                  title="Nuevos eventos — clic para limpiar"
+                >
+                  +{pendingCount}
+                </span>
+              )}
+            </div>
+          </div>
           <p style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>
             Resumen operacional de OficioApp
             {lastUpdated && (
@@ -353,6 +431,41 @@ export default function DashboardPage() {
           <GraceProvidersTable providers={graceProviders} />
         </div>
       </div>
+
+      {/* Componente visual de alerta en tiempo real */}
+      {liveAlert && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          padding: '16px 24px',
+          background: 'var(--surface-3)',
+          border: '1px solid var(--primary-light)',
+          borderRadius: '12px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          animation: 'slideUp 0.3s ease-out'
+        }}>
+          <span style={{ fontSize: '18px' }}>{liveAlert.split(' ')[0]}</span>
+          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{liveAlert}</span>
+        </div>
+      )}
+
+      {/* Definición de animaciones CSS */}
+      <style jsx>{`
+        @keyframes slideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.2); opacity: 0.7; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

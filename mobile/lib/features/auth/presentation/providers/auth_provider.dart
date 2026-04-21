@@ -21,7 +21,8 @@ enum AppNavigationState {
 class TrustRejectionPayload {
   final String reason;
   final String profileType;
-  const TrustRejectionPayload({required this.reason, required this.profileType});
+  final String? rejectedAt;
+  const TrustRejectionPayload({required this.reason, required this.profileType, this.rejectedAt});
 }
 
 class AuthProvider extends ChangeNotifier {
@@ -34,6 +35,12 @@ class AuthProvider extends ChangeNotifier {
   bool _isGuest = false;
   String? _error;
   bool _isLoading = false;
+
+  // Registro pendiente: guardados hasta que el OTP sea verificado
+  String? _pendingRegistrationId;
+  String? _pendingEmail; // para mostrar en pantalla OTP
+
+  String? get pendingEmail => _pendingEmail;
 
   /// true cuando el servidor notificó que esta cuenta fue desactivada.
   /// _AppRoot escucha este flag para mostrar el diálogo de desactivación.
@@ -111,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
     _user = await _repo.restoreSession();
     if (_user != null) {
       await _syncProviderStatus();
-      _connectSocket();
+      _connectSocketForUser(_user!.id);
     }
     _isInitialized = true;
     notifyListeners();
@@ -119,13 +126,15 @@ class AuthProvider extends ChangeNotifier {
 
   // ── Socket ─────────────────────────────────────────────────
 
-  void _connectSocket() {
+  void _connectSocketForUser(int userId) {
     final socket = SocketService.instance;
+    // Siempre re-registrar listeners (pueden haber sido limpiados en logout anterior)
+    socket.removeDeactivationListener(_handleRemoteDeactivation);
+    socket.removeNotificationListener(_handleRemoteNotification);
     socket.addDeactivationListener(_handleRemoteDeactivation);
     socket.addNotificationListener(_handleRemoteNotification);
-    if (!socket.isConnected) {
-      socket.connect(DioClient.baseUrl);
-    }
+    // Forzar reconexión con la sala correcta cada vez que cambia el userId
+    socket.reconnectForUser(DioClient.baseUrl, userId);
   }
 
   /// Callback que el SocketService invoca cuando el servidor emite
@@ -142,22 +151,41 @@ class AuthProvider extends ChangeNotifier {
   /// el evento `notification` genérico.
   /// Filtra por targetUserId y reacciona a PROVIDER_APPROVED / PROVIDER_REJECTED.
   void _handleRemoteNotification(Map<String, dynamic> payload) {
-    final targetUserId = payload['targetUserId'];
-    if (targetUserId != null && targetUserId != _user?.id) return;
+    // Comparación type-safe: el socket puede enviar int o double para userId
+    final rawTargetId = payload['targetUserId'];
+    if (rawTargetId != null) {
+      final targetId = rawTargetId is int
+          ? rawTargetId
+          : int.tryParse(rawTargetId.toString().replaceAll('.0', ''));
+      if (targetId != _user?.id) return;
+    }
 
     final type = payload['type'] as String?;
 
     if (type == 'PLAN_APROBADO' || type == 'PLAN_RECHAZADO') {
-      // Aislamiento por perfil: solo procesar si coincide con el perfil activo.
-      // Evita que la aprobación del perfil NEGOCIO limpie el estado de OFICIO.
       final targetProfileType = payload['targetProfileType'] as String?;
       if (targetProfileType != null && targetProfileType != _activeProfileType) return;
-      _syncProviderStatus().then((_) => notifyListeners());
+      _syncProviderStatus().then((_) {
+        if (type == 'PLAN_APROBADO') {
+          _pendingPlanPromotion = payload['title'] as String? ?? '¡Has sido promovido!';
+        }
+        notifyListeners();
+      });
       return;
     }
 
-    if (type == 'PROVIDER_APPROVED' || type == 'PROVIDER_REJECTED') {
+    if (type == 'PROVIDER_APPROVED') {
+      // Sincronizar estado Y refrescar token para que el JWT tenga role:PROVEEDOR
+      _syncProviderStatus().then((_) async {
+        await _refreshUserToken();
+        notifyListeners();
+      });
+      return;
+    }
+
+    if (type == 'PROVIDER_REJECTED') {
       _syncProviderStatus().then((_) => notifyListeners());
+      return;
     }
 
     if (type == 'TRUST_APPROVED' || type == 'TRUST_REJECTED') {
@@ -166,11 +194,26 @@ class AuthProvider extends ChangeNotifier {
           _pendingTrustRejection = TrustRejectionPayload(
             reason: payload['body'] as String? ?? '',
             profileType: payload['targetProfileType'] as String? ?? 'OFICIO',
+            rejectedAt: payload['rejectedAt'] as String?,
           );
         }
         notifyListeners();
       });
     }
+  }
+
+  /// Refresca el access token para que el JWT refleje el nuevo rol (PROVEEDOR).
+  /// Silencioso en caso de error.
+  Future<void> _refreshUserToken() async {
+    final result = await _repo.refreshTokens();
+    result.when(
+      success: (updatedUser) {
+        if (_user != null && updatedUser.role.isNotEmpty) {
+          _user = _user!.copyWith(role: updatedUser.role);
+        }
+      },
+      failure: (_) {},
+    );
   }
 
   // ── Trust rejection overlay ───────────────────────────────
@@ -179,6 +222,15 @@ class AuthProvider extends ChangeNotifier {
 
   void clearTrustRejection() {
     _pendingTrustRejection = null;
+    notifyListeners();
+  }
+
+  // ── Plan promotion overlay ────────────────────────────────
+  String? _pendingPlanPromotion;
+  String? get pendingPlanPromotion => _pendingPlanPromotion;
+
+  void clearPlanPromotion() {
+    _pendingPlanPromotion = null;
     notifyListeners();
   }
 
@@ -261,7 +313,9 @@ class AuthProvider extends ChangeNotifier {
         }
       },
       failure: (_) {}, // Silencioso
+      
     );
+    
   }
 
   Future<bool> login(String email, String password, {bool rememberSession = false}) async {
@@ -288,7 +342,7 @@ class AuthProvider extends ChangeNotifier {
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
       await _syncProviderStatus();
-      _connectSocket();
+      _connectSocketForUser(_user!.id);
     }
 
     // Guardar cuenta si el usuario lo solicitó
@@ -349,7 +403,7 @@ class AuthProvider extends ChangeNotifier {
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
       await _syncProviderStatus();
-      _connectSocket();
+      _connectSocketForUser(_user!.id);
     }
 
     _isLoading = false;
@@ -378,12 +432,10 @@ class AuthProvider extends ChangeNotifier {
     );
 
     result.when(
-      success: (user) {
-        _user = user;
-        // OTP desactivado temporalmente (sin servicio de correo configurado).
-        // _needsEmailVerification = true;
-        _needsEmailVerification = false;
-        _needsOnboarding = true; // Ir directo al onboarding
+      success: (data) {
+        _pendingRegistrationId = data['pendingId'] as String?;
+        _pendingEmail = email;
+        _needsEmailVerification = true;
       },
       failure: (e) => _error = e.message,
     );
@@ -412,12 +464,11 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
-  /// Verifica el código OTP. Si es válido, pasa al onboarding.
+  /// Verifica el código OTP del registro pendiente. Crea sesión completa si es válido.
   Future<bool> verifyOtp(String code) async {
-    debugPrint("DEBUG: Iniciando verificación para el código: $code");
-    
-    if (_user == null) {
-      debugPrint("DEBUG: Error - El usuario es nulo en el Provider");
+    if (_pendingRegistrationId == null) {
+      _error = 'No hay registro pendiente. Vuelve a registrarte.';
+      notifyListeners();
       return false;
     }
 
@@ -426,24 +477,22 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _repo.verifyOtp(userId: _user!.id, code: code);
+      final result = await _repo.verifyOtp(
+        pendingId: _pendingRegistrationId!,
+        code: code,
+      );
 
       result.when(
-        success: (_) {
-          debugPrint("DEBUG: ¡Éxito en Backend!");
+        success: (user) {
+          _user = user;
+          _pendingRegistrationId = null;
+          _pendingEmail = null;
           _needsEmailVerification = false;
-          _needsOnboarding = true; // Siguiente paso: elegir rol
-          
-          if (_user != null) {
-            _user = _user!.copyWith(isEmailVerified: true);
-            debugPrint("DEBUG: UserModel actualizado localmente: isEmailVerified = true");
-          }
-          notifyListeners(); 
+          _needsOnboarding = true;
+          _connectSocketForUser(user.id);
+          notifyListeners();
         },
-        failure: (e) {
-          debugPrint("DEBUG: Error en Backend: ${e.message}");
-          _error = e.message;
-        },
+        failure: (e) => _error = e.message,
       );
 
       _isLoading = false;
@@ -451,12 +500,26 @@ class AuthProvider extends ChangeNotifier {
       return result.isSuccess;
 
     } catch (e) {
-      debugPrint("DEBUG: Error excepcional en verifyOtp: $e");
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
       return false;
     }
+  }
+
+  /// Reenvía OTP para registro pendiente.
+  Future<bool> resendOtp() async {
+    if (_pendingRegistrationId == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.resendOtp(_pendingRegistrationId!);
+    result.when(success: (_) {}, failure: (e) => _error = e.message);
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
   }
   
 
@@ -761,6 +824,10 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-  
+  void clearPendingRegistration() {
+    _pendingRegistrationId = null;
+    _pendingEmail = null;
+    notifyListeners();
+  }
 }
 

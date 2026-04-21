@@ -14,6 +14,7 @@ class SocketService {
   static SocketService get instance => _instance;
 
   sio.Socket? _socket;
+  int? _currentUserId;
   final List<void Function(int userId)> _deactivationListeners = [];
   final List<void Function(Map<String, dynamic>)> _notificationListeners = [];
 
@@ -21,10 +22,23 @@ class SocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
-  // ── Conectar al servidor ────────────────────────────────────
+  // ── Reconectar para un usuario específico (login / cambio de cuenta) ───
+  /// Fuerza desconexión total y reconexión fresca uniendo la sala user_{userId}.
+  void reconnectForUser(String baseUrl, int userId) {
+    _currentUserId = userId;
+    _socket?.disconnect();
+    _socket?.dispose();
+    _socket = null;
+    _connect(baseUrl);
+  }
+
+  // ── Conectar al servidor (primera vez o tras reconnectForUser) ─────────
   void connect(String baseUrl) {
     if (_socket != null && _socket!.connected) return;
+    _connect(baseUrl);
+  }
 
+  void _connect(String baseUrl) {
     _socket = sio.io(
       baseUrl,
       sio.OptionBuilder()
@@ -38,6 +52,11 @@ class SocketService {
 
     _socket!.onConnect((_) {
       debugPrint('[Socket] Conectado al servidor');
+      // Unirse a la sala del usuario para recibir notificaciones dirigidas
+      if (_currentUserId != null) {
+        _socket!.emit('joinRoom', {'userId': _currentUserId});
+        debugPrint('[Socket] Unido a sala user_$_currentUserId');
+      }
     });
 
     _socket!.onDisconnect((_) {
@@ -103,6 +122,7 @@ class SocketService {
 
   // ── Desconectar (logout) ───────────────────────────────────
   void disconnect() {
+    _currentUserId = null;
     _deactivationListeners.clear();
     _notificationListeners.clear();
     _socket?.disconnect();

@@ -2,7 +2,8 @@
 
 import { X, Phone, MapPin, Star, ShieldCheck, Eye, EyeOff, Edit,
   Briefcase, Building2, Mail, Calendar, BarChart2, Image as ImageIcon,
-  CheckCircle, Clock, XCircle } from 'lucide-react';
+  CheckCircle, Clock, XCircle, MessageCircle, CreditCard, Shield, Hash,
+  Truck, Package, Crown } from 'lucide-react';
 import { Provider, VerificationProvider } from '@/lib/api';
 
 type AnyProvider = Provider | VerificationProvider;
@@ -160,7 +161,65 @@ export function ProviderDetailModal({ provider, onClose, onEdit }: Props) {
             </section>
           )}
 
-          {/* Localidad (siempre visible) */}
+          {/* Contacto adicional */}
+          {((provider as any).whatsapp) && (
+            <section>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">WhatsApp</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <InfoRow icon={<MessageCircle size={14} className="text-green-400"/>} label="WhatsApp" value={(provider as any).whatsapp} />
+              </div>
+            </section>
+          )}
+
+          {/* Datos legales (solo OFICIO) */}
+          {provider.type === 'OFICIO' && (provider as any).dni && (
+            <section>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Datos del profesional</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(provider as any).dni && <InfoRow icon={<Hash size={14} className="text-gray-400"/>} label="DNI" value={(provider as any).dni} />}
+              </div>
+            </section>
+          )}
+
+          {/* Datos legales (solo NEGOCIO) */}
+          {provider.type === 'NEGOCIO' && ((provider as any).ruc || (provider as any).nombreComercial) && (
+            <section>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Datos del negocio</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(provider as any).ruc && <InfoRow icon={<Hash size={14} className="text-gray-400"/>} label="RUC" value={(provider as any).ruc} />}
+                {(provider as any).nombreComercial && <InfoRow icon={<Building2 size={14} className="text-purple-400"/>} label="Nombre comercial" value={(provider as any).nombreComercial} />}
+                {(provider as any).razonSocial && <InfoRow icon={<Building2 size={14} className="text-purple-400"/>} label="Razón social" value={(provider as any).razonSocial} className="sm:col-span-2" />}
+                {(provider as any).hasDelivery !== undefined && (
+                  <InfoRow
+                    icon={(provider as any).hasDelivery ? <Truck size={14} className="text-cyan-400"/> : <Package size={14} className="text-gray-500"/>}
+                    label="Delivery"
+                    value={(provider as any).hasDelivery ? 'Sí ofrece' : 'No ofrece'}
+                  />
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Suscripción y Trust */}
+          <section>
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Plan y confianza</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <MetricBox
+                icon={<Crown size={14} className={(provider as any).subscription?.plan === 'PREMIUM' ? 'text-yellow-400' : (provider as any).subscription?.plan === 'ESTANDAR' ? 'text-cyan-400' : 'text-gray-500'}/>}
+                label="Plan"
+                value={(provider as any).subscription?.plan ?? 'GRATIS'}
+                sub={(provider as any).subscription?.status ?? '—'}
+              />
+              <MetricBox
+                icon={<Shield size={14} className={(provider as any).isTrusted ? 'text-green-400' : 'text-gray-500'}/>}
+                label="Validación"
+                value={(provider as any).isTrusted ? 'Confiable' : ((provider as any).trustStatus ?? 'NONE')}
+                sub={(provider as any).isTrusted ? 'Badge activo' : ''}
+              />
+            </div>
+          </section>
+
+          {/* Localidad */}
           <section>
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Ubicación</h3>
             <div className="grid grid-cols-2 gap-3">
@@ -170,14 +229,28 @@ export function ProviderDetailModal({ provider, onClose, onEdit }: Props) {
                 value={provider.locality?.name ?? '—'}
                 sub={(provider.locality as any)?.department ?? ''}
               />
-              <MetricBox
-                icon={<BarChart2 size={14} className="text-blue-400"/>}
-                label="Suscripción"
-                value={(provider as any).subscription?.plan ?? '—'}
-                sub={(provider as any).subscription?.status ?? '—'}
-              />
+              {((provider as any).department || (provider as any).district) && (
+                <MetricBox
+                  icon={<MapPin size={14} className="text-orange-400"/>}
+                  label="Zona registrada"
+                  value={(provider as any).district ?? (provider as any).province ?? '—'}
+                  sub={(provider as any).department ?? ''}
+                />
+              )}
             </div>
+            {((provider as any).address) && (
+              <div className="mt-3">
+                <InfoRow icon={<MapPin size={14} className="text-orange-400"/>} label="Dirección" value={(provider as any).address} />
+              </div>
+            )}
           </section>
+
+          {/* Fecha de registro */}
+          {(provider as any).createdAt && (
+            <div className="text-xs text-gray-600 text-right">
+              Registrado el {fmt((provider as any).createdAt)}
+            </div>
+          )}
 
           {/* Métricas de reseñas — solo cuando el proveedor está aprobado */}
           {provider.verificationStatus === 'APROBADO' && (

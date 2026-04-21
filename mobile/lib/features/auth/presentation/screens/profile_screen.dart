@@ -14,7 +14,6 @@ import 'onboarding_screen.dart';
 import 'saved_accounts_screen.dart';
 import 'login_screen.dart';
 import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';
-import '../../../../shared/widgets/location_picker_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -379,33 +378,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 20),
 
-          // ── Ubicación ─────────────────────────────────────
-          _SectionTitle(title: 'Mi Ubicación'),
-          const SizedBox(height: 12),
-          _LocationCard(
-            auth: auth,
-            onEdit: () async {
-              final result = await LocationPickerSheet.show(
-                context,
-                initialDepartment: auth.user?.department,
-                initialProvince:   auth.user?.province,
-                initialDistrict:   auth.user?.district,
-              );
-              if (result != null && context.mounted) {
-                await saveUserLocation(context, result);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Ubicación actualizada: ${result.district}, ${result.province}'),
-                      backgroundColor: AppColors.available,
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-          const SizedBox(height: 28),
-
           // ── Acciones de perfil ────────────────────────────
           _SectionTitle(title: 'Gestión de cuenta'),
           const SizedBox(height: 12),
@@ -721,79 +693,6 @@ class _AccountTypeBadge extends StatelessWidget {
   }
 }
 
-// ── Tarjeta de ubicación ──────────────────────────────────────
-
-class _LocationCard extends StatelessWidget {
-  final AuthProvider auth;
-  final VoidCallback onEdit;
-  const _LocationCard({required this.auth, required this.onEdit});
-
-  @override
-  Widget build(BuildContext context) {
-    final c    = context.colors;
-    final user = auth.user;
-    final hasLocation = user?.hasLocation ?? false;
-
-    return GestureDetector(
-      onTap: onEdit,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: c.bgCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: hasLocation
-                ? AppColors.primary.withValues(alpha: 0.3)
-                : AppColors.busy.withValues(alpha: 0.4),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                color: hasLocation
-                    ? AppColors.primary.withValues(alpha: 0.12)
-                    : AppColors.busy.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                hasLocation ? Icons.location_on_rounded : Icons.location_off_rounded,
-                color: hasLocation ? AppColors.primary : AppColors.busy,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    hasLocation ? user!.locationLabel : 'Sin ubicación configurada',
-                    style: TextStyle(
-                      color: c.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasLocation
-                        ? 'Los servicios se filtran según tu zona'
-                        : 'Configura tu zona para ver servicios cercanos',
-                    style: TextStyle(color: c.textSecondary, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(Icons.edit_rounded, color: AppColors.primary, size: 18),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
 export interface NotificationPayload {
   type: string;
@@ -35,14 +35,39 @@ export class EventsGateway {
    * ha sido desactivado. La app móvil filtra por su propio userId
    * y cierra sesión si coincide.
    */
+  /** Cliente se une a su sala personal para recibir notificaciones dirigidas. */
+  @SubscribeMessage('joinRoom')
+  handleJoinRoom(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    if (data?.userId) {
+      client.join(`user_${data.userId}`);
+    }
+  }
+
   emitUserDeactivated(userId: number) {
     this.server.emit('userDeactivated', { userId });
   }
 
   /**
-   * Notificación genérica. La app móvil filtra por targetUserId o targetRole.
+   * Notificación genérica.
+   * Si tiene targetUserId, emite solo a la sala user_{id} (cliente unido vía joinRoom).
+   * Si no, broadcast a todos (filtrado posterior en el cliente por targetRole).
    */
   emitNotification(payload: NotificationPayload) {
-    this.server.emit('notification', payload);
+    if (payload.targetUserId) {
+      this.server.to(`user_${payload.targetUserId}`).emit('notification', payload);
+    } else {
+      this.server.emit('notification', payload);
+    }
+  }
+
+  /**
+   * Evento broadcast para el panel de administración.
+   * Solo el panel admin escucha 'adminEvent'.
+   */
+  emitAdminEvent(event: 'NEW_PROVIDER' | 'PROVIDER_APPROVED' | 'PROVIDER_REJECTED' | 'NEW_PLAN_REQUEST' | 'PLAN_APPROVED' | 'METRICS_CHANGED' | 'USER_PENDING' | 'NEW_USER_VERIFIED', data?: Record<string, unknown>) {
+    this.server.emit('adminEvent', { event, data, timestamp: new Date().toISOString() });
   }
 }
