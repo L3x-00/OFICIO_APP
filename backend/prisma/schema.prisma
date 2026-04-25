@@ -94,6 +94,7 @@ model User {
   department    String?   // Departamento, ej: "Junín"
   province      String?   // Provincia, ej: "Huancayo"
   district      String?   // Distrito, ej: "El Tambo"
+  firebaseUid       String?   @unique  // UID de Firebase (login social)
   isActive          Boolean   @default(true)
   isEmailVerified   Boolean   @default(false)
   createdAt         DateTime  @default(now())

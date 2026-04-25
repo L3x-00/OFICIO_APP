@@ -10,12 +10,14 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus, NotificationType } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { MinioService } from '../common/minio.service.js';
 
 @Injectable()
 export class AdminService {
   constructor(
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
+    private minio: MinioService,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
@@ -332,6 +334,11 @@ async createProvider(data: {
     () => chars[Math.floor(Math.random() * chars.length)],
   ).join('');
 
+  // Upload images to R2 before transaction
+  const imageUrls: string[] = files && files.length > 0
+    ? await Promise.all(files.map(f => this.minio.uploadFile(f.buffer, f.originalname, 'providers/gallery')))
+    : [];
+
   const result = await this.prisma.$transaction(async (tx) => {
     // 1. Crear Usuario
     const user = await tx.user.create({
@@ -380,15 +387,13 @@ async createProvider(data: {
       include: { category: true, locality: true },
     });
 
-    // 3. NUEVO: GUARDAR IMÁGENES EN LA TABLA provider_images
-    if (files && files.length > 0) {
-      const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000';
-      
+    // 3. GUARDAR IMÁGENES EN LA TABLA provider_images
+    if (imageUrls.length > 0) {
       await tx.providerImage.createMany({
-        data: files.map((file, index) => ({
+        data: imageUrls.map((url, index) => ({
           providerId: provider.id,
-          url: `${baseUrl}/uploads/providers/gallery/${file.filename}`,
-          isCover: index === 0, // La primera foto es la de portada por defecto
+          url,
+          isCover: index === 0,
           order: index,
         })),
       });

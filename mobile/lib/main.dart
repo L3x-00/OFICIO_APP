@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
@@ -19,19 +21,35 @@ import 'features/notifications/presentation/screens/notifications_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: themeProvider),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
-        ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
-      ],
-      child: const ConfiServApp(),
+  // DSN configurado en build con --dart-define=SENTRY_DSN=https://...
+  // Si no se provee, Sentry queda deshabilitado (no lanza errores).
+  const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = sentryDsn;
+      options.environment = const String.fromEnvironment(
+        'ENVIRONMENT',
+        defaultValue: 'development',
+      );
+      options.tracesSampleRate = 0.2;
+      options.debug = false;
+    },
+    appRunner: () => runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: themeProvider),
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+          ChangeNotifierProvider(create: (_) => DashboardProvider()),
+          ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ],
+        child: const ConfiServApp(),
+      ),
     ),
   );
 }

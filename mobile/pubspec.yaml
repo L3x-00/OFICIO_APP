@@ -42,12 +42,47 @@ dependencies:
   permission_handler: ^11.3.1
   geolocator: ^13.0.2
 
+  # Firebase — autenticación social
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.6.0
+  google_sign_in: ^6.2.2
+  flutter_facebook_auth: ^7.1.1
+
+  # Monitoreo de errores en producción
+  sentry_flutter: ^8.14.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.13.1
   json_serializable: ^6.13.1
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.5
+
+# ── Configuración de ícono de app ───────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo/logo_light.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo/logo_light.png"
+
+# ── Configuración de splash screen ──────────────────────────
+flutter_native_splash:
+  color: "#FFFFFF"
+  color_dark: "#1A1A1A"
+  image: assets/images/logo/logo_light.png
+  image_dark: assets/images/logo/logo_dark.png
+  android_12:
+    image: assets/images/logo/logo_light.png
+    icon_background_color: "#FFFFFF"
+    image_dark: assets/images/logo/logo_dark.png
+    icon_background_color_dark: "#1A1A1A"
+  fullscreen: false
+  android: true
+  ios: true
 
 flutter:
   uses-material-design: true

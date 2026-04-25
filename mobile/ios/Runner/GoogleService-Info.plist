@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  INSTRUCCIONES:
+  1. Ve a https://console.firebase.google.com
+  2. Selecciona tu proyecto
+  3. Agrega una app iOS con Bundle ID: com.oficioapp.mobile
+  4. Descarga el GoogleService-Info.plist real y reemplaza este archivo
+  ALTERNATIVA: ejecuta 'flutterfire configure' desde mobile/ (requiere Firebase CLI)
+-->
+<plist version="1.0">
+<dict>
+  <key>CLIENT_ID</key>
+  <string>REEMPLAZAR.apps.googleusercontent.com</string>
+  <key>REVERSED_CLIENT_ID</key>
+  <string>com.googleusercontent.apps.REEMPLAZAR</string>
+  <key>API_KEY</key>
+  <string>REEMPLAZAR</string>
+  <key>GCM_SENDER_ID</key>
+  <string>REEMPLAZAR</string>
+  <key>PLIST_VERSION</key>
+  <string>1</string>
+  <key>BUNDLE_ID</key>
+  <string>com.oficioapp.mobile</string>
+  <key>PROJECT_ID</key>
+  <string>REEMPLAZAR</string>
+  <key>STORAGE_BUCKET</key>
+  <string>REEMPLAZAR.appspot.com</string>
+  <key>IS_ADS_ENABLED</key>
+  <false/>
+  <key>IS_ANALYTICS_ENABLED</key>
+  <false/>
+  <key>IS_APPINVITE_ENABLED</key>
+  <true/>
+  <key>IS_GCM_ENABLED</key>
+  <true/>
+  <key>IS_SIGNIN_ENABLED</key>
+  <true/>
+  <key>GOOGLE_APP_ID</key>
+  <string>REEMPLAZAR</string>
+</dict>
+</plist>

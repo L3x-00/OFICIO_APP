@@ -8,10 +8,10 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { SendOtpDto } from './dto/send-otp.dto.js';
 import { VerifyOtpDto } from './dto/verify-otp.dto.js';
+import { SocialLoginDto } from './dto/social-login.dto.js';
 import { UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 
 @Controller('auth')
 export class AuthController {
@@ -30,15 +30,7 @@ export class AuthController {
   // Registro de perfil de proveedor (usuario ya autenticado)
   @UseGuards(JwtAuthGuard)
   @Post('register/provider')
-  @UseInterceptors(FilesInterceptor('images', 4, { // 'images' es la clave que usaremos en Flutter
-    storage: diskStorage({
-      destination: './uploads', // Asegúrate de que esta carpeta exista en la raíz del backend
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-      },
-    }),
-  }))
+  @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
   @HttpCode(HttpStatus.CREATED)
   async registerProvider(
     @Request() req: any, 
@@ -96,5 +88,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resendOtp(@Body() body: { pendingId: string }) {
     return this.authService.resendPendingOtp(body.pendingId);
+  }
+
+  // POST /auth/social-login — verifica idToken de Firebase y devuelve JWT propios
+  @Post('social-login')
+  @HttpCode(HttpStatus.OK)
+  async socialLogin(@Body() dto: SocialLoginDto) {
+    return this.authService.socialLogin(dto.idToken);
   }
 }

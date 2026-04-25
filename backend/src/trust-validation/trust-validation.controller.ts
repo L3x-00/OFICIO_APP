@@ -4,20 +4,11 @@ import {
   ParseIntPipe, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { TrustValidationService } from './trust-validation.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
-
-const trustStorage = diskStorage({
-  destination: './uploads/trust-validation',
-  filename: (_, file, cb) => {
-    const uid = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `${uid}${extname(file.originalname)}`);
-  },
-});
 
 @Controller('trust-validation')
 export class TrustValidationController {
@@ -32,7 +23,7 @@ export class TrustValidationController {
     { name: 'selfieWithDni', maxCount: 1 },
     { name: 'businessPhoto', maxCount: 1 },
     { name: 'ownerDniPhoto', maxCount: 1 },
-  ], { storage: trustStorage }))
+  ], { storage: memoryStorage() }))
   submitRequest(
     @Request() req: any,
     @Query('type') type = 'OFICIO',

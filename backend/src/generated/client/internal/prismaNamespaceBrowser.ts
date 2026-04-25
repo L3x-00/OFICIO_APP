@@ -105,6 +105,7 @@ export const UserScalarFieldEnum = {
   department: 'department',
   province: 'province',
   district: 'district',
+  firebaseUid: 'firebaseUid',
   isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
   createdAt: 'createdAt',

@@ -8,13 +8,19 @@ import { JwtStrategy } from './jwt.strategy.js';
 import { JwtAuthGuard } from './jwt.guard.js';
 import { RolesGuard } from './roles.guard.js';
 import { EventsModule } from '../events/events.module.js';
+import { EmailModule } from '../email/email.module.js';
+import { FirebaseModule } from '../firebase/firebase.module.js';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     PassportModule,
     EventsModule,
+    EmailModule,
+    FirebaseModule,
+    CacheModule.register(),
     JwtModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule ],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),

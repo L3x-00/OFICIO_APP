@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/social_login_button.dart';
+import '../../../../core/social_auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'otp_verification_screen.dart';
 
@@ -156,15 +157,32 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  void _socialLoginPlaceholder(String provider) {
-    final c = context.colors;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Inicio con $provider próximamente'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: c.bgCard,
-      ),
-    );
+  Future<void> _handleSocialLogin(SocialProvider provider) async {
+    final auth = context.read<AuthProvider>();
+
+    String? idToken;
+    if (provider == SocialProvider.google) {
+      idToken = await SocialAuthService.signInWithGoogle();
+    } else if (provider == SocialProvider.facebook) {
+      idToken = await SocialAuthService.signInWithFacebook();
+    }
+
+    if (idToken == null) return; // cancelado o error silencioso
+
+    final ok = await auth.loginWithSocial(idToken);
+
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.error ?? 'Error en inicio de sesión social'),
+          backgroundColor: AppColors.busy,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -302,12 +320,12 @@ class _LoginScreenState extends State<LoginScreen>
                 if (isRegister) ...[
                   SocialLoginButton(
                     provider: SocialProvider.google,
-                    onTap: () => _socialLoginPlaceholder('Google'),
+                    onTap: () => _handleSocialLogin(SocialProvider.google),
                   ),
                   const SizedBox(height: 10),
                   SocialLoginButton(
                     provider: SocialProvider.facebook,
-                    onTap: () => _socialLoginPlaceholder('Facebook'),
+                    onTap: () => _handleSocialLogin(SocialProvider.facebook),
                   ),
                   const SizedBox(height: 20),
                   // Divisor "O regístrate con tu correo"

@@ -46,6 +46,7 @@ export type UserMinAggregateOutputType = {
   department: string | null
   province: string | null
   district: string | null
+  firebaseUid: string | null
   isActive: boolean | null
   isEmailVerified: boolean | null
   createdAt: Date | null
@@ -64,6 +65,7 @@ export type UserMaxAggregateOutputType = {
   department: string | null
   province: string | null
   district: string | null
+  firebaseUid: string | null
   isActive: boolean | null
   isEmailVerified: boolean | null
   createdAt: Date | null
@@ -82,6 +84,7 @@ export type UserCountAggregateOutputType = {
   department: number
   province: number
   district: number
+  firebaseUid: number
   isActive: number
   isEmailVerified: number
   createdAt: number
@@ -110,6 +113,7 @@ export type UserMinAggregateInputType = {
   department?: true
   province?: true
   district?: true
+  firebaseUid?: true
   isActive?: true
   isEmailVerified?: true
   createdAt?: true
@@ -128,6 +132,7 @@ export type UserMaxAggregateInputType = {
   department?: true
   province?: true
   district?: true
+  firebaseUid?: true
   isActive?: true
   isEmailVerified?: true
   createdAt?: true
@@ -146,6 +151,7 @@ export type UserCountAggregateInputType = {
   department?: true
   province?: true
   district?: true
+  firebaseUid?: true
   isActive?: true
   isEmailVerified?: true
   createdAt?: true
@@ -251,6 +257,7 @@ export type UserGroupByOutputType = {
   department: string | null
   province: string | null
   district: string | null
+  firebaseUid: string | null
   isActive: boolean
   isEmailVerified: boolean
   createdAt: Date
@@ -292,6 +299,7 @@ export type UserWhereInput = {
   department?: Prisma.StringNullableFilter<"User"> | string | null
   province?: Prisma.StringNullableFilter<"User"> | string | null
   district?: Prisma.StringNullableFilter<"User"> | string | null
+  firebaseUid?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
   isEmailVerified?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -321,6 +329,7 @@ export type UserOrderByWithRelationInput = {
   department?: Prisma.SortOrderInput | Prisma.SortOrder
   province?: Prisma.SortOrderInput | Prisma.SortOrder
   district?: Prisma.SortOrderInput | Prisma.SortOrder
+  firebaseUid?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -342,6 +351,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: number
   email?: string
   phone?: string
+  firebaseUid?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -368,7 +378,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   recommendations?: Prisma.RecommendationListRelationFilter
   serviceRequests?: Prisma.ServiceRequestListRelationFilter
   penalty?: Prisma.XOR<Prisma.UserPenaltyNullableScalarRelationFilter, Prisma.UserPenaltyWhereInput> | null
-}, "id" | "email" | "phone">
+}, "id" | "email" | "phone" | "firebaseUid">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -382,6 +392,7 @@ export type UserOrderByWithAggregationInput = {
   department?: Prisma.SortOrderInput | Prisma.SortOrder
   province?: Prisma.SortOrderInput | Prisma.SortOrder
   district?: Prisma.SortOrderInput | Prisma.SortOrder
+  firebaseUid?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -408,6 +419,7 @@ export type UserScalarWhereWithAggregatesInput = {
   department?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   province?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   district?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  firebaseUid?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   isEmailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -425,6 +437,7 @@ export type UserCreateInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -454,6 +467,7 @@ export type UserUncheckedCreateInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -482,6 +496,7 @@ export type UserUpdateInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -511,6 +526,7 @@ export type UserUncheckedUpdateInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -540,6 +556,7 @@ export type UserCreateManyInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -557,6 +574,7 @@ export type UserUpdateManyMutationInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -575,6 +593,7 @@ export type UserUncheckedUpdateManyInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -593,6 +612,7 @@ export type UserCountOrderByAggregateInput = {
   department?: Prisma.SortOrder
   province?: Prisma.SortOrder
   district?: Prisma.SortOrder
+  firebaseUid?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -615,6 +635,7 @@ export type UserMaxOrderByAggregateInput = {
   department?: Prisma.SortOrder
   province?: Prisma.SortOrder
   district?: Prisma.SortOrder
+  firebaseUid?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -633,6 +654,7 @@ export type UserMinOrderByAggregateInput = {
   department?: Prisma.SortOrder
   province?: Prisma.SortOrder
   district?: Prisma.SortOrder
+  firebaseUid?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -841,6 +863,7 @@ export type UserCreateWithoutOtpCodesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -869,6 +892,7 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -912,6 +936,7 @@ export type UserUpdateWithoutOtpCodesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -940,6 +965,7 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -967,6 +993,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -995,6 +1022,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1038,6 +1066,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1066,6 +1095,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1093,6 +1123,7 @@ export type UserCreateWithoutProvidersInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1121,6 +1152,7 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1164,6 +1196,7 @@ export type UserUpdateWithoutProvidersInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1192,6 +1225,7 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1219,6 +1253,7 @@ export type UserCreateWithoutReviewsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1247,6 +1282,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1290,6 +1326,7 @@ export type UserUpdateWithoutReviewsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1318,6 +1355,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1345,6 +1383,7 @@ export type UserCreateWithoutReviewRepliesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1373,6 +1412,7 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1416,6 +1456,7 @@ export type UserUpdateWithoutReviewRepliesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1444,6 +1485,7 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1471,6 +1513,7 @@ export type UserCreateWithoutFavoritesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1499,6 +1542,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1542,6 +1586,7 @@ export type UserUpdateWithoutFavoritesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1570,6 +1615,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1597,6 +1643,7 @@ export type UserCreateWithoutRecommendationsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1625,6 +1672,7 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1668,6 +1716,7 @@ export type UserUpdateWithoutRecommendationsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1696,6 +1745,7 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1723,6 +1773,7 @@ export type UserCreateWithoutProviderReportsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1751,6 +1802,7 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1794,6 +1846,7 @@ export type UserUpdateWithoutProviderReportsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1822,6 +1875,7 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1849,6 +1903,7 @@ export type UserCreateWithoutPlatformIssuesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1877,6 +1932,7 @@ export type UserUncheckedCreateWithoutPlatformIssuesInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -1920,6 +1976,7 @@ export type UserUpdateWithoutPlatformIssuesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1948,6 +2005,7 @@ export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1975,6 +2033,7 @@ export type UserCreateWithoutServiceRequestsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -2003,6 +2062,7 @@ export type UserUncheckedCreateWithoutServiceRequestsInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -2046,6 +2106,7 @@ export type UserUpdateWithoutServiceRequestsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2074,6 +2135,7 @@ export type UserUncheckedUpdateWithoutServiceRequestsInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2101,6 +2163,7 @@ export type UserCreateWithoutPenaltyInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -2129,6 +2192,7 @@ export type UserUncheckedCreateWithoutPenaltyInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  firebaseUid?: string | null
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: Date | string
@@ -2172,6 +2236,7 @@ export type UserUpdateWithoutPenaltyInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2200,6 +2265,7 @@ export type UserUncheckedUpdateWithoutPenaltyInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2340,6 +2406,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   department?: boolean
   province?: boolean
   district?: boolean
+  firebaseUid?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
@@ -2370,6 +2437,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   department?: boolean
   province?: boolean
   district?: boolean
+  firebaseUid?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
@@ -2388,6 +2456,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   department?: boolean
   province?: boolean
   district?: boolean
+  firebaseUid?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
@@ -2406,13 +2475,14 @@ export type UserSelectScalar = {
   department?: boolean
   province?: boolean
   district?: boolean
+  firebaseUid?: boolean
   isActive?: boolean
   isEmailVerified?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "department" | "province" | "district" | "isActive" | "isEmailVerified" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "department" | "province" | "district" | "firebaseUid" | "isActive" | "isEmailVerified" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   providers?: boolean | Prisma.User$providersArgs<ExtArgs>
   favorites?: boolean | Prisma.User$favoritesArgs<ExtArgs>
@@ -2457,6 +2527,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     department: string | null
     province: string | null
     district: string | null
+    firebaseUid: string | null
     isActive: boolean
     isEmailVerified: boolean
     createdAt: Date
@@ -2906,6 +2977,7 @@ export interface UserFieldRefs {
   readonly department: Prisma.FieldRef<"User", 'String'>
   readonly province: Prisma.FieldRef<"User", 'String'>
   readonly district: Prisma.FieldRef<"User", 'String'>
+  readonly firebaseUid: Prisma.FieldRef<"User", 'String'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
   readonly isEmailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

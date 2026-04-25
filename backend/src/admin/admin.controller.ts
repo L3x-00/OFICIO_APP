@@ -6,10 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'node:path';
-import { existsSync, mkdirSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { memoryStorage } from 'multer';
 
 import { AdminService } from './admin.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
@@ -19,19 +16,6 @@ import { CreateProviderDto } from './dto/create-provider.dto.js';
 import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
-
-// ── CONFIGURACIÓN DE ALMACENAMIENTO ────────────────────────
-const providerStorage = diskStorage({
-  destination: (_req, _file, cb) => {
-    const path = './uploads/providers/gallery'; 
-    if (!existsSync(path)) mkdirSync(path, { recursive: true });
-    cb(null, path);
-  },
-  filename: (_req, file, cb) => {
-    const uniqueName = randomUUID();
-    cb(null, `${uniqueName}${extname(file.originalname).toLowerCase()}`);
-  },
-});
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -72,7 +56,7 @@ export class AdminController {
 
   @Post('providers')
   // 'images' es el nombre del campo en el FormData, permitimos hasta 4 fotos
-  @UseInterceptors(FilesInterceptor('images', 4, { storage: providerStorage }))
+  @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
   createProvider(
     @Body() body: CreateProviderDto, 
     @UploadedFiles() files: Express.Multer.File[]

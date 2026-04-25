@@ -6,6 +6,9 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { EventsGateway } from '../events/events.gateway.js';
+import { EmailService } from '../email/email.service.js';
+import { FirebaseService } from '../firebase/firebase.service.js';
+import { MinioService } from '../common/minio.service.js';
 import { randomUUID } from 'crypto';
 
 // OTP_EXPIRY_MS: 10 minutos
@@ -20,6 +23,9 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private eventsGateway: EventsGateway,
+    private emailService: EmailService,
+    private firebaseService: FirebaseService,
+    private minio: MinioService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -67,9 +73,14 @@ export class AuthService {
     });
     this.eventsGateway.emitAdminEvent('USER_PENDING', { firstName: data.firstName, lastName: data.lastName, email: data.email });
 
-    // Consola para depuración
+    // Enviar OTP por email (no lanza excepción si falla — el registro sigue adelante)
+    this.emailService.sendOtpEmail(data.email, otpCode).catch((err) =>
+      console.error(`[EMAIL ERROR] No se pudo enviar OTP a ${data.email}:`, err?.message),
+    );
+
+    // Consola para depuración (siempre visible en logs del servidor)
     console.log('------------------------------------------------');
-    console.log(`🔥 [MODO DESARROLLO] Código OTP para ${data.email}: ${otpCode}`);
+    console.log(`🔥 OTP para ${data.email}: ${otpCode}`);
     console.log(`🆔 PendingID: ${pendingId}`);
     console.log('------------------------------------------------');
 
@@ -152,6 +163,11 @@ data: {
       categoryId = firstCategory?.id ?? 1;
     }
 
+    // Upload images to R2 before transaction
+    const imageUrls: string[] = files && files.length > 0
+      ? await Promise.all(files.map(f => this.minio.uploadFile(f.buffer, f.originalname, 'providers/gallery')))
+      : [];
+
     const provider = await this.prisma.$transaction(async (tx) => {
       // El rol del usuario se mantiene como USUARIO hasta que el admin APRUEBE.
       // La suscripción de gracia también se crea al momento de la aprobación.
@@ -188,19 +204,16 @@ data: {
               },
         },
       });
-      // ─── BLOQUE NUEVO PARA LAS FOTOS ───────────────────────
-    // 3. Si vienen archivos, los guardamos usando el modelo ProviderImage
-    if (files && files.length > 0) {
+      if (imageUrls.length > 0) {
       await tx.providerImage.createMany({
-        data: files.map((file, index) => ({
+        data: imageUrls.map((url, index) => ({
           providerId: newProvider.id,
-          url: `/uploads/${file.filename}`, // Ruta relativa a la carpeta de uploads
-          isCover: index === 0,             // La primera foto será la de portada
-          order: index,                     // Mantiene el orden enviado desde el celular
+          url,
+          isCover: index === 0,
+          order: index,
         })),
       });
     }
-    // ───────────────────────────────────────────────────────
 
       return newProvider;
     });
@@ -464,16 +477,85 @@ data: {
     const otpTtlMs  = OTP_EXPIRY_MS;
     await this.cacheManager.set(`pending_otp:${pendingId}`, newCode, otpTtlMs);
 
-    // CORRECCIÓN 2: Añadido Log para ver el nuevo código en consola
+    // Recuperar email del registro pendiente para reenviar
+    const reg = JSON.parse(rawData) as { email: string };
+    this.emailService.sendOtpEmail(reg.email, newCode).catch((err) =>
+      console.error(`[EMAIL ERROR] No se pudo reenviar OTP a ${reg.email}:`, err?.message),
+    );
+
     console.log('------------------------------------------------');
-    console.log(`🔄 [REENVÍO] Nuevo código OTP generado: ${newCode}`);
-    console.log(`🆔 PendingID asociado: ${pendingId}`);
+    console.log(`🔄 [REENVÍO] Nuevo código OTP para ${reg.email}: ${newCode}`);
+    console.log(`🆔 PendingID: ${pendingId}`);
     console.log('------------------------------------------------');
 
     if (this.config.get('NODE_ENV') !== 'production') {
       return { message: 'Nuevo código enviado', _devCode: newCode };
     }
     return { message: 'Nuevo código enviado al email registrado' };
+  }
+
+  // ── SOCIAL LOGIN (Firebase idToken) ─────────────────────
+  async socialLogin(idToken: string) {
+    // Verificar token con Firebase Admin
+    const decoded = await this.firebaseService.verifyIdToken(idToken);
+    const { uid, email, name, picture } = decoded;
+
+    if (!email) {
+      throw new BadRequestException('La cuenta social no tiene email asociado. Usa otro método de registro.');
+    }
+
+    // Buscar usuario por firebaseUid (login recurrente) o email (vinculación)
+    let user = await this.prisma.user.findFirst({
+      where: { OR: [{ firebaseUid: uid }, { email }] },
+    });
+
+    if (!user) {
+      // Primer acceso: crear cuenta automáticamente
+      const nameParts = ((name as string | undefined) ?? '').trim().split(/\s+/);
+      const firstName = nameParts[0] ?? '';
+      const lastName  = nameParts.slice(1).join(' ') || '';
+      // Hash inutilizable: los usuarios sociales no pueden hacer login con contraseña
+      const dummyHash = await bcrypt.hash(`FIREBASE_SOCIAL_${uid}`, 10);
+
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash:    dummyHash,
+          firstName,
+          lastName,
+          avatarUrl:       (picture as string | undefined) ?? null,
+          firebaseUid:     uid,
+          role:            'USUARIO',
+          isEmailVerified: true,
+        },
+      });
+
+      this.eventsGateway.emitNotification({
+        type: 'NEW_USER_VERIFIED',
+        title: 'Nuevo usuario (login social)',
+        body: `${firstName} ${lastName} (${email}) se registró mediante login social.`,
+        targetRole: 'ADMIN',
+      });
+    } else if (!user.firebaseUid) {
+      // Vincular cuenta existente al UID de Firebase
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { firebaseUid: uid },
+      });
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Tu cuenta está desactivada. Contacta al soporte.');
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    return {
+      ...tokens,
+      firstName: user.firstName,
+      lastName:  user.lastName,
+      phone:     user.phone,
+      avatarUrl: user.avatarUrl,
+    };
   }
 
   // ── HELPER: GENERAR TOKENS ───────────────────────────────

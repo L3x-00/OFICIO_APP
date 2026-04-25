@@ -60,6 +60,42 @@ class AuthRepository {
     }
   }
 
+  // ── SOCIAL LOGIN (Firebase idToken) ──────────────────────
+  Future<ApiResult<UserModel>> socialLogin(String idToken) async {
+    try {
+      final response = await _dio.post('/auth/social-login', data: {'idToken': idToken});
+      final data = response.data as Map<String, dynamic>;
+
+      final user = UserModel(
+        id:        data['userId'] as int,
+        email:     data['email']     as String? ?? '',
+        firstName: data['firstName'] as String? ?? '',
+        lastName:  data['lastName']  as String? ?? '',
+        role:      data['role']      as String? ?? 'USUARIO',
+        avatarUrl: data['avatarUrl'] as String?,
+        phone:     data['phone']     as String?,
+      );
+
+      await AuthLocalStorage.saveSession(
+        accessToken:  data['accessToken']  as String,
+        refreshToken: data['refreshToken'] as String,
+        user:         user,
+      );
+      DioClient.instance.setTokens(
+        accessToken:  data['accessToken']  as String,
+        refreshToken: data['refreshToken'] as String,
+      );
+
+      return Success(user);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error en login social'),
+      );
+    }
+  }
+
   // ── REGISTRO ──────────────────────────────────────────────
   // Devuelve pendingId para usar en verifyOtp. NO crea sesión aún.
   Future<ApiResult<Map<String, dynamic>>> register({

@@ -4,10 +4,12 @@ import { AdminController } from './admin.controller.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { EventsModule } from '../events/events.module.js';
+import { CacheModule } from '@nestjs/cache-manager'; 
 
 @Module({
-  imports: [AuthModule, EventsModule],
+  imports: [AuthModule, EventsModule, CacheModule.register()],
   controllers: [AdminController],
   providers: [AdminService, RolesGuard],
+  
 })
 export class AdminModule {}

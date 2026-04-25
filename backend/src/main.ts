@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/nestjs';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
@@ -7,13 +9,32 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'node:path';
 import { DiagnosticInterceptor } from './common/interceptors/diagnostic.interceptor.js';
 
+// Sentry debe inicializarse ANTES de crear la app NestJS
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV ?? 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 1.0,
+    profilesSampleRate: 1.0,
+    integrations: [nodeProfilingIntegration()],
+  });
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // 1. CONFIGURACIÓN DE RED Y SEGURIDAD
+  // 1. CORS — restrictivo en producción, abierto en desarrollo
+  const isProd = process.env.NODE_ENV === 'production';
+  const allowedOrigins = isProd
+    ? (process.env.ALLOWED_ORIGINS ?? 'https://admin.tudominio.com')
+        .split(',')
+        .map((o) => o.trim())
+    : true;
+
   app.enableCors({
-    origin: true, 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: process.env.NODE_ENV === 'production'
+      ? process.env.ALLOWED_ORIGINS?.split(',') ?? '*'
+      : '*',
     credentials: true,
   });
 

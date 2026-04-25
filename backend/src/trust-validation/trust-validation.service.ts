@@ -1,14 +1,14 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
-import { join } from 'path';
-import { existsSync, unlinkSync } from 'fs';
+import { MinioService } from '../common/minio.service.js';
 
 @Injectable()
 export class TrustValidationService {
   constructor(
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
+    private minio: MinioService,
   ) {}
 
   // ── PROVEEDOR: Enviar solicitud ──────────────────────────
@@ -45,8 +45,17 @@ export class TrustValidationService {
       throw new BadRequestException('Ya tienes una solicitud de validación pendiente');
     }
 
-    const buildUrl = (f?: Express.Multer.File) =>
-      f ? `/uploads/trust-validation/${f.filename}` : undefined;
+    const uploadOpt = async (f?: Express.Multer.File) =>
+      f ? this.minio.uploadFile(f.buffer, f.originalname, 'trust-validation') : undefined;
+
+    const [dniPhotoFrontUrl, dniPhotoBackUrl, selfieWithDniUrl, businessPhotoUrl, ownerDniPhotoUrl] =
+      await Promise.all([
+        uploadOpt(files.dniPhotoFront?.[0]),
+        uploadOpt(files.dniPhotoBack?.[0]),
+        uploadOpt(files.selfieWithDni?.[0]),
+        uploadOpt(files.businessPhoto?.[0]),
+        uploadOpt(files.ownerDniPhoto?.[0]),
+      ]);
 
     const request = await this.prisma.trustValidationRequest.create({
       data: {
@@ -58,11 +67,11 @@ export class TrustValidationService {
         dniAddress:      fields.dniAddress,
         rucNumber:       fields.rucNumber,
         businessAddress: fields.businessAddress,
-        dniPhotoFrontUrl: buildUrl(files.dniPhotoFront?.[0]),
-        dniPhotoBackUrl:  buildUrl(files.dniPhotoBack?.[0]),
-        selfieWithDniUrl: buildUrl(files.selfieWithDni?.[0]),
-        businessPhotoUrl: buildUrl(files.businessPhoto?.[0]),
-        ownerDniPhotoUrl: buildUrl(files.ownerDniPhoto?.[0]),
+        dniPhotoFrontUrl,
+        dniPhotoBackUrl,
+        selfieWithDniUrl,
+        businessPhotoUrl,
+        ownerDniPhotoUrl,
       },
     });
 

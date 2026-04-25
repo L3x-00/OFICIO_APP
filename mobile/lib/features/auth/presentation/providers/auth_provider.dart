@@ -369,6 +369,38 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
+  // ── LOGIN SOCIAL ────────────────────────────────────────
+  Future<bool> loginWithSocial(String idToken) async {
+    _isGuest = false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final result = await _repo.socialLogin(idToken);
+
+    result.when(
+      success: (user) {
+        _user = user;
+        _needsOnboarding = (user.role == null || user.role.isEmpty);
+      },
+      failure: (e) => _error = e.message,
+    );
+
+    if (result.isSuccess && _user != null) {
+      _providerProfiles.clear();
+      _activeProfileType = null;
+      _providerVerificationStatus = null;
+      _verificationStatusByType.clear();
+      _rejectionReasonByType.clear();
+      await _syncProviderStatus();
+      _connectSocketForUser(_user!.id);
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return result.isSuccess;
+  }
+
   /// true cuando el último intento de guardar cuenta falló por límite (máx. 3)
   bool _savedAccountLimitReached = false;
   bool get savedAccountLimitReached => _savedAccountLimitReached;

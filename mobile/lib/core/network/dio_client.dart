@@ -8,9 +8,12 @@ class DioClient {
 
   late final Dio dio;
 
-  // Para Flutter Web en Chrome → localhost
-  // Para dispositivo físico → IP de tu máquina (ej: 192.168.1.X)
-  static const String baseUrl = 'http://192.168.1.65:3000';
+  // URL configurada en build con --dart-define=API_BASE_URL=https://...
+  // Si no se provee, usa la URL de desarrollo local.
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://192.168.1.65:3000',
+  );
 
   DioClient._internal() {
     dio = Dio(
