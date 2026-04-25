@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  getReports, exportUsersCSV, exportProvidersCSV, ReportsResponse,
+  getReports, exportUsersExcel, exportProvidersExcel, ReportsResponse,
   getProviderReports, markReportReviewed, ProviderReport, ProviderReportsResponse,
   getPlatformIssues, markPlatformIssueReviewed, PlatformIssue, PlatformIssuesResponse,
 } from '@/lib/api';
@@ -118,13 +118,12 @@ export function ReportsDashboard() {
     }
   };
 
-  const handleExport = (url: string, filename: string) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleExport = async (fn: () => Promise<void>, label: string) => {
+    try {
+      await fn();
+    } catch (e: any) {
+      toast.error(`Error al exportar ${label}: ${e?.message ?? 'desconocido'}`);
+    }
   };
 
   const tabs = [
@@ -172,18 +171,18 @@ export function ReportsDashboard() {
       {/* Botones de exportación */}
       <div className="flex gap-3 flex-wrap">
         <button
-          onClick={() => handleExport(exportUsersCSV(), 'usuarios.csv')}
+          onClick={() => handleExport(exportUsersExcel, 'usuarios')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1a1a1a] border border-white/10 text-gray-300 text-sm font-medium hover:border-blue-500/40 hover:text-blue-400 transition-all"
         >
           <Download size={14} />
-          Exportar usuarios CSV
+          Exportar usuarios Excel
         </button>
         <button
-          onClick={() => handleExport(exportProvidersCSV(), 'proveedores.csv')}
+          onClick={() => handleExport(exportProvidersExcel, 'proveedores')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1a1a1a] border border-white/10 text-gray-300 text-sm font-medium hover:border-purple-500/40 hover:text-purple-400 transition-all"
         >
           <Download size={14} />
-          Exportar proveedores CSV
+          Exportar proveedores Excel
         </button>
       </div>
 

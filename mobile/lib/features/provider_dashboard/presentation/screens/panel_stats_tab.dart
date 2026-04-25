@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../core/utils/plan_limits.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
@@ -18,8 +19,14 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
     final dash = context.watch<DashboardProvider>();
+    final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
+
+    // ── Plan GRATIS: Gestión de visitas bloqueada ─────────────
+    if (!PlanLimits.hasStatsAccess(plan)) {
+      return _StatsUpsellScreen(plan: plan);
+    }
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -582,3 +589,131 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
+// ─── Pantalla de upsell para plan GRATIS ─────────────────────
+
+class _StatsUpsellScreen extends StatelessWidget {
+  final String plan;
+  const _StatsUpsellScreen({required this.plan});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Scaffold(
+      backgroundColor: c.bg,
+      appBar: AppBar(
+        backgroundColor: c.bgCard,
+        title: Text('Estadísticas', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        automaticallyImplyLeading: false,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: AppColors.amber.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.amber.withValues(alpha: 0.3), width: 1.5),
+                ),
+                child: const Icon(Icons.bar_chart_rounded, color: AppColors.amber, size: 44),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Gestión de visitas',
+                style: TextStyle(color: c.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Las estadísticas de visitas, contactos y rendimiento de tu perfil están disponibles desde el plan Estándar.',
+                style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              // Beneficios de upgrade
+              _UpsellBenefit(icon: Icons.touch_app_rounded,  color: AppColors.primary,  text: 'Cuántas personas contactaron tu perfil'),
+              _UpsellBenefit(icon: Icons.chat_rounded,       color: AppColors.whatsapp, text: 'Contactos por WhatsApp vs llamadas'),
+              _UpsellBenefit(icon: Icons.show_chart_rounded, color: AppColors.amber,    text: 'Gráfico diario de actividad'),
+              _UpsellBenefit(icon: Icons.star_rounded,       color: AppColors.star,     text: 'Evolución de calificaciones'),
+              const SizedBox(height: 28),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.amber.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.workspace_premium_rounded, color: AppColors.amber, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Disponible desde Plan Estándar · S/ 29/mes',
+                      style: TextStyle(color: AppColors.amber, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navegar a la tab de ajustes (índice 4) para ver planes
+                    // Se usa el back para que el usuario use la nav bar
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Ve a Ajustes → Subir de rango para cambiar tu plan'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.amber,
+                    foregroundColor: const Color(0xFF3D2B00),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: const Text('Ver planes de suscripción', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _UpsellBenefit extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String text;
+  const _UpsellBenefit({required this.icon, required this.color, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 32, height: 32,
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: TextStyle(color: c.textSecondary, fontSize: 13))),
+        ],
+      ),
+    );
+  }
+}
+

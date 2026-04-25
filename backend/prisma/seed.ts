@@ -15,25 +15,42 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Iniciando seed limpio...');
-
   // ── 1. LIMPIEZA TOTAL ────────────────────────────────────
   console.log('🗑️  Borrando datos existentes...');
+
+  // 1.1. Tablas de Subastas y Ofertas (Hijos de ServiceRequest y Provider)
+  await prisma.offer.deleteMany();
+  await prisma.serviceRequest.deleteMany();
+  await prisma.userPenalty.deleteMany();
+
+  // 1.2. Tablas de Soporte, Pagos y Analíticas
   await prisma.providerAnalytic.deleteMany();
   await prisma.adminNotification.deleteMany();
-  await prisma.payment.deleteMany();
+  await prisma.yapePayment.deleteMany(); // En tu esquema es YapePayment, no Payment
+  await prisma.payment.deleteMany();     // También tienes una tabla Payment
+  await prisma.planRequest.deleteMany();
+  await prisma.reviewReply.deleteMany();
   await prisma.review.deleteMany();
   await prisma.favorite.deleteMany();
   await prisma.verificationDoc.deleteMany();
   await prisma.providerImage.deleteMany();
   await prisma.subscription.deleteMany();
+  await prisma.recommendation.deleteMany();
+  await prisma.providerReport.deleteMany();
+  await prisma.platformIssue.deleteMany();
+  await prisma.trustValidationRequest.deleteMany();
+
+  // 1.3. Tablas Principales (Padres)
   await prisma.provider.deleteMany();
   await prisma.otpCode.deleteMany();
   await prisma.refreshToken.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.user.deleteMany(); // Ahora sí, el User está libre de dependencias
+
+  // 1.4. Estructura base
   await prisma.category.updateMany({ data: { parentId: null } });
   await prisma.category.deleteMany();
   await prisma.locality.deleteMany();
+
   console.log('✅ Base de datos limpia');
 
   // ── 2. LOCALIDADES ───────────────────────────────────────

@@ -14,6 +14,8 @@ import 'onboarding_screen.dart';
 import 'saved_accounts_screen.dart';
 import 'login_screen.dart';
 import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';
+import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
+import '../../../../features/subastas/presentation/screens/my_requests_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -396,6 +398,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: AppColors.primary,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _ActionButton(
+            icon: Icons.assignment_outlined,
+            label: 'Mis solicitudes',
+            color: AppColors.amber,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ChangeNotifierProvider(
+                  create: (_) => SubastasProvider(),
+                  child: const MyRequestsScreen(),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 28),

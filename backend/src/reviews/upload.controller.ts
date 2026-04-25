@@ -18,8 +18,9 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 //   Evidencia de reseñas  →  uploads/reviews/evidence/
 //   Fotos de proveedores  →  uploads/providers/
 const SUBFOLDERS = {
-  reviewEvidence: 'reviews/evidence',
-  provider:       'providers',
+  reviewEvidence:  'reviews/evidence',
+  provider:        'providers',
+  paymentVoucher:  'payments/vouchers',
 } as const;
 
 // ── Genera configuración de almacenamiento multer ─────────
@@ -98,5 +99,23 @@ export class UploadController {
   uploadProviderPhoto(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
     return { url: buildUrl(SUBFOLDERS.provider, file.filename) };
+  }
+
+  /**
+   * POST /upload/payment-voucher
+   * Almacena captura de comprobante Yape.
+   * Destino: uploads/payments/vouchers/<uuid>.<ext>
+   */
+  @Post('payment-voucher')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage:    makeStorage(SUBFOLDERS.paymentVoucher),
+      fileFilter: imageFilter,
+      limits:     { fileSize: MAX_SIZE },
+    }),
+  )
+  uploadPaymentVoucher(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No se recibió ninguna imagen');
+    return { url: buildUrl(SUBFOLDERS.paymentVoucher, file.filename) };
   }
 }

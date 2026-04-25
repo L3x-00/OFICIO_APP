@@ -115,7 +115,6 @@ class FavoritesScreen extends StatelessWidget {
 }
 
 // ── Estado invitado reutilizable ──────────────────────────
-
 class _GuestBody extends StatelessWidget {
   final IconData icon;
   final Color iconColor;

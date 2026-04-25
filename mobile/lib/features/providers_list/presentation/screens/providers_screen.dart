@@ -13,6 +13,9 @@ import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/auth/presentation/screens/login_screen.dart';
 import '../../../../features/favorites/presentation/providers/favorites_provider.dart';
 import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';
+import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
+import '../../../../features/subastas/presentation/screens/my_requests_screen.dart';
+import '../../../../features/subastas/presentation/screens/publish_request_sheet.dart';
 
 class ProvidersScreen extends StatelessWidget {
   const ProvidersScreen({super.key});
@@ -115,6 +118,8 @@ class _ProvidersViewState extends State<_ProvidersView>
           _SearchBar(),
           // ── Chips unificados: tipo + categoría ────────────
           _FilterBar(),
+          // ── Subasta ConfiServ banner ───────────────────────
+          const _SubastaBanner(),
           const Expanded(child: _ProvidersList()),
         ],
       ),
@@ -127,6 +132,88 @@ class _ProvidersViewState extends State<_ProvidersView>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _FilterSheet(prov: prov),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUBASTA CONFISERV BANNER
+// ═══════════════════════════════════════════════════════════
+
+class _SubastaBanner extends StatelessWidget {
+  const _SubastaBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final auth = context.watch<AuthProvider>();
+    if (auth.user == null || auth.user!.isProvider) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () async {
+        final nav = Navigator.of(context);
+        final result = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => SubastasProvider(),
+            child: const PublishRequestSheet(),
+          ),
+        );
+        if (result == true && context.mounted) {
+          nav.push(MaterialPageRoute(
+            builder: (_) => ChangeNotifierProvider(
+              create: (_) => SubastasProvider(),
+              child: const MyRequestsScreen(),
+            ),
+          ));
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0A2647), Color(0xFF144272)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.campaign_rounded,
+                  color: AppColors.primary, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('¿No encuentras lo que buscas?',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700)),
+                  Text('Publica tu necesidad y recibe ofertas',
+                      style: TextStyle(
+                          color: c.textMuted, fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                color: AppColors.primary, size: 14),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../core/utils/plan_limits.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/service_item_model.dart';
 
@@ -20,48 +21,65 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c    = context.colors;
     final dash = context.watch<DashboardProvider>();
-    final services = dash.services;
-    final label = widget.isNegocio ? 'productos' : 'servicios';
-    final labelSingular = widget.isNegocio ? 'producto' : 'servicio';
+    final services       = dash.services;
+    final plan           = dash.profile?.subscription?.plan ?? 'GRATIS';
+    final limit          = PlanLimits.items(plan, isNegocio: widget.isNegocio);
+    final atLimit        = !PlanLimits.canAddItem(plan, services.length, isNegocio: widget.isNegocio);
+    final label          = widget.isNegocio ? 'productos' : 'servicios';
+    final labelSingular  = widget.isNegocio ? 'producto' : 'servicio';
+    final limitLabel     = PlanLimits.itemsLabel(plan, isNegocio: widget.isNegocio);
 
     return Scaffold(
       backgroundColor: c.bg,
-      body: CustomScrollView(
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: AppColors.amber,
+          backgroundColor: c.bgCard,
+          onRefresh: () async {
+            final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+            await dash.loadDashboard(providerType: type);
+          },
+          child: CustomScrollView(
         slivers: [
           SliverAppBar(
             backgroundColor: c.bgCard,
             pinned: true,
             title: Text(
               widget.isNegocio ? 'Mis Productos' : 'Mis Servicios',
-              style: TextStyle(
-                color: c.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
             ),
             actions: [
               if (_isSaving)
                 const Padding(
                   padding: EdgeInsets.all(16),
                   child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: AppColors.amber,
-                      strokeWidth: 2,
-                    ),
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(color: AppColors.amber, strokeWidth: 2),
                   ),
                 ),
             ],
           ),
+
+          // ── Banner de límite de plan ────────────────────────
+          SliverToBoxAdapter(
+            child: _PlanLimitBanner(
+              plan:        plan,
+              current:     services.length,
+              limit:       limit,
+              isNegocio:   widget.isNegocio,
+              limitLabel:  limitLabel,
+            ),
+          ),
+
           if (services.isEmpty)
             SliverFillRemaining(
               child: _EmptyServices(
                 label: label,
                 labelSingular: labelSingular,
                 isNegocio: widget.isNegocio,
-                onAdd: () => _showServiceForm(context, dash),
+                onAdd: atLimit ? null : () => _showServiceForm(context, dash),
               ),
             )
           else ...[
@@ -71,22 +89,20 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                 child: Row(
                   children: [
                     Text(
-                      '${services.length} ${services.length == 1 ? labelSingular : label}',
+                      '${services.length}${limit < 999 ? '/$limit' : ''} ${services.length == 1 ? labelSingular : label}',
                       style: TextStyle(color: c.textSecondary, fontSize: 13),
                     ),
                     const Spacer(),
-                    TextButton.icon(
-                      onPressed: () => _showServiceForm(context, dash),
-                      icon: Icon(Icons.add_rounded, size: 18),
-                      label: Text('Añadir'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.amber,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                    if (!atLimit)
+                      TextButton.icon(
+                        onPressed: () => _showServiceForm(context, dash),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text('Añadir'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.amber,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -96,11 +112,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (ctx, i) => _ServiceCard(
-                    service: services[i],
-                    isNegocio: widget.isNegocio,
-                    onEdit: () =>
-                        _showServiceForm(context, dash, existing: services[i]),
-                    onDelete: () => _deleteService(context, dash, services[i]),
+                    service:    services[i],
+                    isNegocio:  widget.isNegocio,
+                    onEdit:     () => _showServiceForm(context, dash, existing: services[i]),
+                    onDelete:   () => _deleteService(context, dash, services[i]),
                   ),
                   childCount: services.length,
                 ),
@@ -109,12 +124,14 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
           ],
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
-      ),
-      floatingActionButton: services.isNotEmpty
+          ),  // CustomScrollView
+        ),    // RefreshIndicator
+      ),      // SafeArea
+      floatingActionButton: (services.isNotEmpty && !atLimit)
           ? FloatingActionButton(
               onPressed: () => _showServiceForm(context, dash),
               backgroundColor: AppColors.amber,
-              child: Icon(Icons.add_rounded, color: Colors.black),
+              child: const Icon(Icons.add_rounded, color: Colors.black),
             )
           : null,
     );
@@ -156,18 +173,18 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) {
+      builder: (sheetCtx) {
         return Padding(
           padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Center(
                 child: Container(
                   width: 40,
@@ -290,8 +307,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                   ),
                 ),
               ),
-            ],
-          ),
+                ],
+              ),      // Column
+            ),        // inner Padding
+          ),          // SingleChildScrollView
         );
       },
     );
@@ -455,16 +474,92 @@ class _ServiceCard extends StatelessWidget {
   }
 }
 
+// ─── Banner de límite de plan ─────────────────────────────────
+
+class _PlanLimitBanner extends StatelessWidget {
+  final String plan;
+  final int current;
+  final int limit;
+  final bool isNegocio;
+  final String limitLabel;
+
+  const _PlanLimitBanner({
+    required this.plan,
+    required this.current,
+    required this.limit,
+    required this.isNegocio,
+    required this.limitLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final atLimit = current >= limit && limit < 999;
+    final nearLimit = !atLimit && limit < 999 && current >= limit - 1 && limit > 1;
+    if (!atLimit && !nearLimit) return const SizedBox.shrink();
+
+    final noun = isNegocio ? 'productos' : 'servicios';
+    final c    = context.colors;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: (atLimit ? AppColors.busy : AppColors.amber).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: (atLimit ? AppColors.busy : AppColors.amber).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            atLimit ? Icons.lock_rounded : Icons.info_outline_rounded,
+            color: atLimit ? AppColors.busy : AppColors.amber,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  atLimit
+                      ? 'Límite alcanzado — plan ${plan.toLowerCase()}'
+                      : 'Te queda ${limit - current} $noun en tu plan',
+                  style: TextStyle(
+                    color: atLimit ? AppColors.busy : AppColors.amber,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  atLimit
+                      ? 'Tu plan permite $limitLabel. Sube al plan ${PlanLimits.nextPlan(plan)} para añadir más.'
+                      : 'Plan ${plan.toLowerCase()}: $limitLabel permitidos.',
+                  style: TextStyle(color: c.textSecondary, fontSize: 11, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Estado vacío ─────────────────────────────────────────────
+
 class _EmptyServices extends StatelessWidget {
   final String label;
   final String labelSingular;
   final bool isNegocio;
-  final VoidCallback onAdd;
+  final VoidCallback? onAdd;
 
   const _EmptyServices({
     required this.label,
     required this.labelSingular,
-    required this.onAdd,
+    this.onAdd,
     this.isNegocio = false,
   });
 

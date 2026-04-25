@@ -141,3 +141,23 @@ export type PlatformIssue = Prisma.PlatformIssueModel
  * 
  */
 export type TrustValidationRequest = Prisma.TrustValidationRequestModel
+/**
+ * Model ServiceRequest
+ * 
+ */
+export type ServiceRequest = Prisma.ServiceRequestModel
+/**
+ * Model Offer
+ * 
+ */
+export type Offer = Prisma.OfferModel
+/**
+ * Model YapePayment
+ * 
+ */
+export type YapePayment = Prisma.YapePaymentModel
+/**
+ * Model UserPenalty
+ * 
+ */
+export type UserPenalty = Prisma.UserPenaltyModel

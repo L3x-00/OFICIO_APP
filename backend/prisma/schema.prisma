@@ -50,6 +50,26 @@ enum VerificationStatus {
   RECHAZADO
 }
 
+enum ServiceRequestStatus {
+  OPEN        // Recibiendo ofertas
+  CLOSED      // Usuario eligió un proveedor
+  EXPIRED     // No se eligió en 24/48h
+  CANCELLED   // Usuario canceló
+}
+
+enum OfferStatus {
+  PENDING     // Esperando respuesta
+  ACCEPTED    // Proveedor ganó
+  REJECTED    // Otro fue elegido o expiró
+  WITHDRAWN   // Proveedor retiró su oferta
+}
+
+enum YapePaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum TrustStatus {
   NONE      // Sin solicitud de confianza
   PENDING   // Solicitud enviada, pendiente de revisión
@@ -88,7 +108,9 @@ model User {
   platformIssues  PlatformIssue[]     // Problemas reportados desde el panel del proveedor
   refreshTokens   RefreshToken[]      // Sesiones activas
   otpCodes        OtpCode[]           // Códigos OTP de verificación
-  recommendations Recommendation[]   // Proveedores recomendados
+  recommendations  Recommendation[]   // Proveedores recomendados
+  serviceRequests  ServiceRequest[]   // Solicitudes de servicio publicadas
+  penalty          UserPenalty?       // Penalización anti-arrepentimiento
 
   @@map("users")
 }
@@ -150,9 +172,10 @@ model Category {
   forType       String?     // 'OFICIO' | 'NEGOCIO' | null (ambos)
   isActive      Boolean     @default(true)
 
-  parent        Category?   @relation("SubCategories", fields: [parentId], references: [id])
-  children      Category[]  @relation("SubCategories")
-  providers     Provider[]
+  parent           Category?        @relation("SubCategories", fields: [parentId], references: [id])
+  children         Category[]       @relation("SubCategories")
+  providers        Provider[]
+  serviceRequests  ServiceRequest[]
 
   @@map("categories")
 }
@@ -204,7 +227,7 @@ model Provider {
   totalReviews            Int                 @default(0)
   totalRecommendations    Int                 @default(0)
 
-  // Prioridad de plan para ordenamiento: 1=PREMIUM, 2=ESTANDAR, 3=BASICO, 4=GRATIS/GRACIA
+  // Prioridad de plan para ordenamiento: 1=PREMIUM, 2=ESTANDAR, 3=GRATIS (BASICO legacy)
   // Se actualiza cuando el admin aprueba o cambia el plan. Nunca lo toca el proveedor.
   planPriority            Int                 @default(4)
 
@@ -228,6 +251,8 @@ model Provider {
   recommendations     Recommendation[]
   reports             ProviderReport[]
   trustValidations    TrustValidationRequest[]
+  offers              Offer[]
+  yapePayments        YapePayment[]
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
@@ -529,4 +554,100 @@ model TrustValidationRequest {
   @@index([status])
   @@index([providerId])
   @@map("trust_validation_requests")
+}
+
+// ─────────────────────────────────────────
+// SUBASTA CONFISERV
+// ─────────────────────────────────────────
+
+model ServiceRequest {
+  id               Int                   @id @default(autoincrement())
+  userId           Int
+  categoryId       Int
+  description      String
+  photoUrl         String?
+  budgetMin        Float?
+  budgetMax        Float?
+  desiredDate      DateTime?
+  latitude         Float?
+  longitude        Float?
+  department       String?
+  province         String?
+  district         String?
+  status           ServiceRequestStatus  @default(OPEN)
+  maxOffers        Int                   @default(5)
+  notifyRadiusKm   Float                 @default(5)
+  expiresAt        DateTime
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  user             User                  @relation(fields: [userId], references: [id])
+  category         Category              @relation(fields: [categoryId], references: [id])
+  offers           Offer[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([categoryId])
+  @@map("service_requests")
+}
+
+model Offer {
+  id               Int           @id @default(autoincrement())
+  serviceRequestId Int
+  providerId       Int
+  price            Float
+  message          String
+  status           OfferStatus   @default(PENDING)
+  arrivedAt        DateTime?
+  arrivedLat       Float?
+  arrivedLng       Float?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  provider         Provider       @relation(fields: [providerId], references: [id])
+
+  @@unique([serviceRequestId, providerId])
+  @@index([serviceRequestId])
+  @@index([providerId])
+  @@map("offers")
+}
+
+// ─────────────────────────────────────────
+// PAGOS YAPE (voucher manual)
+// ─────────────────────────────────────────
+
+model YapePayment {
+  id                  Int                @id @default(autoincrement())
+  providerId          Int
+  plan                SubscriptionPlan
+  amount              Float
+  voucherUrl          String
+  verificationCode    String             // 3 dígitos
+  note                String?
+  status              YapePaymentStatus  @default(PENDING)
+  rejectionReason     String?
+  reviewedByAdminId   Int?
+  reviewedAt          DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  provider            Provider           @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([status])
+  @@map("yape_payments")
+}
+
+model UserPenalty {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique
+  noPickCount  Int       @default(0)
+  blockedUntil DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_penalties")
 }

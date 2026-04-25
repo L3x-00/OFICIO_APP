@@ -3,6 +3,8 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
+import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
+import '../../../../features/subastas/presentation/screens/oportunidades_tab.dart';
 import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
 import 'panel_home_tab.dart';
 import 'panel_profile_tab.dart';
@@ -52,23 +54,27 @@ class _ProviderPanelState extends State<ProviderPanel> {
       backgroundColor: c.bg,
       body: Stack(
         children: [
-          IndexedStack(
-            index: _currentIndex,
-            children: [
-              PanelHomeTab(
-                isNegocio: isNeg,
-                isPaused: _isPaused,
-                onChangeTab: (i) => setState(() => _currentIndex = i),
-              ),
-              PanelProfileTab(
-                isNegocio: isNeg,
-                isPaused: _isPaused,
-                onPauseToggle: _togglePause,
-              ),
-              PanelServicesTab(isNegocio: isNeg),
-              const PanelStatsTab(),
-              const PanelSettingsTab(),
-            ],
+          ChangeNotifierProvider(
+            create: (_) => SubastasProvider(),
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                PanelHomeTab(
+                  isNegocio: isNeg,
+                  isPaused: _isPaused,
+                  onChangeTab: (i) => setState(() => _currentIndex = i),
+                ),
+                PanelProfileTab(
+                  isNegocio: isNeg,
+                  isPaused: _isPaused,
+                  onPauseToggle: _togglePause,
+                ),
+                const OportunidadesTab(),
+                PanelServicesTab(isNegocio: isNeg),
+                const PanelStatsTab(),
+                const PanelSettingsTab(),
+              ],
+            ),
           ),
 
           // ── Botón de atrás flotante ───────────────────────
@@ -165,6 +171,10 @@ class _PanelBottomNav extends StatelessWidget {
               child: const Icon(Icons.manage_accounts_rounded),
             ),
             label: 'Perfil',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.bolt_rounded),
+            label: 'Ofertas',
           ),
           BottomNavigationBarItem(
             icon: Icon(isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded),

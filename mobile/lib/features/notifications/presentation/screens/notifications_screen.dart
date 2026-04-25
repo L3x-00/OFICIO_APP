@@ -4,9 +4,11 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/notifications_provider.dart';
 import '../../domain/models/notification_model.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 
 class NotificationsScreen extends StatelessWidget {
-  const NotificationsScreen({super.key});
+  final int? userId; // Agregado para consistencia con Favoritos
+  const NotificationsScreen({super.key, this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -23,53 +25,162 @@ class NotificationsScreen extends StatelessWidget {
           style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
         ),
         actions: [
-          if (notifs.unreadCount > 0)
+          // Solo mostrar botón de marcar todas si hay notificaciones y el usuario está logueado
+          if (userId != null && notifs.unreadCount > 0)
             TextButton(
               onPressed: notifs.markAllRead,
-              child: Text(
+              child: const Text(
                 'Marcar todas leídas',
                 style: TextStyle(color: AppColors.primary, fontSize: 12),
               ),
             ),
         ],
       ),
-      body: notifs.items.isEmpty
-          ? _buildEmpty(c)
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: notifs.items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 2),
-              itemBuilder: (_, i) =>
-                  _NotificationTile(notification: notifs.items[i]),
-            ),
+      body: userId == null
+          ? const _GuestBody(
+              icon: Icons.notifications_none_rounded,
+              iconColor: Color.fromARGB(176, 220, 226, 34),
+              title: 'Mantente al tanto',
+              message:
+                  'Regístrate o inicia sesión para recibir notificaciones sobre tus servicios, ofertas y actualizaciones.',
+            )
+          : notifs.items.isEmpty
+              ? _buildEmpty(c)
+              : RefreshIndicator(
+                  color: const Color.fromARGB(176, 246, 255, 0),
+                  onRefresh: () async => {}, // Aquí podrías llamar a un fetch si existiera
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: notifs.items.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 2),
+                    itemBuilder: (_, i) =>
+                        _NotificationTile(notification: notifs.items[i]),
+                  ),
+                ),
     );
   }
 
   Widget _buildEmpty(AppThemeColors c) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.notifications_none_rounded,
-            size: 64,
-            color: c.textMuted.withValues(alpha: 0.4),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Sin notificaciones',
-            style: TextStyle(
-              color: c.textSecondary,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.notifications_off_outlined,
+                color: c.textMuted.withValues(alpha: 0.5),
+                size: 40,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Aquí aparecerán tus alertas',
-            style: TextStyle(color: c.textMuted, fontSize: 13),
-          ),
-        ],
+            const SizedBox(height: 20),
+            Text(
+              'Sin notificaciones',
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Por ahora no tienes avisos nuevos.\nTe avisaremos cuando algo ocurra.',
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Estado invitado reutilizable (Idéntico a Favoritos) ──────────────────────────
+class _GuestBody extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String message;
+
+  const _GuestBody({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 40),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 14,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Iniciar sesión / Registrarse',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -104,7 +215,6 @@ class _NotificationTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icono de tipo
               Container(
                 width: 42,
                 height: 42,

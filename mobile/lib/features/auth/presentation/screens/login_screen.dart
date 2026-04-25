@@ -547,15 +547,24 @@ class _TermsCheckbox extends StatelessWidget {
 
   const _TermsCheckbox({required this.value, required this.onChanged});
 
+  void _openTerms(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _TermsModal(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => onChanged(!value),
+          child: SizedBox(
             width: 20,
             height: 20,
             child: Checkbox(
@@ -570,38 +579,202 @@ class _TermsCheckbox extends StatelessWidget {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => onChanged(!value),
             child: RichText(
               text: TextSpan(
-                style: TextStyle(
-                  color: c.textMuted,
-                  fontSize: 12,
-                  height: 1.5,
-                ),
-                children: const [
-                  TextSpan(text: 'Acepto los '),
-                  TextSpan(
-                    text: 'Términos y Condiciones',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.5),
+                children: [
+                  const TextSpan(text: 'Acepto los '),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.baseline,
+                    baseline: TextBaseline.alphabetic,
+                    child: GestureDetector(
+                      onTap: () => _openTerms(context),
+                      child: const Text(
+                        'Términos y Condiciones',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          height: 1.5,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary,
+                        ),
+                      ),
                     ),
                   ),
-                  TextSpan(text: ' y la '),
-                  TextSpan(
-                    text: 'Política de Privacidad',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                  const TextSpan(text: ' y la '),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.baseline,
+                    baseline: TextBaseline.alphabetic,
+                    child: GestureDetector(
+                      onTap: () => _openTerms(context),
+                      child: const Text(
+                        'Política de Privacidad',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          height: 1.5,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary,
+                        ),
+                      ),
                     ),
                   ),
-                  TextSpan(text: ' de ConfiServ.'),
+                  const TextSpan(text: ' de ConfiServ.'),
                 ],
               ),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+// ── Modal de Términos y Condiciones ──────────────────────────
+
+class _TermsModal extends StatelessWidget {
+  const _TermsModal();
+
+  // ══════════════════════════════════════════════════════════
+  // TEXTO DE TÉRMINOS Y CONDICIONES
+  // Pega aquí el contenido completo cuando esté listo.
+  // ══════════════════════════════════════════════════════════
+  static const String _termsText = '''
+TÉRMINOS Y CONDICIONES DE USO — ConfiServ
+
+Bienvenido a ConfiServ. Antes de utilizar nuestra plataforma, lea detenidamente estos Términos y Condiciones. Al marcar el check de aceptación durante el registro, usted declara haber leído, comprendido y aceptado quedar vinculado legalmente por este documento.
+
+1. NATURALEZA DEL SERVICIO: DIRECTORIO INTERMEDIARIO
+ConfiServ funciona exclusivamente como una plataforma de centralización de información y "puente" de contacto.
+No somos agencia de empleos: No contratamos ni seleccionamos al personal.
+No somos pasarela de servicios: La negociación de precios, condiciones de trabajo y pagos por los servicios o productos ofrecidos por los Proveedores se realizan fuera de la aplicación, directamente vía WhatsApp, teléfono o de forma presencial.
+Exención de comisión: ConfiServ no cobra comisiones por los contratos celebrados entre Usuarios y Proveedores.
+2. DESLINDE DE RESPONSABILIDAD (CLÁUSULA DE INDEMNIDAD)
+El Usuario acepta que el uso de la aplicación es bajo su propia cuenta y riesgo.
+Suplantación y Fraude: Dado que ningún sistema de validación digital es infalible al 100%, ConfiServ no se hace responsable por fraudes, suplantaciones de identidad o actos ilícitos cometidos por terceros.
+Calidad del Servicio: No garantizamos la calidad, puntualidad o idoneidad del servicio prestado por el Proveedor. Cualquier reclamo por daños y perjuicios derivados de un mal servicio debe dirigirse directamente al Proveedor contratado.
+3. SISTEMA DE VERIFICACIÓN Y INSIGNIA "CONFIABLE"
+La insignia "Confiable" es una herramienta de filtrado basada en una validación superficial de datos públicos (SUNAT, consultas RUC/DNI).
+Limitación de la Insignia: La insignia no constituye una garantía absoluta de honestidad o pericia profesional. Es solo una indicación de que el Proveedor ha cumplido con entregar la documentación solicitada.
+Revocación: ConfiServ se reserva el derecho de retirar la insignia "Confiable" de forma inmediata si se recibe un reporte fundamentado o se detectan irregularidades, notificando al Proveedor el motivo de la revocación.
+4. PROTECCIÓN DE DATOS PERSONALES (LEY N° 29733)
+De conformidad con la legislación peruana, el Usuario autoriza expresamente a ConfiServ a:
+Recolección Sensible: Almacenar fotos del DNI (ambas caras), selfies de validación biométrica y datos de ubicación (GPS) con el fin exclusivo de prevenir el fraude y gestionar el sistema de confianza.
+Finalidad: Los datos se utilizarán para validar la identidad del Proveedor. En caso de estafa reportada, ConfiServ podrá facilitar estos datos a las autoridades competentes para coadyuvar en investigaciones externas.
+Derechos ARCO: El Usuario puede solicitar el acceso, rectificación, cancelación u oposición de sus datos escribiendo al canal oficial de soporte de la App.
+5. PLANES DE SUSCRIPCIÓN Y REEMBOLSOS
+El acceso a planes Estándar o Premium se rige por las siguientes reglas:
+Plazo de Arrepentimiento: El Proveedor tiene hasta 5 días calendario tras la compra para solicitar un reembolso total, siempre que fundamente la eliminación de su cuenta.
+Baneo por Mal Comportamiento: Si un Proveedor es expulsado por reportes de fraude o faltas éticas, se aplicará un reembolso parcial proporcional al tiempo no utilizado, descontando gastos administrativos, salvo que la falta sea grave, en cuyo caso se podrá denegar el reembolso para cubrir gastos de mediación.
+Pasarela: Los pagos se procesan a través de Culqi, bajo sus propios términos de seguridad.
+6. CONTENIDO Y RESEÑA
+Moderación: ConfiServ no edita ni elimina reseñas arbitrariamente. Sin embargo, podrá ocultar reseñas de la vista pública bajo un proceso de mediación si existe un conflicto de intereses o si el profesional demuestra que factores externos ajenos a su labor afectaron el resultado.
+Gestión de Prestigio: El acceso a servicios de mediación o gestión de reseñas negativas podrá estar sujeto a planes de pago específicos, entendidos como un servicio de soporte administrativo y no como una alteración fraudulenta del ranking.
+Uso de Imágenes: El Usuario otorga a ConfiServ una licencia gratuita, no exclusiva y mundial para utilizar las fotos de perfil, logotipos y fotos de trabajos subidos a la App con fines de publicidad y marketing de la plataforma.
+
+Última actualización: 23 de abril de 2026
+''';
+  // ══════════════════════════════════════════════════════════
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (_, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // ── Handle ─────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 8),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: c.textMuted.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // ── Header ─────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 4, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Términos y Condiciones',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close_rounded, color: c.textMuted),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(height: 1),
+
+            // ── Contenido scrollable ────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+                child: Text(
+                  _termsText,
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 13,
+                    height: 1.7,
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Botón cerrar ────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

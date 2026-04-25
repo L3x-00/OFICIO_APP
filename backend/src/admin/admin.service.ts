@@ -302,9 +302,19 @@ async createProvider(data: {
   whatsapp?: string;
   description?: string;
   address?: string;
-  categoryId: number | string; // FormData envía strings
-  localityId: number | string; // FormData envía strings
+  categoryId: number | string;
+  localityId: number | string;
   type: string;
+  dni?: string;
+  ruc?: string;
+  nombreComercial?: string;
+  razonSocial?: string;
+  hasDelivery?: boolean | string;
+  plenaCoordinacion?: boolean | string;
+  department?: string;
+  province?: string;
+  district?: string;
+  scheduleJson?: string;
 }, files: Express.Multer.File[]) {
   
   const existing = await this.prisma.user.findUnique({
@@ -326,33 +336,46 @@ async createProvider(data: {
     // 1. Crear Usuario
     const user = await tx.user.create({
       data: {
-        email: data.email,
+        email:        data.email,
         passwordHash: await bcrypt.hash(tempPassword, 10),
-        firstName: data.firstName,
-        lastName: data.lastName,
-        role: 'PROVEEDOR',
+        firstName:    data.firstName,
+        lastName:     data.lastName,
+        role:         'PROVEEDOR',
+        department:   data.department ?? null,
+        province:     data.province   ?? null,
+        district:     data.district   ?? null,
       },
     });
 
     // 2. Crear Proveedor
+    let parsedSchedule: object | undefined;
+    if (data.scheduleJson) {
+      try { parsedSchedule = JSON.parse(data.scheduleJson); } catch { /* ignore */ }
+    }
+    if (!parsedSchedule) {
+      parsedSchedule = {
+        lun: '8:00-18:00', mar: '8:00-18:00', mie: '8:00-18:00',
+        jue: '8:00-18:00', vie: '8:00-18:00', sab: '9:00-13:00', dom: 'Cerrado',
+      };
+    }
+
     const provider = await tx.provider.create({
       data: {
-        userId: user.id,
-        businessName: data.businessName,
-        phone: data.phone,
-        whatsapp: data.whatsapp ?? null,
-        description: data.description ?? null,
-        address: data.address ?? null,
-        // Convertimos a Number porque FormData suele enviarlos como string
-        categoryId: Number(data.categoryId),
-        localityId: Number(data.localityId),
-        type: data.type as any, // 'OFICIO' o 'NEGOCIO'
-        scheduleJson: {
-          lun: '8:00-18:00', mar: '8:00-18:00',
-          mie: '8:00-18:00', jue: '8:00-18:00',
-          vie: '8:00-18:00', sab: '9:00-13:00',
-          dom: 'Cerrado',
-        },
+        userId:          user.id,
+        businessName:    data.businessName,
+        phone:           data.phone,
+        whatsapp:        data.whatsapp ?? null,
+        description:     data.description ?? null,
+        address:         data.address ?? null,
+        categoryId:      Number(data.categoryId),
+        localityId:      Number(data.localityId),
+        type:            data.type as any,
+        dni:             data.dni ?? null,
+        ruc:             data.ruc ?? null,
+        nombreComercial: data.nombreComercial ?? null,
+        razonSocial:     data.razonSocial ?? null,
+        hasDelivery:     data.hasDelivery === true || data.hasDelivery === 'true',
+        scheduleJson:    parsedSchedule as any,
       },
       include: { category: true, locality: true },
     });

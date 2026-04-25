@@ -65,3 +65,6 @@ flutter:
     # ── Íconos SVG o PNG personalizados ──────────────────────
     - assets/icons/
 
+    # ── Pasarela Yape (QR y logo) ────────────────────────────
+    - assets/images/yape/
+

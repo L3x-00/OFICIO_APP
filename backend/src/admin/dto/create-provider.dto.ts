@@ -2,69 +2,78 @@ import {
   IsEmail, IsString, IsOptional, IsEnum, IsNumber, IsPositive,
   MinLength, MaxLength,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateProviderDto {
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
   email: string;
 
-  @IsString()
-  @MinLength(2)
-  @MaxLength(50)
+  @IsString() @MinLength(2) @MaxLength(50)
   firstName: string;
 
-  @IsString()
-  @MinLength(2)
-  @MaxLength(50)
+  @IsString() @MinLength(2) @MaxLength(50)
   lastName: string;
 
-  @IsString()
-  @MinLength(2, { message: 'El nombre del negocio debe tener al menos 2 caracteres' })
-  @MaxLength(100)
+  @IsString() @MinLength(2) @MaxLength(100)
   businessName: string;
 
-  @IsString()
-  @MinLength(6)
-  @MaxLength(20)
+  @IsString() @MinLength(6) @MaxLength(20)
   phone: string;
-  
-  @IsString()
-  @IsOptional() // <--- Agrega esto
+
+  @IsOptional() @IsString()
   whatsapp?: string;
 
-  @IsEnum(['OFICIO', 'NEGOCIO'], { message: 'El tipo debe ser OFICIO o NEGOCIO' })
+  @IsEnum(['OFICIO', 'NEGOCIO'])
   type: 'OFICIO' | 'NEGOCIO';
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(20)
+  // ── Datos legales OFICIO
+  @IsOptional() @IsString() @MaxLength(20)
   dni?: string;
 
+  // ── Datos legales NEGOCIO
+  @IsOptional() @IsString() @MaxLength(11)
+  ruc?: string;
+
+  @IsOptional() @IsString() @MaxLength(120)
+  nombreComercial?: string;
+
+  @IsOptional() @IsString() @MaxLength(200)
+  razonSocial?: string;
+
+  // ── Características NEGOCIO
   @IsOptional()
-  @IsString()
-  @MaxLength(1000)
+  @Transform(({ value }) => value === 'true' || value === true)
+  hasDelivery?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  plenaCoordinacion?: boolean;
+
+  // ── Descripción y dirección
+  @IsOptional() @IsString() @MaxLength(1000)
   description?: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
+  @IsOptional() @IsString() @MaxLength(200)
   address?: string;
 
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
+  // ── Categoría y localidad
+  @Type(() => Number) @IsNumber() @IsPositive()
   categoryId: number;
 
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
+  @Type(() => Number) @IsNumber() @IsPositive()
   localityId: number;
 
-  @IsOptional()
-  @IsNumber()
-  latitude?: number;
+  // ── Ubicación administrativa
+  @IsOptional() @IsString() @MaxLength(100)
+  department?: string;
 
-  @IsOptional()
-  @IsNumber()
-  longitude?: number;
+  @IsOptional() @IsString() @MaxLength(100)
+  province?: string;
+
+  @IsOptional() @IsString() @MaxLength(100)
+  district?: string;
+
+  // ── Horario (JSON serializado como string en FormData)
+  @IsOptional() @IsString()
+  scheduleJson?: string;
 }

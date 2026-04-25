@@ -620,7 +620,7 @@ class _JoinUsModalState extends State<JoinUsModal>
         period: 'al mes',
         features: [
           'Todo lo del plan Gratis',
-          'Hasta 5 fotos del servicio',
+          'Hasta 6 fotos del servicio',
           'Apareces primero en búsquedas',
           'Insignia verificado',
           'Estadísticas de visitas',

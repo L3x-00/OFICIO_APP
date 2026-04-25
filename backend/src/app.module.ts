@@ -17,6 +17,8 @@ import { FavoritesModule } from './favorites/favorites.module.js';
 import { ProviderProfileModule } from './provider-profile/provider-profile.module.js';
 import { EventsModule } from './events/events.module.js';
 import { TrustValidationModule } from './trust-validation/trust-validation.module.js';
+import { SubastasModule } from './subastas/subastas.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 
 @Module({
   imports: [
@@ -57,6 +59,8 @@ import { TrustValidationModule } from './trust-validation/trust-validation.modul
     AdminModule,
     EventsModule,
     TrustValidationModule,
+    SubastasModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

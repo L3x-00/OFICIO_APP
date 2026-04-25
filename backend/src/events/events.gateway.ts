@@ -67,7 +67,27 @@ export class EventsGateway {
    * Evento broadcast para el panel de administración.
    * Solo el panel admin escucha 'adminEvent'.
    */
-  emitAdminEvent(event: 'NEW_PROVIDER' | 'PROVIDER_APPROVED' | 'PROVIDER_REJECTED' | 'NEW_PLAN_REQUEST' | 'PLAN_APPROVED' | 'METRICS_CHANGED' | 'USER_PENDING' | 'NEW_USER_VERIFIED', data?: Record<string, unknown>) {
+  emitAdminEvent(event: 'NEW_PROVIDER' | 'PROVIDER_APPROVED' | 'PROVIDER_REJECTED' | 'NEW_PLAN_REQUEST' | 'PLAN_APPROVED' | 'METRICS_CHANGED' | 'USER_PENDING' | 'NEW_USER_VERIFIED' | 'NEW_YAPE_PAYMENT', data?: Record<string, unknown>) {
     this.server.emit('adminEvent', { event, data, timestamp: new Date().toISOString() });
+  }
+
+  /**
+   * Broadcast nueva solicitud de subasta a todos los proveedores conectados.
+   * El cliente Flutter filtra por categoryId y distancia.
+   */
+  emitSubastaNew(data: {
+    requestId: number;
+    categoryId: number;
+    categoryName: string;
+    description: string;
+    photoUrl: string | null;
+    budgetMin: number | null;
+    budgetMax: number | null;
+    latitude: number | null;
+    longitude: number | null;
+    department: string | null;
+    expiresAt: string;
+  }) {
+    this.server.emit('subastaNew', data);
   }
 }

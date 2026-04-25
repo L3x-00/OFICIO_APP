@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 const EVENT_ROUTES: Record<string, string> = {
   NEW_PROVIDER:              '/verification',
   NEW_PLAN_REQUEST:          '/plan-requests',
+  NEW_YAPE_PAYMENT:          '/yape-payments',
   NEW_USER:                  '/users',
   TRUST_VALIDATION_REQUEST:  '/trust-validation',
 };
@@ -46,8 +47,9 @@ function Topbar() {
     '/reviews': ['Gestión', 'Reseñas'],
     '/verification': ['Operaciones', 'Verificación'],
     '/trust-validation': ['Operaciones', 'Validación de Confianza'],
-    '/plan-requests': ['Operaciones', 'Solicitudes de Plan'],
-    '/notifications': ['Operaciones', 'Notificaciones'],
+    '/plan-requests':  ['Operaciones', 'Solicitudes de Plan'],
+    '/yape-payments':  ['Operaciones', 'Pagos Yape'],
+    '/notifications':  ['Operaciones', 'Notificaciones'],
     '/reports': ['Principal', 'Reportes'],
     '/analytics': ['Principal', 'Analytics'],
   };

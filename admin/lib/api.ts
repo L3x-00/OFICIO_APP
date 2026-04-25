@@ -249,11 +249,65 @@ export const getPlatformIssues = (page = 1, isReviewed?: boolean) => {
 export const markPlatformIssueReviewed = (id: number) =>
   fetchApi(`/admin/platform-issues/${id}/review`, { method: 'PATCH' });
 
-export const exportUsersCSV = () =>
-  `${BASE_URL}/admin/reports/export/users`;
+// Fetches CSV with auth token, returns as Blob
+async function fetchCSVBlob(endpoint: string): Promise<Blob> {
+  const token = getAdminToken();
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+  return res.blob();
+}
 
-export const exportProvidersCSV = () =>
-  `${BASE_URL}/admin/reports/export/providers`;
+export const exportUsersCSV    = () => fetchCSVBlob('/admin/reports/export/users');
+export const exportProvidersCSV = () => fetchCSVBlob('/admin/reports/export/providers');
+
+// Excel helpers (requires xlsx package)
+export async function exportUsersExcel(): Promise<void> {
+  const XLSX = await import('xlsx');
+  const data  = await fetchApi<{ data: any[] }>('/admin/users?page=1&limit=10000');
+  const rows  = data.data.map((u: any) => ({
+    ID:          u.id,
+    Nombre:      u.firstName,
+    Apellido:    u.lastName,
+    Email:       u.email,
+    Rol:         u.role,
+    Activo:      u.isActive ? 'Sí' : 'No',
+    Registro:    new Date(u.createdAt).toLocaleDateString('es-PE'),
+    Negocio:     u.provider?.businessName ?? '',
+    Verificación: u.provider?.verificationStatus ?? '',
+    Reseñas:     u._count?.reviews ?? 0,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Usuarios');
+  XLSX.writeFile(wb, 'usuarios.xlsx');
+}
+
+export async function exportProvidersExcel(): Promise<void> {
+  const XLSX = await import('xlsx');
+  const data  = await fetchApi<{ data: any[] }>('/admin/providers?page=1&limit=10000');
+  const rows  = data.data.map((p: any) => ({
+    ID:             p.id,
+    Negocio:        p.businessName,
+    Email:          p.user?.email ?? '',
+    Titular:        `${p.user?.firstName ?? ''} ${p.user?.lastName ?? ''}`.trim(),
+    Teléfono:       p.phone,
+    Tipo:           p.type,
+    Categoría:      p.category?.name ?? '',
+    Localidad:      p.locality?.name ?? '',
+    Calificación:   p.averageRating,
+    Reseñas:        p.totalReviews ?? 0,
+    Verificado:     p.isVerified ? 'Sí' : 'No',
+    Estado:         p.verificationStatus,
+    Plan:           p.subscription?.plan ?? 'GRATIS',
+    Suscripción:    p.subscription?.status ?? '',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Proveedores');
+  XLSX.writeFile(wb, 'proveedores.xlsx');
+}
 
 // ── CATEGORÍAS ────────────────────────────────────────────
 export const getCategories = (search?: string) => {
@@ -296,6 +350,19 @@ export const approveTrustValidation = (id: number) =>
 
 export const rejectTrustValidation = (id: number, reason: string) =>
   fetchApi(`/trust-validation/admin/${id}/reject`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
+  });
+
+// ── PAGOS YAPE ────────────────────────────────────────────
+export const getYapePayments = (status?: string) =>
+  fetchApi<any[]>(`/payments/admin/yape${status ? `?status=${status}` : ''}`);
+
+export const approveYapePayment = (id: number) =>
+  fetchApi(`/payments/admin/yape/${id}/approve`, { method: 'PATCH' });
+
+export const rejectYapePayment = (id: number, reason?: string) =>
+  fetchApi(`/payments/admin/yape/${id}/reject`, {
     method: 'PATCH',
     body: JSON.stringify({ reason }),
   });

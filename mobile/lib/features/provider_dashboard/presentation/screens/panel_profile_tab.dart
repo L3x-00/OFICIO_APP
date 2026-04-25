@@ -3,10 +3,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../core/utils/plan_limits.dart';
 import '../../../../shared/widgets/phone_input_section.dart';
 import '../../../../shared/widgets/schedule_editor.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../trust_validation/presentation/screens/trust_validation_form_screen.dart';
+import '../../../payments/presentation/screens/plan_selector_sheet.dart';
+import '../../../payments/presentation/screens/payment_history_screen.dart';
+import '../../../payments/presentation/providers/payments_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
@@ -67,6 +71,9 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                     // Validación de confianza
                     _buildTrustSection(context),
                     const SizedBox(height: 20),
+                    // Plan & Pagos
+                    _buildPlanSection(context, profile, dash),
+                    const SizedBox(height: 20),
                     // Zona peligrosa
                     _buildDangerZone(context, dash),
                     const SizedBox(height: 100),
@@ -113,43 +120,83 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
   // ── FOTOS ─────────────────────────────────────────────────
 
   Widget _buildPhotosSection(DashboardProfileModel? profile) {
-    final c = context.colors;
-    final images = profile?.images ?? [];
+    final c        = context.colors;
+    final images   = profile?.images ?? [];
+    final plan     = profile?.subscription?.plan ?? 'GRATIS';
+    final maxFotos = PlanLimits.photos(plan);
+    final canAdd   = PlanLimits.canAddPhoto(plan, images.length);
+    // Espaciadores: slots vacíos hasta completar la fila visual (max 4 slots visibles)
+    final visibleSlots = maxFotos.clamp(0, 4);
+    final emptySlots   = (visibleSlots - images.length - (canAdd ? 1 : 0)).clamp(0, visibleSlots);
+
+    final planColor = switch (plan.toUpperCase()) {
+      'PREMIUM'  => AppColors.premium,
+      'ESTANDAR' => AppColors.primary,
+      _          => c.textMuted,
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(
-          icon: Icons.photo_library_rounded,
-          title: 'Fotos del servicio',
-          subtitle: '${images.length}/4 fotos',
+        // Header: título + chip de límite siempre visible
+        Row(
+          children: [
+            Icon(Icons.photo_library_rounded, color: AppColors.amber, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Fotos del servicio',
+                  style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700)),
+            ),
+            // Chip prominente: X/N fotos · Plan
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: planColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: planColor.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.photo_camera_rounded, size: 12, color: planColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${images.length}/$maxFotos  ·  ${plan[0]}${plan.substring(1).toLowerCase()}',
+                    style: TextStyle(
+                        color: planColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         SizedBox(
           height: 100,
           child: Row(
             children: [
-              // Fotos existentes
-              ...images.take(4).map((img) => _PhotoTile(
+              ...images.take(maxFotos).map((img) => _PhotoTile(
                     url: img.url,
                     onDelete: () => _confirmDeletePhoto(img),
                   )),
-              // Botón añadir (si hay menos de 4)
-              if (images.length < 4)
-                _AddPhotoTile(onTap: _pickPhoto),
-              // Espaciadores vacíos
-              ...List.generate(
-                (3 - images.length).clamp(0, 3),
-                (_) => const _EmptyPhotoTile(),
-              ),
+              if (canAdd) _AddPhotoTile(onTap: _pickPhoto),
+              ...List.generate(emptySlots, (_) => const _EmptyPhotoTile()),
             ],
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          'La primera foto es tu imagen principal. Toca para reordenar.',
-          style: TextStyle(color: c.textMuted, fontSize: 11),
-        ),
+        if (!canAdd)
+          _PhotoLimitNote(plan: plan, max: maxFotos, c: c)
+        else
+          Text(
+            'La primera foto es tu imagen principal. Toca para reordenar.',
+            style: TextStyle(color: c.textMuted, fontSize: 11),
+          ),
       ],
     );
   }
@@ -556,6 +603,145 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
     );
   }
 
+  // ── PLAN & PAGOS ──────────────────────────────────────────
+
+  Widget _buildPlanSection(
+      BuildContext context, DashboardProfileModel? profile, DashboardProvider dash) {
+    final c     = context.colors;
+    final plan  = profile?.subscription?.plan ?? 'GRATIS';
+    final status = profile?.subscription?.status ?? 'GRACIA';
+    final endDate = profile?.subscription?.endDate;
+
+    final planColor = switch (plan.toUpperCase()) {
+      'PREMIUM'  => AppColors.premium,
+      'ESTANDAR' => AppColors.primary,
+      'BASICO'   => const Color(0xFF7CB9E8),
+      _          => c.textMuted,
+    };
+
+    final isPremium = plan.toUpperCase() == 'PREMIUM';
+
+    String? endLabel;
+    if (endDate != null) {
+      final months = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+                      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      endLabel = 'Vence: ${endDate.day} ${months[endDate.month]} ${endDate.year}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.workspace_premium_rounded,
+                color: AppColors.amber, size: 18),
+            const SizedBox(width: 8),
+            Text('Plan & Pagos',
+                style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: c.bgCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: planColor.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: planColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: planColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      '${plan[0]}${plan.substring(1).toLowerCase()}',
+                      style: TextStyle(
+                          color: planColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(status == 'GRACIA' ? 'Período de gracia' : 'Activo',
+                          style: TextStyle(
+                              color: c.textSecondary, fontSize: 12)),
+                      if (endLabel != null)
+                        Text(endLabel,
+                            style: TextStyle(
+                                color: c.textMuted, fontSize: 11)),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChangeNotifierProvider(
+                            create: (_) => PaymentsProvider(),
+                            child: const PaymentHistoryScreen(),
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                      label: const Text('Mis pagos'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: c.textSecondary,
+                        side: BorderSide(color: c.border),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                  if (!isPremium) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => PlanSelectorSheet.show(context),
+                        icon: const Icon(
+                            Icons.rocket_launch_rounded,
+                            size: 16,
+                            color: Colors.black),
+                        label: const Text('Subir de plan',
+                            style: TextStyle(color: Colors.black)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.amber,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDangerZone(BuildContext context, DashboardProvider dash) {
     final c = context.colors;
     return Column(
@@ -893,13 +1079,11 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
 class _SectionTitle extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String? subtitle;
   final Color color;
 
   const _SectionTitle({
     required this.icon,
     required this.title,
-    this.subtitle,
     this.color = AppColors.amber,
   });
 
@@ -918,10 +1102,6 @@ class _SectionTitle extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (subtitle != null) ...[
-          const Spacer(),
-          Text(subtitle!, style: TextStyle(color: c.textMuted, fontSize: 12)),
-        ],
       ],
     );
   }
@@ -1058,6 +1238,30 @@ class _AddPhotoTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PhotoLimitNote extends StatelessWidget {
+  final String plan;
+  final int max;
+  final AppThemeColors c;
+  const _PhotoLimitNote({required this.plan, required this.max, required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(Icons.lock_rounded, color: AppColors.busy, size: 13),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            'Límite de $max fotos (plan ${plan.toLowerCase()}). '
+            'Sube al plan ${PlanLimits.nextPlan(plan)} para añadir más.',
+            style: TextStyle(color: AppColors.busy, fontSize: 11, height: 1.4),
+          ),
+        ),
+      ],
     );
   }
 }

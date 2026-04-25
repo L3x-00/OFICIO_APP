@@ -70,7 +70,11 @@ export const ModelName = {
   Recommendation: 'Recommendation',
   ProviderReport: 'ProviderReport',
   PlatformIssue: 'PlatformIssue',
-  TrustValidationRequest: 'TrustValidationRequest'
+  TrustValidationRequest: 'TrustValidationRequest',
+  ServiceRequest: 'ServiceRequest',
+  Offer: 'Offer',
+  YapePayment: 'YapePayment',
+  UserPenalty: 'UserPenalty'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -386,6 +390,79 @@ export const TrustValidationRequestScalarFieldEnum = {
 } as const
 
 export type TrustValidationRequestScalarFieldEnum = (typeof TrustValidationRequestScalarFieldEnum)[keyof typeof TrustValidationRequestScalarFieldEnum]
+
+
+export const ServiceRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  categoryId: 'categoryId',
+  description: 'description',
+  photoUrl: 'photoUrl',
+  budgetMin: 'budgetMin',
+  budgetMax: 'budgetMax',
+  desiredDate: 'desiredDate',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  department: 'department',
+  province: 'province',
+  district: 'district',
+  status: 'status',
+  maxOffers: 'maxOffers',
+  notifyRadiusKm: 'notifyRadiusKm',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServiceRequestScalarFieldEnum = (typeof ServiceRequestScalarFieldEnum)[keyof typeof ServiceRequestScalarFieldEnum]
+
+
+export const OfferScalarFieldEnum = {
+  id: 'id',
+  serviceRequestId: 'serviceRequestId',
+  providerId: 'providerId',
+  price: 'price',
+  message: 'message',
+  status: 'status',
+  arrivedAt: 'arrivedAt',
+  arrivedLat: 'arrivedLat',
+  arrivedLng: 'arrivedLng',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OfferScalarFieldEnum = (typeof OfferScalarFieldEnum)[keyof typeof OfferScalarFieldEnum]
+
+
+export const YapePaymentScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  plan: 'plan',
+  amount: 'amount',
+  voucherUrl: 'voucherUrl',
+  verificationCode: 'verificationCode',
+  note: 'note',
+  status: 'status',
+  rejectionReason: 'rejectionReason',
+  reviewedByAdminId: 'reviewedByAdminId',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type YapePaymentScalarFieldEnum = (typeof YapePaymentScalarFieldEnum)[keyof typeof YapePaymentScalarFieldEnum]
+
+
+export const UserPenaltyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  noPickCount: 'noPickCount',
+  blockedUntil: 'blockedUntil',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserPenaltyScalarFieldEnum = (typeof UserPenaltyScalarFieldEnum)[keyof typeof UserPenaltyScalarFieldEnum]
 
 
 export const SortOrder = {

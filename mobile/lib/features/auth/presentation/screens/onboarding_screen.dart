@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/utils/permission_service.dart';
+import 'package:mobile/core/utils/plan_limits.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
@@ -150,14 +151,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Navigator.of(context).pop();
   }
 
-  /// Navega directamente al formulario de proveedor sin pasar por "Continuar"
+  /// Muestra comparativa de planes y luego navega al formulario de proveedor.
   void _goToProviderForm(String type) {
     setState(() => _selectedRole = type);
-    // push (no pushReplacement) para que _AppRoot quede en el stack
-    // y al completar el onboarding podamos volver al home con pop()
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ProviderOnboardingForm(providerType: type),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _OnboardingPlansSheet(
+        providerType: type,
+        onContinue: () {
+          Navigator.pop(context); // cierra el sheet
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ProviderOnboardingForm(providerType: type),
+            ),
+          );
+        },
       ),
     );
   }
@@ -312,7 +322,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   // ─── Toggle: mostrar sección dirección/GPS/Maps ───────────
   bool _showAddressSection = false;
 
-  static const _maxPhotos = 4;
+  // Plan Gratis durante el registro: máximo 3 fotos (PlanLimits.photos('GRATIS'))
+  static const _maxPhotos = 3;
   static const _maxMB = 5;
 
   @override
@@ -1104,16 +1115,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 : _buildDeliverySection(),
             const SizedBox(height: 24),
 
-            // ── Horario de atención (solo NEGOCIO) ───────
+            // ── Horario de atención (solo NEGOCIO) — colapsable ───
             if (!_isOficio) ...[
-              _FormSectionHeader(label: 'HORARIO DE ATENCIÓN'),
-              const SizedBox(height: 12),
-              ScheduleEditor(
-                initialSchedule: _scheduleJson.isEmpty ? null : _scheduleJson,
-                saveLabel: 'Confirmar horario',
-                onSave: (schedule) async {
-                  setState(() => _scheduleJson = schedule);
-                },
+              _CollapsibleSchedule(
+                scheduleJson: _scheduleJson,
+                onSave: (s) => setState(() => _scheduleJson = s),
               ),
               const SizedBox(height: 24),
             ],
@@ -1549,7 +1555,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         ),
         const SizedBox(height: 14),
 
-        // Grid de 4 slots
+        // Grid de slots (máx. 3 para Plan Gratis)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -1873,6 +1879,429 @@ class _TypeBadge extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Comparativa de planes en el onboarding ──────────────────
+
+class _OnboardingPlansSheet extends StatelessWidget {
+  final String providerType; // 'OFICIO' | 'NEGOCIO'
+  final VoidCallback onContinue;
+
+  const _OnboardingPlansSheet({
+    required this.providerType,
+    required this.onContinue,
+  });
+
+  bool get _isNegocio => providerType == 'NEGOCIO';
+
+  @override
+  Widget build(BuildContext context) {
+    final c      = context.colors;
+    final accent = _isNegocio ? AppColors.amber : AppColors.primary;
+    final label  = _isNegocio ? 'negocio' : 'perfil profesional';
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.92,
+      minChildSize:     0.6,
+      maxChildSize:     0.95,
+      builder: (_, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 4),
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: c.textMuted.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 16, 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded,
+                      color: accent, size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Elige tu plan',
+                          style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Empieza gratis — puedes subir después',
+                          style: TextStyle(color: c.textSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close_rounded, color: c.textMuted),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            Divider(height: 1, color: c.border),
+
+            // Planes
+            Expanded(
+              child: SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Column(
+                  children: [
+                    _OnboardingPlanCard(
+                      planId:      'GRATIS',
+                      title:       'Gratis',
+                      price:       'S/ 0',
+                      priceNote:   'Para siempre',
+                      color:       const Color(0xFF6B7280),
+                      icon:        Icons.storefront_rounded,
+                      isNegocio:   _isNegocio,
+                      isCurrent:   true,
+                      features: [
+                        _feat(Icons.photo_library_rounded, '${PlanLimits.photos('GRATIS')} fotos de perfil'),
+                        _feat(
+                          _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
+                          PlanLimits.itemsLabel('GRATIS', isNegocio: _isNegocio),
+                        ),
+                        _feat(Icons.bar_chart_rounded, 'Sin gestión de visitas', locked: true),
+                        _feat(Icons.verified_rounded, 'Sin badge verificado', locked: true),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _OnboardingPlanCard(
+                      planId:    'ESTANDAR',
+                      title:     'Estándar',
+                      price:     'S/ 29',
+                      priceNote: 'por mes',
+                      color:     AppColors.standard,
+                      icon:      Icons.verified_rounded,
+                      isNegocio: _isNegocio,
+                      isPopular: true,
+                      features: [
+                        _feat(Icons.photo_library_rounded, '${PlanLimits.photos('ESTANDAR')} fotos de perfil'),
+                        _feat(
+                          _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
+                          PlanLimits.itemsLabel('ESTANDAR', isNegocio: _isNegocio),
+                        ),
+                        if (_isNegocio) _feat(Icons.image_rounded, 'Foto por producto incluida'),
+                        _feat(Icons.bar_chart_rounded, 'Gestión de visitas y estadísticas'),
+                        _feat(Icons.verified_rounded, 'Badge verificado azul'),
+                        _feat(Icons.search_rounded, 'Mayor visibilidad en búsqueda'),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _OnboardingPlanCard(
+                      planId:    'PREMIUM',
+                      title:     'Premium',
+                      price:     'S/ 59',
+                      priceNote: 'por mes',
+                      color:     AppColors.premium,
+                      icon:      Icons.workspace_premium_rounded,
+                      isNegocio: _isNegocio,
+                      features: [
+                        _feat(Icons.photo_library_rounded, '${PlanLimits.photos('PREMIUM')} fotos de perfil'),
+                        _feat(
+                          _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
+                          PlanLimits.itemsLabel('PREMIUM', isNegocio: _isNegocio),
+                        ),
+                        if (_isNegocio) _feat(Icons.image_rounded, 'Fotos ilimitadas por producto'),
+                        _feat(Icons.bar_chart_rounded, 'Estadísticas avanzadas'),
+                        _feat(Icons.workspace_premium_rounded, 'Badge dorado Premium'),
+                        _feat(Icons.star_rounded, 'Posición #1 en búsqueda garantizada'),
+                        _feat(Icons.support_agent_rounded, 'Soporte prioritario 24/7'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Nota informativa
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: accent.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, color: accent, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Comenzarás con el plan Gratis. Puedes subir de plan en cualquier momento desde tu panel → Ajustes → Subir de rango.',
+                              style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.45),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // CTA continuar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accent,
+                    foregroundColor: _isNegocio ? const Color(0xFF3D2B00) : Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Continuar con mi $label',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static _FeatureItem _feat(IconData icon, String text, {bool locked = false}) =>
+      _FeatureItem(icon: icon, text: text, locked: locked);
+}
+
+class _FeatureItem {
+  final IconData icon;
+  final String text;
+  final bool locked;
+  const _FeatureItem({required this.icon, required this.text, this.locked = false});
+}
+
+class _OnboardingPlanCard extends StatelessWidget {
+  final String planId;
+  final String title;
+  final String price;
+  final String priceNote;
+  final Color color;
+  final IconData icon;
+  final bool isNegocio;
+  final bool isCurrent;
+  final bool isPopular;
+  final List<_FeatureItem> features;
+
+  const _OnboardingPlanCard({
+    required this.planId,
+    required this.title,
+    required this.price,
+    required this.priceNote,
+    required this.color,
+    required this.icon,
+    required this.isNegocio,
+    required this.features,
+    this.isCurrent = false,
+    this.isPopular = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isCurrent
+            ? color.withValues(alpha: c.isDark ? 0.1 : 0.05)
+            : c.bg,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isCurrent ? color.withValues(alpha: 0.5) : c.border,
+          width: isCurrent ? 1.8 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(title, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold)),
+                        if (isCurrent) ...[
+                          const SizedBox(width: 6),
+                          _Badge(label: 'Incluido gratis', color: color),
+                        ],
+                        if (isPopular && !isCurrent) ...[
+                          const SizedBox(width: 6),
+                          _Badge(label: '⭐ Popular', color: AppColors.standard),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      '$price $priceNote',
+                      style: TextStyle(color: c.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...features.map((f) => Padding(
+            padding: const EdgeInsets.only(bottom: 7),
+            child: Row(
+              children: [
+                Icon(
+                  f.locked ? Icons.lock_outline_rounded : f.icon,
+                  color: f.locked ? c.textMuted : color,
+                  size: 15,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    f.text,
+                    style: TextStyle(
+                      color: f.locked ? c.textMuted : c.textSecondary,
+                      fontSize: 13,
+                      decoration: f.locked ? TextDecoration.lineThrough : null,
+                      decorationColor: c.textMuted,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollapsibleSchedule extends StatefulWidget {
+  final Map<String, dynamic> scheduleJson;
+  final void Function(Map<String, dynamic>) onSave;
+  const _CollapsibleSchedule({required this.scheduleJson, required this.onSave});
+
+  @override
+  State<_CollapsibleSchedule> createState() => _CollapsibleScheduleState();
+}
+
+class _CollapsibleScheduleState extends State<_CollapsibleSchedule> {
+  bool _expanded = false;
+
+  String get _summary {
+    if (widget.scheduleJson.isEmpty) return 'Sin configurar';
+    final days = widget.scheduleJson.entries
+        .where((e) => e.value is Map && (e.value as Map)['open'] == true)
+        .map((e) => e.key)
+        .toList();
+    if (days.isEmpty) return 'Sin configurar';
+    return '${days.length} día${days.length == 1 ? '' : 's'} configurados';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: c.bgCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: c.border),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.schedule, color: AppColors.primary, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Horario de Atención',
+                          style: TextStyle(fontWeight: FontWeight.w600, color: c.textPrimary)),
+                      Text(_summary,
+                          style: TextStyle(fontSize: 12, color: c.textMuted)),
+                    ],
+                  ),
+                ),
+                Icon(_expanded ? Icons.expand_less : Icons.expand_more, color: c.textMuted),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...[
+          const SizedBox(height: 8),
+          ScheduleEditor(
+            initialSchedule: widget.scheduleJson,
+            onSave: (s) async {
+              widget.onSave(s);
+              setState(() => _expanded = false);
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Badge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 }

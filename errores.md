@@ -561,6 +561,138 @@ this.eventsGateway.emitNotification({
 
 ---
 
+## Error 27 — Límite de fotos hardcodeado en 4 durante el registro (Plan Gratis = 3)
+
+**Archivo**: `mobile/lib/features/auth/presentation/screens/onboarding_screen.dart`
+
+**Qué pasó**:
+`_maxPhotos = 4` estaba hardcodeado en el formulario de registro del proveedor.
+El Plan Gratis permite 3 fotos según `PlanLimits.photos('GRATIS')`. El formulario de onboarding
+usaba su propia constante en lugar de la fuente de verdad `PlanLimits`, creando una discrepancia
+de 1 foto extra que no se reflejaba en el panel del proveedor tras el registro.
+
+**Parche aplicado**:
+- `static const _maxPhotos = 3` en `_ProviderFormState`
+- Descripción en `join_us_modal.dart` corregida de "Hasta 5 fotos" a "Hasta 6 fotos" para Estándar
+
+**Regla de oro**:
+> Cualquier constante de límite de plan (fotos, servicios, etc.) debe leer SIEMPRE
+> de `PlanLimits.*`, nunca de una constante local duplicada. Una constante local
+> se desincroniza en silencio cuando se cambia el plan en `PlanLimits`.
+
+---
+
+## Error 28 — Sección "Horario de Atención" satura la vista en registro de negocio
+
+**Archivo**: `mobile/lib/features/auth/presentation/screens/onboarding_screen.dart`
+
+**Qué pasó**:
+`ScheduleEditor` se renderizaba inline y sin colapsar durante el registro de negocio,
+ocupando toda la pantalla visible y bloqueando el acceso a los campos inferiores del formulario.
+
+**Parche aplicado**:
+- Widget `_CollapsibleSchedule` creado al final del archivo.
+- Contiene un `InkWell` encabezado (bgCard + border) con ícono de reloj y resumen de días configurados.
+- `ScheduleEditor` aparece solo cuando `_expanded == true`; al guardar, colapsa automáticamente.
+- El resumen muestra "Sin configurar" o "N días configurados" según `scheduleJson`.
+
+**Regla de oro**:
+> Cualquier editor complejo (horarios, categorías, servicios) que aparezca dentro de un
+> formulario de registro largo debe estar envuelto en un widget colapsable. El usuario
+> solo lo expande si necesita editar. Nunca renderizar editores complejos inline sin colapso.
+
+---
+
+## Error 29 — Subastas visibles solo para misma categoría; "Mis solicitudes" ausente en perfil cliente
+
+**Archivos**:
+- `backend/src/subastas/subastas.service.ts`
+- `mobile/lib/features/auth/presentation/screens/profile_screen.dart`
+
+**Qué pasó**:
+`getOpportunities` filtraba por `categoryId: provider.categoryId`, ocultando subastas de otras categorías.
+El perfil del cliente no tenía acceso a "Mis solicitudes".
+
+**Parche aplicado**:
+- Eliminado `categoryId: provider.categoryId` del `where` en `getOpportunities`. Ahora todos los proveedores ven todas las subastas OPEN; `canParticipate` sigue indicando si puede postularse.
+- Añadido botón "Mis solicitudes" (amber) en `profile_screen.dart`, sección Gestión de cuenta, que abre `MyRequestsScreen` envuelto en `ChangeNotifierProvider(SubastasProvider)`.
+
+**Regla de oro**:
+> Visibilidad y participación son controles separados. Filtrar registros por categoría/tipo a nivel de consulta mezcla ambos conceptos. Usar `canParticipate: bool` en la respuesta para restringir la acción sin ocultar el contenido.
+
+---
+
+## Error 30 — Plan "Básico" visible como opción de compra; nomenclatura inconsistente
+
+**Archivos**:
+- `mobile/lib/features/payments/presentation/screens/plan_selector_sheet.dart`
+- `mobile/lib/features/payments/presentation/screens/yape_payment_screen.dart`
+- `backend/src/payments/payments.service.ts`
+
+**Qué pasó**:
+`plan_selector_sheet.dart` mostraba BASICO como plan comprable. Los precios y etiquetas de planes eran inconsistentes con la nomenclatura oficial: Gratis / Estándar / Premium.
+
+**Parche aplicado**:
+- `plan_selector_sheet.dart` reescrito: muestra GRATIS como tarjeta informativa no comprable, solo ESTANDAR y PREMIUM son comprables.
+- Etiquetas actualizadas: `_kPlanLabels = {GRATIS: Gratis, ESTANDAR: Estándar, PREMIUM: Premium}`.
+- Eliminado 'BASICO' de `_kPrices` en `yape_payment_screen.dart` y `PLAN_PRIORITY` en `payments.service.ts`.
+- BASICO mantenido en el enum Prisma y en helpers de display para compatibilidad con datos legacy existentes.
+
+**Regla de oro**:
+> Los únicos planes que aparecen en la UI de compra son "Estándar" y "Premium". "Gratis" se muestra como informativo. BASICO existe solo como valor legacy en DB — nunca se ofrece en nueva interfaz de pago.
+
+---
+
+## Error 31 — Botones "Subir de rango" en panel_settings_tab no conectados al flujo de pago
+
+**Archivo**: `mobile/lib/features/provider_dashboard/presentation/screens/panel_settings_tab.dart`
+
+**Qué pasó**:
+`_openConfirmSheet()` abría `_PlanConfirmSheet` que llamaba `dash.requestPlanUpgrade()` (flujo legacy de solicitud manual). No conectaba con el flujo Yape.
+
+**Parche aplicado**:
+- `_openConfirmSheet()` ahora abre `YapePaymentScreen.show(context, plan: plan.id)` directamente.
+- Si `ok == true`, muestra SnackBar de confirmación con el color del plan.
+- `_PlanConfirmSheet` se mantiene en archivo (no se borra) pero ya no se invoca desde `_PlanCardState`.
+
+**Regla de oro**:
+> Todo CTA de upgrade de plan debe abrir el flujo Yape directamente. El flujo de "solicitud manual" (requestPlanUpgrade) es legacy y no debe usarse en nuevas pantallas.
+
+---
+
+## Error 32 — Nomenclatura inconsistente de planes (BASICO/Básico en UI nueva)
+
+**Archivos**: `plan_selector_sheet.dart`, `yape_payment_screen.dart`, `payments.service.ts`
+
+**Qué pasó**:
+El plan "BASICO" aparecía en la UI de compra y en etiquetas de pago, mezclando terminología con los nombres oficiales Gratis/Estándar/Premium.
+
+**Parche aplicado**:
+- Eliminado BASICO de todas las UIs de compra nuevas (plan_selector, yape_payment).
+- BASICO se mantiene en enum Prisma y display helpers para datos legacy.
+- Todos los textos visibles al usuario usan: "Gratis", "Estándar", "Premium".
+- En backend (`PLAN_PRIORITY`) BASICO eliminado del mapa activo.
+
+**Regla de oro**:
+> En toda UI nueva: solo "Gratis", "Estándar", "Premium". BASICO es valor legado de BD — solo existe en `switch`/`case` de display para datos históricos, nunca como opción nueva.
+
+---
+
+## Error 33 — YapePaymentScreen atascado en loading infinito al enviar comprobante
+
+**Archivo**: `mobile/lib/features/payments/presentation/screens/yape_payment_screen.dart`
+
+**Qué pasó**:
+`_submit()` llama `context.read<PaymentsProvider>()` pero `PaymentsProvider` no estaba en el árbol de widgets al navegar a `YapePaymentScreen` desde `PlanSelectorSheet` o `PanelSettingsTab`. El `ProviderNotFoundException` silencioso dejaba `_submitting = true` indefinidamente.
+
+**Parche aplicado**:
+- `YapePaymentScreen.show()` ahora envuelve la pantalla en `ChangeNotifierProvider(create: (_) => PaymentsProvider())`. El provider se crea siempre que se muestra la pantalla, sin depender de la ruta del llamador.
+
+**Regla de oro**:
+> Toda pantalla que use `context.read<T>()` debe garantizar que T esté en su propio árbol o en el árbol del ancestro. Si la pantalla se abre con `Navigator.push` desde múltiples puntos, crear el provider dentro de `show()` — no asumir que el ancestro lo provee.
+
+---
+
 ## Resumen de Reglas de Oro
 
 | # | Área | Regla |
@@ -591,4 +723,11 @@ this.eventsGateway.emitNotification({
 | 24 | Socket admin sin suscriptores — real-time muerto | `lib/socket.ts` existía pero ninguna página llamaba `getAdminSocket()`. El admin nunca recibía actualizaciones en tiempo real a pesar de tener Socket.io instalado |
 | 25 | `groupBy` en campo de relación (`department`) — TS2339 | `admin.service.ts` agrupaba por `department` en `Provider`, pero ese campo no existe. Pertenece a `User`. Groupby debe ser por `localityId` (FK que sí existe) + fetch posterior de nombres |
 | 26 | Propiedad extra en `NotificationPayload` — TS2353 | `trust-validation.service.ts` pasaba `rejectedAt` a `emitNotification()`. El campo no está en `NotificationPayload`. Datos de auditoría van en BD, no en el payload del socket |
+| 27 | Límite de fotos | Límites de plan siempre de `PlanLimits.*`, nunca constante local |
+| 28 | Editores complejos | Editores de horario/categoría dentro de formularios largos → siempre colapsable. Nunca inline |
+| 29 | Visibilidad vs participación | Filtrar registros por categoría oculta contenido; usar `canParticipate` para restringir la acción sin ocultar la lista |
+| 30 | Planes nuevos | UI de compra: solo Estándar y Premium. Gratis = informativo. BASICO = legacy DB, nunca en UI nueva |
+| 31 | Upgrade flow | Botones de upgrade → `YapePaymentScreen.show()` directo. Nunca a flujo legacy de solicitud manual |
+| 32 | Nomenclatura planes | Solo "Gratis", "Estándar", "Premium" en textos UI. No "Básico", "BASICO", "Estandar" sin tilde |
+| 33 | Provider en Navigator.push | Si pantalla usa `context.read<T>()`, crear `ChangeNotifierProvider` dentro de `show()`. No asumir que ancestro lo provee |
 
