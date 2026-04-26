@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter clean *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

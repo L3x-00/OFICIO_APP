@@ -1,40 +1,44 @@
 {
-  "_INSTRUCCIONES": [
-    "1. Ve a https://console.firebase.google.com",
-    "2. Crea un proyecto o selecciona uno existente",
-    "3. Agrega una app Android con package name: com.oficioapp.mobile",
-    "4. Descarga el archivo google-services.json real y reemplaza este archivo",
-    "5. Habilita en Firebase Console: Authentication > Sign-in method > Google y Facebook",
-    "6. Para Facebook: agrega el App ID y App Secret de developers.facebook.com",
-    "ALTERNATIVA RECOMENDADA: ejecuta 'flutterfire configure' desde la carpeta mobile/ (requiere Firebase CLI instalado)"
-  ],
   "project_info": {
-    "project_number": "REEMPLAZAR",
-    "project_id": "REEMPLAZAR",
-    "storage_bucket": "REEMPLAZAR.appspot.com"
+    "project_number": "31930959072",
+    "project_id": "oficioapp-7a879",
+    "storage_bucket": "oficioapp-7a879.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "REEMPLAZAR",
+        "mobilesdk_app_id": "1:31930959072:android:2f0f6c93d122c019df3c85",
         "android_client_info": {
           "package_name": "com.oficioapp.mobile"
         }
       },
       "oauth_client": [
         {
-          "client_id": "REEMPLAZAR.apps.googleusercontent.com",
+          "client_id": "31930959072-pk8dgevm6iu6bi5b9vap3f0k72t4aitv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oficioapp.mobile",
+            "certificate_hash": "5fe3dee577665d396daaae01b8087d09d690b10e"
+          }
+        },
+        {
+          "client_id": "31930959072-e54075pgobgu70g5jb30n2pf4ogdcgge.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "REEMPLAZAR"
+          "current_key": "AIzaSyA4THbfLfpGlrNvX5RjmHBeKRbXczVyrWE"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "31930959072-e54075pgobgu70g5jb30n2pf4ogdcgge.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

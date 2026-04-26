@@ -131,7 +131,6 @@ class _AppRootState extends State<_AppRoot> {
         );
       });
     }
-
     _prevNavState = current;
 
     // ── Cuenta desactivada remotamente ──────────────────────────────────────

@@ -4,16 +4,19 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/notifications_provider.dart';
 import '../../domain/models/notification_model.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 
 class NotificationsScreen extends StatelessWidget {
-  final int? userId; // Agregado para consistencia con Favoritos
-  const NotificationsScreen({super.key, this.userId});
+  const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final c      = context.colors;
+    final auth   = context.watch<AuthProvider>();
     final notifs = context.watch<NotificationsProvider>();
+
+    final isLoggedIn = auth.isAuthenticated;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -25,8 +28,7 @@ class NotificationsScreen extends StatelessWidget {
           style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
         ),
         actions: [
-          // Solo mostrar botón de marcar todas si hay notificaciones y el usuario está logueado
-          if (userId != null && notifs.unreadCount > 0)
+          if (isLoggedIn && notifs.unreadCount > 0)
             TextButton(
               onPressed: notifs.markAllRead,
               child: const Text(
@@ -36,7 +38,7 @@ class NotificationsScreen extends StatelessWidget {
             ),
         ],
       ),
-      body: userId == null
+      body: !isLoggedIn
           ? const _GuestBody(
               icon: Icons.notifications_none_rounded,
               iconColor: Color.fromARGB(176, 220, 226, 34),

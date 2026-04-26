@@ -61,7 +61,7 @@ class AuthRepository {
   }
 
   // ── SOCIAL LOGIN (Firebase idToken) ──────────────────────
-  Future<ApiResult<UserModel>> socialLogin(String idToken) async {
+  Future<ApiResult<({UserModel user, bool isNewUser})>> socialLogin(String idToken) async {
     try {
       final response = await _dio.post('/auth/social-login', data: {'idToken': idToken});
       final data = response.data as Map<String, dynamic>;
@@ -86,7 +86,8 @@ class AuthRepository {
         refreshToken: data['refreshToken'] as String,
       );
 
-      return Success(user);
+      final isNewUser = data['isNewUser'] as bool? ?? false;
+      return Success((user: user, isNewUser: isNewUser));
     } on DioException catch (e) {
       return Failure(
         e.error is AppException

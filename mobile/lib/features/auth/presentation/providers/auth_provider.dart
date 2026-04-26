@@ -379,9 +379,10 @@ class AuthProvider extends ChangeNotifier {
     final result = await _repo.socialLogin(idToken);
 
     result.when(
-      success: (user) {
-        _user = user;
-        _needsOnboarding = (user.role == null || user.role.isEmpty);
+      success: (data) {
+        _user = data.user;
+        // Nuevo usuario → ir a OnboardingScreen para elegir rol/tipo de cuenta
+        _needsOnboarding = data.isNewUser || (data.user.role.isEmpty);
       },
       failure: (e) => _error = e.message,
     );

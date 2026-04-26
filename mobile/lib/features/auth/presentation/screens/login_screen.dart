@@ -160,16 +160,27 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _handleSocialLogin(SocialProvider provider) async {
     final auth = context.read<AuthProvider>();
 
-    String? idToken;
-    if (provider == SocialProvider.google) {
-      idToken = await SocialAuthService.signInWithGoogle();
-    } else if (provider == SocialProvider.facebook) {
-      idToken = await SocialAuthService.signInWithFacebook();
+    final outcome = provider == SocialProvider.google
+        ? await SocialAuthService.signInWithGoogle()
+        : await SocialAuthService.signInWithFacebook();
+
+    if (!mounted) return;
+
+    if (outcome.isCancelled) return; // el usuario canceló — sin feedback
+
+    if (outcome.isError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(outcome.errorMessage ?? 'Error en inicio de sesión social'),
+          backgroundColor: AppColors.busy,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      return;
     }
 
-    if (idToken == null) return; // cancelado o error silencioso
-
-    final ok = await auth.loginWithSocial(idToken);
+    final ok = await auth.loginWithSocial(outcome.idToken!);
 
     if (!mounted) return;
     if (ok) {

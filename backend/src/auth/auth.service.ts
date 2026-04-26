@@ -509,6 +509,8 @@ data: {
       where: { OR: [{ firebaseUid: uid }, { email }] },
     });
 
+    let isNewUser = false;
+
     if (!user) {
       // Primer acceso: crear cuenta automáticamente
       const nameParts = ((name as string | undefined) ?? '').trim().split(/\s+/);
@@ -529,6 +531,8 @@ data: {
           isEmailVerified: true,
         },
       });
+
+      isNewUser = true;
 
       this.eventsGateway.emitNotification({
         type: 'NEW_USER_VERIFIED',
@@ -555,6 +559,7 @@ data: {
       lastName:  user.lastName,
       phone:     user.phone,
       avatarUrl: user.avatarUrl,
+      isNewUser,
     };
   }
 

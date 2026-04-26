@@ -63,6 +63,8 @@ class UserModel {
     );
   }
 
+  int? get providersCount => null;
+
   UserModel copyWith({
     String? firstName,
     String? lastName,
