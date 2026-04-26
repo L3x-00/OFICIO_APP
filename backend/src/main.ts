@@ -32,9 +32,7 @@ async function bootstrap() {
     : true;
 
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production'
-      ? process.env.ALLOWED_ORIGINS?.split(',') ?? '*'
-      : '*',
+    origin: true,               // ← permite cualquier origen en desarrollo y producción
     credentials: true,
   });
 
