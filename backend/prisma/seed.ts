@@ -5,11 +5,8 @@ const { Pool } = pkg;
 import * as bcrypt from 'bcrypt';
 
 const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'oficio_db',
-  user: 'oficio_user',
-  password: 'oficio_pass_2025',
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('supabase') ? { rejectUnauthorized: false } : undefined,
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });

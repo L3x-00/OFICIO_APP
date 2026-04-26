@@ -147,8 +147,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     if (!mounted) return;
     // Notificamos al provider. Esto cambia navigationState a 'authenticated'
+    // _AppRoot reconstruye desde OnboardingScreen → _MainNavigation; no Navigator.pop() necesario.
     context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
-    Navigator.of(context).pop();
   }
 
   /// Muestra comparativa de planes y luego navega al formulario de proveedor.
