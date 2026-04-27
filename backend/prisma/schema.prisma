@@ -202,6 +202,16 @@ model Provider {
   whatsapp            String?
   address             String?
 
+  // Redes sociales (opcionales)
+  website             String?
+  instagram           String?
+  tiktok              String?
+  facebook            String?
+  linkedin            String?
+  twitterX            String?
+  telegram            String?
+  whatsappBiz         String?
+
   // Geolocalización — guardamos lat/lng como decimales
   // PostGIS se usa para las consultas de cercanía
   latitude            Float?

@@ -309,6 +309,17 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   int?   _selectedParentId;               // para mostrar breadcrumb
   String _selectedParentName = '';
 
+  // ─── Redes sociales (opcionales, colapsables) ────────────
+  bool _socialExpanded = false;
+  final _websiteCtrl    = TextEditingController();
+  final _instagramCtrl  = TextEditingController();
+  final _tiktokCtrl     = TextEditingController();
+  final _facebookCtrl   = TextEditingController();
+  final _linkedinCtrl   = TextEditingController();
+  final _twitterCtrl    = TextEditingController();
+  final _telegramCtrl   = TextEditingController();
+  final _whatsappBizCtrl = TextEditingController();
+
   // ─── Ubicación GPS / URL Maps ─────────────────────────────
   final _mapsUrlController = TextEditingController();
   Position? _gpsPosition;
@@ -551,6 +562,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _nombreComercialController.dispose();
     _razonSocialController.dispose();
     _mapsUrlController.dispose();
+    _websiteCtrl.dispose();
+    _instagramCtrl.dispose();
+    _tiktokCtrl.dispose();
+    _facebookCtrl.dispose();
+    _linkedinCtrl.dispose();
+    _twitterCtrl.dispose();
+    _telegramCtrl.dispose();
+    _whatsappBizCtrl.dispose();
     super.dispose();
   }
 
@@ -837,6 +856,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       address:          _addressController.text.trim(),
       categoryId:       _selectedCategoryId,
       scheduleJson:     !_isOficio && _scheduleJson.isNotEmpty ? _scheduleJson : null,
+      website:          _websiteCtrl.text.trim().isEmpty    ? null : _websiteCtrl.text.trim(),
+      instagram:        _instagramCtrl.text.trim().isEmpty  ? null : _instagramCtrl.text.trim(),
+      tiktok:           _tiktokCtrl.text.trim().isEmpty     ? null : _tiktokCtrl.text.trim(),
+      facebook:         _facebookCtrl.text.trim().isEmpty   ? null : _facebookCtrl.text.trim(),
+      linkedin:         _linkedinCtrl.text.trim().isEmpty   ? null : _linkedinCtrl.text.trim(),
+      twitterX:         _twitterCtrl.text.trim().isEmpty    ? null : _twitterCtrl.text.trim(),
+      telegram:         _telegramCtrl.text.trim().isEmpty   ? null : _telegramCtrl.text.trim(),
+      whatsappBiz:      _whatsappBizCtrl.text.trim().isEmpty ? null : _whatsappBizCtrl.text.trim(),
     );
 
     if (!mounted) return;
@@ -1129,6 +1156,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             _FormSectionHeader(label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *'),
             const SizedBox(height: 12),
             _buildLocationSection(context.colors),
+            const SizedBox(height: 24),
+
+            // ── Sección: Redes sociales (colapsable) ─────
+            const SizedBox(height: 8),
+            _buildSocialMediaSection(context.colors),
             const SizedBox(height: 24),
 
             // ── Sección: Fotos ────────────────────────────
@@ -1518,6 +1550,98 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           ],
         ),
       ),
+    );
+  }
+
+  // ─── Redes sociales (colapsable) ─────────────────────────
+
+  Widget _buildSocialMediaSection(AppThemeColors c) {
+    const networks = [
+      ('website',     'Página web',  Icons.language_rounded),
+      ('instagram',   'Instagram',   Icons.camera_alt_rounded),
+      ('tiktok',      'TikTok',      Icons.music_note_rounded),
+      ('facebook',    'Facebook',    Icons.facebook_rounded),
+      ('linkedin',    'LinkedIn',    Icons.work_rounded),
+      ('twitterX',    'Twitter / X', Icons.alternate_email_rounded),
+      ('telegram',    'Telegram',    Icons.send_rounded),
+      ('whatsappBiz', 'WhatsApp (negocio)', Icons.chat_rounded),
+    ];
+
+    final controllers = {
+      'website':     _websiteCtrl,
+      'instagram':   _instagramCtrl,
+      'tiktok':      _tiktokCtrl,
+      'facebook':    _facebookCtrl,
+      'linkedin':    _linkedinCtrl,
+      'twitterX':    _twitterCtrl,
+      'telegram':    _telegramCtrl,
+      'whatsappBiz': _whatsappBizCtrl,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _socialExpanded = !_socialExpanded),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: c.bgCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.share_rounded, size: 18, color: AppColors.amber),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _socialExpanded ? 'Ocultar redes sociales' : 'Añadir redes sociales (opcional)',
+                    style: TextStyle(color: c.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                Icon(
+                  _socialExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  color: c.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_socialExpanded) ...[
+          const SizedBox(height: 12),
+          ...networks.map(((String key, String label, IconData icon) entry) {
+            final ctrl = controllers[entry.$1]!;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TextField(
+                controller: ctrl,
+                style: TextStyle(color: c.textPrimary, fontSize: 14),
+                decoration: InputDecoration(
+                  prefixIcon: Icon(entry.$3, color: c.textMuted, size: 18),
+                  labelText: entry.$2,
+                  labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
+                  filled: true,
+                  fillColor: c.bgInput,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: c.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: c.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+            );
+          }),
+        ],
+      ],
     );
   }
 

@@ -59,6 +59,14 @@ export class ProviderProfileService {
       address?:        string;
       scheduleJson?:   Record<string, string>;
       hasHomeService?: boolean;  // solo OFICIO
+      website?:        string | null;
+      instagram?:      string | null;
+      tiktok?:         string | null;
+      facebook?:       string | null;
+      linkedin?:       string | null;
+      twitterX?:       string | null;
+      telegram?:       string | null;
+      whatsappBiz?:    string | null;
     },
     type?: string,
   ) {

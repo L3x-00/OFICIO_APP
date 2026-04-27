@@ -14,6 +14,7 @@ import 'onboarding_screen.dart';
 import 'saved_accounts_screen.dart';
 import 'login_screen.dart';
 import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';
+import '../../../../features/provider_dashboard/data/dashboard_repository.dart';
 import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../../../features/subastas/presentation/screens/my_requests_screen.dart';
 
@@ -516,6 +517,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
 
           _ActionButton(
+            icon: Icons.bug_report_rounded,
+            label: 'Reportar un problema',
+            color: AppColors.amber,
+            onTap: () => _showReportProblemDialog(context, auth),
+          ),
+          const SizedBox(height: 8),
+          _ActionButton(
             icon: Icons.logout_rounded,
             label: 'Cerrar sesión',
             color: AppColors.busy,
@@ -595,6 +603,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             child: const Text('Salir', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReportProblemDialog(BuildContext ctx, AuthProvider auth) {
+    final c = ctx.colors;
+    final ctrl = TextEditingController();
+    showDialog(
+      context: ctx,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Reportar un problema',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 4,
+          style: TextStyle(color: c.textPrimary, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Describe el problema que encontraste...',
+            hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+            filled: true,
+            fillColor: c.bgInput,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dCtx),
+            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final text = ctrl.text.trim();
+              if (text.length < 5) return;
+              try {
+                final userId = auth.user?.id;
+                if (userId != null) {
+                  await DashboardRepository().reportPlatformIssue(
+                    userId: userId,
+                    description: text,
+                  );
+                }
+                if (dCtx.mounted) {
+                  Navigator.pop(dCtx);
+                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                    content: Text('Reporte enviado. ¡Gracias por tu ayuda!'),
+                    backgroundColor: Color(0xFF10B981),
+                  ));
+                }
+              } catch (_) {}
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.amber,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Enviar',
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

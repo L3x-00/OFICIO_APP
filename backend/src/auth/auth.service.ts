@@ -115,6 +115,15 @@ data: {
   localityId?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scheduleJson?: any;
+  // redes sociales (opcionales)
+  website?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
+  facebook?: string | null;
+  linkedin?: string | null;
+  twitterX?: string | null;
+  telegram?: string | null;
+  whatsappBiz?: string | null;
 }, files: Express.Multer.File[],
   ) {
     // Verificar que el usuario existe
@@ -191,6 +200,14 @@ data: {
           whatsapp:         data.whatsapp?.trim() || null,
           description:      data.description || null,
           address:          data.address || null,
+          website:          data.website?.trim() || null,
+          instagram:        data.instagram?.trim() || null,
+          tiktok:           data.tiktok?.trim() || null,
+          facebook:         data.facebook?.trim() || null,
+          linkedin:         data.linkedin?.trim() || null,
+          twitterX:         data.twitterX?.trim() || null,
+          telegram:         data.telegram?.trim() || null,
+          whatsappBiz:      data.whatsappBiz?.trim() || null,
           type:             data.type,
           categoryId,
           localityId,

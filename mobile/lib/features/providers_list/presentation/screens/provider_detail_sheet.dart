@@ -1119,30 +1119,29 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   // ─── Botón reportar ──────────────────────────────────────
 
   Widget _buildReportButton() {
-    final c = context.colors;
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 4),
-      child: Center(
-        child: TextButton.icon(
-          onPressed: () {
-            final userId = context.read<AuthProvider>().user?.id ?? 0;
-            if (userId == 0) return;
-            _ReportSheet.show(
-              context,
-              providerId:    widget.provider.id,
-              providerName:  widget.provider.businessName,
-              userId:        userId,
-              repo:          _providersRepo,
-            );
-          },
-          icon: Icon(Icons.flag_outlined, size: 15, color: c.textMuted),
-          label: Text(
-            'Reportar este servicio',
-            style: TextStyle(color: c.textMuted, fontSize: 12),
-          ),
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: OutlinedButton.icon(
+        onPressed: () {
+          final userId = context.read<AuthProvider>().user?.id ?? 0;
+          if (userId == 0) return;
+          _ReportSheet.show(
+            context,
+            providerId:    widget.provider.id,
+            providerName:  widget.provider.businessName,
+            userId:        userId,
+            repo:          _providersRepo,
+          );
+        },
+        icon: const Icon(Icons.flag_rounded, size: 16, color: Color(0xFFEF4444)),
+        label: const Text(
+          'Reportar este servicio',
+          style: TextStyle(color: Color(0xFFEF4444), fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );
@@ -2297,12 +2296,7 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
       );
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reporte enviado. Lo revisaremos pronto. Gracias.'),
-            backgroundColor: Color(0xFF2E7D32),
-          ),
-        );
+        _showReportSuccessDialog(context);
       }
     } catch (e) {
       if (!mounted) return;
@@ -2316,6 +2310,59 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  void _showReportSuccessDialog(BuildContext ctx) {
+    final c = ctx.colors;
+    showDialog(
+      context: ctx,
+      builder: (dCtx) => Dialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60, height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 32),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Reporte enviado con éxito',
+                style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Gracias por hacer de esta una comunidad saludable. Nuestro equipo revisará tu reporte a la brevedad.',
+                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dCtx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Aceptar', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override

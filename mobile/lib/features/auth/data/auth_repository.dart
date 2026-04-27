@@ -144,6 +144,15 @@ class AuthRepository {
     int? categoryId,
     int? localityId,
     Map<String, dynamic>? scheduleJson,
+    // redes sociales
+    String? website,
+    String? instagram,
+    String? tiktok,
+    String? facebook,
+    String? linkedin,
+    String? twitterX,
+    String? telegram,
+    String? whatsappBiz,
   }) async {
     try {
       final response = await _dio.post('/auth/register/provider', data: {
@@ -162,6 +171,14 @@ class AuthRepository {
         'categoryId': ?categoryId,
         'localityId': ?localityId,
         if (scheduleJson != null && scheduleJson.isNotEmpty) 'scheduleJson': scheduleJson,
+        'website':     ?website,
+        'instagram':   ?instagram,
+        'tiktok':      ?tiktok,
+        'facebook':    ?facebook,
+        'linkedin':    ?linkedin,
+        'twitterX':    ?twitterX,
+        'telegram':    ?telegram,
+        'whatsappBiz': ?whatsappBiz,
       });
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {

@@ -617,6 +617,15 @@ class AuthProvider extends ChangeNotifier {
     String? address,
     int? categoryId,
     Map<String, dynamic>? scheduleJson,
+    // redes sociales
+    String? website,
+    String? instagram,
+    String? tiktok,
+    String? facebook,
+    String? linkedin,
+    String? twitterX,
+    String? telegram,
+    String? whatsappBiz,
   }) async {
     _isLoading = true;
     _error = null;
@@ -637,6 +646,14 @@ class AuthProvider extends ChangeNotifier {
       address:          address,
       categoryId:       categoryId,
       scheduleJson:     scheduleJson,
+      website:          website,
+      instagram:        instagram,
+      tiktok:           tiktok,
+      facebook:         facebook,
+      linkedin:         linkedin,
+      twitterX:         twitterX,
+      telegram:         telegram,
+      whatsappBiz:      whatsappBiz,
     );
 
     result.when(

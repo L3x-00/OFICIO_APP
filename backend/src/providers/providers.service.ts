@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
+import { EventsGateway } from '../events/events.gateway.js';
 
 @Injectable()
 export class ProvidersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private events: EventsGateway,
+  ) {}
 
   // ── LISTAR proveedores con filtros opcionales ────────────
   async findAll(filters: {
@@ -233,7 +237,7 @@ export class ProvidersService {
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
     try {
-      return await this.prisma.providerReport.create({
+      const report = await this.prisma.providerReport.create({
         data: {
           providerId:  data.providerId,
           userId:      data.userId,
@@ -241,6 +245,16 @@ export class ProvidersService {
           description: data.description,
         },
       });
+
+      // Notificar al admin en tiempo real
+      this.events.emitNotification({
+        type:       'NEW_PROVIDER_REPORT',
+        title:      'Nuevo reporte de proveedor',
+        body:       `Se reportó al proveedor #${data.providerId}. Motivo: ${data.reason}.`,
+        targetRole: 'ADMIN',
+      });
+
+      return report;
     } catch (e: any) {
       if (e?.code === 'P2002') {
         throw new ConflictException('Ya enviaste un reporte para este proveedor.');
