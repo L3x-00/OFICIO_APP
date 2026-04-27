@@ -878,14 +878,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     if (_photos.isNotEmpty) {
       final repo = DashboardRepository();
       int uploadErrors = 0;
-      for (final photo in _photos) {
+      debugPrint('[Onboarding] Subiendo ${_photos.length} foto(s) para tipo=${widget.providerType}');
+      for (int i = 0; i < _photos.length; i++) {
+        final photo = _photos[i];
         try {
-          // Usar método bytes para compatibilidad multiplataforma (web + native)
+          debugPrint('[Onboarding] Foto ${i + 1}/${_photos.length}: ${photo.name} (${photo.path})');
           final url = await repo.uploadProviderPhotoFile(photo);
+          debugPrint('[Onboarding] URL obtenida: $url');
           await repo.saveProviderImage(url, type: widget.providerType);
-        } catch (e) {
+          debugPrint('[Onboarding] Foto ${i + 1} guardada en el perfil');
+        } catch (e, st) {
           uploadErrors++;
-          debugPrint('[Onboarding] Error subiendo foto: $e');
+          debugPrint('[Onboarding] ERROR foto ${i + 1}: $e\n$st');
         }
       }
       if (!mounted) return;

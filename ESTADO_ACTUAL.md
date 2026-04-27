@@ -1,7 +1,7 @@
 # OficioApp — Estado Actual del Proyecto
 
-**Última actualización**: 2026-04-23
-**Estado**: Hito 8.0 — Subasta ConfiServ + Límites de Plan + OTP sin BD + Modales Legales
+**Última actualización**: 2026-04-27
+**Estado**: Hito 8.1 — 23 Observaciones Post-Despliegue Resueltas
 
 ---
 
@@ -50,6 +50,7 @@ OficioApp es un marketplace de servicios locales para ciudades intermedias del P
 | **7.3** | ✅ | Sistema de límites por plan (PlanLimits): fotos 3/6/10, servicios 1/6/∞, productos 3/6/∞, stats gateado |
 | **7.4** | ✅ | Comparativa de planes en onboarding: sheet pre-registro con features por plan, locked tachadas |
 | **8.0** | ✅ | **Subasta ConfiServ**: flujo completo cliente↔proveedor, geolocalización, límites, anti-arrepentimiento |
+| **8.1** | ✅ | **23 observaciones post-despliegue**: UX, perfiles, social media, eliminación cuenta, localización ES |
 
 ---
 
@@ -125,6 +126,8 @@ mobile/lib/
 | flutter_rating_bar | ^4.0.1 | Estrellas de reseñas |
 | shimmer | ^3.0.0 | Skeleton loading |
 | json_serializable | ^6.13.1 | Codegen de modelos |
+| shared_preferences | ^2.3.5 | Preferencias de usuario (showCategoryFilter) |
+| flutter_localizations | sdk | ES-419 en UI del sistema (date pickers, etc.) |
 
 ---
 
@@ -264,7 +267,39 @@ admin/
 
 ---
 
-## 🆕 Cambios Recientes (2026-04-23 — Hitos 7.1 → 8.0)
+## 🆕 Cambios Recientes (2026-04-27 — Hito 8.1)
+
+### Hito 8.1 — 23 Observaciones Post-Despliegue
+
+**UX / Flujos**
+- **Obs #5**: Banner de límite de plan siempre visible en Servicios (muestra `actual/límite`, colores semáforo, botón "Subir de plan")
+- **Obs #9**: Sección de horarios colapsable en panel_profile_tab (toggle expand/collapse)
+- **Obs #10**: Última foto de trust validation cambiada a "Otra foto del negocio" (interior/exterior)
+- **Obs #11**: Indicador rojo de perfil rechazado con "Ver detalles" (`_RejectionDetailDialog`) y "Volver a solicitar"
+- **Obs #12**: Trust validation dispara `auth.refreshProviderStatus()` al completar → botón actualiza en tiempo real
+- **Obs #13**: Logout inmediato: limpia estado + `notifyListeners()` primero, `_repo.logout()` en background
+- **Obs #14**: Notificaciones y favoritos persisten al cambiar cuentas (solo se limpian si cambia el userId)
+- **Obs #15**: Modal de activación de plan con lista de beneficios + botón "Ver detalles" (clase `PlanActivationPayload`)
+- **Obs #16**: Dashboard recarga inmediatamente cuando se detecta activación de plan
+- **Obs #19**: Botón "Reportar" más visible (OutlinedButton rojo full-width) + diálogo de éxito + notificación WebSocket a admins
+- **Obs #20**: "Reportar un problema" agregado al perfil de cliente
+- **Obs #22**: Cápsulas de categoría removidas de pantalla principal → toggleable desde perfil ("Mostrar categorías en la pantalla principal"), persiste con SharedPreferences
+
+**Backend / Datos**
+- **Obs #17**: Eliminar perfil de proveedor en cascada: `DELETE /provider-profile/me`, transacción Prisma completa, `emitAdminEvent('PROVIDER_DELETED')`
+- **Obs #18**: Eliminar cuenta de usuario en cascada: `DELETE /auth/account`, UI en perfil de cliente con confirmación por texto "ELIMINAR"
+- **Obs #21**: 8 campos de redes sociales opcionales en registro de proveedor: `website`, `instagram`, `tiktok`, `facebook`, `linkedin`, `twitterX`, `telegram`, `whatsappBiz`. Prisma migrado, formulario colapsable en onboarding, `updateMyProfile` en backend
+
+**Mejoras de imagen y debug**
+- **Obs #23**: Logs detallados de upload de fotos en onboarding (URL, índice, stacktrace en error)
+
+**Localización**
+- **Idioma**: `flutter_localizations` agregado, `MaterialApp` configurado con `locale: Locale('es', '419')` + delegates globales → UI del sistema en español latinoamericano
+- **shared_preferences** ^2.3.5 agregado al proyecto
+
+---
+
+## 🆕 Cambios Anteriores (2026-04-23 — Hitos 7.1 → 8.0)
 
 ### Hito 7.1 — Registro sin BD hasta OTP verificado
 

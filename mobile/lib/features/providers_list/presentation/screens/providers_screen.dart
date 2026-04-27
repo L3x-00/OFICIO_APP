@@ -278,7 +278,7 @@ class _FilterBar extends StatelessWidget {
           ),
 
           // ── Fila 2: macrocategorías o subcategorías ───
-          if (prov.categories.isNotEmpty)
+          if (prov.showCategoryFilter && prov.categories.isNotEmpty)
             SizedBox(
               height: 42,
               child: AnimatedSwitcher(

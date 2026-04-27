@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
@@ -63,6 +64,13 @@ class ConfiServApp extends StatelessWidget {
     return MaterialApp(
       title: 'ConfiServ',
       debugShowCheckedModeBanner: false,
+      locale: const Locale('es', '419'),
+      supportedLocales: const [Locale('es', '419'), Locale('es'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme:      AppThemeColors.buildLight(),
       darkTheme:  AppThemeColors.buildDark(),
       themeMode:  themeMode,

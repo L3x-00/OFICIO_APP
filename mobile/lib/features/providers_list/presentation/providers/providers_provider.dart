@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/errors/failures.dart';
 import '../../data/providers_repository.dart';
 import '../../domain/models/provider_model.dart';
@@ -30,6 +31,9 @@ class ProvidersProvider extends ChangeNotifier {
   String? _province;
   String? _district;
 
+  // Preferencia: mostrar cápsulas de categoría en la pantalla principal
+  bool _showCategoryFilter = false;
+
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers            => _providers;
   List<CategoryModel> get categories           => _categories;
@@ -49,11 +53,25 @@ class ProvidersProvider extends ChangeNotifier {
   String?             get district             => _district;
   bool                get hasLocationFilter    => _department != null;
   ViewMode            get viewMode             => _viewMode;
+  bool                get showCategoryFilter   => _showCategoryFilter;
 
   void setViewMode(ViewMode mode) {
     if (_viewMode == mode) return;
     _viewMode = mode;
     notifyListeners();
+  }
+
+  Future<void> loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    _showCategoryFilter = prefs.getBool('showCategoryFilter') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> toggleCategoryFilter() async {
+    _showCategoryFilter = !_showCategoryFilter;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showCategoryFilter', _showCategoryFilter);
   }
 
   /// Devuelve la CategoryModel del padre expandido (o null)
@@ -85,7 +103,7 @@ class ProvidersProvider extends ChangeNotifier {
     _department = department;
     _province   = province;
     _district   = district;
-    await Future.wait([loadCategories(), loadProviders()]);
+    await Future.wait([loadCategories(), loadProviders(), loadPreferences()]);
   }
 
   // ── Cargar categorías ─────────────────────────────────────

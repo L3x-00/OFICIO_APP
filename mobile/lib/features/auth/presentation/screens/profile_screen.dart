@@ -501,8 +501,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 12),
           ],
 
-          // ── Toggle de tema (también accesible aquí) ──────
+          // ── Preferencias de visualización ────────────────
+          _SectionTitle(title: 'Preferencias'),
+          const SizedBox(height: 12),
           _ThemeToggleRow(theme: theme),
+          const SizedBox(height: 10),
+          _CategoryFilterToggleRow(prov: context.watch<ProvidersProvider>()),
           const SizedBox(height: 12),
 
           // ── Cuentas guardadas ─────────────────────────────
@@ -808,6 +812,52 @@ class _ThemeToggleRow extends StatelessWidget {
               value: !theme.isDark,
               onChanged: (_) => theme.toggle(),
               activeThumbColor: AppColors.amber,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryFilterToggleRow extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _CategoryFilterToggleRow({required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: prov.toggleCategoryFilter,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.category_rounded,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Mostrar categorías en la pantalla principal',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Switch(
+              value: prov.showCategoryFilter,
+              onChanged: (_) => prov.toggleCategoryFilter(),
+              activeThumbColor: AppColors.primary,
             ),
           ],
         ),
