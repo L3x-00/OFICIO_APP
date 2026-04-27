@@ -11,6 +11,7 @@ import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus,
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
+import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 
 @Injectable()
 export class AdminService {
@@ -18,6 +19,7 @@ export class AdminService {
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
     private minio: MinioService,
+    private push: PushNotificationsService,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
@@ -649,6 +651,13 @@ async updateProvider(
       targetUserId: provider.userId,
     });
 
+    this.push.sendToUser(
+      provider.userId,
+      '¡Perfil aprobado! ✅',
+      `Tu perfil "${updated.businessName}" fue aprobado. ¡Ya apareces en la plataforma!`,
+      { type: 'PROVIDER_APPROVED' },
+    );
+
     return updated;
   }
 
@@ -700,6 +709,13 @@ async updateProvider(
       body: `Tu perfil "${updated.businessName}" no fue aprobado. Motivo: ${reason}`,
       targetUserId: provider.userId,
     });
+
+    this.push.sendToUser(
+      provider.userId,
+      'Perfil rechazado',
+      `Tu perfil "${updated.businessName}" no fue aprobado. Motivo: ${reason}`,
+      { type: 'PROVIDER_REJECTED' },
+    );
 
     return updated;
   }
@@ -1219,6 +1235,13 @@ async updateProvider(
     });
     this.eventsGateway.emitAdminEvent('PLAN_APPROVED', { requestId, plan: req.plan });
 
+    this.push.sendToUser(
+      req.provider.userId,
+      `¡Plan ${req.plan} aprobado!`,
+      `¡Felicidades! Tu plan ${req.plan} ha sido aprobado. Ya disfrutas de todos sus beneficios.`,
+      { type: 'PLAN_APROBADO', plan: req.plan },
+    );
+
     return { success: true };
   }
 
@@ -1258,6 +1281,13 @@ async updateProvider(
       targetUserId:      req.provider.userId,
       targetProfileType: req.provider.type,
     });
+
+    this.push.sendToUser(
+      req.provider.userId,
+      `Solicitud de plan ${req.plan} rechazada`,
+      msg,
+      { type: 'PLAN_RECHAZADO', plan: req.plan },
+    );
 
     return { success: true };
   }

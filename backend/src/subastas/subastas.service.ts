@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto.js';
 import { SubmitOfferDto } from './dto/submit-offer.dto.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
@@ -38,6 +39,7 @@ export class SubastasService {
   constructor(
     private prisma: PrismaService,
     private events: EventsGateway,
+    private push: PushNotificationsService,
   ) {}
 
   // ── CREAR SOLICITUD ─────────────────────────────────────────
@@ -223,6 +225,13 @@ export class SubastasService {
       targetUserId: request.userId,
     });
 
+    this.push.sendToUser(
+      request.userId,
+      '¡Nueva oferta recibida!',
+      `${offer.provider.businessName} ofreció S/ ${dto.price.toFixed(2)}`,
+      { type: 'NEW_OFFER', requestId: String(dto.serviceRequestId) },
+    );
+
     return offer;
   }
 
@@ -276,6 +285,13 @@ export class SubastasService {
         body: 'El cliente eligió tu propuesta. ¡Contáctalo ahora!',
         targetUserId: winningProvider.userId,
       });
+
+      this.push.sendToUser(
+        winningProvider.userId,
+        '¡Felicidades! Tu oferta fue aceptada',
+        'El cliente eligió tu propuesta. ¡Contáctalo ahora!',
+        { type: 'OFFER_ACCEPTED', requestId: String(offer.serviceRequestId) },
+      );
     }
 
     return { success: true, offerId: dto.offerId };

@@ -136,6 +136,15 @@ export class UsersService {
     return user;
   }
 
+  // ── GUARDAR TOKEN FCM ────────────────────────────────────
+  async saveFcmToken(userId: number, token: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { fcmToken: token },
+    });
+    return { success: true };
+  }
+
   // ── CAMBIAR CONTRASEÑA (usuario autenticado) ─────────────
   async changePassword(
     userId: number,

@@ -68,6 +68,14 @@ export type ProviderMinAggregateOutputType = {
   phone: string | null
   whatsapp: string | null
   address: string | null
+  website: string | null
+  instagram: string | null
+  tiktok: string | null
+  facebook: string | null
+  linkedin: string | null
+  twitterX: string | null
+  telegram: string | null
+  whatsappBiz: string | null
   latitude: number | null
   longitude: number | null
   availability: $Enums.AvailabilityStatus | null
@@ -103,6 +111,14 @@ export type ProviderMaxAggregateOutputType = {
   phone: string | null
   whatsapp: string | null
   address: string | null
+  website: string | null
+  instagram: string | null
+  tiktok: string | null
+  facebook: string | null
+  linkedin: string | null
+  twitterX: string | null
+  telegram: string | null
+  whatsappBiz: string | null
   latitude: number | null
   longitude: number | null
   availability: $Enums.AvailabilityStatus | null
@@ -138,6 +154,14 @@ export type ProviderCountAggregateOutputType = {
   phone: number
   whatsapp: number
   address: number
+  website: number
+  instagram: number
+  tiktok: number
+  facebook: number
+  linkedin: number
+  twitterX: number
+  telegram: number
+  whatsappBiz: number
   latitude: number
   longitude: number
   scheduleJson: number
@@ -202,6 +226,14 @@ export type ProviderMinAggregateInputType = {
   phone?: true
   whatsapp?: true
   address?: true
+  website?: true
+  instagram?: true
+  tiktok?: true
+  facebook?: true
+  linkedin?: true
+  twitterX?: true
+  telegram?: true
+  whatsappBiz?: true
   latitude?: true
   longitude?: true
   availability?: true
@@ -237,6 +269,14 @@ export type ProviderMaxAggregateInputType = {
   phone?: true
   whatsapp?: true
   address?: true
+  website?: true
+  instagram?: true
+  tiktok?: true
+  facebook?: true
+  linkedin?: true
+  twitterX?: true
+  telegram?: true
+  whatsappBiz?: true
   latitude?: true
   longitude?: true
   availability?: true
@@ -272,6 +312,14 @@ export type ProviderCountAggregateInputType = {
   phone?: true
   whatsapp?: true
   address?: true
+  website?: true
+  instagram?: true
+  tiktok?: true
+  facebook?: true
+  linkedin?: true
+  twitterX?: true
+  telegram?: true
+  whatsappBiz?: true
   latitude?: true
   longitude?: true
   scheduleJson?: true
@@ -395,6 +443,14 @@ export type ProviderGroupByOutputType = {
   phone: string
   whatsapp: string | null
   address: string | null
+  website: string | null
+  instagram: string | null
+  tiktok: string | null
+  facebook: string | null
+  linkedin: string | null
+  twitterX: string | null
+  telegram: string | null
+  whatsappBiz: string | null
   latitude: number | null
   longitude: number | null
   scheduleJson: runtime.JsonValue | null
@@ -454,6 +510,14 @@ export type ProviderWhereInput = {
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
+  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
@@ -506,6 +570,14 @@ export type ProviderOrderByWithRelationInput = {
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  instagram?: Prisma.SortOrderInput | Prisma.SortOrder
+  tiktok?: Prisma.SortOrderInput | Prisma.SortOrder
+  facebook?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedin?: Prisma.SortOrderInput | Prisma.SortOrder
+  twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
+  telegram?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
   longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleJson?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -562,6 +634,14 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
+  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
@@ -614,6 +694,14 @@ export type ProviderOrderByWithAggregationInput = {
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  instagram?: Prisma.SortOrderInput | Prisma.SortOrder
+  tiktok?: Prisma.SortOrderInput | Prisma.SortOrder
+  facebook?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedin?: Prisma.SortOrderInput | Prisma.SortOrder
+  twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
+  telegram?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
   longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleJson?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -658,6 +746,14 @@ export type ProviderScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringWithAggregatesFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  facebook?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableWithAggregatesFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableWithAggregatesFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableWithAggregatesFilter<"Provider">
@@ -692,6 +788,14 @@ export type ProviderCreateInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -742,6 +846,14 @@ export type ProviderUncheckedCreateInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -789,6 +901,14 @@ export type ProviderUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -839,6 +959,14 @@ export type ProviderUncheckedUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -888,6 +1016,14 @@ export type ProviderCreateManyInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -922,6 +1058,14 @@ export type ProviderUpdateManyMutationInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -956,6 +1100,14 @@ export type ProviderUncheckedUpdateManyInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1007,6 +1159,14 @@ export type ProviderCountOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
+  tiktok?: Prisma.SortOrder
+  facebook?: Prisma.SortOrder
+  linkedin?: Prisma.SortOrder
+  twitterX?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   scheduleJson?: Prisma.SortOrder
@@ -1056,6 +1216,14 @@ export type ProviderMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
+  tiktok?: Prisma.SortOrder
+  facebook?: Prisma.SortOrder
+  linkedin?: Prisma.SortOrder
+  twitterX?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   availability?: Prisma.SortOrder
@@ -1091,6 +1259,14 @@ export type ProviderMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
+  tiktok?: Prisma.SortOrder
+  facebook?: Prisma.SortOrder
+  linkedin?: Prisma.SortOrder
+  twitterX?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   availability?: Prisma.SortOrder
@@ -1482,6 +1658,14 @@ export type ProviderCreateWithoutUserInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1530,6 +1714,14 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1608,6 +1800,14 @@ export type ProviderScalarWhereInput = {
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
+  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
@@ -1642,6 +1842,14 @@ export type ProviderCreateWithoutLocalityInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1691,6 +1899,14 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1763,6 +1979,14 @@ export type ProviderCreateWithoutCategoryInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1812,6 +2036,14 @@ export type ProviderUncheckedCreateWithoutCategoryInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1884,6 +2116,14 @@ export type ProviderCreateWithoutImagesInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1933,6 +2173,14 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1995,6 +2243,14 @@ export type ProviderUpdateWithoutImagesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2044,6 +2300,14 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2090,6 +2354,14 @@ export type ProviderCreateWithoutSubscriptionInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2139,6 +2411,14 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2201,6 +2481,14 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2250,6 +2538,14 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2296,6 +2592,14 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2345,6 +2649,14 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2407,6 +2719,14 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2456,6 +2776,14 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2502,6 +2830,14 @@ export type ProviderCreateWithoutReviewsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2551,6 +2887,14 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2613,6 +2957,14 @@ export type ProviderUpdateWithoutReviewsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2662,6 +3014,14 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2708,6 +3068,14 @@ export type ProviderCreateWithoutFavoritesInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2757,6 +3125,14 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2819,6 +3195,14 @@ export type ProviderUpdateWithoutFavoritesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2868,6 +3252,14 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2914,6 +3306,14 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2963,6 +3363,14 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3025,6 +3433,14 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3074,6 +3490,14 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3120,6 +3544,14 @@ export type ProviderCreateWithoutAnalyticsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3169,6 +3601,14 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3231,6 +3671,14 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3280,6 +3728,14 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3326,6 +3782,14 @@ export type ProviderCreateWithoutNotificationsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3375,6 +3839,14 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3437,6 +3909,14 @@ export type ProviderUpdateWithoutNotificationsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3486,6 +3966,14 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3532,6 +4020,14 @@ export type ProviderCreateWithoutRecommendationsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3581,6 +4077,14 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3643,6 +4147,14 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3692,6 +4204,14 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3738,6 +4258,14 @@ export type ProviderCreateWithoutReportsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3787,6 +4315,14 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3849,6 +4385,14 @@ export type ProviderUpdateWithoutReportsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3898,6 +4442,14 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3944,6 +4496,14 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3993,6 +4553,14 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4055,6 +4623,14 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4104,6 +4680,14 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4150,6 +4734,14 @@ export type ProviderCreateWithoutOffersInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4199,6 +4791,14 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4261,6 +4861,14 @@ export type ProviderUpdateWithoutOffersInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4310,6 +4918,14 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4356,6 +4972,14 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4405,6 +5029,14 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4467,6 +5099,14 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4516,6 +5156,14 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4563,6 +5211,14 @@ export type ProviderCreateManyUserInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4597,6 +5253,14 @@ export type ProviderUpdateWithoutUserInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4645,6 +5309,14 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4693,6 +5365,14 @@ export type ProviderUncheckedUpdateManyWithoutUserInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4729,6 +5409,14 @@ export type ProviderCreateManyLocalityInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4762,6 +5450,14 @@ export type ProviderUpdateWithoutLocalityInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4811,6 +5507,14 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4859,6 +5563,14 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4894,6 +5606,14 @@ export type ProviderCreateManyCategoryInput = {
   phone: string
   whatsapp?: string | null
   address?: string | null
+  website?: string | null
+  instagram?: string | null
+  tiktok?: string | null
+  facebook?: string | null
+  linkedin?: string | null
+  twitterX?: string | null
+  telegram?: string | null
+  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4927,6 +5647,14 @@ export type ProviderUpdateWithoutCategoryInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4976,6 +5704,14 @@ export type ProviderUncheckedUpdateWithoutCategoryInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5024,6 +5760,14 @@ export type ProviderUncheckedUpdateManyWithoutCategoryInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5189,6 +5933,14 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
+  website?: boolean
+  instagram?: boolean
+  tiktok?: boolean
+  facebook?: boolean
+  linkedin?: boolean
+  twitterX?: boolean
+  telegram?: boolean
+  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -5242,6 +5994,14 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
+  website?: boolean
+  instagram?: boolean
+  tiktok?: boolean
+  facebook?: boolean
+  linkedin?: boolean
+  twitterX?: boolean
+  telegram?: boolean
+  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -5281,6 +6041,14 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
+  website?: boolean
+  instagram?: boolean
+  tiktok?: boolean
+  facebook?: boolean
+  linkedin?: boolean
+  twitterX?: boolean
+  telegram?: boolean
+  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -5320,6 +6088,14 @@ export type ProviderSelectScalar = {
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
+  website?: boolean
+  instagram?: boolean
+  tiktok?: boolean
+  facebook?: boolean
+  linkedin?: boolean
+  twitterX?: boolean
+  telegram?: boolean
+  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -5340,7 +6116,7 @@ export type ProviderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "trustStatus" | "isTrusted" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "website" | "instagram" | "tiktok" | "facebook" | "linkedin" | "twitterX" | "telegram" | "whatsappBiz" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "trustStatus" | "isTrusted" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -5407,6 +6183,14 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     phone: string
     whatsapp: string | null
     address: string | null
+    website: string | null
+    instagram: string | null
+    tiktok: string | null
+    facebook: string | null
+    linkedin: string | null
+    twitterX: string | null
+    telegram: string | null
+    whatsappBiz: string | null
     latitude: number | null
     longitude: number | null
     scheduleJson: runtime.JsonValue | null
@@ -5879,6 +6663,14 @@ export interface ProviderFieldRefs {
   readonly phone: Prisma.FieldRef<"Provider", 'String'>
   readonly whatsapp: Prisma.FieldRef<"Provider", 'String'>
   readonly address: Prisma.FieldRef<"Provider", 'String'>
+  readonly website: Prisma.FieldRef<"Provider", 'String'>
+  readonly instagram: Prisma.FieldRef<"Provider", 'String'>
+  readonly tiktok: Prisma.FieldRef<"Provider", 'String'>
+  readonly facebook: Prisma.FieldRef<"Provider", 'String'>
+  readonly linkedin: Prisma.FieldRef<"Provider", 'String'>
+  readonly twitterX: Prisma.FieldRef<"Provider", 'String'>
+  readonly telegram: Prisma.FieldRef<"Provider", 'String'>
+  readonly whatsappBiz: Prisma.FieldRef<"Provider", 'String'>
   readonly latitude: Prisma.FieldRef<"Provider", 'Float'>
   readonly longitude: Prisma.FieldRef<"Provider", 'Float'>
   readonly scheduleJson: Prisma.FieldRef<"Provider", 'Json'>

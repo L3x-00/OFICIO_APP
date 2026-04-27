@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 import { Prisma } from '../generated/client/client.js';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class ReviewsService {
   constructor(
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
+    private push: PushNotificationsService,
   ) {}
 
   // ── CREAR RESEÑA ─────────────────────────────────────────
@@ -117,6 +119,13 @@ export class ReviewsService {
       body: `${reviewerName} te dejó una reseña de ${data.rating} estrella${data.rating === 1 ? '' : 's'}.`,
       targetUserId: provider.userId,
     });
+
+    this.push.sendToUser(
+      provider.userId,
+      'Nueva reseña recibida ⭐',
+      `${reviewerName} te dejó una reseña de ${data.rating} estrella${data.rating === 1 ? '' : 's'}.`,
+      { type: 'NEW_REVIEW', providerId: String(data.providerId) },
+    );
 
     return review;
   }

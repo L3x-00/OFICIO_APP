@@ -55,6 +55,14 @@ export class UsersController {
     return this.usersService.updateProfile(req.user.userId, dto);
   }
 
+  // PATCH /users/me/device-token
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/device-token')
+  saveDeviceToken(@Request() req: any, @Body('token') token: string) {
+    if (!token) throw new BadRequestException('token requerido');
+    return this.usersService.saveFcmToken(req.user.userId, token);
+  }
+
   // PATCH /users/profile-picture
   @UseGuards(JwtAuthGuard)
   @Patch('profile-picture')

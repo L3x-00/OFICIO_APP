@@ -95,6 +95,7 @@ model User {
   province      String?   // Provincia, ej: "Huancayo"
   district      String?   // Distrito, ej: "El Tambo"
   firebaseUid       String?   @unique  // UID de Firebase (login social)
+  fcmToken          String?             // Token FCM para notificaciones push
   isActive          Boolean   @default(true)
   isEmailVerified   Boolean   @default(false)
   createdAt         DateTime  @default(now())
