@@ -1048,10 +1048,22 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
           ),
           StatefulBuilder(
             builder: (ctx, setS) => ElevatedButton(
-              onPressed: () {
-                if (controller.text.trim().toUpperCase() == 'ELIMINAR') {
-                  Navigator.pop(ctx);
-                  context.read<AuthProvider>().logout();
+              onPressed: () async {
+                if (controller.text.trim().toUpperCase() != 'ELIMINAR') return;
+                Navigator.pop(ctx);
+                final dash = context.read<DashboardProvider>();
+                final auth = context.read<AuthProvider>();
+                final ok = await dash.deleteProviderProfile();
+                if (!mounted) return;
+                if (ok) {
+                  await auth.refreshProviderStatus();
+                  if (!mounted) return;
+                  // Si ya no tiene perfiles de proveedor, hacer logout
+                  if (auth.providerProfiles.isEmpty) {
+                    auth.logout();
+                  }
+                } else {
+                  _showSnack(dash.error ?? 'Error al eliminar el perfil', isError: true);
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.busy),

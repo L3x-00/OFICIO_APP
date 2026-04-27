@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt.guard.js';
 import { RegisterUserDto } from './dto/register-user.dto.js';
@@ -95,5 +95,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async socialLogin(@Body() dto: SocialLoginDto) {
     return this.authService.socialLogin(dto.idToken);
+  }
+
+  @Delete('account')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async deleteAccount(@Request() req: any) {
+    return this.authService.deleteAccount(req.user.userId);
   }
 }

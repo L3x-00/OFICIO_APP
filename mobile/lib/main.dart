@@ -154,11 +154,15 @@ class _AppRootState extends State<_AppRoot> {
 
     // ── Promoción de plan ─────────────────────────────────────────────────────
     if (auth.pendingPlanPromotion != null && mounted) {
-      final title = auth.pendingPlanPromotion!;
+      final payload = auth.pendingPlanPromotion!;
       auth.clearPlanPromotion();
+      // Recargar dashboard para que los límites/efectos del plan se apliquen de inmediato
+      context.read<DashboardProvider>().loadDashboard(
+        providerType: auth.activeProfileType,
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _showPlanPromotionDialog(title);
+        _showPlanPromotionDialog(payload);
       });
     }
   }
@@ -247,23 +251,44 @@ class _AppRootState extends State<_AppRoot> {
     );
   }
 
-  void _showPlanPromotionDialog(String title) {
+  void _showPlanPromotionDialog(PlanActivationPayload payload) {
     final c = context.colors;
     const green = Color(0xFF10B981);
+
+    final benefits = switch (payload.plan) {
+      'PREMIUM'  => [
+        'Máxima visibilidad ante clientes',
+        'Servicios y productos ilimitados',
+        'Estadísticas avanzadas de perfil',
+        'Badge "Premium" destacado',
+        'Acceso prioritario a oportunidades',
+      ],
+      'ESTANDAR' => [
+        'Mayor visibilidad ante clientes',
+        'Hasta 10 servicios o productos',
+        'Estadísticas básicas de perfil',
+        'Acceso a oportunidades de trabajo',
+      ],
+      _ => [
+        'Mayor visibilidad ante clientes',
+        'Acceso a más funcionalidades',
+      ],
+    };
+
     showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (ctx) => Dialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 72, height: 72,
+                width: 68, height: 68,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF065F46), Color(0xFF047857)],
@@ -271,32 +296,136 @@ class _AppRootState extends State<_AppRoot> {
                     end: Alignment.bottomRight,
                   ),
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: green.withValues(alpha: 0.35), blurRadius: 18, offset: const Offset(0, 6))],
+                  boxShadow: [BoxShadow(color: green.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 5))],
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 36),
+                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 34),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               Text(
-                title,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                payload.title,
+                style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.w900),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
+              Text(
+                'Ahora tienes acceso a estos beneficios:',
+                style: TextStyle(color: c.textSecondary, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: green.withValues(alpha: 0.08),
+                  color: green.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: green.withValues(alpha: 0.25)),
                 ),
-                child: const Text(
-                  'Tu perfil ahora aparece con mayor visibilidad ante los clientes. ¡Aprovecha tu nuevo plan!',
-                  style: TextStyle(color: green, fontSize: 13, height: 1.5),
-                  textAlign: TextAlign.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: benefits.map((b) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: green, size: 15),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(b, style: const TextStyle(color: green, fontSize: 12, height: 1.4))),
+                      ],
+                    ),
+                  )).toList(),
                 ),
               ),
               const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: c.textMuted,
+                        side: BorderSide(color: c.border),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Aceptar'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _showPlanBenefitsDetail(payload.plan, benefits);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Ver detalles'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPlanBenefitsDetail(String plan, List<String> benefits) {
+    final c = context.colors;
+    const green = Color(0xFF10B981);
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.workspace_premium_rounded, color: green, size: 22),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Plan ${plan[0]}${plan.substring(1).toLowerCase()} — Beneficios',
+                    style: TextStyle(color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ...benefits.asMap().entries.map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 24, height: 24,
+                      decoration: BoxDecoration(
+                        color: green.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${e.key + 1}',
+                          style: const TextStyle(color: green, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(e.value, style: TextStyle(color: c.textPrimary, fontSize: 13, height: 1.4)),
+                    ),
+                  ],
+                ),
+              )),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -304,10 +433,10 @@ class _AppRootState extends State<_AppRoot> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: green,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('¡Excelente!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

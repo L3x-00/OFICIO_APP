@@ -175,6 +175,13 @@ class DashboardRepository {
     );
   }
 
+  Future<void> deleteProviderProfile({String? type}) async {
+    await _dio.delete(
+      '/provider-profile/me',
+      queryParameters: type != null ? {'type': type} : null,
+    );
+  }
+
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
 
   Future<ProviderNotificationsResult> getMyNotifications() async {

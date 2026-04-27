@@ -93,4 +93,13 @@ export class ProviderProfileController {
   ) {
     return this.service.requestPlanUpgrade(req.user.userId, body.plan, type);
   }
+
+  // DELETE /provider-profile/me?type=OFICIO|NEGOCIO — elimina perfil en cascada
+  @Delete('me')
+  deleteMyProfile(
+    @Request() req: any,
+    @Query('type') type?: string,
+  ) {
+    return this.service.deleteMyProfile(req.user.userId, type);
+  }
 }

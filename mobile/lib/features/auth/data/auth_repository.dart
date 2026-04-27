@@ -496,4 +496,10 @@ class AuthRepository {
     await AuthLocalStorage.clearSession();
     DioClient.instance.clearTokens();
   }
+
+  Future<void> deleteAccount() async {
+    await _dio.delete('/auth/account');
+    await AuthLocalStorage.clearSession();
+    DioClient.instance.clearTokens();
+  }
 }

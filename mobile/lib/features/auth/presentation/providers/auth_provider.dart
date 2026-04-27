@@ -25,6 +25,12 @@ class TrustRejectionPayload {
   const TrustRejectionPayload({required this.reason, required this.profileType, this.rejectedAt});
 }
 
+class PlanActivationPayload {
+  final String plan;
+  final String title;
+  const PlanActivationPayload({required this.plan, required this.title});
+}
+
 class AuthProvider extends ChangeNotifier {
   final _repo = AuthRepository();
 
@@ -94,6 +100,29 @@ class AuthProvider extends ChangeNotifier {
   Future<void> refreshProviderStatus() async {
     await _syncProviderStatus();
     notifyListeners();
+  }
+
+  /// Elimina la cuenta del usuario en cascada y hace logout local
+  Future<bool> deleteAccount() async {
+    try {
+      SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
+      SocketService.instance.removeNotificationListener(_handleRemoteNotification);
+      SocketService.instance.disconnect();
+      await _repo.deleteAccount();
+      _user = null;
+      _isGuest = false;
+      _needsOnboarding = false;
+      _needsEmailVerification = false;
+      _providerProfiles.clear();
+      _activeProfileType = null;
+      _providerVerificationStatus = null;
+      _verificationStatusByType.clear();
+      _rejectionReasonByType.clear();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Devuelve true si el usuario autenticado puede registrar un nuevo perfil
@@ -173,7 +202,13 @@ class AuthProvider extends ChangeNotifier {
       if (targetProfileType != null && targetProfileType != _activeProfileType) return;
       _syncProviderStatus().then((_) {
         if (type == 'PLAN_APROBADO') {
-          _pendingPlanPromotion = payload['title'] as String? ?? '¡Has sido promovido!';
+          final rawPlan = payload['body'] as String? ?? '';
+          final planMatch = RegExp(r'plan (\w+)').firstMatch(rawPlan);
+          final planName = planMatch?.group(1) ?? targetProfileType ?? 'ESTANDAR';
+          _pendingPlanPromotion = PlanActivationPayload(
+            plan: planName.toUpperCase(),
+            title: payload['title'] as String? ?? '¡Plan activado!',
+          );
         }
         notifyListeners();
       });
@@ -232,8 +267,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ── Plan promotion overlay ────────────────────────────────
-  String? _pendingPlanPromotion;
-  String? get pendingPlanPromotion => _pendingPlanPromotion;
+  PlanActivationPayload? _pendingPlanPromotion;
+  PlanActivationPayload? get pendingPlanPromotion => _pendingPlanPromotion;
 
   void clearPlanPromotion() {
     _pendingPlanPromotion = null;

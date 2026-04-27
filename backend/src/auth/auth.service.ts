@@ -595,4 +595,39 @@ data: {
 
     return { accessToken, refreshToken, userId, role };
   }
+
+  // ── DELETE ACCOUNT (cascade) ─────────────────────────────
+  async deleteAccount(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    await this.prisma.$transaction(async (tx) => {
+      // Eliminar todos los proveedores del usuario en cascada
+      const providers = await tx.provider.findMany({ where: { userId } });
+      for (const p of providers) {
+        await tx.providerAnalytic.deleteMany({ where: { providerId: p.id } });
+        await tx.adminNotification.deleteMany({ where: { providerId: p.id } });
+        await tx.providerReport.deleteMany({ where: { providerId: p.id } });
+        await tx.favorite.deleteMany({ where: { providerId: p.id } });
+        await tx.providerImage.deleteMany({ where: { providerId: p.id } });
+        await tx.verificationDoc.deleteMany({ where: { providerId: p.id } });
+        await tx.trustValidationRequest.deleteMany({ where: { providerId: p.id } });
+        await tx.planRequest.deleteMany({ where: { providerId: p.id } });
+        await tx.review.deleteMany({ where: { providerId: p.id } });
+        await tx.serviceItem.deleteMany({ where: { providerId: p.id } });
+        await tx.recommendation.deleteMany({ where: { providerId: p.id } });
+        const sub = await tx.subscription.findUnique({ where: { providerId: p.id } });
+        if (sub) await tx.subscription.delete({ where: { providerId: p.id } });
+        await tx.provider.delete({ where: { id: p.id } });
+      }
+      // Eliminar datos del usuario
+      await tx.refreshToken.deleteMany({ where: { userId } });
+      await tx.otpCode.deleteMany({ where: { userId } });
+      await tx.review.deleteMany({ where: { userId } });
+      await tx.favorite.deleteMany({ where: { userId } });
+      await tx.user.delete({ where: { id: userId } });
+    });
+
+    return { success: true };
+  }
 }

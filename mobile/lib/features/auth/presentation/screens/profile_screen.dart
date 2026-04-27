@@ -521,6 +521,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: AppColors.busy,
             onTap: () => _confirmLogout(context, auth),
           ),
+          const SizedBox(height: 8),
+          _ActionButton(
+            icon: Icons.delete_forever_rounded,
+            label: 'Eliminar cuenta',
+            color: const Color(0xFF991B1B),
+            onTap: () => _confirmDeleteAccount(context, auth),
+          ),
           const SizedBox(height: 12),
         ],
       ),
@@ -590,6 +597,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Salir', style: TextStyle(color: Colors.white)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext ctx, AuthProvider auth) {
+    final c = ctx.colors;
+    const red = Color(0xFF991B1B);
+    final controller = TextEditingController();
+    showDialog(
+      context: ctx,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (_, setS) => AlertDialog(
+          backgroundColor: c.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            '¿Eliminar tu cuenta?',
+            style: TextStyle(color: red, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Esta acción es IRREVERSIBLE. Se eliminarán tu cuenta y todos los datos asociados (perfiles, reseñas, favoritos, etc.).\n\nEscribe ELIMINAR para confirmar:',
+                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                onChanged: (_) => setS(() {}),
+                style: TextStyle(color: c.textPrimary),
+                decoration: InputDecoration(
+                  hintText: 'Escribe ELIMINAR',
+                  hintStyle: TextStyle(color: c.textMuted),
+                  filled: true,
+                  fillColor: c.bgInput,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+            ),
+            ElevatedButton(
+              onPressed: controller.text.trim().toUpperCase() == 'ELIMINAR'
+                  ? () async {
+                      Navigator.pop(dialogCtx);
+                      final ok = await auth.deleteAccount();
+                      if (!ok && ctx.mounted) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          const SnackBar(
+                            content: Text('Error al eliminar la cuenta. Inténtalo de nuevo.'),
+                            backgroundColor: Color(0xFFEF4444),
+                          ),
+                        );
+                      }
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: red,
+                disabledBackgroundColor: c.bgCard,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Eliminar cuenta', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
       ),
     );
   }

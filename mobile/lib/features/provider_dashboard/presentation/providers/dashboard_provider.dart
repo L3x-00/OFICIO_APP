@@ -259,6 +259,18 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
+  /// Elimina el perfil de proveedor en cascada. Devuelve true si tuvo éxito.
+  Future<bool> deleteProviderProfile() async {
+    try {
+      await _repo.deleteProviderProfile(type: _currentProviderType);
+      return true;
+    } catch (e) {
+      _error = _formatError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   String _mapUploadError(Object e) {
     final msg = e.toString().toLowerCase();
     if (msg.contains('413') || msg.contains('file too large') || msg.contains('maxfilesize')) {
