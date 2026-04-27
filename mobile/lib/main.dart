@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'core/services/fcm_service.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
@@ -20,9 +22,19 @@ import 'features/provider_dashboard/presentation/providers/dashboard_provider.da
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/notifications/presentation/screens/notifications_screen.dart';
 
+/// Handler de mensajes en background — debe ser función de nivel superior.
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  debugPrint('[FCM] Mensaje en background: ${message.notification?.title}');
+}
+
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FcmService.setNavigatorKey(_navigatorKey);
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();
 
@@ -62,6 +74,7 @@ class ConfiServApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeMode = context.watch<ThemeProvider>().mode;
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'ConfiServ',
       debugShowCheckedModeBanner: false,
       locale: const Locale('es', '419'),
@@ -107,6 +120,8 @@ class _AppRootState extends State<_AppRoot> {
     super.dispose();
   }
 
+  bool _fcmInitialized = false;
+
   void _onAuthChanged() {
     final auth   = context.read<AuthProvider>();
     final notifs = context.read<NotificationsProvider>();
@@ -116,9 +131,17 @@ class _AppRootState extends State<_AppRoot> {
     if (auth.user != null) {
       notifs.setUser(userId: auth.user!.id, role: auth.user!.role);
       favs.initialize(auth.user!.id);
+
+      // Inicializar FCM una sola vez por sesión
+      if (!_fcmInitialized) {
+        _fcmInitialized = true;
+        FcmService.onMessageTap = _handleFcmTap;
+        FcmService.instance.initialize(context);
+      }
     } else {
       notifs.clearUser();
       favs.clear();
+      _fcmInitialized = false;
     }
 
     final current = auth.navigationState;
@@ -172,6 +195,33 @@ class _AppRootState extends State<_AppRoot> {
         if (!mounted) return;
         _showPlanPromotionDialog(payload);
       });
+    }
+  }
+
+  /// Navega a la pantalla adecuada según los datos de la notificación push.
+  void _handleFcmTap(RemoteMessage message) {
+    if (!mounted) return;
+    final type = message.data['type'] as String?;
+    debugPrint('[FCM] Navegando por tipo: $type, data: ${message.data}');
+    switch (type) {
+      case 'NEW_REVIEW':
+      case 'PROVIDER_APPROVED':
+      case 'PROVIDER_REJECTED':
+      case 'PLAN_APROBADO':
+      case 'PLAN_RECHAZADO':
+        // Abrir perfil del proveedor / panel
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        );
+      case 'NEW_OFFER':
+      case 'OFFER_ACCEPTED':
+        // Navegar a solicitudes de subasta
+        context.read<AuthProvider>(); // asegurar acceso
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        );
+      default:
+        break;
     }
   }
 
