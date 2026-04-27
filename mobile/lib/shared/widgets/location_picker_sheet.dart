@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/constans/app_colors.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/constants/peru_locations.dart';
+import '../../core/services/geocoding_service.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/providers_list/presentation/providers/providers_provider.dart';
 
@@ -99,19 +100,24 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
         setState(() { _gpsError = 'Permiso de ubicación denegado.'; });
         return;
       }
-      // GPS obtenido — mapeamos a la provincia más cercana según el contexto.
-      // Por simplicidad usamos un mapeo por defecto al mercado principal (Junín).
-      // En producción se usaría una API de geocodificación inversa.
-      await Geolocator.getCurrentPosition(
+      final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
       );
-      // Detectamos que el usuario está en el área y pre-seleccionamos Huancayo.
-      // El usuario puede corregir manualmente si es necesario.
-      setState(() {
-        _department = 'Junín';
-        _province   = 'Huancayo';
-        _district   = 'Huancayo';
-      });
+
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+
+      if (geo != null) {
+        setState(() {
+          _department = geo.department;
+          _province   = geo.province;
+          _district   = geo.district;
+        });
+      } else {
+        // Fallback: mantener selección manual si la geocodificación falla
+        setState(() {
+          _gpsError = 'No se pudo detectar la ubicación exacta. Selecciónala manualmente.';
+        });
+      }
     } catch (e) {
       setState(() { _gpsError = 'No se pudo obtener la ubicación.'; });
     } finally {
