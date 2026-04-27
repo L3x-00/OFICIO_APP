@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -18,6 +18,8 @@ const PENDING_REG_TTL_MS = 15 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -342,7 +344,13 @@ data: {
         data: { token: `RESET_${resetToken}`, userId: user.id, expiresAt },
       });
 
-      // TODO: enviar email con resetToken cuando se integre el servicio de correo
+      // Enviar email con el código de recuperación
+      try {
+        await this.emailService.sendPasswordResetEmail(user.email, resetToken);
+      } catch {
+        this.logger.warn(`No se pudo enviar email de reset a ${user.email}`);
+      }
+
       if (this.config.get('NODE_ENV') !== 'production') {
         return { message: 'Si el correo existe recibirás un código de recuperación', _devToken: resetToken };
       }
@@ -555,6 +563,7 @@ data: {
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     return {
       ...tokens,
+      email:     user.email,
       firstName: user.firstName,
       lastName:  user.lastName,
       phone:     user.phone,

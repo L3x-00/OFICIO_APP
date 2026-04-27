@@ -487,8 +487,23 @@ class _SubscriptionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isGrace = !sub.isActive;
-    final color = isGrace ? AppColors.busy : AppColors.amber;
+    final isFree  = sub.plan == 'GRATIS';
+    final isGrace = !sub.isActive && !isFree;
+    final color   = isFree
+        ? const Color(0xFF22C55E)
+        : isGrace
+            ? AppColors.busy
+            : AppColors.amber;
+    final icon = isFree
+        ? Icons.storefront_rounded
+        : isGrace
+            ? Icons.warning_rounded
+            : Icons.workspace_premium_rounded;
+    final text = isFree
+        ? 'Estás en el plan Gratis — ¡Sube de plan para más visibilidad!'
+        : isGrace
+            ? 'Tu suscripción venció. Renuévala para más visibilidad.'
+            : 'Plan ${sub.planLabel} activo';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -499,19 +514,10 @@ class _SubscriptionBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            isGrace ? Icons.warning_rounded : Icons.workspace_premium_rounded,
-            size: 16,
-            color: color,
-          ),
+          Icon(icon, size: 16, color: color),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              isGrace
-                  ? 'Tu suscripción venció. Renuévala para más visibilidad.'
-                  : 'Plan ${sub.planLabel} activo',
-              style: TextStyle(color: color, fontSize: 12),
-            ),
+            child: Text(text, style: TextStyle(color: color, fontSize: 12)),
           ),
         ],
       ),

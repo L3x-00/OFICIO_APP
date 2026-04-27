@@ -8,7 +8,8 @@ import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
 class PanelStatsTab extends StatefulWidget {
-  const PanelStatsTab({super.key});
+  final VoidCallback? onNavigateToSettings;
+  const PanelStatsTab({super.key, this.onNavigateToSettings});
 
   @override
   State<PanelStatsTab> createState() => _PanelStatsTabState();
@@ -25,7 +26,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
 
     // ── Plan GRATIS: Gestión de visitas bloqueada ─────────────
     if (!PlanLimits.hasStatsAccess(plan)) {
-      return _StatsUpsellScreen(plan: plan);
+      return _StatsUpsellScreen(plan: plan, onNavigateToSettings: widget.onNavigateToSettings);
     }
 
     return Scaffold(
@@ -594,7 +595,8 @@ class _InfoRow extends StatelessWidget {
 
 class _StatsUpsellScreen extends StatelessWidget {
   final String plan;
-  const _StatsUpsellScreen({required this.plan});
+  final VoidCallback? onNavigateToSettings;
+  const _StatsUpsellScreen({required this.plan, this.onNavigateToSettings});
 
   @override
   Widget build(BuildContext context) {
@@ -663,16 +665,7 @@ class _StatsUpsellScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Navegar a la tab de ajustes (índice 4) para ver planes
-                    // Se usa el back para que el usuario use la nav bar
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Ve a Ajustes → Subir de rango para cambiar tu plan'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
+                  onPressed: onNavigateToSettings,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.amber,
                     foregroundColor: const Color(0xFF3D2B00),

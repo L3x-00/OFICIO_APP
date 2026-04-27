@@ -72,9 +72,8 @@ class PanelSettingsTab extends StatelessWidget {
                     const SizedBox(height: 12),
                   ],
 
-                  // Planes disponibles (siempre visible para proveedores)
-                  _SectionLabel(label: 'Subir de rango'),
-                  _UpgradePlansSection(currentPlan: profile?.subscription?.plan ?? 'GRATIS'),
+                  // Planes disponibles — colapsables
+                  _CollapsiblePlansSection(currentPlan: profile?.subscription?.plan ?? 'GRATIS'),
                   const SizedBox(height: 16),
 
                   // ── Servicio a domicilio (solo OFICIO) ────────
@@ -573,8 +572,11 @@ class _SubscriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final isActive = sub.isActive;
-    final color = isActive ? AppColors.amber : AppColors.busy;
+    final isFree   = sub.plan == 'GRATIS';
+    final isActive = sub.isActive || isFree;
+    final color    = isFree
+        ? const Color(0xFF22C55E)
+        : isActive ? AppColors.amber : AppColors.busy;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -586,7 +588,7 @@ class _SubscriptionCard extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.workspace_premium_rounded,
+            isFree ? Icons.storefront_rounded : Icons.workspace_premium_rounded,
             color: color,
             size: 28,
           ),
@@ -597,29 +599,15 @@ class _SubscriptionCard extends StatelessWidget {
               children: [
                 Text(
                   'Plan ${sub.planLabel}',
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  isActive ? 'Suscripción activa' : 'Suscripción inactiva',
+                  isFree ? 'Plan gratuito activo' : isActive ? 'Suscripción activa' : 'Suscripción inactiva',
                   style: TextStyle(color: c.textSecondary, fontSize: 12),
                 ),
               ],
             ),
           ),
-          if (!isActive)
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.amber,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: Text('Renovar', style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold)),
-            ),
         ],
       ),
     );
@@ -697,19 +685,74 @@ const _kPlans = [
   ),
 ];
 
-// ─── Sección de planes de upgrade ────────────────────────────
+// ─── Planes colapsables ("Ver planes disponibles") ───────────
 
-class _UpgradePlansSection extends StatelessWidget {
+class _CollapsiblePlansSection extends StatefulWidget {
   final String currentPlan;
-  const _UpgradePlansSection({required this.currentPlan});
+  const _CollapsiblePlansSection({required this.currentPlan});
+
+  @override
+  State<_CollapsiblePlansSection> createState() => _CollapsiblePlansSectionState();
+}
+
+class _CollapsiblePlansSectionState extends State<_CollapsiblePlansSection> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Column(
-      children: _kPlans.map((plan) {
-        final isCurrent = plan.id == currentPlan;
-        return _PlanCard(plan: plan, isCurrent: isCurrent);
-      }).toList(),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: _expanded
+                  ? AppColors.amber.withValues(alpha: 0.08)
+                  : c.bgCard,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _expanded
+                    ? AppColors.amber.withValues(alpha: 0.4)
+                    : c.border,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.workspace_premium_rounded,
+                  color: _expanded ? AppColors.amber : c.textMuted,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Ver planes disponibles',
+                    style: TextStyle(
+                      color: _expanded ? AppColors.amber : c.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  color: _expanded ? AppColors.amber : c.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...[
+          const SizedBox(height: 12),
+          ..._kPlans.map((plan) {
+            final isCurrent = plan.id == widget.currentPlan;
+            return _PlanCard(plan: plan, isCurrent: isCurrent);
+          }),
+        ],
+      ],
     );
   }
 }

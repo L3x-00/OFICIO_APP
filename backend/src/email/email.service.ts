@@ -53,4 +53,33 @@ export class EmailService {
       throw new Error(`Error al enviar email: ${(error as Error).message}`);
     }
   }
+
+  async sendPasswordResetEmail(to: string, code: string): Promise<void> {
+    if (!this.client) {
+      this.logger.warn(`[EMAIL SKIP] BREVO_API_KEY no configurada. Reset code para ${to}: ${code}`);
+      return;
+    }
+
+    try {
+      await this.client.transactionalEmails.sendTransacEmail({
+        sender:      { email: this.senderEmail, name: this.senderName },
+        to:          [{ email: to }],
+        subject:     'Restablecer tu contraseña — OficioApp',
+        htmlContent: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff;border-radius:12px">
+            <h2 style="color:#1a1a1a;margin-bottom:8px">Restablecer contraseña</h2>
+            <p style="color:#555;margin-bottom:24px">Recibimos una solicitud para restablecer la contraseña de tu cuenta. Usa el siguiente código:</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px">
+              <span style="font-size:48px;font-weight:700;letter-spacing:12px;color:#E07B39">${code}</span>
+            </div>
+            <p style="color:#888;font-size:13px">Este código expira en 15 minutos. Si no solicitaste esto, ignora este mensaje.</p>
+          </div>
+        `,
+      });
+      this.logger.log(`Reset code enviado a ${to}`);
+    } catch (error) {
+      this.logger.error(`Error al enviar reset code a ${to}: ${(error as Error).message ?? error}`);
+      throw new Error(`Error al enviar email: ${(error as Error).message}`);
+    }
+  }
 }

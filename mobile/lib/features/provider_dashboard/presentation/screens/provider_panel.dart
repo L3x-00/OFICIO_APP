@@ -71,43 +71,14 @@ class _ProviderPanelState extends State<ProviderPanel> {
                 ),
                 const OportunidadesTab(),
                 PanelServicesTab(isNegocio: isNeg),
-                const PanelStatsTab(),
+                PanelStatsTab(
+                  onNavigateToSettings: () => setState(() => _currentIndex = 5),
+                ),
                 const PanelSettingsTab(),
               ],
             ),
           ),
 
-          // ── Botón de atrás flotante ───────────────────────
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 12,
-            child: SafeArea(
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: c.bgCard.withValues(alpha: 0.92),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: c.border),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: c.textPrimary,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
       bottomNavigationBar: _PanelBottomNav(

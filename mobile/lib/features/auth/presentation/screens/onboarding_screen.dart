@@ -29,6 +29,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   String? _selectedRole; // 'USUARIO', 'OFICIO', 'NEGOCIO'
+  bool _isNavigating = false; // guard contra doble ejecución
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +98,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _selectedRole == null ? null : _continue,
+                  onPressed: (_selectedRole == null || _isNavigating) ? null : _continue,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     disabledBackgroundColor: c.bgCard,
@@ -124,12 +125,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _continue() async {
-    // Si el usuario eligió ser solo cliente, pedirle su ubicación antes de entrar
+    if (_isNavigating) return;
+    setState(() => _isNavigating = true);
+
     if (_selectedRole == 'USUARIO') {
       final result = await LocationPickerSheet.show(context);
       if (!mounted) return;
       if (result != null) {
-        // Guardar ubicación en backend (sin bloquear — se hace en background)
         context.read<AuthProvider>().updateLocation(
           department: result.department,
           province:   result.province,
@@ -146,8 +148,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     }
     if (!mounted) return;
-    // Notificamos al provider. Esto cambia navigationState a 'authenticated'
-    // _AppRoot reconstruye desde OnboardingScreen → _MainNavigation; no Navigator.pop() necesario.
+    // _AppRoot reconstruye desde OnboardingScreen → _MainNavigation al cambiar navigationState.
     context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
   }
 
