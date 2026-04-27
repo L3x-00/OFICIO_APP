@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/errors/failures.dart';
 import '../../data/trust_validation_repository.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// Formulario de validación de confianza — cámara obligatoria, sin galería.
 /// [providerType] — 'OFICIO' | 'NEGOCIO'
@@ -34,7 +36,7 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
   File? _dniPhotoBack;
   File? _selfieWithDni;
   File? _businessPhoto;
-  File? _ownerDniPhoto;
+  File? _businessPhoto2;
 
   bool _isLoading = false;
 
@@ -65,7 +67,7 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
         case 'dniPhotoBack':  _dniPhotoBack   = file; break;
         case 'selfieWithDni': _selfieWithDni  = file; break;
         case 'businessPhoto': _businessPhoto  = file; break;
-        case 'ownerDniPhoto': _ownerDniPhoto  = file; break;
+        case 'businessPhoto2': _businessPhoto2  = file; break;
       }
     });
   }
@@ -80,7 +82,7 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
     if (_isNegocio) {
       if (_rucCtrl.text.trim().length < 11) return false;
       if (_bizAddressCtrl.text.trim().isEmpty) return false;
-      if (_businessPhoto == null || _ownerDniPhoto == null) return false;
+      if (_businessPhoto == null || _businessPhoto2 == null) return false;
     }
     return true;
   }
@@ -104,7 +106,7 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
         'dniPhotoBack':  _dniPhotoBack,
         'selfieWithDni': _selfieWithDni,
         if (_isNegocio) 'businessPhoto': _businessPhoto,
-        if (_isNegocio) 'ownerDniPhoto': _ownerDniPhoto,
+        if (_isNegocio) 'businessPhoto2': _businessPhoto2,
       },
     );
 
@@ -112,7 +114,12 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
     setState(() => _isLoading = false);
 
     result.when(
-      success: (_) => _showSuccessDialog(),
+      success: (_) async {
+        if (mounted) {
+          context.read<AuthProvider>().refreshProviderStatus();
+        }
+        _showSuccessDialog();
+      },
       failure: (e) => _showError(e.message),
     );
   }
@@ -266,10 +273,10 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
             ),
             const SizedBox(height: 12),
             _PhotoCapture(
-              label: 'DNI del titular del negocio',
-              icon: Icons.badge_rounded,
-              file: _ownerDniPhoto,
-              onCapture: () => _capturePhoto('ownerDniPhoto'),
+              label: 'Otra foto del negocio (interior o exterior)',
+              icon: Icons.add_a_photo_rounded,
+              file: _businessPhoto2,
+              onCapture: () => _capturePhoto('businessPhoto2'),
             ),
           ],
 

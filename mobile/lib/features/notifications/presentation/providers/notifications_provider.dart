@@ -12,17 +12,22 @@ class NotificationsProvider extends ChangeNotifier {
 
   /// Llamar tras el login para empezar a filtrar notificaciones por usuario/rol.
   void setUser({required int userId, required String role}) {
+    // Si es un usuario diferente, limpiar datos del anterior
+    if (_currentUserId != null && _currentUserId != userId) {
+      _items.clear();
+    }
     _currentUserId = userId;
     _currentUserRole = role;
     SocketService.instance.addNotificationListener(_onNotification);
+    notifyListeners();
   }
 
-  /// Llamar al cerrar sesión.
+  /// Llamar al cerrar sesión — desconecta el socket pero preserva items.
   void clearUser() {
     SocketService.instance.removeNotificationListener(_onNotification);
     _currentUserId = null;
     _currentUserRole = null;
-    _items.clear();
+    // No se borran _items para que persistan al volver a iniciar sesión
     notifyListeners();
   }
 

@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/plan_limits.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/service_item_model.dart';
+import '../../../../features/payments/presentation/screens/plan_selector_sheet.dart';
 
 class PanelServicesTab extends StatefulWidget {
   final bool isNegocio;
@@ -493,28 +494,41 @@ class _PlanLimitBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final atLimit = current >= limit && limit < 999;
+    final atLimit  = limit < 999 && current >= limit;
     final nearLimit = !atLimit && limit < 999 && current >= limit - 1 && limit > 1;
-    if (!atLimit && !nearLimit) return const SizedBox.shrink();
-
+    final isPremium = plan.toUpperCase() == 'PREMIUM';
     final noun = isNegocio ? 'productos' : 'servicios';
     final c    = context.colors;
+
+    final Color accent = atLimit
+        ? AppColors.busy
+        : nearLimit
+            ? AppColors.amber
+            : AppColors.available;
+
+    final String title = atLimit
+        ? 'Límite alcanzado — $current / $limitLabel'
+        : '$current / $limitLabel $noun usados';
+
+    final String subtitle = atLimit
+        ? 'Sube al plan ${PlanLimits.nextPlan(plan)} para añadir más.'
+        : nearLimit
+            ? 'Casi en el límite. Considera subir de plan.'
+            : 'Plan ${plan.toLowerCase()} activo.';
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: (atLimit ? AppColors.busy : AppColors.amber).withValues(alpha: 0.1),
+        color: accent.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: (atLimit ? AppColors.busy : AppColors.amber).withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Icon(
-            atLimit ? Icons.lock_rounded : Icons.info_outline_rounded,
-            color: atLimit ? AppColors.busy : AppColors.amber,
+            atLimit ? Icons.lock_rounded : Icons.inventory_2_outlined,
+            color: accent,
             size: 18,
           ),
           const SizedBox(width: 10),
@@ -523,25 +537,35 @@ class _PlanLimitBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  atLimit
-                      ? 'Límite alcanzado — plan ${plan.toLowerCase()}'
-                      : 'Te queda ${limit - current} $noun en tu plan',
+                  title,
                   style: TextStyle(
-                    color: atLimit ? AppColors.busy : AppColors.amber,
+                    color: accent,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  atLimit
-                      ? 'Tu plan permite $limitLabel. Sube al plan ${PlanLimits.nextPlan(plan)} para añadir más.'
-                      : 'Plan ${plan.toLowerCase()}: $limitLabel permitidos.',
+                  subtitle,
                   style: TextStyle(color: c.textSecondary, fontSize: 11, height: 1.4),
                 ),
               ],
             ),
           ),
+          if (!isPremium) ...[
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: () => PlanSelectorSheet.show(context),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.amber,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+              ),
+              child: const Text('Subir de plan'),
+            ),
+          ],
         ],
       ),
     );

@@ -90,6 +90,12 @@ class AuthProvider extends ChangeNotifier {
   /// Devuelve los datos completos del perfil de proveedor para pre-llenar el formulario
   Map<String, dynamic>? providerDataFor(String type) => _providerDataByType[type];
 
+  /// Refresca el estado del proveedor desde el servidor (útil post-validación)
+  Future<void> refreshProviderStatus() async {
+    await _syncProviderStatus();
+    notifyListeners();
+  }
+
   /// Devuelve true si el usuario autenticado puede registrar un nuevo perfil
   /// del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no lo tiene.
   bool canBecomeRole(String type) => !_providerProfiles.contains(type);
@@ -701,7 +707,7 @@ class AuthProvider extends ChangeNotifier {
     SocketService.instance.removeNotificationListener(_handleRemoteNotification);
     SocketService.instance.disconnect();
 
-    await _repo.logout();
+    // Limpiar estado local inmediatamente → UI navega a WelcomeScreen sin esperar red
     _user = null;
     _isGuest = false;
     _needsOnboarding = false;
@@ -713,6 +719,9 @@ class AuthProvider extends ChangeNotifier {
     _verificationStatusByType.clear();
     _rejectionReasonByType.clear();
     notifyListeners();
+
+    // Invalidar tokens en el servidor en segundo plano
+    _repo.logout().ignore();
   }
 
   /// Actualiza nombre, apellido y/o teléfono del usuario.

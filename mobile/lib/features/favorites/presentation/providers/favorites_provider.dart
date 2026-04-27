@@ -25,6 +25,11 @@ class FavoritesProvider extends ChangeNotifier {
 
   // ── Inicializar con el userId del usuario logueado ────────
   Future<void> initialize(int userId) async {
+    // Si es un usuario diferente, limpiar datos del anterior antes de cargar
+    if (_userId != null && _userId != userId) {
+      _favorites   = [];
+      _favoriteIds = {};
+    }
     _userId = userId;
     await loadFavorites();
   }
@@ -100,11 +105,10 @@ class FavoritesProvider extends ChangeNotifier {
     }
   }
 
-  // ── Limpiar al hacer logout ───────────────────────────────
+  // ── Limpiar al hacer logout — preserva datos para re-login del mismo usuario ─
   void clear() {
-    _favorites  = [];
-    _favoriteIds = {};
-    _userId     = null;
+    _userId = null;
+    // No se borran _favorites/_favoriteIds para persistencia visual entre sesiones
     notifyListeners();
   }
 }
