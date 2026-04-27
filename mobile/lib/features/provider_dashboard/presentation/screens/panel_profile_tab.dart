@@ -511,7 +511,10 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
     // REJECTED → banner rojo con dos botones de acción
     if (trustStatus == 'REJECTED') {
       const red = Color(0xFFEF4444);
-      final reason = auth.rejectionReasonFor(type) ?? 'No se especificó un motivo.';
+      // Prioridad: motivo específico del rechazo de confianza, luego del rechazo de verificación
+      final reason = (auth.providerDataFor(type)?['trustRejectionReason'] as String?)
+          ?? auth.rejectionReasonFor(type)
+          ?? 'No se especificó un motivo.';
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -802,9 +805,18 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(status == 'GRACIA' ? 'Período de gracia' : 'Activo',
+                      Text(
+                          switch (status) {
+                            'GRACIA'    => 'Período de gracia',
+                            'VENCIDA'   => 'Vencido — pasó a Gratis',
+                            'CANCELADA' => 'Cancelado',
+                            _           => 'Activo',
+                          },
                           style: TextStyle(
-                              color: c.textSecondary, fontSize: 12)),
+                              color: status == 'VENCIDA' || status == 'CANCELADA'
+                                  ? AppColors.busy
+                                  : c.textSecondary,
+                              fontSize: 12)),
                       if (endLabel != null)
                         Text(endLabel,
                             style: TextStyle(
@@ -1058,9 +1070,14 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                 if (ok) {
                   await auth.refreshProviderStatus();
                   if (!mounted) return;
-                  // Si ya no tiene perfiles de proveedor, hacer logout
+                  // Si ya no tiene perfiles de proveedor, hacer logout y limpiar stack
                   if (auth.providerProfiles.isEmpty) {
-                    auth.logout();
+                    await auth.logout();
+                    if (!mounted) return;
+                    Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
+                  } else {
+                    // Volver al perfil de cliente cerrando el panel de proveedor
+                    Navigator.of(context).popUntil((r) => r.isFirst);
                   }
                 } else {
                   _showSnack(dash.error ?? 'Error al eliminar el perfil', isError: true);

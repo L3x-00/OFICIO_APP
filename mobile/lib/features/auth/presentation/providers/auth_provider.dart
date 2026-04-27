@@ -434,6 +434,13 @@ class AuthProvider extends ChangeNotifier {
       _providerVerificationStatus = null;
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
+      // Forzar carga completa del perfil (incluye department/province/district
+      // que el endpoint /auth/social-login no devuelve)
+      final freshUser = await _repo.getCurrentUser();
+      freshUser.when(
+        success: (u) => _user = u,
+        failure: (_) {},
+      );
       await _syncProviderStatus();
       _connectSocketForUser(_user!.id);
     }

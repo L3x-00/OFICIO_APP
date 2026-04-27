@@ -487,23 +487,34 @@ class _SubscriptionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFree  = sub.plan == 'GRATIS';
-    final isGrace = !sub.isActive && !isFree;
-    final color   = isFree
-        ? const Color(0xFF22C55E)
-        : isGrace
-            ? AppColors.busy
-            : AppColors.amber;
-    final icon = isFree
-        ? Icons.storefront_rounded
-        : isGrace
-            ? Icons.warning_rounded
-            : Icons.workspace_premium_rounded;
-    final text = isFree
-        ? 'Estás en el plan Gratis — ¡Sube de plan para más visibilidad!'
-        : isGrace
-            ? 'Tu suscripción venció. Renuévala para más visibilidad.'
-            : 'Plan ${sub.planLabel} activo';
+    final isFree           = sub.plan == 'GRATIS';
+    final isExpired        = sub.isExpired;
+    final isExpiringSoon   = sub.isExpiringSoon;
+
+    final Color color;
+    final IconData icon;
+    final String text;
+
+    if (isFree) {
+      color = const Color(0xFF22C55E);
+      icon  = Icons.storefront_rounded;
+      text  = 'Estás en el plan Gratis — ¡Sube de plan para más visibilidad!';
+    } else if (isExpired) {
+      color = AppColors.busy;
+      icon  = Icons.warning_rounded;
+      text  = 'Tu plan ${sub.planLabel} venció. Pasaste al plan Gratis. Renueva para recuperar tus beneficios.';
+    } else if (isExpiringSoon) {
+      color = AppColors.amber;
+      icon  = Icons.access_time_rounded;
+      final days = sub.daysUntilExpiration ?? 0;
+      text  = days <= 0
+          ? 'Tu plan ${sub.planLabel} vence hoy. Renuévalo para evitar interrupciones.'
+          : 'Tu plan ${sub.planLabel} vence en $days día${days == 1 ? '' : 's'}. Renuévalo a tiempo.';
+    } else {
+      color = AppColors.amber;
+      icon  = Icons.workspace_premium_rounded;
+      text  = 'Plan ${sub.planLabel} activo';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

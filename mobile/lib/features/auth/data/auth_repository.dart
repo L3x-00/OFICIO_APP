@@ -60,6 +60,33 @@ class AuthRepository {
     }
   }
 
+  // ── OBTENER USUARIO ACTUAL ──────────────────────────────
+  Future<ApiResult<UserModel>> getCurrentUser() async {
+    try {
+      final response = await _dio.get('/users/me');
+      final data = response.data as Map<String, dynamic>;
+      final user = UserModel(
+        id:         data['id']        as int,
+        email:      data['email']     as String,
+        firstName:  data['firstName'] as String? ?? '',
+        lastName:   data['lastName']  as String? ?? '',
+        role:       data['role']      as String? ?? 'USUARIO',
+        avatarUrl:  data['avatarUrl'] as String?,
+        phone:      data['phone']     as String?,
+        department: data['department'] as String?,
+        province:   data['province']   as String?,
+        district:   data['district']   as String?,
+      );
+      return Success(user);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al cargar perfil'),
+      );
+    }
+  }
+
   // ── SOCIAL LOGIN (Firebase idToken) ──────────────────────
   Future<ApiResult<({UserModel user, bool isNewUser})>> socialLogin(String idToken) async {
     try {

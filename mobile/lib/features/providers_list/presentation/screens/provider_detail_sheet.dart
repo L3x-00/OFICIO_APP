@@ -18,6 +18,7 @@ import '../../domain/models/provider_model.dart';
 import '../../domain/models/review_model.dart';
 import '../../data/providers_repository.dart';
 import '../../presentation/widgets/create_review_sheet.dart';
+import '../../../../shared/widgets/social_media_row.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 
@@ -180,6 +181,32 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                               fontSize: 14,
                               height: 1.6,
                             ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // ── Redes sociales ────────────────────
+                        if (SocialMediaRow(
+                          website:     widget.provider.website,
+                          instagram:   widget.provider.instagram,
+                          tiktok:      widget.provider.tiktok,
+                          facebook:    widget.provider.facebook,
+                          linkedin:    widget.provider.linkedin,
+                          twitterX:    widget.provider.twitterX,
+                          telegram:    widget.provider.telegram,
+                          whatsappBiz: widget.provider.whatsappBiz,
+                        ).hasAny) ...[
+                          _buildSectionTitle('Redes sociales'),
+                          const SizedBox(height: 10),
+                          SocialMediaRow(
+                            website:     widget.provider.website,
+                            instagram:   widget.provider.instagram,
+                            tiktok:      widget.provider.tiktok,
+                            facebook:    widget.provider.facebook,
+                            linkedin:    widget.provider.linkedin,
+                            twitterX:    widget.provider.twitterX,
+                            telegram:    widget.provider.telegram,
+                            whatsappBiz: widget.provider.whatsappBiz,
                           ),
                           const SizedBox(height: 20),
                         ],

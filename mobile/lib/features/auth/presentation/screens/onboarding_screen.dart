@@ -129,22 +129,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() => _isNavigating = true);
 
     if (_selectedRole == 'USUARIO') {
-      final result = await LocationPickerSheet.show(context);
-      if (!mounted) return;
-      if (result != null) {
-        context.read<AuthProvider>().updateLocation(
+      final auth = context.read<AuthProvider>();
+      // Solo solicitar ubicación si el usuario aún no la tiene registrada
+      if (auth.user?.hasLocation != true) {
+        final result = await LocationPickerSheet.show(context);
+        if (!mounted) {
+          setState(() => _isNavigating = false);
+          return;
+        }
+        if (result == null) {
+          // Usuario canceló el picker — no continuar al main flow
+          setState(() => _isNavigating = false);
+          return;
+        }
+        await auth.updateLocation(
           department: result.department,
           province:   result.province,
           district:   result.district,
-        ).then((_) {
-          if (mounted) {
-            context.read<ProvidersProvider>().setUserLocation(
-              department: result.department,
-              province:   result.province,
-              district:   result.district,
-            );
-          }
-        });
+        );
+        if (!mounted) return;
+        context.read<ProvidersProvider>().setUserLocation(
+          department: result.department,
+          province:   result.province,
+          district:   result.district,
+        );
       }
     }
     if (!mounted) return;
@@ -901,6 +909,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     }
 
     if (!mounted) return;
+
+    // Refrescar estado del proveedor para que el panel y la card muestren
+    // las imágenes recién subidas y los datos del perfil completo
+    await auth.refreshProviderStatus();
+    if (!mounted) return;
+
     setState(() => _isLoading = false);
 
     // Guardar ubicación administrativa en el perfil de usuario

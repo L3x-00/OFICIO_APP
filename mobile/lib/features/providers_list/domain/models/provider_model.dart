@@ -40,6 +40,15 @@ class ProviderModel {
   final List<ServiceItem> services;
   /// true cuando el admin validó los documentos de identidad del proveedor
   final bool isTrusted;
+  // ── Redes sociales (todas opcionales) ───────────────────
+  final String? website;
+  final String? instagram;
+  final String? tiktok;
+  final String? facebook;
+  final String? linkedin;
+  final String? twitterX;
+  final String? telegram;
+  final String? whatsappBiz;
 
   const ProviderModel({
     required this.id,
@@ -71,6 +80,14 @@ class ProviderModel {
     this.hasHomeService = false,
     this.services = const [],
     this.isTrusted = false,
+    this.website,
+    this.instagram,
+    this.tiktok,
+    this.facebook,
+    this.linkedin,
+    this.twitterX,
+    this.telegram,
+    this.whatsappBiz,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -116,6 +133,14 @@ class ProviderModel {
       hasHomeService:         json['hasHomeService'] as bool? ?? false,
       services:               _parseServices(json['scheduleJson']),
       isTrusted:              json['isTrusted'] as bool? ?? false,
+      website:                json['website']     as String?,
+      instagram:              json['instagram']   as String?,
+      tiktok:                 json['tiktok']      as String?,
+      facebook:               json['facebook']    as String?,
+      linkedin:               json['linkedin']    as String?,
+      twitterX:               json['twitterX']    as String?,
+      telegram:               json['telegram']    as String?,
+      whatsappBiz:            json['whatsappBiz'] as String?,
     );
   }
 
@@ -172,6 +197,14 @@ class ProviderModel {
       hasHomeService:         hasHomeService,
       services:               services ?? this.services,
       isTrusted:              isTrusted,
+      website:                website,
+      instagram:              instagram,
+      tiktok:                 tiktok,
+      facebook:               facebook,
+      linkedin:               linkedin,
+      twitterX:               twitterX,
+      telegram:               telegram,
+      whatsappBiz:            whatsappBiz,
     );
   }
 }

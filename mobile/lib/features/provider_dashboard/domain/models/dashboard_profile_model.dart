@@ -132,7 +132,23 @@ class SubscriptionInfo {
     this.endDate,
   });
 
-  bool get isActive => status == 'ACTIVE';
+  // Backend usa enum Prisma SubscriptionStatus con valores en español:
+  // ACTIVA, VENCIDA, CANCELADA, GRACIA
+  bool get isActive  => status == 'ACTIVA' || status == 'GRACIA';
+  bool get isExpired => status == 'VENCIDA' || status == 'CANCELADA';
+  bool get isGrace   => status == 'GRACIA';
+
+  /// true si vence en ≤3 días (aviso temprano al usuario)
+  bool get isExpiringSoon {
+    if (!isActive || endDate == null) return false;
+    final daysLeft = endDate!.difference(DateTime.now()).inDays;
+    return daysLeft >= 0 && daysLeft <= 3;
+  }
+
+  int? get daysUntilExpiration {
+    if (endDate == null) return null;
+    return endDate!.difference(DateTime.now()).inDays;
+  }
 
   String get planLabel {
     switch (plan) {
@@ -146,7 +162,7 @@ class SubscriptionInfo {
   factory SubscriptionInfo.fromJson(Map<String, dynamic> json) {
     return SubscriptionInfo(
       plan:    json['plan'] as String? ?? 'GRATIS',
-      status:  json['status'] as String? ?? 'INACTIVE',
+      status:  json['status'] as String? ?? 'GRACIA',
       endDate: json['endDate'] is String
                  ? DateTime.tryParse(json['endDate'] as String)
                  : null,

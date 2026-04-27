@@ -280,9 +280,12 @@ class PanelSettingsTab extends StatelessWidget {
             child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              auth.logout();
+            onPressed: () async {
+              Navigator.pop(context); // cierra el diálogo de confirmación
+              await auth.logout();
+              if (!context.mounted) return;
+              // Limpia todo el stack para que _AppRoot reconstruya desde la pantalla raíz
+              Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.busy,

@@ -123,10 +123,18 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selecciona una categoría')),
+      );
+      return;
+    }
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Completa la descripción (mínimo 10 caracteres).'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
