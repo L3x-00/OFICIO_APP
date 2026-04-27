@@ -20,6 +20,8 @@ export class UsersService {
         type:               true,
         verificationStatus: true,
         isVerified:         true,
+        trustStatus:        true,
+        isTrusted:          true,
         createdAt:          true,
         phone:              true,
         whatsapp:           true,
@@ -42,6 +44,12 @@ export class UsersService {
           orderBy: { sentAt: 'desc' },
           take: 5,
         },
+        trustValidations: {
+          where:   { status: 'REJECTED' },
+          select:  { rejectionReason: true, reviewedAt: true },
+          orderBy: { reviewedAt: 'desc' },
+          take: 1,
+        },
       },
     });
 
@@ -57,6 +65,9 @@ export class UsersService {
         type:                p.type,
         verificationStatus:  p.verificationStatus,
         isVerified:          p.isVerified,
+        trustStatus:         p.trustStatus,
+        isTrusted:           p.isTrusted,
+        trustRejectionReason: p.trustValidations[0]?.rejectionReason ?? null,
         createdAt:           p.createdAt,
         phone:               p.phone,
         whatsapp:            p.whatsapp,

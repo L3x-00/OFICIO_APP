@@ -179,12 +179,13 @@ export class PaymentsService {
       }
     });
 
-    // 5. Notificar al proveedor
+    // 5. Notificar al proveedor — usar PLAN_APROBADO para que la app
+    // dispare el modal de bienvenida con beneficios del plan
     const planLabel = payment.plan.charAt(0) + payment.plan.slice(1).toLowerCase();
     this.events.emitNotification({
-      type:         'OFFER_ACCEPTED',
+      type:         'PLAN_APROBADO',
       title:        `¡Plan ${planLabel} activado!`,
-      body:         `Tu pago fue verificado. Ya tienes acceso a todas las funciones del plan ${planLabel}.`,
+      body:         `Tu pago fue verificado. Ya tienes acceso a todas las funciones del plan ${payment.plan}.`,
       targetUserId: payment.provider.userId,
     });
 

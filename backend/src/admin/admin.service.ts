@@ -822,36 +822,14 @@ async updateProvider(
   }
 
   async deleteUser(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: { providers: { include: { subscription: true } } },
-    });
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
     if (user.role === 'ADMIN') throw new BadRequestException('No se puede eliminar un administrador');
 
-    await this.prisma.$transaction(async (tx) => {
-      for (const prov of user.providers) {
-        const providerId = prov.id;
-        await tx.providerAnalytic.deleteMany({ where: { providerId } });
-        await tx.review.deleteMany({ where: { providerId } });
-        await tx.favorite.deleteMany({ where: { providerId } });
-        await tx.providerImage.deleteMany({ where: { providerId } });
-        await tx.verificationDoc.deleteMany({ where: { providerId } });
-        await tx.adminNotification.deleteMany({ where: { providerId } });
-
-        if (prov.subscription) {
-          await tx.payment.deleteMany({ where: { subscriptionId: prov.subscription.id } });
-          await tx.subscription.delete({ where: { providerId } });
-        }
-
-        await tx.provider.delete({ where: { id: providerId } });
-      }
-
-      await tx.review.deleteMany({ where: { userId: id } });
-      await tx.favorite.deleteMany({ where: { userId: id } });
-      await tx.refreshToken.deleteMany({ where: { userId: id } });
-      await tx.user.delete({ where: { id } });
-    });
+    // Cascade en schema.prisma elimina: providers (con todas sus dependencias),
+    // reviews, reviewReplies, providerReports, platformIssues, refreshTokens,
+    // otpCodes, recommendations, serviceRequests, userPenalty, favorites.
+    await this.prisma.user.delete({ where: { id } });
 
     return { success: true, message: 'Usuario eliminado correctamente' };
   }
@@ -1124,30 +1102,14 @@ async updateProvider(
 
   // ── ELIMINAR PROVEEDOR ────────────────────────────────────
   async deleteProvider(id: number) {
-    const provider = await this.prisma.provider.findUnique({
-      where: { id },
-      include: { subscription: true },
-    });
+    const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.providerAnalytic.deleteMany({ where: { providerId: id } });
-      await tx.review.deleteMany({ where: { providerId: id } });
-      await tx.favorite.deleteMany({ where: { providerId: id } });
-      await tx.providerImage.deleteMany({ where: { providerId: id } });
-      await tx.verificationDoc.deleteMany({ where: { providerId: id } });
-      await tx.adminNotification.deleteMany({ where: { providerId: id } });
-
-      if (provider.subscription) {
-        await tx.payment.deleteMany({
-          where: { subscriptionId: provider.subscription.id },
-        });
-        await tx.subscription.delete({ where: { providerId: id } });
-      }
-
-      await tx.provider.delete({ where: { id } });
-      await tx.user.delete({ where: { id: provider.userId } });
-    });
+    // Cascade en schema.prisma elimina: providerImage, providerAnalytic,
+    // adminNotification, providerReport, subscription (y sus payments),
+    // review, favorite, verificationDoc, recommendation, serviceItem,
+    // planRequest, trustValidationRequest, offer.
+    await this.prisma.provider.delete({ where: { id } });
 
     return { success: true, message: 'Proveedor eliminado correctamente' };
   }

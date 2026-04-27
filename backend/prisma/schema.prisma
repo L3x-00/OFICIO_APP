@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
-  
+
+
 }
 
 // ─────────────────────────────────────────
@@ -249,7 +249,7 @@ model Provider {
   updatedAt           DateTime            @updatedAt
 
   // Relaciones
-  user                User                @relation(fields: [userId], references: [id])
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   locality            Locality            @relation(fields: [localityId], references: [id])
   category            Category            @relation(fields: [categoryId], references: [id])
   images              ProviderImage[]
@@ -304,7 +304,7 @@ model Subscription {
   graceMonths   Int                 @default(2) // Meses gratis otorgados
   priceUSD      Float               @default(0)
   
-  provider      Provider            @relation(fields: [providerId], references: [id])
+  provider      Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
   payments      Payment[]
 
   @@map("subscriptions")
@@ -320,7 +320,7 @@ model Payment {
   confirmedAt     DateTime?
   createdAt       DateTime      @default(now())
 
-  subscription    Subscription  @relation(fields: [subscriptionId], references: [id])
+  subscription    Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }
@@ -367,8 +367,8 @@ model Review {
 
   createdAt   DateTime  @default(now())
 
-  provider    Provider      @relation(fields: [providerId], references: [id])
-  user        User          @relation(fields: [userId], references: [id])
+  provider    Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   replies     ReviewReply[]
 
   @@index([providerId, isVisible])  // listado de reseñas de un proveedor
@@ -384,7 +384,7 @@ model ReviewReply {
   createdAt DateTime @default(now())
 
   review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@map("review_replies")
@@ -420,7 +420,7 @@ model VerificationDoc {
   reviewedAt  DateTime?
   notes       String?             // Notas del admin al revisar
 
-  provider    Provider            @relation(fields: [providerId], references: [id])
+  provider    Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("verification_docs")
 }
@@ -436,7 +436,7 @@ model ProviderAnalytic {
   userId      Int?      // Puede ser anónimo
   createdAt   DateTime  @default(now())
 
-  provider    Provider  @relation(fields: [providerId], references: [id])
+  provider    Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId, eventType])  // conteo de clics por tipo
   @@index([createdAt])              // filtros por rango de fechas en analytics
@@ -505,7 +505,7 @@ model ProviderReport {
   createdAt   DateTime @default(now())
 
   provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId],     references: [id])
+  user        User     @relation(fields: [userId],     references: [id], onDelete: Cascade)
 
   // Un cliente reporta un proveedor como máximo una vez
   @@unique([userId, providerId])
@@ -521,7 +521,7 @@ model PlatformIssue {
   isReviewed  Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([isReviewed])
   @@map("platform_issues")
@@ -593,7 +593,7 @@ model ServiceRequest {
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
 
-  user             User                  @relation(fields: [userId], references: [id])
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   category         Category              @relation(fields: [categoryId], references: [id])
   offers           Offer[]
 
@@ -617,7 +617,7 @@ model Offer {
   updatedAt        DateTime      @updatedAt
 
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  provider         Provider       @relation(fields: [providerId], references: [id])
+  provider         Provider       @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@unique([serviceRequestId, providerId])
   @@index([serviceRequestId])

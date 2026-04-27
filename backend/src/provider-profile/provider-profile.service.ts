@@ -281,22 +281,11 @@ export class ProviderProfileService {
     const provider = await this.findProviderByUser(userId, type);
     const pid = provider.id;
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.providerAnalytic.deleteMany({ where: { providerId: pid } });
-      await tx.adminNotification.deleteMany({ where: { providerId: pid } });
-      await tx.providerReport.deleteMany({ where: { providerId: pid } });
-      await tx.favorite.deleteMany({ where: { providerId: pid } });
-      await tx.providerImage.deleteMany({ where: { providerId: pid } });
-      await tx.verificationDoc.deleteMany({ where: { providerId: pid } });
-      await tx.trustValidationRequest.deleteMany({ where: { providerId: pid } });
-      await tx.planRequest.deleteMany({ where: { providerId: pid } });
-      await tx.review.deleteMany({ where: { providerId: pid } });
-      await tx.serviceItem.deleteMany({ where: { providerId: pid } });
-      await tx.recommendation.deleteMany({ where: { providerId: pid } });
-      const sub = await tx.subscription.findUnique({ where: { providerId: pid } });
-      if (sub) await tx.subscription.delete({ where: { providerId: pid } });
-      await tx.provider.delete({ where: { id: pid } });
-    });
+    // Cascade en schema.prisma elimina todas las dependencias:
+    // providerImage, providerAnalytic, adminNotification, providerReport,
+    // subscription (y sus payments), review, favorite, verificationDoc,
+    // recommendation, serviceItem, planRequest, trustValidationRequest, offer.
+    await this.prisma.provider.delete({ where: { id: pid } });
 
     // Notificar al admin en tiempo real
     this.events.emitAdminEvent('PROVIDER_DELETED', { providerId: pid, type: provider.type });

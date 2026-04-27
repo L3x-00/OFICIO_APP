@@ -94,4 +94,53 @@ export class RegisterProviderDto {
   @IsObject()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scheduleJson?: any;
+
+  // ── Redes sociales (opcionales, todas) ────────────────────
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  website?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  instagram?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  tiktok?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  facebook?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  linkedin?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  twitterX?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  telegram?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  whatsappBiz?: string | null;
 }
