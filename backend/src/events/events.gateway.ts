@@ -67,7 +67,7 @@ export class EventsGateway {
    * Evento broadcast para el panel de administración.
    * Solo el panel admin escucha 'adminEvent'.
    */
-  emitAdminEvent(event: 'NEW_PROVIDER' | 'PROVIDER_APPROVED' | 'PROVIDER_REJECTED' | 'PROVIDER_DELETED' | 'NEW_PLAN_REQUEST' | 'PLAN_APPROVED' | 'METRICS_CHANGED' | 'USER_PENDING' | 'NEW_USER_VERIFIED' | 'NEW_YAPE_PAYMENT', data?: Record<string, unknown>) {
+  emitAdminEvent(event: 'NEW_PROVIDER' | 'PROVIDER_APPROVED' | 'PROVIDER_REJECTED' | 'PROVIDER_DELETED' | 'NEW_PLAN_REQUEST' | 'PLAN_APPROVED' | 'PLAN_CANCELADO' | 'METRICS_CHANGED' | 'USER_PENDING' | 'NEW_USER_VERIFIED' | 'NEW_YAPE_PAYMENT', data?: Record<string, unknown>) {
     this.server.emit('adminEvent', { event, data, timestamp: new Date().toISOString() });
   }
 
