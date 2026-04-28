@@ -139,6 +139,7 @@ export class SubastasService {
       where: {
         status: ServiceRequestStatus.OPEN,
         expiresAt: { gt: new Date() },
+        categoryId: provider.categoryId ?? undefined,
         // No mostrar si el proveedor ya hizo oferta
         offers: { none: { providerId } },
       },

@@ -25,6 +25,12 @@ export class PaymentsController {
     return this.svc.getMyPayments(req.user.id);
   }
 
+  // ── Proveedor: cancelar plan activo ──────────────────────────
+  @Patch('cancel-plan')
+  cancelPlan(@Request() req: any) {
+    return this.svc.cancelPlan(req.user.id);
+  }
+
   // ── Admin: listar pagos ──────────────────────────────────────
   @Get('admin/yape')
   @UseGuards(RolesGuard)

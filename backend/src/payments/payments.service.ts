@@ -192,6 +192,47 @@ export class PaymentsService {
     return { success: true };
   }
 
+  // ── PROVEEDOR: cancelar plan ─────────────────────────────────
+  async cancelPlan(userId: number) {
+    const provider = await this.prisma.provider.findFirst({
+      where: { userId, isVisible: true },
+      select: {
+        id: true, businessName: true, type: true,
+        subscription: { select: { id: true, plan: true, status: true } },
+      },
+    });
+    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    if (!provider.subscription || provider.subscription.status !== 'ACTIVA') {
+      throw new BadRequestException('No tienes un plan activo que cancelar');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.subscription.update({
+        where: { providerId: provider.id },
+        data: { status: 'CANCELADA', plan: 'GRATIS' },
+      }),
+      this.prisma.provider.update({
+        where: { id: provider.id },
+        data: { planPriority: 3 },
+      }),
+    ]);
+
+    const planLabel = provider.subscription.plan.charAt(0) + provider.subscription.plan.slice(1).toLowerCase();
+    this.events.emitNotification({
+      type:       'PLAN_CANCELADO',
+      title:      'Plan cancelado',
+      body:       `${provider.businessName} canceló su plan ${planLabel}.`,
+      targetRole: 'ADMIN',
+    });
+    this.events.emitAdminEvent('PLAN_CANCELADO', {
+      providerId:   provider.id,
+      businessName: provider.businessName,
+      plan:         provider.subscription.plan,
+    });
+
+    return { success: true };
+  }
+
   // ── ADMIN: rechazar ──────────────────────────────────────────
   async rejectPayment(paymentId: number, adminId: number, reason?: string) {
     const payment = await this.prisma.yapePayment.findUnique({

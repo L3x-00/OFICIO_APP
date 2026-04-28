@@ -27,8 +27,9 @@ export class TrustValidationService {
       dniPhotoFront?: Express.Multer.File[];
       dniPhotoBack?: Express.Multer.File[];
       selfieWithDni?: Express.Multer.File[];
-      businessPhoto?: Express.Multer.File[];
-      ownerDniPhoto?: Express.Multer.File[];
+      businessPhoto?:  Express.Multer.File[];
+      businessPhoto2?: Express.Multer.File[];
+      ownerDniPhoto?:  Express.Multer.File[];
     },
   ) {
     const type = providerType === 'NEGOCIO' ? 'NEGOCIO' : 'OFICIO';
@@ -48,12 +49,13 @@ export class TrustValidationService {
     const uploadOpt = async (f?: Express.Multer.File) =>
       f ? this.minio.uploadFile(f.buffer, f.originalname, 'trust-validation') : undefined;
 
-    const [dniPhotoFrontUrl, dniPhotoBackUrl, selfieWithDniUrl, businessPhotoUrl, ownerDniPhotoUrl] =
+    const [dniPhotoFrontUrl, dniPhotoBackUrl, selfieWithDniUrl, businessPhotoUrl, businessPhoto2Url, ownerDniPhotoUrl] =
       await Promise.all([
         uploadOpt(files.dniPhotoFront?.[0]),
         uploadOpt(files.dniPhotoBack?.[0]),
         uploadOpt(files.selfieWithDni?.[0]),
         uploadOpt(files.businessPhoto?.[0]),
+        uploadOpt(files.businessPhoto2?.[0]),
         uploadOpt(files.ownerDniPhoto?.[0]),
       ]);
 
@@ -71,6 +73,7 @@ export class TrustValidationService {
         dniPhotoBackUrl,
         selfieWithDniUrl,
         businessPhotoUrl,
+        businessPhoto2Url,
         ownerDniPhotoUrl,
       },
     });
@@ -182,8 +185,9 @@ export class TrustValidationService {
         dniPhotoFrontUrl: request.dniPhotoFrontUrl,
         dniPhotoBackUrl:  request.dniPhotoBackUrl,
         selfieWithDniUrl: request.selfieWithDniUrl,
-        businessPhotoUrl: request.businessPhotoUrl,
-        ownerDniPhotoUrl: request.ownerDniPhotoUrl,
+        businessPhotoUrl:  request.businessPhotoUrl,
+        businessPhoto2Url: request.businessPhoto2Url,
+        ownerDniPhotoUrl:  request.ownerDniPhotoUrl,
       },
       // Datos de registro del proveedor (para comparar)
       provider: {

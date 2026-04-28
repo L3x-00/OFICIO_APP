@@ -21,8 +21,9 @@ export class TrustValidationController {
     { name: 'dniPhotoFront', maxCount: 1 },
     { name: 'dniPhotoBack',  maxCount: 1 },
     { name: 'selfieWithDni', maxCount: 1 },
-    { name: 'businessPhoto', maxCount: 1 },
-    { name: 'ownerDniPhoto', maxCount: 1 },
+    { name: 'businessPhoto',  maxCount: 1 },
+    { name: 'businessPhoto2', maxCount: 1 },
+    { name: 'ownerDniPhoto',  maxCount: 1 },
   ], { storage: memoryStorage() }))
   submitRequest(
     @Request() req: any,

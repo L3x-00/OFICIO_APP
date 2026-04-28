@@ -550,8 +550,9 @@ model TrustValidationRequest {
   // Campos adicionales — NEGOCIO
   rucNumber        String?  // RUC del negocio (11 dígitos)
   businessAddress  String?  // Dirección física del establecimiento
-  businessPhotoUrl String?  // Foto del frente del local (cámara)
-  ownerDniPhotoUrl String?  // Foto del DNI del titular del negocio
+  businessPhotoUrl  String?  // Foto del frente del local (cámara)
+  businessPhoto2Url String?  // Segunda foto del local (interior u otro ángulo)
+  ownerDniPhotoUrl  String?  // Foto del DNI del titular del negocio
 
   // Revisión por el administrador
   rejectionReason String?

@@ -134,7 +134,15 @@ data: {
     const existing = await this.prisma.provider.findUnique({
       where: { userId_type: { userId, type: data.type } },
     });
-    if (existing) throw new ConflictException(`Ya tienes un perfil de tipo ${data.type}`);
+    if (existing) {
+      if (existing.verificationStatus === 'RECHAZADO') {
+        // Permitir re-registro: eliminar perfil rechazado e imágenes asociadas
+        await this.prisma.providerImage.deleteMany({ where: { providerId: existing.id } });
+        await this.prisma.provider.delete({ where: { id: existing.id } });
+      } else {
+        throw new ConflictException(`Ya tienes un perfil de tipo ${data.type}`);
+      }
+    }
 
     // Validar DNI: el mismo usuario puede reusar su DNI en otro tipo de perfil,
     // pero otro usuario no puede registrarse con un DNI ya usado por alguien más.
