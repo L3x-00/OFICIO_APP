@@ -930,5 +930,18 @@ class AuthProvider extends ChangeNotifier {
     _pendingEmail = null;
     notifyListeners();
   }
+
+  Future<void> refreshUser() async {
+    final result = await _repo.getCurrentUser();
+    result.when(
+      success: (u) {
+        _user = u;
+        notifyListeners();
+      },
+      // Notificar igual en fallo: si _user ya estaba seteado (login previo),
+      // los listeners reciben el dato cacheado en lugar de quedarse congelados.
+      failure: (_) => notifyListeners(),
+    );
+  }
 }
 
