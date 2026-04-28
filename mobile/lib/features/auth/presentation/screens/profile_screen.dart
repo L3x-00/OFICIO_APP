@@ -355,175 +355,168 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 32),
-
-          _SectionTitle(title: 'Información de cuenta'),
-          const SizedBox(height: 12),
-          _InfoRow(icon: Icons.email_outlined, label: 'Correo', value: u.email),
-          _InfoRow(
-            icon: Icons.person_outline,
-            label: 'Nombre completo',
-            value: u.fullName,
-          ),
-          if (u.phone != null && u.phone!.isNotEmpty)
-            _InfoRow(
-              icon: Icons.phone_outlined,
-              label: 'Teléfono',
-              value: u.phone!,
-            ),
-          _InfoRow(
-            icon: Icons.shield_outlined,
-            label: 'Tipo de cuenta',
-            value: _accountTypeLabel(auth),
-          ),
-          const SizedBox(height: 20),
-
-          // ── Acciones de perfil ────────────────────────────
-          _SectionTitle(title: 'Gestión de cuenta'),
-          const SizedBox(height: 12),
-          _ActionButton(
-            icon: Icons.edit_outlined,
-            label: 'Editar información',
-            color: AppColors.primary,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _ActionButton(
-            icon: Icons.lock_outline,
-            label: 'Cambiar contraseña',
-            color: AppColors.primary,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _ActionButton(
-            icon: Icons.assignment_outlined,
-            label: 'Mis solicitudes',
-            color: AppColors.amber,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ChangeNotifierProvider(
-                  create: (_) => SubastasProvider(),
-                  child: const MyRequestsScreen(),
-                ),
-              ),
-            ),
-          ),
           const SizedBox(height: 28),
 
-          if (auth.hasOficioProfile || auth.hasNegocioProfile) ...[
-            const _SectionTitle(title: 'MIS PERFILES DE PROVEEDOR'),
-            const SizedBox(height: 12),
-
-            // ── Decisión por perfil independiente ─────────────────────
-            // APROBADO → botón de panel | otro estado → banner
-            if (auth.hasOficioProfile) ...[
-              if (auth.verificationStatusFor('OFICIO') == 'APROBADO')
-                _ActionButton(
-                  icon: Icons.handyman_rounded,
-                  label: 'Panel Profesional',
-                  color: AppColors.primary,
-                  onTap: () => _openProviderPanel(context, 'OFICIO'),
-                )
-              else
-                _PendingApprovalBanner(
-                  providerType: 'OFICIO',
-                  status: auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
-                  rejectionReason: auth.rejectionReasonFor('OFICIO'),
-                ),
-            ],
-
-            if (auth.hasOficioProfile && auth.hasNegocioProfile)
-              const SizedBox(height: 10),
-
-            if (auth.hasNegocioProfile) ...[
-              if (auth.verificationStatusFor('NEGOCIO') == 'APROBADO')
-                _ActionButton(
-                  icon: Icons.storefront_rounded,
-                  label: 'Panel de Negocio',
-                  color: const Color(0xFF8E2DE2),
-                  onTap: () => _openProviderPanel(context, 'NEGOCIO'),
-                )
-              else
-                _PendingApprovalBanner(
-                  providerType: 'NEGOCIO',
-                  status: auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
-                  rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
-                ),
-            ],
-
-            // Opción de segundo perfil — solo si al menos uno está APROBADO
-            if (auth.hasApprovedProvider) ...[
-              const SizedBox(height: 10),
-              if (auth.hasOficioProfile && !auth.hasNegocioProfile)
-                _ActionButton(
-                  icon: Icons.storefront_rounded,
-                  label: 'Registrar un Negocio',
-                  color: const Color(0xFF8E2DE2),
-                  onTap: () => _openAddProfile(context, 'NEGOCIO'),
-                ),
-              if (auth.hasNegocioProfile && !auth.hasOficioProfile)
-                _ActionButton(
-                  icon: Icons.handyman_rounded,
-                  label: 'Ofrecer Servicios como Profesional',
-                  color: AppColors.primary,
-                  onTap: () => _openAddProfile(context, 'OFICIO'),
-                ),
-            ],
-
-            const SizedBox(height: 20),
-          ],
-
-          // Mostrar botones de alta según los perfiles que faltan
-          if (auth.canBecomeRole('OFICIO') || auth.canBecomeRole('NEGOCIO')) ...[
-            if (auth.canBecomeRole('OFICIO'))
-              _ActionButton(
-                icon: Icons.handyman_rounded,
-                label: 'Ser profesional independiente',
-                color: AppColors.primary,
-                onTap: () => _openAddProfile(context, 'OFICIO'),
+          _ExpandableSection(
+            icon: Icons.person_outline_rounded,
+            title: 'Información de cuenta',
+            children: [
+              _SectionItem(icon: Icons.email_outlined, label: u.email),
+              _SectionItem(icon: Icons.badge_outlined, label: u.fullName),
+              if (u.phone != null && u.phone!.isNotEmpty)
+                _SectionItem(icon: Icons.phone_outlined, label: u.phone!),
+              _SectionItem(
+                icon: Icons.shield_outlined,
+                label: _accountTypeLabel(auth),
+                isLast: true,
               ),
-            if (auth.canBecomeRole('OFICIO') && auth.canBecomeRole('NEGOCIO'))
-              const SizedBox(height: 10),
-            if (auth.canBecomeRole('NEGOCIO'))
-              _ActionButton(
-                icon: Icons.storefront_rounded,
-                label: 'Registrar un negocio',
-                color: const Color(0xFF8E2DE2),
-                onTap: () => _openAddProfile(context, 'NEGOCIO'),
+            ],
+          ),
+
+          _ExpandableSection(
+            icon: Icons.manage_accounts_outlined,
+            title: 'Gestión de cuenta',
+            children: [
+              _SectionItem(
+                icon: Icons.edit_outlined,
+                label: 'Editar información',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                ),
               ),
-            const SizedBox(height: 12),
-          ],
+              _SectionItem(
+                icon: Icons.lock_outline,
+                label: 'Cambiar contraseña',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                ),
+              ),
+              _SectionItem(
+                icon: Icons.assignment_outlined,
+                label: 'Mis solicitudes',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider(
+                      create: (_) => SubastasProvider(),
+                      child: const MyRequestsScreen(),
+                    ),
+                  ),
+                ),
+                isLast: true,
+              ),
+            ],
+          ),
 
-          // ── Preferencias de visualización ────────────────
-          _SectionTitle(title: 'Preferencias'),
-          const SizedBox(height: 12),
-          _ThemeToggleRow(theme: theme),
-          const SizedBox(height: 10),
-          _CategoryFilterToggleRow(prov: context.watch<ProvidersProvider>()),
-          const SizedBox(height: 12),
-
-          // ── Cuentas guardadas ─────────────────────────────
-          _ActionButton(
-            icon: Icons.devices_rounded,
-            label: 'Cuentas guardadas en este dispositivo',
-            color: AppColors.primary,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SavedAccountsScreen()),
+          if (auth.hasOficioProfile || auth.hasNegocioProfile)
+            _ExpandableSection(
+              icon: Icons.work_outline_rounded,
+              title: 'Mis perfiles',
+              children: [
+                if (auth.hasOficioProfile) ...[
+                  if (auth.verificationStatusFor('OFICIO') == 'APROBADO')
+                    _SectionItem(
+                      icon: Icons.handyman_rounded,
+                      label: 'Panel Profesional',
+                      onTap: () => _openProviderPanel(context, 'OFICIO'),
+                    )
+                  else
+                    _PendingApprovalBanner(
+                      providerType: 'OFICIO',
+                      status: auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
+                      rejectionReason: auth.rejectionReasonFor('OFICIO'),
+                    ),
+                  const SizedBox(height: 4),
+                ],
+                if (auth.hasNegocioProfile) ...[
+                  if (auth.verificationStatusFor('NEGOCIO') == 'APROBADO')
+                    _SectionItem(
+                      icon: Icons.storefront_rounded,
+                      label: 'Panel de Negocio',
+                      onTap: () => _openProviderPanel(context, 'NEGOCIO'),
+                    )
+                  else
+                    _PendingApprovalBanner(
+                      providerType: 'NEGOCIO',
+                      status: auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
+                      rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
+                    ),
+                  const SizedBox(height: 4),
+                ],
+                if (auth.hasApprovedProvider) ...[
+                  if (auth.hasOficioProfile && !auth.hasNegocioProfile)
+                    _SectionItem(
+                      icon: Icons.storefront_rounded,
+                      label: 'Registrar un Negocio',
+                      onTap: () => _openAddProfile(context, 'NEGOCIO'),
+                      isLast: true,
+                    ),
+                  if (auth.hasNegocioProfile && !auth.hasOficioProfile)
+                    _SectionItem(
+                      icon: Icons.handyman_rounded,
+                      label: 'Ofrecer servicios como Profesional',
+                      onTap: () => _openAddProfile(context, 'OFICIO'),
+                      isLast: true,
+                    ),
+                ],
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
 
-          _ActionButton(
-            icon: Icons.bug_report_rounded,
-            label: 'Reportar un problema',
-            color: AppColors.amber,
-            onTap: () => _showReportProblemDialog(context, auth),
+          if (auth.canBecomeRole('OFICIO') || auth.canBecomeRole('NEGOCIO'))
+            _ExpandableSection(
+              icon: Icons.add_business_rounded,
+              title: 'Conviértete en proveedor',
+              children: [
+                if (auth.canBecomeRole('OFICIO'))
+                  _SectionItem(
+                    icon: Icons.handyman_rounded,
+                    label: 'Ser profesional independiente',
+                    onTap: () => _openAddProfile(context, 'OFICIO'),
+                    isLast: !auth.canBecomeRole('NEGOCIO'),
+                  ),
+                if (auth.canBecomeRole('NEGOCIO'))
+                  _SectionItem(
+                    icon: Icons.storefront_rounded,
+                    label: 'Registrar un negocio',
+                    onTap: () => _openAddProfile(context, 'NEGOCIO'),
+                    isLast: true,
+                  ),
+              ],
+            ),
+
+          _ExpandableSection(
+            icon: Icons.tune_rounded,
+            title: 'Preferencias',
+            children: [
+              _ThemeToggleRow(theme: theme),
+              const SizedBox(height: 8),
+              _CategoryFilterToggleRow(prov: context.watch<ProvidersProvider>()),
+              const SizedBox(height: 8),
+              _SectionItem(
+                icon: Icons.devices_rounded,
+                label: 'Cuentas guardadas en este dispositivo',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SavedAccountsScreen()),
+                ),
+                isLast: true,
+              ),
+            ],
           ),
+
+          _ExpandableSection(
+            icon: Icons.help_outline_rounded,
+            title: 'Soporte',
+            children: [
+              _SectionItem(
+                icon: Icons.bug_report_rounded,
+                label: 'Reportar un problema',
+                onTap: () => _showReportProblemDialog(context, auth),
+                isLast: true,
+              ),
+            ],
+          ),
+
           const SizedBox(height: 8),
+
           _ActionButton(
             icon: Icons.logout_rounded,
             label: 'Cerrar sesión',
@@ -537,7 +530,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: const Color(0xFF991B1B),
             onTap: () => _confirmDeleteAccount(context, auth),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -902,75 +895,166 @@ class _AccountTypeBadge extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────
 
-class _SectionTitle extends StatelessWidget {
+class _ExpandableSection extends StatefulWidget {
+  final IconData icon;
   final String title;
-  const _SectionTitle({required this.title});
+  final List<Widget> children;
+
+  const _ExpandableSection({
+    required this.icon,
+    required this.title,
+    required this.children,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(
-        color: context.colors.textMuted,
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
-      ),
-    );
-  }
+  State<_ExpandableSection> createState() => _ExpandableSectionState();
 }
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
+class _ExpandableSectionState extends State<_ExpandableSection>
+    with SingleTickerProviderStateMixin {
+  bool _expanded = false;
+  late final AnimationController _ctrl;
+  late final Animation<double> _rotation;
 
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    _rotation = Tween<double>(begin: 0.0, end: 0.5)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    _expanded ? _ctrl.forward() : _ctrl.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: c.bgCard,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: c.border),
-        boxShadow: c.isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                ),
-              ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(icon, color: c.textMuted, size: 18),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: TextStyle(color: c.textMuted, fontSize: 11)),
-              const SizedBox(height: 2),
-              Text(
-                value,
+          GestureDetector(
+            onTap: _toggle,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              child: Row(
+                children: [
+                  Icon(widget.icon, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  RotationTransition(
+                    turns: _rotation,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: c.textMuted,
+                      size: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeInOut,
+            child: _expanded
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Divider(height: 1, color: c.border),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: widget.children,
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+  final bool isLast;
+
+  const _SectionItem({
+    required this.icon,
+    required this.label,
+    this.onTap,
+    this.isLast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final row = InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: c.textMuted, size: 18),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
                 style: TextStyle(
                   color: c.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+            if (onTap != null)
+              Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 18),
+          ],
+        ),
       ),
+    );
+    if (isLast) return row;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row,
+        Divider(height: 1, color: c.border),
+      ],
     );
   }
 }
