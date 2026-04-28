@@ -10,6 +10,7 @@ import {
   Star,
   Share2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import type {
   Provider,
   Analytics,
@@ -28,10 +29,12 @@ export default function PanelHomePage() {
       try {
         const prov = await api.getMyProfile();
         setProvider(prov);
-        const stats = await api.getAnalytics();
+        const [stats, revs] = await Promise.all([
+          api.getAnalytics(),
+          api.getProviderReviews(prov.id, 3),
+        ]);
         setAnalytics(stats);
-        // Reviews se obtienen del provider
-        setReviews([]);
+        setReviews(revs);
       } catch {
         // error ya manejado en api
       } finally {
@@ -81,7 +84,16 @@ export default function PanelHomePage() {
           >
             Plan {planLabel}
           </span>
-          <button className="text-text-secondary hover:text-primary transition-colors">
+          <button
+            onClick={() => {
+              const url = `${window.location.origin}/proveedor/${provider?.id}`;
+              navigator.clipboard.writeText(url).then(() => {
+                toast.success('Enlace copiado al portapapeles');
+              });
+            }}
+            className="text-text-secondary hover:text-primary transition-colors"
+            title="Copiar enlace de perfil"
+          >
             <Share2 size={18} />
           </button>
         </div>

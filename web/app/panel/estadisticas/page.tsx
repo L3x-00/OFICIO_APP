@@ -25,7 +25,7 @@ import type { Analytics } from '@/lib/types';
 export default function PanelEstadisticasPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPaid, setIsPaid] = useState(false); // Se determina al cargar el provider
+  const [isPaid, setIsPaid] = useState(false);
   const [range, setRange] = useState<'7' | '30' | '90'>('7');
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function PanelEstadisticasPage() {
         const plan = prov.subscription?.plan || 'GRATIS';
         setIsPaid(plan === 'ESTANDAR' || plan === 'PREMIUM');
         if (plan !== 'GRATIS') {
-          const stats = await api.getAnalytics();
+          const stats = await api.getAnalyticsWithDays(Number(range));
           setAnalytics(stats);
         }
       } catch {
@@ -45,7 +45,7 @@ export default function PanelEstadisticasPage() {
       }
     }
     load();
-  }, []);
+  }, [range]);
 
   if (loading) {
     return (
@@ -110,7 +110,7 @@ export default function PanelEstadisticasPage() {
           {(['7', '30', '90'] as const).map((r) => (
             <button
               key={r}
-              onClick={() => setRange(r)}
+              onClick={() => { setRange(r); setLoading(true); }}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                 range === r
                   ? 'bg-primary text-white'

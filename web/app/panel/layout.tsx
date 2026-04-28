@@ -11,6 +11,7 @@ import {
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
 import { getSocket } from '@/lib/socket';
+import { Home, UserCog, Zap, Briefcase, BarChart3, Settings } from 'lucide-react';
 
 export default function PanelLayout({
   children,
@@ -67,29 +68,29 @@ function MobileBottomNav() {
   const router = useRouter();
 
   const tabs = [
-    { label: 'Inicio',     icon: '🏠', href: '/panel' },
-    { label: 'Perfil',     icon: '👤', href: '/panel/perfil' },
-    { label: 'Ofertas',    icon: '⚡', href: '/panel/ofertas' },
-    { label: 'Servicios',  icon: '💼', href: '/panel/servicios' },
-    { label: 'Stats',      icon: '📊', href: '/panel/estadisticas' },
-    { label: 'Ajustes',    icon: '⚙️', href: '/panel/ajustes' },
+    { label: 'Inicio',    Icon: Home,     href: '/panel' },
+    { label: 'Perfil',    Icon: UserCog,  href: '/panel/perfil' },
+    { label: 'Ofertas',   Icon: Zap,      href: '/panel/ofertas' },
+    { label: 'Servicios', Icon: Briefcase,href: '/panel/servicios' },
+    { label: 'Stats',     Icon: BarChart3, href: '/panel/estadisticas' },
+    { label: 'Ajustes',   Icon: Settings, href: '/panel/ajustes' },
   ];
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-white/5 z-50">
       <div className="flex justify-around py-1.5">
-        {tabs.map((tab) => {
-          const isActive = pathname === tab.href;
+        {tabs.map(({ label, Icon, href }) => {
+          const isActive = pathname === href;
           return (
             <button
-              key={tab.href}
-              onClick={() => router.push(tab.href)}
-              className={`flex flex-col items-center text-xs gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${
+              key={href}
+              onClick={() => router.push(href)}
+              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${
                 isActive ? 'text-primary' : 'text-text-muted'
               }`}
             >
-              <span className="text-base">{tab.icon}</span>
-              <span className="text-[10px]">{tab.label}</span>
+              <Icon size={18} />
+              <span className="text-[10px]">{label}</span>
             </button>
           );
         })}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { api, apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
 import {
   Settings,
@@ -14,9 +14,11 @@ import {
   ChevronUp,
   Check,
   MessageSquare,
+  LogOut,
 } from 'lucide-react';
 import YapePaymentModal from '@/components/yape-payment-modal';
-import { getUser } from '@/lib/auth';
+import { getUser, clearSession } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
 import type { Provider } from '@/lib/types';
 
 const TERMS_TEXT = `TÉRMINOS Y CONDICIONES DE USO — ConfiServ
@@ -40,6 +42,7 @@ export default function PanelAjustesPage() {
     amount: number;
   } | null>(null);
   const user = getUser();
+  const router = useRouter();
 
   useEffect(() => {
     async function load() {
@@ -297,6 +300,20 @@ export default function PanelAjustesPage() {
         </button>
       </div>
 
+      {/* Cerrar sesión */}
+      <div className="bg-bg-card border border-white/5 rounded-card p-6">
+        <button
+          onClick={() => {
+            clearSession();
+            router.push('/');
+          }}
+          className="flex items-center gap-3 w-full text-left text-red hover:text-red/80 transition-colors"
+        >
+          <LogOut size={18} />
+          <span className="text-sm font-medium">Cerrar sesión</span>
+        </button>
+      </div>
+
       {/* Modal Reporte */}
       {showReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -406,28 +423,3 @@ function LegalModal({
   );
 }
 
-async function apiFetch<T = unknown>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('oficio_access_token')
-      : null;
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL || 'https://oficio-backend.onrender.com'}${endpoint}`,
-    {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers as Record<string, string> || {}),
-      },
-    }
-  );
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message || 'Error');
-  }
-  return res.json();
-}

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { api, apiUpload } from '@/lib/api';
 import { getUser } from '@/lib/auth';
 import { profileSchema } from '@/lib/validators';
-import { Camera, Upload, Trash2, ChevronDown, ChevronUp, Plus, Globe, Music, Send, MessageCircle } from 'lucide-react';
+import { Camera, Upload, Trash2, ChevronDown, ChevronUp, Plus, Globe, Music, Send, MessageCircle, Shield, CheckCircle, XCircle, Clock, Star } from 'lucide-react';
 import type { Provider, ProviderImage } from '@/lib/types';
 
 const SOCIAL_FIELDS = [
@@ -43,6 +43,7 @@ export default function PanelPerfilPage() {
   const [address, setAddress] = useState('');
   const [scheduleJson, setScheduleJson] = useState<Record<string, string>>({});
   const [socialFields, setSocialFields] = useState<Record<string, string>>({});
+  const [availability, setAvailability] = useState<'DISPONIBLE' | 'OCUPADO' | 'CON_DEMORA'>('DISPONIBLE');
 
   useEffect(() => {
     async function load() {
@@ -55,6 +56,7 @@ export default function PanelPerfilPage() {
         setWhatsapp(prov.whatsapp || '');
         setAddress(prov.address || '');
         setScheduleJson((prov as any).scheduleJson || {});
+        setAvailability(prov.availability ?? 'DISPONIBLE');
         const socials: Record<string, string> = {};
         SOCIAL_FIELDS.forEach(({ key }) => {
           const val = (prov as any)[key];
@@ -197,13 +199,18 @@ export default function PanelPerfilPage() {
 
         {/* Galería */}
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
-          {provider?.images?.map((img) => (
+          {provider?.images?.map((img, idx) => (
             <div key={img.id} className="relative group">
               <img
                 src={img.url}
                 alt=""
                 className="w-full aspect-square object-cover rounded-lg"
               />
+              {(img.isCover || idx === 0) && (
+                <span className="absolute bottom-1 left-1 bg-primary/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                  <Star size={8} /> Portada
+                </span>
+              )}
               <button
                 onClick={() => handleDeleteImage(img.id)}
                 className="absolute top-1 right-1 w-6 h-6 bg-red/80 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -231,6 +238,66 @@ export default function PanelPerfilPage() {
           className="hidden"
           onChange={handleImageUpload}
         />
+      </div>
+
+      {/* Disponibilidad */}
+      <div className="bg-bg-card border border-white/5 rounded-card p-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Disponibilidad</h2>
+        <div className="flex gap-3 flex-wrap">
+          {(['DISPONIBLE', 'OCUPADO', 'CON_DEMORA'] as const).map((status) => (
+            <button
+              key={status}
+              onClick={async () => {
+                try {
+                  await api.updateMyProfile({ availability: status });
+                  setAvailability(status);
+                  setProvider((prev) => prev ? { ...prev, availability: status } : prev);
+                  toast.success('Disponibilidad actualizada');
+                } catch {
+                  toast.error('Error al actualizar disponibilidad');
+                }
+              }}
+              className={`flex-1 min-w-[100px] py-2.5 rounded-button text-sm font-medium transition-colors ${
+                availability === status
+                  ? 'bg-primary text-white'
+                  : 'bg-bg-input text-text-muted hover:text-text-secondary'
+              }`}
+            >
+              {status === 'DISPONIBLE' ? 'Disponible' : status === 'OCUPADO' ? 'Ocupado' : 'Con demora'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Verificación de confianza */}
+      <div className="bg-bg-card border border-white/5 rounded-card p-6">
+        <div className="flex items-center gap-3 mb-3">
+          <Shield className="text-primary" size={20} />
+          <h2 className="text-lg font-semibold text-text-primary">Verificación de confianza</h2>
+        </div>
+        {provider?.verificationStatus === 'APROBADO' && (
+          <div className="flex items-center gap-2 text-green">
+            <CheckCircle size={18} />
+            <span className="text-sm font-medium">Perfil verificado</span>
+          </div>
+        )}
+        {provider?.verificationStatus === 'PENDIENTE' && (
+          <div className="flex items-center gap-2 text-amber">
+            <Clock size={18} />
+            <span className="text-sm font-medium">Verificación en revisión</span>
+          </div>
+        )}
+        {provider?.verificationStatus === 'RECHAZADO' && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-red">
+              <XCircle size={18} />
+              <span className="text-sm font-medium">Verificación rechazada</span>
+            </div>
+            <p className="text-text-muted text-xs">
+              Tu solicitud de verificación fue rechazada. Contacta al soporte para más información.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Información básica */}

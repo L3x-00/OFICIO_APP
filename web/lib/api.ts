@@ -1,7 +1,7 @@
 "use client";
 
 import { getAccessToken, getRefreshToken, clearSession, saveSession } from "./auth";
-import { Analytics, LoginResponse, Offer, Opportunity, Provider, ProviderImage, User } from "./types";
+import { Analytics, LoginResponse, Offer, Opportunity, Provider, ProviderImage, Review, User } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://oficio-backend.onrender.com";
 
@@ -129,7 +129,22 @@ export const api = {
   async uploadImage(file: File): Promise<ProviderImage> {
     const formData = new FormData();
     formData.append("file", file);
-    return apiUpload<ProviderImage>("/provider-profile/me/images", formData);
+    const { url } = await apiUpload<{ url: string }>("/upload/provider-photo", formData);
+    return apiFetch<ProviderImage>("/provider-profile/me/images", {
+      method: "POST",
+      body: JSON.stringify({ url }),
+    });
+  },
+
+  async getProviderReviews(providerId: number, limit = 5): Promise<Review[]> {
+    const data = await apiFetch<{ data: Review[] } | Review[]>(
+      `/reviews/provider/${providerId}?limit=${limit}&page=1`
+    );
+    return Array.isArray(data) ? data : (data as { data: Review[] }).data ?? [];
+  },
+
+  async getAnalyticsWithDays(days: number): Promise<Analytics> {
+    return apiFetch<Analytics>(`/provider-profile/me/analytics?days=${days}`);
   },
 
   async deleteImage(imageId: number): Promise<void> {
