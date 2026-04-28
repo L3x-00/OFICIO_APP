@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -44,12 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _uploadingAvatar = false);
 
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error ?? 'Error al subir la imagen'),
-          backgroundColor: AppColors.busy,
-        ),
-      );
+      context.showErrorSnack(auth.error ?? 'Error al subir la imagen');
     }
   }
 
@@ -113,6 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = context.watch<ThemeProvider>();
     final c = context.colors;
     final user = auth.user;
+    debugPrint('🔍 PERFIL: user=${user?.email}, role=${user?.role}, hasAuth=${auth.user != null}');
 
     // ── Estado invitado ────────────────────────────────────
     if (user == null) {
@@ -657,10 +654,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
                 if (dCtx.mounted) {
                   Navigator.pop(dCtx);
-                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-                    content: Text('Reporte enviado. ¡Gracias por tu ayuda!'),
-                    backgroundColor: Color(0xFF10B981),
-                  ));
+                  ctx.showSuccessSnack('Reporte enviado. ¡Gracias por tu ayuda!');
                 }
               } catch (_) {}
             },
@@ -727,12 +721,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Navigator.pop(dialogCtx);
                       final ok = await auth.deleteAccount();
                       if (!ok && ctx.mounted) {
-                        ScaffoldMessenger.of(ctx).showSnackBar(
-                          const SnackBar(
-                            content: Text('Error al eliminar la cuenta. Inténtalo de nuevo.'),
-                            backgroundColor: Color(0xFFEF4444),
-                          ),
-                        );
+                        ctx.showErrorSnack('Error al eliminar la cuenta. Inténtalo de nuevo.');
                       }
                     }
                   : null,

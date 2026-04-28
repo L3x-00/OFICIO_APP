@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
@@ -69,7 +70,10 @@ class PanelSettingsTab extends StatelessWidget {
                   if (profile?.subscription != null) ...[
                     _SectionLabel(label: 'Suscripción'),
                     _SubscriptionCard(sub: profile!.subscription!),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+                    if (profile.subscription!.isActive && profile.subscription!.plan != 'GRATIS')
+                      _CancelPlanButton(dash: dash),
+                    const SizedBox(height: 4),
                   ],
 
                   // Planes disponibles — colapsables
@@ -472,9 +476,7 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
   Future<void> _submit() async {
     final text = widget.ctrl.text.trim();
     if (text.length < 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Describe el problema con más detalle.')),
-      );
+      context.showWarningSnack('Describe el problema con más detalle.');
       return;
     }
     setState(() => _sending = true);
@@ -482,21 +484,11 @@ class _ReportProblemDialogState extends State<_ReportProblemDialog> {
       await widget.onSend(text);
       if (!mounted) return;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Reporte enviado. ¡Gracias por ayudarnos a mejorar!'),
-          backgroundColor: AppColors.available,
-        ),
-      );
+      context.showSuccessSnack('Reporte enviado. ¡Gracias por ayudarnos a mejorar!');
     } catch (_) {
       if (!mounted) return;
       setState(() => _sending = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No se pudo enviar el reporte. Intenta de nuevo.'),
-          backgroundColor: AppColors.busy,
-        ),
-      );
+      context.showErrorSnack('No se pudo enviar el reporte. Intenta de nuevo.');
     }
   }
 }
@@ -776,14 +768,38 @@ class _PlanCardState extends State<_PlanCard> {
 
   Future<void> _openConfirmSheet() async {
     if (widget.isCurrent || widget.plan.id == 'GRATIS') return;
+
+    // If user has an active paid plan, block and redirect to cancel flow
+    final dash = context.read<DashboardProvider>();
+    final sub  = dash.profile?.subscription;
+    final hasActivePaidPlan = sub != null && sub.isActive && sub.plan != 'GRATIS';
+    if (hasActivePaidPlan) {
+      final c = context.colors;
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: c.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Plan activo detectado',
+              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          content: Text(
+            'TIENES QUE CANCELAR TU PLAN ACTUAL (${sub.planLabel}) antes de adquirir uno nuevo. Ve a Ajustes → Suscripción → Cancelar plan.',
+            style: TextStyle(color: c.textSecondary, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Entendido', style: TextStyle(color: AppColors.primary)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     final ok = await YapePaymentScreen.show(context, plan: widget.plan.id);
     if (ok == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Comprobante enviado. Te notificaremos cuando se valide.'),
-        backgroundColor: widget.plan.color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ));
+      context.showInfoSnack('Comprobante enviado. Te notificaremos cuando se valide.');
     }
   }
 
@@ -998,9 +1014,8 @@ class _PlanConfirmSheetState extends State<_PlanConfirmSheet> {
 
   Future<void> _submit() async {
     setState(() => _loading = true);
-    final dash      = context.read<DashboardProvider>();
-    final messenger = ScaffoldMessenger.of(context);
-    final nav       = Navigator.of(context);
+    final dash = context.read<DashboardProvider>();
+    final nav  = Navigator.of(context);
 
     final ok = await dash.requestPlanUpgrade(widget.plan.id);
 
@@ -1009,19 +1024,9 @@ class _PlanConfirmSheetState extends State<_PlanConfirmSheet> {
     nav.pop();
 
     if (ok) {
-      messenger.showSnackBar(SnackBar(
-        content: Text('Solicitud enviada. Te notificaremos cuando sea procesada.'),
-        backgroundColor: widget.plan.color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ));
+      context.showInfoSnack('Solicitud enviada. Te notificaremos cuando sea procesada.');
     } else {
-      messenger.showSnackBar(SnackBar(
-        content: Text(dash.error ?? 'Error al enviar la solicitud'),
-        backgroundColor: AppColors.busy,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ));
+      context.showErrorSnack(dash.error ?? 'Error al enviar la solicitud');
     }
   }
 
@@ -1307,6 +1312,88 @@ class _HomeServiceToggleState extends State<_HomeServiceToggle> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Botón cancelar plan ─────────────────────────────────────
+
+class _CancelPlanButton extends StatefulWidget {
+  final DashboardProvider dash;
+  const _CancelPlanButton({required this.dash});
+
+  @override
+  State<_CancelPlanButton> createState() => _CancelPlanButtonState();
+}
+
+class _CancelPlanButtonState extends State<_CancelPlanButton> {
+  bool _loading = false;
+
+  Future<void> _confirm() async {
+    final c = context.colors;
+    final plan = widget.dash.profile?.subscription?.planLabel ?? 'actual';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('¿Cancelar tu plan?',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        content: Text(
+          'Al cancelar tu plan $plan perderás los beneficios inmediatamente y volverás al plan Gratis. Esta acción no reembolsa pagos anteriores.',
+          style: TextStyle(color: c.textSecondary, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Mantener plan', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.busy,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Sí, cancelar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+    setState(() => _loading = true);
+    try {
+      await DashboardRepository().cancelPlan();
+      if (!mounted) return;
+      await widget.dash.loadDashboard();
+      if (!mounted) return;
+      context.showSuccessSnack('Plan cancelado. Ahora estás en el plan Gratis.');
+    } catch (e) {
+      if (!mounted) return;
+      context.showErrorSnack('No se pudo cancelar: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _loading ? null : _confirm,
+        icon: _loading
+            ? const SizedBox(width: 16, height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.busy))
+            : const Icon(Icons.cancel_outlined, size: 18, color: AppColors.busy),
+        label: const Text('Cancelar plan',
+            style: TextStyle(color: AppColors.busy, fontWeight: FontWeight.w600)),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: AppColors.busy.withValues(alpha: 0.5)),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       ),
     );
   }

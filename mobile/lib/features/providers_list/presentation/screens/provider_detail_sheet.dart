@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constans/app_colors.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/phone_input_section.dart' show formatForWhatsApp;
 import '../../../../core/constans/app_strings.dart';
 import '../../../../core/theme/app_theme_colors.dart';
@@ -20,6 +21,7 @@ import '../../data/providers_repository.dart';
 import '../../presentation/widgets/create_review_sheet.dart';
 import '../../../../shared/widgets/social_media_row.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 
 /// Modal de detalle completo del proveedor
@@ -1084,8 +1086,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () async {
-                  final auth   = context.read<AuthProvider>();
-                  final userId = auth.user?.id ?? 0;
+                  final auth = context.read<AuthProvider>();
+                  if (auth.user == null) { _showLoginRequired(); return; }
+                  final userId = auth.user!.id;
                   final myReview = _myReview;
 
                   if (myReview != null) {
@@ -1150,13 +1153,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: OutlinedButton.icon(
         onPressed: () {
-          final userId = context.read<AuthProvider>().user?.id ?? 0;
-          if (userId == 0) return;
+          final auth = context.read<AuthProvider>();
+          if (auth.user == null) { _showLoginRequired(); return; }
           _ReportSheet.show(
             context,
             providerId:    widget.provider.id,
             providerName:  widget.provider.businessName,
-            userId:        userId,
+            userId:        auth.user!.id,
             repo:          _providersRepo,
           );
         },
@@ -1170,6 +1173,41 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
+      ),
+    );
+  }
+
+  void _showLoginRequired() {
+    final c = context.colors;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Inicia sesión para continuar',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17)),
+        content: Text('Necesitas una cuenta para realizar esta acción.',
+            style: TextStyle(color: c.textSecondary, height: 1.5)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Ahora no', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const LoginScreen(initialMode: AuthMode.login),
+              ));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Iniciar sesión / Registrarme',
+                style: TextStyle(color: Colors.white, fontSize: 12)),
+          ),
+        ],
       ),
     );
   }
@@ -1613,9 +1651,7 @@ class _ReviewDetailSheetState extends State<_ReviewDetailSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al enviar: $e'), backgroundColor: Colors.red),
-        );
+        context.showErrorSnack('Error al enviar: $e');
       }
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -2331,9 +2367,7 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
           ? 'Ya enviaste un reporte para este proveedor.'
           : 'No se pudo enviar el reporte. Intenta de nuevo.';
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red.shade700),
-      );
+      context.showErrorSnack(msg);
     } finally {
       if (mounted) setState(() => _sending = false);
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
+import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/social_login_button.dart';
@@ -88,13 +89,7 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
       if (!_acceptedTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Debes aceptar los Términos y Condiciones para continuar'),
-            backgroundColor: AppColors.busy,
-          ),
-        );
+        context.showWarningSnack('Debes aceptar los Términos y Condiciones para continuar');
         return;
       }
       setState(() => _passwordMismatch = null);
@@ -112,12 +107,7 @@ class _LoginScreenState extends State<LoginScreen>
           MaterialPageRoute(builder: (_) => const OtpVerificationScreen()),
         );
       } else if (!ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(auth.error ?? 'Error al registrarse'),
-            backgroundColor: AppColors.busy,
-          ),
-        );
+        context.showErrorSnack(auth.error ?? 'Error al registrarse');
       }
     } else {
       final ok = await auth.login(
@@ -129,24 +119,11 @@ class _LoginScreenState extends State<LoginScreen>
       if (ok && mounted) {
         if (auth.savedAccountLimitReached) {
           auth.clearSavedAccountLimitFlag();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Sesión iniciada. Límite de 3 cuentas guardadas alcanzado — elimina una desde tu perfil.',
-              ),
-              backgroundColor: AppColors.amber,
-              duration: Duration(seconds: 5),
-            ),
-          );
+          context.showWarningSnack('Sesión iniciada. Límite de 3 cuentas guardadas alcanzado — elimina una desde tu perfil.');
         }
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(auth.error ?? 'Correo o contraseña incorrectos'),
-            backgroundColor: AppColors.busy,
-          ),
-        );
+        context.showErrorSnack(auth.error ?? 'Correo o contraseña incorrectos');
       }
     }
   }
@@ -169,14 +146,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (outcome.isCancelled) return; // el usuario canceló — sin feedback
 
     if (outcome.isError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(outcome.errorMessage ?? 'Error en inicio de sesión social'),
-          backgroundColor: AppColors.busy,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
-        ),
-      );
+      context.showErrorSnack(outcome.errorMessage ?? 'Error en inicio de sesión social');
       return;
     }
 
@@ -186,13 +156,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (ok) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error ?? 'Error en inicio de sesión social'),
-          backgroundColor: AppColors.busy,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      context.showErrorSnack(auth.error ?? 'Error en inicio de sesión social');
     }
   }
 
@@ -327,47 +291,34 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 const SizedBox(height: 28),
 
-                // ── Botones de login social (solo en registro) ──
+                // ── Botones de login social ──────────────────
+                SocialLoginButton(
+                  provider: SocialProvider.google,
+                  onTap: () => _handleSocialLogin(SocialProvider.google),
+                ),
                 if (isRegister) ...[
-                  SocialLoginButton(
-                    provider: SocialProvider.google,
-                    onTap: () => _handleSocialLogin(SocialProvider.google),
-                  ),
                   const SizedBox(height: 10),
                   SocialLoginButton(
                     provider: SocialProvider.facebook,
                     onTap: () => _handleSocialLogin(SocialProvider.facebook),
                   ),
-                  const SizedBox(height: 20),
-                  // Divisor "O regístrate con tu correo"
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: c.border,
-                          thickness: 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          'O regístrate con tu correo',
-                          style: TextStyle(
-                            color: c.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          color: c.border,
-                          thickness: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
                 ],
+                const SizedBox(height: 20),
+                // Divisor
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: c.border, thickness: 1)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        isRegister ? 'O regístrate con tu correo' : 'O ingresa con tu correo',
+                        style: TextStyle(color: c.textMuted, fontSize: 12),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: c.border, thickness: 1)),
+                  ],
+                ),
+                const SizedBox(height: 20),
 
                 // ── Campos nombre (solo en registro) ────────
                 if (isRegister) ...[

@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/utils/permission_service.dart';
 import 'package:mobile/core/utils/plan_limits.dart';
 import 'package:provider/provider.dart';
@@ -693,12 +694,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   }
 
   void _showSnack(String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: isError ? AppColors.busy : AppColors.available,
-      ),
-    );
+    if (isError) {
+      context.showErrorSnack(msg);
+    } else {
+      context.showSuccessSnack(msg);
+    }
   }
 
   // ─── Sección domicilio (OFICIO) ──────────────────────────

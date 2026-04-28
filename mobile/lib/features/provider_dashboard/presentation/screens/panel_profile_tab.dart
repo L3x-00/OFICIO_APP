@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
@@ -460,10 +461,11 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
             onSave: (schedule) async {
               final ok = await dash.updateProfile(scheduleJson: schedule);
               if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(ok ? 'Horario guardado' : dash.error ?? 'Error al guardar'),
-                backgroundColor: ok ? AppColors.available : AppColors.busy,
-              ));
+              if (ok) {
+                context.showSuccessSnack('Horario guardado');
+              } else {
+                context.showErrorSnack(dash.error ?? 'Error al guardar');
+              }
             },
           ),
         ],
@@ -971,13 +973,11 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
 
   void _showSnack(String message, {bool isError = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? AppColors.busy : AppColors.available,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (isError) {
+      context.showErrorSnack(message);
+    } else {
+      context.showSuccessSnack(message);
+    }
   }
 
   void _confirmDeletePhoto(ProfileImage img) {

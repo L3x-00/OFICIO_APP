@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../providers_list/data/providers_repository.dart';
@@ -124,18 +125,11 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
 
   Future<void> _submit() async {
     if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona una categoría')),
-      );
+      context.showWarningSnack('Selecciona una categoría');
       return;
     }
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Completa la descripción (mínimo 10 caracteres).'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      context.showWarningSnack('Completa la descripción (mínimo 10 caracteres).');
       return;
     }
 
@@ -160,12 +154,7 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     if (ok) {
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(prov.error ?? 'No se pudo publicar'),
-          backgroundColor: Colors.red.shade700,
-        ),
-      );
+      context.showErrorSnack(prov.error ?? 'No se pudo publicar');
     }
   }
 
