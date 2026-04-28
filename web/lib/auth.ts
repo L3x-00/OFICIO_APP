@@ -66,9 +66,9 @@ export function isSessionExpired(): boolean {
   return elapsed > INACTIVITY_TIMEOUT;
 }
 
-export function getRedirectPath(user: User): string {
-  if (!user || !user.role) return '/cliente'; 
-  if (user.role === "ADMIN") return "/panel";
-  if (user.role === "PROVEEDOR") return "/panel";
-  return "/cliente";
+export function getRedirectPath(user: User, hasProvider?: boolean): string {
+  if (!user || !user.role) return '/cliente';
+  // ADMIN is redirected externally by the login page — this path is never hit for ADMIN
+  if (user.role === 'PROVEEDOR' || hasProvider) return '/panel';
+  return '/cliente';
 }

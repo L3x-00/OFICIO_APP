@@ -6,6 +6,9 @@ import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { saveSession, getRedirectPath } from '@/lib/auth';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://oficio-backend.onrender.com';
+const ADMIN_PANEL_URL = 'https://oficioadmin.vercel.app/login';
 import { loginSchema } from '@/lib/validators';
 import type { LoginFormData } from '@/lib/validators';
 
@@ -62,10 +65,30 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await api.login(email, password);
-      console.log('DEBUG login response:', JSON.stringify(data, null, 2));
       saveSession(data);
       toast.success('¡Bienvenido de nuevo!');
-      router.push(getRedirectPath(data.user));
+
+      // ADMIN → redirige al panel admin externo con el email pre-cargado
+      if (data.user.role === 'ADMIN') {
+        window.location.href = `${ADMIN_PANEL_URL}?email=${encodeURIComponent(email)}`;
+        return;
+      }
+
+      // Verificar si el usuario tiene perfiles de proveedor
+      let hasProvider = false;
+      try {
+        const res = await fetch(`${API_BASE}/users/my-provider-status`, {
+          headers: { Authorization: `Bearer ${data.accessToken}` },
+        });
+        if (res.ok) {
+          const status = await res.json();
+          hasProvider = status.hasProvider === true;
+        }
+      } catch {
+        // Si falla, continuar con la lógica de rol
+      }
+
+      router.push(getRedirectPath(data.user, hasProvider));
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Error al iniciar sesión';
