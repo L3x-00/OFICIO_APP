@@ -46,6 +46,30 @@ const TYPE_CONFIG: Record<
     border: 'border-orange-500/25',
     description: 'La verificación previamente otorgada fue revocada por un administrador.',
   },
+  PLAN_APROBADO: {
+    icon: CheckCircle,
+    label: 'Plan Aprobado',
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/25',
+    description: 'El pago fue verificado y el plan fue activado.',
+  },
+  PLAN_RECHAZADO: {
+    icon: XCircle,
+    label: 'Plan Rechazado',
+    color: 'text-red-400',
+    bg: 'bg-red-500/10',
+    border: 'border-red-500/25',
+    description: 'El comprobante de pago no pudo ser verificado.',
+  },
+  PLAN_SOLICITADO: {
+    icon: HelpCircle,
+    label: 'Plan Solicitado',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/25',
+    description: 'El proveedor envió un comprobante de pago para cambio de plan.',
+  },
 };
 
 function fmt(iso: string) {

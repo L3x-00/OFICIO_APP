@@ -7,7 +7,6 @@ import {
   Tag, Zap, Bell, FileBarChart, UserCog, ChevronRight,
   Activity, CreditCard, Shield, Wallet,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const navGroups = [
@@ -40,12 +39,19 @@ const navGroups = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean;
+  onCollapsedChange: (v: boolean) => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
+export function Sidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <aside
+      className={`admin-sidebar${mobileOpen ? ' mobile-open' : ''}`}
       style={{
         width: collapsed ? '72px' : '260px',
         background: 'var(--surface-1)',
@@ -57,7 +63,6 @@ export function Sidebar() {
         left: 0,
         top: 0,
         zIndex: 50,
-        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         overflowX: 'hidden',
       }}
     >
@@ -98,7 +103,7 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <button
-            onClick={() => setCollapsed(true)}
+            onClick={() => onCollapsedChange(true)}
             style={{
               width: '26px', height: '26px',
               borderRadius: '6px',
@@ -126,7 +131,7 @@ export function Sidebar() {
         )}
         {collapsed && (
           <button
-            onClick={() => setCollapsed(false)}
+            onClick={() => onCollapsedChange(false)}
             style={{
               position: 'absolute',
               right: '-12px',
@@ -173,6 +178,7 @@ export function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onMobileClose}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -184,9 +190,7 @@ export function Sidebar() {
                     textDecoration: 'none',
                     transition: 'var(--transition)',
                     position: 'relative',
-                    background: isActive
-                      ? 'rgba(59,130,246,0.1)'
-                      : 'transparent',
+                    background: isActive ? 'rgba(59,130,246,0.1)' : 'transparent',
                     color: isActive ? 'var(--brand-light)' : 'var(--text-secondary)',
                     fontWeight: isActive ? 500 : 400,
                     fontSize: '13px',

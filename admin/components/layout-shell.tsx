@@ -3,55 +3,62 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from './sidebar';
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, Search, ChevronRight } from 'lucide-react';
+import { Bell, Search, ChevronRight, Menu, X } from 'lucide-react';
 import { useAdminSocket } from '@/hooks/useAdminSocket';
 import { AdminNotificationPayload } from '@/lib/socket';
+import { getNotifications } from '@/lib/api';
 import { toast } from 'sonner';
 
-// Mapa: tipo de evento → ruta del panel que debe actualizarse
 const EVENT_ROUTES: Record<string, string> = {
-  NEW_PROVIDER:              '/verification',
-  NEW_PLAN_REQUEST:          '/plan-requests',
-  NEW_YAPE_PAYMENT:          '/yape-payments',
-  NEW_USER:                  '/users',
-  TRUST_VALIDATION_REQUEST:  '/trust-validation',
+  NEW_PROVIDER:             '/verification',
+  NEW_PLAN_REQUEST:         '/plan-requests',
+  NEW_YAPE_PAYMENT:         '/yape-payments',
+  NEW_USER:                 '/users',
+  TRUST_VALIDATION_REQUEST: '/trust-validation',
 };
 
-function Topbar() {
-  const pathname  = usePathname();
-  const router    = useRouter();
+interface TopbarProps {
+  onMenuClick: () => void;
+  mobileOpen: boolean;
+}
+
+function Topbar({ onMenuClick, mobileOpen }: TopbarProps) {
+  const pathname = usePathname();
+  const router   = useRouter();
   const [pendingCount, setPendingCount] = useState(0);
 
-  const handleAdminEvent = useCallback((payload: AdminNotificationPayload) => {
-    // Incrementar badge
-    setPendingCount(n => n + 1);
+  // Init badge from server unread count
+  useEffect(() => {
+    getNotifications(1)
+      .then((res) => setPendingCount(res.unreadCount))
+      .catch(() => {});
+  }, []);
 
-    // Toast con link a la página relevante
+  const handleAdminEvent = useCallback((payload: AdminNotificationPayload) => {
+    setPendingCount((n) => n + 1);
     const route = EVENT_ROUTES[payload.type];
     toast(payload.title, {
       description: payload.body,
       duration: 6000,
-      action: route
-        ? { label: 'Ver', onClick: () => router.push(route) }
-        : undefined,
+      action: route ? { label: 'Ver', onClick: () => router.push(route) } : undefined,
     });
   }, [router]);
 
   useAdminSocket(handleAdminEvent);
 
   const breadcrumbs: Record<string, string[]> = {
-    '/': ['Dashboard'],
-    '/providers': ['Gestión', 'Proveedores'],
-    '/users': ['Gestión', 'Usuarios'],
-    '/categories': ['Gestión', 'Categorías'],
-    '/reviews': ['Gestión', 'Reseñas'],
-    '/verification': ['Operaciones', 'Verificación'],
-    '/trust-validation': ['Operaciones', 'Validación de Confianza'],
+    '/':               ['Dashboard'],
+    '/providers':      ['Gestión', 'Proveedores'],
+    '/users':          ['Gestión', 'Usuarios'],
+    '/categories':     ['Gestión', 'Categorías'],
+    '/reviews':        ['Gestión', 'Reseñas'],
+    '/verification':   ['Operaciones', 'Verificación'],
+    '/trust-validation':['Operaciones', 'Validación de Confianza'],
     '/plan-requests':  ['Operaciones', 'Solicitudes de Plan'],
     '/yape-payments':  ['Operaciones', 'Pagos Yape'],
     '/notifications':  ['Operaciones', 'Notificaciones'],
-    '/reports': ['Principal', 'Reportes'],
-    '/analytics': ['Principal', 'Analytics'],
+    '/reports':        ['Principal', 'Reportes'],
+    '/analytics':      ['Principal', 'Analytics'],
   };
 
   const crumbs = breadcrumbs[pathname] || ['ADMIN'];
@@ -64,21 +71,47 @@ function Topbar() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 24px',
+      padding: '0 16px',
       position: 'sticky',
       top: 0,
       zIndex: 40,
       backdropFilter: 'blur(8px)',
+      gap: '8px',
     }}>
+
+      {/* Hamburger — mobile only */}
+      <button
+        className="admin-hamburger"
+        onClick={onMenuClick}
+        style={{
+          width: '34px', height: '34px',
+          borderRadius: '8px',
+          background: 'var(--surface-3)',
+          border: '1px solid var(--border-default)',
+          color: 'var(--text-secondary)',
+          cursor: 'pointer',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          transition: 'var(--transition)',
+        }}
+        aria-label="Abrir menú"
+      >
+        {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+      </button>
+
       {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
         {crumbs.map((crumb, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {i > 0 && <ChevronRight size={12} color="var(--text-tertiary)" />}
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+            {i > 0 && <ChevronRight size={12} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />}
             <span style={{
               fontSize: '13px',
               color: i === crumbs.length - 1 ? 'var(--text-primary)' : 'var(--text-tertiary)',
               fontWeight: i === crumbs.length - 1 ? 600 : 400,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}>
               {crumb}
             </span>
@@ -87,21 +120,23 @@ function Topbar() {
       </div>
 
       {/* Right actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {/* Search hint */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 12px',
-          background: 'var(--surface-3)',
-          border: '1px solid var(--border-default)',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          transition: 'var(--transition)',
-        }}
-        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-strong)'}
-        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-default)'}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+
+        {/* Search hint — hidden on mobile */}
+        <div
+          className="admin-search-hint"
+          style={{
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            background: 'var(--surface-3)',
+            border: '1px solid var(--border-default)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'var(--transition)',
+          }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-strong)'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-default)'}
         >
           <Search size={13} color="var(--text-tertiary)" />
           <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Buscar...</span>
@@ -134,6 +169,7 @@ function Topbar() {
           }}
           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)'}
           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'}
+          title="Notificaciones"
         >
           <Bell size={14} />
           {pendingCount > 0 && (
@@ -182,7 +218,13 @@ function Topbar() {
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
-  const [sidebarWidth, setSidebarWidth] = useState(260);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   if (isLoginPage) {
     return <>{children}</>;
@@ -190,19 +232,44 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--surface-0)' }}>
-      <Sidebar />
-      <div style={{
-        flex: 1,
-        marginLeft: '260px',
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 0,
-        transition: 'margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}>
-        <Topbar />
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="admin-mobile-overlay"
+          onClick={() => setMobileOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.55)',
+            zIndex: 45,
+          }}
+        />
+      )}
+
+      <Sidebar
+        collapsed={collapsed}
+        onCollapsedChange={setCollapsed}
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+      />
+
+      <div
+        className={`admin-content${collapsed ? ' sidebar-collapsed' : ''}`}
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+        }}
+      >
+        <Topbar
+          onMenuClick={() => setMobileOpen((v) => !v)}
+          mobileOpen={mobileOpen}
+        />
         <main style={{
           flex: 1,
-          padding: '28px 28px',
+          padding: '24px 20px',
           overflowY: 'auto',
         }}>
           {children}

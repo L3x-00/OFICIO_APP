@@ -223,3 +223,52 @@ td { padding: 14px 16px; font-size: 13px; color: var(--text-secondary); vertical
 
 /* Número font feature */
 .tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* ── Admin layout responsive ─────────────────────────────── */
+.admin-sidebar {
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-content {
+  margin-left: 260px;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-content.sidebar-collapsed {
+  margin-left: 72px;
+}
+
+.admin-hamburger {
+  display: none;
+}
+
+.admin-search-hint {
+  display: flex;
+}
+
+.admin-mobile-overlay {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.6);
+  }
+  .admin-content,
+  .admin-content.sidebar-collapsed {
+    margin-left: 0 !important;
+  }
+  .admin-hamburger {
+    display: flex;
+  }
+  .admin-search-hint {
+    display: none;
+  }
+  .admin-mobile-overlay {
+    display: block;
+  }
+}
