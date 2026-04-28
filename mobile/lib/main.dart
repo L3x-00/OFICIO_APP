@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/services/fcm_service.dart';
@@ -672,6 +673,7 @@ class _MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<_MainNavigation> {
   int _currentIndex = 0;
+  DateTime? _lastBackPress;
 
   bool get _isGuest => widget.userId == null;
 
@@ -680,30 +682,83 @@ class _MainNavigationState extends State<_MainNavigation> {
     super.initState();
     if (!_isGuest) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         context.read<FavoritesProvider>().initialize(widget.userId!);
+        context.read<AuthProvider>().refreshUser();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(_MainNavigation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Transición guest → autenticado: state reutilizado, initState no vuelve a correr.
+    // refreshUser fuerza notifyListeners para que ProfileScreen (offstage en IndexedStack)
+    // reconstruya con auth.user ya no-nulo.
+    if (oldWidget.userId == null && widget.userId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<FavoritesProvider>().initialize(widget.userId!);
+        context.read<AuthProvider>().refreshUser();
       });
     }
   }
 
   void _handleTabTap(int index) {
     setState(() => _currentIndex = index);
+    if (index == 3 && !_isGuest) {
+      context.read<AuthProvider>().refreshUser();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          const ProvidersScreen(),
-          FavoritesScreen(userId: _isGuest ? null : widget.userId!),
-          const NotificationsScreen(),
-          const ProfileScreen(),
-        ],
-      ),
-      bottomNavigationBar: _BottomNav(
-        currentIndex: _currentIndex,
-        onTap: _handleTabTap,
+    // Seleccionar solo userId: rebuild solo en login/logout, no en cada notificación.
+    // ValueKey fuerza destrucción+recreación de ProfileScreen cuando userId cambia
+    // (null→id al logear, id→null al salir), garantizando que build() corra con
+    // auth.user ya cargado — soluciona el blank screen en IndexedStack offstage.
+    final authUserId = context.select<AuthProvider, int?>(
+      (auth) => auth.user?.id,
+    );
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        final now = DateTime.now();
+        final isSecondPress = _lastBackPress != null &&
+            now.difference(_lastBackPress!) < const Duration(seconds: 2);
+        if (isSecondPress) {
+          _lastBackPress = null;
+          // ignore: deprecated_member_use
+          SystemNavigator.pop();
+        } else {
+          _lastBackPress = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Desliza otra vez para salir de la app'),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            const ProvidersScreen(),
+            FavoritesScreen(userId: _isGuest ? null : widget.userId!),
+            const NotificationsScreen(),
+            ProfileScreen(key: ValueKey(authUserId)),
+          ],
+        ),
+        bottomNavigationBar: _BottomNav(
+          currentIndex: _currentIndex,
+          onTap: _handleTabTap,
+        ),
       ),
     );
   }
