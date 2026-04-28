@@ -9,8 +9,8 @@ const productLinks = [
 ];
 
 const legalLinks = [
-  { label: 'Términos y condiciones', href: '/terminos' },
-  { label: 'Política de privacidad', href: '/privacidad' },
+ // { label: 'Términos y condiciones', href: '/terminos' },
+ // { label: 'Política de privacidad', href: '/privacidad' },
   { label: 'soporte@oficioapp.pe',   href: 'mailto:soporte@oficioapp.pe' },
 ];
 

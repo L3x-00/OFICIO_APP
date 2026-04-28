@@ -62,6 +62,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await api.login(email, password);
+      console.log('DEBUG login response:', JSON.stringify(data, null, 2));
       saveSession(data);
       toast.success('¡Bienvenido de nuevo!');
       router.push(getRedirectPath(data.user));

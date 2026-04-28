@@ -67,6 +67,7 @@ export function isSessionExpired(): boolean {
 }
 
 export function getRedirectPath(user: User): string {
+  if (!user || !user.role) return '/cliente'; 
   if (user.role === "ADMIN") return "/panel";
   if (user.role === "PROVEEDOR") return "/panel";
   return "/cliente";
