@@ -25,12 +25,6 @@ export default function Navbar() {
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
-  // Hide on panel/cliente routes
-  if (pathname?.startsWith('/panel') || pathname?.startsWith('/cliente')) {
-    return null;
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const user = getUser();
     if (isAuthenticated() && user) {
@@ -46,7 +40,6 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
@@ -56,6 +49,11 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Early return AFTER todos los hooks
+  if (pathname?.startsWith('/panel') || pathname?.startsWith('/cliente')) {
+    return null;
+  }
 
   const handleLogout = () => {
     clearSession();
