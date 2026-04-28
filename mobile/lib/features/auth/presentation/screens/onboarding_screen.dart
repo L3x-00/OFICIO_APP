@@ -128,36 +128,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_isNavigating) return;
     setState(() => _isNavigating = true);
 
-    if (_selectedRole == 'USUARIO') {
-      final auth = context.read<AuthProvider>();
-      // Solo solicitar ubicación si el usuario aún no la tiene registrada
-      if (auth.user?.hasLocation != true) {
-        final result = await LocationPickerSheet.show(context);
-        if (!mounted) {
-          setState(() => _isNavigating = false);
-          return;
+    try {
+      if (_selectedRole == 'USUARIO') {
+        final auth = context.read<AuthProvider>();
+        // Solo solicitar ubicación si el usuario aún no la tiene registrada
+        if (auth.user?.hasLocation != true) {
+          final result = await LocationPickerSheet.show(context);
+          if (!mounted) return;
+          if (result == null) return; // Usuario canceló el picker
+          await auth.updateLocation(
+            department: result.department,
+            province:   result.province,
+            district:   result.district,
+          );
+          if (!mounted) return;
+          context.read<ProvidersProvider>().setUserLocation(
+            department: result.department,
+            province:   result.province,
+            district:   result.district,
+          );
         }
-        if (result == null) {
-          // Usuario canceló el picker — no continuar al main flow
-          setState(() => _isNavigating = false);
-          return;
-        }
-        await auth.updateLocation(
-          department: result.department,
-          province:   result.province,
-          district:   result.district,
-        );
-        if (!mounted) return;
-        context.read<ProvidersProvider>().setUserLocation(
-          department: result.department,
-          province:   result.province,
-          district:   result.district,
-        );
       }
+      if (!mounted) return;
+      // _AppRoot reconstruye desde OnboardingScreen → _MainNavigation al cambiar navigationState.
+      context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
+    } finally {
+      if (mounted) setState(() => _isNavigating = false);
     }
-    if (!mounted) return;
-    // _AppRoot reconstruye desde OnboardingScreen → _MainNavigation al cambiar navigationState.
-    context.read<AuthProvider>().completeOnboarding(role: _selectedRole!);
   }
 
   /// Muestra comparativa de planes y luego navega al formulario de proveedor.
@@ -314,7 +311,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   List<CategoryModel> _categories = [];   // árbol completo (padres + hijos)
   int?   _selectedCategoryId;             // id de la hoja seleccionada
   String _selectedCategoryName = 'Selecciona una categoría';
-  int?   _selectedParentId;               // para mostrar breadcrumb
   String _selectedParentName = '';
 
   // ─── Redes sociales (opcionales, colapsables) ────────────
@@ -380,7 +376,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           if (catId != null) {
             _selectedCategoryId   = catId;
             _selectedCategoryName = d['categoryName'] as String? ?? 'Categoría seleccionada';
-            _selectedParentId     = d['parentCategoryId'] as int?;
             _selectedParentName   = d['parentCategoryName'] as String? ?? '';
           }
         });
@@ -540,7 +535,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                               setState(() {
                                 _selectedCategoryId   = cat.id;
                                 _selectedCategoryName = cat.name;
-                                _selectedParentId     = pickerParent?.id;
                                 _selectedParentName   = pickerParent?.name ?? '';
                               });
                               Navigator.of(ctx).pop();
