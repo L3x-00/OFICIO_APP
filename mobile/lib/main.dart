@@ -22,6 +22,7 @@ import 'features/providers_list/presentation/screens/providers_screen.dart';
 import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/notifications/presentation/screens/notifications_screen.dart';
+import 'features/providers_list/presentation/providers/providers_provider.dart';
 
 /// Handler de mensajes en background — debe ser función de nivel superior.
 @pragma('vm:entry-point')
@@ -61,6 +62,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => FavoritesProvider()),
           ChangeNotifierProvider(create: (_) => DashboardProvider()),
           ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+          ChangeNotifierProvider(create: (_) => ProvidersProvider()),
         ],
         child: const ConfiServApp(),
       ),

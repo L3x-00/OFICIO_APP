@@ -22,15 +22,7 @@ class ProvidersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AuthProvider>().user;
-    return ChangeNotifierProvider(
-      create: (_) => ProvidersProvider()..init(
-        department: user?.department,
-        province:   user?.province,
-        district:   user?.district,
-      ),
-      child: const _ProvidersView(),
-    );
+    return const _ProvidersView();
   }
 }
 
@@ -48,6 +40,20 @@ class _ProvidersViewState extends State<_ProvidersView>
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final user = context.read<AuthProvider>().user;
+      context.read<ProvidersProvider>().init(
+        department: user?.department,
+        province:   user?.province,
+        district:   user?.district,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
