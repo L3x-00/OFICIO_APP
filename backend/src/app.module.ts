@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { SignImagesInterceptor } from './common/sign-images.interceptor.js';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 
@@ -71,10 +72,15 @@ import { PaymentsModule } from './payments/payments.module.js';
   controllers: [AppController],
   providers: [
     AppService,
-    // Aplica el rate limiting (Throttler) a todas las rutas automáticamente
+    // Rate limiting global
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    // Firma automáticamente todas las URLs de R2 en las respuestas JSON
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SignImagesInterceptor,
     },
   ],
 })

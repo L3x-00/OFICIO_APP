@@ -68,7 +68,37 @@ export class MinioService implements OnModuleInit {
       { 'Content-Type': contentType },
     );
 
-    return `${this.publicBaseUrl}/${objectName}`;
+    // Si hay URL pública configurada (bucket público / dominio personalizado), usarla.
+    // Si no, generar una URL presignada (máx 7 días para Cloudflare R2).
+    if (process.env.MINIO_PUBLIC_URL) {
+      return `${this.publicBaseUrl}/${objectName}`;
+    }
+    return this.client.presignedGetObject(this.bucket, objectName, 604800);
+  }
+
+  /**
+   * Toma cualquier URL almacenada (presignada o no) y devuelve una URL
+   * presignada fresca con 7 días de validez. Usado por el interceptor global
+   * para firmar URLs antes de enviarlas al cliente.
+   */
+  async signUrl(storedUrl: string): Promise<string> {
+    if (!storedUrl) return storedUrl;
+    try {
+      const urlObj = new URL(storedUrl);
+      // Ya está presignada y vigente → devolver tal cual
+      if (urlObj.searchParams.has('X-Amz-Signature')) return storedUrl;
+
+      // Extraer la clave del objeto desde la ruta
+      let key = urlObj.pathname.replace(/^\//, '');
+      if (key.startsWith(this.bucket + '/')) {
+        key = key.slice(this.bucket.length + 1);
+      }
+      if (!key) return storedUrl;
+
+      return await this.client.presignedGetObject(this.bucket, key, 604800);
+    } catch {
+      return storedUrl;
+    }
   }
 
   /**
