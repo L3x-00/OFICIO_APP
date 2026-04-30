@@ -168,6 +168,24 @@ body {
   .reveal-delay-5 { transition-delay: 400ms; }
   .reveal-delay-6 { transition-delay: 480ms; }
 
+  /* Stack collage cards: cascada solo con opacity para no pisar el transform inline */
+  @keyframes stack-drop-in {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .stack-card {
+    animation: stack-drop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Despliegue de la cuadrícula tras pulsar el botón */
+  @keyframes grid-card-deploy {
+    0%   { opacity: 0; transform: translateY(24px) scale(0.94); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .grid-card-enter {
+    animation: grid-card-deploy 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   /* Floating provider cards */
   @keyframes showcase-float {
     0%, 100% { translate: 0 0; }
@@ -254,5 +272,12 @@ body {
     animation: none !important;
     transform: none !important;
     translate: 0 !important;
+  }
+  /* Stack collage: solo aparece sin rotación cuando se reduce movimiento.
+     No se puede desactivar el transform inline sin romper el layout absolute,
+     así que dejamos la rotación pero quitamos cualquier animación. */
+  .stack-card,
+  .grid-card-enter {
+    animation: none !important;
   }
 }
