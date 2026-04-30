@@ -291,6 +291,16 @@ export const api = {
    * Usa fetch directo porque apiFetch antepone Authorization si hay token,
    * pero este endpoint es público.
    */
+  /** Devuelve el proveedor mejor valorado (1er resultado público) o null si falla. */
+  async getFeaturedProvider(): Promise<PublicProvider | null> {
+    try {
+      const list = await this.getPublicProviders(1);
+      return list[0] ?? null;
+    } catch {
+      return null;
+    }
+  },
+
   async getPublicProviders(limit = 12): Promise<PublicProvider[]> {
     const url = `${API_BASE_URL}/providers?sortBy=rating&limit=${limit}&page=1`;
     const res = await fetch(url, { method: "GET", cache: "no-store" });

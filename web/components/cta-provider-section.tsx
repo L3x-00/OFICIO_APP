@@ -1,11 +1,18 @@
 import Link from 'next/link';
-import { Smartphone, ArrowRight, Shield, TrendingUp, Bell, Star } from 'lucide-react';
+import { Smartphone, ArrowRight, Shield, TrendingUp, Bell, Star, CheckCircle } from 'lucide-react';
 
 const features = [
   { icon: Shield,     text: 'Verificación de identidad gratuita' },
   { icon: TrendingUp, text: 'Estadísticas de tu perfil en tiempo real' },
   { icon: Bell,       text: 'Notificaciones de nuevas solicitudes' },
   { icon: Star,       text: 'Sistema de calificaciones verificadas' },
+];
+
+const providerPerks = [
+  'Perfil verificado y destacado',
+  'Recibe solicitudes de clientes',
+  'Estadísticas de visitas en tiempo real',
+  'Pagos con Yape integrados',
 ];
 
 export default function CtaProviderSection() {
@@ -81,6 +88,44 @@ export default function CtaProviderSection() {
                 />
               </Link>
             </div>
+          </div>
+        </div>
+
+        {/* Sub-bloque movido del Hero: ¿Eres profesional o tienes un negocio? */}
+        <div
+          data-reveal
+          className="relative mt-10 bg-bg-card/60 border border-white/8 rounded-3xl p-8 sm:p-10 backdrop-blur-sm overflow-hidden"
+        >
+          <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-center">
+            <div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
+                ¿Eres profesional o tienes un negocio?
+              </h3>
+              <p className="text-text-secondary text-sm sm:text-base mb-7 leading-relaxed">
+                Regístrate, verifica tu perfil y empieza a recibir clientes de tu ciudad desde hoy.
+              </p>
+
+              <a
+                href="#"
+                className="inline-flex items-center gap-2 bg-primary/15 hover:bg-primary/25 border border-primary/40 hover:border-primary text-primary px-5 py-2.5 rounded-button text-sm font-semibold transition-all duration-200 hover:shadow-glow-sm hover-lift press-effect"
+              >
+                <Smartphone size={16} />
+                Descarga la app gratis
+              </a>
+            </div>
+
+            <ul className="space-y-3">
+              {providerPerks.map((perk, i) => (
+                <li
+                  key={perk}
+                  className="flex items-center gap-2.5 text-text-secondary text-sm animate-fade-in-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <CheckCircle size={16} className="text-primary flex-shrink-0" />
+                  {perk}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

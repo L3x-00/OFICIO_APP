@@ -1,18 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Smartphone, CheckCircle, Star, ShieldCheck } from 'lucide-react';
-
-const providerPerks = [
-  'Perfil verificado y destacado',
-  'Recibe solicitudes de clientes',
-  'Estadísticas de visitas en tiempo real',
-  'Pagos con Yape integrados',
-];
+import { ArrowRight, Smartphone, Star, ShieldCheck } from 'lucide-react';
+import FlipCard3D from '@/components/flip-card-3d';
 
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden">
-      {/* ── Blobs decorativos animados (profundidad) ─────── */}
+      {/* Blobs decorativos animados */}
       <div className="blob bg-primary/40 w-[420px] h-[420px] -top-32 -left-24 animate-float-slow" />
       <div className="blob bg-amber/25 w-[360px] h-[360px] top-1/2 right-[-120px] animate-float" />
 
@@ -22,26 +16,30 @@ export default function HeroSection() {
         aria-hidden
       />
 
-      {/* ── Split hero ───────────────────────────────────── */}
-      <div className="relative flex flex-col lg:flex-row" style={{ minHeight: '620px', maxHeight: '760px' }}>
+      {/* Imagen de fondo unificada */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/promociona2.png"
+          alt=""
+          fill
+          className="object-cover object-center"
+          priority
+          sizes="100vw"
+        />
+        {/* Capa base que oscurece toda la imagen */}
+        <div className="absolute inset-0 bg-bg-dark/65" />
+        {/* Degradado lateral (más denso a la izquierda donde está el texto) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/95 via-bg-dark/75 to-bg-dark/55" />
+        <div className="absolute inset-0 bg-radial-primary opacity-50 pointer-events-none" />
+      </div>
 
-        {/* Panel izquierdo */}
-        <div className="relative flex-[3] flex items-center overflow-hidden min-h-[440px] lg:min-h-0">
-          <Image
-            src="/images/promociona2.png"
-            alt="Encuentra profesionales de confianza en tu ciudad"
-            fill
-            className="object-cover object-center"
-            priority
-            sizes="(max-width: 1024px) 100vw, 62vw"
-          />
-          {/* Capa base que oscurece toda la imagen ~55% */}
-          <div className="absolute inset-0 bg-bg-dark/55" />
-          {/* Degradado adicional más denso del lado del texto para asegurar contraste */}
-          <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/95 via-bg-dark/75 to-bg-dark/35" />
-          <div className="absolute inset-0 bg-radial-primary opacity-50 pointer-events-none" />
-
-          <div className="relative z-10 px-8 sm:px-14 lg:px-16 py-16 max-w-2xl">
+      <div
+        className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-16 lg:py-24"
+        style={{ minHeight: '620px' }}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-10 lg:gap-16 items-center">
+          {/* Texto + CTAs */}
+          <div className="max-w-2xl">
             {/* Badge con pulse */}
             <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/40 rounded-full px-4 py-1.5 mb-6 animate-fade-in-up">
               <span className="relative flex h-2 w-2">
@@ -103,51 +101,13 @@ export default function HeroSection() {
               Más de 500 profesionales verificados en todo el Perú
             </div>
           </div>
-        </div>
 
-        {/* Panel derecho */}
-        <div className="relative flex-[2] flex items-center overflow-hidden min-h-[300px] lg:min-h-0">
-          <Image
-            src="/images/portada.jpeg"
-            alt="Proveedores de servicios en OficioApp"
-            fill
-            className="object-cover object-center"
-            priority
-            sizes="(max-width: 1024px) 100vw, 38vw"
-          />
-          {/* Capa base oscurecedora ~55% */}
-          <div className="absolute inset-0 bg-bg-dark/55" />
-          {/* Degradado adicional más denso del lado del texto */}
-          <div className="absolute inset-0 bg-gradient-to-l from-bg-dark/95 via-bg-dark/78 to-bg-dark/45" />
-
-          <div className="relative z-10 px-8 sm:px-12 py-16 w-full animate-slide-in-right" style={{ animationDelay: '300ms' }}>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
-              ¿Eres profesional o tienes un negocio?
-            </h2>
-            <p className="text-text-secondary text-sm sm:text-base mb-7 leading-relaxed">
-              Regístrate, verifica tu perfil y empieza a recibir clientes de tu ciudad desde hoy.
-            </p>
-
-            <ul className="space-y-3 mb-8">
-              {providerPerks.map((perk, i) => (
-                <li
-                  key={perk}
-                  className="flex items-center gap-2.5 text-text-secondary text-sm animate-fade-in-up"
-                  style={{ animationDelay: `${500 + i * 80}ms` }}
-                >
-                  <CheckCircle size={16} className="text-primary flex-shrink-0" />
-                  {perk}
-                </li>
-              ))}
-            </ul>
-
-            <a
-              href="#"
-              className="inline-flex items-center gap-2 bg-primary/15 hover:bg-primary/25 border border-primary/40 hover:border-primary text-primary px-5 py-2.5 rounded-button text-sm font-semibold transition-all duration-200 hover:shadow-glow-sm hover-lift press-effect"
-            >
-              <Smartphone size={16} />
-              Descarga la app gratis
-            </a>
+          {/* Tarjeta 3D giratoria */}
+          <div
+            className="flex justify-center lg:justify-end animate-fade-in-up pb-10 lg:pb-0"
+            style={{ animationDelay: '500ms' }}
+          >
+            <FlipCard3D />
           </div>
         </div>
       </div>
