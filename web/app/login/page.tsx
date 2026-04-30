@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import { saveSession, getRedirectPath } from '@/lib/auth';
+import { saveSession, getRedirectPath, getUser } from '@/lib/auth';
 import { loginSchema } from '@/lib/validators';
 import type { LoginFormData } from '@/lib/validators';
 
@@ -75,7 +75,15 @@ export default function LoginPage() {
       saveSession(data);
       toast.success('¡Bienvenido de nuevo!');
 
-      if (data.user.role === 'ADMIN') {
+      // Backend may omit `user` in some response shapes — fall back to localStorage,
+      // which `saveSession` just populated, before routing.
+      const sessionUser = data.user ?? getUser();
+      if (!sessionUser || !sessionUser.role) {
+        toast.error('No se pudo cargar tu perfil. Vuelve a iniciar sesión.');
+        return;
+      }
+
+      if (sessionUser.role === 'ADMIN') {
         window.location.href = `${ADMIN_PANEL_URL}?email=${encodeURIComponent(email)}`;
         return;
       }
@@ -93,7 +101,7 @@ export default function LoginPage() {
         /* continue with role logic */
       }
 
-      router.push(getRedirectPath(data.user, hasProvider));
+      router.push(getRedirectPath(sessionUser, hasProvider));
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Error al iniciar sesión';
