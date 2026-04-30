@@ -106,13 +106,51 @@ export async function apiUpload<T = unknown>(
   return res.json() as Promise<T>;
 }
 
+// Shape that the backend actually returns on /auth/login — fields are flat,
+// not wrapped in a `user` object. We normalize it here into LoginResponse.
+interface FlatLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  userId: number;
+  role: User["role"];
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  avatarUrl?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+}
+
+function buildUserFromFlat(raw: FlatLoginResponse, fallbackEmail: string): User {
+  return {
+    id:             raw.userId,
+    email:          raw.email ?? fallbackEmail,
+    role:           raw.role,
+    firstName:      raw.firstName ?? "",
+    lastName:       raw.lastName ?? "",
+    phone:          raw.phone,
+    avatarUrl:      raw.avatarUrl,
+    department:     raw.department,
+    province:       raw.province,
+    district:       raw.district,
+    isActive:       true,
+    isEmailVerified: true,
+  };
+}
+
 export const api = {
   async login(email: string, password: string): Promise<LoginResponse> {
-    const data = await apiFetch<LoginResponse>("/auth/login", {
+    const raw = await apiFetch<FlatLoginResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    return data;
+    return {
+      accessToken:  raw.accessToken,
+      refreshToken: raw.refreshToken,
+      user:         buildUserFromFlat(raw, email),
+    };
   },
 
   async getMyProfile(): Promise<Provider> {
@@ -195,6 +233,23 @@ export const api = {
   },
 
   async getUserProfile(): Promise<User> {
-    return apiFetch<User>("/users/me");
+    // /users/me returns the user fields directly but omits isActive / isEmailVerified.
+    // Default them to true so the User interface is satisfied for the UI.
+    const raw = await apiFetch<Partial<User>>("/users/me");
+    return {
+      id:             raw.id ?? 0,
+      email:          raw.email ?? "",
+      role:           raw.role ?? "USUARIO",
+      firstName:      raw.firstName ?? "",
+      lastName:       raw.lastName ?? "",
+      phone:          raw.phone,
+      avatarUrl:      raw.avatarUrl,
+      department:     raw.department,
+      province:       raw.province,
+      district:       raw.district,
+      isActive:       raw.isActive ?? true,
+      isEmailVerified: raw.isEmailVerified ?? true,
+      fullName:       raw.fullName,
+    };
   },
 };
