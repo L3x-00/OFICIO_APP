@@ -75,9 +75,6 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                     const SizedBox(height: 20),
                     // Plan & Pagos
                     _buildPlanSection(context, profile, dash),
-                    const SizedBox(height: 20),
-                    // Zona peligrosa
-                    _buildDangerZone(context, dash),
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -881,55 +878,6 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
     );
   }
 
-  Widget _buildDangerZone(BuildContext context, DashboardProvider dash) {
-    final c = context.colors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionTitle(icon: Icons.warning_rounded, title: 'Zona de peligro', color: AppColors.busy),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: c.bgCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.busy.withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Eliminar perfil',
-                style: TextStyle(
-                  color: AppColors.busy,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Esta acción eliminará permanentemente tu perfil profesional, todas tus fotos y reseñas. No se puede deshacer.',
-                style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.5),
-              ),
-              const SizedBox(height: 14),
-              OutlinedButton.icon(
-                onPressed: () => _confirmDeleteProfile(context),
-                icon: Icon(Icons.delete_forever_rounded, size: 18),
-                label: Text('Eliminar mi perfil'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.busy,
-                  side: const BorderSide(color: AppColors.busy),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   // ── ACCIONES ──────────────────────────────────────────────
 
   void _togglePause(bool pause, DashboardProvider dash) {
@@ -1010,82 +958,6 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.busy),
             child: Text('Eliminar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDeleteProfile(BuildContext context) {
-    final c = context.colors;
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: c.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          '¿Eliminar perfil?',
-          style: TextStyle(color: AppColors.busy, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Esta acción es IRREVERSIBLE. Escribe ELIMINAR para confirmar:',
-              style: TextStyle(color: c.textSecondary, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              style: TextStyle(color: c.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Escribe ELIMINAR',
-                hintStyle: TextStyle(color: c.textMuted),
-                filled: true,
-                fillColor: c.bgInput,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
-          ),
-          StatefulBuilder(
-            builder: (ctx, setS) => ElevatedButton(
-              onPressed: () async {
-                if (controller.text.trim().toUpperCase() != 'ELIMINAR') return;
-                Navigator.pop(ctx);
-                final dash = context.read<DashboardProvider>();
-                final auth = context.read<AuthProvider>();
-                final ok = await dash.deleteProviderProfile();
-                if (!mounted) return;
-                if (ok) {
-                  await auth.refreshProviderStatus();
-                  if (!mounted) return;
-                  // Si ya no tiene perfiles de proveedor, hacer logout y limpiar stack
-                  if (auth.providerProfiles.isEmpty) {
-                    await auth.logout();
-                    if (!mounted) return;
-                    Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
-                  } else {
-                    // Volver al perfil de cliente cerrando el panel de proveedor
-                    Navigator.of(context).popUntil((r) => r.isFirst);
-                  }
-                } else {
-                  _showSnack(dash.error ?? 'Error al eliminar el perfil', isError: true);
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.busy),
-              child: Text('Eliminar perfil', style: TextStyle(color: Colors.white)),
-            ),
           ),
         ],
       ),

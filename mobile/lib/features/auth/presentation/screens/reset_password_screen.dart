@@ -23,9 +23,11 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey     = GlobalKey<FormState>();
   late final TextEditingController _tokenCtrl;
+  final _oldPassCtrl    = TextEditingController();
   final _newPassCtrl    = TextEditingController();
   final _confirmCtrl    = TextEditingController();
 
+  bool _obscureOld      = true;
   bool _obscureNew      = true;
   bool _obscureConfirm  = true;
 
@@ -38,6 +40,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   void dispose() {
     _tokenCtrl.dispose();
+    _oldPassCtrl.dispose();
     _newPassCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -175,6 +178,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Última contraseña utilizada
+              _PasswordField(
+                controller: _oldPassCtrl,
+                label:      'Última contraseña utilizada',
+                isObscure:  _obscureOld,
+                onToggle:   () => setState(() => _obscureOld = !_obscureOld),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Campo requerido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
               // Nueva contraseña
               _PasswordField(
                 controller: _newPassCtrl,
@@ -184,6 +200,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Campo requerido';
                   if (v.length < 8) return 'Mínimo 8 caracteres';
+                  if (v == _oldPassCtrl.text) return 'La nueva contraseña no puede ser igual a la anterior';
                   return null;
                 },
               ),

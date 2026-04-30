@@ -56,6 +56,7 @@ export default function FlipCard3D() {
 
   return (
     <div
+      
       className="flip-3d-perspective relative mx-auto w-[260px] h-[360px] sm:w-[220px] sm:h-[320px] lg:w-[280px] lg:h-[380px]"
       role="region"
       aria-label="Tarjeta de proveedor destacado"

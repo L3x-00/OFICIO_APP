@@ -14,12 +14,11 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-    // ignore: unused_element
-    void _showSuccessDialog() {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -39,16 +38,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                // DENTRO DEL BOTÓN 'CONTINUAR' DEL MODAL
                 onPressed: () {
-                  // 1. Cerramos el modal primero
-                  Navigator.of(context, rootNavigator: true).pop();
-
-                  // 2. Forzamos la navegación manual para romper el estancamiento
-                  // Esto llevará al usuario al OnboardingScreen ignorando el switch por un momento
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-                  );
+                  // Limpiar todo el stack al root: _AppRoot mostrará OnboardingScreen
+                  // automáticamente porque _needsOnboarding=true.
+                  // No usar pushReplacement — eso apila una segunda OnboardingScreen
+                  // encima de LoginScreen y congela la app después del rol.
+                  Navigator.of(ctx, rootNavigator: true)
+                      .popUntil((route) => route.isFirst);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,

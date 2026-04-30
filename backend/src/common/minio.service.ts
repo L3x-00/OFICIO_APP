@@ -68,12 +68,9 @@ export class MinioService implements OnModuleInit {
       { 'Content-Type': contentType },
     );
 
-    // Si hay URL pública configurada (bucket público / dominio personalizado), usarla.
-    // Si no, generar una URL presignada (máx 7 días para Cloudflare R2).
-    if (process.env.MINIO_PUBLIC_URL) {
-      return `${this.publicBaseUrl}/${objectName}`;
-    }
-    return this.client.presignedGetObject(this.bucket, objectName, 604800);
+    // Siempre guardar URL canónica (sin firmar). El interceptor global la firma
+    // con expiración fresca en cada respuesta, evitando URLs expiradas en BD.
+    return `${this.publicBaseUrl}/${objectName}`;
   }
 
   /**
@@ -85,16 +82,13 @@ export class MinioService implements OnModuleInit {
     if (!storedUrl) return storedUrl;
     try {
       const urlObj = new URL(storedUrl);
-      // Ya está presignada y vigente → devolver tal cual
-      if (urlObj.searchParams.has('X-Amz-Signature')) return storedUrl;
-
-      // Extraer la clave del objeto desde la ruta
+      // Extraer clave del objeto desde la ruta (ignora query params / firma vieja)
       let key = urlObj.pathname.replace(/^\//, '');
       if (key.startsWith(this.bucket + '/')) {
         key = key.slice(this.bucket.length + 1);
       }
       if (!key) return storedUrl;
-
+      // Siempre generar firma fresca (7 días), incluso si la URL ya tenía firma expirada
       return await this.client.presignedGetObject(this.bucket, key, 604800);
     } catch {
       return storedUrl;

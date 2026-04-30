@@ -48,9 +48,7 @@ export class SignImagesInterceptor implements NestInterceptor {
   }
 
   private isUnsignedR2Url(url: string): boolean {
-    return (
-      url.includes('r2.cloudflarestorage.com') &&
-      !url.includes('X-Amz-Signature')
-    );
+    // Firmar CUALQUIER URL de R2 (nueva o con firma expirada) para garantizar validez
+    return url.includes('r2.cloudflarestorage.com');
   }
 }

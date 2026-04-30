@@ -90,7 +90,11 @@ class ApiInterceptor extends Interceptor {
 
         return switch (status) {
           400 => ValidationException(message),
-          401 => const AuthException(),
+          401 => AuthException(
+              message.isNotEmpty && message != 'Unauthorized'
+                  ? message
+                  : 'Tu sesión ha expirado. Vuelve a iniciar sesión.',
+            ),
           403 => const AuthException('No tienes permisos para esto'),
           404 => NotFoundException(message),
           409 => ConflictException(message),

@@ -22,12 +22,12 @@ class NotificationsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Llamar al cerrar sesión — desconecta el socket pero preserva items.
+  /// Llamar al cerrar sesión — desconecta el socket y limpia notificaciones.
   void clearUser() {
     SocketService.instance.removeNotificationListener(_onNotification);
     _currentUserId = null;
     _currentUserRole = null;
-    // No se borran _items para que persistan al volver a iniciar sesión
+    _items.clear();
     notifyListeners();
   }
 

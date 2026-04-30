@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException, Inject, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException, Inject, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -43,7 +43,7 @@ export class AuthService {
   }) {
     // Guardia: email ya en BD
     const exists = await this.prisma.user.findUnique({ where: { email: data.email } });
-    if (exists) throw new ConflictException('El email ya está registrado');
+    if (exists) throw new ConflictException('Ya tienes una cuenta con este correo. Inicia sesión o usa otro correo.');
 
     // Guardia: ya hay un registro pendiente para ese email
     const emailKey = `pending_email:${data.email}`;
@@ -261,13 +261,17 @@ data: {
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException('Credenciales inválidas');
+    if (!user) {
+      throw new NotFoundException('Correo no registrado. ¿Quieres crear una cuenta?');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Tu cuenta está desactivada. Contacta con soporte.');
     }
 
     const passwordMatch = await bcrypt.compare(password, user.passwordHash);
     if (!passwordMatch) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      throw new UnauthorizedException('Contraseña incorrecta');
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
@@ -574,11 +578,8 @@ data: {
         targetRole: 'ADMIN',
       });
     } else if (!user.firebaseUid) {
-      // Vincular cuenta existente al UID de Firebase
-      user = await this.prisma.user.update({
-        where: { id: user.id },
-        data: { firebaseUid: uid },
-      });
+      // Email ya registrado con contraseña — no vincular, bloquear
+      throw new ConflictException('Ya tienes una cuenta con este correo. Inicia sesión con tu correo y contraseña, o regístrate con otro correo.');
     }
 
     if (!user.isActive) {

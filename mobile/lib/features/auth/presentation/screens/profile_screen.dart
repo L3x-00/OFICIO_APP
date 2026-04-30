@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constans/app_colors.dart';
@@ -298,18 +298,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 )
                               : u.avatarUrl != null
-                              ? CachedNetworkImage(
+                              ? AppNetworkImage(
                                   key: ValueKey('avatar_${u.id}_${u.avatarUrl}'),
-                                  imageUrl: u.avatarUrl!,
+                                  url: u.avatarUrl!,
                                   fit: BoxFit.cover,
-                                  placeholder: (_, _) => const Center(
+                                  placeholder: const Center(
                                     child: CircularProgressIndicator(
                                       color: Colors.white,
                                       strokeWidth: 2,
                                     ),
                                   ),
-                                  errorWidget: (_, _, _) =>
-                                      _InitialsAvatar(name: u.firstName),
+                                  errorWidget: _InitialsAvatar(name: u.firstName),
                                 )
                               : _InitialsAvatar(name: u.firstName),
                         ),

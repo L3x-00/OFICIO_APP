@@ -112,7 +112,88 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
     final c = context.colors;
     final hour = DateTime.now().hour;
     final greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+    final coverUrl = dash.profile?.images.isNotEmpty == true
+        ? dash.profile!.images.first.url
+        : null;
 
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$greeting,',
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(blurRadius: 8, color: Colors.black54)],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _StatusBadge(isPaused: widget.isPaused),
+          ],
+        ),
+        if (dash.profile?.subscription != null) ...[
+          const SizedBox(height: 12),
+          _SubscriptionBanner(sub: dash.profile!.subscription!),
+        ],
+        if (!widget.isNegocio && (dash.profile?.hasHomeService ?? false)) ...[
+          const SizedBox(height: 10),
+          _HomeServiceBadge(),
+        ],
+      ],
+    );
+
+    if (coverUrl != null) {
+      return SizedBox(
+        child: Stack(
+          children: [
+            // Cover image
+            Positioned.fill(
+              child: Image.network(
+                coverUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(color: c.bgCard),
+              ),
+            ),
+            // 75% dark gradient overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.55),
+                      Colors.black.withValues(alpha: 0.75),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 52, 20, 24),
+              child: content,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Fallback: gradient only (no cover image)
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 52, 20, 24),
       decoration: BoxDecoration(
@@ -120,49 +201,11 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: widget.isNegocio
-              ? [const Color(0xFF2A0A4A), c.bgCard]   // morado oscuro para negocio
-              : [const Color(0xFF3D2B00), c.bgCard],  // ámbar oscuro para profesional
+              ? [const Color(0xFF2A0A4A), c.bgCard]
+              : [const Color(0xFF3D2B00), c.bgCard],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$greeting,',
-                      style: TextStyle(color: c.textSecondary, fontSize: 13),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: c.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _StatusBadge(isPaused: widget.isPaused),
-            ],
-          ),
-          if (dash.profile?.subscription != null) ...[
-            const SizedBox(height: 12),
-            _SubscriptionBanner(sub: dash.profile!.subscription!),
-          ],
-          // Badge "Va a domicilio" — solo OFICIO cuando está activo
-          if (!widget.isNegocio && (dash.profile?.hasHomeService ?? false)) ...[
-            const SizedBox(height: 10),
-            _HomeServiceBadge(),
-          ],
-        ],
-      ),
+      child: content,
     );
   }
 

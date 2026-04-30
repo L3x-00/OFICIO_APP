@@ -42,7 +42,10 @@
       "Bash(rtk git:*)",
       "Bash(fvm flutter:*)",
       "Bash(npx tsx:*)",
-      "Bash(rtk tsc:*)"
+      "Bash(rtk tsc:*)",
+      "Bash(git commit -m ' *)",
+      "Bash(grep -v \"//.*CachedNetworkImage\")",
+      "Bash(git add *)"
     ]
   }
 }

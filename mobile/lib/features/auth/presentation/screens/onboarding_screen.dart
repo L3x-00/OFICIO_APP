@@ -32,18 +32,57 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? _selectedRole; // 'USUARIO', 'OFICIO', 'NEGOCIO'
   bool _isNavigating = false; // guard contra doble ejecución
 
+  Future<void> _confirmCancel(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('¿Cancelar registro?'),
+        content: const Text(
+          'Si cancelas ahora perderás el progreso y tendrás que registrarte nuevamente con un nuevo código de verificación.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Continuar registro'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sí, cancelar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await context.read<AuthProvider>().logout();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmCancel(context);
+      },
+      child: Scaffold(
       backgroundColor: c.bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: c.textSecondary),
+          onPressed: () => _confirmCancel(context),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
 
               // Título
               Text(
@@ -122,6 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 

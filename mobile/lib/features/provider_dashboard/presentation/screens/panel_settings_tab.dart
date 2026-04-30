@@ -42,124 +42,156 @@ class PanelSettingsTab extends StatelessWidget {
                 children: [
                   // Avatar y nombre
                   _buildProfileHeader(context, auth, profile),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                  // Cuenta
-                  _SectionLabel(label: 'Cuenta'),
-                  _SettingsTile(
+                  _SettingsSection(
                     icon: Icons.person_rounded,
-                    label: 'Nombre de usuario',
-                    subtitle: auth.user?.fullName ?? '',
-                    onTap: null,
+                    title: 'Cuenta',
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.person_rounded,
+                        label: 'Nombre de usuario',
+                        subtitle: auth.user?.fullName ?? '',
+                      ),
+                      _SettingsTile(
+                        icon: Icons.email_rounded,
+                        label: 'Correo electrónico',
+                        subtitle: auth.user?.email ?? '',
+                      ),
+                      _SettingsTile(
+                        icon: Icons.phone_rounded,
+                        label: 'Teléfono de cuenta',
+                        subtitle: auth.user?.phone ?? 'No configurado',
+                      ),
+                      _DangerTile(
+                        icon: Icons.person_remove_rounded,
+                        label: profile?.type == 'NEGOCIO'
+                            ? 'Eliminar perfil de negocio'
+                            : 'Eliminar perfil profesional',
+                        subtitle: auth.hasOficioProfile && auth.hasNegocioProfile
+                            ? 'Solo elimina este perfil, el otro se mantiene'
+                            : 'Pasarás a ser cliente al eliminar este perfil',
+                        onTap: () => _confirmDeleteProfile(context, dash, auth, profile?.type),
+                      ),
+                    ],
                   ),
-                  _SettingsTile(
-                    icon: Icons.email_rounded,
-                    label: 'Correo electrónico',
-                    subtitle: auth.user?.email ?? '',
-                    onTap: null,
+
+                  _SettingsSection(
+                    icon: Icons.workspace_premium_rounded,
+                    title: 'Suscripción y planes',
+                    children: [
+                      if (profile?.subscription != null) ...[
+                        _SubscriptionCard(sub: profile!.subscription!),
+                        const SizedBox(height: 10),
+                      ],
+                      _CollapsiblePlansSection(
+                        currentPlan: profile?.subscription?.plan ?? 'GRATIS',
+                      ),
+                      if (profile?.subscription != null &&
+                          profile!.subscription!.isActive &&
+                          profile.subscription!.plan != 'GRATIS') ...[
+                        const SizedBox(height: 10),
+                        _CancelPlanButton(dash: dash),
+                      ],
+                    ],
                   ),
-                  _SettingsTile(
-                    icon: Icons.phone_rounded,
-                    label: 'Teléfono de cuenta',
-                    subtitle: auth.user?.phone ?? 'No configurado',
-                    onTap: null,
-                  ),
-                  const SizedBox(height: 16),
 
-                  // Mi suscripción
-                  if (profile?.subscription != null) ...[
-                    _SectionLabel(label: 'Suscripción'),
-                    _SubscriptionCard(sub: profile!.subscription!),
-                    const SizedBox(height: 8),
-                    if (profile.subscription!.isActive && profile.subscription!.plan != 'GRATIS')
-                      _CancelPlanButton(dash: dash),
-                    const SizedBox(height: 4),
-                  ],
-
-                  // Planes disponibles — colapsables
-                  _CollapsiblePlansSection(currentPlan: profile?.subscription?.plan ?? 'GRATIS'),
-                  const SizedBox(height: 16),
-
-                  // ── Servicio a domicilio (solo OFICIO) ────────
-                  if (profile?.type == 'OFICIO') ...[
-                    _SectionLabel(label: 'Servicio a domicilio'),
-                    _HomeServiceToggle(profile: profile, dash: dash),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Apariencia
-                  _SectionLabel(label: 'Apariencia'),
-                  _SettingsSwitch(
-                    icon: theme.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                    label: theme.isDark ? 'Tema oscuro' : 'Tema claro',
-                    subtitle: 'Cambiar entre tema claro y oscuro',
-                    value: !theme.isDark,
-                    onChanged: (_) => theme.toggle(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Notificaciones
-                  _SectionLabel(label: 'Notificaciones'),
-                  _SettingsSwitch(
-                    icon: Icons.notifications_rounded,
-                    label: 'Nuevas reseñas',
-                    subtitle: 'Recibir aviso cuando alguien te califica',
-                    value: true,
-                    onChanged: (_) {},
-                  ),
-                  _SettingsSwitch(
-                    icon: Icons.chat_bubble_rounded,
-                    label: 'Mensajes de WhatsApp',
-                    subtitle: 'Notificación cuando alguien te contacta',
-                    value: true,
-                    onChanged: (_) {},
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Privacidad
-                  _SectionLabel(label: 'Privacidad'),
-                  _SettingsTile(
-                    icon: Icons.privacy_tip_rounded,
-                    label: 'Política de privacidad',
-                    onTap: () => _LegalSheet.show(
-                      context,
-                      type:    profile?.type ?? 'OFICIO',
-                      section: _LegalSection.privacy,
+                  if (profile?.type == 'OFICIO')
+                    _SettingsSection(
+                      icon: Icons.home_repair_service_rounded,
+                      title: 'Servicio a domicilio',
+                      children: [
+                        _HomeServiceToggle(profile: profile, dash: dash),
+                      ],
                     ),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.description_rounded,
-                    label: 'Términos y condiciones',
-                    onTap: () => _LegalSheet.show(
-                      context,
-                      type:    profile?.type ?? 'OFICIO',
-                      section: _LegalSection.terms,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
 
-                  // Soporte
-                  _SectionLabel(label: 'Soporte'),
-                  _SettingsTile(
+                  _SettingsSection(
+                    icon: Icons.palette_outlined,
+                    title: 'Apariencia',
+                    children: [
+                      _SettingsSwitch(
+                        icon: theme.isDark
+                            ? Icons.dark_mode_rounded
+                            : Icons.light_mode_rounded,
+                        label: theme.isDark ? 'Tema oscuro' : 'Tema claro',
+                        subtitle: 'Cambiar entre tema claro y oscuro',
+                        value: !theme.isDark,
+                        onChanged: (_) => theme.toggle(),
+                      ),
+                    ],
+                  ),
+
+                  _SettingsSection(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notificaciones',
+                    children: [
+                      _SettingsSwitch(
+                        icon: Icons.notifications_rounded,
+                        label: 'Nuevas reseñas',
+                        subtitle: 'Recibir aviso cuando alguien te califica',
+                        value: true,
+                        onChanged: (_) {},
+                      ),
+                      _SettingsSwitch(
+                        icon: Icons.chat_bubble_rounded,
+                        label: 'Mensajes de WhatsApp',
+                        subtitle: 'Notificación cuando alguien te contacta',
+                        value: true,
+                        onChanged: (_) {},
+                      ),
+                    ],
+                  ),
+
+                  _SettingsSection(
+                    icon: Icons.shield_outlined,
+                    title: 'Legal y privacidad',
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.privacy_tip_rounded,
+                        label: 'Política de privacidad',
+                        onTap: () => _LegalSheet.show(
+                          context,
+                          type:    profile?.type ?? 'OFICIO',
+                          section: _LegalSection.privacy,
+                        ),
+                      ),
+                      _SettingsTile(
+                        icon: Icons.description_rounded,
+                        label: 'Términos y condiciones',
+                        onTap: () => _LegalSheet.show(
+                          context,
+                          type:    profile?.type ?? 'OFICIO',
+                          section: _LegalSection.terms,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  _SettingsSection(
                     icon: Icons.help_outline_rounded,
-                    label: 'Centro de ayuda',
-                    onTap: () => _LegalSheet.show(
-                      context,
-                      type:    profile?.type ?? 'OFICIO',
-                      section: _LegalSection.help,
-                    ),
+                    title: 'Soporte',
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.help_outline_rounded,
+                        label: 'Centro de ayuda',
+                        onTap: () => _LegalSheet.show(
+                          context,
+                          type:    profile?.type ?? 'OFICIO',
+                          section: _LegalSection.help,
+                        ),
+                      ),
+                      _SettingsTile(
+                        icon: Icons.bug_report_rounded,
+                        label: 'Reportar un problema',
+                        onTap: () => _showReportDialog(context),
+                      ),
+                    ],
                   ),
-                  _SettingsTile(
-                    icon: Icons.bug_report_rounded,
-                    label: 'Reportar un problema',
-                    onTap: () => _showReportDialog(context),
-                  ),
-                  const SizedBox(height: 24),
 
-                  // Cerrar sesión
+                  const SizedBox(height: 16),
+
                   _LogoutButton(onTap: () => _confirmLogout(context, auth)),
 
-                  // Versión
                   const SizedBox(height: 20),
                   Center(
                     child: Text(
@@ -302,6 +334,98 @@ class PanelSettingsTab extends StatelessWidget {
     );
   }
 
+  void _confirmDeleteProfile(
+    BuildContext context,
+    DashboardProvider dash,
+    AuthProvider auth,
+    String? profileType,
+  ) {
+    final c = context.colors;
+    final isNegocio  = profileType == 'NEGOCIO';
+    final typeLabel  = isNegocio ? 'negocio' : 'profesional';
+    final hasBoth    = auth.hasOficioProfile && auth.hasNegocioProfile;
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Eliminar perfil de $typeLabel',
+          style: const TextStyle(color: AppColors.busy, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Se eliminará permanentemente tu tarjeta, fotos, reseñas y todos los datos de tu perfil de $typeLabel.',
+              style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              hasBoth
+                  ? 'Tu otro perfil se mantendrá activo.'
+                  : 'Sin perfiles activos pasarás a ser cliente.',
+              style: TextStyle(
+                color: hasBoth ? c.textSecondary : AppColors.busy,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Escribe ELIMINAR para confirmar:',
+              style: TextStyle(color: c.textSecondary, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: controller,
+              style: TextStyle(color: c.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'ELIMINAR',
+                hintStyle: TextStyle(color: c.textMuted),
+                filled: true,
+                fillColor: c.bgInput,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (controller.text.trim().toUpperCase() != 'ELIMINAR') return;
+              Navigator.pop(context);
+              final ok = await dash.deleteProviderProfile();
+              if (!context.mounted) return;
+              if (ok) {
+                await auth.refreshProviderStatus();
+                if (!context.mounted) return;
+                Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
+              } else {
+                context.showErrorSnack(dash.error ?? 'Error al eliminar el perfil');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.busy,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showReportDialog(BuildContext context) {
     final c    = context.colors;
     final ctrl = TextEditingController();
@@ -327,22 +451,92 @@ class PanelSettingsTab extends StatelessWidget {
 
 // ─── WIDGETS LOCALES ──────────────────────────────────────────
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  const _SectionLabel({required this.label});
+class _SettingsSection extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final List<Widget> children;
+  const _SettingsSection({required this.icon, required this.title, required this.children});
+
+  @override
+  State<_SettingsSection> createState() => _SettingsSectionState();
+}
+
+class _SettingsSectionState extends State<_SettingsSection>
+    with SingleTickerProviderStateMixin {
+  bool _expanded = false;
+  late final AnimationController _ctrl;
+  late final Animation<double> _rotation;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
+    _rotation = Tween<double>(begin: 0.0, end: 0.5).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    _expanded ? _ctrl.forward() : _ctrl.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          color: AppColors.amber,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
+    final c = context.colors;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: _toggle,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Icon(widget.icon, color: AppColors.amber, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  RotationTransition(
+                    turns: _rotation,
+                    child: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.amber, size: 20),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeInOut,
+            child: _expanded
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    child: Column(children: widget.children),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -399,6 +593,69 @@ class _SettingsTile extends StatelessWidget {
             ),
             if (onTap != null)
               Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DangerTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String? subtitle;
+  final VoidCallback? onTap;
+
+  const _DangerTile({
+    required this.icon,
+    required this.label,
+    this.subtitle,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(top: 4, bottom: 8),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.busy.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.busy.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.busy, size: 20),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.busy,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle != null && subtitle!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        color: AppColors.busy.withValues(alpha: 0.7),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: AppColors.busy.withValues(alpha: 0.6), size: 18),
           ],
         ),
       ),

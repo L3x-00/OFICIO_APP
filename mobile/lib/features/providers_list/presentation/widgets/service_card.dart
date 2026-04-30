@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/constans/app_strings.dart';
@@ -141,13 +141,13 @@ class _CoverImage extends StatelessWidget {
             topLeft: Radius.circular(24), topRight: Radius.circular(24),
           ),
           child: provider.coverImageUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: provider.coverImageUrl!,
+              ? AppNetworkImage(
+                  url: provider.coverImageUrl!,
                   height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  placeholder: (_, _) => _placeholder(c),
-                  errorWidget: (_, _, _) => _placeholder(c),
+                  placeholder: _placeholder(c),
+                  errorWidget: _placeholder(c),
                 )
               : _placeholder(c),
         ),
@@ -282,12 +282,12 @@ class _ThumbnailRow extends StatelessWidget {
           padding: const EdgeInsets.only(right: 8),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: CachedNetworkImage(
-              imageUrl: url,
+            child: AppNetworkImage(
+              url: url,
               width: 64, height: 64,
               fit: BoxFit.cover,
-              placeholder: (_, _) => Container(width: 64, height: 64, color: c.bgInput),
-              errorWidget: (_, _, _) => Container(
+              placeholder: Container(width: 64, height: 64, color: c.bgInput),
+              errorWidget: Container(
                 width: 64, height: 64,
                 color: c.bgInput,
                 child: Icon(Icons.image_not_supported, color: c.textMuted, size: 24),
@@ -647,12 +647,12 @@ class ServiceCardList extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: provider.coverImageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: provider.coverImageUrl!,
+                  ? AppNetworkImage(
+                      url: provider.coverImageUrl!,
                       width: 48, height: 48,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) => _avatarFallback(c),
-                      errorWidget: (_, _, _) => _avatarFallback(c),
+                      placeholder: _avatarFallback(c),
+                      errorWidget: _avatarFallback(c),
                     )
                   : _avatarFallback(c),
             ),
@@ -817,13 +817,13 @@ class ServiceCardMosaic extends StatelessWidget {
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                     child: provider.coverImageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: provider.coverImageUrl!,
+                        ? AppNetworkImage(
+                            url: provider.coverImageUrl!,
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
-                            placeholder: (_, _) => _mosaicPlaceholder(c),
-                            errorWidget: (_, _, _) => _mosaicPlaceholder(c),
+                            placeholder: _mosaicPlaceholder(c),
+                            errorWidget: _mosaicPlaceholder(c),
                           )
                         : _mosaicPlaceholder(c),
                   ),
@@ -983,12 +983,12 @@ class ServiceCardContent extends StatelessWidget {
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
               child: provider.coverImageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: provider.coverImageUrl!,
+                  ? AppNetworkImage(
+                      url: provider.coverImageUrl!,
                       width: 95, height: 115,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) => _contentPlaceholder(c),
-                      errorWidget: (_, _, _) => _contentPlaceholder(c),
+                      placeholder: _contentPlaceholder(c),
+                      errorWidget: _contentPlaceholder(c),
                     )
                   : _contentPlaceholder(c),
             ),

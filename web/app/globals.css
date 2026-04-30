@@ -168,86 +168,23 @@ body {
   .reveal-delay-5 { transition-delay: 400ms; }
   .reveal-delay-6 { transition-delay: 480ms; }
 
-  /* 3D flip card en el Hero */
-  .flip-3d-perspective {
-    perspective: 1200px;
-  }
-  .flip-3d-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    animation: flip-card-360 8s ease-in-out infinite;
-    will-change: transform;
-  }
-  .flip-3d-perspective:hover .flip-3d-inner {
-    animation-play-state: paused;
-  }
-  .flip-3d-face {
-    position: absolute;
-    inset: 0;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .flip-3d-back {
-    transform: rotateY(180deg);
-  }
-  /* Reflejo sutil debajo de la tarjeta */
-  .flip-3d-perspective::after {
-    content: '';
-    position: absolute;
-    left: 10%;
-    right: 10%;
-    bottom: -28px;
-    height: 32px;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, transparent 70%);
-    filter: blur(8px);
-    transform: rotateX(60deg);
-    pointer-events: none;
-    opacity: 0.65;
-  }
-
-  @keyframes flip-card-360 {
-    0%   { transform: rotateY(0deg);   box-shadow: 0 18px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(224,123,57,0.18); }
-    45%  { transform: rotateY(0deg);   box-shadow: 0 18px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(224,123,57,0.18); }
-    50%  { transform: rotateY(0deg);   box-shadow: 0 22px 50px -10px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 36px rgba(224,123,57,0.32); }
-    70%  { transform: rotateY(180deg); box-shadow: 0 18px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(224,123,57,0.18); }
-    80%  { transform: rotateY(180deg); box-shadow: 0 18px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(224,123,57,0.18); }
-    100% { transform: rotateY(360deg); box-shadow: 0 18px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(224,123,57,0.18); }
-  }
-
   /* Stack collage cards: cascada solo con opacity para no pisar el transform inline */
-  @keyframes stack-drop-in {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-  }
   .stack-card {
     animation: stack-drop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   /* Despliegue de la cuadrícula tras pulsar el botón */
-  @keyframes grid-card-deploy {
-    0%   { opacity: 0; transform: translateY(24px) scale(0.94); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-  }
   .grid-card-enter {
     animation: grid-card-deploy 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   /* Floating provider cards */
-  @keyframes showcase-float {
-    0%, 100% { translate: 0 0; }
-    50%       { translate: 0 -7px; }
-  }
   .showcase-card {
     animation: showcase-float 5.6s ease-in-out infinite;
     transform-origin: center;
     will-change: transform, translate;
   }
   .showcase-card:hover {
-    /* Endereza la tarjeta + leve elevación cuando interactúa el usuario */
     transform: rotate(0deg) translateY(-4px) !important;
     border-color: rgba(224, 123, 57, 0.35);
     box-shadow: 0 18px 40px -16px rgba(224, 123, 57, 0.35), 0 0 0 1px rgba(224, 123, 57, 0.15);
@@ -309,30 +246,103 @@ body {
 }
 
 /* ── Reduced motion ──────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  [data-reveal] { opacity: 1 !important; transform: none !important; }
-  /* Desactiva inclinación + flotación de las tarjetas showcase */
-  .showcase-card {
-    animation: none !important;
-    transform: none !important;
-    translate: 0 !important;
-  }
-  /* Stack collage: solo aparece sin rotación cuando se reduce movimiento.
-     No se puede desactivar el transform inline sin romper el layout absolute,
-     así que dejamos la rotación pero quitamos cualquier animación. */
-  .stack-card,
-  .grid-card-enter {
-    animation: none !important;
-  }
-  /* Flip 3D: detén la rotación y deja la cara frontal visible */
-  .flip-3d-inner {
-    animation: none !important;
-    transform: rotateY(0deg) !important;
-  }
+/* ── 3D flip card en el Hero (fuera de @layer para evitar purga) ── */
+.flip-3d-perspective {
+  perspective: 1200px;
+  perspective-origin: center center;
+  /* Contenedor del escenario 3D — sin sombra de suelo aquí */
+}
+.flip-3d-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: flip-card-360 12s linear infinite;
+  will-change: transform;
+}
+.flip-3d-perspective:hover .flip-3d-inner {
+  animation-play-state: paused;
+}
+.flip-3d-face {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  overflow: hidden;
+  transform: translateZ(8px);
+  border: 2px solid #000000;
+}
+/* Grosor del bloque: 4 caras laterales creadas con pseudo-elementos */
+.flip-3d-face::before,
+.flip-3d-face::after {
+  content: '';
+  position: absolute;
+  background: #1a1a1a;
+  backface-visibility: hidden;
+}
+/* Cara lateral derecha */
+.flip-3d-face::before {
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 100%;
+  transform: rotateY(90deg) translateX(8px);
+  transform-origin: right center;
+  border-radius: 0 16px 16px 0;
+}
+/* Cara lateral inferior */
+.flip-3d-face::after {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  transform: rotateX(-90deg) translateY(-8px);
+  transform-origin: bottom center;
+  border-radius: 0 0 16px 16px;
+}
+/* Cara trasera compensada */
+.flip-3d-back {
+  transform: rotateY(180deg) translateZ(8px);
+  background: linear-gradient(160deg, #1a1d2e 0%, #15192B 50%, #0f1119 100%);
+}
+/* Sombra de suelo — separada, como si la tarjeta flotara en el espacio */
+.flip-3d-perspective::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -50px;
+  height: 50px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 40%, transparent 70%);
+  filter: blur(14px);
+  transform: rotateX(70deg) scale(1.1);
+  pointer-events: none;
+  opacity: 0.8;
+  animation: shadow-breathe 6s ease-in-out infinite;
+}
+
+@keyframes flip-card-360 {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+@keyframes shadow-breathe {
+  0%, 100% { opacity: 0.7; transform: rotateX(70deg) scale(1); }
+  50%      { opacity: 0.9; transform: rotateX(70deg) scale(1.08); }
+}
+
+@keyframes stack-drop-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes grid-card-deploy {
+  0%   { opacity: 0; transform: translateY(24px) scale(0.94); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes showcase-float {
+  0%, 100% { translate: 0 0; }
+  50%       { translate: 0 -7px; }
 }

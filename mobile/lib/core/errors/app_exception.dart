@@ -21,7 +21,7 @@ class ServerException extends AppException {
 
 /// Error de autenticación (401, 403)
 class AuthException extends AppException {
-  const AuthException([super.message = 'Sesión expirada']);
+  const AuthException([super.message = 'Tu sesión ha expirado. Vuelve a iniciar sesión.']);
 }
 
 /// Error de validación (400)

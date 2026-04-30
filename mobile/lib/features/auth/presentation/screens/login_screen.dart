@@ -102,12 +102,16 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (ok && mounted) {
-        // Navegar a la pantalla de verificación OTP (reemplaza esta ruta)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const OtpVerificationScreen()),
         );
       } else if (!ok && mounted) {
-        context.showErrorSnack(auth.error ?? 'Error al registrarse');
+        final error = auth.error ?? 'Error al registrarse';
+        context.showErrorSnack(error);
+        // Cuenta ya existe → llevar a login
+        if (_isConflictError(error)) {
+          _switchMode(AuthMode.login);
+        }
       }
     } else {
       final ok = await auth.login(
@@ -123,9 +127,30 @@ class _LoginScreenState extends State<LoginScreen>
         }
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
-        context.showErrorSnack(auth.error ?? 'Correo o contraseña incorrectos');
+        final error = auth.error ?? 'Correo o contraseña incorrectos';
+        context.showErrorSnack(error);
+        // Correo no registrado → llevar a registro
+        if (_isNotRegisteredError(error)) {
+          _switchMode(AuthMode.register);
+        }
       }
     }
+  }
+
+  /// Detecta errores de correo no registrado (404 del backend)
+  bool _isNotRegisteredError(String error) {
+    final lower = error.toLowerCase();
+    return lower.contains('no registrado') ||
+        lower.contains('no está registrado') ||
+        lower.contains('no encontrado');
+  }
+
+  /// Detecta errores de cuenta ya existente (409 del backend)
+  bool _isConflictError(String error) {
+    final lower = error.toLowerCase();
+    return lower.contains('ya tienes una cuenta') ||
+        lower.contains('ya está registrado') ||
+        lower.contains('ya existe una cuenta');
   }
 
   void _showForgotPassword() {
@@ -156,7 +181,12 @@ class _LoginScreenState extends State<LoginScreen>
     if (ok) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
-      context.showErrorSnack(auth.error ?? 'Error en inicio de sesión social');
+      final error = auth.error ?? 'Error en inicio de sesión social';
+      context.showErrorSnack(error);
+      // Cuenta ya existe con contraseña → llevar a login manual
+      if (_isConflictError(error)) {
+        _switchMode(AuthMode.login);
+      }
     }
   }
 

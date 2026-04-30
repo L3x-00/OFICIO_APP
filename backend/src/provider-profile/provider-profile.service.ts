@@ -287,6 +287,15 @@ export class ProviderProfileService {
     // recommendation, serviceItem, planRequest, trustValidationRequest, offer.
     await this.prisma.provider.delete({ where: { id: pid } });
 
+    // Si ya no quedan perfiles, degradar el rol del usuario a USUARIO (cliente)
+    const remaining = await this.prisma.provider.count({ where: { userId } });
+    if (remaining === 0) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { role: 'USUARIO' },
+      });
+    }
+
     // Notificar al admin en tiempo real
     this.events.emitAdminEvent('PROVIDER_DELETED', { providerId: pid, type: provider.type });
 
