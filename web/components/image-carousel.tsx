@@ -58,9 +58,9 @@ export default function ImageCarousel() {
   return (
     <section className="py-14 bg-bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-text-primary">
-            Conoce OficioApp
+        <div className="text-center mb-10" data-reveal>
+          <h2 className="text-2xl sm:text-4xl font-bold text-text-primary">
+            Conoce <span className="text-gradient">OficioApp</span>
           </h2>
           <p className="text-text-secondary mt-2 text-sm sm:text-base">
             La plataforma que transforma cómo se contratan servicios en el Perú.
@@ -68,7 +68,8 @@ export default function ImageCarousel() {
         </div>
 
         <div
-          className="relative rounded-2xl overflow-hidden shadow-2xl select-none"
+          data-reveal="scale"
+          className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 ring-1 ring-white/5 select-none"
           style={{ aspectRatio: '16 / 7' }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
@@ -100,7 +101,7 @@ export default function ImageCarousel() {
           {/* Botón anterior */}
           <button
             onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/65 rounded-full text-white transition-colors duration-200"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-black/40 hover:bg-primary/80 backdrop-blur-sm rounded-full text-white transition-all duration-200 hover:-translate-x-0.5 ring-1 ring-white/10 hover:ring-primary"
             aria-label="Imagen anterior"
           >
             <ChevronLeft size={20} />
@@ -109,7 +110,7 @@ export default function ImageCarousel() {
           {/* Botón siguiente */}
           <button
             onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/65 rounded-full text-white transition-colors duration-200"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-black/40 hover:bg-primary/80 backdrop-blur-sm rounded-full text-white transition-all duration-200 hover:translate-x-0.5 ring-1 ring-white/10 hover:ring-primary"
             aria-label="Imagen siguiente"
           >
             <ChevronRight size={20} />

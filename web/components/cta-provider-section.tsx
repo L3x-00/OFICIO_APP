@@ -11,59 +11,76 @@ const features = [
 export default function CtaProviderSection() {
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
-      {/* Fondo con gradiente */}
+      {/* Fondo y blobs */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-bg-dark to-bg-card" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/6 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/6 rounded-full blur-3xl pointer-events-none" />
+      <div className="blob bg-primary/30 w-[480px] h-[480px] -top-40 right-[-120px] animate-float-slow" />
+      <div className="blob bg-amber/20 w-[360px] h-[360px] bottom-[-100px] left-[-80px] animate-float" />
+      <div className="absolute inset-0 bg-grid-pattern bg-grid-md opacity-[0.04] pointer-events-none" aria-hidden />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-bg-card/50 border border-white/8 rounded-2xl p-8 sm:p-12 lg:p-16 text-center backdrop-blur-sm">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-primary text-xs font-bold uppercase tracking-widest">
-              Para proveedores
-            </span>
-          </div>
+        <div
+          data-reveal="scale"
+          className="relative glass-card rounded-3xl p-8 sm:p-12 lg:p-16 text-center overflow-hidden gradient-border"
+        >
+          {/* Spotlight orgánico */}
+          <div
+            className="absolute inset-0 opacity-30 pointer-events-none"
+            style={{
+              background:
+                'radial-gradient(circle at 50% 0%, rgba(224,123,57,0.4), transparent 60%)',
+            }}
+            aria-hidden
+          />
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-5 max-w-3xl mx-auto leading-tight">
-            Haz crecer tu negocio con{' '}
-            <span className="text-primary">OficioApp</span>
-          </h2>
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-full px-4 py-1.5 mb-6 animate-pulse-soft">
+              <span className="text-primary text-xs font-bold uppercase tracking-widest">
+                Para proveedores
+              </span>
+            </div>
 
-          <p className="text-text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Descarga la app, crea tu perfil en minutos y empieza a conectar con clientes
-            que buscan exactamente lo que ofreces.
-          </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-5 max-w-3xl mx-auto leading-tight">
+              Haz crecer tu negocio con{' '}
+              <span className="text-gradient">OficioApp</span>
+            </h2>
 
-          {/* Feature pills */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-12">
-            {features.map((f) => (
-              <div
-                key={f.text}
-                className="flex items-center gap-2 text-text-secondary text-sm"
+            <p className="text-text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+              Descarga la app, crea tu perfil en minutos y empieza a conectar con clientes
+              que buscan exactamente lo que ofreces.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-12">
+              {features.map((f, i) => (
+                <div
+                  key={f.text}
+                  className="flex items-center gap-2 text-text-secondary text-sm animate-fade-in-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <f.icon size={15} className="text-primary flex-shrink-0" />
+                  {f.text}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              <a
+                href="#"
+                className="btn-primary press-effect group px-8 py-4 rounded-button font-bold text-base inline-flex items-center gap-2"
               >
-                <f.icon size={15} className="text-primary flex-shrink-0" />
-                {f.text}
-              </div>
-            ))}
-          </div>
-
-          {/* CTAs */}
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="#"
-              className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-button font-bold text-base inline-flex items-center gap-2 transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5"
-            >
-              <Smartphone size={20} />
-              Descargar la app
-            </a>
-            <Link
-              href="/login"
-              className="border border-white/20 text-white hover:border-primary/50 hover:text-primary px-8 py-4 rounded-button font-bold text-base inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5"
-            >
-              Acceder al panel web
-              <ArrowRight size={20} />
-            </Link>
+                <Smartphone size={20} />
+                Descargar la app
+              </a>
+              <Link
+                href="/login"
+                className="btn-ghost press-effect group px-8 py-4 rounded-button font-bold text-base inline-flex items-center gap-2"
+              >
+                Acceder al panel web
+                <ArrowRight
+                  size={20}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

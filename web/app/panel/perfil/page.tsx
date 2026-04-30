@@ -2,11 +2,28 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { api, apiUpload } from '@/lib/api';
-import { getUser } from '@/lib/auth';
+import { api } from '@/lib/api';
 import { profileSchema } from '@/lib/validators';
-import { Camera, Upload, Trash2, ChevronDown, ChevronUp, Plus, Globe, Music, Send, MessageCircle, Shield, CheckCircle, XCircle, Clock, Star } from 'lucide-react';
-import type { Provider, ProviderImage } from '@/lib/types';
+import {
+  Camera,
+  Upload,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Globe,
+  Music,
+  Send,
+  MessageCircle,
+  Shield,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Star,
+  Loader2,
+  Save,
+} from 'lucide-react';
+import type { Provider } from '@/lib/types';
 
 const SOCIAL_FIELDS = [
   { key: 'website', label: 'Página web', icon: Globe },
@@ -25,6 +42,12 @@ const DAY_LABELS: Record<string, string> = {
   vie: 'Viernes', sáb: 'Sábado', dom: 'Domingo',
 };
 
+const AVAIL_STYLES = {
+  DISPONIBLE:  { bg: 'bg-green/15',  text: 'text-green',  border: 'border-green/40',  label: 'Disponible' },
+  OCUPADO:     { bg: 'bg-amber/15',  text: 'text-amber',  border: 'border-amber/40',  label: 'Ocupado' },
+  CON_DEMORA:  { bg: 'bg-red/15',    text: 'text-red',    border: 'border-red/40',    label: 'Con demora' },
+} as const;
+
 export default function PanelPerfilPage() {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +56,6 @@ export default function PanelPerfilPage() {
   const [showSocial, setShowSocial] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const user = getUser();
 
   // Form state
   const [businessName, setBusinessName] = useState('');
@@ -55,11 +77,11 @@ export default function PanelPerfilPage() {
         setPhone(prov.phone || '');
         setWhatsapp(prov.whatsapp || '');
         setAddress(prov.address || '');
-        setScheduleJson((prov as any).scheduleJson || {});
+        setScheduleJson((prov as unknown as { scheduleJson?: Record<string, string> }).scheduleJson || {});
         setAvailability(prov.availability ?? 'DISPONIBLE');
         const socials: Record<string, string> = {};
         SOCIAL_FIELDS.forEach(({ key }) => {
-          const val = (prov as any)[key];
+          const val = (prov as unknown as Record<string, string | undefined>)[key];
           if (val) socials[key] = val;
         });
         setSocialFields(socials);
@@ -102,7 +124,7 @@ export default function PanelPerfilPage() {
       }
       const updated = await api.updateMyProfile(payload);
       setProvider(updated);
-      toast.success('Perfil actualizado');
+      toast.success('Perfil actualizado correctamente');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al guardar');
     } finally {
@@ -155,81 +177,114 @@ export default function PanelPerfilPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="space-y-6">
+        <div className="skeleton h-9 w-48 rounded" />
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="skeleton h-48 rounded-2xl" />
+        ))}
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6 pb-20 md:pb-0">
-      <h1 className="text-2xl font-bold text-text-primary">Editar Perfil</h1>
+  const imageCount = provider?.images?.length ?? 0;
+  const imageProgress = (imageCount / 5) * 100;
 
-      {/* Avatar y foto principal */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">
-          Foto de perfil y galería
-        </h2>
-        <div className="flex items-center gap-4 mb-4">
-          <div className="relative">
-            <div className="w-24 h-24 bg-bg-input rounded-full flex items-center justify-center text-text-muted text-3xl font-bold">
+  return (
+    <div className="space-y-6 pb-20 md:pb-0 max-w-4xl">
+      <div data-reveal>
+        <h1 className="text-3xl font-extrabold text-text-primary">Editar perfil</h1>
+        <p className="text-text-secondary text-sm mt-1">
+          Actualiza tu información para que los clientes te encuentren mejor.
+        </p>
+      </div>
+
+      {/* Avatar y galería */}
+      <SectionCard title="Foto de perfil y galería" subtitle="Sube hasta 5 imágenes (JPG, PNG, WebP, máx. 5MB)">
+        <div className="flex items-center gap-5 mb-6">
+          <div className="relative group">
+            <div className="w-24 h-24 bg-gradient-primary rounded-2xl flex items-center justify-center text-white text-3xl font-extrabold shadow-glow-md ring-2 ring-primary/30">
               {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
             </div>
             {provider?.images?.[0]?.url && (
               <img
                 src={provider.images[0].url}
                 alt="Avatar"
-                className="absolute inset-0 w-24 h-24 rounded-full object-cover"
+                className="absolute inset-0 w-24 h-24 rounded-2xl object-cover ring-2 ring-primary/30"
               />
             )}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center text-white"
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary hover:bg-primary-dark rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all duration-200"
+              aria-label="Cambiar foto"
             >
               <Camera size={14} />
             </button>
           </div>
-          <div>
-            <p className="text-text-secondary text-sm">
-              Haz clic en el icono de cámara para subir una foto
+          <div className="flex-1 min-w-0">
+            <p className="text-text-secondary text-sm font-medium">
+              Tu foto principal aparecerá en tu perfil público
             </p>
-            <p className="text-text-muted text-xs mt-1">JPG, PNG o WebP. Máx. 5 MB</p>
+            <p className="text-text-muted text-xs mt-1">
+              Una buena foto aumenta hasta un 60% las visitas a tu perfil.
+            </p>
+            {/* Progress galería */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-text-muted">Galería ({imageCount}/5)</span>
+                <span className={imageCount >= 4 ? 'text-amber font-semibold' : 'text-text-muted'}>
+                  {imageCount >= 5 ? 'Completo' : `${5 - imageCount} restantes`}
+                </span>
+              </div>
+              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ease-smooth ${
+                    imageCount >= 5 ? 'bg-amber' : 'bg-gradient-primary'
+                  }`}
+                  style={{ width: `${imageProgress}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Galería */}
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
           {provider?.images?.map((img, idx) => (
-            <div key={img.id} className="relative group">
+            <div key={img.id} className="relative group rounded-xl overflow-hidden ring-1 ring-white/5 hover:ring-primary/40 transition-all duration-200">
               <img
                 src={img.url}
                 alt=""
-                className="w-full aspect-square object-cover rounded-lg"
+                className="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-110"
               />
               {(img.isCover || idx === 0) && (
-                <span className="absolute bottom-1 left-1 bg-primary/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                  <Star size={8} /> Portada
+                <span className="absolute bottom-1 left-1 bg-primary/95 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-lg">
+                  <Star size={8} className="fill-white" /> Portada
                 </span>
               )}
               <button
                 onClick={() => handleDeleteImage(img.id)}
-                className="absolute top-1 right-1 w-6 h-6 bg-red/80 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1.5 right-1.5 w-7 h-7 bg-red/90 hover:bg-red rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                aria-label="Eliminar imagen"
               >
                 <Trash2 size={12} />
               </button>
             </div>
           ))}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full aspect-square rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center text-text-muted hover:border-primary/40 transition-colors"
-          >
-            {uploading ? (
-              <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            ) : (
-              <Plus size={24} />
-            )}
-          </button>
+          {imageCount < 5 && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 flex flex-col items-center justify-center text-text-muted hover:text-primary transition-all duration-200 group disabled:opacity-50"
+            >
+              {uploading ? (
+                <Loader2 size={22} className="animate-spin text-primary" />
+              ) : (
+                <>
+                  <Plus size={22} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] mt-1 font-medium">Añadir</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
         <input
           ref={fileInputRef}
@@ -238,99 +293,97 @@ export default function PanelPerfilPage() {
           className="hidden"
           onChange={handleImageUpload}
         />
-      </div>
+      </SectionCard>
 
       {/* Disponibilidad */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Disponibilidad</h2>
-        <div className="flex gap-3 flex-wrap">
-          {(['DISPONIBLE', 'OCUPADO', 'CON_DEMORA'] as const).map((status) => (
-            <button
-              key={status}
-              onClick={async () => {
-                try {
-                  await api.updateMyProfile({ availability: status });
-                  setAvailability(status);
-                  setProvider((prev) => prev ? { ...prev, availability: status } : prev);
-                  toast.success('Disponibilidad actualizada');
-                } catch {
-                  toast.error('Error al actualizar disponibilidad');
-                }
-              }}
-              className={`flex-1 min-w-[100px] py-2.5 rounded-button text-sm font-medium transition-colors ${
-                availability === status
-                  ? 'bg-primary text-white'
-                  : 'bg-bg-input text-text-muted hover:text-text-secondary'
-              }`}
-            >
-              {status === 'DISPONIBLE' ? 'Disponible' : status === 'OCUPADO' ? 'Ocupado' : 'Con demora'}
-            </button>
-          ))}
+      <SectionCard title="Disponibilidad" subtitle="Comunica a los clientes tu estado actual">
+        <div className="grid grid-cols-3 gap-3">
+          {(['DISPONIBLE', 'OCUPADO', 'CON_DEMORA'] as const).map((status) => {
+            const style = AVAIL_STYLES[status];
+            const isActive = availability === status;
+            return (
+              <button
+                key={status}
+                onClick={async () => {
+                  try {
+                    await api.updateMyProfile({ availability: status });
+                    setAvailability(status);
+                    setProvider((prev) => prev ? { ...prev, availability: status } : prev);
+                    toast.success('Disponibilidad actualizada');
+                  } catch {
+                    toast.error('Error al actualizar disponibilidad');
+                  }
+                }}
+                className={`relative py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
+                  isActive
+                    ? `${style.bg} ${style.text} ${style.border} shadow-glow-sm`
+                    : 'bg-bg-input border-white/5 text-text-muted hover:text-text-secondary hover:border-white/15'
+                }`}
+              >
+                {isActive && (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-current animate-pulse-soft" />
+                )}
+                {style.label}
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Verificación de confianza */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <Shield className="text-primary" size={20} />
-          <h2 className="text-lg font-semibold text-text-primary">Verificación de confianza</h2>
-        </div>
+      {/* Verificación */}
+      <SectionCard
+        title={
+          <span className="flex items-center gap-2">
+            <Shield className="text-primary" size={20} />
+            Verificación de confianza
+          </span>
+        }
+      >
         {provider?.verificationStatus === 'APROBADO' && (
-          <div className="flex items-center gap-2 text-green">
-            <CheckCircle size={18} />
-            <span className="text-sm font-medium">Perfil verificado</span>
+          <div className="flex items-center gap-3 bg-green/10 border border-green/30 rounded-xl px-4 py-3">
+            <CheckCircle size={20} className="text-green flex-shrink-0" />
+            <div>
+              <p className="text-green text-sm font-semibold">Perfil verificado</p>
+              <p className="text-text-muted text-xs">Tu identidad ha sido validada.</p>
+            </div>
           </div>
         )}
         {provider?.verificationStatus === 'PENDIENTE' && (
-          <div className="flex items-center gap-2 text-amber">
-            <Clock size={18} />
-            <span className="text-sm font-medium">Verificación en revisión</span>
+          <div className="flex items-center gap-3 bg-amber/10 border border-amber/30 rounded-xl px-4 py-3">
+            <Clock size={20} className="text-amber flex-shrink-0 animate-pulse-soft" />
+            <div>
+              <p className="text-amber text-sm font-semibold">Verificación en revisión</p>
+              <p className="text-text-muted text-xs">Te notificaremos en 24-48 horas.</p>
+            </div>
           </div>
         )}
         {provider?.verificationStatus === 'RECHAZADO' && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-red">
-              <XCircle size={18} />
-              <span className="text-sm font-medium">Verificación rechazada</span>
+          <div className="flex items-start gap-3 bg-red/10 border border-red/30 rounded-xl px-4 py-3">
+            <XCircle size={20} className="text-red flex-shrink-0" />
+            <div>
+              <p className="text-red text-sm font-semibold">Verificación rechazada</p>
+              <p className="text-text-muted text-xs mt-0.5">
+                Tu solicitud fue rechazada. Contacta al soporte para más información.
+              </p>
             </div>
-            <p className="text-text-muted text-xs">
-              Tu solicitud de verificación fue rechazada. Contacta al soporte para más información.
-            </p>
           </div>
         )}
-      </div>
+      </SectionCard>
 
       {/* Información básica */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">
-          Información básica
-        </h2>
+      <SectionCard title="Información básica">
         <div className="grid sm:grid-cols-2 gap-4">
           <InputField
             label="Nombre del negocio / servicio"
             value={businessName}
             onChange={setBusinessName}
           />
-          <InputField
-            label="Teléfono"
-            value={phone}
-            onChange={setPhone}
-            type="tel"
-          />
-          <InputField
-            label="WhatsApp"
-            value={whatsapp}
-            onChange={setWhatsapp}
-            type="tel"
-          />
-          <InputField
-            label="Dirección"
-            value={address}
-            onChange={setAddress}
-          />
+          <InputField label="Teléfono" value={phone} onChange={setPhone} type="tel" />
+          <InputField label="WhatsApp" value={whatsapp} onChange={setWhatsapp} type="tel" />
+          <InputField label="Dirección" value={address} onChange={setAddress} />
         </div>
         <div className="mt-4">
-          <label className="block text-text-secondary text-sm mb-1.5">
+          <label className="block text-text-secondary text-xs font-medium mb-2 uppercase tracking-wider">
             Descripción
           </label>
           <textarea
@@ -338,95 +391,139 @@ export default function PanelPerfilPage() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             maxLength={500}
-            className="w-full bg-bg-input border border-white/5 rounded-button p-3 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors resize-none"
+            className="w-full bg-bg-input border border-white/8 rounded-xl p-3 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:border-primary/60 focus:shadow-[0_0_0_3px_rgba(224,123,57,0.12)] transition-all resize-none"
             placeholder="Describe tu servicio o negocio..."
           />
-          <p className="text-text-muted text-xs mt-1">
-            {description.length}/500
-          </p>
+          <div className="flex justify-end mt-1">
+            <p className={`text-xs tabular-nums ${description.length > 450 ? 'text-amber' : 'text-text-muted'}`}>
+              {description.length}/500
+            </p>
+          </div>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Redes sociales (colapsable) */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <button
-          onClick={() => setShowSocial(!showSocial)}
-          className="flex items-center justify-between w-full text-left"
-        >
-          <h2 className="text-lg font-semibold text-text-primary">
-            Redes sociales
-          </h2>
-          {showSocial ? (
-            <ChevronUp className="text-text-muted" size={20} />
-          ) : (
-            <ChevronDown className="text-text-muted" size={20} />
-          )}
-        </button>
-        {showSocial && (
-          <div className="grid sm:grid-cols-2 gap-4 mt-4">
-            {SOCIAL_FIELDS.map(({ key, label, icon: Icon }) => (
-              <InputField
-                key={key}
-                label={label}
-                value={socialFields[key] || ''}
-                onChange={(v) =>
-                  setSocialFields((prev) => ({ ...prev, [key]: v }))
-                }
-                icon={<Icon size={16} />}
+      {/* Redes sociales */}
+      <CollapsibleSection
+        title="Redes sociales"
+        open={showSocial}
+        onToggle={() => setShowSocial(!showSocial)}
+      >
+        <div className="grid sm:grid-cols-2 gap-4">
+          {SOCIAL_FIELDS.map(({ key, label, icon: Icon }) => (
+            <InputField
+              key={key}
+              label={label}
+              value={socialFields[key] || ''}
+              onChange={(v) => setSocialFields((prev) => ({ ...prev, [key]: v }))}
+              icon={<Icon size={16} />}
+            />
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      {/* Horario */}
+      <CollapsibleSection
+        title="Horario de atención"
+        open={showSchedule}
+        onToggle={() => setShowSchedule(!showSchedule)}
+      >
+        <div className="space-y-2.5">
+          {DAYS.map((day) => (
+            <div key={day} className="flex items-center gap-3">
+              <span className="text-text-secondary text-sm w-24 font-medium">
+                {DAY_LABELS[day]}
+              </span>
+              <input
+                type="text"
+                value={scheduleJson[day] || ''}
+                onChange={(e) => handleScheduleChange(day, e.target.value)}
+                placeholder="Ej: 8:00-18:00"
+                className="flex-1 bg-bg-input border border-white/8 rounded-xl px-3 py-2 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:border-primary/60 transition-colors"
               />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Horario (colapsable) */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <button
-          onClick={() => setShowSchedule(!showSchedule)}
-          className="flex items-center justify-between w-full text-left"
-        >
-          <h2 className="text-lg font-semibold text-text-primary">
-            Horario de atención
-          </h2>
-          {showSchedule ? (
-            <ChevronUp className="text-text-muted" size={20} />
-          ) : (
-            <ChevronDown className="text-text-muted" size={20} />
-          )}
-        </button>
-        {showSchedule && (
-          <div className="space-y-3 mt-4">
-            {DAYS.map((day) => (
-              <div key={day} className="flex items-center gap-3">
-                <span className="text-text-secondary text-sm w-24">
-                  {DAY_LABELS[day]}
-                </span>
-                <input
-                  type="text"
-                  value={scheduleJson[day] || ''}
-                  onChange={(e) => handleScheduleChange(day, e.target.value)}
-                  placeholder="Ej: 8:00-18:00"
-                  className="flex-1 bg-bg-input border border-white/5 rounded-button px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
 
       {/* Botón guardar */}
+      <div className="sticky bottom-20 md:bottom-4 z-30 bg-bg-dark/0">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="btn-primary press-effect w-full sm:w-auto px-8 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Save size={18} />
+              Guardar cambios
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: React.ReactNode;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      data-reveal
+      className="bg-bg-card border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-colors"
+    >
+      <h2 className="text-lg font-semibold text-text-primary mb-1">{title}</h2>
+      {subtitle && <p className="text-text-muted text-xs mb-4">{subtitle}</p>}
+      {!subtitle && <div className="mb-4" />}
+      {children}
+    </div>
+  );
+}
+
+function CollapsibleSection({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div data-reveal className="bg-bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-colors">
       <button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full sm:w-auto bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-8 py-3 rounded-button font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
+        onClick={onToggle}
+        className="flex items-center justify-between w-full text-left p-6 hover:bg-white/[0.02] transition-colors"
       >
-        {saving ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
+        {open ? (
+          <ChevronUp className="text-primary" size={20} />
         ) : (
-          <Upload size={18} />
+          <ChevronDown className="text-text-muted" size={20} />
         )}
-        {saving ? 'Guardando...' : 'Guardar cambios'}
       </button>
+      <div
+        className={`grid transition-all duration-300 ease-smooth ${
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="px-6 pb-6">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -446,12 +543,12 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-text-secondary text-sm mb-1.5">
+      <label className="block text-text-secondary text-xs font-medium mb-2 uppercase tracking-wider">
         {label}
       </label>
-      <div className="relative">
+      <div className="relative group">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">
             {icon}
           </div>
         )}
@@ -459,7 +556,7 @@ function InputField({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full bg-bg-input border border-white/5 rounded-button py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors ${
+          className={`w-full bg-bg-input border border-white/8 rounded-xl py-2.5 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:border-primary/60 focus:shadow-[0_0_0_3px_rgba(224,123,57,0.12)] hover:border-white/15 transition-all ${
             icon ? 'pl-10 pr-3' : 'px-3'
           }`}
         />
