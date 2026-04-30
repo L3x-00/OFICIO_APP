@@ -106,6 +106,27 @@ export async function apiUpload<T = unknown>(
   return res.json() as Promise<T>;
 }
 
+/** Shape returned by GET /providers (public listing). */
+export interface PublicProvider {
+  id: number;
+  businessName: string;
+  description?: string;
+  phone?: string;
+  whatsapp?: string;
+  averageRating?: number;
+  totalReviews?: number;
+  type?: "OFICIO" | "NEGOCIO";
+  availability?: "DISPONIBLE" | "OCUPADO" | "CON_DEMORA";
+  images?: { url: string; isCover?: boolean; order?: number }[];
+  category?: { name: string; slug?: string; iconUrl?: string };
+  locality?: {
+    name?: string;
+    department?: string;
+    province?: string;
+    district?: string;
+  };
+}
+
 // Shape that the backend actually returns on /auth/login — fields are flat,
 // not wrapped in a `user` object. We normalize it here into LoginResponse.
 interface FlatLoginResponse {
@@ -263,6 +284,19 @@ export const api = {
     } catch {
       return [];
     }
+  },
+
+  /**
+   * Listado público de proveedores (sin auth) para la landing.
+   * Usa fetch directo porque apiFetch antepone Authorization si hay token,
+   * pero este endpoint es público.
+   */
+  async getPublicProviders(limit = 12): Promise<PublicProvider[]> {
+    const url = `${API_BASE_URL}/providers?sortBy=rating&limit=${limit}&page=1`;
+    const res = await fetch(url, { method: "GET", cache: "no-store" });
+    if (!res.ok) throw new Error(`Error ${res.status} cargando proveedores`);
+    const json = (await res.json()) as { data?: PublicProvider[] } | PublicProvider[];
+    return Array.isArray(json) ? json : json.data ?? [];
   },
 
   async getNotifications(): Promise<{
