@@ -22,6 +22,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useProfileType } from '@/lib/profile-type-context';
 import type { Analytics } from '@/lib/types';
 
 const PREMIUM_PERKS = [
@@ -36,25 +37,30 @@ export default function PanelEstadisticasPage() {
   const [loading, setLoading] = useState(true);
   const [isPaid, setIsPaid] = useState(false);
   const [range, setRange] = useState<'7' | '30' | '90'>('7');
+  const { activeType } = useProfileType();
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
+      setLoading(true);
       try {
-        const prov = await api.getMyProfile();
+        const prov = await api.getMyProfile(activeType ?? undefined);
+        if (cancelled) return;
         const plan = prov.subscription?.plan || 'GRATIS';
         setIsPaid(plan === 'ESTANDAR' || plan === 'PREMIUM');
         if (plan !== 'GRATIS') {
-          const stats = await api.getAnalyticsWithDays(Number(range));
-          setAnalytics(stats);
+          const stats = await api.getAnalyticsWithDays(Number(range), activeType ?? undefined);
+          if (!cancelled) setAnalytics(stats);
         }
       } catch {
-        toast.error('Error al cargar estadísticas');
+        if (!cancelled) toast.error('Error al cargar estadísticas');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, [range]);
+    return () => { cancelled = true; };
+  }, [range, activeType]);
 
   if (loading) {
     return (

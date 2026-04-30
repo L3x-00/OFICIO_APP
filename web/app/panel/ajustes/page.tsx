@@ -21,6 +21,7 @@ import {
 import YapePaymentModal from '@/components/yape-payment-modal';
 import { getUser, clearSession } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import { useProfileType } from '@/lib/profile-type-context';
 import type { Provider } from '@/lib/types';
 
 const TERMS_TEXT = `TÉRMINOS Y CONDICIONES DE USO — ConfiServ
@@ -52,19 +53,24 @@ export default function PanelAjustesPage() {
   const user = getUser();
   const router = useRouter();
 
+  const { activeType } = useProfileType();
+
   useEffect(() => {
+    let cancelled = false;
     async function load() {
+      setLoading(true);
       try {
-        const prov = await api.getMyProfile();
-        setProvider(prov);
+        const prov = await api.getMyProfile(activeType ?? undefined);
+        if (!cancelled) setProvider(prov);
       } catch {
         // Cliente puro sin provider
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, []);
+    return () => { cancelled = true; };
+  }, [activeType]);
 
   const currentPlan = provider?.subscription?.plan || 'GRATIS';
   const currentStatus = provider?.subscription?.status || 'ACTIVA';
@@ -285,7 +291,7 @@ export default function PanelAjustesPage() {
                   key={status}
                   onClick={async () => {
                     try {
-                      await api.updateMyProfile({ availability: status });
+                      await api.updateMyProfile({ availability: status }, activeType ?? undefined);
                       setProvider((prev) =>
                         prev ? { ...prev, availability: status } : prev
                       );

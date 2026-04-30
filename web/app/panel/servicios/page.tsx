@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { Plus, ArrowUpRight, Package, X } from 'lucide-react';
+import { useProfileType } from '@/lib/profile-type-context';
 import type { Provider } from '@/lib/types';
 
 export default function PanelServiciosPage() {
@@ -16,20 +17,24 @@ export default function PanelServiciosPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const isNegocio = provider?.type === 'NEGOCIO';
+  const { activeType } = useProfileType();
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
+      setLoading(true);
       try {
-        const prov = await api.getMyProfile();
-        setProvider(prov);
+        const prov = await api.getMyProfile(activeType ?? undefined);
+        if (!cancelled) setProvider(prov);
       } catch {
-        toast.error('Error al cargar datos');
+        if (!cancelled) toast.error('Error al cargar datos');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, []);
+    return () => { cancelled = true; };
+  }, [activeType]);
 
   const plan = provider?.subscription?.plan || 'GRATIS';
   const maxItems = plan === 'PREMIUM' ? Infinity : plan === 'ESTANDAR' ? 6 : 3;

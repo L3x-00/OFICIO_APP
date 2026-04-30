@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { profileSchema } from '@/lib/validators';
+import { useProfileType } from '@/lib/profile-type-context';
 import {
   Camera,
   Upload,
@@ -66,11 +67,15 @@ export default function PanelPerfilPage() {
   const [scheduleJson, setScheduleJson] = useState<Record<string, string>>({});
   const [socialFields, setSocialFields] = useState<Record<string, string>>({});
   const [availability, setAvailability] = useState<'DISPONIBLE' | 'OCUPADO' | 'CON_DEMORA'>('DISPONIBLE');
+  const { activeType } = useProfileType();
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
+      setLoading(true);
       try {
-        const prov = await api.getMyProfile();
+        const prov = await api.getMyProfile(activeType ?? undefined);
+        if (cancelled) return;
         setProvider(prov);
         setBusinessName(prov.businessName || '');
         setDescription(prov.description || '');
@@ -86,13 +91,14 @@ export default function PanelPerfilPage() {
         });
         setSocialFields(socials);
       } catch {
-        toast.error('Error al cargar el perfil');
+        if (!cancelled) toast.error('Error al cargar el perfil');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, []);
+    return () => { cancelled = true; };
+  }, [activeType]);
 
   const handleSave = async () => {
     const result = profileSchema.safeParse({
@@ -122,7 +128,7 @@ export default function PanelPerfilPage() {
       if (Object.keys(scheduleJson).length > 0) {
         payload.scheduleJson = scheduleJson;
       }
-      const updated = await api.updateMyProfile(payload);
+      const updated = await api.updateMyProfile(payload, activeType ?? undefined);
       setProvider(updated);
       toast.success('Perfil actualizado correctamente');
     } catch (err: unknown) {
@@ -306,7 +312,7 @@ export default function PanelPerfilPage() {
                 key={status}
                 onClick={async () => {
                   try {
-                    await api.updateMyProfile({ availability: status });
+                    await api.updateMyProfile({ availability: status }, activeType ?? undefined);
                     setAvailability(status);
                     setProvider((prev) => prev ? { ...prev, availability: status } : prev);
                     toast.success('Disponibilidad actualizada');

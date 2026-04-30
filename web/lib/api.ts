@@ -153,12 +153,17 @@ export const api = {
     };
   },
 
-  async getMyProfile(): Promise<Provider> {
-    return apiFetch<Provider>("/provider-profile/me");
+  async getMyProfile(type?: "OFICIO" | "NEGOCIO"): Promise<Provider> {
+    const qs = type ? `?type=${type}` : "";
+    return apiFetch<Provider>(`/provider-profile/me${qs}`);
   },
 
-  async updateMyProfile(payload: Record<string, unknown>): Promise<Provider> {
-    return apiFetch<Provider>("/provider-profile/me", {
+  async updateMyProfile(
+    payload: Record<string, unknown>,
+    type?: "OFICIO" | "NEGOCIO",
+  ): Promise<Provider> {
+    const qs = type ? `?type=${type}` : "";
+    return apiFetch<Provider>(`/provider-profile/me${qs}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
@@ -181,8 +186,13 @@ export const api = {
     return Array.isArray(data) ? data : (data as { data: Review[] }).data ?? [];
   },
 
-  async getAnalyticsWithDays(days: number): Promise<Analytics> {
-    return apiFetch<Analytics>(`/provider-profile/me/analytics?days=${days}`);
+  async getAnalyticsWithDays(
+    days: number,
+    type?: "OFICIO" | "NEGOCIO",
+  ): Promise<Analytics> {
+    const params = new URLSearchParams({ days: String(days) });
+    if (type) params.set("type", type);
+    return apiFetch<Analytics>(`/provider-profile/me/analytics?${params.toString()}`);
   },
 
   async deleteImage(imageId: number): Promise<void> {
@@ -228,8 +238,49 @@ export const api = {
     });
   },
 
-  async getAnalytics(): Promise<Analytics> {
-    return apiFetch<Analytics>("/provider-profile/me/analytics");
+  async getAnalytics(type?: "OFICIO" | "NEGOCIO"): Promise<Analytics> {
+    const qs = type ? `?type=${type}` : "";
+    return apiFetch<Analytics>(`/provider-profile/me/analytics${qs}`);
+  },
+
+  async getMyProviderStatus(): Promise<{
+    hasProvider: boolean;
+    profiles: Array<{
+      providerId: number;
+      businessName: string;
+      type: "OFICIO" | "NEGOCIO";
+      verificationStatus: "PENDIENTE" | "APROBADO" | "RECHAZADO";
+      isVerified: boolean;
+      categoryName?: string;
+    }>;
+  }> {
+    return apiFetch("/users/my-provider-status");
+  },
+
+  async getFavorites(userId: number): Promise<unknown[]> {
+    try {
+      return await apiFetch<unknown[]>(`/favorites/${userId}`);
+    } catch {
+      return [];
+    }
+  },
+
+  async getNotifications(): Promise<{
+    data: Array<{
+      id: number;
+      type: string;
+      title: string;
+      message: string;
+      sentAt: string;
+      isRead: boolean;
+    }>;
+    unreadCount: number;
+  }> {
+    try {
+      return await apiFetch("/notifications");
+    } catch {
+      return { data: [], unreadCount: 0 };
+    }
   },
 
   async getUserProfile(): Promise<User> {

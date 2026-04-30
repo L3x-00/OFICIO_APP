@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCountUp } from '@/lib/hooks';
+import { useProfileType } from '@/lib/profile-type-context';
 import type {
   Provider,
   Analytics,
@@ -25,26 +26,32 @@ export default function PanelHomePage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const user = getUser();
+  const { activeType } = useProfileType();
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
+      setLoading(true);
       try {
-        const prov = await api.getMyProfile();
+        const prov = await api.getMyProfile(activeType ?? undefined);
+        if (cancelled) return;
         setProvider(prov);
         const [stats, revs] = await Promise.all([
-          api.getAnalytics(),
+          api.getAnalytics(activeType ?? undefined),
           api.getProviderReviews(prov.id, 3),
         ]);
+        if (cancelled) return;
         setAnalytics(stats);
         setReviews(revs);
       } catch {
         // error ya manejado en api
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, []);
+    return () => { cancelled = true; };
+  }, [activeType]);
 
   if (loading) {
     return <PanelHomeSkeleton />;
@@ -60,7 +67,8 @@ export default function PanelHomePage() {
   const planLabel = provider?.subscription?.plan ?? 'Gratis';
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 pb-20 md:pb-0">
+      <div className="space-y-6 min-w-0">
       {/* Welcome card */}
       <div
         data-reveal
@@ -198,7 +206,105 @@ export default function PanelHomePage() {
           </div>
         )}
       </div>
+      </div>
+
+      {/* Columna derecha: resumen + atajos (xl+) */}
+      <SummaryColumn provider={provider} planLabel={planLabel} planBadgeColor={planBadgeColor} />
     </div>
+  );
+}
+
+function SummaryColumn({
+  provider,
+  planLabel,
+  planBadgeColor,
+}: {
+  provider: Provider | null;
+  planLabel: string;
+  planBadgeColor: string;
+}) {
+  return (
+    <aside className="hidden xl:block space-y-5 sticky top-6 self-start">
+      <div className="bg-bg-card border border-white/5 rounded-2xl p-5">
+        <p className="text-text-muted text-[10px] uppercase tracking-widest font-bold mb-3">
+          Resumen del perfil
+        </p>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-glow-sm flex-shrink-0">
+            {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-text-primary font-bold text-sm truncate">
+              {provider?.businessName ?? '—'}
+            </div>
+            <div className="text-text-muted text-xs">
+              {provider?.type === 'NEGOCIO' ? 'Negocio' : 'Profesional'}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-text-muted">Plan</span>
+            <span className={`px-2 py-0.5 rounded-full font-semibold border ${planBadgeColor}`}>
+              {planLabel}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-text-muted">Rating</span>
+            <span className="text-amber font-bold tabular-nums flex items-center gap-1">
+              <Star size={11} className="fill-amber" />
+              {(provider?.averageRating ?? 0).toFixed(1)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-text-muted">Reseñas</span>
+            <span className="text-text-primary font-semibold tabular-nums">
+              {provider?.totalReviews ?? 0}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-text-muted">Disponibilidad</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
+              provider?.availability === 'DISPONIBLE'
+                ? 'bg-green/15 text-green border-green/30'
+                : provider?.availability === 'OCUPADO'
+                ? 'bg-amber/15 text-amber border-amber/30'
+                : 'bg-red/15 text-red border-red/30'
+            }`}>
+              {provider?.availability === 'DISPONIBLE'
+                ? 'Disponible'
+                : provider?.availability === 'OCUPADO'
+                ? 'Ocupado'
+                : 'Con demora'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-bg-card border border-white/5 rounded-2xl p-5">
+        <p className="text-text-muted text-[10px] uppercase tracking-widest font-bold mb-3">
+          Accesos rápidos
+        </p>
+        <div className="space-y-1">
+          <QuickLink href="/panel/perfil" label="Editar mi perfil" />
+          <QuickLink href="/panel/servicios" label="Gestionar servicios" />
+          <QuickLink href="/panel/estadisticas" label="Ver estadísticas" />
+          <QuickLink href="/panel/ajustes" label="Cambiar de plan" />
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function QuickLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      className="flex items-center justify-between text-text-secondary hover:text-primary text-sm py-2 px-2.5 rounded-lg hover:bg-white/5 transition-colors group"
+    >
+      {label}
+      <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+    </a>
   );
 }
 

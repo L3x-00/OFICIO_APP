@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   isAuthenticated,
@@ -12,6 +12,8 @@ import {
 import Sidebar from '@/components/sidebar';
 import { getSocket } from '@/lib/socket';
 import { Home, UserCog, Zap, Briefcase, BarChart3, Settings } from 'lucide-react';
+import { ProfileTypeProvider, useProfileType } from '@/lib/profile-type-context';
+import { api } from '@/lib/api';
 
 export default function PanelLayout({
   children,
@@ -20,6 +22,7 @@ export default function PanelLayout({
 }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -43,6 +46,8 @@ export default function PanelLayout({
       });
     }
 
+    setAuthChecked(true);
+
     const interval = setInterval(() => {
       updateLastActivity();
     }, 30000);
@@ -50,12 +55,57 @@ export default function PanelLayout({
     return () => clearInterval(interval);
   }, [router]);
 
-  if (!mounted) {
+  if (!mounted || !authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-dark">
         <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     );
+  }
+
+  return (
+    <Suspense fallback={null}>
+      <ProfileTypeProvider>
+        <PanelGate>{children}</PanelGate>
+      </ProfileTypeProvider>
+    </Suspense>
+  );
+}
+
+/**
+ * Gate: redirect users without provider profiles to /cliente.
+ * Otherwise render the provider panel chrome.
+ */
+function PanelGate({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { status, loading } = useProfileType();
+
+  useEffect(() => {
+    if (loading) return;
+    // Backend may temporarily 401/error -> status null. Re-check with the
+    // controller-typed call to be safe before redirecting.
+    if (status && status.hasProvider === false) {
+      // No provider profiles at all -> client-only
+      router.replace('/cliente');
+    } else if (status === null) {
+      // Network / unauthorized: try fallback fetch through api wrapper
+      api.getMyProviderStatus().then((s) => {
+        if (s.hasProvider === false) router.replace('/cliente');
+      }).catch(() => { /* ignore; let user retry */ });
+    }
+  }, [status, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-dark">
+        <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!status?.hasProvider) {
+    // Brief blank while redirect happens
+    return null;
   }
 
   return (

@@ -12,11 +12,16 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
+  Store,
+  Wrench,
+  LayoutDashboard,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { clearSession, getUser } from '@/lib/auth';
 import { disconnectSocket } from '@/lib/socket';
+import { useProfileTypeOptional } from '@/lib/profile-type-context';
 
 const tabs = [
   { label: 'Inicio',       icon: Home,      href: '/panel' },
@@ -32,6 +37,7 @@ export default function Sidebar() {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const user = getUser();
+  const profileCtx = useProfileTypeOptional();
 
   const handleLogout = () => {
     disconnectSocket();
@@ -39,10 +45,12 @@ export default function Sidebar() {
     router.push('/login');
   };
 
+  const showSwitcher = !!profileCtx && profileCtx.availableTypes.length > 0;
+
   return (
     <aside
       className={`hidden md:flex flex-col bg-bg-card/80 backdrop-blur-xl border-r border-white/5 h-screen sticky top-0 transition-all duration-300 ease-smooth ${
-        collapsed ? 'w-[72px]' : 'w-60'
+        collapsed ? 'w-[72px]' : 'w-64'
       }`}
     >
       {/* Header con logo */}
@@ -74,7 +82,6 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Toggle al expandir */}
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
@@ -83,6 +90,11 @@ export default function Sidebar() {
         >
           <ChevronRight size={16} />
         </button>
+      )}
+
+      {/* PANEL switcher */}
+      {showSwitcher && (
+        <PanelSwitcher collapsed={collapsed} />
       )}
 
       {/* Nav items */}
@@ -147,3 +159,125 @@ export default function Sidebar() {
     </aside>
   );
 }
+
+/* ── PANEL switcher (OFICIO ↔ NEGOCIO) ─────────────────────── */
+
+function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
+  const ctx = useProfileTypeOptional();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  if (!ctx || ctx.availableTypes.length === 0) return null;
+
+  const { activeType, availableTypes, setActiveType } = ctx;
+  const activeMeta = activeType ? META[activeType] : META.OFICIO;
+  const ActiveIcon = activeMeta.icon;
+  const onlyOne = availableTypes.length === 1;
+
+  if (collapsed) {
+    // En sidebar colapsado: solo icono indicador, no dropdown
+    return (
+      <div className="px-2.5 pt-3" title={`Panel ${activeMeta.label}`}>
+        <div className="w-12 h-12 mx-auto rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
+          <ActiveIcon size={20} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-2.5 pt-3 relative" ref={ref}>
+      <p className="text-text-muted text-[10px] uppercase tracking-widest font-bold px-3 mb-1.5">
+        Panel
+      </p>
+      <button
+        onClick={() => !onlyOne && setOpen(!open)}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-bg-input/60 border border-white/8 hover:border-primary/40 transition-all duration-200 ${
+          onlyOne ? 'cursor-default' : 'cursor-pointer hover:bg-bg-input'
+        }`}
+        aria-haspopup={!onlyOne}
+        aria-expanded={open}
+      >
+        <div className={`w-9 h-9 rounded-lg ${activeMeta.bg} flex items-center justify-center flex-shrink-0`}>
+          <ActiveIcon size={18} className={activeMeta.color} />
+        </div>
+        <div className="flex-1 text-left min-w-0">
+          <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+            Panel
+          </div>
+          <div className="text-text-primary text-sm font-bold truncate">
+            {activeMeta.label}
+          </div>
+        </div>
+        {!onlyOne && (
+          <ChevronDown
+            size={16}
+            className={`text-text-muted transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`}
+          />
+        )}
+      </button>
+
+      {open && !onlyOne && (
+        <div className="absolute left-2.5 right-2.5 top-full mt-2 z-50 glass-card rounded-xl shadow-2xl py-1 animate-scale-in origin-top">
+          {availableTypes.map((t) => {
+            const m = META[t];
+            const Icon = m.icon;
+            const isActive = t === activeType;
+            return (
+              <button
+                key={t}
+                onClick={() => {
+                  setActiveType(t);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center flex-shrink-0`}>
+                  <Icon size={16} className={m.color} />
+                </div>
+                <span className="text-sm font-medium">{m.label}</span>
+                {isActive && (
+                  <LayoutDashboard size={14} className="ml-auto text-primary" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const META: Record<'OFICIO' | 'NEGOCIO', {
+  label: string;
+  icon: React.ElementType;
+  color: string;
+  bg: string;
+}> = {
+  OFICIO: {
+    label: 'Profesional',
+    icon: Wrench,
+    color: 'text-primary',
+    bg: 'bg-primary/15',
+  },
+  NEGOCIO: {
+    label: 'Negocio',
+    icon: Store,
+    color: 'text-amber',
+    bg: 'bg-amber/15',
+  },
+};
