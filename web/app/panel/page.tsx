@@ -36,15 +36,18 @@ export default function PanelHomePage() {
         const prov = await api.getMyProfile(activeType ?? undefined);
         if (cancelled) return;
         setProvider(prov);
-        const [stats, revs] = await Promise.all([
+
+        // Cargar analítica y reseñas de forma independiente: si una falla,
+        // la otra debe seguir mostrándose. (Antes Promise.all rechazaba ambas.)
+        const [statsRes, revsRes] = await Promise.allSettled([
           api.getAnalytics(activeType ?? undefined),
           api.getProviderReviews(prov.id, 3),
         ]);
         if (cancelled) return;
-        setAnalytics(stats);
-        setReviews(revs);
+        if (statsRes.status === 'fulfilled') setAnalytics(statsRes.value);
+        if (revsRes.status === 'fulfilled') setReviews(revsRes.value);
       } catch {
-        // error ya manejado en api
+        // perfil falló — error ya manejado en api
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -182,27 +185,47 @@ export default function PanelHomePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {reviews.slice(0, 3).map((r, i) => (
-              <div
-                key={r.id}
-                className="border-b border-white/5 pb-4 last:border-0 last:pb-0 animate-fade-in-up"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-amber text-sm tracking-tighter">
-                    {'★'.repeat(r.rating)}
-                    <span className="text-amber/30">{'★'.repeat(5 - r.rating)}</span>
-                  </span>
-                  <span className="text-text-muted text-xs">·</span>
-                  <span className="text-text-muted text-xs">
-                    {r.user?.firstName} {r.user?.lastName}
-                  </span>
+            {reviews.slice(0, 3).map((r, i) => {
+              const fullName = [r.user?.firstName, r.user?.lastName]
+                .filter(Boolean)
+                .join(' ')
+                .trim() || 'Cliente';
+              const initial = (r.user?.firstName?.charAt(0) || 'C').toUpperCase();
+              return (
+                <div
+                  key={r.id}
+                  className="flex items-start gap-3 border-b border-white/5 pb-4 last:border-0 last:pb-0 animate-fade-in-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  {/* Avatar para que el autor sea visible incluso en móviles estrechos */}
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-primary text-white font-bold text-xs flex items-center justify-center ring-1 ring-primary/30">
+                    {r.user?.avatarUrl ? (
+                      <img
+                        src={r.user.avatarUrl}
+                        alt={fullName}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      initial
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-1">
+                      <span className="text-text-primary text-sm font-semibold truncate max-w-full">
+                        {fullName}
+                      </span>
+                      <span className="text-amber text-xs tracking-tighter leading-none">
+                        {'★'.repeat(r.rating)}
+                        <span className="text-amber/30">{'★'.repeat(5 - r.rating)}</span>
+                      </span>
+                    </div>
+                    <p className="text-text-secondary text-sm leading-relaxed line-clamp-2 break-words">
+                      {r.comment || 'Sin comentario.'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-text-secondary text-sm leading-relaxed line-clamp-2">
-                  {r.comment || 'Sin comentario.'}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
