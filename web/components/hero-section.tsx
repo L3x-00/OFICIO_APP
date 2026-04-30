@@ -35,8 +35,11 @@ export default function HeroSection() {
             priority
             sizes="(max-width: 1024px) 100vw, 62vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/96 via-bg-dark/82 to-bg-dark/40" />
-          <div className="absolute inset-0 bg-radial-primary opacity-60 pointer-events-none" />
+          {/* Capa base que oscurece toda la imagen ~55% */}
+          <div className="absolute inset-0 bg-bg-dark/55" />
+          {/* Degradado adicional más denso del lado del texto para asegurar contraste */}
+          <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/95 via-bg-dark/75 to-bg-dark/35" />
+          <div className="absolute inset-0 bg-radial-primary opacity-50 pointer-events-none" />
 
           <div className="relative z-10 px-8 sm:px-14 lg:px-16 py-16 max-w-2xl">
             {/* Badge con pulse */}
@@ -112,7 +115,10 @@ export default function HeroSection() {
             priority
             sizes="(max-width: 1024px) 100vw, 38vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-l from-bg-dark/96 via-bg-dark/82 to-bg-dark/55" />
+          {/* Capa base oscurecedora ~55% */}
+          <div className="absolute inset-0 bg-bg-dark/55" />
+          {/* Degradado adicional más denso del lado del texto */}
+          <div className="absolute inset-0 bg-gradient-to-l from-bg-dark/95 via-bg-dark/78 to-bg-dark/45" />
 
           <div className="relative z-10 px-8 sm:px-12 py-16 w-full animate-slide-in-right" style={{ animationDelay: '300ms' }}>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
