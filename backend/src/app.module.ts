@@ -21,6 +21,7 @@ import { EventsModule } from './events/events.module.js';
 import { TrustValidationModule } from './trust-validation/trust-validation.module.js';
 import { SubastasModule } from './subastas/subastas.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
+import { ReferralsModule } from './referrals/referrals.module.js';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { PaymentsModule } from './payments/payments.module.js';
     TrustValidationModule,
     SubastasModule,
     PaymentsModule,
+    ReferralsModule,
   ],
   controllers: [AppController],
   providers: [

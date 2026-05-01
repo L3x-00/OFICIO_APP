@@ -407,7 +407,11 @@ export const ModelName = {
   ServiceRequest: 'ServiceRequest',
   Offer: 'Offer',
   YapePayment: 'YapePayment',
-  UserPenalty: 'UserPenalty'
+  UserPenalty: 'UserPenalty',
+  ReferralCode: 'ReferralCode',
+  Referral: 'Referral',
+  ReferralReward: 'ReferralReward',
+  CoinRedemption: 'CoinRedemption'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -423,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "provider" | "providerImage" | "subscription" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "provider" | "providerImage" | "subscription" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2203,6 +2207,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReferralCode: {
+      payload: Prisma.$ReferralCodePayload<ExtArgs>
+      fields: Prisma.ReferralCodeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReferralCodeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReferralCodeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>
+        }
+        findFirst: {
+          args: Prisma.ReferralCodeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReferralCodeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>
+        }
+        findMany: {
+          args: Prisma.ReferralCodeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>[]
+        }
+        create: {
+          args: Prisma.ReferralCodeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>
+        }
+        createMany: {
+          args: Prisma.ReferralCodeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReferralCodeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>[]
+        }
+        delete: {
+          args: Prisma.ReferralCodeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>
+        }
+        update: {
+          args: Prisma.ReferralCodeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>
+        }
+        deleteMany: {
+          args: Prisma.ReferralCodeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReferralCodeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReferralCodeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>[]
+        }
+        upsert: {
+          args: Prisma.ReferralCodeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralCodePayload>
+        }
+        aggregate: {
+          args: Prisma.ReferralCodeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReferralCode>
+        }
+        groupBy: {
+          args: Prisma.ReferralCodeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReferralCodeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReferralCodeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReferralCodeCountAggregateOutputType> | number
+        }
+      }
+    }
+    Referral: {
+      payload: Prisma.$ReferralPayload<ExtArgs>
+      fields: Prisma.ReferralFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReferralFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReferralFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>
+        }
+        findFirst: {
+          args: Prisma.ReferralFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReferralFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>
+        }
+        findMany: {
+          args: Prisma.ReferralFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>[]
+        }
+        create: {
+          args: Prisma.ReferralCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>
+        }
+        createMany: {
+          args: Prisma.ReferralCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReferralCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>[]
+        }
+        delete: {
+          args: Prisma.ReferralDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>
+        }
+        update: {
+          args: Prisma.ReferralUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReferralDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReferralUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReferralUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReferralUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralPayload>
+        }
+        aggregate: {
+          args: Prisma.ReferralAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReferral>
+        }
+        groupBy: {
+          args: Prisma.ReferralGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReferralGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReferralCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReferralCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReferralReward: {
+      payload: Prisma.$ReferralRewardPayload<ExtArgs>
+      fields: Prisma.ReferralRewardFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReferralRewardFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReferralRewardFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>
+        }
+        findFirst: {
+          args: Prisma.ReferralRewardFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReferralRewardFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>
+        }
+        findMany: {
+          args: Prisma.ReferralRewardFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>[]
+        }
+        create: {
+          args: Prisma.ReferralRewardCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>
+        }
+        createMany: {
+          args: Prisma.ReferralRewardCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReferralRewardCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>[]
+        }
+        delete: {
+          args: Prisma.ReferralRewardDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>
+        }
+        update: {
+          args: Prisma.ReferralRewardUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReferralRewardDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReferralRewardUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReferralRewardUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReferralRewardUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferralRewardPayload>
+        }
+        aggregate: {
+          args: Prisma.ReferralRewardAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReferralReward>
+        }
+        groupBy: {
+          args: Prisma.ReferralRewardGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReferralRewardGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReferralRewardCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReferralRewardCountAggregateOutputType> | number
+        }
+      }
+    }
+    CoinRedemption: {
+      payload: Prisma.$CoinRedemptionPayload<ExtArgs>
+      fields: Prisma.CoinRedemptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CoinRedemptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CoinRedemptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>
+        }
+        findFirst: {
+          args: Prisma.CoinRedemptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CoinRedemptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>
+        }
+        findMany: {
+          args: Prisma.CoinRedemptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>[]
+        }
+        create: {
+          args: Prisma.CoinRedemptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>
+        }
+        createMany: {
+          args: Prisma.CoinRedemptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CoinRedemptionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>[]
+        }
+        delete: {
+          args: Prisma.CoinRedemptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>
+        }
+        update: {
+          args: Prisma.CoinRedemptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CoinRedemptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CoinRedemptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CoinRedemptionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CoinRedemptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoinRedemptionPayload>
+        }
+        aggregate: {
+          args: Prisma.CoinRedemptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCoinRedemption>
+        }
+        groupBy: {
+          args: Prisma.CoinRedemptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoinRedemptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CoinRedemptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoinRedemptionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2258,6 +2558,7 @@ export const UserScalarFieldEnum = {
   fcmToken: 'fcmToken',
   isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
+  coins: 'coins',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2540,6 +2841,7 @@ export const TrustValidationRequestScalarFieldEnum = {
   rucNumber: 'rucNumber',
   businessAddress: 'businessAddress',
   businessPhotoUrl: 'businessPhotoUrl',
+  businessPhoto2Url: 'businessPhoto2Url',
   ownerDniPhotoUrl: 'ownerDniPhotoUrl',
   rejectionReason: 'rejectionReason',
   reviewedByAdminId: 'reviewedByAdminId',
@@ -2622,6 +2924,60 @@ export const UserPenaltyScalarFieldEnum = {
 } as const
 
 export type UserPenaltyScalarFieldEnum = (typeof UserPenaltyScalarFieldEnum)[keyof typeof UserPenaltyScalarFieldEnum]
+
+
+export const ReferralCodeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  code: 'code',
+  totalInvites: 'totalInvites',
+  successfulInvites: 'successfulInvites',
+  createdAt: 'createdAt'
+} as const
+
+export type ReferralCodeScalarFieldEnum = (typeof ReferralCodeScalarFieldEnum)[keyof typeof ReferralCodeScalarFieldEnum]
+
+
+export const ReferralScalarFieldEnum = {
+  id: 'id',
+  inviterId: 'inviterId',
+  invitedUserId: 'invitedUserId',
+  invitedProviderId: 'invitedProviderId',
+  status: 'status',
+  coinsAwarded: 'coinsAwarded',
+  invitedCoinsAwarded: 'invitedCoinsAwarded',
+  createdAt: 'createdAt',
+  approvedAt: 'approvedAt'
+} as const
+
+export type ReferralScalarFieldEnum = (typeof ReferralScalarFieldEnum)[keyof typeof ReferralScalarFieldEnum]
+
+
+export const ReferralRewardScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  title: 'title',
+  description: 'description',
+  coinsCost: 'coinsCost',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReferralRewardScalarFieldEnum = (typeof ReferralRewardScalarFieldEnum)[keyof typeof ReferralRewardScalarFieldEnum]
+
+
+export const CoinRedemptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  rewardId: 'rewardId',
+  plan: 'plan',
+  coinsSpent: 'coinsSpent',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type CoinRedemptionScalarFieldEnum = (typeof CoinRedemptionScalarFieldEnum)[keyof typeof CoinRedemptionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2901,6 +3257,34 @@ export type EnumYapePaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumYapePaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'YapePaymentStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'ReferralStatus'
+ */
+export type EnumReferralStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReferralStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReferralStatus[]'
+ */
+export type ListEnumReferralStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReferralStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RedemptionStatus'
+ */
+export type EnumRedemptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RedemptionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RedemptionStatus[]'
+ */
+export type ListEnumRedemptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RedemptionStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -3035,6 +3419,10 @@ export type GlobalOmitConfig = {
   offer?: Prisma.OfferOmit
   yapePayment?: Prisma.YapePaymentOmit
   userPenalty?: Prisma.UserPenaltyOmit
+  referralCode?: Prisma.ReferralCodeOmit
+  referral?: Prisma.ReferralOmit
+  referralReward?: Prisma.ReferralRewardOmit
+  coinRedemption?: Prisma.CoinRedemptionOmit
 }
 
 /* Types for Logging */

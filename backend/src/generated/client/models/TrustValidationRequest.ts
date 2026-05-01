@@ -52,6 +52,7 @@ export type TrustValidationRequestMinAggregateOutputType = {
   rucNumber: string | null
   businessAddress: string | null
   businessPhotoUrl: string | null
+  businessPhoto2Url: string | null
   ownerDniPhotoUrl: string | null
   rejectionReason: string | null
   reviewedByAdminId: number | null
@@ -74,6 +75,7 @@ export type TrustValidationRequestMaxAggregateOutputType = {
   rucNumber: string | null
   businessAddress: string | null
   businessPhotoUrl: string | null
+  businessPhoto2Url: string | null
   ownerDniPhotoUrl: string | null
   rejectionReason: string | null
   reviewedByAdminId: number | null
@@ -96,6 +98,7 @@ export type TrustValidationRequestCountAggregateOutputType = {
   rucNumber: number
   businessAddress: number
   businessPhotoUrl: number
+  businessPhoto2Url: number
   ownerDniPhotoUrl: number
   rejectionReason: number
   reviewedByAdminId: number
@@ -132,6 +135,7 @@ export type TrustValidationRequestMinAggregateInputType = {
   rucNumber?: true
   businessAddress?: true
   businessPhotoUrl?: true
+  businessPhoto2Url?: true
   ownerDniPhotoUrl?: true
   rejectionReason?: true
   reviewedByAdminId?: true
@@ -154,6 +158,7 @@ export type TrustValidationRequestMaxAggregateInputType = {
   rucNumber?: true
   businessAddress?: true
   businessPhotoUrl?: true
+  businessPhoto2Url?: true
   ownerDniPhotoUrl?: true
   rejectionReason?: true
   reviewedByAdminId?: true
@@ -176,6 +181,7 @@ export type TrustValidationRequestCountAggregateInputType = {
   rucNumber?: true
   businessAddress?: true
   businessPhotoUrl?: true
+  businessPhoto2Url?: true
   ownerDniPhotoUrl?: true
   rejectionReason?: true
   reviewedByAdminId?: true
@@ -285,6 +291,7 @@ export type TrustValidationRequestGroupByOutputType = {
   rucNumber: string | null
   businessAddress: string | null
   businessPhotoUrl: string | null
+  businessPhoto2Url: string | null
   ownerDniPhotoUrl: string | null
   rejectionReason: string | null
   reviewedByAdminId: number | null
@@ -330,6 +337,7 @@ export type TrustValidationRequestWhereInput = {
   rucNumber?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
+  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableFilter<"TrustValidationRequest"> | number | null
@@ -353,6 +361,7 @@ export type TrustValidationRequestOrderByWithRelationInput = {
   rucNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   businessAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrderInput | Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -379,6 +388,7 @@ export type TrustValidationRequestWhereUniqueInput = Prisma.AtLeast<{
   rucNumber?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
+  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableFilter<"TrustValidationRequest"> | number | null
@@ -402,6 +412,7 @@ export type TrustValidationRequestOrderByWithAggregationInput = {
   rucNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   businessAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrderInput | Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -432,6 +443,7 @@ export type TrustValidationRequestScalarWhereWithAggregatesInput = {
   rucNumber?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
+  businessPhoto2Url?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableWithAggregatesFilter<"TrustValidationRequest"> | number | null
@@ -452,6 +464,7 @@ export type TrustValidationRequestCreateInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
+  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
@@ -475,6 +488,7 @@ export type TrustValidationRequestUncheckedCreateInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
+  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
@@ -495,6 +509,7 @@ export type TrustValidationRequestUpdateInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -518,6 +533,7 @@ export type TrustValidationRequestUncheckedUpdateInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -540,6 +556,7 @@ export type TrustValidationRequestCreateManyInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
+  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
@@ -560,6 +577,7 @@ export type TrustValidationRequestUpdateManyMutationInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -582,6 +600,7 @@ export type TrustValidationRequestUncheckedUpdateManyInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -614,6 +633,7 @@ export type TrustValidationRequestCountOrderByAggregateInput = {
   rucNumber?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
@@ -642,6 +662,7 @@ export type TrustValidationRequestMaxOrderByAggregateInput = {
   rucNumber?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
@@ -664,6 +685,7 @@ export type TrustValidationRequestMinOrderByAggregateInput = {
   rucNumber?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
@@ -732,6 +754,7 @@ export type TrustValidationRequestCreateWithoutProviderInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
+  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
@@ -753,6 +776,7 @@ export type TrustValidationRequestUncheckedCreateWithoutProviderInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
+  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
@@ -804,6 +828,7 @@ export type TrustValidationRequestScalarWhereInput = {
   rucNumber?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
+  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableFilter<"TrustValidationRequest"> | number | null
@@ -825,6 +850,7 @@ export type TrustValidationRequestCreateManyProviderInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
+  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
@@ -845,6 +871,7 @@ export type TrustValidationRequestUpdateWithoutProviderInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -866,6 +893,7 @@ export type TrustValidationRequestUncheckedUpdateWithoutProviderInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -887,6 +915,7 @@ export type TrustValidationRequestUncheckedUpdateManyWithoutProviderInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -911,6 +940,7 @@ export type TrustValidationRequestSelect<ExtArgs extends runtime.Types.Extension
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
+  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
@@ -934,6 +964,7 @@ export type TrustValidationRequestSelectCreateManyAndReturn<ExtArgs extends runt
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
+  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
@@ -957,6 +988,7 @@ export type TrustValidationRequestSelectUpdateManyAndReturn<ExtArgs extends runt
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
+  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
@@ -980,6 +1012,7 @@ export type TrustValidationRequestSelectScalar = {
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
+  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
@@ -988,7 +1021,7 @@ export type TrustValidationRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type TrustValidationRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "status" | "dniNumber" | "dniFirstName" | "dniLastName" | "dniAddress" | "dniPhotoFrontUrl" | "dniPhotoBackUrl" | "selfieWithDniUrl" | "rucNumber" | "businessAddress" | "businessPhotoUrl" | "ownerDniPhotoUrl" | "rejectionReason" | "reviewedByAdminId" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["trustValidationRequest"]>
+export type TrustValidationRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "status" | "dniNumber" | "dniFirstName" | "dniLastName" | "dniAddress" | "dniPhotoFrontUrl" | "dniPhotoBackUrl" | "selfieWithDniUrl" | "rucNumber" | "businessAddress" | "businessPhotoUrl" | "businessPhoto2Url" | "ownerDniPhotoUrl" | "rejectionReason" | "reviewedByAdminId" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["trustValidationRequest"]>
 export type TrustValidationRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
@@ -1018,6 +1051,7 @@ export type $TrustValidationRequestPayload<ExtArgs extends runtime.Types.Extensi
     rucNumber: string | null
     businessAddress: string | null
     businessPhotoUrl: string | null
+    businessPhoto2Url: string | null
     ownerDniPhotoUrl: string | null
     rejectionReason: string | null
     reviewedByAdminId: number | null
@@ -1461,6 +1495,7 @@ export interface TrustValidationRequestFieldRefs {
   readonly rucNumber: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly businessAddress: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly businessPhotoUrl: Prisma.FieldRef<"TrustValidationRequest", 'String'>
+  readonly businessPhoto2Url: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly ownerDniPhotoUrl: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly rejectionReason: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly reviewedByAdminId: Prisma.FieldRef<"TrustValidationRequest", 'Int'>

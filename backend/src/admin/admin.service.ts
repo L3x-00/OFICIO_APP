@@ -12,6 +12,7 @@ import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
+import { ReferralsService } from '../referrals/referrals.service.js';
 
 @Injectable()
 export class AdminService {
@@ -20,6 +21,7 @@ export class AdminService {
     private eventsGateway: EventsGateway,
     private minio: MinioService,
     private push: PushNotificationsService,
+    private referrals: ReferralsService,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
@@ -657,6 +659,15 @@ async updateProvider(
       `Tu perfil "${updated.businessName}" fue aprobado. ¡Ya apareces en la plataforma!`,
       { type: 'PROVIDER_APPROVED' },
     );
+
+    // Sistema de referidos: si este provider tiene un referral pendiente,
+    // entrega monedas al inviter y al invitado y emite las notificaciones extra.
+    // Falla en silencio para no romper la aprobación si algo va mal.
+    try {
+      await this.referrals.onProviderApproved(updated.id);
+    } catch (err) {
+      console.error('[ReferralsService.onProviderApproved] error:', err);
+    }
 
     return updated;
   }

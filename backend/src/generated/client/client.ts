@@ -161,3 +161,27 @@ export type YapePayment = Prisma.YapePaymentModel
  * 
  */
 export type UserPenalty = Prisma.UserPenaltyModel
+/**
+ * Model ReferralCode
+ * Código único personal de cada usuario para invitar a otros.
+ * Se genera bajo demanda (8 caracteres alfanuméricos).
+ */
+export type ReferralCode = Prisma.ReferralCodeModel
+/**
+ * Model Referral
+ * Vincula un invitado con quien lo invitó. Se crea con status PENDING al
+ * aplicar el código y pasa a APPROVED cuando el admin aprueba el perfil
+ * del invitado (entonces se entregan las monedas).
+ */
+export type Referral = Prisma.ReferralModel
+/**
+ * Model ReferralReward
+ * Servicios canjeables creados por el admin: un proveedor ofrece un
+ * servicio que los usuarios pueden adquirir gastando monedas.
+ */
+export type ReferralReward = Prisma.ReferralRewardModel
+/**
+ * Model CoinRedemption
+ * Canje de monedas: o por un plan (ESTANDAR/PREMIUM) o por una recompensa.
+ */
+export type CoinRedemption = Prisma.CoinRedemptionModel

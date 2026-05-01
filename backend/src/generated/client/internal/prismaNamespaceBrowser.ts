@@ -74,7 +74,11 @@ export const ModelName = {
   ServiceRequest: 'ServiceRequest',
   Offer: 'Offer',
   YapePayment: 'YapePayment',
-  UserPenalty: 'UserPenalty'
+  UserPenalty: 'UserPenalty',
+  ReferralCode: 'ReferralCode',
+  Referral: 'Referral',
+  ReferralReward: 'ReferralReward',
+  CoinRedemption: 'CoinRedemption'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -109,6 +113,7 @@ export const UserScalarFieldEnum = {
   fcmToken: 'fcmToken',
   isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
+  coins: 'coins',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -391,6 +396,7 @@ export const TrustValidationRequestScalarFieldEnum = {
   rucNumber: 'rucNumber',
   businessAddress: 'businessAddress',
   businessPhotoUrl: 'businessPhotoUrl',
+  businessPhoto2Url: 'businessPhoto2Url',
   ownerDniPhotoUrl: 'ownerDniPhotoUrl',
   rejectionReason: 'rejectionReason',
   reviewedByAdminId: 'reviewedByAdminId',
@@ -473,6 +479,60 @@ export const UserPenaltyScalarFieldEnum = {
 } as const
 
 export type UserPenaltyScalarFieldEnum = (typeof UserPenaltyScalarFieldEnum)[keyof typeof UserPenaltyScalarFieldEnum]
+
+
+export const ReferralCodeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  code: 'code',
+  totalInvites: 'totalInvites',
+  successfulInvites: 'successfulInvites',
+  createdAt: 'createdAt'
+} as const
+
+export type ReferralCodeScalarFieldEnum = (typeof ReferralCodeScalarFieldEnum)[keyof typeof ReferralCodeScalarFieldEnum]
+
+
+export const ReferralScalarFieldEnum = {
+  id: 'id',
+  inviterId: 'inviterId',
+  invitedUserId: 'invitedUserId',
+  invitedProviderId: 'invitedProviderId',
+  status: 'status',
+  coinsAwarded: 'coinsAwarded',
+  invitedCoinsAwarded: 'invitedCoinsAwarded',
+  createdAt: 'createdAt',
+  approvedAt: 'approvedAt'
+} as const
+
+export type ReferralScalarFieldEnum = (typeof ReferralScalarFieldEnum)[keyof typeof ReferralScalarFieldEnum]
+
+
+export const ReferralRewardScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  title: 'title',
+  description: 'description',
+  coinsCost: 'coinsCost',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReferralRewardScalarFieldEnum = (typeof ReferralRewardScalarFieldEnum)[keyof typeof ReferralRewardScalarFieldEnum]
+
+
+export const CoinRedemptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  rewardId: 'rewardId',
+  plan: 'plan',
+  coinsSpent: 'coinsSpent',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type CoinRedemptionScalarFieldEnum = (typeof CoinRedemptionScalarFieldEnum)[keyof typeof CoinRedemptionScalarFieldEnum]
 
 
 export const SortOrder = {

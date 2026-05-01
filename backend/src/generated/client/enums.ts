@@ -114,3 +114,21 @@ export const NotificationType = {
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const ReferralStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type ReferralStatus = (typeof ReferralStatus)[keyof typeof ReferralStatus]
+
+
+export const RedemptionStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type RedemptionStatus = (typeof RedemptionStatus)[keyof typeof RedemptionStatus]
