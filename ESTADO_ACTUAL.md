@@ -1,7 +1,39 @@
 # OficioApp — Estado Actual del Proyecto
 
-**Última actualización**: 2026-04-27
-**Estado**: Hito 8.1 — 23 Observaciones Post-Despliegue Resueltas
+**Última actualización**: 2026-04-30
+**Estado**: Hito 9.0 — Sistema de Referidos y Monedas activo
+
+> **9.0 — Referidos y monedas (2026-04-30)**
+>
+> Sistema completo end-to-end (BD + backend + Flutter + admin):
+>
+> - **DB**: nuevos modelos `ReferralCode`, `Referral`, `ReferralReward`,
+>   `CoinRedemption` y `User.coins`. Migration manual
+>   `20260430000000_add_referrals_and_coins`.
+> - **Backend**: módulo `ReferralsModule` con
+>   `GET /referrals/my-code|my-stats|rewards|redemptions`,
+>   `POST /referrals/apply|redeem`, `GET /admin/referral-stats` y CRUD
+>   `POST/PATCH/DELETE /admin/rewards`. Hook
+>   `referrals.onProviderApproved` enganchado a
+>   `admin.approveVerification` que entrega 50 monedas al inviter, 5 al
+>   invitado y emite notificaciones websocket + push (+ aviso al admin).
+>   Validaciones: no-self-code, no doble aplicación, monedas suficientes
+>   antes de canjear, solo proveedores APROBADOS pueden ofrecer rewards.
+> - **Flutter**: nueva feature `features/referrals` con repository,
+>   provider y `ReferralScreen` de 3 pestañas (Mi código / Ganar
+>   monedas / Historial). Entry points en `profile_screen.dart`
+>   (Gestión de cuenta) y `panel_settings_tab.dart` (sección
+>   Promociones). Campo opcional "Código de referido" en el
+>   `onboarding_screen.dart` que llama a `applyCode` tras registrar.
+> - **Admin**: nuevas páginas `/referrals` (KPIs + AreaChart 12 meses +
+>   top 10 referidores) y `/rewards` (tabla CRUD + modal con
+>   ProviderPicker debounced filtrando solo APROBADOS). Widget
+>   `ReferralsWidget` en el dashboard principal. Sidebar con sección
+>   "Crecimiento".
+> - **Reglas**: 500 monedas = Plan Estándar 1 mes, 1000 = Premium
+>   2 meses. Canjes de plan no se desactivan, canjes de servicio no
+>   reembolsables, admin puede revocar rewards sin afectar canjes
+>   pasados.
 
 ---
 
