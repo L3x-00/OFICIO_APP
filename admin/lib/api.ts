@@ -665,3 +665,77 @@ export interface TrustValidationDetail {
     isTrusted: boolean;
   };
 }
+
+// ── REFERIDOS Y RECOMPENSAS ────────────────────────────────
+
+export interface ReferralStats {
+  totalInvitations: number;
+  totalApproved: number;
+  conversionRate: number;
+  totalCoinsDistributed: number;
+  topInviters: Array<{
+    userId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    code: string;
+    totalInvites: number;
+    successfulInvites: number;
+    coinsBalance: number;
+  }>;
+  monthlyInvites: Array<{ month: string; count: number }>;
+}
+
+export interface AdminReward {
+  id: number;
+  providerId: number;
+  title: string;
+  description: string;
+  coinsCost: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  provider: {
+    id: number;
+    businessName: string;
+    type: string;
+    phone: string;
+  };
+  _count?: { redemptions: number };
+}
+
+export const getReferralStats = () =>
+  fetchApi<ReferralStats>('/admin/referral-stats');
+
+export const getAdminRewards = () =>
+  fetchApi<AdminReward[]>('/admin/rewards');
+
+export const createReward = (data: {
+  providerId: number;
+  title: string;
+  description: string;
+  coinsCost: number;
+}) =>
+  fetchApi<AdminReward>('/admin/rewards', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const updateReward = (
+  id: number,
+  data: Partial<{
+    title: string;
+    description: string;
+    coinsCost: number;
+    isActive: boolean;
+  }>,
+) =>
+  fetchApi<AdminReward>(`/admin/rewards/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+export const deleteReward = (id: number) =>
+  fetchApi<{ success: boolean }>(`/admin/rewards/${id}`, {
+    method: 'DELETE',
+  });

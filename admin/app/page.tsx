@@ -9,6 +9,7 @@ import {
 import { MetricCard } from '@/components/metric-card';
 import { GraceProvidersTable } from '@/components/grace-providers-table';
 import { PendingApprovalsTable } from '@/components/pending-approvals-table';
+import { ReferralsWidget } from '@/components/referrals-widget';
 import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
 import type { DashboardMetrics, GraceProvider } from '@/lib/api';
 import { useAdminRealtime } from '@/lib/use-admin-realtime';
@@ -392,6 +393,9 @@ export default function DashboardPage() {
           <PendingApprovalsTable onAction={handlePendingAction} />
         </div>
       </div>
+
+      {/* Referidos: KPIs rápidos */}
+      <ReferralsWidget />
 
       {/* Grace providers */}
       <div style={{
