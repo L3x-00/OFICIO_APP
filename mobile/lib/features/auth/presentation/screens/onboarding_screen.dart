@@ -8,6 +8,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/utils/permission_service.dart';
 import 'package:mobile/core/utils/plan_limits.dart';
+import 'package:mobile/features/referrals/data/referrals_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
@@ -364,6 +365,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   final _twitterCtrl    = TextEditingController();
   final _telegramCtrl   = TextEditingController();
   final _whatsappBizCtrl = TextEditingController();
+  final _referralCodeCtrl = TextEditingController();
 
   // ─── Ubicación GPS / URL Maps ─────────────────────────────
   final _mapsUrlController = TextEditingController();
@@ -613,6 +615,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _twitterCtrl.dispose();
     _telegramCtrl.dispose();
     _whatsappBizCtrl.dispose();
+    _referralCodeCtrl.dispose();
     super.dispose();
   }
 
@@ -914,6 +917,19 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       setState(() => _isLoading = false);
       _showSnack(auth.error ?? 'Error al crear el perfil', isError: true);
       return;
+    }
+
+    // Aplicar código de referido si el usuario lo introdujo (silencioso si falla)
+    final refCode = _referralCodeCtrl.text.trim();
+    if (refCode.isNotEmpty) {
+      try {
+        await ReferralsRepository().applyCode(refCode);
+        if (!mounted) return;
+        _showSnack('Código de referido aplicado.');
+      } catch (e) {
+        if (!mounted) return;
+        _showSnack('No pudimos aplicar el código de referido.', isError: true);
+      }
     }
 
     // Subir fotos al servidor y vincularlas al proveedor recién creado
@@ -1219,6 +1235,49 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             _FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
             const SizedBox(height: 12),
             _buildPhotoSection(),
+            const SizedBox(height: 32),
+
+            // ── Código de referido (opcional) ─────────────
+            _FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              decoration: BoxDecoration(
+                color: c.bgInput,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.card_giftcard_rounded,
+                      color: AppColors.primary, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _referralCodeCtrl,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Ej: ALEX1234',
+                        hintStyle: TextStyle(color: c.textMuted),
+                      ),
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(
+                'Si alguien te invitó, ingresa su código aquí. Recibirás 5 monedas al ser aprobado.',
+                style: TextStyle(color: c.textMuted, fontSize: 11),
+              ),
+            ),
             const SizedBox(height: 32),
 
             // ── Botón enviar ──────────────────────────────

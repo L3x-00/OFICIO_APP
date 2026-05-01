@@ -10,6 +10,7 @@ import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 import '../../data/dashboard_repository.dart';
 import '../../../payments/presentation/screens/yape_payment_screen.dart';
+import '../../../referrals/presentation/screens/referral_screen.dart';
 
 class PanelSettingsTab extends StatelessWidget {
   const PanelSettingsTab({super.key});
@@ -72,6 +73,23 @@ class PanelSettingsTab extends StatelessWidget {
                             ? 'Solo elimina este perfil, el otro se mantiene'
                             : 'Pasarás a ser cliente al eliminar este perfil',
                         onTap: () => _confirmDeleteProfile(context, dash, auth, profile?.type),
+                      ),
+                    ],
+                  ),
+
+                  _SettingsSection(
+                    icon: Icons.card_giftcard_rounded,
+                    title: 'Promociones',
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.monetization_on_rounded,
+                        label: 'Referidos y monedas',
+                        subtitle: 'Invita profesionales y canjea monedas por planes o servicios',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ReferralScreen(),
+                          ),
+                        ),
                       ),
                     ],
                   ),

@@ -18,6 +18,7 @@ import '../../../../features/provider_dashboard/presentation/screens/provider_pa
 import '../../../../features/provider_dashboard/data/dashboard_repository.dart';
 import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../../../features/subastas/presentation/screens/my_requests_screen.dart';
+import '../../../../features/referrals/presentation/screens/referral_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -400,6 +401,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: const MyRequestsScreen(),
                     ),
                   ),
+                ),
+              ),
+              _SectionItem(
+                icon: Icons.card_giftcard_rounded,
+                label: 'Promociones y referidos',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ReferralScreen()),
                 ),
                 isLast: true,
               ),
