@@ -106,6 +106,109 @@ export async function apiUpload<T = unknown>(
   return res.json() as Promise<T>;
 }
 
+/* ── Referidos y monedas ─────────────────────────────────── */
+
+export interface ReferralCodeInfo {
+  id: number;
+  userId: number;
+  code: string;
+  totalInvites: number;
+  successfulInvites: number;
+  createdAt?: string;
+}
+
+export type ReferralStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface ReferralHistoryItem {
+  id: number;
+  status: ReferralStatus;
+  coinsAwarded: number;
+  invitedCoinsAwarded: number;
+  createdAt: string;
+  approvedAt?: string | null;
+  invitedUser?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+  } | null;
+  invitedProvider?: {
+    id: number;
+    businessName: string;
+    type: "OFICIO" | "NEGOCIO";
+    verificationStatus: "PENDIENTE" | "APROBADO" | "RECHAZADO";
+  } | null;
+}
+
+export interface ReferralStats {
+  code: string;
+  coins: number;
+  totalInvited: number;
+  approvedInvited: number;
+  pendingInvited: number;
+  history: ReferralHistoryItem[];
+}
+
+export interface ReferralReward {
+  id: number;
+  title: string;
+  description: string;
+  coinsCost: number;
+  isActive: boolean;
+  provider: {
+    id: number;
+    businessName: string;
+    phone?: string;
+    whatsapp?: string;
+    averageRating?: number;
+    type?: "OFICIO" | "NEGOCIO";
+    category?: { name?: string };
+    images?: { url: string; isCover?: boolean; order?: number }[];
+  };
+}
+
+export type RedemptionStatus = "PENDING" | "COMPLETED" | "CANCELLED";
+
+export interface CoinRedemption {
+  id: number;
+  rewardId?: number | null;
+  plan?: string | null;
+  coinsSpent: number;
+  status: RedemptionStatus;
+  createdAt: string;
+  reward?: {
+    id: number;
+    title: string;
+    description: string;
+    coinsCost: number;
+    provider: {
+      id: number;
+      businessName: string;
+      phone?: string;
+      whatsapp?: string;
+    };
+  } | null;
+}
+
+export interface RedemptionResult {
+  success: boolean;
+  redemption: CoinRedemption;
+  /** Solo viene cuando el canje fue de un plan. */
+  planActivated?: string;
+  months?: number;
+  /** Solo viene cuando el canje fue de un servicio. */
+  reward?: {
+    title: string;
+    description: string;
+    provider: {
+      id: number;
+      businessName: string;
+      phone?: string;
+      whatsapp?: string;
+    };
+  };
+}
+
 /** Shape returned by GET /providers (public listing). */
 export interface PublicProvider {
   id: number;
@@ -307,6 +410,41 @@ export const api = {
     if (!res.ok) throw new Error(`Error ${res.status} cargando proveedores`);
     const json = (await res.json()) as { data?: PublicProvider[] } | PublicProvider[];
     return Array.isArray(json) ? json : json.data ?? [];
+  },
+
+  // ── REFERIDOS Y MONEDAS ─────────────────────────────────────
+
+  async getMyReferralCode(): Promise<ReferralCodeInfo> {
+    return apiFetch<ReferralCodeInfo>("/referrals/my-code");
+  },
+
+  async getMyReferralStats(): Promise<ReferralStats> {
+    return apiFetch<ReferralStats>("/referrals/my-stats");
+  },
+
+  async applyReferralCode(code: string): Promise<void> {
+    await apiFetch("/referrals/apply", {
+      method: "POST",
+      body: JSON.stringify({ code: code.trim().toUpperCase() }),
+    });
+  },
+
+  async getReferralRewards(): Promise<ReferralReward[]> {
+    return apiFetch<ReferralReward[]>("/referrals/rewards");
+  },
+
+  async redeemCoins(payload: {
+    rewardId?: number;
+    plan?: "ESTANDAR" | "PREMIUM";
+  }): Promise<RedemptionResult> {
+    return apiFetch<RedemptionResult>("/referrals/redeem", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getRedemptionHistory(): Promise<CoinRedemption[]> {
+    return apiFetch<CoinRedemption[]>("/referrals/redemptions");
   },
 
   async getNotifications(): Promise<{

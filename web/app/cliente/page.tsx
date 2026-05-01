@@ -17,9 +17,12 @@ import {
   Settings,
   CheckCircle,
   ChevronRight,
+  Gift,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { clearSession } from '@/lib/auth';
+import ReferralPanel from '@/components/referral-panel';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { User as UserType } from '@/lib/types';
@@ -46,15 +49,26 @@ interface FavoriteItem {
 }
 
 export default function ClientePage() {
+  return (
+    <Suspense fallback={null}>
+      <ClienteContent />
+    </Suspense>
+  );
+}
+
+type ClientSection = 'favorites' | 'notifications' | 'settings' | 'referrals';
+
+function ClienteContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab: ClientSection =
+    searchParams.get('tab') === 'referidos' ? 'referrals' : 'favorites';
   const [user, setUser] = useState<UserType | null>(null);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<'favorites' | 'notifications' | 'settings'>(
-    'favorites',
-  );
+  const [activeSection, setActiveSection] = useState<ClientSection>(initialTab);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,6 +183,12 @@ export default function ClientePage() {
             highlight={unreadCount > 0}
           />
           <TabButton
+            active={activeSection === 'referrals'}
+            onClick={() => setActiveSection('referrals')}
+            icon={Gift}
+            label="Referidos"
+          />
+          <TabButton
             active={activeSection === 'settings'}
             onClick={() => setActiveSection('settings')}
             icon={Settings}
@@ -179,6 +199,7 @@ export default function ClientePage() {
         {/* Section content */}
         {activeSection === 'favorites' && <FavoritesSection items={favorites} />}
         {activeSection === 'notifications' && <NotificationsSection items={notifications} />}
+        {activeSection === 'referrals' && <ReferralPanel />}
         {activeSection === 'settings' && <SettingsSection user={user} />}
 
         {/* CTA hacerse proveedor */}

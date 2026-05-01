@@ -17,6 +17,7 @@ import {
   Store,
   Wrench,
   LayoutDashboard,
+  Gift,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { clearSession, getUser } from '@/lib/auth';
@@ -29,6 +30,7 @@ const tabs = [
   { label: 'Ofertas',      icon: Zap,       href: '/panel/ofertas' },
   { label: 'Servicios',    icon: Briefcase, href: '/panel/servicios' },
   { label: 'Estadísticas', icon: BarChart3, href: '/panel/estadisticas' },
+  { label: 'Referidos',    icon: Gift,      href: '/panel/referidos' },
   { label: 'Ajustes',      icon: Settings,  href: '/panel/ajustes' },
 ];
 

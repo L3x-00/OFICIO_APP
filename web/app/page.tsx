@@ -3,6 +3,7 @@ import StatsSection from '@/components/stats-section';
 import BenefitsSection from '@/components/benefits-section';
 import HowItWorksSection from '@/components/how-it-works-section';
 import ProvidersShowcase from '@/components/providers-showcase';
+import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
 import CtaProviderSection from '@/components/cta-provider-section';
 
@@ -14,6 +15,7 @@ export default function HomePage() {
       <BenefitsSection />
       <HowItWorksSection />
       <ProvidersShowcase />
+      <ReferralBanner />
       <TestimonialsSection />
       <CtaProviderSection />
     </>

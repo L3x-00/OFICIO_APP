@@ -11,7 +11,7 @@ import {
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
 import { getSocket } from '@/lib/socket';
-import { Home, UserCog, Zap, Briefcase, BarChart3, Settings } from 'lucide-react';
+import { Home, UserCog, Zap, Briefcase, BarChart3, Settings, Gift } from 'lucide-react';
 import { ProfileTypeProvider, useProfileType } from '@/lib/profile-type-context';
 import { api } from '@/lib/api';
 
@@ -130,6 +130,7 @@ function MobileBottomNav() {
     { label: 'Servicios', Icon: Briefcase, href: '/panel/servicios' },
     { label: 'Stats',     Icon: BarChart3, href: '/panel/estadisticas' },
     { label: 'Ajustes',   Icon: Settings,  href: '/panel/ajustes' },
+      { label: 'Referidos', Icon: Gift,      href: '/panel/referidos' },
   ];
 
   return (
