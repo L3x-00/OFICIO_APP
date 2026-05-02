@@ -387,7 +387,8 @@ export default function PanelAjustesPage() {
         isOpen={showHelp}
         onClose={() => setShowHelp(false)}
         title="Ayuda"
-        content="Centro de ayuda de OficioApp. Si tienes dudas, contáctanos en soporte@oficioapp.pe"
+        content="Centro de ayuda de OficioApp. Si tienes dudas, contáctanos en soporteofiapp@gmail.com
+                  o visita nuestras redes sociales. (Texto pendiente de completar)"
       />
 
       {/* Modal de pago Yape */}

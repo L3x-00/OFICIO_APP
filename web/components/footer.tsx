@@ -10,7 +10,7 @@ const productLinks = [
 ];
 
 const legalLinks = [
-  { label: 'soporte@oficioapp.pe',   href: 'mailto:soporte@oficioapp.pe' },
+  { label: 'soporteofiapp@gmail.com',   href: 'mailto:soporteofiapp@gmail.com' },
 ];
 
 export default function Footer() {
@@ -47,13 +47,13 @@ export default function Footer() {
               verificados en ciudades intermedias del Perú.
             </p>
             <a
-              href="mailto:soporte@oficioapp.pe"
+              href="mailto:soporteofiapp@gmail.com"
               className="inline-flex items-center gap-2 text-text-muted text-xs hover:text-primary transition-colors group"
             >
               <span className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-primary/15 flex items-center justify-center transition-colors">
                 <Mail size={13} />
               </span>
-              soporte@oficioapp.pe
+              soporteofiapp@gmail.com
             </a>
           </div>
 

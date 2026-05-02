@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Gift, ArrowRight, Sparkles, Coins } from 'lucide-react';
+import { ArrowRight, Sparkles, Coins } from 'lucide-react';
 import { isAuthenticated, getUser } from '@/lib/auth';
 
 export default function ReferralBanner() {
@@ -24,7 +24,7 @@ export default function ReferralBanner() {
   return (
     <section
       id="referidos-banner"
-      className="relative py-16 sm:py-20 overflow-hidden"
+      className="relative py-16 sm:py-20"
     >
       {/* Fondo con gradiente cálido */}
       <div className="absolute inset-0 bg-gradient-to-br from-amber/15 via-bg-dark to-primary/10" />
@@ -38,8 +38,7 @@ export default function ReferralBanner() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           data-reveal="scale"
-          className="relative glass-card gradient-border rounded-3xl p-8 sm:p-12 lg:p-14 overflow-hidden"
-        >
+          className="relative glass-card gradient-border rounded-3xl p-8 sm:p-12 lg:p-14">
           {/* Spotlight */}
           <div
             className="absolute inset-0 opacity-30 pointer-events-none"
@@ -113,13 +112,21 @@ export default function ReferralBanner() {
               </div>
             </div>
 
-            {/* Icono decorativo grande */}
-            <div className="hidden lg:flex justify-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber/40 to-primary/30 rounded-full blur-3xl scale-110 animate-pulse-soft" />
-                <div className="relative w-44 h-44 rounded-3xl bg-gradient-to-br from-amber via-amber/80 to-primary flex items-center justify-center shadow-glow-lg ring-4 ring-amber/30 animate-float">
-                  <Gift size={88} className="text-white drop-shadow-lg" strokeWidth={1.5} />
-                </div>
+            {/* Imagen de monedas con efecto 3D sobresaliendo */}
+            <div className="hidden lg:flex justify-center items-center">
+              <div
+                className="coins-glow-wrapper w-72 h-72 lg:w-80 lg:h-80"
+                style={{ overflow: 'visible', zIndex: 20 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/coins-banner.png"
+                  alt="Monedas de OficioApp"
+                  className="w-[520px] h-[520px] max-w-none object-contain"
+                  style={{
+                    clipPath: 'none',
+                    position: 'relative',
+                    zIndex: 20,
+                    filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(245,158,11,0.35))',}}/>
               </div>
             </div>
           </div>
