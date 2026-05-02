@@ -3,7 +3,9 @@ import './globals.css';
 import Navbar from '@/components/navbar';
 import LayoutShell from '@/components/layout-shell';
 import RevealProvider from '@/components/reveal-provider';
+import WhatsAppButton from '@/components/whatsapp-button';
 import { Toaster } from 'sonner';
+
 
 export const metadata: Metadata = {
   title: 'OficioApp – Marketplace de servicios locales en Perú',
@@ -58,6 +60,7 @@ export default function RootLayout({
             className: 'shadow-xl',
           }}
         />
+                <WhatsAppButton />
       </body>
     </html>
   );
