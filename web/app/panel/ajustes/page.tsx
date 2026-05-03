@@ -24,9 +24,9 @@ import { useRouter } from 'next/navigation';
 import { useProfileType } from '@/lib/profile-type-context';
 import type { Provider } from '@/lib/types';
 
-const TERMS_TEXT = `TÉRMINOS Y CONDICIONES DE USO — ConfiServ
+const TERMS_TEXT = `TÉRMINOS Y CONDICIONES DE USO — OficioApp
 
-Bienvenido a ConfiServ. Antes de utilizar nuestra plataforma, lea detenidamente estos Términos y Condiciones...
+Bienvenido a OficioApp. Antes de utilizar nuestra plataforma, lea detenidamente estos Términos y Condiciones...
 
 (El texto completo es el mismo que está en login_screen.dart de la app Flutter)`;
 

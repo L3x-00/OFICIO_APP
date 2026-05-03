@@ -141,7 +141,7 @@ export default function Footer() {
 
               {/* TikTok */}
               <a
-                href="https://tiktok.com/@kirasaludintegral"
+                href="https://www.tiktok.com/@ofiapp.pe"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="TikTok"
@@ -171,7 +171,7 @@ export default function Footer() {
 
               {/* Instagram */}
               <a
-                href="https://instagram.com/kirasaludintegral"
+                href="https://www.instagram.com/ofiapp.pe/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
