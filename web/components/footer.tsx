@@ -79,6 +79,7 @@ const productLinks = [
   { label: 'Beneficios',          href: '/#beneficios' },
   { label: 'Cómo funciona',       href: '/#como-funciona' },
   { label: 'Testimonios',         href: '/#testimonios' },
+  { label: 'Manual de usuario', href: '/#guia' },
   { label: 'Panel de proveedor',  href: '/login' },
 ];
 

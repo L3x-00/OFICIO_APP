@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/#beneficios',    label: 'Beneficios' },
   { href: '/#como-funciona', label: 'Cómo funciona' },
   { href: '/#testimonios',   label: 'Testimonios' },
+  { href: '/#guia',          label: 'Manual de usuario' },
 ];
 
 export default function Navbar() {

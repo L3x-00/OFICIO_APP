@@ -7,7 +7,7 @@ import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
 import CtaProviderSection from '@/components/cta-provider-section';
 import FaqSection from '@/components/faq-section';
-
+import UserManual from '@/components/user-manual';
 export default function HomePage() {
   return (
     <>
@@ -34,36 +34,41 @@ export default function HomePage() {
           Reduce fricción explicando el proceso
       ============================================ */}
       <HowItWorksSection />
+      {/* ============================================
+          SECCIÓN 5: User Manual - Manual de usuario
+          Guía paso a paso para nuevos usuarios, profesional y negocios
+      ============================================ */}
+       <UserManual />
 
       {/* ============================================
-          SECCIÓN 5: PROVIDERS SHOWCASE - Prueba social visual
+          SECCIÓN 6: PROVIDERS SHOWCASE - Prueba social visual
           Muestra profesionales reales verificados
       ============================================ */}
       <ProvidersShowcase />
 
       {/* ============================================
-          SECCIÓN 6: TESTIMONIALS - Validación emocional
+          SECCIÓN 7: TESTIMONIALS - Validación emocional
           Reseñas y experiencias de usuarios reales
           [MOVIDO: ahora va después de Providers]
       ============================================ */}
       <TestimonialsSection />
 
       {/* ============================================
-          SECCIÓN 7: REFERRAL BANNER - CTA secundario
+          SECCIÓN 8: REFERRAL BANNER - CTA secundario
           Programa de referidos post-confianza
           [MOVIDO: ahora va después de Testimonials]
       ============================================ */}
       <ReferralBanner />
 
       {/* ============================================
-          SECCIÓN 8: FAQ - Resolución de objeciones
+          SECCIÓN 9: FAQ - Resolución de objeciones
           Dudas frecuentes antes de convertir
           [MOVIDO: ahora va antes del CTA final]
       ============================================ */}
       <FaqSection />
 
       {/* ============================================
-          SECCIÓN 9: CTA PROVIDER - Conversión final
+          SECCIÓN 10: CTA PROVIDER - Conversión final
           Llamada a acción fuerte como cierre
       ============================================ */}
       <CtaProviderSection />
