@@ -580,7 +580,7 @@ model TrustValidationRequest {
 }
 
 // ─────────────────────────────────────────
-// SUBASTA CONFISERV
+// SUBASTA OficioApp
 // ─────────────────────────────────────────
 
 model ServiceRequest {

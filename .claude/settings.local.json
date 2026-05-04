@@ -45,7 +45,14 @@
       "Bash(rtk tsc:*)",
       "Bash(git commit -m ' *)",
       "Bash(grep -v \"//.*CachedNetworkImage\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma format)",
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma validate)",
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma generate)",
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma migrate dev --name add_referrals_and_coins --create-only)",
+      "Bash(grep -n \"register\\\\|registerProfessional\\\\|registerBusiness\\\\|api\\\\\\\\.register\\\\|formData\\\\\\\\[\" c:/Users/Usuario/oficio_app/mobile/lib/features/auth/presentation/screens/onboarding_screen.dart)",
+      "Bash(grep -n \"DateFormat\\\\|fmt\\\\\\\\.format\\\\|fmt = \" c:/Users/Usuario/oficio_app/mobile/lib/features/referrals/presentation/screens/referral_screen.dart)",
+      "Bash(grep -n \"API_BASE\\\\|adminApi\\\\|fetchAdmin\\\\|api\\\\\\\\.get\\\\\\\\|export const\" c:/Users/Usuario/oficio_app/admin/lib/api.ts)"
     ]
   }
 }

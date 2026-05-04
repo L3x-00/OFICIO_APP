@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Heart } from 'lucide-react';
 import LegalModal from '@/components/legal-modal';
+import AboutModal from '@/components/about-modal';
 
 const TERMS_CONTENT = `TÉRMINOS Y CONDICIONES DE USO — OficioApp
 
@@ -88,6 +89,8 @@ export default function Footer() {
     title: '',
     content: '',
   });
+
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   return (
     <footer className="relative border-t border-white/5 bg-bg-card/30 overflow-hidden">
@@ -186,7 +189,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Secciones */}
+                    {/* Secciones */}
           <div>
             <h4 className="text-text-primary font-semibold text-xs mb-4 uppercase tracking-wider">
               Explorar
@@ -203,6 +206,15 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={() => setAboutOpen(true)}
+                  className="text-text-muted text-sm hover:text-primary transition-colors inline-flex items-center gap-1.5 group text-left"
+                >
+                  <span className="w-1 h-1 rounded-full bg-text-muted/40 group-hover:bg-primary group-hover:w-3 transition-all duration-300" />
+                  Conócenos
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -301,6 +313,7 @@ export default function Footer() {
         title={legalModal.title}
         content={legalModal.content}
       />
+      <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </footer>
   );
 }

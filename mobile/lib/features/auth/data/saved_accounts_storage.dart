@@ -51,8 +51,8 @@ class SavedAccountsStorage {
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(),
     webOptions: WebOptions(
-      dbName:    'ConfiServ_SecureStore',
-      publicKey: 'confiserv_auth_key_2026',
+      dbName:    'OficioApp_SecureStore',
+      publicKey: 'oficioapp_auth_key_2026',
     ),
   );
 

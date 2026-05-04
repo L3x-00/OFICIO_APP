@@ -228,7 +228,7 @@ class _TopBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            'ConfiServ',
+            'OficioApp',
             style: TextStyle(
               color: c.textPrimary,
               fontWeight: FontWeight.bold,
@@ -893,7 +893,7 @@ class _CommunityVisual extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '"Gracias a ConfiServ, mi panadería duplicó sus clientes. La gente confía porque ve las reseñas reales."',
+                  '"Gracias a OficioApp, mi panadería duplicó sus clientes. La gente confía porque ve las reseñas reales."',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textPrimary,

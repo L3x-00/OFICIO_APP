@@ -7,7 +7,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/provider_dashboard/presentation/screens/provider_panel.dart';
 
-/// Modal informativo "¡Quiero ser parte de ConfiServ!"
+/// Modal informativo "¡Quiero ser parte de OficioApp!"
 /// Se abre desde el botón flotante en la pantalla principal
 class JoinUsModal extends StatefulWidget {
   const JoinUsModal({super.key});
@@ -230,7 +230,7 @@ class _JoinUsModalState extends State<JoinUsModal>
                 const SizedBox(height: 8),
                 Text(
                   'Miles de personas en tu zona buscan exactamente lo que tú ofreces. '
-                  'Únete a ConfiServ gratis los primeros 2 meses.',
+                  'Únete a OficioApp gratis los primeros 2 meses.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textSecondary,
@@ -1404,7 +1404,7 @@ class _FreePeriodBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Los primeros proveedores de cada localidad obtienen '
-              '2 meses gratis con todos los beneficios del plan Estándar en ConfiServ.',
+              '2 meses gratis con todos los beneficios del plan Estándar en OficioApp.',
               style: TextStyle(
                 color: AppColors.available,
                 fontSize: 12,

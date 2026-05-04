@@ -47,7 +47,7 @@ class PermissionService {
         await _showDialog(
           context,
           title: 'Permiso bloqueado',
-          message: 'Habilitaste "No preguntar de nuevo". Ve a Ajustes > Aplicaciones > ConfiServ > Permisos.',
+          message: 'Habilitaste "No preguntar de nuevo". Ve a Ajustes > Aplicaciones > OficioApp > Permisos.',
           actionLabel: 'Abrir ajustes',
           onAction: () => openAppSettings(),
         );
@@ -84,7 +84,7 @@ class PermissionService {
       await _showDialog(
         context,
         title: 'Cámara bloqueada',
-        message: 'Habilita el permiso de cámara en Ajustes > Aplicaciones > ConfiServ.',
+        message: 'Habilita el permiso de cámara en Ajustes > Aplicaciones > OficioApp.',
         actionLabel: 'Abrir ajustes',
         onAction: openAppSettings,
       );
@@ -107,7 +107,7 @@ class PermissionService {
       await _showDialog(
         context,
         title: 'Galería bloqueada',
-        message: 'Habilita el permiso de fotos en Ajustes > Aplicaciones > ConfiServ.',
+        message: 'Habilita el permiso de fotos en Ajustes > Aplicaciones > OficioApp.',
         actionLabel: 'Abrir ajustes',
         onAction: openAppSettings,
       );

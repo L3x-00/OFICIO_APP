@@ -95,7 +95,7 @@ class _ProvidersViewState extends State<_ProvidersView>
             ),
             const SizedBox(width: 10),
             Text(
-              'ConfiServ',
+              'OficioApp',
               style: TextStyle(
                 color: c.textPrimary,
                 fontWeight: FontWeight.bold,
@@ -124,7 +124,7 @@ class _ProvidersViewState extends State<_ProvidersView>
           _SearchBar(),
           // ── Chips unificados: tipo + categoría ────────────
           _FilterBar(),
-          // ── Subasta ConfiServ banner ───────────────────────
+          // ── Subasta OficioApp banner ───────────────────────
           const _SubastaBanner(),
           const Expanded(child: _ProvidersList()),
         ],
@@ -143,7 +143,7 @@ class _ProvidersViewState extends State<_ProvidersView>
 }
 
 // ═══════════════════════════════════════════════════════════
-// SUBASTA CONFISERV BANNER
+// SUBASTA OFICIOAPP BANNER
 // ═══════════════════════════════════════════════════════════
 
 class _SubastaBanner extends StatelessWidget {

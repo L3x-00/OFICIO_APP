@@ -64,21 +64,21 @@ void main() async {
           ChangeNotifierProvider(create: (_) => NotificationsProvider()),
           ChangeNotifierProvider(create: (_) => ProvidersProvider()),
         ],
-        child: const ConfiServApp(),
+        child: const OficioApp(),
       ),
     ),
   );
 }
 
-class ConfiServApp extends StatelessWidget {
-  const ConfiServApp({super.key});
+class OficioApp extends StatelessWidget {
+  const OficioApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final themeMode = context.watch<ThemeProvider>().mode;
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'ConfiServ',
+      title: 'OficioApp',
       debugShowCheckedModeBanner: false,
       locale: const Locale('es', '419'),
       supportedLocales: const [Locale('es', '419'), Locale('es'), Locale('en')],
@@ -628,7 +628,7 @@ class _AppRootState extends State<_AppRoot> {
         content: Text(
           'Tu cuenta ha sido desactivada por el administrador.\n\n'
           'Por favor comunícate con soporte para recibir más información.\n\n'
-          '📧 soporte@confiserv.com',
+          '📧 soporteofiapp@gmail.com',
           style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
           textAlign: TextAlign.center,
         ),
