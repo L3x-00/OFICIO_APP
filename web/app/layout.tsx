@@ -25,6 +25,18 @@ export const metadata: Metadata = {
     title: 'OficioApp',
     description: 'Marketplace de servicios locales en el Perú.',
   },
+  icons: {
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
@@ -40,6 +52,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
+      <head>
+        <link rel="manifest" href="/site.webmanifest" />
+      </head>
       <body className="min-h-screen flex flex-col bg-bg-dark text-text-primary antialiased">
         <RevealProvider />
         <Navbar />
@@ -60,7 +75,7 @@ export default function RootLayout({
             className: 'shadow-xl',
           }}
         />
-                <WhatsAppButton />
+        <WhatsAppButton />
       </body>
     </html>
   );
