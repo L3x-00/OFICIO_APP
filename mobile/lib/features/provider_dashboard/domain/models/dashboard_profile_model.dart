@@ -152,7 +152,6 @@ class SubscriptionInfo {
 
   String get planLabel {
     switch (plan) {
-      case 'BASICO':    return 'Básico';
       case 'ESTANDAR':  return 'Estándar';
       case 'PREMIUM':   return 'Premium';
       default:          return 'Gratis';

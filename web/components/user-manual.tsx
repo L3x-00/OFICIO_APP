@@ -211,7 +211,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         subSteps: [
           'Ve a "Promociones" desde tu perfil o panel',
           'Copia tu código personal o comparte el enlace',
-          'Recibes 50 monedas por cada registro aprobado',
+          'Recibes 25 monedas por cada registro aprobado',
           'Tu amigo recibe 5 monedas de bienvenida',
         ],
       },
@@ -222,8 +222,8 @@ const GUIDE_SECTIONS: GuideSection[] = [
         color: '#F59E0B',
         screenshot: 'Pantalla de canje de monedas con opciones disponibles',
         subSteps: [
-          '500 monedas = Plan Estándar por 1 mes',
-          '1000 monedas = Plan Premium por 2 meses',
+          '1000 monedas = Plan Estándar por 1 mes',
+          '2000 monedas = Plan Premium por 2 meses',
           'También puedes canjear por servicios reales',
           'Ve a "Canjear monedas" para ver las opciones',
         ],

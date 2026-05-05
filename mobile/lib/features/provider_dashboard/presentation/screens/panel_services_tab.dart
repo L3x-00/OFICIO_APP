@@ -140,8 +140,6 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
   // ── DIALOGO DE SERVICIO ───────────────────────────────────
 
-  // ── DIALOGO DE SERVICIO ───────────────────────────────────
-
   void _showServiceForm(
     BuildContext context,
     DashboardProvider dash, {

@@ -458,7 +458,7 @@ async updateProvider(
     switch (plan) {
       case 'PREMIUM':  return 1;
       case 'ESTANDAR': return 2;
-      case 'BASICO':   return 3;
+      case 'GRATIS':   return 3;
       default:         return 4;
     }
   }

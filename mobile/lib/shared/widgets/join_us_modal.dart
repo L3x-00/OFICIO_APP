@@ -609,14 +609,14 @@ class _JoinUsModalState extends State<JoinUsModal>
         features: [
           'Apareces en búsquedas',
           'Foto de perfil',
-          'Botón de WhatsApp',
-          'Botón de llamada',
+          'Hasta 3 fotos del servicio',
+          'Panel administrador Básico',
         ],
         isHighlighted: false,
       ),
       _PlanData(
         name: 'Estándar',
-        price: 'S/ 29',
+        price: 'S/ 19.90',
         period: 'al mes',
         features: [
           'Todo lo del plan Gratis',
@@ -629,14 +629,14 @@ class _JoinUsModalState extends State<JoinUsModal>
       ),
       _PlanData(
         name: 'Premium',
-        price: 'S/ 49',
+        price: 'S/ 39.90',
         period: 'al mes',
         features: [
           'Todo lo de Estándar',
           'Posición #1 garantizada',
           'Soporte prioritario',
           'Análisis de clientes',
-          'Sin comisiones',
+          'Panel administradivo avanzado',
         ],
         isHighlighted: false,
       ),
@@ -1404,7 +1404,7 @@ class _FreePeriodBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Los primeros proveedores de cada localidad obtienen '
-              '2 meses gratis con todos los beneficios del plan Estándar en OficioApp.',
+              'Aparecen primero en las busquedas de su localidad.',
               style: TextStyle(
                 color: AppColors.available,
                 fontSize: 12,

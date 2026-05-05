@@ -244,7 +244,7 @@ function CodeTab({ stats }: { stats: ReferralStats | null }) {
           <p className="text-text-muted text-xs mt-3 leading-relaxed">
             Comparte tu código por WhatsApp, redes sociales o email. Cuando un
             profesional o negocio sea aprobado usándolo, recibirás{' '}
-            <strong className="text-primary">50 monedas</strong>.
+            <strong className="text-primary">25 monedas</strong>.
           </p>
         </div>
 
@@ -327,7 +327,7 @@ function HowTab({ rewards }: { rewards: ReferralReward[] }) {
           number="03"
           icon={Coins}
           title="Gana monedas"
-          desc="Cuando el admin apruebe su perfil, recibes 50 monedas."
+          desc="Cuando el admin apruebe su perfil, recibes 25 monedas."
         />
       </div>
 

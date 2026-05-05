@@ -8,12 +8,12 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 
-const INVITER_REWARD_COINS = 50;
+const INVITER_REWARD_COINS = 25;
 const INVITED_WELCOME_COINS = 5;
 
 const PLAN_COSTS: Record<string, number> = {
-  ESTANDAR: 500,
-  PREMIUM:  1000,
+  ESTANDAR: 1000,
+  PREMIUM:  2000,
 };
 
 const PLAN_DURATION_MONTHS: Record<string, number> = {

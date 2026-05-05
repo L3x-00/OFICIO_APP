@@ -452,7 +452,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
         if (widget.provider.isVerified &&
             (widget.provider.subscriptionPlan == 'PREMIUM' ||
              widget.provider.subscriptionPlan == 'ESTANDAR' ||
-             widget.provider.subscriptionPlan == 'BASICO'))
+             widget.provider.subscriptionPlan == 'GRATIS')) // Solo mostrar badge de verificado si tiene plan activo
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(

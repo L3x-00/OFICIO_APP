@@ -742,7 +742,7 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
     final planColor = switch (plan.toUpperCase()) {
       'PREMIUM'  => AppColors.premium,
       'ESTANDAR' => AppColors.primary,
-      'BASICO'   => const Color(0xFF7CB9E8),
+      'GRATIS'   => const Color(0xFF7CB9E8),
       _          => c.textMuted,
     };
 

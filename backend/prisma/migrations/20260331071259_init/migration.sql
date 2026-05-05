@@ -5,7 +5,7 @@ CREATE TYPE "UserRole" AS ENUM ('USUARIO', 'PROVEEDOR', 'ADMIN');
 CREATE TYPE "AvailabilityStatus" AS ENUM ('DISPONIBLE', 'OCUPADO', 'CON_DEMORA');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionPlan" AS ENUM ('GRATIS', 'BASICO', 'ESTANDAR', 'PREMIUM');
+CREATE TYPE "SubscriptionPlan" AS ENUM ('GRATIS', 'ESTANDAR', 'PREMIUM');
 
 -- CreateEnum
 CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVA', 'VENCIDA', 'CANCELADA', 'GRACIA');

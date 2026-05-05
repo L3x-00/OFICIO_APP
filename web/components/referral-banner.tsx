@@ -62,7 +62,7 @@ export default function ReferralBanner() {
                 Invita a un profesional y gana{' '}
                 <span className="inline-flex items-baseline gap-1.5 align-baseline">
                   <span className="text-gradient bg-gradient-to-br from-amber to-primary bg-clip-text text-transparent">
-                    50 monedas
+                    25 monedas
                   </span>
                   <Coins
                     size={28}

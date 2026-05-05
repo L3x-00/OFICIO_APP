@@ -29,7 +29,6 @@ export type AvailabilityStatus = (typeof AvailabilityStatus)[keyof typeof Availa
 
 export const SubscriptionPlan = {
   GRATIS: 'GRATIS',
-  BASICO: 'BASICO',
   ESTANDAR: 'ESTANDAR',
   PREMIUM: 'PREMIUM'
 } as const

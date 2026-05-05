@@ -25,7 +25,6 @@ enum AvailabilityStatus {
 
 enum SubscriptionPlan {
   GRATIS // Periodo de gracia (freemium)
-  BASICO
   ESTANDAR
   PREMIUM
 }

@@ -6,8 +6,8 @@ import '../../../provider_dashboard/presentation/providers/dashboard_provider.da
 import 'yape_payment_screen.dart';
 
 const _kPlanPrices = {
-  'ESTANDAR': 30.00,
-  'PREMIUM':  50.00,
+  'ESTANDAR': 19.90,
+  'PREMIUM':  29.90,
 };
 
 const _kPlanFeatures = {

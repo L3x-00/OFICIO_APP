@@ -18,7 +18,6 @@ const C = {
   views:    '#A78BFA',
   premium:  '#F59E0B',
   estandar: '#6366F1',
-  basico:   '#10B981',
   gratis:   '#6B7280',
   approved: '#10B981',
   pending:  '#F97316',
@@ -29,14 +28,12 @@ const C = {
 const PLAN_COLORS: Record<string, string> = {
   PREMIUM:  C.premium,
   ESTANDAR: C.estandar,
-  BASICO:   C.basico,
   GRATIS:   C.gratis,
 };
 
 const PLAN_LABELS: Record<string, string> = {
   PREMIUM:  'Premium',
   ESTANDAR: 'Estándar',
-  BASICO:   'Básico',
   GRATIS:   'Gratis',
 };
 

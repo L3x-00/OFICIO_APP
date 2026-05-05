@@ -49,7 +49,7 @@ class YapePaymentModel {
     return switch (plan.toUpperCase()) {
       'PREMIUM'  => 'Premium',
       'ESTANDAR' => 'Estándar',
-      'BASICO'   => 'Básico',
+      'GRATIS'   => 'gratis',
       _          => plan,
     };
   }

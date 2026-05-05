@@ -13,9 +13,8 @@ interface Props {
 
 const PLAN_OPTIONS = [
   { value: 'GRATIS',   label: '🆓 Gratis',    description: 'Período de gracia' },
-  { value: 'BASICO',   label: '📦 Básico',     description: 'S/ 15/mes' },
-  { value: 'ESTANDAR', label: '✅ Estándar',   description: 'S/ 29/mes' },
-  { value: 'PREMIUM',  label: '⭐ Premium',    description: 'S/ 59/mes' },
+  { value: 'ESTANDAR', label: '✅ Estándar',   description: 'S/ 19.90 /mes' },
+  { value: 'PREMIUM',  label: '⭐ Premium',    description: 'S/ 39.90 /mes' },
 ];
 
 export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Props) {
@@ -167,13 +166,11 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
                 const isSelected = selectedPlan === plan.value;
                 const colorMap: Record<string, string> = {
                   GRATIS:   'border-gray-500/40 text-gray-400',
-                  BASICO:   'border-blue-500/40 text-blue-400',
                   ESTANDAR: 'border-cyan-400/50 text-cyan-400',
                   PREMIUM:  'border-yellow-400/50 text-yellow-400',
                 };
                 const selectedMap: Record<string, string> = {
                   GRATIS:   'bg-gray-500/15 border-gray-400/60',
-                  BASICO:   'bg-blue-500/15 border-blue-400/60',
                   ESTANDAR: 'bg-cyan-400/15 border-cyan-400/60',
                   PREMIUM:  'bg-yellow-400/15 border-yellow-400/60',
                 };

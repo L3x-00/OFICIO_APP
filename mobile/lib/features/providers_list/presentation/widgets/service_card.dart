@@ -11,7 +11,7 @@ import '../../../provider_dashboard/domain/models/service_item_model.dart';
 
 // ─── Helpers de plan ─────────────────────────────────────────
 bool _isPremium(String plan) => plan == 'PREMIUM';
-bool _isStandard(String plan) => plan == 'ESTANDAR' || plan == 'BASICO';
+bool _isStandard(String plan) => plan == 'ESTANDAR' || plan == 'GRATIS';
 
 /// Tarjeta principal de servicio
 class ServiceCard extends StatelessWidget {

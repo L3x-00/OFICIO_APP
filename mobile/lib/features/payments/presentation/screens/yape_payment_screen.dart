@@ -14,8 +14,8 @@ const _kCard    = Color(0xFF2A1236);
 
 // Precios por plan (PEN)
 const _kPrices = {
-  'ESTANDAR': 30.00,
-  'PREMIUM':  50.00,
+  'ESTANDAR': 19.90,
+  'PREMIUM':  39.90,
 };
 
 class YapePaymentScreen extends StatefulWidget {

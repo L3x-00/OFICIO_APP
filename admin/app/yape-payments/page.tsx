@@ -15,7 +15,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 const PLAN_COLORS: Record<string, string> = {
   PREMIUM:  'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
   ESTANDAR: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/30',
-  BASICO:   'text-blue-400 bg-blue-400/10 border-blue-400/30',
+  GRATIS:   'text-blue-400 bg-blue-400/10 border-blue-400/30',
 };
 
 export default function YapePaymentsPage() {

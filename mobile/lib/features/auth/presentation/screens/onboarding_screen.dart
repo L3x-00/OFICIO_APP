@@ -2233,7 +2233,7 @@ class _OnboardingPlansSheet extends StatelessWidget {
                     _OnboardingPlanCard(
                       planId:    'ESTANDAR',
                       title:     'Estándar',
-                      price:     'S/ 29',
+                      price:     'S/ 19.90',
                       priceNote: 'por mes',
                       color:     AppColors.standard,
                       icon:      Icons.verified_rounded,
@@ -2255,7 +2255,7 @@ class _OnboardingPlansSheet extends StatelessWidget {
                     _OnboardingPlanCard(
                       planId:    'PREMIUM',
                       title:     'Premium',
-                      price:     'S/ 59',
+                      price:     'S/ 39.90',
                       priceNote: 'por mes',
                       color:     AppColors.premium,
                       icon:      Icons.workspace_premium_rounded,

@@ -28,7 +28,7 @@ class ProviderModel {
   final String? ownerName;
   /// Avatar del dueño — relevante sobre todo para tipo OFICIO
   final String? ownerAvatarUrl;
-  /// Plan de suscripción: 'GRATIS' | 'BASICO' | 'ESTANDAR' | 'PREMIUM'
+  /// Plan de suscripción: 'GRATIS'| 'ESTANDAR' | 'PREMIUM'
   final String subscriptionPlan;
   /// ID del usuario propietario — para detectar auto-interacción
   final int? userId;

@@ -926,7 +926,7 @@ const _kPlans = [
   _PlanData(
     id: 'ESTANDAR',
     label: 'Estándar',
-    price: 'S/ 29',
+    price: 'S/ 19.90',
     priceNote: 'por mes',
     features: [
       'Badge verificado azul',
@@ -941,7 +941,7 @@ const _kPlans = [
   _PlanData(
     id: 'PREMIUM',
     label: 'Premium',
-    price: 'S/ 59',
+    price: 'S/ 39.90',
     priceNote: 'por mes',
     features: [
       'Badge dorado Premium',
