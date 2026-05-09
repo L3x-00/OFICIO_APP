@@ -3,6 +3,7 @@ import '../../data/dashboard_repository.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 import '../../domain/models/service_item_model.dart';
 import '../../../../features/providers_list/domain/models/review_model.dart';
+import '../../../../core/network/socket_service.dart'; // <--- NUEVO IMPORT
 
 export '../../data/dashboard_repository.dart'
     show ProviderNotification, ProviderNotificationsResult, ProfileImageRef;
@@ -67,6 +68,9 @@ class DashboardProvider extends ChangeNotifier {
 
       _status = DashboardStatus.loaded;
 
+      // --- NUEVO: Unirse a salas de categoría para recibir subastas ---
+      _joinCategoryRooms();
+
       // Cargar notificaciones silenciosamente
       _loadNotificationsSilent();
     } catch (e) {
@@ -75,6 +79,24 @@ class DashboardProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  // ── SOCKET: SALAS DE CATEGORÍA ─────────────────────────────
+
+  /// Emite el evento `joinCategoryRooms` para que el backend coloque al
+  /// socket en la sala `category_${id}` y reciba sólo las nuevas subastas
+  /// de esa categoría. El backend recortó el broadcast global por
+  /// seguridad: si no nos unimos, no llegan notificaciones de subasta.
+  void _joinCategoryRooms() {
+    final categoryId = _profile?.categoryId;
+    if (categoryId == null) {
+      debugPrint('[Dashboard] sin categoryId — no se hace joinCategoryRooms');
+      return;
+    }
+
+    SocketService.instance.emit('joinCategoryRooms', {
+      'categoryIds': [categoryId],
+    });
   }
 
   // Carga notificaciones sin afectar el estado principal

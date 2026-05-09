@@ -105,7 +105,7 @@ export class AdminService {
     prevSince.setDate(prevSince.getDate() - days);
 
     const [
-      allEvents,
+      dailyAgg,
       prevWA, prevCalls, prevViews,
       planDist,
       totalProviders, approvedProviders, pendingProviders, rejectedProviders, activeProviders,
@@ -113,12 +113,18 @@ export class AdminService {
       geoDist,
       topProviderClicks,
     ] = await Promise.all([
-      // Todos los eventos del período actual
-      this.prisma.providerAnalytic.findMany({
-        where: { createdAt: { gte: since } },
-        select: { eventType: true, createdAt: true, providerId: true },
-        orderBy: { createdAt: 'asc' },
-      }),
+      // Agrupado por día + tipo de evento en SQL (evita traer todas las filas)
+      this.prisma.$queryRaw<
+        Array<{ day: string; eventType: string; count: bigint }>
+      >`
+        SELECT TO_CHAR(DATE_TRUNC('day', "createdAt"), 'YYYY-MM-DD') AS "day",
+               "eventType"::text                                   AS "eventType",
+               COUNT(*)                                            AS "count"
+          FROM "provider_analytics"
+         WHERE "createdAt" >= ${since}
+         GROUP BY 1, 2
+         ORDER BY 1 ASC
+      `,
       // Período anterior para comparación
       this.prisma.providerAnalytic.count({ where: { eventType: 'whatsapp_click', createdAt: { gte: prevSince, lt: since } } }),
       this.prisma.providerAnalytic.count({ where: { eventType: 'call_click',     createdAt: { gte: prevSince, lt: since } } }),
@@ -159,15 +165,16 @@ export class AdminService {
       }),
     ]);
 
-    // Construir dailyClicks agrupado por día
+    // Construir dailyClicks a partir del agrupado SQL.
     const byDay: Record<string, { whatsapp: number; calls: number; views: number }> = {};
     let totalWA = 0, totalCalls = 0, totalViews = 0;
-    for (const ev of allEvents) {
-      const day = ev.createdAt.toISOString().split('T')[0];
+    for (const row of dailyAgg) {
+      const day  = row.day;
+      const cnt  = Number(row.count); // bigint → number
       if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0, views: 0 };
-      if (ev.eventType === 'whatsapp_click') { byDay[day].whatsapp++; totalWA++; }
-      if (ev.eventType === 'call_click')     { byDay[day].calls++;    totalCalls++; }
-      if (ev.eventType === 'view')           { byDay[day].views++;    totalViews++; }
+      if (row.eventType === 'whatsapp_click') { byDay[day].whatsapp += cnt; totalWA    += cnt; }
+      else if (row.eventType === 'call_click')     { byDay[day].calls    += cnt; totalCalls += cnt; }
+      else if (row.eventType === 'view')           { byDay[day].views    += cnt; totalViews += cnt; }
     }
 
     // Delta % vs período anterior
@@ -550,23 +557,44 @@ async updateProvider(
   }
 
   // ── HELPER: INVALIDAR CACHÉ DE PROVEEDORES ───────────────
-  // cache-manager v7 + cache-manager-redis-yet puede exponer reset()
-  // directamente o a través del store. Intentamos ambas vías.
+  // Borrado SELECTIVO por prefijo "providers_*" — ya no usamos flushAll
+  // para no purgar caches de otros módulos en el mismo Redis.
   private async clearProvidersCache(): Promise<void> {
+    const PATTERN = 'providers_*';
     try {
-      const cm = this.cacheManager;
-      if (typeof cm?.reset === 'function') {
-        await cm.reset();
-      } else if (typeof cm?.store?.reset === 'function') {
-        await cm.store.reset();
-      } else {
-        // Último recurso: flushAll/flushDb vía cliente Redis directo
-        const client = cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client;
-        if (typeof client?.flushAll === 'function') await client.flushAll();
-        else if (typeof client?.flushDb === 'function') await client.flushDb();
+      const cm     = this.cacheManager;
+      const client =
+        cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client ?? null;
+
+      // Caso ideal: cliente Redis con SCAN (cache-manager-redis-yet expone uno).
+      if (client && typeof client.scanIterator === 'function') {
+        const toDelete: string[] = [];
+        for await (const key of client.scanIterator({ MATCH: PATTERN, COUNT: 200 })) {
+          toDelete.push(key as string);
+        }
+        if (toDelete.length > 0 && typeof client.del === 'function') {
+          await client.del(toDelete);
+        }
+        return;
       }
+
+      // Fallback: KEYS (bloqueante, solo en datasets pequeños).
+      if (client && typeof client.keys === 'function') {
+        const keys: string[] = await client.keys(PATTERN);
+        if (keys.length > 0) {
+          if (typeof client.del === 'function') await client.del(keys);
+          else {
+            for (const k of keys) await cm.del?.(k);
+          }
+        }
+        return;
+      }
+
+      // Último recurso: si el cache-manager no expone client, intentamos
+      // borrar por nombre conocido (lista vacía → no-op). NO hacemos
+      // flushAll para evitar afectar caches no relacionadas.
     } catch {
-      // Si la limpieza falla, el TTL de 30s invalida la caché naturalmente
+      // Si la limpieza falla, el TTL natural (~30s) invalida la caché.
     }
   }
 

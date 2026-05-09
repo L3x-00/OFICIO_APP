@@ -2,3 +2,8 @@ node_modules
 dist
 .env
 *.log
+AUDITORÍA_TÉCNICA.md
+CLAUDE.md
+ARQUITERCTURA_DESPLIEGUE.md
+errores.md
+ESTADO_ACTUAL.md

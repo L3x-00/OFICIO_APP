@@ -7,6 +7,8 @@ import '../../domain/models/user_model.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/socket_service.dart';
+import '../../../../core/services/fcm_service.dart';
+import 'registration_provider.dart';
 
 /// Estado de navegación del usuario
 enum AppNavigationState {
@@ -42,11 +44,20 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
   bool _isLoading = false;
 
-  // Registro pendiente: guardados hasta que el OTP sea verificado
-  String? _pendingRegistrationId;
-  String? _pendingEmail; // para mostrar en pantalla OTP
+  // ── Registro pendiente ───────────────────────────────────────
+  // El estado de "esperando OTP" vive en RegistrationProvider. Lo
+  // adjuntamos vía `attachRegistration` desde main.dart para evitar
+  // ciclos de dependencia y para no acoplar la sesión activa con el
+  // flujo transitorio de registro.
+  RegistrationProvider? _registration;
 
-  String? get pendingEmail => _pendingEmail;
+  void attachRegistration(RegistrationProvider reg) {
+    _registration = reg;
+  }
+
+  /// Compat: getter delegado al RegistrationProvider.
+  String? get pendingEmail => _registration?.pendingEmail;
+  String? get _pendingRegistrationId => _registration?.pendingId;
 
   /// true cuando el servidor notificó que esta cuenta fue desactivada.
   /// _AppRoot escucha este flag para mostrar el diálogo de desactivación.
@@ -159,17 +170,21 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Socket ─────────────────────────────────────────────────
+    // ── Socket ─────────────────────────────────────────────────
 
-  void _connectSocketForUser(int userId) {
+  Future<void> _connectSocketForUser(int userId) async {
     final socket = SocketService.instance;
     // Siempre re-registrar listeners (pueden haber sido limpiados en logout anterior)
     socket.removeDeactivationListener(_handleRemoteDeactivation);
     socket.removeNotificationListener(_handleRemoteNotification);
     socket.addDeactivationListener(_handleRemoteDeactivation);
     socket.addNotificationListener(_handleRemoteNotification);
+    
+    // Obtener el token JWT guardado para autenticar el WebSocket
+    final token = await AuthLocalStorage.getAccessToken();
+    
     // Forzar reconexión con la sala correcta cada vez que cambia el userId
-    socket.reconnectForUser(DioClient.baseUrl, userId);
+    socket.reconnectForUser(DioClient.baseUrl, userId, token ?? '');
   }
 
   /// Callback que el SocketService invoca cuando el servidor emite
@@ -514,8 +529,10 @@ class AuthProvider extends ChangeNotifier {
 
     result.when(
       success: (data) {
-        _pendingRegistrationId = data['pendingId'] as String?;
-        _pendingEmail = email;
+        final pendingId = data['pendingId'] as String?;
+        if (pendingId != null) {
+          _registration?.setPending(pendingId: pendingId, email: email);
+        }
         _needsEmailVerification = true;
       },
       failure: (e) => _error = e.message,
@@ -566,8 +583,7 @@ class AuthProvider extends ChangeNotifier {
       result.when(
         success: (user) {
           _user = user;
-          _pendingRegistrationId = null;
-          _pendingEmail = null;
+          _registration?.clearPendingRegistration();
           _needsEmailVerification = false;
           _needsOnboarding = true;
           _connectSocketForUser(user.id);
@@ -588,21 +604,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Reenvía OTP para registro pendiente.
+  /// Reenvía OTP para el registro pendiente. Delegado a RegistrationProvider.
   Future<bool> resendOtp() async {
-    if (_pendingRegistrationId == null) return false;
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    final result = await _repo.resendOtp(_pendingRegistrationId!);
-    result.when(success: (_) {}, failure: (e) => _error = e.message);
-
-    _isLoading = false;
-    notifyListeners();
-    return result.isSuccess;
+    final reg = _registration;
+    if (reg == null) return false;
+    return reg.resendOtp();
   }
-  
+
 
   /// Registra el perfil de proveedor en el backend y actualiza el estado local.
   /// Devuelve true si se creó con éxito, false si hubo error (ver [error]).
@@ -766,6 +774,12 @@ class AuthProvider extends ChangeNotifier {
     SocketService.instance.removeNotificationListener(_handleRemoteNotification);
     SocketService.instance.disconnect();
 
+    // Limpiar token FCM (backend + Firebase) ANTES de invalidar el access
+    // token, para que la petición DELETE viaje con la cookie/JWT vigente.
+    // Falla silenciosa: si no hay red o la respuesta es 401, igual seguimos
+    // con el logout local.
+    FcmService.instance.clearToken().ignore();
+
     // Limpiar estado local inmediatamente → UI navega a WelcomeScreen sin esperar red
     _user = null;
     _isGuest = false;
@@ -925,10 +939,9 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+  /// Compat: delega al RegistrationProvider adjunto.
   void clearPendingRegistration() {
-    _pendingRegistrationId = null;
-    _pendingEmail = null;
-    notifyListeners();
+    _registration?.clearPendingRegistration();
   }
 
   Future<void> refreshUser() async {

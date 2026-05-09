@@ -1,11 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Coins, Users, TrendingUp, Award, Gift } from 'lucide-react';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+import { Coins, Users, TrendingUp, Award } from 'lucide-react';
 import { getReferralStats, type ReferralStats } from '@/lib/api';
+
+// Recharts pesa ~95kB gz; lo aislamos en un sub-componente con SSR off.
+const ReferralsMonthlyChart = dynamic(
+  () => import('@/components/charts/referrals-monthly-chart'),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ width: '100%', height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+        Cargando gráfico…
+      </div>
+    ),
+  },
+);
 
 export default function ReferralsPage() {
   const [stats, setStats] = useState<ReferralStats | null>(null);
@@ -105,31 +116,7 @@ export default function ReferralsPage() {
         {stats.monthlyInvites.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Aún no hay datos.</p>
         ) : (
-          <div style={{ width: '100%', height: 260 }}>
-            <ResponsiveContainer>
-              <AreaChart data={stats.monthlyInvites}>
-                <defs>
-                  <linearGradient id="invGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#E07B39" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#E07B39" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" stroke="#6B7280" fontSize={11} tickLine={false} />
-                <YAxis stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{
-                    background: 'rgba(21,25,43,0.95)',
-                    border: '1px solid rgba(224,123,57,0.3)',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                  }}
-                  cursor={{ stroke: '#E07B39', strokeOpacity: 0.3 }}
-                />
-                <Area type="monotone" dataKey="count" stroke="#E07B39" strokeWidth={2.5} fill="url(#invGrad)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <ReferralsMonthlyChart data={stats.monthlyInvites} />
         )}
       </section>
 

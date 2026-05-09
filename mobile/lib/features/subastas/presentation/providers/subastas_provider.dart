@@ -117,12 +117,14 @@ class SubastasProvider extends ChangeNotifier {
   }
 
   // ── PROVEEDOR: Cargar oportunidades ──────────────────────────
-  Future<void> loadOpportunities(int providerId) async {
+  // El backend identifica al provider desde el JWT, así que ya no
+  // recibimos providerId aquí.
+  Future<void> loadOpportunities() async {
     _state = SubastasState.loading;
     _error = null;
     notifyListeners();
 
-    final result = await _repo.getOpportunities(providerId);
+    final result = await _repo.getOpportunities();
     result.when(
       success: (data) {
         _opportunities = data;

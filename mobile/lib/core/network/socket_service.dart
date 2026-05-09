@@ -14,7 +14,6 @@ class SocketService {
   static SocketService get instance => _instance;
 
   sio.Socket? _socket;
-  int? _currentUserId;
   final List<void Function(int userId)> _deactivationListeners = [];
   final List<void Function(Map<String, dynamic>)> _notificationListeners = [];
 
@@ -23,22 +22,23 @@ class SocketService {
   bool get isConnected => _socket?.connected ?? false;
 
   // ── Reconectar para un usuario específico (login / cambio de cuenta) ───
-  /// Fuerza desconexión total y reconexión fresca uniendo la sala user_{userId}.
-  void reconnectForUser(String baseUrl, int userId) {
-    _currentUserId = userId;
+  /// Fuerza desconexión total y reconexión fresca.
+  /// AHORA REQUIERE el token JWT para que el backend permita la conexión.
+  void reconnectForUser(String baseUrl, int userId, String token) {
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
-    _connect(baseUrl);
+    _connect(baseUrl, token);
   }
 
   // ── Conectar al servidor (primera vez o tras reconnectForUser) ─────────
-  void connect(String baseUrl) {
+  /// AHORA REQUIERE el token JWT.
+  void connect(String baseUrl, String token) {
     if (_socket != null && _socket!.connected) return;
-    _connect(baseUrl);
+    _connect(baseUrl, token);
   }
 
-  void _connect(String baseUrl) {
+  void _connect(String baseUrl, String token) {
     _socket = sio.io(
       baseUrl,
       sio.OptionBuilder()
@@ -47,16 +47,13 @@ class SocketService {
           .enableReconnection()
           .setReconnectionDelay(2000)
           .setReconnectionAttempts(10)
+          .setAuth({'token': token}) // <--- 🛡️ Enviamos el JWT
           .build(),
     );
 
     _socket!.onConnect((_) {
-      debugPrint('[Socket] Conectado al servidor');
-      // Unirse a la sala del usuario para recibir notificaciones dirigidas
-      if (_currentUserId != null) {
-        _socket!.emit('joinRoom', {'userId': _currentUserId});
-        debugPrint('[Socket] Unido a sala user_$_currentUserId');
-      }
+      debugPrint('[Socket] Conectado al servidor (Autenticado)');
+      // 🛡️ Ya NO emitimos 'joinRoom' manualmente. El backend lo hace automáticamente.
     });
 
     _socket!.onDisconnect((_) {
@@ -99,6 +96,17 @@ class SocketService {
     _socket!.connect();
   }
 
+  // ── Emitir eventos al servidor ────────────────────────────
+  /// Emite un evento genérico al servidor si el socket está conectado.
+  void emit(String event, dynamic data) {
+    if (_socket != null && _socket!.connected) {
+      _socket!.emit(event, data);
+      debugPrint('[Socket] Evento emitido: $event');
+    } else {
+      debugPrint('[Socket] No se pudo emitir $event — socket no conectado');
+    }
+  }
+
   // ── Suscripción a eventos ──────────────────────────────────
   void addDeactivationListener(void Function(int userId) listener) {
     if (!_deactivationListeners.contains(listener)) {
@@ -122,7 +130,6 @@ class SocketService {
 
   // ── Desconectar (logout) ───────────────────────────────────
   void disconnect() {
-    _currentUserId = null;
     _deactivationListeners.clear();
     _notificationListeners.clear();
     _socket?.disconnect();

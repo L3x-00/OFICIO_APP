@@ -80,13 +80,12 @@ export class AuthService {
       console.error(`[EMAIL ERROR] No se pudo enviar OTP a ${data.email}:`, err?.message),
     );
 
-    // Consola para depuración (siempre visible en logs del servidor)
-    console.log('------------------------------------------------');
-    console.log(`🔥 OTP para ${data.email}: ${otpCode}`);
-    console.log(`🆔 PendingID: ${pendingId}`);
-    console.log('------------------------------------------------');
-
+    // Depuración SOLO fuera de producción — nunca loguear OTPs en prod
     if (this.config.get('NODE_ENV') !== 'production') {
+      console.log('------------------------------------------------');
+      console.log(`🔥 OTP para ${data.email}: ${otpCode}`);
+      console.log(`🆔 PendingID: ${pendingId}`);
+      console.log('------------------------------------------------');
       return { pendingId, requiresEmailVerification: true, _devOtpCode: otpCode };
     }
     return { pendingId, requiresEmailVerification: true };
@@ -520,12 +519,11 @@ data: {
       console.error(`[EMAIL ERROR] No se pudo reenviar OTP a ${reg.email}:`, err?.message),
     );
 
-    console.log('------------------------------------------------');
-    console.log(`🔄 [REENVÍO] Nuevo código OTP para ${reg.email}: ${newCode}`);
-    console.log(`🆔 PendingID: ${pendingId}`);
-    console.log('------------------------------------------------');
-
     if (this.config.get('NODE_ENV') !== 'production') {
+      console.log('------------------------------------------------');
+      console.log(`🔄 [REENVÍO] Nuevo código OTP para ${reg.email}: ${newCode}`);
+      console.log(`🆔 PendingID: ${pendingId}`);
+      console.log('------------------------------------------------');
       return { message: 'Nuevo código enviado', _devCode: newCode };
     }
     return { message: 'Nuevo código enviado al email registrado' };

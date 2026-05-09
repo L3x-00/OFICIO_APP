@@ -50,8 +50,15 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // R8 minify + shrinker activos: reduce ~30-40 % el APK.
+            // Reglas en `proguard-rules.pro` mantienen Firebase, Serializables,
+            // FCM y reflection-based classes (Gson, etc.) intactas.
+            isMinifyEnabled   = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }

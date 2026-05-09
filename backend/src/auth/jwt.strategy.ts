@@ -41,18 +41,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Tu cuenta ha sido desactivada');
     }
 
-    // LOG DE DEPURACIÓN (Míralo en la terminal de tu backend)
-    console.log('--- JWT VALIDATE SUCCESS ---');
-    console.log('Payload Role:', payload.role);
-    console.log('DB User Role:', user.role);
-
-    // Devolvemos el objeto que NestJS pondrá en request.user
-   // Devolvemos el objeto que NestJS pondrá en request.user
+    // Devolvemos el objeto que NestJS pondrá en request.user.
     return {
-      userId: user.id, // <--- Volvemos a llamarlo userId para mantener compatibilidad
-      id: user.id,     // <--- Dejamos id también por si acaso (no molesta)
-      email: payload.email,
-      role: user.role, 
+      userId: user.id,
+      id:     user.id,
+      email:  payload.email,
+      role:   user.role,
     };
   }
 }

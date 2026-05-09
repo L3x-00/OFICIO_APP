@@ -66,6 +66,7 @@ export type VerificationStatus = (typeof VerificationStatus)[keyof typeof Verifi
 export const ServiceRequestStatus = {
   OPEN: 'OPEN',
   CLOSED: 'CLOSED',
+  AWARDED: 'AWARDED',
   EXPIRED: 'EXPIRED',
   CANCELLED: 'CANCELLED'
 } as const

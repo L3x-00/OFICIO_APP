@@ -10,6 +10,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/providers/registration_provider.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
@@ -20,22 +21,19 @@ import 'features/favorites/presentation/providers/favorites_provider.dart';
 import 'features/favorites/presentation/screens/favorites_screen.dart';
 import 'features/providers_list/presentation/screens/providers_screen.dart';
 import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
+import 'features/notifications/domain/models/notification_model.dart';
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/notifications/presentation/screens/notifications_screen.dart';
 import 'features/providers_list/presentation/providers/providers_provider.dart';
-
-/// Handler de mensajes en background — debe ser función de nivel superior.
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('[FCM] Mensaje en background: ${message.notification?.title}');
-}
+import 'features/subastas/presentation/providers/subastas_provider.dart';
+import 'features/subastas/presentation/screens/my_requests_screen.dart';
+import 'features/subastas/presentation/screens/oportunidades_tab.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   FcmService.setNavigatorKey(_navigatorKey);
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();
@@ -58,7 +56,18 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: themeProvider),
-          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => RegistrationProvider()),
+          // AuthProvider depende de RegistrationProvider (lo recibe por
+          // attachRegistration). Usamos ChangeNotifierProxyProvider para
+          // bindearlos sin crear ciclos.
+          ChangeNotifierProxyProvider<RegistrationProvider, AuthProvider>(
+            create: (_) => AuthProvider(),
+            update: (_, reg, auth) {
+              auth ??= AuthProvider();
+              auth.attachRegistration(reg);
+              return auth;
+            },
+          ),
           ChangeNotifierProvider(create: (_) => FavoritesProvider()),
           ChangeNotifierProvider(create: (_) => DashboardProvider()),
           ChangeNotifierProvider(create: (_) => NotificationsProvider()),
@@ -138,8 +147,9 @@ class _AppRootState extends State<_AppRoot> {
       // Inicializar FCM una sola vez por sesión
       if (!_fcmInitialized) {
         _fcmInitialized = true;
-        FcmService.onMessageTap = _handleFcmTap;
-        FcmService.instance.initialize(context);
+        FcmService.onMessageTap        = _handleFcmTap;
+        FcmService.onForegroundMessage = _handleFcmInbound;
+        FcmService.instance.initialize();
       }
     } else {
       notifs.clearUser();
@@ -201,11 +211,27 @@ class _AppRootState extends State<_AppRoot> {
     }
   }
 
+  /// Inserta cualquier notificación recibida (foreground/tap) al
+  /// NotificationsProvider para que aparezca en la pantalla "Alertas".
+  void _handleFcmInbound(RemoteMessage message) {
+    if (!mounted) return;
+    final notif = AppNotification.fromSocket({
+      'type':              message.data['type']
+                          ?? message.notification?.title?.toUpperCase()
+                          ?? 'GENERIC',
+      'title':             message.notification?.title ?? message.data['title'] ?? 'Notificación',
+      'body':              message.notification?.body  ?? message.data['body']  ?? '',
+      'targetProfileType': message.data['targetProfileType'],
+    });
+    context.read<NotificationsProvider>().addLocal(notif);
+  }
+
   /// Navega a la pantalla adecuada según los datos de la notificación push.
   void _handleFcmTap(RemoteMessage message) {
     if (!mounted) return;
     final type = message.data['type'] as String?;
     debugPrint('[FCM] Navegando por tipo: $type, data: ${message.data}');
+    final navigator = Navigator.of(context, rootNavigator: true);
     switch (type) {
       case 'NEW_REVIEW':
       case 'PROVIDER_APPROVED':
@@ -213,15 +239,23 @@ class _AppRootState extends State<_AppRoot> {
       case 'PLAN_APROBADO':
       case 'PLAN_RECHAZADO':
         // Abrir perfil del proveedor / panel
-        Navigator.of(context, rootNavigator: true).push(
+        navigator.push(
           MaterialPageRoute(builder: (_) => const ProfileScreen()),
         );
       case 'NEW_OFFER':
+        // Cliente: tiene una nueva oferta en una de sus solicitudes
+        navigator.push(
+          MaterialPageRoute(
+            builder: (_) => ChangeNotifierProvider(
+              create: (_) => SubastasProvider(),
+              child: const MyRequestsScreen(),
+            ),
+          ),
+        );
       case 'OFFER_ACCEPTED':
-        // Navegar a solicitudes de subasta
-        context.read<AuthProvider>(); // asegurar acceso
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        // Proveedor ganador: ir al tab de oportunidades
+        navigator.push(
+          MaterialPageRoute(builder: (_) => const OportunidadesTab()),
         );
       default:
         break;

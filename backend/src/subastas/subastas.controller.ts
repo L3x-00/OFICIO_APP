@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { CreateServiceRequestDto } from './dto/create-service-request.dto.js';
 import { SubmitOfferDto } from './dto/submit-offer.dto.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { ArrivedDto } from './dto/arrived.dto.js';
+import { PaginateRequestsDto } from './dto/paginate-requests.dto.js';
 
 @Controller('subastas')
 @UseGuards(JwtAuthGuard)
@@ -27,10 +29,10 @@ export class SubastasController {
     return this.service.createRequest(req.user.userId, dto);
   }
 
-  // ── CLIENTE: Ver mis solicitudes + sus ofertas ───────────────
+  // ── CLIENTE: Ver mis solicitudes + sus ofertas (paginado) ────
   @Get('requests/mine')
-  getMyRequests(@Request() req) {
-    return this.service.getMyRequests(req.user.userId);
+  getMyRequests(@Request() req, @Query() q: PaginateRequestsDto) {
+    return this.service.getMyRequests(req.user.userId, q.page, q.limit);
   }
 
   // ── CLIENTE: Aceptar oferta ──────────────────────────────────
@@ -40,16 +42,18 @@ export class SubastasController {
   }
 
   // ── PROVEEDOR: Ver oportunidades disponibles ─────────────────
-  @Get('opportunities/:providerId')
-  getOpportunities(@Param('providerId', ParseIntPipe) providerId: number) {
-    return this.service.getOpportunities(providerId);
+  // El providerId NUNCA se acepta desde la URL (era IDOR). Se resuelve
+  // desde el JWT inyectado por JwtAuthGuard.
+  @Get('opportunities/me')
+  getOpportunities(@Request() req) {
+    return this.service.getOpportunitiesByUser(req.user.userId);
   }
 
   // ── PROVEEDOR: Enviar oferta ─────────────────────────────────
+  // El providerId se resuelve internamente desde req.user.userId; el DTO
+  // solo lleva datos de la oferta (no identidad).
   @Post('offers')
   submitOffer(@Request() req, @Body() dto: SubmitOfferDto) {
-    // providerId se resuelve en el servicio buscando por userId + tipo activo
-    // Para simplicidad, el DTO incluye providerId como campo adicional
     return this.service.submitOfferByUser(req.user.userId, dto);
   }
 

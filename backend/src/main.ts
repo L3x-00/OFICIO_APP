@@ -8,6 +8,8 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'node:path';
 import { DiagnosticInterceptor } from './common/interceptors/diagnostic.interceptor.js';
+import helmet from 'helmet';
+import compression from 'compression';
 
 // Sentry debe inicializarse ANTES de crear la app NestJS
 if (process.env.SENTRY_DSN) {
@@ -23,6 +25,17 @@ if (process.env.SENTRY_DSN) {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // 0. HARDENING (helmet + compression) ANTES de CORS
+  // helmet aplica cabeceras de seguridad (CSP relajada para no romper imágenes
+  // firmadas + admin panel); compression activa gzip de respuestas JSON.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,    // evita romper Next.js admin / Flutter assets remotos
+      crossOriginResourcePolicy: { policy: 'cross-origin' }, // permite cargar imágenes desde R2
+    }),
+  );
+  app.use(compression());
+
   // 1. CORS — restrictivo en producción, abierto en desarrollo
   const isProd = process.env.NODE_ENV === 'production';
   const allowedOrigins = isProd
@@ -32,7 +45,7 @@ async function bootstrap() {
     : true;
 
   app.enableCors({
-    origin: true,               // ← permite cualquier origen en desarrollo y producción
+    origin: allowedOrigins,
     credentials: true,
   });
 

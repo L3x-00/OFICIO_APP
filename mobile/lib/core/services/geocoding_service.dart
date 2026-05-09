@@ -40,8 +40,11 @@ class GeocodingService {
         headers: {'User-Agent': _userAgent},
       ).timeout(_timeout);
 
-      debugPrint('[Geocoding] Status: ${response.statusCode}');
-      debugPrint('[Geocoding] Body: ${response.body}');
+      // El body de Nominatim puede pesar varios KB. Solo loguear en debug.
+      if (kDebugMode) {
+        debugPrint('[Geocoding] Status: ${response.statusCode}');
+        debugPrint('[Geocoding] Body: ${response.body}');
+      }
 
       if (response.statusCode != 200) return null;
 

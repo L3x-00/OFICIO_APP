@@ -48,9 +48,10 @@ enum VerificationStatus {
 }
 
 enum ServiceRequestStatus {
-  OPEN // Recibiendo ofertas
-  CLOSED // Usuario eligió un proveedor
-  EXPIRED // No se eligió en 24/48h
+  OPEN      // Recibiendo ofertas
+  CLOSED    // Cupo lleno (5 ofertas) — ya no acepta nuevas, espera elección
+  AWARDED   // Usuario aceptó una oferta y se adjudicó
+  EXPIRED   // No se eligió en 24/48h
   CANCELLED // Usuario canceló
 }
 
@@ -131,6 +132,7 @@ model OtpCode {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("otp_codes")
 }
 
@@ -143,6 +145,7 @@ model RefreshToken {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("refresh_tokens")
 }
 
@@ -351,6 +354,7 @@ model PlanRequest {
 
   @@index([providerId])
   @@index([status])
+  @@index([providerId, status])
   @@map("plan_requests")
 }
 
@@ -479,6 +483,7 @@ model AdminNotification {
 
   provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
+  @@index([providerId, isRead])
   @@map("admin_notifications")
 }
 
@@ -610,6 +615,8 @@ model ServiceRequest {
   @@index([userId])
   @@index([status])
   @@index([categoryId])
+  @@index([status, categoryId, expiresAt])
+  @@index([status, expiresAt])
   @@map("service_requests")
 }
 
@@ -632,6 +639,7 @@ model Offer {
   @@unique([serviceRequestId, providerId])
   @@index([serviceRequestId])
   @@index([providerId])
+  @@index([serviceRequestId, status])
   @@map("offers")
 }
 

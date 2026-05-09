@@ -9,6 +9,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../provider_dashboard/data/dashboard_repository.dart';
 import '../../../providers_list/data/providers_repository.dart';
 import '../providers/subastas_provider.dart';
 
@@ -136,10 +137,26 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     // Leer ubicación del usuario para enriquecer la solicitud
     final authUser = context.read<AuthProvider>().user;
 
+    // Si hay foto, primero la subimos a MinIO/R2 y obtenemos la URL pública.
+    // Reutilizamos el flujo del perfil del proveedor (DashboardRepository).
+    String? photoUrl;
+    if (_photo != null) {
+      try {
+        photoUrl = await DashboardRepository()
+            .uploadProviderPhotoFile(XFile(_photo!.path));
+      } catch (e) {
+        if (!mounted) return;
+        context.showErrorSnack('No pudimos subir la foto. Inténtalo otra vez.');
+        return;
+      }
+    }
+
+    if (!mounted) return;
     final prov = context.read<SubastasProvider>();
     final ok = await prov.createRequest(
       categoryId: _selectedCategoryId!,
       description: _descCtrl.text.trim(),
+      photoUrl: photoUrl,
       budgetMin: double.tryParse(_budgetMinCtrl.text),
       budgetMax: double.tryParse(_budgetMaxCtrl.text),
       desiredDate: _desiredDate,

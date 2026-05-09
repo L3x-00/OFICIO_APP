@@ -156,6 +156,15 @@ export class UsersService {
     return { success: true };
   }
 
+  // ── BORRAR TOKEN FCM (logout) ────────────────────────────
+  async clearFcmToken(userId: number) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data:  { fcmToken: null },
+    });
+    return { success: true };
+  }
+
   // ── CAMBIAR CONTRASEÑA (usuario autenticado) ─────────────
   async changePassword(
     userId: number,

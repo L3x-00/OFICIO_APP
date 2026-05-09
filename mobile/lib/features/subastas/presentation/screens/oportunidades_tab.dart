@@ -22,10 +22,12 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
   }
 
   void _load() {
+    // El backend resuelve el provider activo desde el JWT.
+    // Solo cargamos si el dashboard ya tiene un perfil cargado, para
+    // evitar pegarle al endpoint cuando aún no hay sesión válida.
     final dash = context.read<DashboardProvider>();
-    final providerId = dash.profile?.id;
-    if (providerId != null) {
-      context.read<SubastasProvider>().loadOpportunities(providerId);
+    if (dash.profile?.id != null) {
+      context.read<SubastasProvider>().loadOpportunities();
     }
   }
 

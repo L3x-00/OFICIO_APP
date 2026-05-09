@@ -13,6 +13,9 @@ class DashboardProfileModel {
   final bool hasCleanRecord;
   final String type; // OFICIO | NEGOCIO
   final bool hasHomeService; // solo OFICIO: atiende a domicilio
+  /// ID de la categoría del proveedor — necesario para `joinCategoryRooms`
+  /// del WebSocket (recibe notificaciones solo para esta categoría).
+  final int? categoryId;
   final String? categoryName;
   final String? localityName;
   final List<ProfileImage> images;
@@ -34,6 +37,7 @@ class DashboardProfileModel {
     required this.hasCleanRecord,
     required this.type,
     this.hasHomeService = false,
+    this.categoryId,
     this.categoryName,
     this.localityName,
     required this.images,
@@ -59,6 +63,10 @@ class DashboardProfileModel {
       hasCleanRecord: json['hasCleanRecord'] as bool? ?? false,
       type:           json['type'] as String? ?? 'OFICIO',
       hasHomeService: json['hasHomeService'] as bool? ?? false,
+      // El backend (`provider-profile/me`) anida la categoría como
+      // `category: { id, name, slug }`. Como fallback aceptamos también
+      // `categoryId` plano en la raíz por si una respuesta lo trae así.
+      categoryId:    (json['category']?['id'] as int?) ?? json['categoryId'] as int?,
       categoryName:  json['category']?['name'] as String?,
       localityName:  json['locality']?['name'] as String?,
       images:        (json['images'] as List?)
@@ -97,6 +105,7 @@ class DashboardProfileModel {
       hasCleanRecord: hasCleanRecord,
       type:           type,
       hasHomeService: hasHomeService  ?? this.hasHomeService,
+      categoryId:     categoryId,
       categoryName:   categoryName,
       localityName:   localityName,
       images:         images          ?? this.images,

@@ -341,48 +341,4 @@ export class ProvidersService {
       orderBy: { createdAt: 'desc' }
     });
   }
-  // backend/src/providers/providers.service.ts
-
-async getAnalyticsSummary(days: number) {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
-
-  // 1. Obtenemos los eventos de la base de datos (clicks en whatsapp/llamadas)
-  // Asumiendo que tienes una tabla 'ProviderEvent' o similar del Hito 4
-  const events = await this.prisma.providerAnalytic.findMany({
-      where: {
-        createdAt: { gte: startDate },
-      },
-      select: {
-        eventType: true,
-        createdAt: true,
-      },
-    });
-
-    // 2. Agrupamos los datos por día para la gráfica
-    const dailyData: Record<string, { date: string; whatsapp: number; calls: number }> = {};
-    
-    // Inicializamos los días con 0 para que la gráfica no tenga huecos
-    for (let i = 0; i < days; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      dailyData[dateStr] = { date: dateStr, whatsapp: 0, calls: 0 };
-    }
-
-    // Llenamos con datos reales
-    events.forEach(event => {
-      const dateStr = event.createdAt.toISOString().split('T')[0];
-      if (dailyData[dateStr]) {
-        if (event.eventType === 'WHATSAPP') dailyData[dateStr].whatsapp++;
-        if (event.eventType === 'CALL') dailyData[dateStr].calls++;
-      }
-    });
-
-    // Devolvemos el array ordenado por fecha
-    return {
-      dailyClicks: Object.values(dailyData as Record<string, { date: string; whatsapp: number; calls: number }>)
-        .sort((a, b) => a.date.localeCompare(b.date))
-    };
-  }
 }

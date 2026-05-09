@@ -7,10 +7,22 @@ import {
   CheckCircle, XCircle, Edit, Star, Trash2, Loader2, Crown, X,
 } from 'lucide-react';
 import { StatusBadge } from './status-badge';
-import { CreateProviderModal } from './create-provider-modal';
-import { EditProviderModal } from './edit-provider-modal';
-import { ProviderDetailModal } from './provider-detail-modal';
+import dynamic from 'next/dynamic';
 import { getProviders, deleteProvider, toggleVisibility, promotePlan, Provider } from '@/lib/api';
+
+// Modales: carga diferida (no se incluyen en el bundle inicial de la lista).
+const CreateProviderModal = dynamic(
+  () => import('./create-provider-modal').then((m) => m.CreateProviderModal),
+  { ssr: false },
+);
+const EditProviderModal = dynamic(
+  () => import('./edit-provider-modal').then((m) => m.EditProviderModal),
+  { ssr: false },
+);
+const ProviderDetailModal = dynamic(
+  () => import('./provider-detail-modal').then((m) => m.ProviderDetailModal),
+  { ssr: false },
+);
 import { toast } from 'sonner';
 
 interface Props {

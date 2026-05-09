@@ -52,7 +52,14 @@
       "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma migrate dev --name add_referrals_and_coins --create-only)",
       "Bash(grep -n \"register\\\\|registerProfessional\\\\|registerBusiness\\\\|api\\\\\\\\.register\\\\|formData\\\\\\\\[\" c:/Users/Usuario/oficio_app/mobile/lib/features/auth/presentation/screens/onboarding_screen.dart)",
       "Bash(grep -n \"DateFormat\\\\|fmt\\\\\\\\.format\\\\|fmt = \" c:/Users/Usuario/oficio_app/mobile/lib/features/referrals/presentation/screens/referral_screen.dart)",
-      "Bash(grep -n \"API_BASE\\\\|adminApi\\\\|fetchAdmin\\\\|api\\\\\\\\.get\\\\\\\\|export const\" c:/Users/Usuario/oficio_app/admin/lib/api.ts)"
+      "Bash(grep -n \"API_BASE\\\\|adminApi\\\\|fetchAdmin\\\\|api\\\\\\\\.get\\\\\\\\|export const\" c:/Users/Usuario/oficio_app/admin/lib/api.ts)",
+      "Bash(grep -n \"console\\\\\\\\.log\\\\|console\\\\\\\\.warn\\\\|console\\\\\\\\.error\\\\|pendingId\\\\|otp.*code\\\\|NODE_ENV\" c:/Users/Usuario/oficio_app/backend/src/auth/auth.service.ts)",
+      "Bash(grep -E \"main\\\\\\\\.ts|auth\\\\\\\\.service|jwt\\\\\\\\.strategy|helmet|compression\")",
+      "Bash(grep -v \"spec\\\\\\\\.ts\")",
+      "Bash(grep -rn \"service\\\\\\\\.getOpportunities\\\\|subastasService\\\\\\\\.getOpportunities\\\\|subastas\\\\\\\\.getOpportunities\" c:/Users/Usuario/oficio_app/backend/src/)",
+      "Bash(grep -rn \"from 'xlsx'\\\\|require\\\\\\\\\\('xlsx'\\\\|XLSX\\\\\\\\.\" c:/Users/Usuario/oficio_app/admin/ --include='*.ts' --include='*.tsx')",
+      "Bash(grep -rn \"auth\\\\\\\\.pendingEmail\\\\|auth\\\\\\\\.resendOtp\\\\|auth\\\\\\\\.clearPendingRegistration\\\\|\\\\\\\\.pendingEmail\\\\|\\\\\\\\.resendOtp\\\\|\\\\\\\\.clearPendingRegistration\" c:/Users/Usuario/oficio_app/mobile/lib)",
+      "Bash(grep -n \"_joinCategoryRooms\\\\|joinCategoryRooms\\\\|categoryId\\\\|category\\\\\\\\?\\\\\\\\.id\" c:/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/providers/dashboard_provider.dart)"
     ]
   }
 }

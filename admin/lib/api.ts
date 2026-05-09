@@ -262,51 +262,75 @@ async function fetchCSVBlob(endpoint: string): Promise<Blob> {
 export const exportUsersCSV    = () => fetchCSVBlob('/admin/reports/export/users');
 export const exportProvidersCSV = () => fetchCSVBlob('/admin/reports/export/providers');
 
-// Excel helpers (requires xlsx package)
+// Excel helpers (usan exceljs — XLSX puro JS, sin dependencias nativas).
+async function downloadXlsx(
+  sheetName: string,
+  fileName: string,
+  rows: Array<Record<string, unknown>>,
+): Promise<void> {
+  const ExcelJS = (await import('exceljs')).default;
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(sheetName);
+
+  if (rows.length === 0) {
+    ws.addRow(['(sin datos)']);
+  } else {
+    const headers = Object.keys(rows[0]);
+    ws.columns = headers.map((h) => ({ header: h, key: h, width: 22 }));
+    for (const row of rows) ws.addRow(row);
+    ws.getRow(1).font = { bold: true };
+  }
+
+  const buf  = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function exportUsersExcel(): Promise<void> {
-  const XLSX = await import('xlsx');
-  const data  = await fetchApi<{ data: any[] }>('/admin/users?page=1&limit=10000');
-  const rows  = data.data.map((u: any) => ({
-    ID:          u.id,
-    Nombre:      u.firstName,
-    Apellido:    u.lastName,
-    Email:       u.email,
-    Rol:         u.role,
-    Activo:      u.isActive ? 'Sí' : 'No',
-    Registro:    new Date(u.createdAt).toLocaleDateString('es-PE'),
-    Negocio:     u.provider?.businessName ?? '',
+  const data = await fetchApi<{ data: any[] }>('/admin/users?page=1&limit=10000');
+  const rows = data.data.map((u: any) => ({
+    ID:           u.id,
+    Nombre:       u.firstName,
+    Apellido:     u.lastName,
+    Email:        u.email,
+    Rol:          u.role,
+    Activo:       u.isActive ? 'Sí' : 'No',
+    Registro:     new Date(u.createdAt).toLocaleDateString('es-PE'),
+    Negocio:      u.provider?.businessName ?? '',
     Verificación: u.provider?.verificationStatus ?? '',
-    Reseñas:     u._count?.reviews ?? 0,
+    Reseñas:      u._count?.reviews ?? 0,
   }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Usuarios');
-  XLSX.writeFile(wb, 'usuarios.xlsx');
+  await downloadXlsx('Usuarios', 'usuarios.xlsx', rows);
 }
 
 export async function exportProvidersExcel(): Promise<void> {
-  const XLSX = await import('xlsx');
-  const data  = await fetchApi<{ data: any[] }>('/admin/providers?page=1&limit=10000');
-  const rows  = data.data.map((p: any) => ({
-    ID:             p.id,
-    Negocio:        p.businessName,
-    Email:          p.user?.email ?? '',
-    Titular:        `${p.user?.firstName ?? ''} ${p.user?.lastName ?? ''}`.trim(),
-    Teléfono:       p.phone,
-    Tipo:           p.type,
-    Categoría:      p.category?.name ?? '',
-    Localidad:      p.locality?.name ?? '',
-    Calificación:   p.averageRating,
-    Reseñas:        p.totalReviews ?? 0,
-    Verificado:     p.isVerified ? 'Sí' : 'No',
-    Estado:         p.verificationStatus,
-    Plan:           p.subscription?.plan ?? 'GRATIS',
-    Suscripción:    p.subscription?.status ?? '',
+  const data = await fetchApi<{ data: any[] }>('/admin/providers?page=1&limit=10000');
+  const rows = data.data.map((p: any) => ({
+    ID:           p.id,
+    Negocio:      p.businessName,
+    Email:        p.user?.email ?? '',
+    Titular:      `${p.user?.firstName ?? ''} ${p.user?.lastName ?? ''}`.trim(),
+    Teléfono:     p.phone,
+    Tipo:         p.type,
+    Categoría:    p.category?.name ?? '',
+    Localidad:    p.locality?.name ?? '',
+    Calificación: p.averageRating,
+    Reseñas:      p.totalReviews ?? 0,
+    Verificado:   p.isVerified ? 'Sí' : 'No',
+    Estado:       p.verificationStatus,
+    Plan:         p.subscription?.plan ?? 'GRATIS',
+    Suscripción:  p.subscription?.status ?? '',
   }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Proveedores');
-  XLSX.writeFile(wb, 'proveedores.xlsx');
+  await downloadXlsx('Proveedores', 'proveedores.xlsx', rows);
 }
 
 // ── CATEGORÍAS ────────────────────────────────────────────

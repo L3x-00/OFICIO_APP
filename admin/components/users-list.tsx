@@ -6,8 +6,13 @@ import {
   ShieldCheck, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { getUsers, deleteUser, updateUserStatus, UserItem } from '@/lib/api';
-import { UserDetailModal } from './user-detail-modal';
+import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
+
+const UserDetailModal = dynamic(
+  () => import('./user-detail-modal').then((m) => m.UserDetailModal),
+  { ssr: false },
+);
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   USUARIO:    { label: 'Cliente',      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },

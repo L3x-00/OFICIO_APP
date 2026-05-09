@@ -6,33 +6,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
-import { extname } from 'node:path';
 import { MinioService } from '../common/minio.service.js';
-
-const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+import { memOpts } from '../common/multer-image.config.js';
 
 const FOLDERS = {
   reviewEvidence: 'reviews/evidence',
   provider:       'providers/gallery',
   paymentVoucher: 'payments/vouchers',
 } as const;
-
-function imageFilter(_req: any, file: Express.Multer.File, cb: any) {
-  if (!file.mimetype.startsWith('image/')) {
-    cb(new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP)'), false);
-    return;
-  }
-  const ext = extname(file.originalname).toLowerCase();
-  if (!ALLOWED_EXTENSIONS.includes(ext)) {
-    cb(new BadRequestException(`Extensión no permitida. Usa: ${ALLOWED_EXTENSIONS.join(', ')}`), false);
-    return;
-  }
-  cb(null, true);
-}
-
-const memOpts = { storage: memoryStorage(), fileFilter: imageFilter, limits: { fileSize: MAX_SIZE } };
 
 @Controller('upload')
 export class UploadController {

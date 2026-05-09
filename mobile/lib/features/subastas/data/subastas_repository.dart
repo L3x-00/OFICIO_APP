@@ -68,9 +68,11 @@ class SubastasRepository {
 
   // ── PROVEEDOR ─────────────────────────────────────────────────
 
-  Future<ApiResult<List<OpportunityModel>>> getOpportunities(int providerId) async {
+  /// El backend resuelve el provider desde el JWT — ya no aceptamos
+  /// providerId en la URL para evitar IDOR.
+  Future<ApiResult<List<OpportunityModel>>> getOpportunities() async {
     try {
-      final res = await _dio.get('/subastas/opportunities/$providerId');
+      final res = await _dio.get('/subastas/opportunities/me');
       final list = (res.data as List)
           .map((j) => OpportunityModel.fromJson(j as Map<String, dynamic>))
           .toList();

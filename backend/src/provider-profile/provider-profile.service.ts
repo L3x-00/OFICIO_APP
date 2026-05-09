@@ -130,15 +130,43 @@ export class ProviderProfileService {
 
   // ── IMÁGENES DEL PROVEEDOR ───────────────────────────────
 
+  /**
+   * Límite máximo de fotos por plan de suscripción del proveedor.
+   * GRATIS=3, ESTANDAR=6, PREMIUM=10.
+   */
+  private static readonly PHOTO_LIMITS: Record<string, number> = {
+    GRATIS:   3,
+    ESTANDAR: 6,
+    PREMIUM:  10,
+  };
+
   async addImage(userId: number, url: string, isCover = false, type?: string) {
     const provider = await this.findProviderByUser(userId, type);
-    const existingCount = await this.prisma.providerImage.count({
-      where: { providerId: provider.id },
-    });
-    if (existingCount >= 4) {
-      throw new BadRequestException('Máximo 4 fotos permitidas');
+
+    const [existingCount, subscription] = await Promise.all([
+      this.prisma.providerImage.count({ where: { providerId: provider.id } }),
+      this.prisma.subscription.findUnique({
+        where:  { providerId: provider.id },
+        select: { plan: true, status: true },
+      }),
+    ]);
+
+    // Si la suscripción está inactiva o no existe, aplicamos el límite GRATIS.
+    const planKey =
+      subscription &&
+      ['ACTIVA', 'GRACIA'].includes(subscription.status) &&
+      ProviderProfileService.PHOTO_LIMITS[subscription.plan]
+        ? subscription.plan
+        : 'GRATIS';
+    const limit = ProviderProfileService.PHOTO_LIMITS[planKey];
+
+    if (existingCount >= limit) {
+      throw new BadRequestException(
+        `Máximo ${limit} fotos permitidas en el plan ${planKey}.`,
+      );
     }
-    // La primera imagen sube automáticamente como portada
+
+    // La primera imagen sube automáticamente como portada.
     const shouldBeCover = isCover || existingCount === 0;
     return this.prisma.providerImage.create({
       data: {

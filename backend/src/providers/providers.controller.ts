@@ -73,12 +73,6 @@ export class ProvidersController {
     return this.providersService.getGraceProviders();
   }
 
-  @Get('admin/analytics')
-  async getAnalytics(@Query('days') days: string) {
-    const daysNum = days ? parseInt(days) : 30;
-    return this.providersService.getAnalyticsSummary(daysNum);
-  }
-
   // GET /providers/:id
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {

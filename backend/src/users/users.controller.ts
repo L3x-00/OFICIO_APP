@@ -1,31 +1,14 @@
 import {
-  Controller, Get, Patch, Body, UseGuards, Request,
+  Controller, Get, Patch, Delete, Body, UseGuards, Request,
   UseInterceptors, UploadedFile, BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
-import { extname } from 'node:path';
 import { UsersService } from './users.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { MinioService } from '../common/minio.service.js';
-
-const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
-const MAX_SIZE = 5 * 1024 * 1024;
-
-function imageFilter(_req: any, file: Express.Multer.File, cb: any) {
-  if (!file.mimetype.startsWith('image/')) {
-    cb(new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP)'), false);
-    return;
-  }
-  const ext = extname(file.originalname).toLowerCase();
-  if (!ALLOWED_EXTENSIONS.includes(ext)) {
-    cb(new BadRequestException(`Extensión no permitida. Usa: ${ALLOWED_EXTENSIONS.join(', ')}`), false);
-    return;
-  }
-  cb(null, true);
-}
+import { memOpts } from '../common/multer-image.config.js';
 
 @Controller('users')
 export class UsersController {
@@ -63,16 +46,17 @@ export class UsersController {
     return this.usersService.saveFcmToken(req.user.userId, token);
   }
 
+  // DELETE /users/me/device-token — invalida el token al hacer logout
+  @UseGuards(JwtAuthGuard)
+  @Delete('me/device-token')
+  clearDeviceToken(@Request() req: any) {
+    return this.usersService.clearFcmToken(req.user.userId);
+  }
+
   // PATCH /users/profile-picture
   @UseGuards(JwtAuthGuard)
   @Patch('profile-picture')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage:    memoryStorage(),
-      fileFilter: imageFilter,
-      limits:     { fileSize: MAX_SIZE },
-    }),
-  )
+  @UseInterceptors(FileInterceptor('avatar', memOpts))
   async updateProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
     const avatarUrl = await this.minio.uploadFile(file.buffer, file.originalname, 'clients/profiles');

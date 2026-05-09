@@ -12,7 +12,12 @@ import {
   markAllNotificationsRead,
   NotificationItem,
 } from '@/lib/api';
-import { NotificationDetailModal } from './notification-detail-modal';
+import dynamic from 'next/dynamic';
+
+const NotificationDetailModal = dynamic(
+  () => import('./notification-detail-modal').then((m) => m.NotificationDetailModal),
+  { ssr: false },
+);
 
 const TYPE_CONFIG: Record<string, { icon: any; label: string; color: string; bg: string; border: string }> = {
   APROBADO: {

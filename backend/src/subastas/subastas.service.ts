@@ -13,10 +13,11 @@ import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { ArrivedDto } from './dto/arrived.dto.js';
 
 // Prisma enum values — kept as string constants so the module compiles
-// before `prisma generate` is run after the migration.
+// before `prisma generate` is run after la nueva migration.
 const ServiceRequestStatus = {
   OPEN:      'OPEN',
-  CLOSED:    'CLOSED',
+  CLOSED:    'CLOSED',     // Cupo lleno (5 ofertas) — sigue mostrándose para que el usuario elija
+  AWARDED:   'AWARDED',    // Usuario aceptó una oferta y se adjudicó
   EXPIRED:   'EXPIRED',
   CANCELLED: 'CANCELLED',
 } as const;
@@ -89,34 +90,53 @@ export class SubastasService {
   }
 
   // ── OBTENER SOLICITUDES ACTIVAS (usuario cliente) ────────────
-  async getMyRequests(userId: number) {
-    return this.prisma.serviceRequest.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        category: { select: { id: true, name: true, iconUrl: true } },
-        offers: {
-          include: {
-            provider: {
-              select: {
-                id: true,
-                businessName: true,
-                averageRating: true,
-                totalReviews: true,
-                isTrusted: true,
-                images: { where: { isCover: true }, select: { url: true } },
-                user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+  async getMyRequests(userId: number, page = 1, limit = 10) {
+    const safePage  = Math.max(1, page);
+    const safeLimit = Math.min(50, Math.max(1, limit));
+    const skip      = (safePage - 1) * safeLimit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.serviceRequest.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: safeLimit,
+        include: {
+          category: { select: { id: true, name: true, iconUrl: true } },
+          offers: {
+            include: {
+              provider: {
+                select: {
+                  id: true,
+                  businessName: true,
+                  averageRating: true,
+                  totalReviews: true,
+                  isTrusted: true,
+                  images: { where: { isCover: true }, select: { url: true } },
+                  user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+                },
               },
             },
+            orderBy: { price: 'asc' },
           },
-          orderBy: { price: 'asc' },
         },
-      },
-    });
+      }),
+      this.prisma.serviceRequest.count({ where: { userId } }),
+    ]);
+
+    return {
+      data,
+      total,
+      page: safePage,
+      lastPage: Math.max(1, Math.ceil(total / safeLimit)),
+    };
   }
 
   // ── OPORTUNIDADES PARA PROVEEDOR ─────────────────────────────
-  async getOpportunities(providerId: number) {
+  // PRIVADO a propósito: el id del provider NUNCA debe llegar desde la
+  // request. Acceso autorizado vía getOpportunitiesByUser() que lo deriva
+  // del JWT.
+  private async getOpportunities(providerId: number) {
     // Obtener datos del proveedor para filtrar por ubicación y categoría
     const provider = await this.prisma.provider.findUnique({
       where: { id: providerId },
@@ -169,65 +189,81 @@ export class SubastasService {
     }));
   }
 
-  // ── ENVIAR OFERTA ────────────────────────────────────────────
+  // ── ENVIAR OFERTA (transacción atómica) ─────────────────────
   async submitOffer(providerId: number, dto: SubmitOfferDto) {
-    const request = await this.prisma.serviceRequest.findUnique({
-      where: { id: dto.serviceRequestId },
-      include: { _count: { select: { offers: true } } },
-    });
+    // Toda la lógica de validación + creación + cierre debe ejecutarse en una
+    // sola transacción para evitar race conditions (cupo) y dobles ofertas.
+    const { offer, requestUserId } = await this.prisma.$transaction(async (tx) => {
+      const request = await tx.serviceRequest.findUnique({
+        where: { id: dto.serviceRequestId },
+      });
 
-    if (!request) throw new NotFoundException('Solicitud no encontrada');
-    if (request.status !== ServiceRequestStatus.OPEN)
-      throw new BadRequestException('La solicitud ya no está activa');
-    if (request._count.offers >= request.maxOffers)
-      throw new BadRequestException('Esta solicitud ya alcanzó el máximo de ofertas');
-    if (new Date() > request.expiresAt)
-      throw new BadRequestException('La solicitud ha expirado');
+      if (!request) throw new NotFoundException('Solicitud no encontrada');
+      if (request.status !== ServiceRequestStatus.OPEN)
+        throw new BadRequestException('La solicitud ya no está activa');
+      if (new Date() > request.expiresAt)
+        throw new BadRequestException('La solicitud ha expirado');
 
-    // Verificar que no tenga oferta previa
-    const existing = await this.prisma.offer.findUnique({
-      where: { serviceRequestId_providerId: { serviceRequestId: dto.serviceRequestId, providerId } },
-    });
-    if (existing) throw new BadRequestException('Ya enviaste una oferta para esta solicitud');
+      // Cupo: contar dentro de la transacción para que dos providers
+      // simultáneos no superen el límite.
+      const offersCount = await tx.offer.count({
+        where: { serviceRequestId: dto.serviceRequestId },
+      });
+      if (offersCount >= request.maxOffers)
+        throw new BadRequestException('Esta solicitud ya alcanzó el máximo de ofertas');
 
-    const offer = await this.prisma.offer.create({
-      data: {
-        serviceRequestId: dto.serviceRequestId,
-        providerId,
-        price: dto.price,
-        message: dto.message,
-      },
-      include: {
-        provider: {
-          select: {
-            businessName: true,
-            averageRating: true,
-            isTrusted: true,
-            user: { select: { avatarUrl: true } },
+      // Verificar que el provider no tenga oferta previa
+      const existing = await tx.offer.findUnique({
+        where: {
+          serviceRequestId_providerId: {
+            serviceRequestId: dto.serviceRequestId,
+            providerId,
           },
         },
-      },
+      });
+      if (existing)
+        throw new BadRequestException('Ya enviaste una oferta para esta solicitud');
+
+      const created = await tx.offer.create({
+        data: {
+          serviceRequestId: dto.serviceRequestId,
+          providerId,
+          price: dto.price,
+          message: dto.message,
+        },
+        include: {
+          provider: {
+            select: {
+              businessName: true,
+              averageRating: true,
+              isTrusted: true,
+              user: { select: { avatarUrl: true } },
+            },
+          },
+        },
+      });
+
+      // Cerrar la solicitud si la oferta recién creada llenó el cupo
+      if (offersCount + 1 >= request.maxOffers) {
+        await tx.serviceRequest.update({
+          where: { id: dto.serviceRequestId },
+          data: { status: ServiceRequestStatus.CLOSED },
+        });
+      }
+
+      return { offer: created, requestUserId: request.userId };
     });
 
-    // Cerrar la solicitud si alcanzó el límite
-    const newCount = request._count.offers + 1;
-    if (newCount >= request.maxOffers) {
-      await this.prisma.serviceRequest.update({
-        where: { id: dto.serviceRequestId },
-        data: { status: ServiceRequestStatus.CLOSED },
-      });
-    }
-
-    // Notificar al usuario que tiene una nueva oferta
+    // Notificaciones FUERA de la transacción para no alargar el lock.
     this.events.emitNotification({
       type: 'NEW_OFFER',
       title: '¡Nueva oferta recibida!',
       body: `${offer.provider.businessName} ofreció S/ ${dto.price.toFixed(2)}`,
-      targetUserId: request.userId,
+      targetUserId: requestUserId,
     });
 
     this.push.sendToUser(
-      request.userId,
+      requestUserId,
       '¡Nueva oferta recibida!',
       `${offer.provider.businessName} ofreció S/ ${dto.price.toFixed(2)}`,
       { type: 'NEW_OFFER', requestId: String(dto.serviceRequestId) },
@@ -238,44 +274,68 @@ export class SubastasService {
 
   // ── ACEPTAR OFERTA (transacción atómica) ─────────────────────
   async acceptOffer(userId: number, dto: AcceptOfferDto) {
-    const offer = await this.prisma.offer.findUnique({
-      where: { id: dto.offerId },
-      include: { serviceRequest: true },
-    });
+    const winnerProviderId = await this.prisma.$transaction(async (tx) => {
+      const offer = await tx.offer.findUnique({
+        where: { id: dto.offerId },
+        include: { serviceRequest: true },
+      });
 
-    if (!offer) throw new NotFoundException('Oferta no encontrada');
-    if (offer.serviceRequest.userId !== userId)
-      throw new ForbiddenException('No tienes permiso para aceptar esta oferta');
-    if (offer.serviceRequest.status !== ServiceRequestStatus.OPEN &&
-        offer.serviceRequest.status !== ServiceRequestStatus.CLOSED)
-      throw new BadRequestException('Esta solicitud ya no permite cambios');
+      if (!offer) throw new NotFoundException('Oferta no encontrada');
+      if (offer.serviceRequest.userId !== userId)
+        throw new ForbiddenException('No tienes permiso para aceptar esta oferta');
 
-    // Transacción atómica
-    await this.prisma.$transaction([
-      // 1. Aceptar oferta elegida
-      this.prisma.offer.update({
+      // Solo se permite aceptar si la solicitud está OPEN (todavía recibe
+      // ofertas) o CLOSED (cupo lleno, esperando elección). Cualquier otro
+      // estado (AWARDED, EXPIRED, CANCELLED) bloquea la operación.
+      if (
+        offer.serviceRequest.status !== ServiceRequestStatus.OPEN &&
+        offer.serviceRequest.status !== ServiceRequestStatus.CLOSED
+      ) {
+        throw new BadRequestException('Esta solicitud ya no permite cambios');
+      }
+
+      // Guard estricto: verifica que NO exista ya una oferta ACCEPTED para
+      // esta solicitud. Evita doble adjudicación si dos requests llegan
+      // simultáneamente.
+      const alreadyAccepted = await tx.offer.findFirst({
+        where: {
+          serviceRequestId: offer.serviceRequestId,
+          status: OfferStatus.ACCEPTED,
+        },
+        select: { id: true },
+      });
+      if (alreadyAccepted) {
+        throw new BadRequestException(
+          'Ya hay una oferta aceptada para esta solicitud',
+        );
+      }
+
+      // 1. Aceptar la oferta elegida
+      await tx.offer.update({
         where: { id: dto.offerId },
         data: { status: OfferStatus.ACCEPTED },
-      }),
-      // 2. Rechazar todas las demás ofertas
-      this.prisma.offer.updateMany({
+      });
+      // 2. Rechazar todas las demás pendientes
+      await tx.offer.updateMany({
         where: {
           serviceRequestId: offer.serviceRequestId,
           id: { not: dto.offerId },
           status: OfferStatus.PENDING,
         },
         data: { status: OfferStatus.REJECTED },
-      }),
-      // 3. Cerrar la solicitud
-      this.prisma.serviceRequest.update({
+      });
+      // 3. Marcar la solicitud como ADJUDICADA
+      await tx.serviceRequest.update({
         where: { id: offer.serviceRequestId },
-        data: { status: ServiceRequestStatus.CLOSED },
-      }),
-    ]);
+        data: { status: ServiceRequestStatus.AWARDED },
+      });
 
-    // Notificar al proveedor ganador
+      return offer.providerId;
+    });
+
+    // Notificaciones fuera de la transacción.
     const winningProvider = await this.prisma.provider.findUnique({
-      where: { id: offer.providerId },
+      where: { id: winnerProviderId },
       select: { userId: true, businessName: true },
     });
 
@@ -291,7 +351,7 @@ export class SubastasService {
         winningProvider.userId,
         '¡Felicidades! Tu oferta fue aceptada',
         'El cliente eligió tu propuesta. ¡Contáctalo ahora!',
-        { type: 'OFFER_ACCEPTED', requestId: String(offer.serviceRequestId) },
+        { type: 'OFFER_ACCEPTED', requestId: String(dto.offerId) },
       );
     }
 
@@ -329,30 +389,55 @@ export class SubastasService {
       include: { offers: { where: { status: OfferStatus.PENDING } } },
     });
 
+    let processed = 0;
+    let failed = 0;
+
+    // Procesar cada solicitud en su propio try/catch para que un fallo
+    // aislado no detenga el procesamiento del resto.
     for (const req of expired) {
-      const hadOffers = req.offers.length > 0;
+      try {
+        const hadOffers = req.offers.length > 0;
 
-      await this.prisma.$transaction([
-        this.prisma.serviceRequest.update({
-          where: { id: req.id },
-          data: { status: ServiceRequestStatus.EXPIRED },
-        }),
-        this.prisma.offer.updateMany({
-          where: { serviceRequestId: req.id, status: OfferStatus.PENDING },
-          data: { status: OfferStatus.REJECTED },
-        }),
-      ]);
+        await this.prisma.$transaction([
+          this.prisma.serviceRequest.update({
+            where: { id: req.id },
+            data: { status: ServiceRequestStatus.EXPIRED },
+          }),
+          this.prisma.offer.updateMany({
+            where: { serviceRequestId: req.id, status: OfferStatus.PENDING },
+            data: { status: OfferStatus.REJECTED },
+          }),
+        ]);
 
-      // Penalizar si tenía ofertas y no eligió nadie
-      if (hadOffers) {
-        await this._incrementNoPick(req.userId);
+        if (hadOffers) {
+          await this._incrementNoPick(req.userId);
+        }
+        processed++;
+      } catch (err) {
+        failed++;
+        // No re-lanzamos: log y seguimos con la siguiente solicitud.
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[expireStaleRequests] error procesando request ${req.id}: ${msg}`,
+        );
       }
     }
 
-    return { expired: expired.length };
+    return { expired: processed, failed, total: expired.length };
   }
 
   // ── WRAPPERS userId → providerId ─────────────────────────────
+
+  /**
+   * Resuelve el provider activo desde el JWT y devuelve sus oportunidades.
+   * Reemplaza al endpoint público getOpportunities(:providerId) que era
+   * vulnerable a IDOR (cualquier usuario podía pedir las oportunidades
+   * dirigidas a OTRO proveedor pasando su id).
+   */
+  async getOpportunitiesByUser(userId: number) {
+    const provider = await this._getActiveProvider(userId);
+    return this.getOpportunities(provider.id);
+  }
 
   async submitOfferByUser(userId: number, dto: SubmitOfferDto) {
     const provider = await this._getActiveProvider(userId);
@@ -406,17 +491,32 @@ export class SubastasService {
   }
 
   private async _incrementNoPick(userId: number) {
-    const penalty = await this.prisma.userPenalty.upsert({
-      where: { userId },
-      create: { userId, noPickCount: 1 },
-      update: { noPickCount: { increment: 1 } },
+    // 1) Asegura que la fila exista (insert idempotente sin tocar el contador
+    //    si ya existía).
+    await this.prisma.userPenalty.upsert({
+      where:  { userId },
+      create: { userId, noPickCount: 0 },
+      update: {},
     });
 
-    if (penalty.noPickCount >= NO_PICK_THRESHOLD) {
+    // 2) Incremento atómico vía SQL crudo + RETURNING. Evita el patrón
+    //    leer/calcular/escribir que es vulnerable a race conditions cuando
+    //    varias subastas expiran simultáneamente para el mismo usuario.
+    const rows = await this.prisma.$queryRaw<{ noPickCount: number }[]>`
+      UPDATE "user_penalties"
+         SET "noPickCount" = "noPickCount" + 1,
+             "updatedAt"   = NOW()
+       WHERE "userId" = ${userId}
+       RETURNING "noPickCount"
+    `;
+
+    const newCount = rows[0]?.noPickCount ?? 0;
+
+    if (newCount >= NO_PICK_THRESHOLD) {
       const blockedUntil = new Date(Date.now() + BLOCK_DAYS * 24 * 60 * 60 * 1000);
       await this.prisma.userPenalty.update({
         where: { userId },
-        data: { blockedUntil, noPickCount: 0 },
+        data:  { blockedUntil, noPickCount: 0 },
       });
     }
   }
