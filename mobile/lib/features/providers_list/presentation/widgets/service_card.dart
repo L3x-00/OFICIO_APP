@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -5,6 +6,7 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/constans/app_strings.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../data/providers_repository.dart';
 import '../../domain/models/provider_model.dart';
 import '../../../../shared/widgets/phone_input_section.dart' show formatForWhatsApp;
 import '../../../provider_dashboard/domain/models/service_item_model.dart';
@@ -380,6 +382,9 @@ class _ActionButtons extends StatelessWidget {
   }
 
   Future<void> _openWhatsApp() async {
+    // Tracking analítico — fire-and-forget; nunca debe bloquear la apertura
+    // de WhatsApp ni propagar errores (el repo captura internamente).
+    unawaited(ProvidersRepository().trackEvent(provider.id, 'whatsapp_click'));
     final raw    = provider.whatsapp ?? provider.phone;
     final number = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
     final message = Uri.encodeComponent(AppStrings.whatsappMessage(provider.businessName));
@@ -393,6 +398,7 @@ class _ActionButtons extends StatelessWidget {
   }
 
   Future<void> _makeCall() async {
+    unawaited(ProvidersRepository().trackEvent(provider.id, 'call_click'));
     final uri = Uri.parse('tel:${provider.phone}');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
@@ -1186,6 +1192,7 @@ class ServiceCardContent extends StatelessWidget {
   }
 
   Future<void> _openWhatsApp() async {
+    unawaited(ProvidersRepository().trackEvent(provider.id, 'whatsapp_click'));
     final raw     = provider.whatsapp ?? provider.phone;
     final number  = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
     final message = Uri.encodeComponent(AppStrings.whatsappMessage(provider.businessName));
@@ -1199,6 +1206,7 @@ class ServiceCardContent extends StatelessWidget {
   }
 
   Future<void> _makeCall() async {
+    unawaited(ProvidersRepository().trackEvent(provider.id, 'call_click'));
     final uri = Uri.parse('tel:${provider.phone}');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -79,6 +80,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   void initState() {
     super.initState();
     _loadReviews();
+    // Tracking analítico: registra una vista del perfil al abrir el sheet.
+    // Fire-and-forget — el repo absorbe errores internamente.
+    unawaited(_providersRepo.trackEvent(widget.provider.id, 'view'));
   }
 
   /// Reseña del usuario actual para este proveedor (null si no ha reseñado).
@@ -1225,6 +1229,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   Future<void> _openWhatsApp() async {
+    // Tracking analítico — fire-and-forget; nunca debe bloquear la apertura
+    // de WhatsApp.
+    unawaited(_providersRepo.trackEvent(widget.provider.id, 'whatsapp_click'));
     final raw    = widget.provider.whatsapp ?? widget.provider.phone;
     final number = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
     final message = Uri.encodeComponent(
@@ -1241,6 +1248,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   Future<void> _makeCall() async {
+    unawaited(_providersRepo.trackEvent(widget.provider.id, 'call_click'));
     final uri = Uri.parse('tel:${widget.provider.phone}');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
