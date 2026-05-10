@@ -14,8 +14,13 @@ export function saveSession(data: LoginResponse): void {
   localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
   localStorage.setItem(USER_KEY, JSON.stringify(data.user));
   updateLastActivity();
-  // Sync cookie so middleware (server-side) can read the token
-  document.cookie = `${ACCESS_TOKEN_KEY}=${data.accessToken}; path=/; max-age=86400; SameSite=Lax`;
+  // Sync cookie so middleware (server-side) can read the token.
+  // Algunos navegadores (Chrome ≥ 80) rechazan cookies SameSite=Lax sin
+  // `Secure` cuando la página está servida por https — sin el flag, el
+  // middleware no ve el token y rebota al login tras hacer redirect.
+  const isHttps = window.location.protocol === 'https:';
+  const secure = isHttps ? '; Secure' : '';
+  document.cookie = `${ACCESS_TOKEN_KEY}=${data.accessToken}; path=/; max-age=86400; SameSite=Lax${secure}`;
 }
 
 export function getAccessToken(): string | null {
@@ -45,8 +50,11 @@ export function clearSession(): void {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem(LAST_ACTIVITY_KEY);
-  // Expire the cookie used by middleware
-  document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  // Expire the cookie used by middleware. Mismos atributos que en save
+  // para que el navegador la considere "la misma cookie" y la borre.
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const secure = isHttps ? '; Secure' : '';
+  document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secure}`;
 }
 
 export function isAuthenticated(): boolean {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, ShieldCheck, Loader2 } from 'lucide-react';
@@ -15,7 +14,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://oficio-backend.onre
 const ADMIN_PANEL_URL = 'https://oficioadmin.vercel.app/login';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -99,7 +97,12 @@ export default function LoginPage() {
         /* continue with role logic */
       }
 
-      router.push(getRedirectPath(sessionUser, hasProvider));
+      // Navegación full reload (no router.push) por dos razones:
+      // 1. Garantiza que el middleware vea la cookie recién escrita.
+      // 2. Evita que el RSC cache de Next sirva un árbol stale del
+      //    layout/landing autenticado-aware sin re-fetch.
+      // El flujo ADMIN ya usa window.location.href; alineamos el resto.
+      window.location.href = getRedirectPath(sessionUser, hasProvider);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error al iniciar sesión';
       toast.error(message);

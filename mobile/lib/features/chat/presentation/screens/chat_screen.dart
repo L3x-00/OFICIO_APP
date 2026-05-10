@@ -341,10 +341,14 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = const Radius.circular(16);
     final smallRadius = const Radius.circular(4);
-    final bg = mine ? AppColors.primary : c.bgCard;
-    final fg = mine ? Colors.white : c.textPrimary;
+    
+    // Cambio: Burbuja del emisor (mine) ahora es blanca con borde
+    final bg = mine ? Colors.white : c.bgCard;
+    // Cambio: Texto del emisor oscuro para contraste
+    final fg = mine ? Colors.black87 : c.textPrimary;
+    // Cambio: Hora del emisor en gris oscuro
     final timeColor = mine
-        ? Colors.white.withValues(alpha: 0.85)
+        ? Colors.grey.shade600
         : c.textMuted;
 
     return Padding(
@@ -361,7 +365,8 @@ class _MessageBubble extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
                 decoration: BoxDecoration(
                   color: bg,
-                  border: mine ? null : Border.all(color: c.border),
+                  // Ambas burbujas tienen borde ligero para distinguir del fondo
+                  border: Border.all(color: mine ? Colors.grey.shade300 : c.border),
                   borderRadius: BorderRadius.only(
                     topLeft:     radius,
                     topRight:    radius,
@@ -419,21 +424,24 @@ class _StatusIcon extends StatelessWidget {
         return Icon(
           Icons.access_time_rounded,
           size: 12,
-          color: Colors.white.withValues(alpha: 0.85),
+          // Cambio: Gris oscuro sobre blanco
+          color: Colors.grey.shade600, 
         );
       case MessageStatus.sent:
       case MessageStatus.delivered:
         return Icon(
           Icons.check_rounded,
           size: 14,
-          color: Colors.white.withValues(alpha: 0.85),
+          // Cambio: Gris oscuro sobre blanco
+          color: Colors.grey.shade600, 
         );
       case MessageStatus.read:
-        // Doble check azul claro (estilo WhatsApp)
+        // Doble check azul brillante (estilo WhatsApp sobre blanco)
         return Icon(
           Icons.done_all_rounded,
           size: 14,
-          color: const Color(0xFF7BD0FF),
+          // Cambio: Azul brillante para que resalte sobre el blanco
+          color: Colors.blue, 
         );
     }
   }

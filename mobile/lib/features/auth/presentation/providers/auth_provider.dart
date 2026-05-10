@@ -160,9 +160,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> initialize() async {
+    Future<void> initialize() async {
     _user = await _repo.restoreSession();
     if (_user != null) {
+      // Refrescar token ANTES de conectar el socket y sincronizar
+      await _refreshUserToken();
       await _syncProviderStatus();
       _connectSocketForUser(_user!.id);
     }
