@@ -627,6 +627,7 @@ class AuthProvider extends ChangeNotifier {
     String? razonSocial,
     bool hasDelivery = false,
     bool plenaCoordinacion = false,
+    bool hasHomeService = false,
     // comunes
     String? description,
     String? address,
@@ -657,6 +658,7 @@ class AuthProvider extends ChangeNotifier {
       razonSocial:      razonSocial,
       hasDelivery:      hasDelivery,
       plenaCoordinacion: plenaCoordinacion,
+      hasHomeService:   hasHomeService,
       description:      description,
       address:          address,
       categoryId:       categoryId,

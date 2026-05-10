@@ -26,7 +26,7 @@ export default function WhatsAppButton() {
       className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[99999] w-14 h-14 bg-[#25D366] hover:bg-[#1ea952] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group active:scale-95">
       <WhatsAppIcon size={28} />
       {/* Tooltip */}
-      <span className="absolute right-16 bg-bg-card text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none border border-white/10">
+      <span className="absolute right-16 bg-ink text-white text-[12px] font-display font-medium px-3 py-1.5 rounded-lg shadow-soft opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
         ¿Necesitas ayuda?
       </span>
       {/* Pulso animado */}

@@ -8,42 +8,51 @@ interface Props {
   onClose: () => void;
 }
 
+const ACCENT = {
+  orange: { bg: 'bg-[#FBE8D6]', text: 'text-primary-darker', border: 'border-[#F4CDA3]' },
+  blue:   { bg: 'bg-[#E0EAFB]', text: 'text-[#1E40AF]',     border: 'border-[#C2D5F5]' },
+  green:  { bg: 'bg-[#E2F5EC]', text: 'text-[#0E5C3D]',     border: 'border-[#B8E3CD]' },
+  purple: { bg: 'bg-[#EBE0FB]', text: 'text-[#5B21B6]',     border: 'border-[#D6C4F2]' },
+  rose:   { bg: 'bg-[#FBE0E3]', text: 'text-[#9B1C28]',     border: 'border-[#F2BFC4]' },
+  amber:  { bg: 'bg-[#FBEFCD]', text: 'text-[#7A4C00]',     border: 'border-[#EBCF8A]' },
+} as const;
+
 const ABOUT_SECTIONS = [
   {
     title: 'Nuestra Misión',
     desc: 'Conectar a profesionales y negocios verificados con clientes reales en ciudades intermedias del Perú, donde antes no existía una plataforma formal y segura para contratar servicios locales.',
     icon: Target,
-    color: '#E07B39',
+    accent: 'orange' as keyof typeof ACCENT,
   },
   {
     title: 'Nuestra Visión',
     desc: 'Ser el marketplace de servicios locales más confiable del Perú, expandiéndonos a todas las regiones y convirtiéndonos en la primera opción para encontrar profesionales verificados.',
     icon: Eye,
-    color: '#3B82F6',
+    accent: 'blue' as keyof typeof ACCENT,
   },
   {
     title: 'Público Objetivo',
     desc: 'Clientes que buscan servicios de calidad con garantía de verificación. Profesionales independientes y pequeños negocios que quieren expandir su alcance y credibilidad.',
     icon: Users,
-    color: '#10B981',
+    accent: 'green' as keyof typeof ACCENT,
   },
   {
     title: 'Verificación y Confianza',
     desc: 'Cada profesional pasa por un proceso de validación documental antes de aparecer en la plataforma. Las reseñas con GPS garantizan experiencias reales y transparentes.',
     icon: ShieldCheck,
-    color: '#8B5CF6',
+    accent: 'purple' as keyof typeof ACCENT,
   },
   {
     title: 'Cobertura Actual',
     desc: 'Comenzamos en Huancayo y Huanta, ciudades donde la economía local necesitaba una solución tecnológica para conectar la oferta y demanda de servicios.',
     icon: MapPin,
-    color: '#E4405F',
+    accent: 'rose' as keyof typeof ACCENT,
   },
   {
     title: 'Crecimiento',
     desc: 'Gracias al boca a boca, las invitaciones entre colegas y nuestro programa de referidos con monedas, más profesionales se suman cada semana a la plataforma.',
     icon: TrendingUp,
-    color: '#F59E0B',
+    accent: 'amber' as keyof typeof ACCENT,
   },
 ];
 
@@ -73,65 +82,54 @@ export default function AboutModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-ink/55 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Modal tipo página */}
-      <div className="relative bg-bg-dark border border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] mx-2 sm:mx-0 overflow-hidden shadow-2xl animate-scale-in flex flex-col">
-        {/* Cabecera con gradiente */}
-        <div className="relative bg-gradient-to-r from-primary/20 via-amber/10 to-primary/20 px-4 sm:px-6 py-5 sm:py-6 flex-shrink-0 border-b border-white/5">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="relative bg-paper border border-line rounded-2xl w-full max-w-3xl max-h-[88vh] mx-2 sm:mx-0 overflow-hidden shadow-soft-lg animate-scale-in flex flex-col">
+        <div className="relative bg-surface px-6 py-6 flex-shrink-0 border-b border-line">
           <div className="relative flex items-start justify-between">
             <div>
-              <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-                Team Less Dev
-              </p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                ¿Quiénes Somos?
+              <span className="eyebrow">Team Less Dev</span>
+              <h2 className="mt-2 font-display font-bold tracking-tightest text-ink text-[26px] sm:text-[30px] leading-tight">
+                ¿Quiénes somos?
               </h2>
-              <p className="text-text-secondary text-sm mt-2 max-w-md">
+              <p className="text-ink-3 text-[14.5px] mt-2 max-w-md leading-relaxed">
                 Una plataforma peruana construida para conectar el talento local
                 con personas que valoran la seguridad y la calidad.
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-text-muted hover:text-white transition-colors flex-shrink-0"
+              className="w-9 h-9 rounded-full bg-paper hover:bg-surface-2 border border-line-2 flex items-center justify-center text-ink-4 hover:text-ink transition-colors flex-shrink-0"
               aria-label="Cerrar"
             >
-              <X size={18} />
+              <X size={18} strokeWidth={1.75} />
             </button>
           </div>
         </div>
 
-        {/* Grid de secciones */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ABOUT_SECTIONS.map((section) => {
               const Icon = section.icon;
+              const a = ACCENT[section.accent];
               return (
                 <div
                   key={section.title}
-                  className="bg-bg-card border border-white/5 rounded-2xl p-5 hover:border-primary/20 transition-all duration-300 group"
+                  className="card-flat p-5 hover:border-ink-4 transition-colors"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: `${section.color}20` }}
-                    >
-                      <Icon size={18} style={{ color: section.color }} />
+                    <div className={`w-9 h-9 rounded-lg border ${a.border} ${a.bg} flex items-center justify-center flex-shrink-0`}>
+                      <Icon size={16} strokeWidth={1.75} className={a.text} />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-text-primary font-semibold text-sm truncate">
-                        {section.title}
-                      </p>
-                    </div>
+                    <p className="font-display font-semibold text-ink text-[14px] leading-snug">
+                      {section.title}
+                    </p>
                   </div>
-                  <p className="text-text-secondary text-xs leading-relaxed">
+                  <p className="text-ink-3 text-[12.5px] leading-relaxed">
                     {section.desc}
                   </p>
                 </div>
@@ -139,22 +137,21 @@ export default function AboutModal({ isOpen, onClose }: Props) {
             })}
           </div>
 
-          {/* Footer del modal */}
-          <div className="mt-8 pt-6 border-t border-white/5 text-center">
-            <p className="text-text-muted text-xs leading-relaxed max-w-lg mx-auto">
-              <strong className="text-primary">OficioApp</strong> nació de la
-              necesidad de formalizar el mercado de servicios locales en ciudades
-              donde no existía una alternativa digital confiable. Creemos en el
-              talento peruano y trabajamos cada día para que encontrar un profesional
+          <div className="mt-8 pt-6 border-t border-line text-center">
+            <p className="text-ink-3 text-[13px] leading-relaxed max-w-lg mx-auto">
+              <strong className="text-ink">OficioApp</strong> nació de la necesidad
+              de formalizar el mercado de servicios locales en ciudades donde no
+              existía una alternativa digital confiable. Creemos en el talento
+              peruano y trabajamos cada día para que encontrar un profesional
               de calidad sea tan fácil como pedir un taxi por app.
             </p>
-            <p className="text-text-muted text-xs leading-relaxed max-w-lg mx-auto mt-3">
-              Desarrollado con dedicación por <strong className="text-primary">Team Less Dev</strong>,
+            <p className="text-ink-3 text-[13px] leading-relaxed max-w-lg mx-auto mt-3">
+              Desarrollado con dedicación por <strong className="text-ink">Team Less Dev</strong>,
               un equipo pequeño con grandes ideas. Porque no se trata del tamaño del
               equipo, sino del impacto que generas.
             </p>
-            <p className="text-text-muted/50 text-[10px] mt-4">
-              © {new Date().getFullYear()} Team Less Dev — Hecho en Perú con dedicación y café. 🇵🇪
+            <p className="text-ink-5 text-[11px] mt-5">
+              © {new Date().getFullYear()} Team Less Dev — Hecho en Perú con dedicación y café.
             </p>
           </div>
         </div>

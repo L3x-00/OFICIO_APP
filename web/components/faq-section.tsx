@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, HelpCircle } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 interface FaqItem {
   question: string;
@@ -10,7 +10,7 @@ interface FaqItem {
 
 const faqData: { category: string; items: FaqItem[] }[] = [
   {
-    category: 'Para Clientes (Usuarios)',
+    category: 'Para Clientes',
     items: [
       {
         question: '¿Cómo garantizan que los profesionales sean confiables?',
@@ -18,7 +18,7 @@ const faqData: { category: string; items: FaqItem[] }[] = [
       },
       {
         question: '¿Tiene algún costo solicitar un servicio?',
-        answer: 'No, publicar una solicitud de servicio es totalmente gratuito. Recibirás diferentes propuestas (subastas) y tú eliges la que mejor se adapte a tu presupuesto y necesidad.',
+        answer: 'No, publicar una solicitud de servicio es totalmente gratuito. Recibirás diferentes propuestas y tú eliges la que mejor se adapte a tu presupuesto y necesidad.',
       },
       {
         question: '¿Cómo funcionan las monedas de recompensa?',
@@ -31,15 +31,15 @@ const faqData: { category: string; items: FaqItem[] }[] = [
     ],
   },
   {
-    category: 'Para Proveedores (Profesionales y Negocios)',
+    category: 'Para Proveedores',
     items: [
       {
         question: '¿Cómo puedo empezar a ofrecer mis servicios?',
-        answer: 'Solo debes registrarte, completar tu perfil profesional y subir los documentos solicitados para la verificación (DNI/RUC). Una vez aprobado por el administrador, podrás empezar a enviar ofertas a las solicitudes de los clientes.',
+        answer: 'Solo debes registrarte, completar tu perfil profesional y subir los documentos solicitados para la verificación (DNI/RUC). Una vez aprobado, podrás empezar a enviar ofertas a las solicitudes de los clientes.',
       },
       {
         question: '¿Qué beneficios obtengo con los planes Estándar y Premium?',
-        answer: 'Los planes de suscripción te permiten enviar más ofertas por día, aparecer en los primeros lugares de búsqueda y obtener una insignia de "Proveedor Destacado" para generar más confianza.',
+        answer: 'Los planes te permiten enviar más ofertas por día, aparecer en los primeros lugares de búsqueda y obtener una insignia de "Proveedor Destacado" para generar más confianza.',
       },
       {
         question: '¿Cómo funcionan las subastas de servicios?',
@@ -47,7 +47,7 @@ const faqData: { category: string; items: FaqItem[] }[] = [
       },
       {
         question: '¿Es seguro el sistema de pagos por Yape?',
-        answer: 'Totalmente. Hemos integrado un flujo de validación de capturas de pantalla y estados de pago que son verificados por el sistema para asegurar que tu suscripción o transacciones se activen correctamente y sin errores.',
+        answer: 'Totalmente. Hemos integrado un flujo de validación de capturas de pantalla y estados de pago que son verificados por el sistema para asegurar que tu suscripción se active correctamente y sin errores.',
       },
     ],
   },
@@ -70,18 +70,19 @@ function FaqAccordion({ question, answer }: FaqItem) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-white/5 last:border-b-0">
+    <div className="border-b border-line last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-4 py-5 text-left group"
       >
-        <span className="text-text-primary font-medium text-sm sm:text-base group-hover:text-primary transition-colors pr-4">
+        <span className="font-display font-medium text-ink text-[15px] sm:text-[16px] group-hover:text-ink-2 transition-colors pr-4">
           {question}
         </span>
         <ChevronDown
           size={18}
-          className={`text-text-muted flex-shrink-0 transition-transform duration-300 ${
-            open ? 'rotate-180 text-primary' : ''
+          strokeWidth={1.75}
+          className={`text-ink-4 flex-shrink-0 transition-transform duration-300 ${
+            open ? 'rotate-180 text-ink' : ''
           }`}
         />
       </button>
@@ -90,7 +91,7 @@ function FaqAccordion({ question, answer }: FaqItem) {
           open ? 'max-h-96 pb-5' : 'max-h-0'
         }`}
       >
-        <p className="text-text-secondary text-sm leading-relaxed">{answer}</p>
+        <p className="text-ink-3 text-[14.5px] leading-relaxed">{answer}</p>
       </div>
     </div>
   );
@@ -98,31 +99,27 @@ function FaqAccordion({ question, answer }: FaqItem) {
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="py-20 sm:py-28 bg-bg-dark">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14" data-reveal>
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/25 rounded-full px-4 py-1.5 mb-4">
-            <HelpCircle size={14} className="text-primary" />
-            <span className="text-primary text-xs font-bold uppercase tracking-widest">
-              Preguntas frecuentes
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-text-primary">
-            Todo lo que necesitas saber
+    <section id="faq" className="py-24 sm:py-32 bg-paper">
+      <div className="max-w-3xl mx-auto px-5 sm:px-8 lg:px-10">
+
+        <div className="mb-14 sm:mb-16" data-reveal>
+          <span className="eyebrow">Preguntas frecuentes</span>
+          <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
+            Todo lo que necesitas saber.
           </h2>
-          <p className="text-text-secondary mt-3 max-w-lg mx-auto">
+          <p className="mt-4 text-ink-3 text-[16px] leading-relaxed max-w-lg">
             Respuestas claras a las dudas más comunes de clientes y proveedores.
           </p>
         </div>
 
-        <div className="space-y-10">
+        <div className="space-y-12">
           {faqData.map((group) => (
             <div key={group.category} data-reveal>
-              <h3 className="text-text-primary font-bold text-lg mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-5 bg-primary rounded-full" />
+              <h3 className="font-display font-semibold text-ink text-[14px] uppercase tracking-[0.16em] mb-3 flex items-center gap-2.5">
+                <span className="w-5 h-px bg-ink-4" />
                 {group.category}
               </h3>
-              <div className="bg-bg-card border border-white/5 rounded-2xl px-5">
+              <div className="card-flat px-6">
                 {group.items.map((item) => (
                   <FaqAccordion key={item.question} {...item} />
                 ))}

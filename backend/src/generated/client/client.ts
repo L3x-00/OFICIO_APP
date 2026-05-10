@@ -185,3 +185,13 @@ export type ReferralReward = Prisma.ReferralRewardModel
  * Canje de monedas: o por un plan (ESTANDAR/PREMIUM) o por una recompensa.
  */
 export type CoinRedemption = Prisma.CoinRedemptionModel
+/**
+ * Model ChatRoom
+ * 
+ */
+export type ChatRoom = Prisma.ChatRoomModel
+/**
+ * Model ChatMessage
+ * 
+ */
+export type ChatMessage = Prisma.ChatMessageModel

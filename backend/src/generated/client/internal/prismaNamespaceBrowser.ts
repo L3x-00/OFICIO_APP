@@ -78,7 +78,9 @@ export const ModelName = {
   ReferralCode: 'ReferralCode',
   Referral: 'Referral',
   ReferralReward: 'ReferralReward',
-  CoinRedemption: 'CoinRedemption'
+  CoinRedemption: 'CoinRedemption',
+  ChatRoom: 'ChatRoom',
+  ChatMessage: 'ChatMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -533,6 +535,28 @@ export const CoinRedemptionScalarFieldEnum = {
 } as const
 
 export type CoinRedemptionScalarFieldEnum = (typeof CoinRedemptionScalarFieldEnum)[keyof typeof CoinRedemptionScalarFieldEnum]
+
+
+export const ChatRoomScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  providerId: 'providerId',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatRoomScalarFieldEnum = (typeof ChatRoomScalarFieldEnum)[keyof typeof ChatRoomScalarFieldEnum]
+
+
+export const ChatMessageScalarFieldEnum = {
+  id: 'id',
+  chatRoomId: 'chatRoomId',
+  senderId: 'senderId',
+  content: 'content',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
 
 
 export const SortOrder = {

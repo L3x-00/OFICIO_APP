@@ -16,6 +16,8 @@ import '../../../../features/provider_dashboard/presentation/screens/provider_pa
 import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../../../features/subastas/presentation/screens/my_requests_screen.dart';
 import '../../../../features/subastas/presentation/screens/publish_request_sheet.dart';
+import '../../../../features/chat/presentation/providers/chat_provider.dart';
+import '../../../../features/chat/presentation/screens/chat_screen.dart';
 
 class ProvidersScreen extends StatelessWidget {
   const ProvidersScreen({super.key});
@@ -1125,6 +1127,32 @@ class _ProvidersList extends StatelessWidget {
         ),
       ));
 
+      Future<void> openChat() async {
+        final auth = context.read<AuthProvider>();
+        if (auth.user == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Inicia sesión para chatear')),
+          );
+          return;
+        }
+        final chat = context.read<ChatProvider>();
+        try {
+          final roomId = await chat.openRoom(
+            clientId:   auth.user!.id,
+            providerId: p.id,
+          );
+          if (!context.mounted) return;
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => ChatScreen(roomId: roomId),
+          ));
+        } catch (e) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No se pudo abrir el chat: $e')),
+          );
+        }
+      }
+
       return switch (prov.viewMode) {
         ViewMode.lista => ServiceCardList(
           provider: p,
@@ -1138,6 +1166,7 @@ class _ProvidersList extends StatelessWidget {
           onTap: () => ProviderDetailSheet.show(context, p),
           onFavoriteToggle: isOwnCard ? null : handleFav,
           onGoToDashboard: isOwnCard ? goToDashboard : null,
+          onChat: isOwnCard ? null : openChat,
         ),
         ViewMode.mosaicos => ServiceCardMosaic(
           provider: p,
@@ -1150,6 +1179,7 @@ class _ProvidersList extends StatelessWidget {
           onTap: () => ProviderDetailSheet.show(context, p),
           onGoToDashboard: isOwnCard ? goToDashboard : null,
           onFavoriteToggle: isOwnCard ? null : handleFav,
+          onChat: isOwnCard ? null : openChat,
         ),
       };
     }

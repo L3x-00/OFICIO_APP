@@ -61,6 +61,12 @@ export class RegisterProviderDto {
   @IsBoolean()
   plenaCoordinacion?: boolean;
 
+  // ── Campos OFICIO ─────────────────────────────────────────
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  hasHomeService?: boolean;
+
   // ── Comunes ───────────────────────────────────────────────
   @NullIfEmpty()
   @IsOptional()

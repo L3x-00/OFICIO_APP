@@ -132,3 +132,12 @@ export const RedemptionStatus = {
 } as const
 
 export type RedemptionStatus = (typeof RedemptionStatus)[keyof typeof RedemptionStatus]
+
+
+export const MessageStatus = {
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  READ: 'READ'
+} as const
+
+export type MessageStatus = (typeof MessageStatus)[keyof typeof MessageStatus]

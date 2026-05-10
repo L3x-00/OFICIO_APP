@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0B0D17',
+  themeColor: '#FBF7EE',
   width: 'device-width',
   initialScale: 1,
 };
@@ -55,24 +55,24 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/site.webmanifest" />
       </head>
-      <body className="min-h-screen flex flex-col bg-bg-dark text-text-primary antialiased">
+      <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
         <RevealProvider />
         <Navbar />
         <LayoutShell>{children}</LayoutShell>
         <Toaster
           position="bottom-right"
-          theme="dark"
+          theme="light"
           richColors
           closeButton
           duration={4000}
           toastOptions={{
             style: {
-              background: 'rgba(21, 25, 43, 0.96)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#fff',
-              backdropFilter: 'blur(8px)',
+              background: '#FFFFFF',
+              border: '1px solid #DDD4BF',
+              color: '#14141C',
+              boxShadow: '0 1px 2px rgba(28,22,8,0.04), 0 12px 32px -14px rgba(28,22,8,0.14)',
             },
-            className: 'shadow-xl',
+            className: 'shadow-soft',
           }}
         />
         <WhatsAppButton />

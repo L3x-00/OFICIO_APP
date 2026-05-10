@@ -12,6 +12,9 @@ import '../../../provider_dashboard/domain/models/service_item_model.dart';
 // ─── Helpers de plan ─────────────────────────────────────────
 bool _isPremium(String plan) => plan == 'PREMIUM';
 bool _isStandard(String plan) => plan == 'ESTANDAR' || plan == 'GRATIS';
+/// Sólo planes pagos exponen WhatsApp/Llamada; GRATIS sólo deja el chat
+/// interno (la fricción de los pagos paga la libertad de contacto).
+bool _isPaidPlan(String plan) => plan == 'PREMIUM' || plan == 'ESTANDAR';
 
 /// Tarjeta principal de servicio
 class ServiceCard extends StatelessWidget {
@@ -22,6 +25,8 @@ class ServiceCard extends StatelessWidget {
   final bool isOwnCard;
   /// Navega al panel del proveedor (solo cuando isOwnCard == true)
   final VoidCallback? onGoToDashboard;
+  /// Abre el chat interno con este proveedor
+  final VoidCallback? onChat;
 
   const ServiceCard({
     super.key,
@@ -30,6 +35,7 @@ class ServiceCard extends StatelessWidget {
     this.onFavoriteToggle,
     this.isOwnCard = false,
     this.onGoToDashboard,
+    this.onChat,
   });
 
   @override
@@ -116,6 +122,7 @@ class ServiceCard extends StatelessWidget {
                 onFavoriteToggle: onFavoriteToggle,
                 isOwnCard: isOwnCard,
                 onGoToDashboard: onGoToDashboard,
+                onChat: onChat,
               ),
             ),
           ],
@@ -307,7 +314,14 @@ class _ActionButtons extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
   final bool isOwnCard;
   final VoidCallback? onGoToDashboard;
-  const _ActionButtons({required this.provider, this.onFavoriteToggle, this.isOwnCard = false, this.onGoToDashboard});
+  final VoidCallback? onChat;
+  const _ActionButtons({
+    required this.provider,
+    this.onFavoriteToggle,
+    this.isOwnCard = false,
+    this.onGoToDashboard,
+    this.onChat,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -333,11 +347,32 @@ class _ActionButtons extends StatelessWidget {
         ),
       );
     }
+
+    // Plan gating: GRATIS sólo expone el chat interno; ESTANDAR y PREMIUM
+    // muestran chat + WhatsApp + llamada.
+    final paid = _isPaidPlan(provider.subscriptionPlan);
+
     return Row(
       children: [
-        Expanded(child: _ContactButton(label: 'WhatsApp', icon: Icons.chat_rounded, color: AppColors.whatsapp, onTap: () => _openWhatsApp())),
-        const SizedBox(width: 8),
-        Expanded(child: _ContactButton(label: 'Llamar',   icon: Icons.call_rounded,  color: AppColors.call,    onTap: () => _makeCall())),
+        Expanded(child: _IconActionButton(
+          icon: Icons.forum_rounded,
+          color: AppColors.amber,
+          onTap: onChat,
+        )),
+        if (paid) ...[
+          const SizedBox(width: 8),
+          Expanded(child: _IconActionButton(
+            icon: Icons.chat_rounded,
+            color: AppColors.whatsapp,
+            onTap: () => _openWhatsApp(),
+          )),
+          const SizedBox(width: 8),
+          Expanded(child: _IconActionButton(
+            icon: Icons.call_rounded,
+            color: AppColors.call,
+            onTap: () => _makeCall(),
+          )),
+        ],
         const SizedBox(width: 8),
         _FavoriteButton(isFavorite: provider.isFavorite, onToggle: onFavoriteToggle),
       ],
@@ -363,31 +398,26 @@ class _ActionButtons extends StatelessWidget {
   }
 }
 
-class _ContactButton extends StatelessWidget {
-  final String label;
+/// Acción de contacto sólo-icono, ocupa el ancho de su padre.
+class _IconActionButton extends StatelessWidget {
   final IconData icon;
   final Color color;
-  final VoidCallback onTap;
-  const _ContactButton({required this.label, required this.icon, required this.color, required this.onTap});
+  final VoidCallback? onTap;
+  const _IconActionButton({required this.icon, required this.color, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w700)),
-          ],
+        child: Center(
+          child: Icon(icon, color: color, size: 20),
         ),
       ),
     );
@@ -933,6 +963,7 @@ class ServiceCardContent extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
   final bool isOwnCard;
   final VoidCallback? onGoToDashboard;
+  final VoidCallback? onChat;
 
   const ServiceCardContent({
     super.key,
@@ -941,6 +972,7 @@ class ServiceCardContent extends StatelessWidget {
     this.onFavoriteToggle,
     this.isOwnCard = false,
     this.onGoToDashboard,
+    this.onChat,
   });
 
   @override
@@ -1107,16 +1139,24 @@ class ServiceCardContent extends StatelessWidget {
                       Row(
                         children: [
                           _CompactActionBtn(
-                            icon: Icons.chat_rounded,
-                            color: AppColors.whatsapp,
-                            onTap: () => _openWhatsApp(),
+                            icon: Icons.forum_rounded,
+                            color: AppColors.amber,
+                            onTap: onChat,
                           ),
-                          const SizedBox(width: 6),
-                          _CompactActionBtn(
-                            icon: Icons.call_rounded,
-                            color: AppColors.call,
-                            onTap: () => _makeCall(),
-                          ),
+                          if (_isPaidPlan(plan)) ...[
+                            const SizedBox(width: 6),
+                            _CompactActionBtn(
+                              icon: Icons.chat_rounded,
+                              color: AppColors.whatsapp,
+                              onTap: () => _openWhatsApp(),
+                            ),
+                            const SizedBox(width: 6),
+                            _CompactActionBtn(
+                              icon: Icons.call_rounded,
+                              color: AppColors.call,
+                              onTap: () => _makeCall(),
+                            ),
+                          ],
                           const SizedBox(width: 6),
                           _CompactActionBtn(
                             icon: provider.isFavorite

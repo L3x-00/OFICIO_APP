@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Coins } from 'lucide-react';
+import { ArrowRight, Coins } from 'lucide-react';
 import { isAuthenticated, getUser } from '@/lib/auth';
 
 export default function ReferralBanner() {
@@ -22,89 +22,59 @@ export default function ReferralBanner() {
   }, []);
 
   return (
-    <section
-      id="referidos-banner"
-      className="relative py-16 sm:py-20"
-    >
-      {/* Fondo con gradiente cálido */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber/15 via-bg-dark to-primary/10" />
-      <div className="blob bg-amber/30 w-[480px] h-[480px] -top-32 -right-20 animate-float-slow" aria-hidden />
-      <div className="blob bg-primary/25 w-[360px] h-[360px] -bottom-24 -left-16 animate-float" aria-hidden />
-      <div
-        className="absolute inset-0 bg-grid-pattern bg-grid-md opacity-[0.04] pointer-events-none"
-        aria-hidden
-      />
+    <section id="referidos-banner" className="relative py-20 sm:py-28 bg-paper-warm overflow-hidden">
+      <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
         <div
           data-reveal="scale"
-          className="relative glass-card gradient-border rounded-3xl p-8 sm:p-12 lg:p-14">
-          {/* Spotlight */}
-          <div
-            className="absolute inset-0 opacity-30 pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(circle at 90% 0%, rgba(245,158,11,0.45), transparent 55%)',
-            }}
-            aria-hidden
-          />
+          className="relative card-3d overflow-hidden p-8 sm:p-12 lg:p-14"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 items-center">
 
-          <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-amber/15 border border-amber/40 rounded-full px-3 py-1 mb-5 animate-pulse-soft">
-                <Sparkles size={12} className="text-amber" />
-                <span className="text-amber text-[10px] font-bold uppercase tracking-widest">
-                  Programa de referidos
-                </span>
+            <div className="max-w-2xl">
+              <div className="chip-eyebrow mb-7" style={{ background: '#FBE8D6', borderColor: '#F4CDA3' }}>
+                <span className="dot" style={{ background: '#F59E0B', boxShadow: '0 0 0 4px rgba(245,158,11,0.18)' }} />
+                Programa de referidos
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">
-                Invita a un profesional y gana{' '}
-                <span className="inline-flex items-baseline gap-1.5 align-baseline">
-                  <span className="text-gradient bg-gradient-to-br from-amber to-primary bg-clip-text text-transparent">
-                    25 monedas
-                  </span>
+              <h2 className="font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.05]">
+                Invita a un profesional
+                <br className="hidden sm:block" />
+                y gana{' '}
+                <span className="inline-flex items-baseline gap-2 align-baseline">
+                  <span className="text-gradient">25 monedas</span>
                   <Coins
-                    size={28}
-                    className="text-amber inline-block translate-y-1 sm:translate-y-1.5"
+                    size={30}
+                    className="text-amber inline-block translate-y-1"
                   />
                 </span>
               </h2>
 
-              <p className="text-text-secondary text-base sm:text-lg leading-relaxed mb-7 max-w-xl">
-                Tu amigo recibe <strong className="text-amber">5 monedas</strong> de
-                bienvenida. Acumula y canjea por planes gratis o servicios reales
-                de la comunidad de OficioApp.
+              <p className="mt-5 text-ink-3 text-[16px] sm:text-[17px] leading-relaxed">
+                Tu amigo recibe <strong className="text-ink font-semibold">5 monedas</strong> de bienvenida.
+                Acumula y canjea por planes gratis o servicios reales de la comunidad.
               </p>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3">
                 {authed ? (
-                  <Link
-                    href={targetHref}
-                    className="btn-primary press-effect group inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm sm:text-base"
-                  >
+                  <Link href={targetHref} className="btn btn-ink btn-lg press-effect group">
                     Ir a mis referidos
                     <ArrowRight
                       size={16}
-                      className="transition-transform duration-300 group-hover:translate-x-1"
+                      className="transition-transform duration-200 group-hover:translate-x-0.5"
                     />
                   </Link>
                 ) : (
                   <>
-                    <a
-                      href="#como-funciona"
-                      className="btn-primary press-effect group inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm sm:text-base"
-                    >
+                    <a href="#como-funciona" className="btn btn-ink btn-lg press-effect group">
                       Más información
                       <ArrowRight
                         size={16}
-                        className="transition-transform duration-300 group-hover:translate-x-1"
+                        className="transition-transform duration-200 group-hover:translate-x-0.5"
                       />
                     </a>
-                    <Link
-                      href="/login"
-                      className="btn-ghost press-effect inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm sm:text-base"
-                    >
+                    <Link href="/login" className="btn btn-ghost btn-lg press-effect">
                       Iniciar sesión
                     </Link>
                   </>
@@ -112,21 +82,17 @@ export default function ReferralBanner() {
               </div>
             </div>
 
-            {/* Imagen de monedas con efecto 3D sobresaliendo */}
             <div className="hidden lg:flex justify-center items-center">
-              <div
-                className="coins-glow-wrapper w-72 h-72 lg:w-80 lg:h-80"
-                style={{ overflow: 'visible', zIndex: 20 }}>
+              <div className="coins-glow-wrapper w-72 h-72">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/coins-banner.png"
                   alt="Monedas de OficioApp"
-                  className="w-[520px] h-[520px] max-w-none object-contain"
+                  className="w-[440px] h-[440px] max-w-none object-contain"
                   style={{
-                    clipPath: 'none',
-                    position: 'relative',
-                    zIndex: 20,
-                    filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(245,158,11,0.35))',}}/>
+                    filter: 'drop-shadow(0 18px 38px rgba(245,158,11,0.30))',
+                  }}
+                />
               </div>
             </div>
           </div>

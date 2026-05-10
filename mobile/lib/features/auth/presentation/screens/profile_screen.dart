@@ -19,6 +19,7 @@ import '../../../../features/provider_dashboard/data/dashboard_repository.dart';
 import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../../../features/subastas/presentation/screens/my_requests_screen.dart';
 import '../../../../features/referrals/presentation/screens/referral_screen.dart';
+import '../../../../features/chat/presentation/screens/chat_list_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -401,6 +402,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: const MyRequestsScreen(),
                     ),
                   ),
+                ),
+              ),
+              _SectionItem(
+                icon: Icons.forum_outlined,
+                label: 'Mis mensajes',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ChatListScreen()),
                 ),
               ),
               _SectionItem(

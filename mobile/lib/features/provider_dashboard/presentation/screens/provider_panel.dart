@@ -11,6 +11,8 @@ import 'panel_profile_tab.dart';
 import 'panel_services_tab.dart';
 import 'panel_stats_tab.dart';
 import 'panel_settings_tab.dart';
+import '../../../chat/presentation/screens/chat_list_screen.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 
 class ProviderPanel extends StatefulWidget {
   /// Tipo de perfil que abre el panel: 'OFICIO' | 'NEGOCIO' | null (usa activeProfileType)
@@ -72,8 +74,9 @@ class _ProviderPanelState extends State<ProviderPanel> {
                 const OportunidadesTab(),
                 PanelServicesTab(isNegocio: isNeg),
                 PanelStatsTab(
-                  onNavigateToSettings: () => setState(() => _currentIndex = 5),
+                  onNavigateToSettings: () => setState(() => _currentIndex = 6),
                 ),
+                const ChatListScreen(),
                 const PanelSettingsTab(),
               ],
             ),
@@ -154,6 +157,20 @@ class _PanelBottomNav extends StatelessWidget {
           const BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart_rounded),
             label: 'Estadísticas',
+          ),
+          BottomNavigationBarItem(
+            icon: Consumer<ChatProvider>(
+              builder: (_, chat, child) => Badge(
+                isLabelVisible: chat.totalUnread > 0,
+                label: Text(
+                  chat.totalUnread > 99 ? '99+' : '${chat.totalUnread}',
+                ),
+                backgroundColor: AppColors.busy,
+                child: child,
+              ),
+              child: const Icon(Icons.forum_rounded),
+            ),
+            label: 'Mensajes',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.settings_rounded),

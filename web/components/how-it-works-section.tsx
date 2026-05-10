@@ -2,88 +2,63 @@ import { Search, MessageCircle, Star } from 'lucide-react';
 
 const steps = [
   {
-    number: '01',
     icon: Search,
     title: 'Busca al experto que necesitas',
-    desc: 'Filtra por categoría, ubicación y rating para encontrar al profesional ideal para tu servicio.',
-    iconBg: 'bg-primary/10',
-    iconColor: 'text-primary',
-    border: 'border-primary/30',
+    desc: 'Filtra por categoría, ubicación y rating para encontrar al profesional ideal.',
   },
   {
-    number: '02',
     icon: MessageCircle,
     title: 'Contacta directamente',
-    desc: 'Habla por WhatsApp o teléfono con el proveedor y acuerda todos los detalles del servicio.',
-    iconBg: 'bg-amber/10',
-    iconColor: 'text-amber',
-    border: 'border-amber/30',
+    desc: 'Habla por WhatsApp o teléfono con el proveedor y acuerda los detalles.',
   },
   {
-    number: '03',
     icon: Star,
     title: 'Califica el servicio',
-    desc: 'Deja tu reseña geolocalizada con GPS y ayuda a la comunidad a tomar mejores decisiones.',
-    iconBg: 'bg-green/10',
-    iconColor: 'text-green',
-    border: 'border-green/30',
+    desc: 'Deja tu reseña geolocalizada con GPS y ayuda a la comunidad.',
   },
 ];
 
 export default function HowItWorksSection() {
   return (
-    <section
-      id="como-funciona"
-      className="relative py-20 sm:py-28 bg-gradient-to-b from-bg-dark via-bg-card/30 to-bg-dark overflow-hidden"
-    >
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16" data-reveal>
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/25 rounded-full px-4 py-1.5 mb-4">
-            <span className="text-primary text-xs font-bold uppercase tracking-widest">
-              Proceso simple
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-text-primary leading-tight">
-            ¿Cómo <span className="text-gradient">funciona</span>?
+    <section id="como-funciona" className="relative py-24 sm:py-32 bg-surface border-y border-line overflow-hidden">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+
+        <div className="max-w-2xl mb-16" data-reveal>
+          <span className="eyebrow">Proceso simple</span>
+          <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
+            Tres pasos para encontrar
+            <br className="hidden sm:block" /> al profesional ideal.
           </h2>
-          <p className="text-text-secondary mt-4 max-w-xl mx-auto text-lg">
-            Tres pasos simples para encontrar al profesional que necesitas.
-          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 relative">
-          {/* Línea conectora animada (desktop) */}
+        {/* Steps */}
+        <div className="grid md:grid-cols-3 gap-x-10 gap-y-12 relative">
+          {/* Línea conectora desktop — sutil */}
           <div
-            className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px"
+            className="hidden md:block absolute top-7 left-[10%] right-[10%] h-px bg-gradient-to-r from-line via-line-2 to-line"
             aria-hidden
-          >
-            <div className="h-full w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-          </div>
+          />
 
           {steps.map((step, i) => (
             <div
-              key={step.number}
+              key={step.title}
               data-reveal
-              className={`reveal-delay-${i + 1} relative text-center group`}
+              className={`reveal-delay-${i + 1} relative group`}
             >
-              {/* Número grande de fondo (decorativo) */}
-              <div className="absolute -top-4 right-4 text-7xl font-black text-white/[0.03] select-none pointer-events-none z-0">
-                {step.number}
-              </div>
-
-              <div
-                className={`relative z-10 w-20 h-20 ${step.iconBg} border-2 ${step.border} rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-glow-md`}
-              >
-                <step.icon className={step.iconColor} size={32} />
-                <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-bg-dark border border-white/10 text-text-secondary text-[10px] font-bold flex items-center justify-center">
-                  {step.number}
+              {/* Numbered dot */}
+              <div className="relative z-10 mb-6 flex items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-paper border border-line-2 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-0.5">
+                  <step.icon className="text-ink" size={22} strokeWidth={1.75} />
+                </div>
+                <span className="font-mono tabular-nums text-[12px] text-ink-4 px-2 py-1 rounded-md border border-line-2 bg-paper">
+                  PASO 0{i + 1}
                 </span>
               </div>
 
-              <h3 className="relative z-10 text-text-primary font-semibold text-lg mb-2">
+              <h3 className="font-display font-semibold text-ink text-[20px] leading-snug mb-2 max-w-xs">
                 {step.title}
               </h3>
-              <p className="relative z-10 text-text-muted text-sm leading-relaxed max-w-xs mx-auto">
+              <p className="text-ink-3 text-[14.5px] leading-relaxed max-w-xs">
                 {step.desc}
               </p>
             </div>

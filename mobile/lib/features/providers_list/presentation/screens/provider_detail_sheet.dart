@@ -23,6 +23,8 @@ import '../../../../shared/widgets/social_media_row.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../../chat/presentation/screens/chat_screen.dart';
 
 /// Modal de detalle completo del proveedor
 class ProviderDetailSheet extends StatefulWidget {
@@ -1059,26 +1061,36 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
               ),
             )
           else ...[
+            // Plan gating: GRATIS solo expone el chat interno; ESTANDAR/PREMIUM
+            // muestran chat + WhatsApp + llamada.
             Row(
               children: [
                 Expanded(
-                  flex: 2,
-                  child: _BigContactButton(
-                    label: 'WhatsApp',
-                    icon: Icons.chat_rounded,
-                    color: AppColors.whatsapp,
-                    onTap: _openWhatsApp,
+                  child: _BigIconButton(
+                    icon: Icons.forum_rounded,
+                    color: AppColors.amber,
+                    onTap: _openInternalChat,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _BigContactButton(
-                    label: 'Llamar',
-                    icon: Icons.call_rounded,
-                    color: AppColors.call,
-                    onTap: _makeCall,
+                if (widget.provider.subscriptionPlan == 'PREMIUM' ||
+                    widget.provider.subscriptionPlan == 'ESTANDAR') ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _BigIconButton(
+                      icon: Icons.chat_rounded,
+                      color: AppColors.whatsapp,
+                      onTap: _openWhatsApp,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _BigIconButton(
+                      icon: Icons.call_rounded,
+                      color: AppColors.call,
+                      onTap: _makeCall,
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 10),
@@ -1231,6 +1243,32 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   Future<void> _makeCall() async {
     final uri = Uri.parse('tel:${widget.provider.phone}');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  /// Abre el chat interno con este proveedor. Crea/recupera la sala
+  /// y navega a `ChatScreen`. Requiere usuario autenticado.
+  Future<void> _openInternalChat() async {
+    final auth = context.read<AuthProvider>();
+    if (auth.user == null) {
+      _showLoginRequired();
+      return;
+    }
+    final chat = context.read<ChatProvider>();
+    try {
+      final roomId = await chat.openRoom(
+        clientId:   auth.user!.id,
+        providerId: widget.provider.id,
+      );
+      if (!mounted) return;
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ChatScreen(roomId: roomId),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo abrir el chat: $e')),
+      );
+    }
   }
 }
 
@@ -2093,14 +2131,12 @@ class _ReviewDetailSheetState extends State<_ReviewDetailSheet> {
 
 // ─── Botón de contacto ────────────────────────────────────
 
-class _BigContactButton extends StatelessWidget {
-  final String label;
+class _BigIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
 
-  const _BigContactButton({
-    required this.label,
+  const _BigIconButton({
     required this.icon,
     required this.color,
     required this.onTap,
@@ -2117,20 +2153,8 @@ class _BigContactButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        child: Center(
+          child: Icon(icon, color: color, size: 22),
         ),
       ),
     );

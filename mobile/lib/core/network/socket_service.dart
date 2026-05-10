@@ -16,6 +16,8 @@ class SocketService {
   sio.Socket? _socket;
   final List<void Function(int userId)> _deactivationListeners = [];
   final List<void Function(Map<String, dynamic>)> _notificationListeners = [];
+  final List<void Function(Map<String, dynamic>)> _chatMessageListeners = [];
+  final List<void Function(Map<String, dynamic>)> _chatReadListeners = [];
 
   SocketService._internal();
 
@@ -93,6 +95,30 @@ class SocketService {
       }
     });
 
+    // Evento: mensaje de chat entrante (el server emite a user_{receptorId})
+    _socket!.on('newChatMessage', (data) {
+      try {
+        final map = Map<String, dynamic>.from(data as Map);
+        for (final listener in List<void Function(Map<String, dynamic>)>.from(_chatMessageListeners)) {
+          listener(map);
+        }
+      } catch (e) {
+        debugPrint('[Socket] Error procesando newChatMessage: $e');
+      }
+    });
+
+    // Evento: la otra parte leyó la conversación → actualizar dobles checks
+    _socket!.on('chatMessagesRead', (data) {
+      try {
+        final map = Map<String, dynamic>.from(data as Map);
+        for (final listener in List<void Function(Map<String, dynamic>)>.from(_chatReadListeners)) {
+          listener(map);
+        }
+      } catch (e) {
+        debugPrint('[Socket] Error procesando chatMessagesRead: $e');
+      }
+    });
+
     _socket!.connect();
   }
 
@@ -128,10 +154,32 @@ class SocketService {
     _notificationListeners.remove(listener);
   }
 
+  void addChatMessageListener(void Function(Map<String, dynamic>) listener) {
+    if (!_chatMessageListeners.contains(listener)) {
+      _chatMessageListeners.add(listener);
+    }
+  }
+
+  void removeChatMessageListener(void Function(Map<String, dynamic>) listener) {
+    _chatMessageListeners.remove(listener);
+  }
+
+  void addChatReadListener(void Function(Map<String, dynamic>) listener) {
+    if (!_chatReadListeners.contains(listener)) {
+      _chatReadListeners.add(listener);
+    }
+  }
+
+  void removeChatReadListener(void Function(Map<String, dynamic>) listener) {
+    _chatReadListeners.remove(listener);
+  }
+
   // ── Desconectar (logout) ───────────────────────────────────
   void disconnect() {
     _deactivationListeners.clear();
     _notificationListeners.clear();
+    _chatMessageListeners.clear();
+    _chatReadListeners.clear();
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;

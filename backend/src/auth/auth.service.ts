@@ -106,6 +106,8 @@ data: {
   razonSocial?: string | null;
   hasDelivery?: boolean;
   plenaCoordinacion?: boolean;
+  // OFICIO
+  hasHomeService?: boolean;
   // comunes
   whatsapp?: string | null;
   description?: string;
@@ -203,6 +205,7 @@ data: {
           razonSocial:      data.type === 'NEGOCIO' ? (data.razonSocial?.trim() || null) : null,
           hasDelivery:      data.type === 'NEGOCIO' ? (data.hasDelivery ?? false) : false,
           plenaCoordinacion: data.type === 'NEGOCIO' ? (data.plenaCoordinacion ?? false) : false,
+          hasHomeService:   data.type === 'OFICIO' ? (data.hasHomeService ?? false) : false,
           // comunes
           whatsapp:         data.whatsapp?.trim() || null,
           description:      data.description || null,

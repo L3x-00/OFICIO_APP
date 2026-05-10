@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import LegalModal from '@/components/legal-modal';
 import AboutModal from '@/components/about-modal';
 
@@ -76,11 +76,11 @@ Usted tiene derecho a:
 Para ejercer sus derechos o consultar sobre esta política: soporteofiapp@gmail.com`;
 
 const productLinks = [
-  { label: 'Beneficios',          href: '/#beneficios' },
-  { label: 'Cómo funciona',       href: '/#como-funciona' },
-  { label: 'Testimonios',         href: '/#testimonios' },
-  { label: 'Manual de usuario', href: '/#guia' },
-  { label: 'Panel de proveedor',  href: '/login' },
+  { label: 'Beneficios',         href: '/#beneficios' },
+  { label: 'Cómo funciona',      href: '/#como-funciona' },
+  { label: 'Testimonios',        href: '/#testimonios' },
+  { label: 'Manual de usuario',  href: '/#guia' },
+  { label: 'Panel de proveedor', href: '/login' },
 ];
 
 export default function Footer() {
@@ -90,119 +90,61 @@ export default function Footer() {
     title: '',
     content: '',
   });
-
   const [aboutOpen, setAboutOpen] = useState(false);
 
   return (
-    <footer className="relative border-t border-white/5 bg-bg-card/30 overflow-hidden">
-      <div
-        className="absolute inset-0 bg-grid-pattern bg-grid-md opacity-[0.03] pointer-events-none"
-        aria-hidden
-      />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+    <footer className="relative border-t border-line bg-paper-warm">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
 
           {/* Marca */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-3 mb-4 group w-fit">
-              <div className="relative w-10 h-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <Link href="/" className="flex items-center gap-3 mb-5 group w-fit">
+              <div className="relative w-10 h-10 rounded-xl bg-ink flex items-center justify-center shadow-ink-soft transition-transform duration-300 group-hover:scale-[1.04]">
                 <Image
                   src="/images/logo/logo_dark.png"
                   alt="OficioApp"
-                  fill
+                  width={24}
+                  height={24}
                   className="object-contain"
-                  sizes="40px"
                 />
               </div>
-              <span className="text-text-primary font-bold text-xl group-hover:text-primary transition-colors">
+              <span className="font-display font-bold text-ink text-[18px] tracking-tightest">
                 OficioApp
               </span>
             </Link>
-            <p className="text-text-muted text-base leading-relaxed mb-4 max-w-xs">
+            <p className="text-ink-3 text-[14.5px] leading-relaxed mb-5 max-w-xs">
               Encuentra al profesional ideal en minutos, no en horas.
-              El marketplace peruano que garantiza seguridad y calidad en oficios y negocios locales a través de verificación rigurosa.
+              El marketplace peruano que garantiza seguridad y calidad en oficios y negocios locales.
             </p>
-            <span className="text-text-primary font-bold text-sm group-hover:text-primary transition-colors">
-                Visita nuestras redes sociales
-            </span>
-            {/* Redes sociales */}
-            <div className="flex items-center gap-4 mt-4">
-              {/* Gmail */}
-              <a
-                href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Gmail"
-                className="transition-opacity hover:opacity-80"
-              >
-                <img
-                  src="/images/social/gmail.png"
-                  alt="Gmail"
-                  className="w-7 h-7 object-contain rounded-full"
-                />
-              </a>
 
-              {/* TikTok */}
-              <a
-                href="https://www.tiktok.com/@ofiapp.pe"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="TikTok"
-                className="transition-opacity hover:opacity-80"
-              >
-                <img
-                  src="/images/social/tik-tok.png"
-                  alt="TikTok"
-                  className="w-7 h-7 object-contain rounded-full"
-                />
+            <span className="eyebrow block mb-3">Síguenos</span>
+            <div className="flex items-center gap-3">
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com" target="_blank" rel="noopener noreferrer" aria-label="Gmail" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
+                <img src="/images/social/gmail.png" alt="" className="w-5 h-5 object-contain" />
               </a>
-
-              {/* Facebook */}
-              <a
-                href="https://www.facebook.com/profile.php?id=61585849044376"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="transition-opacity hover:opacity-80"
-              >
-                <img
-                  src="/images/social/fb.png"
-                  alt="Facebook"
-                  className="w-7 h-7 object-contain rounded-full"
-                />
+              <a href="https://www.tiktok.com/@ofiapp.pe" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
+                <img src="/images/social/tik-tok.png" alt="" className="w-5 h-5 object-contain" />
               </a>
-
-              {/* Instagram */}
-              <a
-                href="https://www.instagram.com/ofiapp.pe/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="transition-opacity hover:opacity-80"
-              >
-                <img
-                  src="/images/social/instagram.png"
-                  alt="Instagram"
-                  className="w-7 h-7 object-contain rounded-full"
-                />
+              <a href="https://www.facebook.com/profile.php?id=61585849044376" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
+                <img src="/images/social/fb.png" alt="" className="w-5 h-5 object-contain" />
+              </a>
+              <a href="https://www.instagram.com/ofiapp.pe/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
+                <img src="/images/social/instagram.png" alt="" className="w-5 h-5 object-contain" />
               </a>
             </div>
           </div>
 
-                    {/* Secciones */}
+          {/* Explorar */}
           <div>
-            <h4 className="text-text-primary font-semibold text-xs mb-4 uppercase tracking-wider">
-              Explorar
-            </h4>
-            <ul className="space-y-2.5">
+            <h4 className="eyebrow mb-4">Explorar</h4>
+            <ul className="space-y-3">
               {productLinks.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-text-muted text-sm hover:text-primary transition-colors inline-flex items-center gap-1.5 group"
+                    className="text-ink-2 text-[14px] hover:text-ink transition-colors"
                   >
-                    <span className="w-1 h-1 rounded-full bg-text-muted/40 group-hover:bg-primary group-hover:w-3 transition-all duration-300" />
                     {l.label}
                   </Link>
                 </li>
@@ -210,9 +152,8 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => setAboutOpen(true)}
-                  className="text-text-muted text-sm hover:text-primary transition-colors inline-flex items-center gap-1.5 group text-left"
+                  className="text-ink-2 text-[14px] hover:text-ink transition-colors text-left"
                 >
-                  <span className="w-1 h-1 rounded-full bg-text-muted/40 group-hover:bg-primary group-hover:w-3 transition-all duration-300" />
                   Conócenos
                 </button>
               </li>
@@ -221,16 +162,14 @@ export default function Footer() {
 
           {/* Contacto */}
           <div>
-            <h4 className="text-text-primary font-semibold text-xs mb-4 uppercase tracking-wider">
-              Contacto
-            </h4>
-            <ul className="space-y-2.5">
+            <h4 className="eyebrow mb-4">Contacto</h4>
+            <ul className="space-y-3">
               <li>
                 <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-text-muted text-sm hover:text-primary transition-colors"
+                  className="text-ink-2 text-[14px] hover:text-ink transition-colors"
                 >
                   Soporte técnico
                 </a>
@@ -240,7 +179,7 @@ export default function Footer() {
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=ronla.angarita31@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-text-muted text-sm hover:text-primary transition-colors"
+                  className="text-ink-2 text-[14px] hover:text-ink transition-colors"
                 >
                   Ventas y planes
                 </a>
@@ -250,7 +189,7 @@ export default function Footer() {
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=dannyafk2000@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-text-muted text-sm hover:text-primary transition-colors"
+                  className="text-ink-2 text-[14px] hover:text-ink transition-colors"
                 >
                   Centro de ayuda
                 </a>
@@ -260,10 +199,8 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-text-primary font-semibold text-xs mb-4 uppercase tracking-wider">
-              Legal
-            </h4>
-            <ul className="space-y-2.5">
+            <h4 className="eyebrow mb-4">Legal</h4>
+            <ul className="space-y-3">
               <li>
                 <button
                   onClick={() =>
@@ -273,7 +210,7 @@ export default function Footer() {
                       content: TERMS_CONTENT,
                     })
                   }
-                  className="text-text-muted text-sm hover:text-primary transition-colors text-left"
+                  className="text-ink-2 text-[14px] hover:text-ink transition-colors text-left"
                 >
                   Términos y condiciones
                 </button>
@@ -287,7 +224,7 @@ export default function Footer() {
                       content: PRIVACY_CONTENT,
                     })
                   }
-                  className="text-text-muted text-sm hover:text-primary transition-colors text-left"
+                  className="text-ink-2 text-[14px] hover:text-ink transition-colors text-left"
                 >
                   Política de privacidad
                 </button>
@@ -297,17 +234,19 @@ export default function Footer() {
         </div>
 
         {/* Barra inferior */}
-        <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-text-muted text-xs">
+        <div className="pt-7 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-ink-4 text-[12.5px]">
             © {year} OficioApp. Todos los derechos reservados.
           </span>
-          <span className="text-text-muted/70 text-xs inline-flex items-center gap-1.5">
-            Hecho con <Heart size={11} className="text-red fill-red animate-pulse-soft" /> en Perú
+          <span className="text-ink-4 text-[12.5px] inline-flex items-center gap-2">
+            <span className="peru-stripe">
+              <i /><i /><i />
+            </span>
+            Hecho con <Heart size={11} className="text-rose fill-rose" /> en Perú
           </span>
         </div>
       </div>
 
-      {/* Modal legal */}
       <LegalModal
         isOpen={legalModal.open}
         onClose={() => setLegalModal({ open: false, title: '', content: '' })}

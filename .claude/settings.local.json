@@ -59,7 +59,11 @@
       "Bash(grep -rn \"service\\\\\\\\.getOpportunities\\\\|subastasService\\\\\\\\.getOpportunities\\\\|subastas\\\\\\\\.getOpportunities\" c:/Users/Usuario/oficio_app/backend/src/)",
       "Bash(grep -rn \"from 'xlsx'\\\\|require\\\\\\\\\\('xlsx'\\\\|XLSX\\\\\\\\.\" c:/Users/Usuario/oficio_app/admin/ --include='*.ts' --include='*.tsx')",
       "Bash(grep -rn \"auth\\\\\\\\.pendingEmail\\\\|auth\\\\\\\\.resendOtp\\\\|auth\\\\\\\\.clearPendingRegistration\\\\|\\\\\\\\.pendingEmail\\\\|\\\\\\\\.resendOtp\\\\|\\\\\\\\.clearPendingRegistration\" c:/Users/Usuario/oficio_app/mobile/lib)",
-      "Bash(grep -n \"_joinCategoryRooms\\\\|joinCategoryRooms\\\\|categoryId\\\\|category\\\\\\\\?\\\\\\\\.id\" c:/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/providers/dashboard_provider.dart)"
+      "Bash(grep -n \"_joinCategoryRooms\\\\|joinCategoryRooms\\\\|categoryId\\\\|category\\\\\\\\?\\\\\\\\.id\" c:/Users/Usuario/oficio_app/mobile/lib/features/provider_dashboard/presentation/providers/dashboard_provider.dart)",
+      "Bash(ls .env*)",
+      "Bash(head -3 .env)",
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma generate --schema=prisma/schema.prisma)",
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma migrate dev --name add_chat_internal --create-only --schema=prisma/schema.prisma)"
     ]
   }
 }

@@ -120,6 +120,9 @@ model User {
   referralReceived Referral?        @relation("ReferralInvited") // Referido que aceptó (1-1)
   redemptions      CoinRedemption[] // Canjes de monedas
 
+  // Chat interno: salas donde el usuario participa como cliente
+  chatsAsClient    ChatRoom[]       @relation("ClientChats")
+
   @@map("users")
 }
 
@@ -277,6 +280,9 @@ model Provider {
   // Sistema de referidos
   referralReceived Referral?        @relation("ReferralInvitedProvider")
   referralRewards  ReferralReward[] // Servicios canjeables que ofrece este proveedor
+
+  // Chat interno: salas donde este perfil participa como proveedor
+  chatsAsProvider  ChatRoom[]       @relation("ProviderChats")
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
@@ -773,4 +779,44 @@ enum RedemptionStatus {
   PENDING
   COMPLETED
   CANCELLED
+}
+
+
+// ─────────────────────────────────────────
+// CHAT INTERNO
+// ─────────────────────────────────────────
+
+enum MessageStatus {
+  SENT       // Llegó al servidor
+  DELIVERED  // Llegó al dispositivo del receptor
+  READ       // El receptor lo leyó
+}
+
+model ChatRoom {
+  id         Int           @id @default(autoincrement())
+  clientId   Int
+  providerId Int
+  client     User          @relation("ClientChats", fields: [clientId], references: [id], onDelete: Cascade)
+  provider   Provider      @relation("ProviderChats", fields: [providerId], references: [id], onDelete: Cascade)
+  messages   ChatMessage[]
+  createdAt  DateTime      @default(now())
+
+  // Una sala única por (cliente, proveedor) — idempotencia a nivel BD
+  @@unique([clientId, providerId])
+  @@index([clientId, providerId])
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id         Int           @id @default(autoincrement())
+  chatRoomId Int
+  senderId   Int           // ID del User que envía
+  content    String
+  status     MessageStatus @default(SENT)
+  createdAt  DateTime      @default(now())
+
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+
+  @@index([chatRoomId, createdAt])
+  @@map("chat_messages")
 }

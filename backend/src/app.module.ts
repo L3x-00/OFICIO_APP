@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { SignImagesInterceptor } from './common/sign-images.interceptor.js';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
@@ -22,6 +23,7 @@ import { TrustValidationModule } from './trust-validation/trust-validation.modul
 import { SubastasModule } from './subastas/subastas.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { ReferralsModule } from './referrals/referrals.module.js';
+import { ChatModule } from './chat/chat.module.js';
 
 @Module({
   imports: [
@@ -35,6 +37,9 @@ import { ReferralsModule } from './referrals/referrals.module.js';
       ttl: 60000,   // ventana de 60 segundos
       limit: 60,    // máximo 60 requests
     }]),
+
+    // Cron jobs (limpieza de chat expirado, etc.)
+    ScheduleModule.forRoot(),
 
     // En el módulo de Redis o donde configures CacheModule
     CacheModule.registerAsync({
@@ -70,6 +75,7 @@ import { ReferralsModule } from './referrals/referrals.module.js';
     SubastasModule,
     PaymentsModule,
     ReferralsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

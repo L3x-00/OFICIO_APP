@@ -18,16 +18,14 @@ import {
   Download,
   ExternalLink,
   ChevronDown,
-  Image,
+  Image as ImageIcon,
 } from 'lucide-react';
-
-/* ── Tipos ──────────────────────────────────── */
 
 interface GuideStep {
   title: string;
   desc: string;
   icon: React.ElementType;
-  color: string;
+  accent: keyof typeof ACCENT;
   screenshot?: string;
   links?: { label: string; href: string }[];
   subSteps?: string[];
@@ -37,30 +35,31 @@ interface GuideSection {
   id: string;
   title: string;
   icon: React.ElementType;
-  color: string;
-  bg: string;
-  border: string;
-  hoverBorder: string;
+  accent: keyof typeof ACCENT;
   content: GuideStep[];
 }
 
-/* ── Datos del manual ──────────────────────────────────── */
+const ACCENT = {
+  blue:   { bg: 'bg-[#E0EAFB]',  text: 'text-[#1E40AF]',     border: 'border-[#C2D5F5]', dot: 'bg-[#3B82F6]' },
+  orange: { bg: 'bg-[#FBE8D6]',  text: 'text-primary-darker', border: 'border-[#F4CDA3]', dot: 'bg-primary' },
+  purple: { bg: 'bg-[#EBE0FB]',  text: 'text-[#5B21B6]',     border: 'border-[#D6C4F2]', dot: 'bg-[#8B5CF6]' },
+  amber:  { bg: 'bg-[#FBEFCD]',  text: 'text-[#7A4C00]',     border: 'border-[#EBCF8A]', dot: 'bg-amber' },
+  green:  { bg: 'bg-[#E2F5EC]',  text: 'text-[#0E5C3D]',     border: 'border-[#B8E3CD]', dot: 'bg-green' },
+  rose:   { bg: 'bg-[#FBE0E3]',  text: 'text-[#9B1C28]',     border: 'border-[#F2BFC4]', dot: 'bg-rose' },
+} as const;
 
 const GUIDE_SECTIONS: GuideSection[] = [
   {
     id: 'cliente',
     title: 'Soy Cliente — Buscar y contratar',
     icon: Search,
-    color: '#3B82F6',
-    bg: 'bg-blue-500/5',
-    border: 'border-blue-500/20',
-    hoverBorder: 'hover:border-blue-400/40',
+    accent: 'blue',
     content: [
       {
         title: 'Explora profesionales por categoría',
         desc: 'En la pantalla principal, usa los filtros de categoría, ubicación y rating para encontrar al profesional ideal.',
         icon: Search,
-        color: '#3B82F6',
+        accent: 'blue',
         screenshot: 'Pantalla de exploración con filtros de categoría y ubicación',
         subSteps: [
           'Selecciona una categoría (electricista, gasfitero, chef, etc.)',
@@ -72,7 +71,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Contacta directamente',
         desc: 'Cada tarjeta muestra WhatsApp y teléfono. Toca el botón verde para iniciar una conversación.',
         icon: MessageCircle,
-        color: '#10B981',
+        accent: 'green',
         screenshot: 'Tarjeta de proveedor con botones de WhatsApp y teléfono',
         subSteps: [
           'Toca el ícono de WhatsApp para enviar un mensaje',
@@ -84,7 +83,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Califica el servicio',
         desc: 'Después del servicio, deja una reseña con estrellas, comentario y foto.',
         icon: Star,
-        color: '#F59E0B',
+        accent: 'amber',
         screenshot: 'Formulario de reseña con estrellas, comentario y foto',
         subSteps: [
           'Toca "Escribir reseña" en el perfil del proveedor',
@@ -99,16 +98,13 @@ const GUIDE_SECTIONS: GuideSection[] = [
     id: 'profesional',
     title: 'Soy Profesional Independiente',
     icon: UserPlus,
-    color: '#E07B39',
-    bg: 'bg-primary/5',
-    border: 'border-primary/20',
-    hoverBorder: 'hover:border-primary/40',
+    accent: 'orange',
     content: [
       {
         title: 'Regístrate como Profesional',
         desc: 'Llena el formulario con DNI, teléfono, categoría, ubicación y fotos de tus trabajos.',
         icon: UserPlus,
-        color: '#E07B39',
+        accent: 'orange',
         screenshot: 'Formulario de registro de profesional independiente',
         subSteps: [
           'Elige un nombre para tu servicio',
@@ -126,7 +122,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Configura tu perfil',
         desc: 'Edita información, añade servicios, redes sociales y horarios de atención.',
         icon: Camera,
-        color: '#E07B39',
+        accent: 'orange',
         screenshot: 'Panel de edición de perfil profesional',
         subSteps: [
           'Ve a "Perfil" en tu panel',
@@ -140,7 +136,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Gestiona tus servicios',
         desc: 'Añade los servicios que ofreces según tu plan contratado.',
         icon: BookOpen,
-        color: '#E07B39',
+        accent: 'orange',
         screenshot: 'Lista de servicios con botón para añadir nuevo',
         subSteps: [
           'Toca "Añadir servicio"',
@@ -155,16 +151,13 @@ const GUIDE_SECTIONS: GuideSection[] = [
     id: 'negocio',
     title: 'Tengo un Negocio',
     icon: Store,
-    color: '#8B5CF6',
-    bg: 'bg-purple-500/5',
-    border: 'border-purple-500/20',
-    hoverBorder: 'hover:border-purple-400/40',
+    accent: 'purple',
     content: [
       {
         title: 'Registra tu Negocio',
         desc: 'Ingresa RUC, Nombre Comercial, Razón Social y configura opciones de delivery.',
         icon: Store,
-        color: '#8B5CF6',
+        accent: 'purple',
         screenshot: 'Formulario de registro de negocio con campos RUC y delivery',
         subSteps: [
           'Ingresa el RUC de tu negocio (11 dígitos)',
@@ -182,7 +175,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Añade productos',
         desc: 'Agrega los productos que vendes con su precio en soles (S/.).',
         icon: BookOpen,
-        color: '#8B5CF6',
+        accent: 'purple',
         screenshot: 'Lista de productos con precios y botón para añadir',
         subSteps: [
           'Ve a "Productos" en tu panel',
@@ -197,16 +190,13 @@ const GUIDE_SECTIONS: GuideSection[] = [
     id: 'monedas',
     title: 'Sistema de Monedas y Referidos',
     icon: Coins,
-    color: '#F59E0B',
-    bg: 'bg-amber-500/5',
-    border: 'border-amber-500/20',
-    hoverBorder: 'hover:border-amber-400/40',
+    accent: 'amber',
     content: [
       {
         title: 'Consigue tu código de referido',
         desc: 'Cada usuario tiene un código único. Compártelo y gana monedas.',
         icon: Coins,
-        color: '#F59E0B',
+        accent: 'amber',
         screenshot: 'Sección de promociones con código de referido',
         subSteps: [
           'Ve a "Promociones" desde tu perfil o panel',
@@ -219,7 +209,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Canjea tus monedas',
         desc: 'Acumula monedas y canjéalas por planes gratis o servicios reales.',
         icon: Crown,
-        color: '#F59E0B',
+        accent: 'amber',
         screenshot: 'Pantalla de canje de monedas con opciones disponibles',
         subSteps: [
           '1000 monedas = Plan Estándar por 1 mes',
@@ -234,31 +224,26 @@ const GUIDE_SECTIONS: GuideSection[] = [
     id: 'planes',
     title: 'Planes y Suscripciones',
     icon: Crown,
-    color: '#E07B39',
-    bg: 'bg-primary/5',
-    border: 'border-primary/20',
-    hoverBorder: 'hover:border-primary/40',
+    accent: 'orange',
     content: [
       {
         title: 'Planes disponibles',
         desc: 'OficioApp ofrece 3 planes: Gratis, Estándar y Premium.',
         icon: Crown,
-        color: '#E07B39',
+        accent: 'orange',
         screenshot: 'Comparativa de planes Gratis, Estándar y Premium',
         subSteps: [
           'Gratis: 3 servicios/productos, 3 fotos',
           'Estándar: 6 servicios/productos, 6 fotos, estadísticas',
           'Premium: ilimitado, máxima visibilidad, estadísticas avanzadas',
         ],
-        links: [
-          { label: 'Ver planes en panel web', href: '/login' },
-        ],
+        links: [{ label: 'Ver planes en panel web', href: '/login' }],
       },
       {
         title: 'Cómo pagar con Yape',
         desc: 'Escanea el QR, sube tu comprobante y un código de verificación.',
         icon: Coins,
-        color: '#E07B39',
+        accent: 'orange',
         screenshot: 'Pantalla de pago con QR de Yape y campos de comprobante',
         subSteps: [
           'Ve a "Ajustes" > "Ver planes disponibles"',
@@ -273,7 +258,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Cancelar un plan',
         desc: 'Puedes cancelar tu plan activo desde Ajustes cuando lo desees.',
         icon: Trash2,
-        color: '#EF4444',
+        accent: 'rose',
         screenshot: 'Sección de suscripción con botón de cancelar plan',
         subSteps: [
           'Ve a "Ajustes" en tu panel',
@@ -288,16 +273,13 @@ const GUIDE_SECTIONS: GuideSection[] = [
     id: 'cuenta',
     title: 'Gestión de Cuenta',
     icon: ShieldCheck,
-    color: '#10B981',
-    bg: 'bg-green-500/5',
-    border: 'border-green-500/20',
-    hoverBorder: 'hover:border-green-400/40',
+    accent: 'green',
     content: [
       {
         title: 'Cambiar contraseña',
         desc: 'Actualiza tu contraseña desde la sección de Perfil.',
         icon: ShieldCheck,
-        color: '#10B981',
+        accent: 'green',
         screenshot: 'Formulario de cambio de contraseña',
         subSteps: [
           'Ve a "Perfil" > "Cambiar contraseña"',
@@ -310,7 +292,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Eliminar cuenta',
         desc: 'Elimina permanentemente tu cuenta y todos tus datos.',
         icon: Trash2,
-        color: '#EF4444',
+        accent: 'rose',
         screenshot: 'Pantalla de confirmación para eliminar cuenta',
         subSteps: [
           'Ve a "Perfil" > "Eliminar cuenta"',
@@ -324,7 +306,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         title: 'Reportar un problema',
         desc: 'Reporta bugs, sugerencias o problemas con algún proveedor.',
         icon: Headphones,
-        color: '#10B981',
+        accent: 'green',
         screenshot: 'Formulario de reporte de problemas',
         subSteps: [
           'En tu perfil: "Reportar un problema"',
@@ -332,131 +314,103 @@ const GUIDE_SECTIONS: GuideSection[] = [
           'Panel profesional: "Ajustes" > "Reportar problema"',
           'También puedes escribir a soporte',
         ],
-        links: [
-          { label: 'Soporte técnico', href: 'mailto:soporteofiapp@gmail.com' },
-        ],
+        links: [{ label: 'Soporte técnico', href: 'mailto:soporteofiapp@gmail.com' }],
       },
     ],
   },
 ];
 
-/* ── Componente de tarjeta individual ────────────────────────────────── */
-
 function GuideCard({ section }: { section: GuideSection }) {
-  const [isActive, setIsActive] = useState(false);
-
+  const [open, setOpen] = useState(false);
   const Icon = section.icon;
+  const a = ACCENT[section.accent];
 
   return (
-    <div
-      className={`user-guide-card group relative rounded-2xl border ${section.border} ${section.bg} ${section.hoverBorder} transition-all duration-300`}
-    >
-      {/* Cabecera clickeable */}
+    <div className="user-guide-card group relative card-3d overflow-hidden">
       <button
-        onClick={() => setIsActive((prev) => !prev)}
-        className="w-full text-left px-5 py-5 flex items-center gap-4"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full text-left px-6 py-5 flex items-center gap-4"
       >
-        {/* Icono con animación sutil */}
-        <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
-          style={{ backgroundColor: `${section.color}20` }}
-        >
-          <Icon size={22} style={{ color: section.color }} />
+        <div className={`w-11 h-11 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center flex-shrink-0`}>
+          <Icon size={20} strokeWidth={1.75} className={a.text} />
         </div>
 
-        {/* Título y contador */}
         <div className="flex-1 min-w-0">
-          <h3
-            className="font-bold text-sm sm:text-base transition-colors duration-300"
-            style={{ color: section.color }}
-          >
+          <h3 className="font-display font-semibold text-ink text-[15.5px] leading-snug">
             {section.title}
           </h3>
-          <p className="text-text-muted text-xs mt-1">
+          <p className="text-ink-4 text-xs mt-1">
             {section.content.length} {section.content.length === 1 ? 'guía' : 'guías'}
           </p>
         </div>
 
-        {/* Flecha que rota */}
         <ChevronDown
           size={18}
-          className={`text-text-muted flex-shrink-0 transition-transform duration-300 ${
-            isActive ? 'rotate-180' : ''
-          }`}
+          strokeWidth={1.75}
+          className={`text-ink-4 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180 text-ink' : ''}`}
         />
       </button>
 
-      {/* Contenido desplegable - SOLO si está activo */}
-      {isActive && (
-        <div className="px-5 pb-5 space-y-5 border-t border-white/10 pt-5 guide-content-enter">
+      {open && (
+        <div className="px-6 pb-6 space-y-4 border-t border-line pt-5 guide-content-enter">
           {section.content.map((step, i) => {
             const StepIcon = step.icon;
+            const sa = ACCENT[step.accent];
             return (
-              <div
-                key={i}
-                className="bg-bg-card border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all duration-200"
-              >
+              <div key={i} className="card-flat p-4">
                 <div className="flex items-start gap-3">
-                  {/* Icono del paso */}
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ backgroundColor: `${step.color}18` }}
-                  >
-                    <StepIcon size={16} style={{ color: step.color }} />
+                  <div className={`w-9 h-9 rounded-lg border ${sa.border} ${sa.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                    <StepIcon size={15} strokeWidth={1.75} className={sa.text} />
                   </div>
 
-                  {/* Contenido del paso */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-text-primary font-semibold text-sm">{step.title}</h4>
-                    <p className="text-text-secondary text-xs leading-relaxed mt-1.5">{step.desc}</p>
+                    <h4 className="font-display font-semibold text-ink text-[14px]">
+                      {step.title}
+                    </h4>
+                    <p className="text-ink-3 text-[13px] leading-relaxed mt-1">
+                      {step.desc}
+                    </p>
 
-                    {/* CAPTURA DE PANTALLA */}
                     {step.screenshot && (
-                      <div className="mt-3 bg-bg-input/40 border border-white/10 border-dashed rounded-lg p-4 text-center group/screenshot cursor-pointer hover:border-primary/30 transition-all duration-200">
-                        <div className="flex flex-col items-center gap-2">
-                          <Image size={24} className="text-text-muted group-hover/screenshot:text-primary transition-colors duration-200" />
-                          <p className="text-text-muted text-xs font-medium">📸 {step.screenshot}</p>
-                          <span className="text-[10px] text-text-muted/60">
-                            (Espacio para captura de pantalla real)
+                      <div className="mt-3 bg-paper border border-dashed border-line-2 rounded-lg p-4 text-center hover:border-primary/40 transition-colors duration-200">
+                        <div className="flex flex-col items-center gap-1.5">
+                          <ImageIcon size={20} className="text-ink-4" strokeWidth={1.75} />
+                          <p className="text-ink-3 text-[12px] font-medium">{step.screenshot}</p>
+                          <span className="text-[10px] text-ink-5">
+                            (Espacio para captura real)
                           </span>
                         </div>
                       </div>
                     )}
 
-                    {/* Sub-pasos */}
                     {step.subSteps && step.subSteps.length > 0 && (
                       <ul className="mt-3 space-y-1.5">
                         {step.subSteps.map((s, j) => (
-                          <li key={j} className="text-text-muted text-xs flex items-start gap-2">
-                            <span
-                              className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                              style={{ backgroundColor: step.color }}
-                            />
+                          <li key={j} className="text-ink-3 text-[12.5px] flex items-start gap-2 leading-relaxed">
+                            <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${sa.dot}`} />
                             {s}
                           </li>
                         ))}
                       </ul>
                     )}
 
-                    {/* Enlaces */}
                     {step.links && step.links.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {step.links.map((link, k) => (
-                          <a
-                            key={k}
-                            href={link.href}
-                            target={link.href.startsWith('http') ? '_blank' : undefined}
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-white/10 hover:border-primary/40 text-text-secondary hover:text-primary transition-all duration-200"
-                          >
-                            {link.href.startsWith('http') || link.href.startsWith('mailto') ? (
-                              <ExternalLink size={12} />
-                            ) : (
-                              <ArrowRight size={12} />
-                            )}
-                            {link.label}
-                          </a>
-                        ))}
+                        {step.links.map((link, k) => {
+                          const ext = link.href.startsWith('http') || link.href.startsWith('mailto');
+                          return (
+                            <a
+                              key={k}
+                              href={link.href}
+                              target={ext ? '_blank' : undefined}
+                              rel="noopener noreferrer"
+                              className="btn btn-ghost btn-sm press-effect"
+                            >
+                              {ext ? <ExternalLink size={12} /> : <ArrowRight size={12} />}
+                              {link.label}
+                            </a>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -470,32 +424,23 @@ function GuideCard({ section }: { section: GuideSection }) {
   );
 }
 
-/* ── Componente principal ────────────────────────────────── */
-
 export default function UserGuideSection() {
   return (
-    <section id="guia" className="py-20 sm:py-28 bg-bg-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Encabezado ── */}
-        <div className="text-center mb-14" data-reveal>
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/25 rounded-full px-4 py-1.5 mb-4">
-            <BookOpen size={14} className="text-primary" />
-            <span className="text-primary text-xs font-bold uppercase tracking-widest">
-              Manual de usuario
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-text-primary leading-tight">
-            Aprende a usar{' '}
-            <span className="text-gradient">OficioApp</span>
+    <section id="guia" className="py-24 sm:py-32 bg-paper">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+
+        <div className="max-w-2xl mb-14 sm:mb-16" data-reveal>
+          <span className="eyebrow">Manual de usuario</span>
+          <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
+            Aprende a usar OficioApp.
           </h2>
-          <p className="text-text-secondary mt-4 max-w-xl mx-auto text-lg">
+          <p className="mt-4 text-ink-3 text-[16px] leading-relaxed max-w-xl">
             Todo lo que necesitas saber para aprovechar al máximo la plataforma,
             tanto si eres cliente como si eres profesional o negocio.
           </p>
         </div>
 
-        {/* ── Grid de tarjetas: 2 columnas × 3 filas = 6 tarjetas ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {GUIDE_SECTIONS.map((section) => (
             <div key={section.id} data-reveal>
               <GuideCard section={section} />
@@ -503,31 +448,21 @@ export default function UserGuideSection() {
           ))}
         </div>
 
-        {/* ── Nota al pie ── */}
-        <div className="mt-12 text-center" data-reveal>
-          <p className="text-text-muted text-xs max-w-lg mx-auto leading-relaxed">
-            Si después de leer este manual aún tienes dudas, no dudes en contactarnos.
-            Estamos aquí para ayudarte a sacar el máximo provecho de OficioApp.
+        <div className="mt-16 text-center" data-reveal>
+          <p className="text-ink-4 text-[13px] max-w-lg mx-auto leading-relaxed">
+            Si después de leer este manual aún tienes dudas, contáctanos.
+            Estamos aquí para ayudarte.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 mt-5">
-            <a
-              href="mailto:soporteofiapp@gmail.com"
-              className="btn-ghost press-effect inline-flex items-center gap-2 px-5 py-2 rounded-xl font-semibold text-sm"
-            >
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            <a href="mailto:soporteofiapp@gmail.com" className="btn btn-ghost btn-sm press-effect">
               <Headphones size={14} />
               Soporte técnico
             </a>
-            <a
-              href="mailto:ronla.angarita31@gmail.com"
-              className="btn-ghost press-effect inline-flex items-center gap-2 px-5 py-2 rounded-xl font-semibold text-sm"
-            >
+            <a href="mailto:ronla.angarita31@gmail.com" className="btn btn-ghost btn-sm press-effect">
               <Download size={14} />
               Ventas y planes
             </a>
-            <a
-              href="#"
-              className="btn-primary press-effect inline-flex items-center gap-2 px-5 py-2 rounded-xl font-semibold text-sm"
-            >
+            <a href="#" className="btn btn-ink btn-sm press-effect">
               <ExternalLink size={14} />
               Descargar la app
             </a>

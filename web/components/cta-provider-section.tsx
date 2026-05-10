@@ -3,9 +3,9 @@ import { Smartphone, ArrowRight, Shield, TrendingUp, Bell, Star, CheckCircle } f
 
 const features = [
   { icon: Shield,     text: 'Verificación de identidad gratuita' },
-  { icon: TrendingUp, text: 'Estadísticas de tu perfil en tiempo real' },
-  { icon: Bell,       text: 'Notificaciones de nuevas solicitudes' },
-  { icon: Star,       text: 'Sistema de calificaciones verificadas' },
+  { icon: TrendingUp, text: 'Estadísticas en tiempo real' },
+  { icon: Bell,       text: 'Notificaciones de solicitudes' },
+  { icon: Star,       text: 'Calificaciones verificadas' },
 ];
 
 const providerPerks = [
@@ -17,111 +17,93 @@ const providerPerks = [
 
 export default function CtaProviderSection() {
   return (
-    <section className="py-20 sm:py-28 relative overflow-hidden">
-      {/* Fondo y blobs */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-bg-dark to-bg-card" />
-      <div className="blob bg-primary/30 w-[480px] h-[480px] -top-40 right-[-120px] animate-float-slow" />
-      <div className="blob bg-amber/20 w-[360px] h-[360px] bottom-[-100px] left-[-80px] animate-float" />
-      <div className="absolute inset-0 bg-grid-pattern bg-grid-md opacity-[0.04] pointer-events-none" aria-hidden />
+    <section className="relative py-24 sm:py-32 overflow-hidden bg-surface border-y border-line">
+      <div className="absolute inset-0 grid-bg opacity-50 pointer-events-none" aria-hidden />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+
+        {/* Bloque CTA principal */}
         <div
           data-reveal="scale"
-          className="relative glass-card rounded-3xl p-8 sm:p-12 lg:p-16 text-center overflow-hidden gradient-border"
+          className="relative card-3d p-10 sm:p-14 lg:p-16 overflow-hidden"
         >
-          {/* Spotlight orgánico */}
+          {/* Spotlight cálido */}
           <div
-            className="absolute inset-0 opacity-30 pointer-events-none"
+            className="absolute inset-0 opacity-50 pointer-events-none"
             style={{
               background:
-                'radial-gradient(circle at 50% 0%, rgba(224,123,57,0.4), transparent 60%)',
+                'radial-gradient(circle at 100% 0%, rgba(224,123,57,0.10), transparent 55%)',
             }}
             aria-hidden
           />
 
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-full px-4 py-1.5 mb-6 animate-pulse-soft">
-              <span className="text-primary text-xs font-bold uppercase tracking-widest">
-                Para proveedores
-              </span>
+          <div className="relative max-w-3xl">
+            <div className="chip-eyebrow mb-7">
+              <span className="dot" />
+              Para proveedores
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-5 max-w-3xl mx-auto leading-tight">
-              Haz crecer tu negocio con{' '}
-              <span className="text-gradient">OficioApp</span>
+            <h2 className="font-display font-bold tracking-tightest text-ink text-[36px] sm:text-[48px] leading-[1.05]">
+              Haz crecer tu negocio
+              <br className="hidden sm:block" /> con <span className="text-gradient">OficioApp</span>.
             </h2>
 
-            <p className="text-text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="mt-6 text-ink-3 text-[17px] leading-relaxed max-w-2xl">
               Descarga la app, crea tu perfil en minutos y empieza a conectar con clientes
               que buscan exactamente lo que ofreces.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-12">
-              {features.map((f, i) => (
-                <div
-                  key={f.text}
-                  className="flex items-center gap-2 text-text-secondary text-sm animate-fade-in-up"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
-                  <f.icon size={15} className="text-primary flex-shrink-0" />
+            <div className="mt-9 flex flex-wrap gap-3">
+              <a href="#" className="btn btn-orange btn-lg press-effect">
+                <Smartphone size={18} />
+                Descargar la app
+              </a>
+              <Link href="/login" className="btn btn-ghost btn-lg press-effect group">
+                Acceder al panel web
+                <ArrowRight
+                  size={18}
+                  className="transition-transform duration-200 group-hover:translate-x-0.5"
+                />
+              </Link>
+            </div>
+
+            {/* Mini features inline */}
+            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
+              {features.map((f) => (
+                <div key={f.text} className="flex items-center gap-2 text-ink-3 text-[13.5px]">
+                  <f.icon size={15} className="text-primary flex-shrink-0" strokeWidth={1.75} />
                   {f.text}
                 </div>
               ))}
             </div>
-
-            <div className="flex flex-wrap justify-center gap-4">
-              <a
-                href="#"
-                className="btn-primary press-effect group px-8 py-4 rounded-button font-bold text-base inline-flex items-center gap-2"
-              >
-                <Smartphone size={20} />
-                Descargar la app
-              </a>
-              <Link
-                href="/login"
-                className="btn-ghost press-effect group px-8 py-4 rounded-button font-bold text-base inline-flex items-center gap-2"
-              >
-                Acceder al panel web
-                <ArrowRight
-                  size={20}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </Link>
-            </div>
           </div>
         </div>
 
-        {/* Sub-bloque movido del Hero: ¿Eres profesional o tienes un negocio? */}
+        {/* Bloque secundario: profesional o negocio */}
         <div
           data-reveal
-          className="relative mt-10 bg-bg-card/60 border border-white/8 rounded-3xl p-8 sm:p-10 backdrop-blur-sm overflow-hidden"
+          className="relative mt-8 card-flat p-8 sm:p-10"
         >
-          <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-center">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
+              <h3 className="font-display font-semibold text-ink text-[24px] sm:text-[28px] leading-snug">
                 ¿Eres profesional o tienes un negocio?
               </h3>
-              <p className="text-text-secondary text-sm sm:text-base mb-7 leading-relaxed">
-                Regístrate, verifica tu perfil y empieza a recibir clientes de tu ciudad desde hoy.
+              <p className="mt-4 text-ink-3 text-[15px] leading-relaxed">
+                Regístrate, verifica tu perfil y empieza a recibir clientes de tu ciudad
+                desde hoy.
               </p>
 
-              <a
-                href="#"
-                className="inline-flex items-center gap-2 bg-primary/15 hover:bg-primary/25 border border-primary/40 hover:border-primary text-primary px-5 py-2.5 rounded-button text-sm font-semibold transition-all duration-200 hover:shadow-glow-sm hover-lift press-effect"
-              >
-                <Smartphone size={16} />
+              <a href="#" className="mt-6 btn btn-ink btn-sm press-effect">
+                <Smartphone size={14} />
                 Descarga la app gratis
               </a>
             </div>
 
             <ul className="space-y-3">
-              {providerPerks.map((perk, i) => (
-                <li
-                  key={perk}
-                  className="flex items-center gap-2.5 text-text-secondary text-sm animate-fade-in-up"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
-                  <CheckCircle size={16} className="text-primary flex-shrink-0" />
+              {providerPerks.map((perk) => (
+                <li key={perk} className="flex items-start gap-2.5 text-ink-2 text-[14.5px]">
+                  <CheckCircle size={16} className="text-green flex-shrink-0 mt-0.5" strokeWidth={1.75} />
                   {perk}
                 </li>
               ))}

@@ -107,18 +107,23 @@ function ClienteContent() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-dark">
-      <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="min-h-screen bg-paper">
+      <div className="max-w-5xl mx-auto p-5 sm:p-7 lg:p-10 space-y-6">
         <div data-reveal className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-extrabold text-text-primary">Mi Panel</h1>
+          <div>
+            <span className="eyebrow">Mi cuenta</span>
+            <h1 className="mt-2 font-display font-bold tracking-tightest text-ink text-[28px] sm:text-[34px] leading-tight">
+              Mi Panel
+            </h1>
+          </div>
           <button
             onClick={() => {
               clearSession();
               router.push('/');
             }}
-            className="flex items-center gap-2 text-text-muted hover:text-red text-sm font-medium transition-colors"
+            className="flex items-center gap-2 text-ink-4 hover:text-rose text-[13px] font-display font-medium transition-colors"
           >
-            <LogOut size={16} />
+            <LogOut size={16} strokeWidth={1.75} />
             <span className="hidden sm:inline">Cerrar sesión</span>
           </button>
         </div>
@@ -126,37 +131,35 @@ function ClienteContent() {
         {/* Perfil */}
         <div
           data-reveal
-          className="relative bg-gradient-to-br from-primary/10 via-bg-card to-bg-card border border-primary/20 rounded-2xl p-6 overflow-hidden"
+          className="relative card-3d p-7 overflow-hidden"
         >
-          <div className="blob bg-primary/25 w-64 h-64 -top-20 -right-20 animate-float-slow" aria-hidden />
+          <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
 
           <div className="relative flex items-start gap-4">
-            <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center text-white font-extrabold text-2xl shadow-glow-md ring-2 ring-primary/30 flex-shrink-0">
+            <div className="avatar avatar-orange w-16 h-16 text-2xl font-bold flex-shrink-0 shadow-orange-soft">
               {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h2 className="text-lg sm:text-xl font-bold text-text-primary">
+                <h2 className="font-display font-bold text-ink text-[18px] sm:text-[22px] tracking-tightest">
                   {user?.firstName} {user?.lastName}
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/30">
-                  Cliente
-                </span>
+                <span className="badge badge-trust">Cliente</span>
               </div>
-              <div className="space-y-1.5 mt-2">
-                <div className="flex items-center gap-2 text-text-secondary text-sm">
-                  <Mail size={14} className="text-text-muted flex-shrink-0" />
+              <div className="space-y-1.5 mt-3">
+                <div className="flex items-center gap-2 text-ink-3 text-[13.5px]">
+                  <Mail size={14} className="text-ink-4 flex-shrink-0" strokeWidth={1.75} />
                   <span className="truncate">{user?.email}</span>
                 </div>
                 {user?.phone && (
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <Phone size={14} className="text-text-muted flex-shrink-0" />
+                  <div className="flex items-center gap-2 text-ink-3 text-[13.5px]">
+                    <Phone size={14} className="text-ink-4 flex-shrink-0" strokeWidth={1.75} />
                     {user.phone}
                   </div>
                 )}
                 {user?.department && (
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <MapPin size={14} className="text-text-muted flex-shrink-0" />
+                  <div className="flex items-center gap-2 text-ink-3 text-[13.5px]">
+                    <MapPin size={14} className="text-ink-4 flex-shrink-0" strokeWidth={1.75} />
                     {[user.department, user.province, user.district].filter(Boolean).join(', ')}
                   </div>
                 )}
@@ -166,7 +169,7 @@ function ClienteContent() {
         </div>
 
         {/* Tabs */}
-        <div data-reveal className="flex gap-2 bg-bg-card border border-white/8 rounded-2xl p-1.5 overflow-x-auto">
+        <div data-reveal className="flex gap-1.5 card-flat p-1.5 overflow-x-auto">
           <TabButton
             active={activeSection === 'favorites'}
             onClick={() => setActiveSection('favorites')}
@@ -205,37 +208,29 @@ function ClienteContent() {
         {/* CTA hacerse proveedor */}
         <div
           data-reveal="scale"
-          className="relative overflow-hidden rounded-2xl gradient-border bg-gradient-to-br from-primary/15 via-bg-card to-amber/10 p-6 sm:p-8 text-center"
+          className="relative card-3d overflow-hidden p-8 sm:p-10 text-center"
         >
-          <div className="blob bg-primary/30 w-72 h-72 -top-20 -right-20 animate-float-slow" aria-hidden />
+          <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
 
           <div className="relative">
-            <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-full px-3 py-1 mb-4">
-              <Sparkles size={12} className="text-primary" />
-              <span className="text-primary text-[10px] font-bold uppercase tracking-widest">
-                Hazte profesional
-              </span>
+            <div className="chip-eyebrow mb-5 mx-auto">
+              <Sparkles size={12} strokeWidth={1.75} />
+              Hazte profesional
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-text-primary mb-2">
+            <h2 className="font-display font-bold tracking-tightest text-ink text-[24px] sm:text-[28px] leading-snug mb-3">
               ¿Quieres ofrecer tus servicios en{' '}
               <span className="text-gradient">OficioApp</span>?
             </h2>
-            <p className="text-text-secondary text-sm mb-6 max-w-md mx-auto">
+            <p className="text-ink-3 text-[14.5px] mb-7 max-w-md mx-auto leading-relaxed">
               Regístrate como profesional o negocio y empieza a recibir clientes desde hoy.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <a
-                href="#"
-                className="btn-primary press-effect inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-              >
-                <Briefcase size={16} />
+              <a href="#" className="btn btn-ink press-effect">
+                <Briefcase size={15} />
                 Registrarme como Profesional
               </a>
-              <a
-                href="#"
-                className="btn-ghost press-effect inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-              >
-                <Store size={16} />
+              <a href="#" className="btn btn-ghost press-effect">
+                <Store size={15} />
                 Registrar mi Negocio
               </a>
             </div>
@@ -264,18 +259,22 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+      className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-[13.5px] font-display font-medium whitespace-nowrap transition-colors ${
         active
-          ? 'bg-primary/15 text-primary shadow-glow-sm'
-          : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
+          ? 'bg-ink text-white'
+          : 'text-ink-3 hover:text-ink hover:bg-surface-2'
       }`}
     >
-      <Icon size={16} />
+      <Icon size={15} strokeWidth={1.75} />
       <span>{label}</span>
       {count !== undefined && count > 0 && (
         <span
           className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums ${
-            highlight ? 'bg-red text-white' : 'bg-white/10 text-text-secondary'
+            highlight
+              ? 'bg-rose text-white'
+              : active
+              ? 'bg-white/15 text-white'
+              : 'bg-surface-2 text-ink-3 border border-line-2'
           }`}
         >
           {count}
@@ -290,14 +289,14 @@ function TabButton({
 function FavoritesSection({ items }: { items: FavoriteItem[] }) {
   if (items.length === 0) {
     return (
-      <div data-reveal className="bg-bg-card border border-white/5 rounded-2xl p-12 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red/10 flex items-center justify-center animate-float-slow">
-          <Heart size={28} className="text-red/60" />
+      <div data-reveal className="card-3d p-12 text-center">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#FBE0E3] border border-[#F2BFC4] flex items-center justify-center">
+          <Heart size={26} className="text-[#9B1C28]" strokeWidth={1.75} />
         </div>
-        <h3 className="text-text-primary font-semibold text-lg mb-2">
+        <h3 className="font-display font-semibold text-ink text-[18px] mb-2">
           No tienes favoritos aún
         </h3>
-        <p className="text-text-muted text-sm max-w-sm mx-auto">
+        <p className="text-ink-3 text-[14px] max-w-sm mx-auto leading-relaxed">
           Marca como favoritos a los profesionales que más te gusten para encontrarlos rápido.
         </p>
       </div>
@@ -313,9 +312,9 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
         return (
           <div
             key={fav.id}
-            className="group bg-bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-primary/30 hover-lift transition-all duration-300"
+            className="group card-3d hover-lift overflow-hidden"
           >
-            <div className="aspect-video bg-bg-input relative">
+            <div className="aspect-video bg-surface-2 relative">
               {cover ? (
                 <img
                   src={cover}
@@ -323,25 +322,25 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-text-muted/30">
-                  <Briefcase size={32} />
+                <div className="w-full h-full flex items-center justify-center text-ink-5">
+                  <Briefcase size={32} strokeWidth={1.5} />
                 </div>
               )}
               <button
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-red hover:bg-red/30 transition-colors"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/85 backdrop-blur-sm flex items-center justify-center text-rose hover:bg-rose/85 hover:text-white transition-colors"
                 aria-label="Quitar de favoritos"
               >
-                <Heart size={14} className="fill-red" />
+                <Heart size={14} className="fill-rose" />
               </button>
             </div>
             <div className="p-4">
-              <h3 className="text-text-primary font-semibold text-sm truncate">{p.businessName}</h3>
+              <h3 className="font-display font-semibold text-ink text-[14px] truncate">{p.businessName}</h3>
               {p.category?.name && (
-                <p className="text-text-muted text-xs truncate mt-0.5">{p.category.name}</p>
+                <p className="text-ink-4 text-[12px] truncate mt-0.5">{p.category.name}</p>
               )}
               {typeof p.averageRating === 'number' && p.averageRating > 0 && (
-                <div className="flex items-center gap-1 mt-2 text-amber text-xs font-bold tabular-nums">
-                  <Star size={12} className="fill-amber" />
+                <div className="flex items-center gap-1 mt-2 text-ink text-[12.5px] font-display font-semibold tabular-nums">
+                  <Star size={12} className="text-amber fill-amber" />
                   {p.averageRating.toFixed(1)}
                 </div>
               )}
@@ -358,14 +357,14 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
 function NotificationsSection({ items }: { items: NotificationItem[] }) {
   if (items.length === 0) {
     return (
-      <div data-reveal className="bg-bg-card border border-white/5 rounded-2xl p-12 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center animate-float-slow">
-          <Bell size={28} className="text-primary/60" />
+      <div data-reveal className="card-3d p-12 text-center">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#FBE8D6] border border-[#F4CDA3] flex items-center justify-center">
+          <Bell size={26} className="text-primary-darker" strokeWidth={1.75} />
         </div>
-        <h3 className="text-text-primary font-semibold text-lg mb-2">
+        <h3 className="font-display font-semibold text-ink text-[18px] mb-2">
           No tienes notificaciones
         </h3>
-        <p className="text-text-muted text-sm max-w-sm mx-auto">
+        <p className="text-ink-3 text-[14px] max-w-sm mx-auto leading-relaxed">
           Te avisaremos cuando haya novedades importantes para ti.
         </p>
       </div>
@@ -373,29 +372,31 @@ function NotificationsSection({ items }: { items: NotificationItem[] }) {
   }
 
   return (
-    <div data-reveal className="bg-bg-card border border-white/5 rounded-2xl divide-y divide-white/5">
+    <div data-reveal className="card-flat divide-y divide-line">
       {items.map((n) => (
         <div
           key={n.id}
           className={`flex items-start gap-3 p-4 transition-colors ${
-            n.isRead ? '' : 'bg-primary/5'
-          } hover:bg-white/[0.02]`}
+            n.isRead ? '' : 'bg-[#FBE8D6]/35'
+          } hover:bg-surface-2`}
         >
           <div
             className={`w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center ${
-              n.isRead ? 'bg-white/5 text-text-muted' : 'bg-primary/15 text-primary'
+              n.isRead
+                ? 'bg-surface-2 text-ink-4 border border-line'
+                : 'bg-[#FBE8D6] text-primary-darker border border-[#F4CDA3]'
             }`}
           >
-            <Bell size={16} />
+            <Bell size={15} strokeWidth={1.75} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2 mb-0.5">
-              <h4 className="text-text-primary font-semibold text-sm truncate">{n.title}</h4>
-              <span className="text-text-muted text-[10px] flex-shrink-0">
+              <h4 className="font-display font-semibold text-ink text-[14px] truncate">{n.title}</h4>
+              <span className="text-ink-4 text-[10.5px] flex-shrink-0">
                 {formatDistanceToNow(new Date(n.sentAt), { addSuffix: true, locale: es })}
               </span>
             </div>
-            <p className="text-text-secondary text-xs leading-relaxed">{n.message}</p>
+            <p className="text-ink-3 text-[12.5px] leading-relaxed">{n.message}</p>
           </div>
           {!n.isRead && (
             <span className="w-2 h-2 rounded-full bg-primary mt-3 flex-shrink-0 animate-pulse-soft" />
@@ -411,8 +412,8 @@ function NotificationsSection({ items }: { items: NotificationItem[] }) {
 function SettingsSection({ user }: { user: UserType | null }) {
   return (
     <div data-reveal className="space-y-4">
-      <div className="bg-bg-card border border-white/5 rounded-2xl p-6">
-        <h3 className="text-text-primary font-semibold text-base mb-4">Información de cuenta</h3>
+      <div className="card-3d p-6">
+        <h3 className="font-display font-semibold text-ink text-[16px] mb-5">Información de cuenta</h3>
         <div className="space-y-3">
           <Field label="Nombre" value={`${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() || '—'} />
           <Field label="Email" value={user?.email ?? '—'} verified />
@@ -424,7 +425,7 @@ function SettingsSection({ user }: { user: UserType | null }) {
         </div>
       </div>
 
-      <div className="bg-bg-card border border-white/5 rounded-2xl divide-y divide-white/5">
+      <div className="card-flat divide-y divide-line">
         <SettingsLink label="Términos y Condiciones" />
         <SettingsLink label="Política de Privacidad" />
         <SettingsLink label="Centro de ayuda" />
@@ -436,12 +437,12 @@ function SettingsSection({ user }: { user: UserType | null }) {
 function Field({ label, value, verified }: { label: string; value: string; verified?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-text-muted text-xs uppercase tracking-wider font-semibold">
+      <span className="eyebrow text-ink-4">
         {label}
       </span>
-      <span className="text-text-primary text-sm flex items-center gap-1.5 truncate text-right">
+      <span className="text-ink text-[14px] flex items-center gap-1.5 truncate text-right font-medium">
         <span className="truncate">{value}</span>
-        {verified && <CheckCircle size={13} className="text-green flex-shrink-0" />}
+        {verified && <CheckCircle size={13} className="text-green flex-shrink-0" strokeWidth={1.75} />}
       </span>
     </div>
   );
@@ -449,9 +450,9 @@ function Field({ label, value, verified }: { label: string; value: string; verif
 
 function SettingsLink({ label }: { label: string }) {
   return (
-    <button className="flex items-center justify-between w-full px-5 py-4 hover:bg-white/[0.02] transition-colors text-text-secondary hover:text-text-primary group">
-      <span className="text-sm font-medium">{label}</span>
-      <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+    <button className="flex items-center justify-between w-full px-5 py-4 hover:bg-surface-2 transition-colors text-ink-2 hover:text-ink group">
+      <span className="text-[14px] font-display font-medium">{label}</span>
+      <ChevronRight size={15} className="text-ink-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" strokeWidth={1.75} />
     </button>
   );
 }

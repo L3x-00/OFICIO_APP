@@ -25,6 +25,8 @@ import 'features/notifications/domain/models/notification_model.dart';
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/notifications/presentation/screens/notifications_screen.dart';
 import 'features/providers_list/presentation/providers/providers_provider.dart';
+import 'features/chat/presentation/providers/chat_provider.dart';
+import 'features/chat/presentation/screens/chat_screen.dart';
 import 'features/subastas/presentation/providers/subastas_provider.dart';
 import 'features/subastas/presentation/screens/my_requests_screen.dart';
 import 'features/subastas/presentation/screens/oportunidades_tab.dart';
@@ -72,6 +74,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => DashboardProvider()),
           ChangeNotifierProvider(create: (_) => NotificationsProvider()),
           ChangeNotifierProvider(create: (_) => ProvidersProvider()),
+          ChangeNotifierProvider(create: (_) => ChatProvider()),
         ],
         child: const OficioApp(),
       ),
@@ -138,11 +141,13 @@ class _AppRootState extends State<_AppRoot> {
     final auth   = context.read<AuthProvider>();
     final notifs = context.read<NotificationsProvider>();
     final favs   = context.read<FavoritesProvider>();
+    final chat   = context.read<ChatProvider>();
 
-    // Sincronizar NotificationsProvider y FavoritesProvider con auth
+    // Sincronizar NotificationsProvider, FavoritesProvider y ChatProvider con auth
     if (auth.user != null) {
       notifs.setUser(userId: auth.user!.id, role: auth.user!.role);
       favs.initialize(auth.user!.id);
+      chat.initialize(auth.user!.id);
 
       // Inicializar FCM una sola vez por sesión
       if (!_fcmInitialized) {
@@ -154,6 +159,7 @@ class _AppRootState extends State<_AppRoot> {
     } else {
       notifs.clearUser();
       favs.clear();
+      chat.clear();
       _fcmInitialized = false;
     }
 
@@ -257,9 +263,45 @@ class _AppRootState extends State<_AppRoot> {
         navigator.push(
           MaterialPageRoute(builder: (_) => const OportunidadesTab()),
         );
+      case 'CHAT_MESSAGE':
+        _openChatFromPush(message.data);
       default:
         break;
     }
+  }
+
+  /// Deep link de un push de chat. El payload del backend trae:
+  ///   { type: 'CHAT_MESSAGE', chatRoomId, messageId, senderId }
+  /// Garantizamos que el `ChatProvider` tenga la sala cargada antes de
+  /// empujar la pantalla, así el `ChatScreen` resuelve la otra parte.
+  Future<void> _openChatFromPush(Map<String, dynamic> data) async {
+    final roomId = int.tryParse('${data['chatRoomId'] ?? ''}');
+    if (roomId == null) {
+      debugPrint('[FCM] CHAT_MESSAGE sin chatRoomId — push ignorado');
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    if (auth.user == null) {
+      // No hay sesión — el push se registró con la cuenta anterior.
+      // Mejor no empujar a un chat que no le pertenece.
+      return;
+    }
+
+    final chat = context.read<ChatProvider>();
+    // Asegurar que `currentUserId` y los listeners estén configurados
+    // (idempotente si ya estaba inicializado).
+    await chat.initialize(auth.user!.id);
+    // Si la sala todavía no estaba en la bandeja (chat nuevo recibido
+    // mientras la app estaba cerrada), recargamos.
+    if (!chat.rooms.any((r) => r.id == roomId)) {
+      await chat.loadRooms();
+    }
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(builder: (_) => ChatScreen(roomId: roomId)),
+    );
   }
 
   void _showTrustRejectionDialog(TrustRejectionPayload rejection) {

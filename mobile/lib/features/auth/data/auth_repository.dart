@@ -165,6 +165,7 @@ class AuthRepository {
     String? razonSocial,
     bool hasDelivery = false,
     bool plenaCoordinacion = false,
+    bool hasHomeService = false,
     // comunes
     String? description,
     String? address,
@@ -193,6 +194,7 @@ class AuthRepository {
         if (razonSocial != null && razonSocial.isNotEmpty) 'razonSocial': razonSocial,
         if (type == 'NEGOCIO') 'hasDelivery': hasDelivery,
         if (type == 'NEGOCIO' && hasDelivery) 'plenaCoordinacion': plenaCoordinacion,
+        if (type == 'OFICIO') 'hasHomeService': hasHomeService,
         if (description != null && description.isNotEmpty) 'description': description,
         if (address != null && address.isNotEmpty) 'address': address,
         'categoryId': ?categoryId,

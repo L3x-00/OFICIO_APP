@@ -75,8 +75,6 @@ export default function LoginPage() {
       saveSession(data);
       toast.success('¡Bienvenido de nuevo!');
 
-      // Backend may omit `user` in some response shapes — fall back to localStorage,
-      // which `saveSession` just populated, before routing.
       const sessionUser = data.user ?? getUser();
       if (!sessionUser || !sessionUser.role) {
         toast.error('No se pudo cargar tu perfil. Vuelve a iniciar sesión.');
@@ -103,8 +101,7 @@ export default function LoginPage() {
 
       router.push(getRedirectPath(sessionUser, hasProvider));
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Error al iniciar sesión';
+      const message = err instanceof Error ? err.message : 'Error al iniciar sesión';
       toast.error(message);
       triggerShake();
       const newAttempts = attempts + 1;
@@ -120,65 +117,51 @@ export default function LoginPage() {
   const isLocked = !!lockedUntil && Date.now() < lockedUntil;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Decoración */}
-      <div className="blob bg-primary/30 w-[500px] h-[500px] -top-40 -left-40 animate-float-slow" aria-hidden />
-      <div className="blob bg-amber/20 w-[400px] h-[400px] bottom-[-150px] right-[-80px] animate-float" aria-hidden />
-      <div className="absolute inset-0 bg-grid-pattern bg-grid-md opacity-[0.03] pointer-events-none" aria-hidden />
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-5 py-16">
+      {/* Topografía suave */}
+      <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
+      <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" aria-hidden />
 
       <div
-        className={`relative w-full max-w-md glass-card rounded-3xl p-8 sm:p-10 shadow-2xl shadow-primary/10 gradient-border animate-scale-in ${shake ? 'animate-shake' : ''}`}
+        className={`relative w-full max-w-md card-3d p-8 sm:p-10 animate-scale-in ${shake ? 'animate-shake' : ''}`}
       >
-        {/* Logo */}
-        <div className="flex justify-center mb-6 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 bg-gradient-primary rounded-2xl shadow-glow-md animate-pulse-glow" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Image
-                src="/images/logo/logo_dark.png"
-                alt="OficioApp"
-                width={36}
-                height={36}
-                className="object-contain"
-              />
-            </div>
+        <div className="flex flex-col items-center mb-8 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+          <div className="w-14 h-14 rounded-2xl bg-ink flex items-center justify-center shadow-ink-soft mb-5">
+            <Image
+              src="/images/logo/logo_dark.png"
+              alt="OficioApp"
+              width={28}
+              height={28}
+              className="object-contain"
+            />
           </div>
+          <h1 className="font-display font-bold tracking-tightest text-ink text-[26px] sm:text-[30px] leading-tight">
+            Bienvenido de nuevo
+          </h1>
+          <p className="text-ink-4 text-[14px] mt-2">Tu portal de gestión profesional</p>
         </div>
 
-        <h1
-          className="text-2xl sm:text-3xl font-bold text-text-primary text-center mb-2 animate-fade-in-up"
-          style={{ animationDelay: '160ms' }}
-        >
-          Bienvenido a <span className="text-gradient">OficioApp</span>
-        </h1>
-        <p
-          className="text-text-secondary text-sm text-center mb-8 animate-fade-in-up"
-          style={{ animationDelay: '240ms' }}
-        >
-          Tu portal de gestión profesional
-        </p>
-
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
-          <div className="animate-fade-in-up" style={{ animationDelay: '320ms' }}>
-            <label className="block text-text-secondary text-xs font-medium mb-2 uppercase tracking-wider">
+          <div className="animate-fade-in-up" style={{ animationDelay: '160ms' }}>
+            <label className="block text-ink-3 text-[12.5px] font-display font-semibold mb-2 uppercase tracking-[0.16em]">
               Correo electrónico
             </label>
             <div className="relative group">
               <Mail
                 className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
-                  email ? 'text-primary' : 'text-text-muted group-focus-within:text-primary'
+                  email ? 'text-primary' : 'text-ink-4 group-focus-within:text-ink'
                 }`}
-                size={18}
+                size={17}
+                strokeWidth={1.75}
               />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full bg-bg-input border rounded-xl pl-11 pr-4 py-3 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none transition-all duration-200 ${
+                className={`w-full bg-surface border rounded-xl pl-11 pr-4 py-3 text-ink text-[14px] placeholder:text-ink-5 focus:outline-none transition-all duration-200 font-sans ${
                   errors.email
-                    ? 'border-red/60 focus:border-red focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-white/8 focus:border-primary/60 focus:shadow-[0_0_0_3px_rgba(224,123,57,0.15)] hover:border-white/15'
+                    ? 'border-rose/60 focus:border-rose focus:shadow-[0_0_0_3px_rgba(225,75,90,0.12)]'
+                    : 'border-line-2 focus:border-ink focus:shadow-[0_0_0_3px_rgba(20,20,28,0.08)] hover:border-ink-4'
                 }`}
                 placeholder="tu@correo.com"
                 autoComplete="email"
@@ -186,33 +169,33 @@ export default function LoginPage() {
               />
             </div>
             {errors.email && (
-              <p className="text-red text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
+              <p className="text-rose text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
                 <AlertCircle size={12} />
                 {errors.email}
               </p>
             )}
           </div>
 
-          {/* Password */}
-          <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-            <label className="block text-text-secondary text-xs font-medium mb-2 uppercase tracking-wider">
+          <div className="animate-fade-in-up" style={{ animationDelay: '240ms' }}>
+            <label className="block text-ink-3 text-[12.5px] font-display font-semibold mb-2 uppercase tracking-[0.16em]">
               Contraseña
             </label>
             <div className="relative group">
               <Lock
                 className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
-                  password ? 'text-primary' : 'text-text-muted group-focus-within:text-primary'
+                  password ? 'text-primary' : 'text-ink-4 group-focus-within:text-ink'
                 }`}
-                size={18}
+                size={17}
+                strokeWidth={1.75}
               />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full bg-bg-input border rounded-xl pl-11 pr-12 py-3 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none transition-all duration-200 ${
+                className={`w-full bg-surface border rounded-xl pl-11 pr-12 py-3 text-ink text-[14px] placeholder:text-ink-5 focus:outline-none transition-all duration-200 font-sans ${
                   errors.password
-                    ? 'border-red/60 focus:border-red focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-white/8 focus:border-primary/60 focus:shadow-[0_0_0_3px_rgba(224,123,57,0.15)] hover:border-white/15'
+                    ? 'border-rose/60 focus:border-rose focus:shadow-[0_0_0_3px_rgba(225,75,90,0.12)]'
+                    : 'border-line-2 focus:border-ink focus:shadow-[0_0_0_3px_rgba(20,20,28,0.08)] hover:border-ink-4'
                 }`}
                 placeholder="••••••••"
                 autoComplete="current-password"
@@ -221,63 +204,58 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-4 hover:text-ink transition-colors"
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={17} strokeWidth={1.75} /> : <Eye size={17} strokeWidth={1.75} />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-red text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
+              <p className="text-rose text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
                 <AlertCircle size={12} />
                 {errors.password}
               </p>
             )}
           </div>
 
-          {/* Rate-limit visual */}
           {isLocked && (
-            <div className="bg-red/10 border border-red/30 rounded-xl px-4 py-3 text-center text-red text-sm animate-fade-in flex items-center justify-center gap-2">
+            <div className="bg-rose/8 border border-rose/30 rounded-xl px-4 py-3 text-center text-rose text-[13px] animate-fade-in flex items-center justify-center gap-2">
               <AlertCircle size={14} />
               Demasiados intentos. Espera <span className="font-bold tabular-nums">{remainingSecs}s</span>
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading || isLocked}
-            className={`btn-primary press-effect w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-fade-in-up`}
-            style={{ animationDelay: '480ms' }}
+            className="btn btn-ink press-effect w-full h-12 text-[14px] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-fade-in-up"
+            style={{ animationDelay: '320ms' }}
           >
             {loading ? (
               <>
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={17} className="animate-spin" />
                 Ingresando...
               </>
             ) : isLocked ? (
               `Espera ${remainingSecs}s`
             ) : (
               <>
-                <LogIn size={18} />
+                <LogIn size={17} />
                 Ingresar
               </>
             )}
           </button>
         </form>
 
-        <div
-          className="mt-6 pt-5 border-t border-white/5 text-center animate-fade-in-up"
-          style={{ animationDelay: '560ms' }}
-        >
-          <p className="text-text-muted text-xs mb-3">
+        <div className="mt-7 pt-5 border-t border-line text-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+          <p className="text-ink-4 text-[12.5px] mb-3">
             ¿No tienes cuenta?{' '}
-            <Link href="/" className="text-primary hover:text-primary-light underline-offset-4 hover:underline transition-colors">
+            <Link href="/" className="text-ink font-semibold hover:underline underline-offset-4 transition-colors">
               Descarga la app
             </Link>
           </p>
-          <p className="text-text-muted/70 text-[10px] flex items-center justify-center gap-1.5">
-            <ShieldCheck size={12} className="text-green" />
+          <p className="text-ink-5 text-[11px] flex items-center justify-center gap-1.5">
+            <ShieldCheck size={12} className="text-green" strokeWidth={1.75} />
             Tus credenciales viajan cifradas. Protegemos tu privacidad.
           </p>
         </div>

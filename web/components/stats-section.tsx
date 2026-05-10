@@ -1,58 +1,31 @@
 'use client';
 
-import { Users, Star, MapPin, Briefcase } from 'lucide-react';
 import { useCountUp } from '@/lib/hooks';
 
 const stats = [
-  {
-    icon: Users,
-    target: 500,
-    suffix: '+',
-    label: 'Profesionales registrados',
-    color: 'text-primary',
-    bg: 'bg-primary/10',
-  },
-  {
-    icon: Star,
-    target: 1200,
-    suffix: '+',
-    label: 'Reseñas verificadas',
-    color: 'text-amber',
-    bg: 'bg-amber/10',
-  },
-  {
-    icon: MapPin,
-    target: 5,
-    suffix: '+',
-    label: 'Ciudades atendidas',
-    color: 'text-green',
-    bg: 'bg-green/10',
-  },
-  {
-    icon: Briefcase,
-    target: 30,
-    suffix: '+',
-    label: 'Categorías de servicio',
-    color: 'text-blue-400',
-    bg: 'bg-blue-400/10',
-  },
+  { target: 500,  suffix: '+', label: 'Profesionales registrados' },
+  { target: 1200, suffix: '+', label: 'Reseñas verificadas' },
+  { target: 5,    suffix: '+', label: 'Ciudades atendidas' },
+  { target: 30,   suffix: '+', label: 'Categorías de servicio' },
 ];
 
-function StatItem({ stat }: { stat: (typeof stats)[number] }) {
+function StatItem({ stat, index }: { stat: (typeof stats)[number]; index: number }) {
   const { ref, value } = useCountUp(stat.target, 1800);
 
   return (
-    <div className="text-center group cursor-default">
-      <div
-        className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow-sm ring-1 ring-white/5`}
-      >
-        <stat.icon size={24} className={stat.color} />
-      </div>
-      <div className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold ${stat.color} mb-1 tabular-nums`}>
+    <div
+      data-reveal
+      className={`reveal-delay-${index + 1} relative pl-6 sm:pl-7`}
+    >
+      <span
+        className="absolute left-0 top-1.5 bottom-1.5 w-px bg-line-2"
+        aria-hidden
+      />
+      <div className="font-display tabular-nums text-4xl sm:text-5xl font-bold text-ink leading-none tracking-tightest">
         <span ref={ref}>{value.toLocaleString('es-PE')}</span>
-        {stat.suffix}
+        <span className="text-orange-3 text-primary-darker">{stat.suffix}</span>
       </div>
-      <div className="text-text-muted text-xs sm:text-sm leading-snug">
+      <div className="mt-3 text-ink-3 text-[13.5px] leading-snug max-w-[160px]">
         {stat.label}
       </div>
     </div>
@@ -61,15 +34,11 @@ function StatItem({ stat }: { stat: (typeof stats)[number] }) {
 
 export default function StatsSection() {
   return (
-    <section className="relative py-16 bg-bg-card/40 border-y border-white/5 overflow-hidden">
-      <div className="absolute inset-0 bg-grid-pattern bg-grid-md opacity-[0.03] pointer-events-none" aria-hidden />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+    <section className="relative bg-surface border-y border-line">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-14 sm:py-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10">
           {stats.map((stat, i) => (
-            <div key={stat.label} data-reveal className={`reveal-delay-${i + 1}`}>
-              <StatItem stat={stat} />
-            </div>
+            <StatItem key={stat.label} stat={stat} index={i} />
           ))}
         </div>
       </div>

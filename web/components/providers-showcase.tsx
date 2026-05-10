@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Briefcase,
   AlertTriangle,
-  Sparkles,
+  ArrowRight,
   Layers,
 } from 'lucide-react';
 import { api, type PublicProvider } from '@/lib/api';
@@ -18,17 +18,12 @@ const STACK_COUNT = 5;
 const FALLBACK_IMG = '/images/portada.jpeg';
 const STORAGE_KEY = 'oficio_showcase_expanded';
 
-/**
- * Pre-baked transforms para las 5 cartas del montón.
- * Index 0 = carta superior (casi recta). Index 4 = carta del fondo (más inclinada).
- * Se aplican en orden inverso al renderizar para que la carta 0 quede arriba.
- */
 const STACK_LAYOUT: { rotate: number; x: number; y: number }[] = [
-  { rotate: 1.2,  x:  4,   y: 0 },   // top
+  { rotate: 1.2,  x:  4,   y: 0 },
   { rotate: -3,   x: -16,  y: 6 },
   { rotate: 5,    x:  18,  y: 12 },
   { rotate: -7,   x: -28,  y: 18 },
-  { rotate: 8,    x:  30,  y: 22 },  // bottom
+  { rotate: 8,    x:  30,  y: 22 },
 ];
 
 export default function ProvidersShowcase() {
@@ -37,7 +32,6 @@ export default function ProvidersShowcase() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  // Restaura preferencia del usuario
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (localStorage.getItem(STORAGE_KEY) === '1') setExpanded(true);
@@ -64,7 +58,6 @@ export default function ProvidersShowcase() {
     setExpanded(true);
     if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, '1');
   };
-
   const handleCollapse = () => {
     setExpanded(false);
     if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, '0');
@@ -74,38 +67,34 @@ export default function ProvidersShowcase() {
   const showGrid  = !loading && !error && providers.length > 0 && expanded;
 
   return (
-    <section className="relative py-20 sm:py-28 bg-bg-dark overflow-hidden">
-      <div className="blob bg-primary/15 w-[420px] h-[420px] -top-20 left-1/3 animate-float-slow" aria-hidden />
+    <section className="relative py-24 sm:py-32 bg-paper overflow-hidden">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 sm:mb-14" data-reveal>
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/25 rounded-full px-4 py-1.5 mb-4">
-            <span className="text-primary text-xs font-bold uppercase tracking-widest">
-              Servicios destacados
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12 sm:mb-16" data-reveal>
+          <div className="max-w-xl">
+            <span className="eyebrow">Servicios destacados</span>
+            <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
+              Algunos de los más buscados.
+            </h2>
+            <p className="mt-4 text-ink-3 text-[16px] leading-relaxed">
+              Profesionales y negocios reales, listos para ayudarte hoy mismo.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-text-primary leading-tight">
-            Algunos de los <span className="text-gradient">más buscados</span>
-          </h2>
-          <p className="text-text-secondary mt-4 max-w-xl mx-auto text-lg">
-            Profesionales y negocios reales, listos para ayudarte hoy mismo.
-          </p>
         </div>
 
         {loading && <SkeletonGrid />}
 
         {!loading && error && (
-          <div className="bg-bg-card border border-white/5 rounded-2xl p-8 text-center max-w-md mx-auto">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber/10 flex items-center justify-center">
-              <AlertTriangle size={26} className="text-amber" />
+          <div className="card-flat p-8 text-center max-w-md mx-auto">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[#FBEFCD] border border-[#EBCF8A] flex items-center justify-center">
+              <AlertTriangle size={22} className="text-[#7A4C00]" />
             </div>
-            <p className="text-text-secondary text-sm">{error}</p>
+            <p className="text-ink-3 text-sm">{error}</p>
           </div>
         )}
 
         {!loading && !error && providers.length === 0 && <EmptyState />}
 
-        {/* Vista collage: montón de polaroids */}
         {showStack && (
           <CollageStack
             providers={providers.slice(0, STACK_COUNT)}
@@ -113,7 +102,6 @@ export default function ProvidersShowcase() {
           />
         )}
 
-        {/* Vista cuadrícula desplegada */}
         {showGrid && (
           <ExpandedGrid providers={providers} onCollapse={handleCollapse} />
         )}
@@ -122,7 +110,7 @@ export default function ProvidersShowcase() {
   );
 }
 
-/* ── Vista 1: Montón de polaroids ──────────────────────────── */
+/* ── Stack collage (vista colapsada) ───────────────────────── */
 
 function CollageStack({
   providers,
@@ -132,25 +120,22 @@ function CollageStack({
   onExpand: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-10 sm:gap-12 animate-fade-in">
-      {/* Contenedor del montón. Altura fija para que las cards absolute floten centradas */}
+    <div className="flex flex-col items-center gap-12 animate-fade-in">
       <div
-        className="relative w-full max-w-[300px] sm:max-w-[340px] h-[380px] sm:h-[440px]"
+        className="relative w-full max-w-[320px] sm:max-w-[360px] h-[400px] sm:h-[460px]"
         aria-hidden="true"
       >
-        {/* Renderizamos del fondo hacia arriba para z-index correcto */}
         {[...providers].reverse().map((p, idxFromBottom) => {
-          // El último iterado (idxFromBottom = providers.length-1) corresponde al top
           const realIndex = providers.length - 1 - idxFromBottom;
           const layout = STACK_LAYOUT[realIndex] ?? STACK_LAYOUT[0];
           return (
             <div
               key={p.id}
-              className="stack-card absolute left-1/2 top-1/2 w-[260px] sm:w-[300px] -translate-x-1/2 -translate-y-1/2"
+              className="absolute left-1/2 top-1/2 w-[280px] sm:w-[320px] -translate-x-1/2 -translate-y-1/2"
               style={{
                 transform: `translate(calc(-50% + ${layout.x}px), calc(-50% + ${layout.y}px)) rotate(${layout.rotate}deg)`,
                 zIndex: providers.length - realIndex,
-                animationDelay: `${realIndex * 0.12}s`,
+                animation: `fade-in 0.5s ease-out ${realIndex * 0.1}s both`,
               }}
             >
               <ProviderCard provider={p} variant="stack" />
@@ -159,28 +144,26 @@ function CollageStack({
         })}
       </div>
 
-      {/* Botón llamativo */}
       <button
         type="button"
         onClick={onExpand}
-        aria-label="Desplegar tarjetas y descubrir todos los profesionales"
-        className="btn-primary press-effect group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-bold text-sm sm:text-base shadow-glow-md hover:shadow-glow-lg"
+        className="btn btn-ink btn-lg press-effect group"
       >
-        <Sparkles
-          size={18}
-          className="transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
-        />
         Descubrir profesionales
+        <ArrowRight
+          size={18}
+          className="transition-transform duration-200 group-hover:translate-x-0.5"
+        />
       </button>
 
-      <p className="text-text-muted text-xs -mt-6">
+      <p className="text-ink-4 text-[13px] -mt-7">
         {providers.length} de {MAX_VISIBLE} disponibles
       </p>
     </div>
   );
 }
 
-/* ── Vista 2: Cuadrícula desplegada ────────────────────────── */
+/* ── Grid expandido ──────────────────────────────────────────── */
 
 function ExpandedGrid({
   providers,
@@ -191,28 +174,26 @@ function ExpandedGrid({
 }) {
   return (
     <div className="animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 lg:gap-8 px-2 sm:px-0 py-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
         {providers.map((p, i) => (
           <div
             key={p.id}
-            className="grid-card-enter"
+            className="animate-fade-in-up"
             style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
           >
-            <ProviderCard provider={p} variant="grid" index={i} />
+            <ProviderCard provider={p} variant="grid" />
           </div>
         ))}
       </div>
 
-      {/* Toggle discreto para volver a vista collage */}
-      <div className="flex justify-center mt-10">
+      <div className="flex justify-center mt-12">
         <button
           type="button"
           onClick={onCollapse}
-          aria-label="Volver a la vista de collage apilado"
-          className="inline-flex items-center gap-2 text-text-muted hover:text-primary text-xs font-semibold transition-colors group"
+          className="inline-flex items-center gap-2 text-ink-3 hover:text-ink text-[13px] font-display font-semibold transition-colors group"
         >
           <Layers
-            size={13}
+            size={14}
             className="transition-transform duration-200 group-hover:-translate-y-0.5"
           />
           Vista collage
@@ -222,16 +203,14 @@ function ExpandedGrid({
   );
 }
 
-/* ── Tarjeta proveedor (variante stack | grid) ─────────────── */
+/* ── Provider Card ─────────────────────────────────────────── */
 
 function ProviderCard({
   provider,
   variant,
-  index = 0,
 }: {
   provider: PublicProvider;
   variant: 'stack' | 'grid';
-  index?: number;
 }) {
   const cover = pickCover(provider);
   const description = truncate(provider.description, 80);
@@ -244,12 +223,8 @@ function ProviderCard({
     .join(' · ');
 
   if (variant === 'stack') {
-    // Variante decorativa: sin hover, sin float, no clickable
     return (
-      <article
-        className="bg-bg-card border border-white/8 rounded-2xl overflow-hidden shadow-2xl shadow-black/40 ring-1 ring-white/5 select-none pointer-events-none"
-        aria-hidden="true"
-      >
+      <article className="card-3d overflow-hidden select-none pointer-events-none" aria-hidden="true">
         <CoverImage src={cover} alt={provider.businessName} category={provider.category?.name} rating={rating} />
         <CardBody
           businessName={provider.businessName}
@@ -264,14 +239,8 @@ function ProviderCard({
     );
   }
 
-  // Grid variant: hover + float + tilt alterno
-  const tilt = index % 2 === 0 ? '-1.2deg' : '1.2deg';
-  const animationDelay = `${(index % 6) * 0.4}s`;
   return (
-    <article
-      className="showcase-card group relative bg-bg-card border border-white/5 rounded-2xl overflow-hidden shadow-xl shadow-black/20 transition-all duration-300 ease-smooth"
-      style={{ transform: `rotate(${tilt})`, animationDelay }}
-    >
+    <article className="card-3d hover-lift overflow-hidden group">
       <CoverImage
         src={cover}
         alt={provider.businessName}
@@ -306,7 +275,7 @@ function CoverImage({
   interactive?: boolean;
 }) {
   return (
-    <div className="relative aspect-[5/3] bg-bg-input overflow-hidden">
+    <div className="relative aspect-[5/3] bg-surface-2 overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
@@ -314,24 +283,24 @@ function CoverImage({
         loading="lazy"
         decoding="async"
         className={`w-full h-full object-cover transition-transform duration-500 ease-smooth ${
-          interactive ? 'group-hover:scale-110' : ''
+          interactive ? 'group-hover:scale-[1.04]' : ''
         }`}
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-bg-card/95 via-bg-card/30 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent pointer-events-none" />
 
       {category && (
-        <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-black/55 backdrop-blur-md border border-white/15 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg">
+        <span className="badge badge-ink absolute top-3 left-3 backdrop-blur-md">
           <Briefcase size={11} />
           {category}
         </span>
       )}
 
       {rating > 0 && (
-        <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/15 text-amber text-xs font-bold px-2.5 py-1 rounded-full shadow-lg tabular-nums">
-          <Star size={11} className="fill-amber" />
+        <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-ink text-white text-[11px] font-display font-semibold px-2 py-1 rounded-full tabular-nums">
+          <Star size={11} className="text-amber fill-amber" />
           {rating.toFixed(1)}
         </span>
       )}
@@ -358,13 +327,13 @@ function CardBody({
 }) {
   return (
     <div className="p-5">
-      <h3 className="text-text-primary font-bold text-base leading-tight truncate">
+      <h3 className="font-display font-semibold text-ink text-[16px] leading-snug truncate">
         {businessName}
       </h3>
 
-      <div className="flex items-center gap-1.5 mt-2">
+      <div className="flex items-center gap-2 mt-2">
         <StarRow value={rating} />
-        <span className="text-text-muted text-xs">
+        <span className="text-ink-4 text-xs">
           {reviews > 0
             ? `(${reviews} ${reviews === 1 ? 'reseña' : 'reseñas'})`
             : 'Sin reseñas aún'}
@@ -372,14 +341,14 @@ function CardBody({
       </div>
 
       {location && (
-        <div className="flex items-center gap-1.5 mt-2.5 text-text-muted text-xs">
-          <MapPin size={12} className="text-primary/70 flex-shrink-0" />
+        <div className="flex items-center gap-1.5 mt-3 text-ink-3 text-xs">
+          <MapPin size={12} className="text-ink-4 flex-shrink-0" />
           <span className="truncate">{location}</span>
         </div>
       )}
 
       {phoneShown && (
-        <div className="flex items-center gap-1.5 mt-1.5 text-text-secondary text-xs">
+        <div className="flex items-center gap-1.5 mt-1 text-ink-3 text-xs">
           {isWhats ? (
             <MessageCircle size={12} className="text-green flex-shrink-0" />
           ) : (
@@ -390,15 +359,13 @@ function CardBody({
       )}
 
       {description && (
-        <p className="text-text-secondary text-sm leading-relaxed mt-3">
+        <p className="text-ink-3 text-[13.5px] leading-relaxed mt-3">
           {description}
         </p>
       )}
     </div>
   );
 }
-
-/* ── Estrellas ─────────────────────────────────────────────── */
 
 function StarRow({ value }: { value: number }) {
   const full = Math.floor(value);
@@ -408,24 +375,18 @@ function StarRow({ value }: { value: number }) {
         <Star
           key={i}
           size={12}
-          className={i < full ? 'text-amber fill-amber' : 'text-amber/25'}
+          className={i < full ? 'text-amber fill-amber' : 'text-line-3'}
         />
       ))}
     </div>
   );
 }
 
-/* ── Skeleton & empty ─────────────────────────────────────── */
-
 function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 lg:gap-8 px-2 sm:px-0 py-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-bg-card border border-white/5 rounded-2xl overflow-hidden"
-          style={{ transform: `rotate(${i % 2 === 0 ? '-1.2deg' : '1.2deg'})` }}
-        >
+        <div key={i} className="card-3d overflow-hidden">
           <div className="skeleton aspect-[5/3]" />
           <div className="p-5 space-y-2.5">
             <div className="skeleton h-4 w-3/4 rounded" />
@@ -442,19 +403,17 @@ function SkeletonGrid() {
 
 function EmptyState() {
   return (
-    <div className="bg-bg-card border border-white/5 rounded-2xl p-12 text-center max-w-md mx-auto">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center animate-float-slow">
-        <Briefcase size={32} className="text-primary/60" />
+    <div className="card-3d p-12 text-center max-w-md mx-auto">
+      <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-paper border border-line-2 flex items-center justify-center">
+        <Briefcase size={26} className="text-ink-4" />
       </div>
-      <h3 className="text-text-primary font-semibold text-lg mb-2">
+      <h3 className="font-display font-semibold text-ink text-[17px] mb-2">
         Estamos preparando los mejores profesionales de tu zona
       </h3>
-      <p className="text-text-muted text-sm">¡Vuelve pronto!</p>
+      <p className="text-ink-4 text-sm">¡Vuelve pronto!</p>
     </div>
   );
 }
-
-/* ── Helpers ──────────────────────────────────────────────── */
 
 function pickCover(p: PublicProvider): string {
   const imgs = p.images ?? [];
