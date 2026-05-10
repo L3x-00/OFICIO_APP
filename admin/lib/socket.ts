@@ -15,6 +15,14 @@ export function getAdminSocket(): Socket {
     reconnection: true,
     reconnectionDelay: 2000,
     reconnectionAttempts: Infinity,
+    // 🛡️ CAMBIO CRÍTICO: Enviar el token JWT dinámicamente en el handshake
+    // Usamos una función para que si el socket se reconecta, siempre use el token más reciente.
+    auth: (cb) => {
+      const token = typeof window !== 'undefined' 
+        ? localStorage.getItem('adminToken') 
+        : null;
+      cb({ token: token || '' });
+    }
   });
 
   return _socket;
