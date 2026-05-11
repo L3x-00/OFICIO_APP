@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Plus, ArrowUpRight } from 'lucide-react';
 
 interface Service {
@@ -30,15 +31,15 @@ export default function ServicesList({
   const isAtLimit = currentCount >= maxItems;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-primary">
+        <h2 className="font-display text-lg font-semibold text-white">
           {isNegocio ? 'Productos' : 'Servicios'}
         </h2>
         <button
           onClick={onAdd}
           disabled={isAtLimit}
-          className="bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-button text-sm font-medium flex items-center gap-2 transition-colors"
+          className="btn btn-primary btn-sm press-effect disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={16} />
           Añadir
@@ -46,65 +47,69 @@ export default function ServicesList({
       </div>
 
       {/* Indicador de límite */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-text-secondary text-sm">
-            {currentCount}/{maxItems} {isNegocio ? 'productos' : 'servicios'} (Plan {plan})
+      <div className="glass rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-white/60 text-sm">
+            {currentCount}/{maxItems} {isNegocio ? 'productos' : 'servicios'} <span className="text-white/30">(Plan {plan})</span>
           </span>
           {isAtLimit && (
-            <span className="text-primary text-xs font-medium">
+            <span className="text-primary-light text-xs font-semibold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse-soft" />
               Límite alcanzado
             </span>
           )}
         </div>
-        <div className="w-full h-2 bg-bg-input rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all"
-            style={{
-              width: `${Math.min((currentCount / maxItems) * 100, 100)}%`,
-            }}
+        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min((currentCount / maxItems) * 100, 100)}%` }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            className="h-full bg-gradient-primary rounded-full shadow-glow-sm" 
           />
         </div>
         {isAtLimit && (
           <button
             onClick={onUpgrade}
-            className="inline-flex items-center gap-1 text-primary text-sm mt-3 hover:underline"
+            className="inline-flex items-center gap-1.5 text-primary-light text-sm mt-4 hover:text-white transition-colors group"
           >
-            Subir de plan <ArrowUpRight size={14} />
+            Subir de plan <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </button>
         )}
       </div>
 
       {/* Lista de servicios */}
       {items.length === 0 ? (
-        <div className="bg-bg-card border border-white/5 rounded-card p-8 text-center">
-          <p className="text-text-muted">
+        <div className="glass rounded-xl p-10 text-center">
+          <p className="text-white/40 text-sm">
             Aún no has añadido {isNegocio ? 'productos' : 'servicios'}.
           </p>
         </div>
       ) : (
         <div className="grid gap-3">
-          {items.map((item) => (
-            <div
+          {items.map((item, i) => (
+            <motion.div
               key={item.id}
-              className="bg-bg-card border border-white/5 rounded-card p-4 flex items-center justify-between"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+              className="glass glass-hover rounded-xl p-4 flex items-center justify-between cursor-default"
             >
               <div>
-                <p className="text-text-primary font-medium text-sm">
+                <p className="text-white font-medium text-sm">
                   {item.name}
                 </p>
                 {item.description && (
-                  <p className="text-text-muted text-xs mt-1">
+                  <p className="text-white/40 text-xs mt-1">
                     {item.description}
                   </p>
                 )}
               </div>
               {isNegocio && item.price != null && (
-                <span className="text-primary font-bold text-sm">
+                <span className="text-primary-light font-bold text-sm bg-primary/10 px-3 py-1 rounded-lg">
                   S/. {item.price.toFixed(2)}
                 </span>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

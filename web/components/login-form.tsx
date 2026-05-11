@@ -81,63 +81,63 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-text-secondary text-sm mb-1.5">
+        <label className="block text-white/60 text-sm font-medium mb-2">
           Correo electrónico
         </label>
-        <div className="relative">
+        <div className="relative group">
           <Mail
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors"
             size={18}
           />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-bg-input border border-white/5 rounded-button pl-10 pr-4 py-3 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors"
+            className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder:text-white/20 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all duration-300"
             placeholder="tu@correo.com"
             autoComplete="email"
           />
         </div>
         {errors.email && (
-          <p className="text-red text-xs mt-1">{errors.email}</p>
+          <p className="text-red text-xs mt-1.5 flex items-center gap-1">{errors.email}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-text-secondary text-sm mb-1.5">
+        <label className="block text-white/60 text-sm font-medium mb-2">
           Contraseña
         </label>
-        <div className="relative">
+        <div className="relative group">
           <Lock
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors"
             size={18}
           />
           <input
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-bg-input border border-white/5 rounded-button pl-10 pr-12 py-3 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors"
+            className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-10 pr-12 py-3.5 text-white placeholder:text-white/20 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all duration-300"
             placeholder="••••••••"
             autoComplete="current-password"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
             aria-label="Mostrar contraseña"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-red text-xs mt-1">{errors.password}</p>
+          <p className="text-red text-xs mt-1.5">{errors.password}</p>
         )}
       </div>
 
       <button
         type="submit"
         disabled={loading || (!!lockedUntil && Date.now() < lockedUntil)}
-        className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-button font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-200"
+        className="w-full btn btn-primary btn-lg press-effect disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
       >
         {loading ? (
           <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

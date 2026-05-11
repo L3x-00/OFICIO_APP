@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Coins,
   Copy,
@@ -36,9 +37,9 @@ const PLAN_REWARDS = [
     duration: '1 mes',
     coinsCost: 500,
     icon: StarIcon,
-    color: 'text-[#1E40AF]',
-    bg: 'bg-[#E0EAFB]',
-    border: 'border-[#C2D5F5]',
+    color: 'text-accent', // Cian para Estándar
+    bg: 'bg-accent/10',
+    border: 'border-accent/20',
   },
   {
     plan: 'PREMIUM' as const,
@@ -46,9 +47,9 @@ const PLAN_REWARDS = [
     duration: '2 meses',
     coinsCost: 1000,
     icon: Crown,
-    color: 'text-[#7A4C00]',
-    bg: 'bg-[#FBEFCD]',
-    border: 'border-[#EBCF8A]',
+    color: 'text-primary-light', // Naranja/Dorado para Premium
+    bg: 'bg-primary/10',
+    border: 'border-primary/20',
   },
 ];
 
@@ -92,8 +93,8 @@ export default function ReferralPanel() {
 
   return (
     <div className="space-y-5">
-      {/* Sub-tabs */}
-      <div className="flex gap-1.5 card-flat p-1.5 overflow-x-auto">
+      {/* Sub-tabs Glassmorphism */}
+      <div className="flex gap-1.5 glass p-1.5 overflow-x-auto rounded-xl">
         <SubTabButton active={tab === 'code'}   onClick={() => setTab('code')}   icon={Coins}   label="Mi código" />
         <SubTabButton active={tab === 'how'}    onClick={() => setTab('how')}    icon={Sparkles} label="Cómo funciona" />
         <SubTabButton active={tab === 'redeem'} onClick={() => setTab('redeem')} icon={Gift}    label="Canjear monedas" />
@@ -102,66 +103,82 @@ export default function ReferralPanel() {
 
       {loading && <PanelSkeleton />}
 
-      {!loading && tab === 'code' && (
-        <CodeTab stats={stats} />
-      )}
+      <AnimatePresence mode="wait">
+        {!loading && tab === 'code' && (
+          <motion.div key="code" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+            <CodeTab stats={stats} />
+          </motion.div>
+        )}
 
-      {!loading && tab === 'how' && <HowTab rewards={rewards} />}
+        {!loading && tab === 'how' && (
+          <motion.div key="how" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+            <HowTab rewards={rewards} />
+          </motion.div>
+        )}
 
-      {!loading && tab === 'redeem' && (
-        <RedeemTab
-          coins={coins}
-          rewards={rewards}
-          busy={busy}
-          onPickPlan={(plan, label, cost) =>
-            setConfirm({ kind: 'plan', plan, label, cost })
-          }
-          onPickReward={(reward) =>
-            setConfirm({ kind: 'reward', reward })
-          }
-        />
-      )}
+        {!loading && tab === 'redeem' && (
+          <motion.div key="redeem" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+            <RedeemTab
+              coins={coins}
+              rewards={rewards}
+              busy={busy}
+              onPickPlan={(plan, label, cost) =>
+                setConfirm({ kind: 'plan', plan, label, cost })
+              }
+              onPickReward={(reward) =>
+                setConfirm({ kind: 'reward', reward })
+              }
+            />
+          </motion.div>
+        )}
 
-      {!loading && tab === 'history' && (
-        <HistoryTab stats={stats} redemptions={redemptions} />
-      )}
+        {!loading && tab === 'history' && (
+          <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+            <HistoryTab stats={stats} redemptions={redemptions} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal de confirmación */}
-      {confirm && (
-        <ConfirmRedeemModal
-          confirm={confirm}
-          coins={coins}
-          busy={busy}
-          onCancel={() => setConfirm(null)}
-          onAccept={async () => {
-            setBusy(true);
-            try {
-              const payload =
-                confirm.kind === 'plan'
-                  ? { plan: confirm.plan }
-                  : { rewardId: confirm.reward.id };
-              const result = await api.redeemCoins(payload);
-              setConfirm(null);
-              setSuccess(result);
-              await reload();
-            } catch (err) {
-              const msg =
-                err instanceof Error ? err.message : 'No pudimos completar el canje';
-              toast.error(msg);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {confirm && (
+          <ConfirmRedeemModal
+            confirm={confirm}
+            coins={coins}
+            busy={busy}
+            onCancel={() => setConfirm(null)}
+            onAccept={async () => {
+              setBusy(true);
+              try {
+                const payload =
+                  confirm.kind === 'plan'
+                    ? { plan: confirm.plan }
+                    : { rewardId: confirm.reward.id };
+                const result = await api.redeemCoins(payload);
+                setConfirm(null);
+                setSuccess(result);
+                await reload();
+              } catch (err) {
+                const msg =
+                  err instanceof Error ? err.message : 'No pudimos completar el canje';
+                toast.error(msg);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Modal de éxito */}
-      {success && (
-        <SuccessRedeemModal
-          result={success}
-          onClose={() => setSuccess(null)}
-        />
-      )}
+      <AnimatePresence>
+        {success && (
+          <SuccessRedeemModal
+            result={success}
+            onClose={() => setSuccess(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -182,10 +199,10 @@ function SubTabButton({
   return (
     <button
       onClick={onClick}
-      className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+      className={`relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
         active
-          ? 'bg-ink text-white'
-          : 'text-ink-4 hover:text-ink-2 hover:bg-surface-2'
+          ? 'bg-primary/15 text-primary-light shadow-glow-sm'
+          : 'text-white/40 hover:text-white/70 hover:bg-white/5'
       }`}
     >
       <Icon size={15} />
@@ -213,11 +230,11 @@ function CodeTab({ stats }: { stats: ReferralStats | null }) {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
       <div className="space-y-5">
         {/* Tarjeta del código */}
-        <div className="card-flat p-6 sm:p-7">
-          <p className="text-ink-4 text-[10px] uppercase tracking-widest font-bold mb-3">
+        <div className="glass rounded-xl p-6 sm:p-7">
+          <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-3">
             Tu código personal
           </p>
-          <div className="bg-primary/5 border border-primary/30 rounded-2xl px-5 py-6 flex items-center justify-between gap-4">
+          <div className="bg-primary/5 border border-primary/20 rounded-2xl px-5 py-6 flex items-center justify-between gap-4">
             <span
               className="font-mono text-3xl sm:text-4xl font-black text-gradient tracking-[0.3em] truncate"
               aria-label={`Código de referido ${stats.code}`}
@@ -226,7 +243,7 @@ function CodeTab({ stats }: { stats: ReferralStats | null }) {
             </span>
             <button
               onClick={copyCode}
-              className="w-11 h-11 rounded-xl bg-surface-2 border border-line-2 hover:border-ink-4 text-ink-2 hover:text-ink flex items-center justify-center transition-colors"
+              className="w-11 h-11 rounded-xl glass flex items-center justify-center text-white/50 hover:text-primary-light transition-colors"
               aria-label="Copiar código"
               title="Copiar código"
             >
@@ -236,23 +253,23 @@ function CodeTab({ stats }: { stats: ReferralStats | null }) {
 
           <button
             onClick={copyLink}
-            className="btn btn-ink press-effect mt-4 w-full"
+            className="btn btn-primary press-effect mt-4 w-full"
           >
             <Share2 size={16} />
             Copiar enlace de invitación
           </button>
-          <p className="text-ink-4 text-xs mt-3 leading-relaxed">
+          <p className="text-white/40 text-xs mt-3 leading-relaxed">
             Comparte tu código por WhatsApp, redes sociales o email. Cuando un
             profesional o negocio sea aprobado usándolo, recibirás{' '}
-            <strong className="text-primary">25 monedas</strong>.
+            <strong className="text-primary-light">25 monedas</strong>.
           </p>
         </div>
 
         {/* Métricas */}
         <div className="grid grid-cols-3 gap-3">
-          <MetricBox label="Enviadas"  value={stats.totalInvited}    color="text-ink" />
-          <MetricBox label="Aprobadas" value={stats.approvedInvited} color="text-green" />
-          <MetricBox label="Pendientes" value={stats.pendingInvited} color="text-amber-dark" />
+          <MetricBox label="Enviadas"  value={stats.totalInvited}    color="text-white" />
+          <MetricBox label="Aprobadas" value={stats.approvedInvited} color="text-accent" />
+          <MetricBox label="Pendientes" value={stats.pendingInvited} color="text-amber" />
         </div>
       </div>
 
@@ -264,21 +281,21 @@ function CodeTab({ stats }: { stats: ReferralStats | null }) {
 
 function CoinsCard({ coins }: { coins: number }) {
   return (
-    <div className="relative card-3d p-6 overflow-hidden">
-      <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
+    <div className="relative glass rounded-xl p-6 overflow-hidden border-primary/20 shadow-glow-md">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-11 h-11 rounded-xl bg-[#FBEFCD] border border-[#EBCF8A] flex items-center justify-center">
-            <Coins size={22} strokeWidth={1.75} className="text-[#7A4C00]" />
+          <div className="w-11 h-11 rounded-xl bg-amber/10 border border-amber/20 flex items-center justify-center">
+            <Coins size={22} strokeWidth={1.75} className="text-amber drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
           </div>
-          <p className="text-ink-4 text-[10px] uppercase tracking-widest font-bold">
+          <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">
             Tus monedas
           </p>
         </div>
-        <div className="font-display font-extrabold tracking-tightest text-ink text-5xl sm:text-6xl tabular-nums leading-none">
+        <div className="font-display font-extrabold tracking-tightest text-white text-5xl sm:text-6xl tabular-nums leading-none">
           {coins.toLocaleString('es-PE')}
         </div>
-        <p className="text-ink-2 text-sm mt-3">
+        <p className="text-white/50 text-sm mt-3">
           Acumula y canjea por planes gratis o servicios de la comunidad.
         </p>
       </div>
@@ -296,11 +313,11 @@ function MetricBox({
   color: string;
 }) {
   return (
-    <div className="bg-surface border border-line rounded-xl p-4 text-center">
+    <div className="glass rounded-xl p-4 text-center">
       <div className={`text-2xl font-extrabold tabular-nums ${color}`}>
         {value.toLocaleString('es-PE')}
       </div>
-      <div className="text-ink-4 text-xs mt-1">{label}</div>
+      <div className="text-white/40 text-xs mt-1">{label}</div>
     </div>
   );
 }
@@ -332,11 +349,11 @@ function HowTab({ rewards }: { rewards: ReferralReward[] }) {
       </div>
 
       {/* Tabla de recompensas */}
-      <div className="card-flat p-6">
-        <h3 className="text-ink font-bold text-base mb-1">
+      <div className="glass rounded-xl p-6">
+        <h3 className="text-white font-bold text-base mb-1">
           ¿En qué puedes canjear tus monedas?
         </h3>
-        <p className="text-ink-4 text-xs mb-4">
+        <p className="text-white/40 text-xs mb-4">
           El sistema convierte tus invitaciones aprobadas en beneficios reales.
         </p>
 
@@ -356,15 +373,15 @@ function HowTab({ rewards }: { rewards: ReferralReward[] }) {
             <RewardRow
               key={r.id}
               icon={Gift}
-              iconColor="text-primary"
-              iconBg="bg-[#FBE8D6] border border-[#F4CDA3]"
+              iconColor="text-primary-light"
+              iconBg="bg-primary/10"
               title={r.title}
               subtitle={`${r.provider.businessName}${r.provider.category?.name ? ` · ${r.provider.category.name}` : ''}`}
               cost={r.coinsCost}
             />
           ))}
           {rewards.length === 0 && (
-            <p className="text-ink-4 text-xs italic text-center py-4">
+            <p className="text-white/30 text-xs italic text-center py-4">
               Aún no hay servicios canjeables. Vuelve pronto.
             </p>
           )}
@@ -386,17 +403,17 @@ function Step({
   desc: string;
 }) {
   return (
-    <div className="card-flat p-6 hover-lift transition-all duration-300">
+    <div className="glass glass-hover rounded-xl p-6 transition-all duration-300">
       <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-xl bg-[#FBE8D6] border border-[#F4CDA3] flex items-center justify-center">
-          <Icon size={22} className="text-primary" />
+        <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <Icon size={22} className="text-primary-light" />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-ink-4">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
           Paso {number}
         </span>
       </div>
-      <h4 className="text-ink font-semibold text-base mb-1.5">{title}</h4>
-      <p className="text-ink-4 text-sm leading-relaxed">{desc}</p>
+      <h4 className="text-white font-semibold text-base mb-1.5">{title}</h4>
+      <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
     </div>
   );
 }
@@ -417,15 +434,15 @@ function RewardRow({
   cost: number;
 }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-3 bg-surface-2/40 rounded-xl">
+    <div className="flex items-center gap-3 px-3 py-3 bg-white/[0.02] rounded-xl">
       <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
         <Icon size={18} className={iconColor} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-ink font-semibold text-sm truncate">{title}</div>
-        <div className="text-ink-4 text-xs truncate">{subtitle}</div>
+        <div className="text-white font-semibold text-sm truncate">{title}</div>
+        <div className="text-white/40 text-xs truncate">{subtitle}</div>
       </div>
-      <div className="badge badge-premium tabular-nums">
+      <div className="badge badge-premium tabular-nums flex items-center gap-1">
         <Coins size={11} />
         {cost.toLocaleString('es-PE')}
       </div>
@@ -450,10 +467,10 @@ function RedeemTab({
 }) {
   return (
     <div className="space-y-6">
-      <div className="card-3d p-5 flex items-center gap-4">
-        <Coins size={28} className="text-amber" />
+      <div className="glass rounded-xl p-5 flex items-center gap-4 border-amber/20">
+        <Coins size={28} className="text-amber drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
         <div>
-          <p className="text-ink-4 text-[10px] uppercase tracking-widest font-bold">
+          <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">
             Saldo disponible
           </p>
           <p className="text-amber text-3xl font-extrabold tabular-nums">
@@ -464,7 +481,7 @@ function RedeemTab({
 
       {/* Planes */}
       <div>
-        <h3 className="text-ink font-bold text-sm mb-3 uppercase tracking-wider">
+        <h3 className="text-white/50 text-sm mb-3 uppercase tracking-wider font-bold">
           Planes
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -474,15 +491,15 @@ function RedeemTab({
             return (
               <div
                 key={p.plan}
-                className={`bg-surface border ${p.border} rounded-2xl p-5 flex flex-col gap-4`}
+                className={`glass rounded-2xl p-5 flex flex-col gap-4 border ${p.border}`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-xl ${p.bg} flex items-center justify-center`}>
                     <Icon size={22} className={p.color} />
                   </div>
                   <div>
-                    <h4 className="text-ink font-bold text-base">{p.label}</h4>
-                    <p className="text-ink-4 text-xs">{p.duration} · activación inmediata</p>
+                    <h4 className="text-white font-bold text-base">{p.label}</h4>
+                    <p className="text-white/40 text-xs">{p.duration} · activación inmediata</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -493,9 +510,7 @@ function RedeemTab({
                   <button
                     onClick={() => onPickPlan(p.plan, p.label, p.coinsCost)}
                     disabled={!enough || busy}
-                    className={`btn btn-ink btn-sm press-effect disabled:opacity-50 disabled:cursor-not-allowed ${
-                      enough ? '' : ''
-                    }`}
+                    className={`btn ${enough ? 'btn-primary' : 'btn-ghost'} btn-sm press-effect disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {enough ? 'Canjear' : `Faltan ${(p.coinsCost - coins).toLocaleString('es-PE')}`}
                   </button>
@@ -508,18 +523,18 @@ function RedeemTab({
 
       {/* Servicios */}
       <div>
-        <h3 className="text-ink font-bold text-sm mb-3 uppercase tracking-wider">
+        <h3 className="text-white/50 text-sm mb-3 uppercase tracking-wider font-bold">
           Servicios canjeables
         </h3>
         {rewards.length === 0 ? (
-          <div className="card-flat p-8 text-center">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-[#FBE8D6] border border-[#F4CDA3] flex items-center justify-center">
+          <div className="glass rounded-xl p-8 text-center">
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
               <Gift size={26} className="text-primary/60" />
             </div>
-            <p className="text-ink-2 text-sm">
+            <p className="text-white/60 text-sm">
               Aún no hay servicios canjeables.
             </p>
-            <p className="text-ink-4 text-xs mt-1">
+            <p className="text-white/30 text-xs mt-1">
               El admin publicará nuevos servicios próximamente.
             </p>
           </div>
@@ -560,25 +575,25 @@ function RewardCard({
   }, [reward.provider.images]);
 
   return (
-    <div className="card-flat overflow-hidden hover:border-primary/30 transition-all duration-300">
+    <div className="glass glass-hover rounded-xl overflow-hidden">
       {cover ? (
-        <div className="aspect-[5/3] bg-surface-2 overflow-hidden">
+        <div className="aspect-[5/3] bg-dark-card overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={cover} alt={reward.title} loading="lazy" className="w-full h-full object-cover" />
         </div>
       ) : (
-        <div className="aspect-[5/3] bg-surface-2 flex items-center justify-center text-ink-4/40">
+        <div className="aspect-[5/3] bg-dark-card flex items-center justify-center text-white/20">
           <Gift size={36} />
         </div>
       )}
 
       <div className="p-5">
-        <h4 className="text-ink font-bold text-base">{reward.title}</h4>
-        <p className="text-ink-4 text-xs mt-1 truncate">
+        <h4 className="text-white font-bold text-base">{reward.title}</h4>
+        <p className="text-white/40 text-xs mt-1 truncate">
           {reward.provider.businessName}
           {reward.provider.category?.name ? ` · ${reward.provider.category.name}` : ''}
         </p>
-        <p className="text-ink-2 text-sm leading-relaxed mt-3 line-clamp-2">
+        <p className="text-white/50 text-sm leading-relaxed mt-3 line-clamp-2">
           {reward.description}
         </p>
 
@@ -590,7 +605,7 @@ function RewardCard({
           <button
             onClick={onPick}
             disabled={!enough || busy}
-            className="btn btn-ink btn-sm press-effect disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`btn ${enough ? 'btn-primary' : 'btn-ghost'} btn-sm press-effect disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {enough
               ? 'Canjear'
@@ -614,13 +629,13 @@ function HistoryTab({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-ink-4 text-[10px] uppercase tracking-widest font-bold mb-3">
+        <h3 className="text-white/30 text-[10px] uppercase tracking-widest font-bold mb-3">
           Invitaciones
         </h3>
         {!stats || stats.history.length === 0 ? (
           <EmptyMini msg="Aún no has invitado a nadie." />
         ) : (
-          <div className="card-flat divide-y divide-line">
+          <div className="glass rounded-xl divide-y divide-white/5">
             {stats.history.map((h) => {
               const name =
                 h.invitedProvider?.businessName ??
@@ -631,10 +646,10 @@ function HistoryTab({
               return (
                 <div key={h.id} className="px-4 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="text-ink text-sm font-semibold truncate">
+                    <div className="text-white text-sm font-semibold truncate">
                       {name}
                     </div>
-                    <div className="text-ink-4 text-xs mt-0.5">
+                    <div className="text-white/30 text-xs mt-0.5">
                       {formatDate(h.createdAt)}
                       {h.coinsAwarded > 0 ? ` · +${h.coinsAwarded} monedas` : ''}
                     </div>
@@ -652,13 +667,13 @@ function HistoryTab({
       </div>
 
       <div>
-        <h3 className="text-ink-4 text-[10px] uppercase tracking-widest font-bold mb-3">
+        <h3 className="text-white/30 text-[10px] uppercase tracking-widest font-bold mb-3">
           Canjes
         </h3>
         {redemptions.length === 0 ? (
           <EmptyMini msg="Todavía no has canjeado monedas." />
         ) : (
-          <div className="card-flat divide-y divide-line">
+          <div className="glass rounded-xl divide-y divide-white/5">
             {redemptions.map((r) => {
               const title = r.plan
                 ? `Plan ${r.plan}`
@@ -666,10 +681,10 @@ function HistoryTab({
               return (
                 <div key={r.id} className="px-4 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="text-ink text-sm font-semibold truncate">
+                    <div className="text-white text-sm font-semibold truncate">
                       {title}
                     </div>
-                    <div className="text-ink-4 text-xs mt-0.5">
+                    <div className="text-white/30 text-xs mt-0.5">
                       {formatDate(r.createdAt)}
                     </div>
                   </div>
@@ -691,14 +706,14 @@ const STATUS_BADGE: Record<
   'PENDING' | 'APPROVED' | 'REJECTED',
   { label: string; cls: string }
 > = {
-  PENDING: { label: 'Pendiente', cls: 'bg-[#FBEFCD] text-[#7A4C00] border-[#EBCF8A]' },
-  APPROVED: { label: 'Aprobado', cls: 'bg-[#E2F5EC] text-[#0E5C3D] border-[#B8E3CD]' },
-  REJECTED: { label: 'Rechazado', cls: 'bg-rose/15 text-rose border-rose/40' },
+  PENDING: { label: 'Pendiente', cls: 'bg-amber/10 text-amber border-amber/20' },
+  APPROVED: { label: 'Aprobado', cls: 'bg-accent/10 text-accent border-accent/20' },
+  REJECTED: { label: 'Rechazado', cls: 'bg-rose/10 text-rose-400 border-rose/20' },
 };
 
 function EmptyMini({ msg }: { msg: string }) {
   return (
-    <div className="card-flat p-6 text-center text-ink-4 text-sm">
+    <div className="glass rounded-xl p-6 text-center text-white/40 text-sm">
       {msg}
     </div>
   );
@@ -737,31 +752,38 @@ function ConfirmRedeemModal({
       : `Confirmar canje · ${confirm.reward.title}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/55 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="card-flat p-6 w-full max-w-md animate-scale-in shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onCancel} />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        className="relative glass rounded-2xl p-6 w-full max-w-md shadow-glow-lg border-primary/20"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-ink">{title}</h2>
+          <h2 className="text-lg font-bold text-white">{title}</h2>
           <button
             onClick={onCancel}
             disabled={busy}
-            className="w-8 h-8 rounded-full hover:bg-surface-2 flex items-center justify-center text-ink-4 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full glass flex items-center justify-center text-white/50 hover:text-white transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="bg-surface-2/60 border border-line rounded-xl p-4 mb-4">
+        <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 mb-4">
           {confirm.kind === 'plan' ? (
-            <p className="text-ink-2 text-sm leading-relaxed">
-              Vas a activar inmediatamente <strong className="text-ink">{confirm.label}</strong>.
+            <p className="text-white/60 text-sm leading-relaxed">
+              Vas a activar inmediatamente <strong className="text-primary-light">{confirm.label}</strong>.
               Una vez activado no se puede deshacer.
             </p>
           ) : (
             <>
-              <p className="text-ink-2 text-sm leading-relaxed mb-2">
+              <p className="text-white/60 text-sm leading-relaxed mb-2">
                 {confirm.reward.description}
               </p>
-              <p className="text-ink-4 text-xs">
+              <p className="text-white/30 text-xs">
                 Tras canjear, el proveedor te entregará el servicio. Coordina con sus datos de contacto.
               </p>
             </>
@@ -769,7 +791,7 @@ function ConfirmRedeemModal({
         </div>
 
         <div className="flex items-center justify-between text-sm mb-5">
-          <span className="text-ink-4">Costo</span>
+          <span className="text-white/40">Costo</span>
           <span className="text-amber font-extrabold text-lg tabular-nums flex items-center gap-1">
             <Coins size={16} />
             {cost.toLocaleString('es-PE')}
@@ -777,7 +799,7 @@ function ConfirmRedeemModal({
         </div>
 
         {!enough && (
-          <div className="bg-rose/10 border border-rose/30 rounded-xl px-4 py-3 mb-4 text-rose text-xs flex items-center gap-2">
+          <div className="bg-rose/10 border border-rose/20 rounded-xl px-4 py-3 mb-4 text-rose-400 text-xs flex items-center gap-2">
             <AlertCircle size={14} />
             No tienes suficientes monedas. Te faltan {(cost - coins).toLocaleString('es-PE')}.
           </div>
@@ -787,20 +809,20 @@ function ConfirmRedeemModal({
           <button
             onClick={onCancel}
             disabled={busy}
-            className="text-ink-4 hover:text-ink-2 px-4 py-2 text-sm font-medium transition-colors"
+            className="text-white/40 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
           >
             Cancelar
           </button>
           <button
             onClick={onAccept}
             disabled={busy || !enough}
-            className="btn btn-ink press-effect disabled:opacity-50"
+            className="btn btn-primary press-effect disabled:opacity-50"
           >
             {busy ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
             Confirmar canje
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -815,53 +837,60 @@ function SuccessRedeemModal({
   const isPlan = !!result.planActivated;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/55 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="card-flat p-6 w-full max-w-md animate-scale-in shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        className="relative glass rounded-2xl p-6 w-full max-w-md shadow-glow-lg border-accent/20"
+      >
         <div className="text-center pt-2">
           <div className="relative w-20 h-20 mx-auto mb-4">
-            <div className="absolute inset-0 bg-[#E2F5EC] rounded-full" />
+            <div className="absolute inset-0 bg-accent/15 rounded-full animate-pulse-glow" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <CheckCircle size={40} className="text-green animate-scale-in" />
+              <CheckCircle size={40} className="text-accent" />
             </div>
           </div>
-          <h2 className="text-xl font-bold text-ink mb-1">¡Canje exitoso!</h2>
+          <h2 className="text-xl font-bold text-white mb-1">¡Canje exitoso!</h2>
           {isPlan ? (
-            <p className="text-ink-2 text-sm">
+            <p className="text-white/60 text-sm">
               Has activado el plan{' '}
-              <strong className="text-amber">{result.planActivated}</strong> por{' '}
+              <strong className="text-primary-light">{result.planActivated}</strong> por{' '}
               {result.months} {result.months === 1 ? 'mes' : 'meses'}.
             </p>
           ) : result.reward ? (
-            <p className="text-ink-2 text-sm">
-              Has canjeado <strong className="text-ink">{result.reward.title}</strong>.
+            <p className="text-white/60 text-sm">
+              Has canjeado <strong className="text-white">{result.reward.title}</strong>.
             </p>
           ) : (
-            <p className="text-ink-2 text-sm">Tu canje se registró correctamente.</p>
+            <p className="text-white/60 text-sm">Tu canje se registró correctamente.</p>
           )}
         </div>
 
         {!isPlan && result.reward && (
-          <div className="bg-surface-2/60 border border-line rounded-xl p-4 mt-5 space-y-2">
-            <p className="text-ink-4 text-[10px] uppercase tracking-widest font-bold">
+          <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 mt-5 space-y-2">
+            <p className="text-white/30 text-[10px] uppercase tracking-widest font-bold">
               Datos del proveedor
             </p>
-            <div className="flex items-center gap-2 text-ink text-sm">
-              <MapPin size={14} className="text-primary" />
+            <div className="flex items-center gap-2 text-white text-sm">
+              <MapPin size={14} className="text-accent" />
               <span>{result.reward.provider.businessName}</span>
             </div>
             {result.reward.provider.phone && (
-              <div className="flex items-center gap-2 text-ink-2 text-sm">
-                <Phone size={14} className="text-primary" />
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <Phone size={14} className="text-white/40" />
                 {result.reward.provider.phone}
               </div>
             )}
             {result.reward.provider.whatsapp && (
-              <div className="flex items-center gap-2 text-ink-2 text-sm">
-                <MessageCircle size={14} className="text-green" />
+              <div className="flex items-center gap-2 text-white/60 text-sm">
+                <MessageCircle size={14} className="text-accent" />
                 {result.reward.provider.whatsapp}
               </div>
             )}
-            <p className="text-ink-4 text-xs leading-relaxed pt-2">
+            <p className="text-white/30 text-xs leading-relaxed pt-2">
               Contacta al proveedor para coordinar tu servicio. Muestra este canje
               como comprobante.
             </p>
@@ -870,11 +899,11 @@ function SuccessRedeemModal({
 
         <button
           onClick={onClose}
-          className="btn btn-ink press-effect mt-5 w-full"
+          className="btn btn-primary press-effect mt-5 w-full"
         >
           Entendido
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 }

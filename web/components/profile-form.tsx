@@ -40,8 +40,8 @@ export default function ProfileForm({ provider, onSave, saving }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid sm:grid-cols-2 gap-4">
+    <div className="space-y-5">
+      <div className="grid sm:grid-cols-2 gap-5">
         <InputField
           label="Nombre del negocio / servicio"
           value={businessName}
@@ -66,7 +66,7 @@ export default function ProfileForm({ provider, onSave, saving }: Props) {
         />
       </div>
       <div>
-        <label className="block text-text-secondary text-sm mb-1.5">
+        <label className="block text-white/60 text-sm font-medium mb-2">
           Descripción
         </label>
         <textarea
@@ -74,15 +74,15 @@ export default function ProfileForm({ provider, onSave, saving }: Props) {
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           maxLength={500}
-          className="w-full bg-bg-input border border-white/5 rounded-button p-3 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors resize-none"
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white placeholder:text-white/20 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all duration-300 resize-none"
           placeholder="Describe tu servicio o negocio..."
         />
-        <p className="text-text-muted text-xs mt-1">{description.length}/500</p>
+        <p className="text-white/30 text-xs mt-1.5">{description.length}/500</p>
       </div>
       <button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full sm:w-auto bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-8 py-3 rounded-button font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
+        className="btn btn-primary btn-lg press-effect disabled:opacity-50 w-full sm:w-auto flex items-center justify-center gap-2"
       >
         {saving ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -107,12 +107,12 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-text-secondary text-sm mb-1.5">{label}</label>
+      <label className="block text-white/60 text-sm font-medium mb-2">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-bg-input border border-white/5 rounded-button px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-colors"
+        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all duration-300"
       />
     </div>
   );

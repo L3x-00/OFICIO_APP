@@ -55,104 +55,114 @@ export default function FlipCard3D() {
   const card = data ?? PLACEHOLDER;
 
   return (
-    <div
-      className="flip-3d-perspective relative mx-auto w-[280px] h-[380px] sm:w-[260px] sm:h-[360px] lg:w-[300px] lg:h-[400px]"
-      role="region"
-      aria-label="Tarjeta de proveedor destacado"
-    >
-      <div className="flip-3d-inner">
-        {/* CARA FRONTAL */}
-        <article className="flip-3d-face bg-ink">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={card.cover}
-            alt={card.businessName}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/40 to-ink/10 pointer-events-none" />
+    <div className="relative mx-auto w-[280px] h-[380px] sm:w-[260px] sm:h-[360px] lg:w-[300px] lg:h-[400px] group">
+      {/* Resplandor ambiental detrás de la tarjeta */}
+      <div 
+        className="absolute inset-0 scale-125 blur-3xl bg-primary/15 rounded-full group-hover:bg-primary/25 transition-all duration-700 pointer-events-none" 
+        aria-hidden="true" 
+      />
 
-          <span className="badge badge-ink absolute top-3 left-3 backdrop-blur-md">
-            <Briefcase size={11} />
-            {card.category}
-          </span>
+      <div
+        className="flip-3d-perspective relative w-full h-full"
+        role="region"
+        aria-label="Tarjeta de proveedor destacado"
+      >
+        <div className="flip-3d-inner">
+          {/* CARA FRONTAL */}
+          <article className="flip-3d-face bg-black">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={card.cover}
+              alt={card.businessName}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 pointer-events-none" />
 
-          {card.rating > 0 && (
-            <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-ink text-white text-[11px] font-display font-semibold px-2.5 py-1 rounded-full tabular-nums">
-              <Star size={11} className="text-amber fill-amber" />
-              {card.rating.toFixed(1)}
+            {/* Badge Categoría */}
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent text-[11px] font-display font-semibold px-2.5 py-1 rounded-full backdrop-blur-md">
+              <Briefcase size={11} />
+              {card.category}
             </span>
-          )}
 
-          <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-ink/95 to-transparent">
-            <p className="font-display text-[10px] uppercase tracking-[0.18em] text-amber font-semibold mb-1">
-              Destacado
-            </p>
-            <h3 className="text-white font-display font-bold text-[18px] leading-tight">
+            {/* Badge Rating */}
+            {card.rating > 0 && (
+              <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-amber/10 border border-amber/20 text-amber text-[11px] font-display font-semibold px-2.5 py-1 rounded-full tabular-nums backdrop-blur-md">
+                <Star size={11} className="fill-amber" />
+                {card.rating.toFixed(1)}
+              </span>
+            )}
+
+            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
+              <p className="font-display text-[10px] uppercase tracking-[0.18em] text-primary-light font-semibold mb-1">
+                Destacado
+              </p>
+              <h3 className="text-white font-display font-bold text-[18px] leading-tight">
+                {card.businessName}
+              </h3>
+              {card.reviews > 0 && (
+                <p className="text-white/50 text-[12px] mt-1">
+                  {card.reviews} {card.reviews === 1 ? 'reseña verificada' : 'reseñas verificadas'}
+                </p>
+              )}
+            </div>
+          </article>
+
+          {/* CARA TRASERA */}
+          <article className="flip-3d-face flip-3d-back p-5 flex flex-col text-white">
+            <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 text-primary-light text-[11px] font-display font-semibold px-2.5 py-1 rounded-full self-start backdrop-blur-md">
+              <Briefcase size={11} />
+              {card.category}
+            </span>
+
+            <h3 className="font-display font-bold text-white text-[19px] leading-tight mt-3 mb-2">
               {card.businessName}
             </h3>
-            {card.reviews > 0 && (
-              <p className="text-white/70 text-[12px] mt-1">
-                {card.reviews} {card.reviews === 1 ? 'reseña verificada' : 'reseñas verificadas'}
-              </p>
-            )}
-          </div>
-        </article>
 
-        {/* CARA TRASERA */}
-        <article className="flip-3d-face flip-3d-back p-5 flex flex-col text-white">
-          <span className="badge backdrop-blur-md self-start" style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)', color: '#FFE0CB' }}>
-            <Briefcase size={11} />
-            {card.category}
-          </span>
+            <p className="text-white/60 text-[13.5px] leading-relaxed flex-1">
+              {truncate(card.description, 100)}
+            </p>
 
-          <h3 className="font-display font-bold text-white text-[19px] leading-tight mt-3 mb-2">
-            {card.businessName}
-          </h3>
-
-          <p className="text-white/75 text-[13.5px] leading-relaxed flex-1">
-            {truncate(card.description, 100)}
-          </p>
-
-          <div className="space-y-2 mt-3 pt-3 border-t border-white/10">
-            {card.location && (
-              <div className="flex items-center gap-2 text-white/65 text-[12px]">
-                <MapPin size={12} className="text-amber flex-shrink-0" />
-                <span className="truncate">{card.location}</span>
-              </div>
-            )}
-            {card.phone && (
-              <div className="flex items-center gap-2 text-white/75 text-[12px]">
-                {card.isWhats ? (
-                  <MessageCircle size={12} className="text-green flex-shrink-0" />
-                ) : (
-                  <Phone size={12} className="text-amber flex-shrink-0" />
-                )}
-                <span className="truncate">{card.phone}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-center gap-1.5 mt-3 text-white/55 text-[10px]">
-            <div className="relative w-4 h-4">
-              <Image
-                src="/images/logo/logo_dark.png"
-                alt="OficioApp"
-                fill
-                className="object-contain"
-                sizes="16px"
-              />
+            <div className="space-y-2 mt-3 pt-3 border-t border-white/10">
+              {card.location && (
+                <div className="flex items-center gap-2 text-white/50 text-[12px]">
+                  <MapPin size={12} className="text-accent flex-shrink-0" />
+                  <span className="truncate">{card.location}</span>
+                </div>
+              )}
+              {card.phone && (
+                <div className="flex items-center gap-2 text-white/50 text-[12px]">
+                  {card.isWhats ? (
+                    <MessageCircle size={12} className="text-accent flex-shrink-0" />
+                  ) : (
+                    <Phone size={12} className="text-white/40 flex-shrink-0" />
+                  )}
+                  <span className="truncate">{card.phone}</span>
+                </div>
+              )}
             </div>
-            <span className="font-display font-semibold uppercase tracking-[0.16em]">
-              Disponible en OficioApp
-            </span>
-            <ShieldCheck size={11} className="text-green" />
-          </div>
-        </article>
+
+            <div className="flex items-center justify-center gap-1.5 mt-4 text-white/40 text-[10px]">
+              <div className="relative w-4 h-4">
+                <Image
+                  src="/images/logo/logo_light.png"
+                  alt="OficioApp"
+                  fill
+                  className="object-contain"
+                  sizes="16px"
+                />
+              </div>
+              <span className="font-display font-semibold uppercase tracking-[0.16em]">
+                Disponible en OficioApp
+              </span>
+              <ShieldCheck size={11} className="text-accent" />
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   );

@@ -11,8 +11,15 @@ const config: Config = {
         // ── Brand ────────────────────────────────────
         primary: "#E07B39",
         "primary-dark": "#C96A2E",
-        "primary-light": "#F49866",
+        "primary-light": "#FFB347", // Actualizado para gradientes más vibrantes
         "primary-darker": "#B25A24",
+        "primary-glow": "rgba(224, 123, 57, 0.4)",
+        
+        // ── Nuevo Acento de Confianza (Cian) ────────
+        accent: "#06B6D4",
+        "accent-dark": "#0891B2",
+        "accent-glow": "rgba(6, 182, 212, 0.3)",
+
         amber: "#F59E0B",
         "amber-dark": "#B97506",
         green: "#16A36B",
@@ -38,7 +45,13 @@ const config: Config = {
         "line-2": "#DDD4BF",
         "line-3": "#C7BEA3",
 
-        // ── Dark theme (panel/admin) — preserved ────
+        // ── Dark Premium (Nuevo enfoque espectacular) ──
+        "dark-premium": "#05060F",
+        "dark-surface": "#0A0E1A",
+        "dark-card": "#111827",
+        "dark-input": "#1A1F2E",
+        
+        // ── Legacy dark/panel tokens (preservados) ────
         night: "#1A1A2E",
         "night-2": "#20203A",
         "night-3": "#292947",
@@ -48,17 +61,16 @@ const config: Config = {
         "night-text-2": "#B5B5CC",
         "night-text-3": "#7A7A95",
 
-        // ── Legacy dark tokens (kept so panel doesn't break) ─
         "bg-dark": "#0B0D17",
         "bg-card": "#15192B",
         "bg-input": "#1E2235",
         "text-primary": "#FFFFFF",
         "text-secondary": "#B0B8C8",
         "text-muted": "#6B7280",
-        "primary-glow": "rgba(224, 123, 57, 0.4)",
       },
       fontFamily: {
-        sans: ["Geist", "Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
+        // Ajustado para usar la variable CSS de next/font
+        sans: ["var(--font-jakarta)", "Geist", "system-ui", "-apple-system", "sans-serif"],
         display: ["Sora", "Geist", "system-ui", "sans-serif"],
         mono: ["Geist Mono", "ui-monospace", "monospace"],
       },
@@ -72,8 +84,8 @@ const config: Config = {
         lg: "14px",
         xl: "20px",
         "2xl": "28px",
-        card: "14px",
-        button: "10px",
+        card: "16px", // Actualizado para look más moderno
+        button: "12px", // Actualizado
       },
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -90,6 +102,12 @@ const config: Config = {
         "ink-soft":
           "0 1px 0 rgba(255,255,255,0.12) inset, 0 1px 2px rgba(0,0,0,0.2)",
 
+        // ── Glassmorphism & Premium Glows ──────────
+        glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
+        "glass-border": "inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "card-glass": "0 8px 32px 0 rgba(5, 6, 15, 0.5)",
+        "glow-accent": "0 0 20px rgba(6, 182, 212, 0.3)",
+        
         // Legacy glow (for panel)
         "glow-sm": "0 0 12px rgba(224, 123, 57, 0.25)",
         "glow-md": "0 0 24px rgba(224, 123, 57, 0.35)",
@@ -108,7 +126,7 @@ const config: Config = {
         "radial-warm":
           "radial-gradient(1200px 200px at 0% 0%, rgba(224,123,57,0.06), transparent 60%), radial-gradient(900px 220px at 100% 100%, rgba(245,158,11,0.05), transparent 60%)",
         "gradient-primary":
-          "linear-gradient(135deg, #E07B39 0%, #F49866 100%)",
+          "linear-gradient(135deg, #E07B39 0%, #FFB347 100%)", // Actualizado a dorado vibrante
         "gradient-orange":
           "linear-gradient(135deg, #E07B39 0%, #C96A2E 100%)",
         "gradient-amber":
@@ -117,6 +135,10 @@ const config: Config = {
           "linear-gradient(135deg, #2B2B38 0%, #14141C 100%)",
         "gradient-card":
           "linear-gradient(180deg, #FFFFFF 0%, #FDFAF1 100%)",
+        "gradient-dark": // Nuevo gradiente profundo
+          "linear-gradient(180deg, #05060F 0%, #0A0E1A 100%)",
+        "gradient-accent": // Nuevo gradiente cian
+          "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)",
         shimmer:
           "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
       },
@@ -166,6 +188,10 @@ const config: Config = {
           "25%": { transform: "translateX(-5px)" },
           "75%": { transform: "translateX(5px)" },
         },
+        spotlight: { // Animación estilo Yape para el hero
+          "0%, 100%": { transform: "translate(-10%, -10%) scale(1)" },
+          "50%": { transform: "translate(10%, 10%) scale(1.1)" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both",
@@ -179,6 +205,7 @@ const config: Config = {
         "pulse-soft": "pulse-soft 2.4s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-out infinite",
         shake: "shake 0.4s ease-in-out",
+        spotlight: "spotlight 14s ease-in-out infinite", // Nuevo
       },
     },
   },

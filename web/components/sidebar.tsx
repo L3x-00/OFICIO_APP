@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
   UserCog,
@@ -51,7 +52,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`hidden md:flex flex-col bg-bg-card/80 backdrop-blur-xl border-r border-white/5 h-screen sticky top-0 transition-all duration-300 ease-smooth ${
+      className={`hidden md:flex flex-col bg-dark-surface/80 backdrop-blur-xl border-r border-white/5 h-screen sticky top-0 transition-all duration-300 ease-smooth ${
         collapsed ? 'w-[72px]' : 'w-64'
       }`}
     >
@@ -60,7 +61,7 @@ export default function Sidebar() {
         <Link href="/panel" className={`flex items-center gap-2.5 group overflow-hidden ${collapsed ? 'justify-center w-full' : ''}`}>
           <div className="relative w-8 h-8 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
             <Image
-              src="/images/logo/logo_dark.png"
+              src="/images/logo/logo_light.png" // Cambiado a logo claro
               alt="OficioApp"
               fill
               className="object-contain"
@@ -68,7 +69,7 @@ export default function Sidebar() {
             />
           </div>
           {!collapsed && (
-            <span className="text-text-primary font-bold text-sm whitespace-nowrap animate-fade-in">
+            <span className="text-white font-display font-bold text-sm whitespace-nowrap animate-fade-in">
               OficioApp
             </span>
           )}
@@ -76,7 +77,7 @@ export default function Sidebar() {
         {!collapsed && (
           <button
             onClick={() => setCollapsed(true)}
-            className="text-text-muted hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
+            className="text-white/30 hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
             aria-label="Colapsar menú"
           >
             <ChevronLeft size={16} />
@@ -87,7 +88,7 @@ export default function Sidebar() {
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="mx-auto mt-2 text-text-muted hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
+          className="mx-auto mt-2 text-white/30 hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
           aria-label="Expandir menú"
         >
           <ChevronRight size={16} />
@@ -109,13 +110,16 @@ export default function Sidebar() {
               href={tab.href}
               className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
                 isActive
-                  ? 'bg-primary/15 text-primary shadow-glow-sm'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-primary/20 to-primary/5 text-primary-light shadow-glow-sm'
+                  : 'text-white/50 hover:text-white hover:bg-white/[0.04]'
               } ${collapsed ? 'justify-center' : ''}`}
               title={collapsed ? tab.label : undefined}
             >
               {isActive && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-0.5 bg-primary rounded-r-full" />
+                <motion.span 
+                  layoutId="active-sidebar-tab"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-gradient-to-b from-primary to-primary-light rounded-r-full shadow-glow-sm" 
+                />
               )}
               <tab.icon
                 size={20}
@@ -144,14 +148,14 @@ export default function Sidebar() {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <div className="text-text-primary text-xs font-semibold truncate">{user.firstName}</div>
-              <div className="text-text-muted text-[10px] truncate">{user.email}</div>
+              <div className="text-white text-xs font-semibold truncate">{user.firstName}</div>
+              <div className="text-white/30 text-[10px] truncate">{user.email}</div>
             </div>
           </div>
         )}
         <button
           onClick={handleLogout}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red/80 hover:text-red hover:bg-red/10 transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Cerrar sesión' : undefined}
         >
           <LogOut size={20} className="flex-shrink-0" />
@@ -190,7 +194,7 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
     // En sidebar colapsado: solo icono indicador, no dropdown
     return (
       <div className="px-2.5 pt-3" title={`Panel ${activeMeta.label}`}>
-        <div className="w-12 h-12 mx-auto rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shadow-glow-sm">
+        <div className="w-12 h-12 mx-auto rounded-xl glass border-primary/20 flex items-center justify-center text-primary shadow-glow-sm">
           <ActiveIcon size={20} />
         </div>
       </div>
@@ -199,13 +203,13 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
 
   return (
     <div className="px-2.5 pt-3 relative" ref={ref}>
-      <p className="text-text-muted text-[10px] uppercase tracking-widest font-bold px-3 mb-1.5">
+      <p className="text-white/30 text-[10px] uppercase tracking-widest font-bold px-3 mb-1.5">
         Panel
       </p>
       <button
         onClick={() => !onlyOne && setOpen(!open)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-bg-input/60 border border-white/8 hover:border-primary/40 transition-all duration-200 ${
-          onlyOne ? 'cursor-default' : 'cursor-pointer hover:bg-bg-input'
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl glass border-white/5 hover:border-primary/30 transition-all duration-200 ${
+          onlyOne ? 'cursor-default' : 'cursor-pointer hover:bg-white/[0.04]'
         }`}
         aria-haspopup={!onlyOne}
         aria-expanded={open}
@@ -214,52 +218,60 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
           <ActiveIcon size={18} className={activeMeta.color} />
         </div>
         <div className="flex-1 text-left min-w-0">
-          <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+          <div className="text-[10px] uppercase tracking-wider text-white/40 font-semibold">
             Panel
           </div>
-          <div className="text-text-primary text-sm font-bold truncate">
+          <div className="text-white text-sm font-bold truncate">
             {activeMeta.label}
           </div>
         </div>
         {!onlyOne && (
           <ChevronDown
             size={16}
-            className={`text-text-muted transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`}
+            className={`text-white/30 transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`}
           />
         )}
       </button>
 
-      {open && !onlyOne && (
-        <div className="absolute left-2.5 right-2.5 top-full mt-2 z-50 glass-card rounded-xl shadow-2xl py-1 animate-scale-in origin-top">
-          {availableTypes.map((t) => {
-            const m = META[t];
-            const Icon = m.icon;
-            const isActive = t === activeType;
-            return (
-              <button
-                key={t}
-                onClick={() => {
-                  setActiveType(t);
-                  setOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center flex-shrink-0`}>
-                  <Icon size={16} className={m.color} />
-                </div>
-                <span className="text-sm font-medium">{m.label}</span>
-                {isActive && (
-                  <LayoutDashboard size={14} className="ml-auto text-primary" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <AnimatePresence>
+        {open && !onlyOne && (
+          <motion.div
+            initial={{ opacity: 0, y: -5, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            className="absolute left-2.5 right-2.5 top-full mt-2 z-50 glass-card rounded-xl shadow-glow-sm py-1.5 overflow-hidden"
+          >
+            {availableTypes.map((t) => {
+              const m = META[t];
+              const Icon = m.icon;
+              const isActive = t === activeType;
+              return (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setActiveType(t);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${
+                    isActive
+                      ? 'bg-primary/10 text-primary-light'
+                      : 'text-white/50 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center flex-shrink-0`}>
+                    <Icon size={16} className={m.color} />
+                  </div>
+                  <span className="text-sm font-medium">{m.label}</span>
+                  {isActive && (
+                    <LayoutDashboard size={14} className="ml-auto text-primary" />
+                  )}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -273,7 +285,7 @@ const META: Record<'OFICIO' | 'NEGOCIO', {
   OFICIO: {
     label: 'Profesional',
     icon: Wrench,
-    color: 'text-primary',
+    color: 'text-primary-light',
     bg: 'bg-primary/15',
   },
   NEGOCIO: {

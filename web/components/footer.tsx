@@ -3,10 +3,39 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart } from 'lucide-react';
+import { Heart, ArrowUp, Mail, Phone, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
 import LegalModal from '@/components/legal-modal';
 import AboutModal from '@/components/about-modal';
 
+// ========== ANIMACIONES TIPADAS ==========
+const footerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 15, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
+// ========== CONTENIDO LEGAL ==========
 const TERMS_CONTENT = `TÉRMINOS Y CONDICIONES DE USO — OficioApp
 
 Última actualización: Mayo 2026
@@ -76,10 +105,10 @@ Usted tiene derecho a:
 Para ejercer sus derechos o consultar sobre esta política: soporteofiapp@gmail.com`;
 
 const productLinks = [
-  { label: 'Beneficios',         href: '/#beneficios' },
-  { label: 'Cómo funciona',      href: '/#como-funciona' },
-  { label: 'Testimonios',        href: '/#testimonios' },
-  { label: 'Manual de usuario',  href: '/#guia' },
+  { label: 'Beneficios', href: '/#beneficios' },
+  { label: 'Cómo funciona', href: '/#como-funciona' },
+  { label: 'Testimonios', href: '/#testimonios' },
+  { label: 'Manual de usuario', href: '/#guia' },
   { label: 'Panel de proveedor', href: '/login' },
 ];
 
@@ -92,58 +121,97 @@ export default function Footer() {
   });
   const [aboutOpen, setAboutOpen] = useState(false);
 
-  return (
-    <footer className="relative border-t border-line bg-paper-warm">
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-          {/* Marca */}
-          <div className="sm:col-span-2 lg:col-span-1">
+  return (
+    <motion.footer
+      variants={footerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-50px' }}
+      className="relative mt-20 border-t border-white/10 bg-dark-premium/80 backdrop-blur-xl"
+    >
+      {/* Degradado superior sutil */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12"
+        >
+          {/* Marca + redes */}
+          <motion.div variants={itemVariants} className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-5 group w-fit">
-              <div className="relative w-10 h-10 rounded-xl bg-ink flex items-center justify-center shadow-ink-soft transition-transform duration-300 group-hover:scale-[1.04]">
+              <div className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105 border border-white/10">
                 <Image
-                  src="/images/logo/logo_dark.png"
+                  src="/images/logo/logo_light.png"
                   alt="OficioApp"
                   width={24}
                   height={24}
                   className="object-contain"
                 />
               </div>
-              <span className="font-display font-bold text-ink text-[18px] tracking-tightest">
+              <span className="font-display font-bold text-white text-xl tracking-tightest bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                 OficioApp
               </span>
             </Link>
-            <p className="text-ink-3 text-[14.5px] leading-relaxed mb-5 max-w-xs">
-              Encuentra al profesional ideal en minutos, no en horas.
-              El marketplace peruano que garantiza seguridad y calidad en oficios y negocios locales.
+            <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-xs">
+              Encuentra al profesional ideal en minutos, no en horas. El marketplace peruano que garantiza seguridad y calidad en oficios y negocios locales.
             </p>
 
-            <span className="eyebrow block mb-3">Síguenos</span>
-            <div className="flex items-center gap-3">
-              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com" target="_blank" rel="noopener noreferrer" aria-label="Gmail" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
-                <img src="/images/social/gmail.png" alt="" className="w-5 h-5 object-contain" />
-              </a>
-              <a href="https://www.tiktok.com/@ofiapp.pe" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
-                <img src="/images/social/tik-tok.png" alt="" className="w-5 h-5 object-contain" />
-              </a>
-              <a href="https://www.facebook.com/profile.php?id=61585849044376" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
-                <img src="/images/social/fb.png" alt="" className="w-5 h-5 object-contain" />
-              </a>
-              <a href="https://www.instagram.com/ofiapp.pe/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 rounded-lg bg-surface border border-line-2 hover:border-ink-4 transition-colors flex items-center justify-center">
-                <img src="/images/social/instagram.png" alt="" className="w-5 h-5 object-contain" />
+            <div className="flex items-center gap-2 mb-4">
+              <Mail size={14} className="text-white/30" />
+              <a
+                href="mailto:soporteofiapp@gmail.com"
+                className="text-white/50 text-xs hover:text-primary-light transition-colors"
+              >
+                soporteofiapp@gmail.com
               </a>
             </div>
-          </div>
+            <div className="flex items-center gap-2">
+              <MapPin size={14} className="text-white/30" />
+              <span className="text-white/40 text-xs">Perú</span>
+            </div>
+
+            <span className="eyebrow block mt-6 mb-3">Síguenos</span>
+            <div className="flex items-center gap-2">
+              <SocialIcon
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
+                src="/images/social/gmail.png"
+                label="Gmail"
+              />
+              <SocialIcon
+                href="https://www.tiktok.com/@ofiapp.pe"
+                src="/images/social/tik-tok.png"
+                label="TikTok"
+              />
+              <SocialIcon
+                href="https://www.facebook.com/profile.php?id=61585849044376"
+                src="/images/social/fb.png"
+                label="Facebook"
+              />
+              <SocialIcon
+                href="https://www.instagram.com/ofiapp.pe/"
+                src="/images/social/instagram.png"
+                label="Instagram"
+              />
+            </div>
+          </motion.div>
 
           {/* Explorar */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h4 className="eyebrow mb-4">Explorar</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {productLinks.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-ink-2 text-[14px] hover:text-ink transition-colors"
+                    className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
                     {l.label}
                   </Link>
@@ -152,25 +220,26 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => setAboutOpen(true)}
-                  className="text-ink-2 text-[14px] hover:text-ink transition-colors text-left"
+                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
                 >
                   Conócenos
                 </button>
               </li>
             </ul>
-          </div>
+          </motion.div>
 
           {/* Contacto */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h4 className="eyebrow mb-4">Contacto</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               <li>
                 <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-2 text-[14px] hover:text-ink transition-colors"
+                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-flex items-center gap-1.5"
                 >
+                  <Mail size={12} />
                   Soporte técnico
                 </a>
               </li>
@@ -179,8 +248,9 @@ export default function Footer() {
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=ronla.angarita31@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-2 text-[14px] hover:text-ink transition-colors"
+                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-flex items-center gap-1.5"
                 >
+                  <Mail size={12} />
                   Ventas y planes
                 </a>
               </li>
@@ -189,18 +259,19 @@ export default function Footer() {
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=dannyafk2000@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-2 text-[14px] hover:text-ink transition-colors"
+                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-flex items-center gap-1.5"
                 >
+                  <Mail size={12} />
                   Centro de ayuda
                 </a>
               </li>
             </ul>
-          </div>
+          </motion.div>
 
           {/* Legal */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h4 className="eyebrow mb-4">Legal</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               <li>
                 <button
                   onClick={() =>
@@ -210,7 +281,7 @@ export default function Footer() {
                       content: TERMS_CONTENT,
                     })
                   }
-                  className="text-ink-2 text-[14px] hover:text-ink transition-colors text-left"
+                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
                 >
                   Términos y condiciones
                 </button>
@@ -224,27 +295,41 @@ export default function Footer() {
                       content: PRIVACY_CONTENT,
                     })
                   }
-                  className="text-ink-2 text-[14px] hover:text-ink transition-colors text-left"
+                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
                 >
                   Política de privacidad
                 </button>
               </li>
             </ul>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* Barra inferior */}
-        <div className="pt-7 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-ink-4 text-[12.5px]">
+        {/* Barra inferior con botón de scroll up */}
+        <motion.div
+          variants={itemVariants}
+          className="pt-7 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <span className="text-white/30 text-xs">
             © {year} OficioApp. Todos los derechos reservados.
           </span>
-          <span className="text-ink-4 text-[12.5px] inline-flex items-center gap-2">
-            <span className="peru-stripe">
-              <i /><i /><i />
+          <div className="flex items-center gap-4">
+            <span className="text-white/30 text-xs inline-flex items-center gap-1.5">
+              <span className="peru-stripe">
+                <i />
+                <i />
+                <i />
+              </span>
+              Hecho con <Heart size={10} className="text-rose fill-rose" /> en Perú
             </span>
-            Hecho con <Heart size={11} className="text-rose fill-rose" /> en Perú
-          </span>
-        </div>
+            <button
+              onClick={scrollToTop}
+              className="w-8 h-8 rounded-full glass flex items-center justify-center text-white/50 hover:text-primary-light hover:shadow-glow-sm transition-all hover:scale-105"
+              aria-label="Volver arriba"
+            >
+              <ArrowUp size={14} />
+            </button>
+          </div>
+        </motion.div>
       </div>
 
       <LegalModal
@@ -254,6 +339,25 @@ export default function Footer() {
         content={legalModal.content}
       />
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
-    </footer>
+    </motion.footer>
+  );
+}
+
+// Componente para íconos sociales (mejor hover)
+function SocialIcon({ href, src, label }: { href: string; src: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
+    >
+      <img
+        src={src}
+        alt={label}
+        className="w-5 h-5 object-contain brightness-0 invert opacity-60 group-hover:opacity-100 transition-opacity"
+      />
+    </a>
   );
 }

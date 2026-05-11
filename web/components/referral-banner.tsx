@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ArrowRight, Coins } from 'lucide-react';
 import { isAuthenticated, getUser } from '@/lib/auth';
 
@@ -22,43 +23,50 @@ export default function ReferralBanner() {
   }, []);
 
   return (
-    <section id="referidos-banner" className="relative py-20 sm:py-28 bg-paper-warm overflow-hidden">
-      <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
+    <section id="referidos-banner" className="relative py-24 sm:py-32 bg-dark-surface overflow-hidden">
+      {/* Fondo con resplandor ámbar */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber/5 rounded-full blur-[120px]" />
+      </div>
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
-        <div
-          data-reveal="scale"
-          className="relative card-3d overflow-hidden p-8 sm:p-12 lg:p-14"
+        <motion.div 
+          initial={{ opacity: 0, y: 30, scale: 0.98 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          className="relative glass overflow-hidden p-8 sm:p-12 lg:p-14 border-amber/10 shadow-glow-md"
         >
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 items-center">
 
             <div className="max-w-2xl">
-              <div className="chip-eyebrow mb-7" style={{ background: '#FBE8D6', borderColor: '#F4CDA3' }}>
-                <span className="dot" style={{ background: '#F59E0B', boxShadow: '0 0 0 4px rgba(245,158,11,0.18)' }} />
+              {/* Chip actualizado a tema oscuro */}
+              <div className="chip-eyebrow mb-7 bg-amber/10 border-amber/20 text-amber">
+                <span className="dot" />
                 Programa de referidos
               </div>
 
-              <h2 className="font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.05]">
+              <h2 className="font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.05]">
                 Invita a un profesional
                 <br className="hidden sm:block" />
                 y gana{' '}
                 <span className="inline-flex items-baseline gap-2 align-baseline">
-                  <span className="text-gradient">25 monedas</span>
+                  <span className="text-gradient-amber">25 monedas</span>
                   <Coins
                     size={30}
-                    className="text-amber inline-block translate-y-1"
+                    className="text-amber inline-block translate-y-1 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]"
                   />
                 </span>
               </h2>
 
-              <p className="mt-5 text-ink-3 text-[16px] sm:text-[17px] leading-relaxed">
-                Tu amigo recibe <strong className="text-ink font-semibold">5 monedas</strong> de bienvenida.
+              <p className="mt-5 text-white/60 text-[16px] sm:text-[17px] leading-relaxed">
+                Tu amigo recibe <strong className="text-white font-semibold">5 monedas</strong> de bienvenida.
                 Acumula y canjea por planes gratis o servicios reales de la comunidad.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 {authed ? (
-                  <Link href={targetHref} className="btn btn-ink btn-lg press-effect group">
+                  <Link href={targetHref} className="btn btn-primary btn-lg press-effect group">
                     Ir a mis referidos
                     <ArrowRight
                       size={16}
@@ -67,7 +75,7 @@ export default function ReferralBanner() {
                   </Link>
                 ) : (
                   <>
-                    <a href="#como-funciona" className="btn btn-ink btn-lg press-effect group">
+                    <a href="#como-funciona" className="btn btn-primary btn-lg press-effect group">
                       Más información
                       <ArrowRight
                         size={16}
@@ -96,7 +104,7 @@ export default function ReferralBanner() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

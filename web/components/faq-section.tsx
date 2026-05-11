@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
 interface FaqItem {
@@ -70,63 +71,93 @@ function FaqAccordion({ question, answer }: FaqItem) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-line last:border-b-0">
+    <div className="border-b border-white/5 last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-4 py-5 text-left group"
       >
-        <span className="font-display font-medium text-ink text-[15px] sm:text-[16px] group-hover:text-ink-2 transition-colors pr-4">
+        <span className={`font-display font-medium text-[15px] sm:text-[16px] transition-colors pr-4 ${open ? 'text-primary-light' : 'text-white/80 group-hover:text-white'}`}>
           {question}
         </span>
         <ChevronDown
           size={18}
           strokeWidth={1.75}
-          className={`text-ink-4 flex-shrink-0 transition-transform duration-300 ${
-            open ? 'rotate-180 text-ink' : ''
-          }`}
+          className={`flex-shrink-0 transition-all duration-300 ${open ? 'rotate-180 text-primary' : 'text-white/30'}`}
         />
       </button>
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? 'max-h-96 pb-5' : 'max-h-0'
-        }`}
-      >
-        <p className="text-ink-3 text-[14.5px] leading-relaxed">{answer}</p>
-      </div>
+      
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            className="overflow-hidden"
+          >
+            <p className="pb-5 text-white/50 text-[14.5px] leading-relaxed">{answer}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="py-24 sm:py-32 bg-paper">
-      <div className="max-w-3xl mx-auto px-5 sm:px-8 lg:px-10">
+    <section id="faq" className="py-24 sm:py-32 bg-dark-surface relative overflow-hidden">
+      {/* Fondo decorativo sutil */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px]" />
+      </div>
 
-        <div className="mb-14 sm:mb-16" data-reveal>
+      <div className="relative max-w-3xl mx-auto px-5 sm:px-8 lg:px-10">
+
+        <motion.div 
+          className="mb-14 sm:mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        >
           <span className="eyebrow">Preguntas frecuentes</span>
-          <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
+          <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
             Todo lo que necesitas saber.
           </h2>
-          <p className="mt-4 text-ink-3 text-[16px] leading-relaxed max-w-lg">
+          <p className="mt-4 text-white/60 text-[16px] leading-relaxed max-w-lg">
             Respuestas claras a las dudas más comunes de clientes y proveedores.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="space-y-12">
+        <motion.div 
+          className="space-y-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={{
+            visible: { transition: { staggerChildren: 0.1 } }
+          }}
+        >
           {faqData.map((group) => (
-            <div key={group.category} data-reveal>
-              <h3 className="font-display font-semibold text-ink text-[14px] uppercase tracking-[0.16em] mb-3 flex items-center gap-2.5">
-                <span className="w-5 h-px bg-ink-4" />
+            <motion.div 
+              key={group.category} 
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } }
+              }}
+            >
+              <h3 className="font-display font-semibold text-accent text-[14px] uppercase tracking-[0.16em] mb-3 flex items-center gap-2.5">
+                <span className="w-5 h-px bg-accent/40" />
                 {group.category}
               </h3>
-              <div className="card-flat px-6">
+              <div className="glass rounded-xl px-6 border-white/5">
                 {group.items.map((item) => (
                   <FaqAccordion key={item.question} {...item} />
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

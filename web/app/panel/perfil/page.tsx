@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { profileSchema } from '@/lib/validators';
 import { useProfileType } from '@/lib/profile-type-context';
@@ -44,10 +45,27 @@ const DAY_LABELS: Record<string, string> = {
 };
 
 const AVAIL_STYLES = {
-  DISPONIBLE:  { bg: 'bg-green/15',  text: 'text-green',  border: 'border-green/40',  label: 'Disponible' },
-  OCUPADO:     { bg: 'bg-amber/15',  text: 'text-amber',  border: 'border-amber/40',  label: 'Ocupado' },
-  CON_DEMORA:  { bg: 'bg-red/15',    text: 'text-red',    border: 'border-red/40',    label: 'Con demora' },
+  DISPONIBLE:  { bg: 'bg-accent/10',  text: 'text-accent',  border: 'border-accent/20',  label: 'Disponible' },
+  OCUPADO:     { bg: 'bg-amber/10',  text: 'text-amber',  border: 'border-amber/20',  label: 'Ocupado' },
+  CON_DEMORA:  { bg: 'bg-rose/10',    text: 'text-rose-400',    border: 'border-rose/20',    label: 'Con demora' },
 } as const;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1, 
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } 
+  }
+};
 
 export default function PanelPerfilPage() {
   const [provider, setProvider] = useState<Provider | null>(null);
@@ -196,13 +214,18 @@ export default function PanelPerfilPage() {
   const imageProgress = (imageCount / 5) * 100;
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0 max-w-4xl">
-      <div data-reveal>
-        <h1 className="text-3xl font-extrabold text-text-primary">Editar perfil</h1>
-        <p className="text-text-secondary text-sm mt-1">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6 pb-20 md:pb-0 max-w-4xl"
+    >
+      <motion.div variants={itemVariants}>
+        <h1 className="text-3xl font-extrabold text-white font-display tracking-tightest">Editar perfil</h1>
+        <p className="text-white/50 text-sm mt-1">
           Actualiza tu información para que los clientes te encuentren mejor.
         </p>
-      </div>
+      </motion.div>
 
       {/* Avatar y galería */}
       <SectionCard title="Foto de perfil y galería" subtitle="Sube hasta 5 imágenes (JPG, PNG, WebP, máx. 5MB)">
@@ -227,17 +250,17 @@ export default function PanelPerfilPage() {
             </button>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-text-secondary text-sm font-medium">
+            <p className="text-white/60 text-sm font-medium">
               Tu foto principal aparecerá en tu perfil público
             </p>
-            <p className="text-text-muted text-xs mt-1">
+            <p className="text-white/30 text-xs mt-1">
               Una buena foto aumenta hasta un 60% las visitas a tu perfil.
             </p>
             {/* Progress galería */}
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="text-text-muted">Galería ({imageCount}/5)</span>
-                <span className={imageCount >= 4 ? 'text-amber font-semibold' : 'text-text-muted'}>
+                <span className="text-white/40">Galería ({imageCount}/5)</span>
+                <span className={imageCount >= 4 ? 'text-amber font-semibold' : 'text-white/40'}>
                   {imageCount >= 5 ? 'Completo' : `${5 - imageCount} restantes`}
                 </span>
               </div>
@@ -255,7 +278,7 @@ export default function PanelPerfilPage() {
 
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
           {provider?.images?.map((img, idx) => (
-            <div key={img.id} className="relative group rounded-xl overflow-hidden ring-1 ring-white/5 hover:ring-primary/40 transition-all duration-200">
+            <div key={img.id} className="relative group rounded-xl overflow-hidden ring-1 ring-white/5 hover:ring-primary/30 transition-all duration-200">
               <img
                 src={img.url}
                 alt=""
@@ -268,7 +291,7 @@ export default function PanelPerfilPage() {
               )}
               <button
                 onClick={() => handleDeleteImage(img.id)}
-                className="absolute top-1.5 right-1.5 w-7 h-7 bg-red/90 hover:bg-red rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                className="absolute top-1.5 right-1.5 w-7 h-7 bg-rose/90 hover:bg-rose rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
                 aria-label="Eliminar imagen"
               >
                 <Trash2 size={12} />
@@ -279,7 +302,7 @@ export default function PanelPerfilPage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="w-full aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 flex flex-col items-center justify-center text-text-muted hover:text-primary transition-all duration-200 group disabled:opacity-50"
+              className="w-full aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-primary/30 hover:bg-primary/5 flex flex-col items-center justify-center text-white/30 hover:text-primary-light transition-all duration-200 group disabled:opacity-50"
             >
               {uploading ? (
                 <Loader2 size={22} className="animate-spin text-primary" />
@@ -323,7 +346,7 @@ export default function PanelPerfilPage() {
                 className={`relative py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
                   isActive
                     ? `${style.bg} ${style.text} ${style.border} shadow-glow-sm`
-                    : 'bg-bg-input border-white/5 text-text-muted hover:text-text-secondary hover:border-white/15'
+                    : 'glass border-white/10 text-white/40 hover:text-white/70 hover:bg-white/[0.06]'
                 }`}
               >
                 {isActive && (
@@ -340,35 +363,35 @@ export default function PanelPerfilPage() {
       <SectionCard
         title={
           <span className="flex items-center gap-2">
-            <Shield className="text-primary" size={20} />
+            <Shield className="text-accent" size={20} />
             Verificación de confianza
           </span>
         }
       >
         {provider?.verificationStatus === 'APROBADO' && (
-          <div className="flex items-center gap-3 bg-green/10 border border-green/30 rounded-xl px-4 py-3">
-            <CheckCircle size={20} className="text-green flex-shrink-0" />
+          <div className="flex items-center gap-3 bg-accent/10 border border-accent/20 rounded-xl px-4 py-3">
+            <CheckCircle size={20} className="text-accent flex-shrink-0" />
             <div>
-              <p className="text-green text-sm font-semibold">Perfil verificado</p>
-              <p className="text-text-muted text-xs">Tu identidad ha sido validada.</p>
+              <p className="text-accent text-sm font-semibold">Perfil verificado</p>
+              <p className="text-white/40 text-xs">Tu identidad ha sido validada.</p>
             </div>
           </div>
         )}
         {provider?.verificationStatus === 'PENDIENTE' && (
-          <div className="flex items-center gap-3 bg-amber/10 border border-amber/30 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3 bg-amber/10 border border-amber/20 rounded-xl px-4 py-3">
             <Clock size={20} className="text-amber flex-shrink-0 animate-pulse-soft" />
             <div>
               <p className="text-amber text-sm font-semibold">Verificación en revisión</p>
-              <p className="text-text-muted text-xs">Te notificaremos en 24-48 horas.</p>
+              <p className="text-white/40 text-xs">Te notificaremos en 24-48 horas.</p>
             </div>
           </div>
         )}
         {provider?.verificationStatus === 'RECHAZADO' && (
-          <div className="flex items-start gap-3 bg-red/10 border border-red/30 rounded-xl px-4 py-3">
-            <XCircle size={20} className="text-red flex-shrink-0" />
+          <div className="flex items-start gap-3 bg-rose/10 border border-rose/20 rounded-xl px-4 py-3">
+            <XCircle size={20} className="text-rose-400 flex-shrink-0" />
             <div>
-              <p className="text-red text-sm font-semibold">Verificación rechazada</p>
-              <p className="text-text-muted text-xs mt-0.5">
+              <p className="text-rose-400 text-sm font-semibold">Verificación rechazada</p>
+              <p className="text-white/40 text-xs mt-0.5">
                 Tu solicitud fue rechazada. Contacta al soporte para más información.
               </p>
             </div>
@@ -389,7 +412,7 @@ export default function PanelPerfilPage() {
           <InputField label="Dirección" value={address} onChange={setAddress} />
         </div>
         <div className="mt-4">
-          <label className="block text-text-secondary text-xs font-medium mb-2 uppercase tracking-wider">
+          <label className="block text-white/50 text-xs font-medium mb-2 uppercase tracking-wider">
             Descripción
           </label>
           <textarea
@@ -397,11 +420,11 @@ export default function PanelPerfilPage() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             maxLength={500}
-            className="w-full bg-bg-input border border-white/8 rounded-xl p-3 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:border-primary/60 focus:shadow-[0_0_0_3px_rgba(224,123,57,0.12)] transition-all resize-none"
+            className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none"
             placeholder="Describe tu servicio o negocio..."
           />
           <div className="flex justify-end mt-1">
-            <p className={`text-xs tabular-nums ${description.length > 450 ? 'text-amber' : 'text-text-muted'}`}>
+            <p className={`text-xs tabular-nums ${description.length > 450 ? 'text-amber' : 'text-white/30'}`}>
               {description.length}/500
             </p>
           </div>
@@ -436,7 +459,7 @@ export default function PanelPerfilPage() {
         <div className="space-y-2.5">
           {DAYS.map((day) => (
             <div key={day} className="flex items-center gap-3">
-              <span className="text-text-secondary text-sm w-24 font-medium">
+              <span className="text-white/50 text-sm w-24 font-medium">
                 {DAY_LABELS[day]}
               </span>
               <input
@@ -444,7 +467,7 @@ export default function PanelPerfilPage() {
                 value={scheduleJson[day] || ''}
                 onChange={(e) => handleScheduleChange(day, e.target.value)}
                 placeholder="Ej: 8:00-18:00"
-                className="flex-1 bg-bg-input border border-white/8 rounded-xl px-3 py-2 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:border-primary/60 transition-colors"
+                className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
               />
             </div>
           ))}
@@ -452,11 +475,11 @@ export default function PanelPerfilPage() {
       </CollapsibleSection>
 
       {/* Botón guardar */}
-      <div className="sticky bottom-20 md:bottom-4 z-30 bg-bg-dark/0">
+      <div className="sticky bottom-20 md:bottom-4 z-30">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="btn-primary press-effect w-full sm:w-auto px-8 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-primary btn-lg press-effect w-full sm:w-auto px-8 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? (
             <>
@@ -471,7 +494,7 @@ export default function PanelPerfilPage() {
           )}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -485,15 +508,15 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      data-reveal
-      className="bg-bg-card border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-colors"
+    <motion.div 
+      variants={itemVariants}
+      className="glass rounded-xl p-6 hover:border-white/10 transition-colors"
     >
-      <h2 className="text-lg font-semibold text-text-primary mb-1">{title}</h2>
-      {subtitle && <p className="text-text-muted text-xs mb-4">{subtitle}</p>}
+      <h2 className="text-lg font-semibold text-white font-display mb-1">{title}</h2>
+      {subtitle && <p className="text-white/30 text-xs mb-4">{subtitle}</p>}
       {!subtitle && <div className="mb-4" />}
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -509,28 +532,31 @@ function CollapsibleSection({
   children: React.ReactNode;
 }) {
   return (
-    <div data-reveal className="bg-bg-card border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-colors">
+    <motion.div variants={itemVariants} className="glass rounded-xl overflow-hidden hover:border-white/10 transition-colors">
       <button
         onClick={onToggle}
         className="flex items-center justify-between w-full text-left p-6 hover:bg-white/[0.02] transition-colors"
       >
-        <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
-        {open ? (
-          <ChevronUp className="text-primary" size={20} />
-        ) : (
-          <ChevronDown className="text-text-muted" size={20} />
-        )}
+        <h2 className="text-lg font-semibold text-white font-display">{title}</h2>
+        <ChevronDown
+          size={20}
+          className={`text-white/30 transition-transform duration-300 ${open ? 'rotate-180 text-primary-light' : ''}`}
+        />
       </button>
-      <div
-        className={`grid transition-all duration-300 ease-smooth ${
-          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="px-6 pb-6">{children}</div>
-        </div>
-      </div>
-    </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-6">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -549,12 +575,12 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-text-secondary text-xs font-medium mb-2 uppercase tracking-wider">
+      <label className="block text-white/50 text-xs font-medium mb-2 uppercase tracking-wider">
         {label}
       </label>
       <div className="relative group">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors">
             {icon}
           </div>
         )}
@@ -562,8 +588,8 @@ function InputField({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full bg-bg-input border border-white/8 rounded-xl py-2.5 text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:border-primary/60 focus:shadow-[0_0_0_3px_rgba(224,123,57,0.12)] hover:border-white/15 transition-all ${
-            icon ? 'pl-10 pr-3' : 'px-3'
+          className={`w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 hover:border-white/20 transition-all ${
+            icon ? 'pl-10 pr-4' : 'px-4'
           }`}
         />
       </div>

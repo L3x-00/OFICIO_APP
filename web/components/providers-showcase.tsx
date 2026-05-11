@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
   MapPin,
@@ -25,6 +26,25 @@ const STACK_LAYOUT: { rotate: number; x: number; y: number }[] = [
   { rotate: -7,   x: -28,  y: 18 },
   { rotate: 8,    x:  30,  y: 22 },
 ];
+
+// Variantes para la cascada del Grid
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
+};
+
+const cardVariants = {
+  hidden: { y: 30, opacity: 0, scale: 0.95 },
+  visible: { 
+    y: 0, 
+    opacity: 1, 
+    scale: 1, 
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } 
+  }
+};
 
 export default function ProvidersShowcase() {
   const [providers, setProviders] = useState<PublicProvider[]>([]);
@@ -67,44 +87,63 @@ export default function ProvidersShowcase() {
   const showGrid  = !loading && !error && providers.length > 0 && expanded;
 
   return (
-    <section className="relative py-24 sm:py-32 bg-paper overflow-hidden">
+    <section className="relative py-24 sm:py-32 bg-dark-premium overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px]" />
+      </div>
+
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
 
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12 sm:mb-16" data-reveal>
+        <motion.div 
+          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12 sm:mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        >
           <div className="max-w-xl">
             <span className="eyebrow">Servicios destacados</span>
-            <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
-              Algunos de los más buscados.
+            <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
+              Algunos de los más <span className="text-gradient">buscados</span>.
             </h2>
-            <p className="mt-4 text-ink-3 text-[16px] leading-relaxed">
+            <p className="mt-4 text-white/60 text-[16px] leading-relaxed">
               Profesionales y negocios reales, listos para ayudarte hoy mismo.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {loading && <SkeletonGrid />}
 
         {!loading && error && (
-          <div className="card-flat p-8 text-center max-w-md mx-auto">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[#FBEFCD] border border-[#EBCF8A] flex items-center justify-center">
-              <AlertTriangle size={22} className="text-[#7A4C00]" />
+          <div className="glass p-8 text-center max-w-md mx-auto border-rose/20">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-rose/10 border border-rose/20 flex items-center justify-center">
+              <AlertTriangle size={22} className="text-rose" />
             </div>
-            <p className="text-ink-3 text-sm">{error}</p>
+            <p className="text-white/60 text-sm">{error}</p>
           </div>
         )}
 
         {!loading && !error && providers.length === 0 && <EmptyState />}
 
-        {showStack && (
-          <CollageStack
-            providers={providers.slice(0, STACK_COUNT)}
-            onExpand={handleExpand}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {showStack && (
+            <CollageStack
+              key="stack"
+              providers={providers.slice(0, STACK_COUNT)}
+              onExpand={handleExpand}
+            />
+          )}
 
-        {showGrid && (
-          <ExpandedGrid providers={providers} onCollapse={handleCollapse} />
-        )}
+          {showGrid && (
+            <ExpandedGrid
+              key="grid"
+              providers={providers}
+              onCollapse={handleCollapse}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
@@ -120,7 +159,13 @@ function CollageStack({
   onExpand: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-12 animate-fade-in">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-center gap-12"
+    >
       <div
         className="relative w-full max-w-[320px] sm:max-w-[360px] h-[400px] sm:h-[460px]"
         aria-hidden="true"
@@ -129,17 +174,19 @@ function CollageStack({
           const realIndex = providers.length - 1 - idxFromBottom;
           const layout = STACK_LAYOUT[realIndex] ?? STACK_LAYOUT[0];
           return (
-            <div
+            <motion.div
               key={p.id}
+              initial={{ opacity: 0, y: 50, rotate: 0 }}
+              animate={{ opacity: 1, y: 0, rotate: layout.rotate, x: layout.x }}
+              transition={{ duration: 0.5, delay: realIndex * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
               className="absolute left-1/2 top-1/2 w-[280px] sm:w-[320px] -translate-x-1/2 -translate-y-1/2"
               style={{
-                transform: `translate(calc(-50% + ${layout.x}px), calc(-50% + ${layout.y}px)) rotate(${layout.rotate}deg)`,
                 zIndex: providers.length - realIndex,
-                animation: `fade-in 0.5s ease-out ${realIndex * 0.1}s both`,
+                y: layout.y,
               }}
             >
               <ProviderCard provider={p} variant="stack" />
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -147,7 +194,7 @@ function CollageStack({
       <button
         type="button"
         onClick={onExpand}
-        className="btn btn-ink btn-lg press-effect group"
+        className="btn btn-primary btn-lg press-effect group"
       >
         Descubrir profesionales
         <ArrowRight
@@ -156,10 +203,10 @@ function CollageStack({
         />
       </button>
 
-      <p className="text-ink-4 text-[13px] -mt-7">
+      <p className="text-white/30 text-[13px] -mt-7">
         {providers.length} de {MAX_VISIBLE} disponibles
       </p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -173,24 +220,30 @@ function ExpandedGrid({
   onCollapse: () => void;
 }) {
   return (
-    <div className="animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-        {providers.map((p, i) => (
-          <div
-            key={p.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
-          >
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div 
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {providers.map((p) => (
+          <motion.div key={p.id} variants={cardVariants}>
             <ProviderCard provider={p} variant="grid" />
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="flex justify-center mt-12">
         <button
           type="button"
           onClick={onCollapse}
-          className="inline-flex items-center gap-2 text-ink-3 hover:text-ink text-[13px] font-display font-semibold transition-colors group"
+          className="inline-flex items-center gap-2 text-white/50 hover:text-white text-[13px] font-display font-semibold transition-colors group"
         >
           <Layers
             size={14}
@@ -199,7 +252,7 @@ function ExpandedGrid({
           Vista collage
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -224,7 +277,7 @@ function ProviderCard({
 
   if (variant === 'stack') {
     return (
-      <article className="card-3d overflow-hidden select-none pointer-events-none" aria-hidden="true">
+      <article className="glass overflow-hidden select-none pointer-events-none border-primary/10 shadow-glow-sm" aria-hidden="true">
         <CoverImage src={cover} alt={provider.businessName} category={provider.category?.name} rating={rating} />
         <CardBody
           businessName={provider.businessName}
@@ -240,7 +293,7 @@ function ProviderCard({
   }
 
   return (
-    <article className="card-3d hover-lift overflow-hidden group">
+    <article className="glass glass-hover overflow-hidden group cursor-pointer">
       <CoverImage
         src={cover}
         alt={provider.businessName}
@@ -275,7 +328,7 @@ function CoverImage({
   interactive?: boolean;
 }) {
   return (
-    <div className="relative aspect-[5/3] bg-surface-2 overflow-hidden">
+    <div className="relative aspect-[5/3] bg-dark-card overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
@@ -289,18 +342,18 @@ function CoverImage({
           (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
       {category && (
-        <span className="badge badge-ink absolute top-3 left-3 backdrop-blur-md">
+        <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent text-[11px] font-display font-semibold px-2.5 py-1 rounded-full backdrop-blur-md">
           <Briefcase size={11} />
           {category}
         </span>
       )}
 
       {rating > 0 && (
-        <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-ink text-white text-[11px] font-display font-semibold px-2 py-1 rounded-full tabular-nums">
-          <Star size={11} className="text-amber fill-amber" />
+        <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-amber/10 border border-amber/20 text-amber text-[11px] font-display font-semibold px-2 py-1 rounded-full tabular-nums backdrop-blur-md">
+          <Star size={11} className="fill-amber" />
           {rating.toFixed(1)}
         </span>
       )}
@@ -327,13 +380,13 @@ function CardBody({
 }) {
   return (
     <div className="p-5">
-      <h3 className="font-display font-semibold text-ink text-[16px] leading-snug truncate">
+      <h3 className="font-display font-semibold text-white text-[16px] leading-snug truncate">
         {businessName}
       </h3>
 
       <div className="flex items-center gap-2 mt-2">
         <StarRow value={rating} />
-        <span className="text-ink-4 text-xs">
+        <span className="text-white/40 text-xs">
           {reviews > 0
             ? `(${reviews} ${reviews === 1 ? 'reseña' : 'reseñas'})`
             : 'Sin reseñas aún'}
@@ -341,25 +394,25 @@ function CardBody({
       </div>
 
       {location && (
-        <div className="flex items-center gap-1.5 mt-3 text-ink-3 text-xs">
-          <MapPin size={12} className="text-ink-4 flex-shrink-0" />
+        <div className="flex items-center gap-1.5 mt-3 text-white/50 text-xs">
+          <MapPin size={12} className="text-accent flex-shrink-0" />
           <span className="truncate">{location}</span>
         </div>
       )}
 
       {phoneShown && (
-        <div className="flex items-center gap-1.5 mt-1 text-ink-3 text-xs">
+        <div className="flex items-center gap-1.5 mt-1 text-white/50 text-xs">
           {isWhats ? (
-            <MessageCircle size={12} className="text-green flex-shrink-0" />
+            <MessageCircle size={12} className="text-accent flex-shrink-0" />
           ) : (
-            <Phone size={12} className="text-primary flex-shrink-0" />
+            <Phone size={12} className="text-white/40 flex-shrink-0" />
           )}
           <span className="truncate">{phoneShown}</span>
         </div>
       )}
 
       {description && (
-        <p className="text-ink-3 text-[13.5px] leading-relaxed mt-3">
+        <p className="text-white/40 text-[13.5px] leading-relaxed mt-3">
           {description}
         </p>
       )}
@@ -375,7 +428,7 @@ function StarRow({ value }: { value: number }) {
         <Star
           key={i}
           size={12}
-          className={i < full ? 'text-amber fill-amber' : 'text-line-3'}
+          className={i < full ? 'text-amber fill-amber' : 'text-white/10'}
         />
       ))}
     </div>
@@ -386,7 +439,7 @@ function SkeletonGrid() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="card-3d overflow-hidden">
+        <div key={i} className="glass overflow-hidden">
           <div className="skeleton aspect-[5/3]" />
           <div className="p-5 space-y-2.5">
             <div className="skeleton h-4 w-3/4 rounded" />
@@ -403,14 +456,14 @@ function SkeletonGrid() {
 
 function EmptyState() {
   return (
-    <div className="card-3d p-12 text-center max-w-md mx-auto">
-      <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-paper border border-line-2 flex items-center justify-center">
-        <Briefcase size={26} className="text-ink-4" />
+    <div className="glass p-12 text-center max-w-md mx-auto">
+      <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+        <Briefcase size={26} className="text-white/40" />
       </div>
-      <h3 className="font-display font-semibold text-ink text-[17px] mb-2">
+      <h3 className="font-display font-semibold text-white text-[17px] mb-2">
         Estamos preparando los mejores profesionales de tu zona
       </h3>
-      <p className="text-ink-4 text-sm">¡Vuelve pronto!</p>
+      <p className="text-white/40 text-sm">¡Vuelve pronto!</p>
     </div>
   );
 }

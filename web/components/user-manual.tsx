@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   MessageCircle,
@@ -39,13 +40,14 @@ interface GuideSection {
   content: GuideStep[];
 }
 
+// Mapa actualizado para el tema Dark Premium (colores brillantes sobre cristal oscuro)
 const ACCENT = {
-  blue:   { bg: 'bg-[#E0EAFB]',  text: 'text-[#1E40AF]',     border: 'border-[#C2D5F5]', dot: 'bg-[#3B82F6]' },
-  orange: { bg: 'bg-[#FBE8D6]',  text: 'text-primary-darker', border: 'border-[#F4CDA3]', dot: 'bg-primary' },
-  purple: { bg: 'bg-[#EBE0FB]',  text: 'text-[#5B21B6]',     border: 'border-[#D6C4F2]', dot: 'bg-[#8B5CF6]' },
-  amber:  { bg: 'bg-[#FBEFCD]',  text: 'text-[#7A4C00]',     border: 'border-[#EBCF8A]', dot: 'bg-amber' },
-  green:  { bg: 'bg-[#E2F5EC]',  text: 'text-[#0E5C3D]',     border: 'border-[#B8E3CD]', dot: 'bg-green' },
-  rose:   { bg: 'bg-[#FBE0E3]',  text: 'text-[#9B1C28]',     border: 'border-[#F2BFC4]', dot: 'bg-rose' },
+  blue:   { bg: 'bg-blue-500/10',   text: 'text-blue-400',      border: 'border-blue-500/20', dot: 'bg-blue-400' },
+  orange: { bg: 'bg-primary/10',    text: 'text-primary-light', border: 'border-primary/20',  dot: 'bg-primary-light' },
+  purple: { bg: 'bg-purple-500/10', text: 'text-purple-400',    border: 'border-purple-500/20', dot: 'bg-purple-400' },
+  amber:  { bg: 'bg-amber/10',      text: 'text-amber',         border: 'border-amber/20',    dot: 'bg-amber' },
+  green:  { bg: 'bg-accent/10',     text: 'text-accent',        border: 'border-accent/20',   dot: 'bg-accent' }, // Cian de confianza
+  rose:   { bg: 'bg-rose-500/10',   text: 'text-rose-400',      border: 'border-rose-500/20', dot: 'bg-rose-400' },
 } as const;
 
 const GUIDE_SECTIONS: GuideSection[] = [
@@ -228,7 +230,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     content: [
       {
         title: 'Planes disponibles',
-        desc: 'OficioApp ofrece 3 planes: Gratis, Estándar y Premium.',
+        desc: 'OficioApp ofrece 3 planos: Gratis, Estándar y Premium.',
         icon: Crown,
         accent: 'orange',
         screenshot: 'Comparativa de planes Gratis, Estándar y Premium',
@@ -320,26 +322,44 @@ const GUIDE_SECTIONS: GuideSection[] = [
   },
 ];
 
+// Variantes de animación para la cuadrícula principal
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
+};
+
+const cardVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1, 
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } 
+  }
+};
+
 function GuideCard({ section }: { section: GuideSection }) {
   const [open, setOpen] = useState(false);
   const Icon = section.icon;
   const a = ACCENT[section.accent];
 
   return (
-    <div className="user-guide-card group relative card-3d overflow-hidden">
+    <motion.div variants={cardVariants} className="glass rounded-xl overflow-hidden group">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="w-full text-left px-6 py-5 flex items-center gap-4"
+        className="w-full text-left px-6 py-5 flex items-center gap-4 hover:bg-white/[0.02] transition-colors"
       >
         <div className={`w-11 h-11 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center flex-shrink-0`}>
           <Icon size={20} strokeWidth={1.75} className={a.text} />
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-display font-semibold text-ink text-[15.5px] leading-snug">
+          <h3 className="font-display font-semibold text-white text-[15.5px] leading-snug">
             {section.title}
           </h3>
-          <p className="text-ink-4 text-xs mt-1">
+          <p className="text-white/40 text-xs mt-1">
             {section.content.length} {section.content.length === 1 ? 'guía' : 'guías'}
           </p>
         </div>
@@ -347,109 +367,141 @@ function GuideCard({ section }: { section: GuideSection }) {
         <ChevronDown
           size={18}
           strokeWidth={1.75}
-          className={`text-ink-4 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180 text-ink' : ''}`}
+          className={`text-white/30 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180 text-primary-light' : ''}`}
         />
       </button>
 
-      {open && (
-        <div className="px-6 pb-6 space-y-4 border-t border-line pt-5 guide-content-enter">
-          {section.content.map((step, i) => {
-            const StepIcon = step.icon;
-            const sa = ACCENT[step.accent];
-            return (
-              <div key={i} className="card-flat p-4">
-                <div className="flex items-start gap-3">
-                  <div className={`w-9 h-9 rounded-lg border ${sa.border} ${sa.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                    <StepIcon size={15} strokeWidth={1.75} className={sa.text} />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-display font-semibold text-ink text-[14px]">
-                      {step.title}
-                    </h4>
-                    <p className="text-ink-3 text-[13px] leading-relaxed mt-1">
-                      {step.desc}
-                    </p>
-
-                    {step.screenshot && (
-                      <div className="mt-3 bg-paper border border-dashed border-line-2 rounded-lg p-4 text-center hover:border-primary/40 transition-colors duration-200">
-                        <div className="flex flex-col items-center gap-1.5">
-                          <ImageIcon size={20} className="text-ink-4" strokeWidth={1.75} />
-                          <p className="text-ink-3 text-[12px] font-medium">{step.screenshot}</p>
-                          <span className="text-[10px] text-ink-5">
-                            (Espacio para captura real)
-                          </span>
-                        </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-6 space-y-4 border-t border-white/5 pt-5">
+              {section.content.map((step, i) => {
+                const StepIcon = step.icon;
+                const sa = ACCENT[step.accent];
+                return (
+                  <div key={i} className="glass rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-9 h-9 rounded-lg border ${sa.border} ${sa.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                        <StepIcon size={15} strokeWidth={1.75} className={sa.text} />
                       </div>
-                    )}
 
-                    {step.subSteps && step.subSteps.length > 0 && (
-                      <ul className="mt-3 space-y-1.5">
-                        {step.subSteps.map((s, j) => (
-                          <li key={j} className="text-ink-3 text-[12.5px] flex items-start gap-2 leading-relaxed">
-                            <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${sa.dot}`} />
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-display font-semibold text-white text-[14px]">
+                          {step.title}
+                        </h4>
+                        <p className="text-white/60 text-[13px] leading-relaxed mt-1">
+                          {step.desc}
+                        </p>
 
-                    {step.links && step.links.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {step.links.map((link, k) => {
-                          const ext = link.href.startsWith('http') || link.href.startsWith('mailto');
-                          return (
-                            <a
-                              key={k}
-                              href={link.href}
-                              target={ext ? '_blank' : undefined}
-                              rel="noopener noreferrer"
-                              className="btn btn-ghost btn-sm press-effect"
-                            >
-                              {ext ? <ExternalLink size={12} /> : <ArrowRight size={12} />}
-                              {link.label}
-                            </a>
-                          );
-                        })}
+                        {/* SECCIÓN DE FOTOS INTACTA (Solo adaptada a tema oscuro) */}
+                        {step.screenshot && (
+                          <div className="mt-3 bg-white/[0.02] border border-dashed border-white/10 rounded-lg p-4 text-center hover:border-primary/30 transition-colors duration-200">
+                            <div className="flex flex-col items-center gap-1.5">
+                              <ImageIcon size={20} className="text-white/30" strokeWidth={1.75} />
+                              <p className="text-white/50 text-[12px] font-medium">{step.screenshot}</p>
+                              <span className="text-[10px] text-white/30">
+                                (Espacio para captura real)
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {step.subSteps && step.subSteps.length > 0 && (
+                          <ul className="mt-3 space-y-1.5">
+                            {step.subSteps.map((s, j) => (
+                              <li key={j} className="text-white/50 text-[12.5px] flex items-start gap-2 leading-relaxed">
+                                <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${sa.dot}`} />
+                                {s}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {step.links && step.links.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {step.links.map((link, k) => {
+                              const ext = link.href.startsWith('http') || link.href.startsWith('mailto');
+                              return (
+                                <a
+                                  key={k}
+                                  href={link.href}
+                                  target={ext ? '_blank' : undefined}
+                                  rel="noopener noreferrer"
+                                  className="btn btn-ghost btn-sm press-effect"
+                                >
+                                  {ext ? <ExternalLink size={12} /> : <ArrowRight size={12} />}
+                                  {link.label}
+                                </a>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
 export default function UserGuideSection() {
   return (
-    <section id="guia" className="py-24 sm:py-32 bg-paper">
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+    <section id="guia" className="py-24 sm:py-32 bg-dark-premium relative overflow-hidden">
+      {/* Fondo sutil */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px]" />
+      </div>
 
-        <div className="max-w-2xl mb-14 sm:mb-16" data-reveal>
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+
+        <motion.div 
+          className="max-w-2xl mb-14 sm:mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        >
           <span className="eyebrow">Manual de usuario</span>
-          <h2 className="mt-3 font-display font-bold tracking-tightest text-ink text-[34px] sm:text-[44px] leading-[1.1]">
-            Aprende a usar OficioApp.
+          <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
+            Aprende a usar <span className="text-gradient">OficioApp</span>.
           </h2>
-          <p className="mt-4 text-ink-3 text-[16px] leading-relaxed max-w-xl">
+          <p className="mt-4 text-white/60 text-[16px] leading-relaxed max-w-xl">
             Todo lo que necesitas saber para aprovechar al máximo la plataforma,
             tanto si eres cliente como si eres profesional o negocio.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
           {GUIDE_SECTIONS.map((section) => (
-            <div key={section.id} data-reveal>
-              <GuideCard section={section} />
-            </div>
+            <GuideCard key={section.id} section={section} />
           ))}
-        </div>
+        </motion.div>
 
-        <div className="mt-16 text-center" data-reveal>
-          <p className="text-ink-4 text-[13px] max-w-lg mx-auto leading-relaxed">
+        <motion.div 
+          className="mt-16 text-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+        >
+          <p className="text-white/40 text-[13px] max-w-lg mx-auto leading-relaxed">
             Si después de leer este manual aún tienes dudas, contáctanos.
             Estamos aquí para ayudarte.
           </p>
@@ -462,12 +514,12 @@ export default function UserGuideSection() {
               <Download size={14} />
               Ventas y planes
             </a>
-            <a href="#" className="btn btn-ink btn-sm press-effect">
+            <a href="#" className="btn btn-primary btn-sm press-effect">
               <ExternalLink size={14} />
               Descargar la app
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

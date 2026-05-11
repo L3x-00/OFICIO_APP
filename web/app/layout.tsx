@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Plus_Jakarta_Sans, Sora } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/navbar';
 import LayoutShell from '@/components/layout-shell';
@@ -6,6 +7,18 @@ import RevealProvider from '@/components/reveal-provider';
 import WhatsAppButton from '@/components/whatsapp-button';
 import { Toaster } from 'sonner';
 
+// ── Nueva tipografía nativa (rendimiento óptimo) ──────────
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jakarta', // Inyecta la variable CSS que usa Tailwind
+});
+
+const sora = Sora({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sora', // Inyecta la variable CSS para títulos
+});
 
 export const metadata: Metadata = {
   title: 'OficioApp – Marketplace de servicios locales en Perú',
@@ -40,7 +53,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#FBF7EE',
+  themeColor: '#05060F', // Cambiado al fondo Dark Premium
   width: 'device-width',
   initialScale: 1,
 };
@@ -51,28 +64,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${jakarta.variable} ${sora.variable}`}>
       <head>
         <link rel="manifest" href="/site.webmanifest" />
       </head>
-      <body className="min-h-screen flex flex-col bg-paper text-ink antialiased">
+      <body className="min-h-screen flex flex-col bg-dark-premium text-white antialiased font-sans">
         <RevealProvider />
         <Navbar />
         <LayoutShell>{children}</LayoutShell>
         <Toaster
           position="bottom-right"
-          theme="light"
+          theme="dark"
           richColors
           closeButton
           duration={4000}
           toastOptions={{
             style: {
-              background: '#FFFFFF',
-              border: '1px solid #DDD4BF',
-              color: '#14141C',
-              boxShadow: '0 1px 2px rgba(28,22,8,0.04), 0 12px 32px -14px rgba(28,22,8,0.14)',
+              background: 'rgba(10, 14, 26, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              color: '#FFFFFF',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
             },
-            className: 'shadow-soft',
+            className: 'shadow-glass',
           }}
         />
         <WhatsAppButton />

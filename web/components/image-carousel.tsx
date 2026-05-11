@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const slides = [
@@ -56,52 +57,75 @@ export default function ImageCarousel() {
   }, [paused, next]);
 
   return (
-    <section className="py-14 bg-bg-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10" data-reveal>
-          <h2 className="text-2xl sm:text-4xl font-bold text-text-primary">
+    <section className="py-24 sm:py-32 bg-dark-surface relative overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+        
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        >
+          <span className="eyebrow">Galería</span>
+          <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
             Conoce <span className="text-gradient">OficioApp</span>
           </h2>
-          <p className="text-text-secondary mt-2 text-sm sm:text-base">
+          <p className="text-white/60 mt-3 text-[16px] max-w-lg mx-auto leading-relaxed">
             La plataforma que transforma cómo se contratan servicios en el Perú.
           </p>
-        </div>
+        </motion.div>
 
-        <div
-          data-reveal="scale"
-          className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 ring-1 ring-white/5 select-none"
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          className="relative rounded-2xl overflow-hidden glass border border-white/5 select-none"
           style={{ aspectRatio: '16 / 7' }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {slides.map((slide, idx) => (
-            <div
-              key={slide.src}
-              className={`absolute inset-0 transition-opacity duration-700 ${
-                idx === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
+          {/* AnimatePresence para transiciones suaves de slides */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+              className="absolute inset-0"
             >
               <Image
-                src={slide.src}
-                alt={slide.alt}
+                src={slides[current].src}
+                alt={slides[current].alt}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 90vw"
+                priority={current === 0}
               />
               {/* Gradient overlay para texto */}
-              <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/75 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-premium/80 via-dark-premium/20 to-transparent" />
+              
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <p className="text-white text-sm sm:text-base font-medium drop-shadow-lg max-w-xl">
-                  {slide.caption}
-                </p>
+                <div className="glass rounded-xl px-5 py-3 inline-block">
+                  <p className="text-white text-sm sm:text-base font-medium drop-shadow-lg max-w-xl">
+                    {slides[current].caption}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Botón anterior */}
           <button
             onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-black/40 hover:bg-primary/80 backdrop-blur-sm rounded-full text-white transition-all duration-200 hover:-translate-x-0.5 ring-1 ring-white/10 hover:ring-primary"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center glass rounded-full text-white/70 hover:text-primary transition-all duration-200 hover:-translate-x-0.5 hover:shadow-glow-sm hover:border-primary/30"
             aria-label="Imagen anterior"
           >
             <ChevronLeft size={20} />
@@ -110,7 +134,7 @@ export default function ImageCarousel() {
           {/* Botón siguiente */}
           <button
             onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-black/40 hover:bg-primary/80 backdrop-blur-sm rounded-full text-white transition-all duration-200 hover:translate-x-0.5 ring-1 ring-white/10 hover:ring-primary"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center glass rounded-full text-white/70 hover:text-primary transition-all duration-200 hover:translate-x-0.5 hover:shadow-glow-sm hover:border-primary/30"
             aria-label="Imagen siguiente"
           >
             <ChevronRight size={20} />
@@ -124,8 +148,8 @@ export default function ImageCarousel() {
                 onClick={() => setCurrent(idx)}
                 className={`rounded-full transition-all duration-300 ${
                   idx === current
-                    ? 'w-6 h-2 bg-primary'
-                    : 'w-2 h-2 bg-white/40 hover:bg-white/70'
+                    ? 'w-6 h-2 bg-primary shadow-glow-sm'
+                    : 'w-2 h-2 bg-white/30 hover:bg-white/60'
                 }`}
                 aria-label={`Ir a imagen ${idx + 1}`}
               />
@@ -133,16 +157,16 @@ export default function ImageCarousel() {
           </div>
 
           {/* Barra de progreso */}
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/10 z-20">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-white/5 z-20">
             <div
               key={current}
-              className="h-full bg-primary origin-left"
+              className="h-full bg-gradient-primary origin-left"
               style={{
                 animation: paused ? 'none' : `progress ${SLIDE_INTERVAL}ms linear`,
               }}
             />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

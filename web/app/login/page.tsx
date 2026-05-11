@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
@@ -97,11 +98,6 @@ export default function LoginPage() {
         /* continue with role logic */
       }
 
-      // Navegación full reload (no router.push) por dos razones:
-      // 1. Garantiza que el middleware vea la cookie recién escrita.
-      // 2. Evita que el RSC cache de Next sirva un árbol stale del
-      //    layout/landing autenticado-aware sin re-fetch.
-      // El flujo ADMIN ya usa window.location.href; alineamos el resto.
       window.location.href = getRedirectPath(sessionUser, hasProvider);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error al iniciar sesión';
@@ -120,39 +116,45 @@ export default function LoginPage() {
   const isLocked = !!lockedUntil && Date.now() < lockedUntil;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-5 py-16">
-      {/* Topografía suave */}
-      <div className="absolute inset-0 topo pointer-events-none" aria-hidden />
-      <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" aria-hidden />
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-5 py-16 bg-dark-surface overflow-hidden">
+      {/* Fondo atmosférico */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
+        <div className="absolute inset-0 grid-bg-night opacity-20" />
+      </div>
 
-      <div
-        className={`relative w-full max-w-md card-3d p-8 sm:p-10 animate-scale-in ${shake ? 'animate-shake' : ''}`}
+      <motion.div 
+        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        className={`relative w-full max-w-md glass p-8 sm:p-10 rounded-2xl shadow-glow-lg border-white/5 ${shake ? 'animate-shake' : ''}`}
       >
-        <div className="flex flex-col items-center mb-8 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-          <div className="w-14 h-14 rounded-2xl bg-ink flex items-center justify-center shadow-ink-soft mb-5">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 rounded-2xl glass border-primary/20 flex items-center justify-center shadow-glow-sm mb-5">
             <Image
-              src="/images/logo/logo_dark.png"
+              src="/images/logo/logo_light.png" // Logo claro para fondo oscuro
               alt="OficioApp"
               width={28}
               height={28}
               className="object-contain"
             />
           </div>
-          <h1 className="font-display font-bold tracking-tightest text-ink text-[26px] sm:text-[30px] leading-tight">
+          <h1 className="font-display font-bold tracking-tightest text-white text-[26px] sm:text-[30px] leading-tight">
             Bienvenido de nuevo
           </h1>
-          <p className="text-ink-4 text-[14px] mt-2">Tu portal de gestión profesional</p>
+          <p className="text-white/50 text-[14px] mt-2">Tu portal de gestión profesional</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="animate-fade-in-up" style={{ animationDelay: '160ms' }}>
-            <label className="block text-ink-3 text-[12.5px] font-display font-semibold mb-2 uppercase tracking-[0.16em]">
+          <div>
+            <label className="block text-white/50 text-[12.5px] font-display font-semibold mb-2 uppercase tracking-[0.16em]">
               Correo electrónico
             </label>
             <div className="relative group">
               <Mail
                 className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
-                  email ? 'text-primary' : 'text-ink-4 group-focus-within:text-ink'
+                  email ? 'text-primary' : 'text-white/30 group-focus-within:text-primary'
                 }`}
                 size={17}
                 strokeWidth={1.75}
@@ -161,10 +163,10 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full bg-surface border rounded-xl pl-11 pr-4 py-3 text-ink text-[14px] placeholder:text-ink-5 focus:outline-none transition-all duration-200 font-sans ${
+                className={`w-full bg-white/[0.03] border rounded-xl pl-11 pr-4 py-3.5 text-white text-[14px] placeholder:text-white/20 focus:outline-none transition-all duration-300 font-sans ${
                   errors.email
-                    ? 'border-rose/60 focus:border-rose focus:shadow-[0_0_0_3px_rgba(225,75,90,0.12)]'
-                    : 'border-line-2 focus:border-ink focus:shadow-[0_0_0_3px_rgba(20,20,28,0.08)] hover:border-ink-4'
+                    ? 'border-rose-500/50 focus:border-rose-400 focus:ring-1 focus:ring-rose-400/20'
+                    : 'border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 hover:border-white/20'
                 }`}
                 placeholder="tu@correo.com"
                 autoComplete="email"
@@ -172,21 +174,21 @@ export default function LoginPage() {
               />
             </div>
             {errors.email && (
-              <p className="text-rose text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
+              <p className="text-rose-400 text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
                 <AlertCircle size={12} />
                 {errors.email}
               </p>
             )}
           </div>
 
-          <div className="animate-fade-in-up" style={{ animationDelay: '240ms' }}>
-            <label className="block text-ink-3 text-[12.5px] font-display font-semibold mb-2 uppercase tracking-[0.16em]">
+          <div>
+            <label className="block text-white/50 text-[12.5px] font-display font-semibold mb-2 uppercase tracking-[0.16em]">
               Contraseña
             </label>
             <div className="relative group">
               <Lock
                 className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
-                  password ? 'text-primary' : 'text-ink-4 group-focus-within:text-ink'
+                  password ? 'text-primary' : 'text-white/30 group-focus-within:text-primary'
                 }`}
                 size={17}
                 strokeWidth={1.75}
@@ -195,10 +197,10 @@ export default function LoginPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full bg-surface border rounded-xl pl-11 pr-12 py-3 text-ink text-[14px] placeholder:text-ink-5 focus:outline-none transition-all duration-200 font-sans ${
+                className={`w-full bg-white/[0.03] border rounded-xl pl-11 pr-12 py-3.5 text-white text-[14px] placeholder:text-white/20 focus:outline-none transition-all duration-300 font-sans ${
                   errors.password
-                    ? 'border-rose/60 focus:border-rose focus:shadow-[0_0_0_3px_rgba(225,75,90,0.12)]'
-                    : 'border-line-2 focus:border-ink focus:shadow-[0_0_0_3px_rgba(20,20,28,0.08)] hover:border-ink-4'
+                    ? 'border-rose-500/50 focus:border-rose-400 focus:ring-1 focus:ring-rose-400/20'
+                    : 'border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 hover:border-white/20'
                 }`}
                 placeholder="••••••••"
                 autoComplete="current-password"
@@ -207,14 +209,14 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-4 hover:text-ink transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? <EyeOff size={17} strokeWidth={1.75} /> : <Eye size={17} strokeWidth={1.75} />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-rose text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
+              <p className="text-rose-400 text-xs mt-1.5 flex items-center gap-1 animate-fade-in">
                 <AlertCircle size={12} />
                 {errors.password}
               </p>
@@ -222,7 +224,7 @@ export default function LoginPage() {
           </div>
 
           {isLocked && (
-            <div className="bg-rose/8 border border-rose/30 rounded-xl px-4 py-3 text-center text-rose text-[13px] animate-fade-in flex items-center justify-center gap-2">
+            <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-center text-rose-400 text-[13px] animate-fade-in flex items-center justify-center gap-2">
               <AlertCircle size={14} />
               Demasiados intentos. Espera <span className="font-bold tabular-nums">{remainingSecs}s</span>
             </div>
@@ -231,8 +233,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading || isLocked}
-            className="btn btn-ink press-effect w-full h-12 text-[14px] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-fade-in-up"
-            style={{ animationDelay: '320ms' }}
+            className="btn btn-primary btn-lg press-effect w-full h-12 text-[14px] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {loading ? (
               <>
@@ -250,19 +251,19 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-7 pt-5 border-t border-line text-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-          <p className="text-ink-4 text-[12.5px] mb-3">
+        <div className="mt-7 pt-5 border-t border-white/5 text-center">
+          <p className="text-white/40 text-[12.5px] mb-3">
             ¿No tienes cuenta?{' '}
-            <Link href="/" className="text-ink font-semibold hover:underline underline-offset-4 transition-colors">
+            <Link href="/" className="text-primary-light font-semibold hover:underline underline-offset-4 transition-colors">
               Descarga la app
             </Link>
           </p>
-          <p className="text-ink-5 text-[11px] flex items-center justify-center gap-1.5">
-            <ShieldCheck size={12} className="text-green" strokeWidth={1.75} />
+          <p className="text-white/30 text-[11px] flex items-center justify-center gap-1.5">
+            <ShieldCheck size={12} className="text-accent" strokeWidth={1.75} />
             Tus credenciales viajan cifradas. Protegemos tu privacidad.
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

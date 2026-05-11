@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import {
   LineChart,
   Line,
@@ -27,62 +28,139 @@ interface Props {
 export default function StatsCharts({ dailyData, rangeLabel }: Props) {
   if (!dailyData || dailyData.length === 0) {
     return (
-      <p className="text-text-muted text-sm">Sin datos para mostrar.</p>
+      <div className="glass rounded-xl p-8 text-center">
+        <p className="text-white/40 text-sm">Sin datos suficientes para mostrar estadísticas todavía.</p>
+      </div>
     );
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } 
+    }
+  };
+
   return (
-    <div className="space-y-8">
+    <motion.div 
+      className="space-y-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Gráfico de línea: visitas */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">
-          Visitas al perfil ({rangeLabel})
+      <motion.div variants={itemVariants} className="glass rounded-xl p-6">
+        <h2 className="font-display text-lg font-semibold text-white mb-6 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-primary shadow-glow-sm" />
+          Visitas al perfil <span className="text-white/30 text-sm font-normal">({rangeLabel})</span>
         </h2>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={dailyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1E2235" />
-            <XAxis dataKey="date" stroke="#6B7280" fontSize={12} />
-            <YAxis stroke="#6B7280" fontSize={12} />
+            <defs>
+              <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#E07B39" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#E07B39" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} />
+            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#15192B',
+                backgroundColor: 'rgba(10, 14, 26, 0.95)',
+                backdropFilter: 'blur(12px)',
                 border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px 0 rgba(5, 6, 15, 0.5)',
+                color: '#fff',
+                padding: '10px 14px',
               }}
+              itemStyle={{ color: '#FFB347' }}
+              labelStyle={{ color: 'rgba(255,255,255,0.5)', fontWeight: 'bold', marginBottom: '4px' }}
             />
+            {/* Línea de resplandor (sombra) */}
             <Line
               type="monotone"
               dataKey="views"
               stroke="#E07B39"
-              strokeWidth={2}
+              strokeWidth={4}
               dot={false}
+              style={{ filter: 'blur(4px)', opacity: 0.3 }}
+            />
+            {/* Línea principal */}
+            <Line
+              type="monotone"
+              dataKey="views"
+              stroke="url(#colorViews)"
+              strokeWidth={2.5}
+              dot={false}
+              activeDot={{ r: 6, fill: "#FFB347", stroke: "#fff", strokeWidth: 2, style: { filter: `drop-shadow(0 0 4px rgba(255,179,71,0.6))` } }}
             />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </motion.div>
 
       {/* Gráfico de barras: WhatsApp vs Llamadas */}
-      <div className="bg-bg-card border border-white/5 rounded-card p-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">
-          Clics en WhatsApp vs Llamadas ({rangeLabel})
+      <motion.div variants={itemVariants} className="glass rounded-xl p-6">
+        <h2 className="font-display text-lg font-semibold text-white mb-6 flex items-center gap-3">
+          <span className="w-2 h-2 rounded-full bg-accent shadow-glow-accent" />
+          Interacciones <span className="text-white/30 text-sm font-normal">({rangeLabel})</span>
         </h2>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={dailyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1E2235" />
-            <XAxis dataKey="date" stroke="#6B7280" fontSize={12} />
-            <YAxis stroke="#6B7280" fontSize={12} />
+            <defs>
+              <linearGradient id="colorWhatsapp" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.9}/>
+                <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.4}/>
+              </linearGradient>
+              <linearGradient id="colorCalls" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#E07B39" stopOpacity={0.9}/>
+                <stop offset="95%" stopColor="#E07B39" stopOpacity={0.4}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} />
+            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#15192B',
+                backgroundColor: 'rgba(10, 14, 26, 0.95)',
+                backdropFilter: 'blur(12px)',
                 border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px 0 rgba(5, 6, 15, 0.5)',
+                color: '#fff',
+                padding: '10px 14px',
               }}
+              itemStyle={{ color: '#fff' }}
+              labelStyle={{ color: 'rgba(255,255,255,0.5)', fontWeight: 'bold', marginBottom: '4px' }}
             />
-            <Bar dataKey="whatsapp" fill="#25D366" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="calls" fill="#E07B39" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="whatsapp" fill="url(#colorWhatsapp)" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="calls" fill="url(#colorCalls)" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+        
+        {/* Leyenda personalizada */}
+        <div className="flex items-center justify-center gap-6 mt-4">
+          <div className="flex items-center gap-2 text-sm text-white/60">
+            <span className="w-3 h-3 rounded-sm bg-accent/70" />
+            WhatsApp
+          </div>
+          <div className="flex items-center gap-2 text-sm text-white/60">
+            <span className="w-3 h-3 rounded-sm bg-primary/70" />
+            Llamadas
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
