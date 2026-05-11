@@ -82,11 +82,23 @@ export class ProvidersService {
       where.type = 'NEGOCIO';
     }
 
-    // Búsqueda por texto libre (nombre y descripción)
-    if (search) {
+    // Búsqueda por texto libre. OR sobre múltiples campos para que la
+    // búsqueda en tiempo real sea robusta — el usuario puede tipear el
+    // nombre del negocio, el del profesional o el de la categoría y
+    // obtener resultados igualmente.
+    if (search && search.trim().length > 0) {
+      const q = search.trim();
       where.OR = [
-        { businessName: { contains: search, mode: 'insensitive' } },
-        { description:  { contains: search, mode: 'insensitive' } },
+        { businessName: { contains: q, mode: 'insensitive' } },
+        { description:  { contains: q, mode: 'insensitive' } },
+        { user: {
+            OR: [
+              { firstName: { contains: q, mode: 'insensitive' } },
+              { lastName:  { contains: q, mode: 'insensitive' } },
+            ],
+          },
+        },
+        { category: { name: { contains: q, mode: 'insensitive' } } },
       ];
     }
 

@@ -1,5 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/constants/peru_locations.dart';
+import 'package:mobile/core/services/geocoding_service.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/join_us_modal.dart';
 import 'package:mobile/shared/widgets/location_picker_sheet.dart';
@@ -923,59 +927,171 @@ class _LocationButton extends StatelessWidget {
   }
 }
 
-// ─── Barra de búsqueda ────────────────────────────────────
+// ─── Barra de búsqueda colapsable ─────────────────────────
+//
+// Estado inactivo (default): sólo un ícono de lupa con hint "Toca para
+// buscar..." que parpadea suavemente una vez al montar la pantalla.
+// Estado activo: la lupa se expande animadamente a un TextField que
+// recibe foco automático (abre teclado) y dispara una búsqueda al
+// backend tras un debounce de 400ms.
+// Colapsar: al tocar fuera o presionar la X estando el texto vacío,
+// la barra vuelve al ícono y se cierra el teclado.
 
 class _SearchBar extends StatefulWidget {
   @override
   State<_SearchBar> createState() => _SearchBarState();
 }
 
-class _SearchBarState extends State<_SearchBar> {
+class _SearchBarState extends State<_SearchBar> with TickerProviderStateMixin {
   final _controller = TextEditingController();
+  final _focusNode  = FocusNode();
+  Timer? _debounce;
+  bool _active = false;
+  /// Indica si el hint "Toca para buscar..." todavía debe pulsar una vez.
+  /// Se desactiva tras la primera interacción para no distraer.
+  bool _showHintPulse = true;
+
+  static const _debounceDuration = Duration(milliseconds: 400);
+
+  @override
+  void initState() {
+    super.initState();
+    // Tras un par de segundos sin interacción ocultamos el pulse del hint.
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _showHintPulse = false);
+    });
+  }
 
   @override
   void dispose() {
+    _debounce?.cancel();
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _expand() {
+    if (_active) return;
+    setState(() {
+      _active = true;
+      _showHintPulse = false;
+    });
+    // El TextField se construye en el siguiente frame; pedimos foco entonces
+    // para que el teclado se abra solo.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
+  }
+
+  void _collapse({bool clearText = false}) {
+    if (!_active && _controller.text.isEmpty) return;
+    _debounce?.cancel();
+    if (clearText && _controller.text.isNotEmpty) {
+      _controller.clear();
+      context.read<ProvidersProvider>().setSearch('');
+    }
+    _focusNode.unfocus();
+    setState(() => _active = false);
+  }
+
+  void _onChanged(String v) {
+    setState(() {});
+    _debounce?.cancel();
+    _debounce = Timer(_debounceDuration, () {
+      if (!mounted) return;
+      context.read<ProvidersProvider>().setSearch(v.trim());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: TextField(
-        controller: _controller,
-        style: TextStyle(color: c.textPrimary),
-        decoration: InputDecoration(
-          hintText: 'Buscar electricistas, pintores...',
-          hintStyle: TextStyle(color: c.textMuted),
-          prefixIcon: Icon(Icons.search_rounded, color: c.textMuted),
-          suffixIcon: _controller.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: c.textMuted),
-                  onPressed: () {
-                    _controller.clear();
-                    context.read<ProvidersProvider>().setSearch('');
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: c.bgCard,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.centerLeft,
+        child: _active ? _buildExpanded(c) : _buildCollapsed(c),
+      ),
+    );
+  }
+
+  // ── Estado inactivo: lupa + hint sutil ─────────────────────
+  Widget _buildCollapsed(AppThemeColors c) {
+    return GestureDetector(
+      onTap: _expand,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          // Botón lupa
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: c.bgCard,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: c.border),
+            ),
+            child: Icon(Icons.search_rounded, color: c.textSecondary, size: 22),
           ),
+          const SizedBox(width: 10),
+          // Hint con pulse suave
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 500),
+            opacity: _showHintPulse ? 1.0 : 0.55,
+            child: Text(
+              'Toca para buscar...',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 13.5,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Estado activo: TextField full-width ────────────────────
+  Widget _buildExpanded(AppThemeColors c) {
+    return TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      autofocus: false, // el foco se solicita explícitamente en _expand
+      style: TextStyle(color: c.textPrimary),
+      onChanged: _onChanged,
+      // onTapOutside dispara cuando el usuario toca fuera del TextField;
+      // colapsamos para devolver al ícono y cerrar el teclado.
+      onTapOutside: (_) {
+        // Sólo colapsar si no hay texto — preservamos la query si el usuario
+        // se desplaza por la lista y quiere volver al TextField luego con su
+        // último término. Una X explícita basta para limpiar.
+        if (_controller.text.isEmpty) {
+          _collapse();
+        } else {
+          _focusNode.unfocus();
+        }
+      },
+      decoration: InputDecoration(
+        hintText: 'Buscar electricistas, pintores...',
+        hintStyle: TextStyle(color: c.textMuted),
+        prefixIcon: Icon(Icons.search_rounded, color: c.textMuted),
+        suffixIcon: IconButton(
+          icon: Icon(Icons.close_rounded, color: c.textMuted),
+          tooltip: 'Cerrar búsqueda',
+          onPressed: () => _collapse(clearText: true),
         ),
-        onChanged: (v) {
-          setState(() {});
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (_controller.text == v) {
-              // ignore: use_build_context_synchronously
-              context.read<ProvidersProvider>().setSearch(v);
-            }
-          });
-        },
+        filled: true,
+        fillColor: c.bgCard,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
       ),
     );
   }
@@ -1283,6 +1399,14 @@ class _FilterSheetState extends State<_FilterSheet> {
   String? _sheetParentSlug;   // macrocategoría expandida en el sheet
   String? _sheetCategory;     // subcategoría hoja seleccionada
 
+  // Ubicación estructurada (jerarquía Perú). Preload desde AuthProvider.user
+  // en initState — si el usuario tiene un department/province/district en su
+  // perfil, los dropdowns arrancan ya rellenados.
+  String? _dept;
+  String? _prov;
+  String? _dist;
+  bool _gpsLoading = false;
+
   // Opciones de ordenamiento
   static const _sortOptions = [
     _SortOption(
@@ -1320,7 +1444,26 @@ class _FilterSheetState extends State<_FilterSheet> {
     _locationCtrl      = TextEditingController(text: widget.prov.location);
     _sheetParentSlug   = widget.prov.expandedParentSlug;
     _sheetCategory     = widget.prov.selectedCategory;
+
+    // Preload de la ubicación del usuario: si ya tiene filtro estructurado
+    // en el provider, usamos ese. Si no, caemos al perfil registrado.
+    final auth = context.read<AuthProvider>();
+    _dept = widget.prov.department ?? auth.user?.department;
+    _prov = widget.prov.province   ?? auth.user?.province;
+    _dist = widget.prov.district   ?? auth.user?.district;
+    // Sanea: si el dept del usuario no está en el catálogo local, lo
+    // descartamos para no mostrar opciones inválidas.
+    _dept = _sanitizeDept(_dept);
+    _prov = _sanitizeProv(_dept, _prov);
+    _dist = _sanitizeDist(_prov, _dist);
   }
+
+  String? _sanitizeDept(String? d) =>
+      (d != null && PeruLocations.departments.contains(d)) ? d : null;
+  String? _sanitizeProv(String? d, String? p) =>
+      (d != null && p != null && PeruLocations.provincesOf(d).contains(p)) ? p : null;
+  String? _sanitizeDist(String? p, String? di) =>
+      (p != null && di != null && PeruLocations.districtsOf(p).contains(di)) ? di : null;
 
   @override
   void dispose() {
@@ -1336,6 +1479,9 @@ class _FilterSheetState extends State<_FilterSheet> {
       location:       _locationCtrl.text.trim(),
       category:       _sheetCategory,
       parentCategory: _sheetCategory == null ? _sheetParentSlug : null,
+      department:     _dept,
+      province:       _prov,
+      district:       _dist,
     );
     Navigator.pop(context);
   }
@@ -1348,6 +1494,9 @@ class _FilterSheetState extends State<_FilterSheet> {
       _sheetParentSlug = null;
       _sheetCategory   = null;
       _locationCtrl.clear();
+      _dept = null;
+      _prov = null;
+      _dist = null;
     });
   }
 
@@ -1357,7 +1506,58 @@ class _FilterSheetState extends State<_FilterSheet> {
       _sortBy          != widget.prov.sortBy ||
       _sheetCategory   != widget.prov.selectedCategory ||
       _sheetParentSlug != widget.prov.expandedParentSlug ||
-      _locationCtrl.text.trim() != widget.prov.location;
+      _locationCtrl.text.trim() != widget.prov.location ||
+      _dept != widget.prov.department ||
+      _prov != widget.prov.province ||
+      _dist != widget.prov.district;
+
+  // ── GPS: usar mi ubicación actual ──────────────────────────
+  Future<void> _useMyGps() async {
+    if (_gpsLoading) return;
+    setState(() => _gpsLoading = true);
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permiso de ubicación denegado')),
+        );
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+      );
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      if (!mounted) return;
+      if (geo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No pudimos detectar tu ubicación')),
+        );
+        return;
+      }
+      // Sanea contra catálogo local. El geocoder puede devolver nombres
+      // sin tilde o con variantes que no matchean el catálogo Prisma.
+      final d  = _sanitizeDept(geo.department);
+      final p  = _sanitizeProv(d, geo.province);
+      final di = _sanitizeDist(p, geo.district);
+      setState(() {
+        _dept = d;
+        _prov = p;
+        _dist = di;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo obtener la ubicación')),
+      );
+    } finally {
+      if (mounted) setState(() => _gpsLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1656,14 +1856,92 @@ class _FilterSheetState extends State<_FilterSheet> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ── UBICACIÓN ─────────────────────────
+                  // ── UBICACIÓN (estructurada: Dept → Prov → Dist) ──
                   _SectionLabel(label: 'UBICACIÓN'),
                   const SizedBox(height: 10),
+                  // Botón GPS
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _gpsLoading ? null : _useMyGps,
+                      icon: _gpsLoading
+                          ? const SizedBox(
+                              width: 14, height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : const Icon(Icons.my_location_rounded,
+                              size: 16, color: AppColors.primary),
+                      label: Text(
+                        _gpsLoading ? 'Detectando…' : 'Usar mi ubicación actual',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Departamento
+                  _LocationDropdown(
+                    label: 'Departamento',
+                    value: _dept,
+                    items: PeruLocations.departments,
+                    onChanged: (v) => setState(() {
+                      _dept = v;
+                      _prov = null; // limpia niveles inferiores
+                      _dist = null;
+                    }),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Provincia (depende del departamento)
+                  _LocationDropdown(
+                    label: 'Provincia',
+                    value: _prov,
+                    items: _dept == null
+                        ? const <String>[]
+                        : PeruLocations.provincesOf(_dept!),
+                    enabled: _dept != null,
+                    onChanged: (v) => setState(() {
+                      _prov = v;
+                      _dist = null;
+                    }),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Distrito (depende de la provincia y solo si hay catálogo)
+                  _LocationDropdown(
+                    label: 'Distrito',
+                    value: _dist,
+                    items: _prov == null
+                        ? const <String>[]
+                        : PeruLocations.districtsOf(_prov!),
+                    enabled: _prov != null &&
+                             PeruLocations.districtsOf(_prov!).isNotEmpty,
+                    onChanged: (v) => setState(() => _dist = v),
+                  ),
+
+                  // Texto libre adicional (opcional) — sigue funcionando como
+                  // filtro suelto sobre `address`. Lo mantengo para que el
+                  // usuario pueda matizar (calle, urbanización).
+                  const SizedBox(height: 14),
                   TextField(
                     controller: _locationCtrl,
                     style: TextStyle(color: c.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'Ej: Miraflores, Jr. Lima...',
+                      hintText: 'Dirección (opcional): Jr. Lima, Av…',
                       hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
                       prefixIcon: const Icon(
                           Icons.location_on_outlined,
@@ -2079,6 +2357,92 @@ class _CategorySheetSection extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+// ─── Dropdown reutilizable para Dept/Prov/Dist ─────────────
+//
+// Estilo coherente con el resto del sheet (bg c.bgCard, border, icon de
+// pin ámbar). Cuando `enabled` es false (ej. provincia sin departamento
+// seleccionado), se atenúa y no abre el menú.
+class _LocationDropdown extends StatelessWidget {
+  final String label;
+  final String? value;
+  final List<String> items;
+  final bool enabled;
+  final ValueChanged<String?> onChanged;
+
+  const _LocationDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    this.enabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    // Garantía: el value debe estar en `items` para que el Dropdown lo
+    // acepte. Si por sanitización quedó fuera, lo mostramos como null.
+    final effective = (value != null && items.contains(value)) ? value : null;
+
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.45,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.border),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: effective,
+            isExpanded: true,
+            icon: Icon(Icons.expand_more_rounded, color: c.textMuted),
+            dropdownColor: c.bgCard,
+            hint: Row(
+              children: [
+                const Icon(Icons.location_on_outlined,
+                    color: AppColors.amber, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  enabled ? label : 'Selecciona el nivel anterior',
+                  style: TextStyle(color: c.textMuted, fontSize: 13.5),
+                ),
+              ],
+            ),
+            selectedItemBuilder: (_) => items
+                .map((it) => Row(
+                      children: [
+                        const Icon(Icons.location_on_outlined,
+                            color: AppColors.amber, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            it,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ))
+                .toList(),
+            items: items
+                .map((it) => DropdownMenuItem<String>(
+                      value: it,
+                      child: Text(it, style: TextStyle(color: c.textPrimary)),
+                    ))
+                .toList(),
+            onChanged: enabled ? onChanged : null,
+          ),
+        ),
+      ),
     );
   }
 }

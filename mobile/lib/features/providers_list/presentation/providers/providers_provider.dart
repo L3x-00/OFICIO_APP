@@ -156,6 +156,13 @@ class ProvidersProvider extends ChangeNotifier {
     String location = '',
     String? category,        // subcategoría hoja (desde el sheet)
     String? parentCategory,  // macrocategoría (desde el sheet)
+    // Ubicación estructurada (jerarquía peruana). Pasar `null` mantiene el
+    // valor previo NO es lo deseado aquí: el sheet aplica una snapshot
+    // completa, así que un `null` explícito significa "limpiar este nivel".
+    String? department,
+    String? province,
+    String? district,
+    bool clearLocation = false,
   }) async {
     _selectedAvailability = availability;
     _verifiedOnly         = verifiedOnly;
@@ -163,6 +170,15 @@ class ProvidersProvider extends ChangeNotifier {
     _location             = location;
     _selectedCategory     = category;
     _expandedParentSlug   = category != null ? (parentCategory ?? _expandedParentSlug) : parentCategory;
+    if (clearLocation) {
+      _department = null;
+      _province   = null;
+      _district   = null;
+    } else {
+      _department = department;
+      _province   = province;
+      _district   = district;
+    }
     await loadProviders();
   }
 

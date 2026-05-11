@@ -5,6 +5,7 @@ import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../providers_list/domain/models/review_model.dart';
+import '../../../providers_list/presentation/widgets/upsell_sheet.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
@@ -97,6 +98,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
               ]),
             ),
           ),
+          SliverToBoxAdapter(child: _buildContactPreview(dash)),
           SliverToBoxAdapter(child: _buildNotificationsSection(dash)),
           SliverToBoxAdapter(child: _buildWeeklyChart(dash)),
           SliverToBoxAdapter(child: _buildReviewsSection(dash)),
@@ -206,6 +208,116 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
         ),
       ),
       child: content,
+    );
+  }
+
+  // ── PREVIEW DE CONTACTO PÚBLICO ────────────────────────────
+  //
+  // Refleja cómo los clientes ven los botones de contacto en la tarjeta
+  // del proveedor. Cumple doble propósito:
+  //   1) En plan GRATIS, los íconos de WhatsApp y llamada aparecen
+  //      bloqueados con un candado y abren el upsell sheet al tocarlos.
+  //   2) En ESTANDAR/PREMIUM, aparecen activos como confirmación de que
+  //      esos canales están disponibles para sus clientes.
+  // El chat interno siempre está activo (no depende de plan).
+
+  Widget _buildContactPreview(DashboardProvider dash) {
+    final c = context.colors;
+    final profile = dash.profile;
+    if (profile == null) return const SizedBox.shrink();
+    final plan = profile.subscription?.plan ?? 'GRATIS';
+    final isPaid = plan == 'PREMIUM' || plan == 'ESTANDAR';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.visibility_rounded, color: AppColors.primary, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'Vista pública de tu tarjeta',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                if (!isPaid)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.amber.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.amber.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      'GRATIS',
+                      style: TextStyle(
+                        color: AppColors.amber,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              isPaid
+                  ? 'Tus clientes ven estos botones activos.'
+                  : 'Mejora tu plan para activar WhatsApp y llamada.',
+              style: TextStyle(color: c.textMuted, fontSize: 11.5, height: 1.35),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _PreviewIcon(
+                    icon: Icons.forum_rounded,
+                    color: AppColors.amber,
+                    locked: false,
+                    onTap: null, // chat siempre disponible — sin acción aquí
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _PreviewIcon(
+                    icon: Icons.chat_rounded,
+                    color: AppColors.whatsapp,
+                    locked: !isPaid,
+                    onTap: isPaid
+                        ? null
+                        : () => UpsellContactSheet.show(context, channel: 'WhatsApp'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _PreviewIcon(
+                    icon: Icons.call_rounded,
+                    color: AppColors.call,
+                    locked: !isPaid,
+                    onTap: isPaid
+                        ? null
+                        : () => UpsellContactSheet.show(context, channel: 'llamadas'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -904,6 +1016,60 @@ class _HomeServiceBadge extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Botón de preview de contacto: ícono con overlay candado ─
+// Cuando `locked` es true se pinta un candado superpuesto y, al tocar,
+// se invoca `onTap` (típicamente abre el upsell sheet). Cuando no está
+// bloqueado, se muestra activo en su color de marca.
+class _PreviewIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final bool locked;
+  final VoidCallback? onTap;
+  const _PreviewIcon({
+    required this.icon,
+    required this.color,
+    required this.locked,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final dimmed = locked ? c.textMuted : color;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: (locked ? c.textMuted : color).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: (locked ? c.textMuted : color).withValues(alpha: 0.3)),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, color: dimmed, size: 22),
+            if (locked)
+              Positioned(
+                right: -2,
+                bottom: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: AppColors.amber,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: c.bgCard, width: 1.5),
+                  ),
+                  child: const Icon(Icons.lock_rounded, color: Colors.white, size: 10),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
