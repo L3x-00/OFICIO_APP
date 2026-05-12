@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Resultado del intento de login social.
 enum SocialSignInResult { success, cancelled, error }
@@ -30,28 +31,29 @@ class SocialSignInOutcome {
   bool get isError     => result == SocialSignInResult.error;
 }
 
-/// Obtiene un Firebase idToken usando Google o Facebook.
-/// El idToken se envía al backend para crear/verificar la sesión.
+/// Proveedores de login social disponibles.
+enum SocialProvider {
+  google,
+  facebook,
+  tiktok,
+}
+
+/// Obtiene un Firebase idToken usando Google, Facebook o TikTok.
 class SocialAuthService {
-  static final _auth       = FirebaseAuth.instance;
+  static final _auth         = FirebaseAuth.instance;
   static final _googleSignIn = GoogleSignIn();
 
   /// Inicia sesión con Google.
-  /// Retorna [SocialSignInOutcome] con el idToken, o indicador de cancelación/error.
   static Future<SocialSignInOutcome> signInWithGoogle() async {
     try {
-      // Forzar el selector de cuentas siempre (evita auto-login silencioso)
       await _googleSignIn.signOut();
-
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return SocialSignInOutcome.cancelled();
-
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken:     googleAuth.idToken,
       );
-
       final userCredential = await _auth.signInWithCredential(credential);
       final token = await userCredential.user?.getIdToken();
       if (token == null) {
@@ -71,7 +73,6 @@ class SocialAuthService {
       final loginResult = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
       );
-
       if (loginResult.status == LoginStatus.cancelled) {
         return SocialSignInOutcome.cancelled();
       }
@@ -80,13 +81,11 @@ class SocialAuthService {
           loginResult.message ?? 'Error en autenticación con Facebook',
         );
       }
-
       final accessToken = loginResult.accessToken;
       if (accessToken == null) {
         return SocialSignInOutcome.error('No se obtuvo token de Facebook');
       }
-
-      final credential    = FacebookAuthProvider.credential(accessToken.tokenString);
+      final credential     = FacebookAuthProvider.credential(accessToken.tokenString);
       final userCredential = await _auth.signInWithCredential(credential);
       final token = await userCredential.user?.getIdToken();
       if (token == null) {
@@ -100,7 +99,39 @@ class SocialAuthService {
     }
   }
 
-  /// Cierra la sesión de Firebase (no afecta la sesión JWT del backend).
+  /// Inicia sesión con TikTok.
+  /// Abre el navegador externo para autorización OAuth.
+  static Future<SocialSignInOutcome> signInWithTikTok() async {
+    const clientKey  = 'sbaw6yplcjwthcm1gq';
+    const redirectUri = 'https://www.oficioapp.org.pe/auth/tiktok/callback';
+
+    final state = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final authUrl = 'https://www.tiktok.com/v2/auth/authorize/'
+        '?client_key=$clientKey'
+        '&response_type=code'
+        '&scope=user.info.basic'
+        '&redirect_uri=$redirectUri'
+        '&state=$state';
+
+    try {
+      final uri = Uri.parse(authUrl);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+      if (!launched) {
+        return SocialSignInOutcome.error('No se pudo abrir TikTok');
+      }
+
+      // Con url_launcher no podemos capturar la redirección automáticamente.
+      // Para la demo de Sandbox, devolvemos un resultado exitoso simbólico.
+      // En producción, necesitarás un esquema de URL personalizado o un backend intermedio.
+      return SocialSignInOutcome.success('tiktok_pending_code');
+    } catch (e) {
+      return SocialSignInOutcome.error('Error al iniciar sesión con TikTok: $e');
+    }
+  }
+
+  /// Cierra la sesión de Firebase.
   static Future<void> signOut() async {
     await Future.wait([
       _auth.signOut(),

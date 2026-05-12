@@ -167,6 +167,23 @@ export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeFilter<$PrismaModel>
 }
 
+export type EnumLocalitySourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.LocalitySource | Prisma.EnumLocalitySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocalitySourceFilter<$PrismaModel> | $Enums.LocalitySource
+}
+
+export type EnumLocalitySourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LocalitySource | Prisma.EnumLocalitySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocalitySourceWithAggregatesFilter<$PrismaModel> | $Enums.LocalitySource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLocalitySourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLocalitySourceFilter<$PrismaModel>
+}
+
 export type IntNullableFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
@@ -709,6 +726,23 @@ export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeFilter<$PrismaModel>
+}
+
+export type NestedEnumLocalitySourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.LocalitySource | Prisma.EnumLocalitySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocalitySourceFilter<$PrismaModel> | $Enums.LocalitySource
+}
+
+export type NestedEnumLocalitySourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LocalitySource | Prisma.EnumLocalitySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LocalitySource[] | Prisma.ListEnumLocalitySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocalitySourceWithAggregatesFilter<$PrismaModel> | $Enums.LocalitySource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLocalitySourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLocalitySourceFilter<$PrismaModel>
 }
 
 export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {

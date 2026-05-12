@@ -7,9 +7,10 @@ import { RolesGuard } from '../auth/roles.guard.js';
 import { EventsModule } from '../events/events.module.js';
 import { FirebaseModule } from '../firebase/firebase.module.js';
 import { ReferralsModule } from '../referrals/referrals.module.js';
+import { LocalitiesModule } from '../localities/localities.module.js';
 
 @Module({
-  imports: [CacheModule.register(), AuthModule, EventsModule, FirebaseModule, ReferralsModule],
+  imports: [CacheModule.register(), AuthModule, EventsModule, FirebaseModule, ReferralsModule, LocalitiesModule],
   controllers: [AdminController],
   providers: [AdminService, RolesGuard],
 })

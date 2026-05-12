@@ -64,14 +64,58 @@ export class ProvidersService {
       where.localityId = localityId;
     }
 
-    // Filtro de ubicación estructurado (jerarquía: departamento → provincia → distrito)
-    // Si se pasa distrito, filtra con máxima precisión. Si solo provincia, filtra por ella.
+    // Filtro de ubicación estructurado (jerarquía: departamento → provincia → distrito).
+    //
+    // Postgres `mode: 'insensitive'` ignora mayúsculas pero NO acentos, así que
+    // "Junín" != "Junin" aunque ambas vinieran del mismo lugar. El geocoder
+    // Nominatim y los catálogos pueden divergir en tildes, por lo que
+    // resolvemos las localityIds en JS con normalización accent-insensitive.
+    //
+    // También aplicamos degradación jerárquica: si filtrar por los 3 niveles
+    // (dept+prov+dist) no encontraría ninguna locality, caemos a 2 (dept+prov)
+    // y finalmente a 1 (dept). Mejor mostrar resultados cercanos que un
+    // listado vacío por una variante ortográfica menor.
     if (department || province || district) {
-      const localityFilter: Prisma.LocalityWhereInput = {};
-      if (department) localityFilter.department = { equals: department, mode: 'insensitive' };
-      if (province)   localityFilter.province   = { equals: province,   mode: 'insensitive' };
-      if (district)   localityFilter.district   = { equals: district,   mode: 'insensitive' };
-      where.locality = localityFilter;
+      const norm = (s: string | null | undefined) =>
+        (s ?? '')
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .toLowerCase()
+          .trim();
+
+      const localities = await this.prisma.locality.findMany({
+        where: { isActive: true },
+        select: { id: true, department: true, province: true, district: true },
+      });
+
+      const nDept = norm(department);
+      const nProv = norm(province);
+      const nDist = norm(district);
+
+      // Helper: lista de localityIds que cumplen los 3 niveles dados
+      const matchAt = (d: string, p: string, di: string) =>
+        localities
+          .filter((l) => (!d  || norm(l.department) === d)
+                     && (!p  || norm(l.province)   === p)
+                     && (!di || norm(l.district)   === di))
+          .map((l) => l.id);
+
+      // Probamos del más específico al más general
+      let matchedIds = matchAt(nDept, nProv, nDist);
+      if (matchedIds.length === 0 && (nProv || nDist)) {
+        matchedIds = matchAt(nDept, nProv, '');
+      }
+      if (matchedIds.length === 0 && nDept) {
+        matchedIds = matchAt(nDept, '', '');
+      }
+
+      if (matchedIds.length > 0) {
+        where.localityId = { in: matchedIds };
+      } else {
+        // No matchea ningún nivel — forzamos "sin resultados" para no
+        // mostrar al usuario proveedores fuera de su zona.
+        where.id = { in: [-1] };
+      }
     }
 
     // Filtro por tipo de proveedor. Acepta tanto los nombres canónicos

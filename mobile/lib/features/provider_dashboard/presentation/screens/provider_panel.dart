@@ -54,6 +54,16 @@ class _ProviderPanelState extends State<ProviderPanel> {
 
     return Scaffold(
       backgroundColor: c.bg,
+      appBar: _PanelAppBar(
+        activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
+        hasOficio: auth.hasOficioProfile,
+        hasNegocio: auth.hasNegocioProfile,
+        onSwitch: (type) {
+          auth.switchProfile(type);
+          context.read<DashboardProvider>().loadDashboard(providerType: type);
+        },
+        onLogout: () => _confirmLogout(context),
+      ),
       body: Stack(
         children: [
           ChangeNotifierProvider(
@@ -89,6 +99,326 @@ class _ProviderPanelState extends State<ProviderPanel> {
         onTap: (i) => setState(() => _currentIndex = i),
         isPaused: _isPaused,
         isNegocio: isNeg,
+      ),
+    );
+  }
+
+  // ── Confirmación de logout reutilizable desde el AppBar ────
+  void _confirmLogout(BuildContext context) {
+    final c = context.colors;
+    final auth = context.read<AuthProvider>();
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Cerrar sesión',
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          '¿Seguro que quieres cerrar sesión?',
+          style: TextStyle(color: c.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(dialogCtx);
+              await auth.logout();
+              if (!context.mounted) return;
+              // Pop hasta raíz para que _AppRoot reconstruya el árbol según el
+              // nuevo estado (unauthenticated).
+              Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.busy,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Cerrar sesión', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── AppBar del panel: switcher de perfil + menú ──────────────
+//
+// Cuando el usuario tiene los dos tipos de perfil (OFICIO y NEGOCIO),
+// muestra un chip clickable en el title que abre un menú para alternar
+// entre ambos. Si sólo tiene uno, muestra el tipo como etiqueta estática.
+// El icono de menú overflow expone "Cerrar sesión" de forma siempre
+// visible, sin importar en qué tab esté el usuario.
+
+class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String activeType;          // 'OFICIO' | 'NEGOCIO'
+  final bool hasOficio;
+  final bool hasNegocio;
+  final ValueChanged<String> onSwitch;
+  final VoidCallback onLogout;
+
+  const _PanelAppBar({
+    required this.activeType,
+    required this.hasOficio,
+    required this.hasNegocio,
+    required this.onSwitch,
+    required this.onLogout,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  bool get _canSwitch => hasOficio && hasNegocio;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final isNeg = activeType == 'NEGOCIO';
+    final label = isNeg ? 'Panel Negocio' : 'Panel Profesional';
+
+    return AppBar(
+      backgroundColor: c.bg,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: 16,
+      title: GestureDetector(
+        onTap: _canSwitch ? () => _showSwitcher(context) : null,
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isNeg
+                    ? AppColors.amber.withValues(alpha: 0.12)
+                    : AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: (isNeg ? AppColors.amber : AppColors.primary)
+                      .withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isNeg ? Icons.store_rounded : Icons.handyman_rounded,
+                    size: 14,
+                    color: isNeg ? AppColors.amber : AppColors.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: isNeg ? AppColors.amber : AppColors.primary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (_canSwitch) ...[
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.swap_horiz_rounded,
+                      size: 14,
+                      color: isNeg ? AppColors.amber : AppColors.primary,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        PopupMenuButton<String>(
+          tooltip: 'Más opciones',
+          icon: Icon(Icons.more_vert_rounded, color: c.textPrimary),
+          color: c.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          onSelected: (value) {
+            if (value == 'logout') onLogout();
+            if (value == 'switch_oficio') onSwitch('OFICIO');
+            if (value == 'switch_negocio') onSwitch('NEGOCIO');
+          },
+          itemBuilder: (_) => [
+            if (_canSwitch && activeType != 'OFICIO')
+              PopupMenuItem(
+                value: 'switch_oficio',
+                child: Row(
+                  children: [
+                    Icon(Icons.handyman_rounded, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 10),
+                    Text('Ir a Panel Profesional',
+                        style: TextStyle(color: c.textPrimary, fontSize: 13.5)),
+                  ],
+                ),
+              ),
+            if (_canSwitch && activeType != 'NEGOCIO')
+              PopupMenuItem(
+                value: 'switch_negocio',
+                child: Row(
+                  children: [
+                    Icon(Icons.store_rounded, size: 16, color: AppColors.amber),
+                    const SizedBox(width: 10),
+                    Text('Ir a Panel Negocio',
+                        style: TextStyle(color: c.textPrimary, fontSize: 13.5)),
+                  ],
+                ),
+              ),
+            if (_canSwitch) const PopupMenuDivider(),
+            PopupMenuItem(
+              value: 'logout',
+              child: Row(
+                children: [
+                  Icon(Icons.logout_rounded, size: 16, color: AppColors.busy),
+                  const SizedBox(width: 10),
+                  Text('Cerrar sesión',
+                      style: TextStyle(color: AppColors.busy, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showSwitcher(BuildContext context) {
+    final c = context.colors;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: c.textMuted.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Cambiar de panel',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 14),
+              _SwitcherOption(
+                icon: Icons.handyman_rounded,
+                color: AppColors.primary,
+                title: 'Panel Profesional',
+                subtitle: 'Tu perfil OFICIO',
+                selected: activeType == 'OFICIO',
+                onTap: () {
+                  Navigator.pop(context);
+                  if (activeType != 'OFICIO') onSwitch('OFICIO');
+                },
+              ),
+              const SizedBox(height: 8),
+              _SwitcherOption(
+                icon: Icons.store_rounded,
+                color: AppColors.amber,
+                title: 'Panel Negocio',
+                subtitle: 'Tu perfil NEGOCIO',
+                selected: activeType == 'NEGOCIO',
+                onTap: () {
+                  Navigator.pop(context);
+                  if (activeType != 'NEGOCIO') onSwitch('NEGOCIO');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SwitcherOption extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SwitcherOption({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.10) : c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? color : c.border,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(color: c.textMuted, fontSize: 11.5),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(Icons.check_circle_rounded, color: color, size: 20),
+          ],
+        ),
       ),
     );
   }

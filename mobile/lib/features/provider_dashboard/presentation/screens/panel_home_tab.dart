@@ -8,6 +8,7 @@ import '../../../providers_list/domain/models/review_model.dart';
 import '../../../providers_list/presentation/widgets/upsell_sheet.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
+import '../widgets/welcome_provider_plan_modal.dart';
 
 class PanelHomeTab extends StatefulWidget {
   final bool isNegocio;
@@ -28,12 +29,42 @@ class PanelHomeTab extends StatefulWidget {
 class _PanelHomeTabState extends State<PanelHomeTab> {
   String get _providerType => widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
 
+  /// Flag local para no encolar múltiples diálogos si el provider cambia
+  /// varias veces tras el primer load (cambio de tab, switch de perfil).
+  bool _welcomeChecked = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DashboardProvider>().loadDashboard(providerType: _providerType);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await context.read<DashboardProvider>().loadDashboard(providerType: _providerType);
+      if (!mounted) return;
+      _maybeShowWelcome();
     });
+  }
+
+  /// Si el provider tiene el plan ESTANDAR de cortesía (GRACIA), abrimos
+  /// el modal de bienvenida una sola vez (persistido en SharedPreferences
+  /// por providerId).
+  Future<void> _maybeShowWelcome() async {
+    if (_welcomeChecked) return;
+    final dash = context.read<DashboardProvider>();
+    final p = dash.profile;
+    if (p == null) return;
+    final sub = p.subscription;
+    if (sub == null) return;
+    if (sub.plan != 'ESTANDAR' || sub.status != 'GRACIA') return;
+
+    _welcomeChecked = true;
+    final displayName = p.businessName.isNotEmpty
+        ? p.businessName
+        : (context.read<AuthProvider>().user?.firstName ?? '');
+    await WelcomeProviderPlanModal.showIfFirstTime(
+      context,
+      displayName: displayName,
+      providerId:  p.id,
+    );
   }
 
   @override

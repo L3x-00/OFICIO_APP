@@ -16,12 +16,17 @@ import { CreateProviderDto } from './dto/create-provider.dto.js';
 import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
+import { LocalitiesService } from '../localities/localities.service.js';
+import { CreateLocalityDto, UpdateLocalityDto } from '../localities/dto/admin-locality.dto.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly localitiesService: LocalitiesService,
+  ) {}
 
   // ── MÉTRICAS Y ANALYTICS ─────────────────────────────────
 
@@ -268,6 +273,40 @@ export class AdminController {
   @Patch('categories/:id/toggle')
   toggleCategoryActive(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.toggleCategoryActive(id);
+  }
+
+  // ── LOCALIDADES ───────────────────────────────────────────
+  // CRUD para que el admin pueda gestionar el catálogo de ubicaciones.
+
+  @Get('localities')
+  listLocalities(
+    @Query('active') active?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.localitiesService.adminList({
+      activeOnly: active === 'true',
+      search,
+    });
+  }
+
+  @Post('localities')
+  createLocality(@Body() body: CreateLocalityDto) {
+    return this.localitiesService.adminCreate(body);
+  }
+
+  @Patch('localities/:id')
+  updateLocality(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateLocalityDto,
+  ) {
+    return this.localitiesService.adminUpdate(id, body);
+  }
+
+  // Soft-delete: la fila persiste para no romper FKs de providers
+  // existentes, pero ya no aparece en el filtro público.
+  @Delete('localities/:id')
+  deleteLocality(@Param('id', ParseIntPipe) id: number) {
+    return this.localitiesService.adminDelete(id);
   }
 
   // ── SOLICITUDES DE PLAN ───────────────────────────────────

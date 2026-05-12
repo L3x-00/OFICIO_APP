@@ -164,12 +164,24 @@ model Locality {
   district   String? // Ej: "El Tambo"
   country    String   @default("Perú")
   isActive   Boolean  @default(true)
+  source     LocalitySource @default(SEED)
   createdAt  DateTime @default(now())
 
   providers Provider[]
 
+  // Una sola entrada por combinación (dept, prov, dist). En PostgreSQL los
+  // NULLs se consideran distintos, así que permite "Lima/null/null" + variantes
+  // — para el caso seed eso es OK; el endpoint de suggest siempre manda los 3.
+  @@unique([department, province, district], map: "localities_dept_prov_dist_unique")
   @@index([department, province, district])
+  @@index([source])
   @@map("localities")
+}
+
+enum LocalitySource {
+  SEED  // Datos iniciales del catálogo peru_locations.dart
+  USER  // Sugerida por un usuario móvil vía GPS
+  ADMIN // Añadida desde el panel administrador
 }
 
 // ─────────────────────────────────────────

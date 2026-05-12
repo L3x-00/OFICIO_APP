@@ -410,13 +410,14 @@ async createProvider(data: {
       });
     }
 
-    // 4. Crear Suscripción (tu lógica actual)
+    // 4. Crear Suscripción de cortesía: ESTANDAR por 1 mes (mismo trato
+    // que un proveedor que se registra él mismo y es aprobado luego).
     const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 2);
+    endDate.setMonth(endDate.getMonth() + 1);
     await tx.subscription.create({
       data: {
         providerId: provider.id,
-        plan: 'GRATIS',
+        plan: 'ESTANDAR',
         status: 'GRACIA',
         endDate,
       },
@@ -621,14 +622,23 @@ async updateProvider(
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
+    // Bienvenida: ESTANDAR de cortesía por 1 mes para que el proveedor pruebe
+    // toda la app sin fricción. Al expirar, el cron de suscripciones lo
+    // degrada a GRATIS automáticamente.
     const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 2);
+    endDate.setMonth(endDate.getMonth() + 1);
 
     const [updated] = await this.prisma.$transaction(async (tx) => {
       // 1. Aprobar proveedor y hacerlo visible
       const updatedProvider = await tx.provider.update({
         where: { id },
-        data: { isVerified: true, verificationStatus: 'APROBADO', isVisible: true },
+        data: {
+          isVerified: true,
+          verificationStatus: 'APROBADO',
+          isVisible: true,
+          // Prioridad de listado equivalente a ESTANDAR mientras dure la cortesía
+          planPriority: this.planToPriority('ESTANDAR', 'ACTIVA'),
+        },
       });
 
       // 2. Cambiar rol del usuario a PROVEEDOR (ahora sí está aprobado)
@@ -637,12 +647,14 @@ async updateProvider(
         data: { role: 'PROVEEDOR' },
       });
 
-      // 3. Crear suscripción de gracia (solo si no tiene una ya)
+      // 3. Crear suscripción de cortesía (solo si no tiene una ya).
+      // Plan ESTANDAR, status GRACIA — el dashboard del proveedor detecta esa
+      // combinación y muestra el modal de bienvenida exclusivo de primera vez.
       if (!provider.subscription) {
         await tx.subscription.create({
           data: {
             providerId: id,
-            plan:       'GRATIS',
+            plan:       'ESTANDAR',
             status:     'GRACIA',
             endDate,
           },

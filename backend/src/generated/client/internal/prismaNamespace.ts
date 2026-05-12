@@ -2746,6 +2746,7 @@ export const LocalityScalarFieldEnum = {
   district: 'district',
   country: 'country',
   isActive: 'isActive',
+  source: 'source',
   createdAt: 'createdAt'
 } as const
 
@@ -3259,6 +3260,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'LocalitySource'
+ */
+export type EnumLocalitySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LocalitySource'>
+    
+
+
+/**
+ * Reference to a field of type 'LocalitySource[]'
+ */
+export type ListEnumLocalitySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LocalitySource[]'>
     
 
 

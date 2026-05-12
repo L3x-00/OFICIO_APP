@@ -123,4 +123,64 @@ class PeruLocations {
   /// Verifica si un departamento tiene provincias con distritos cargados
   static bool hasDistricts(String province) =>
       districts.containsKey(province);
+
+  // ── Búsqueda accent-insensitive (canonicalización) ────────────
+  //
+  // El geocoder (Nominatim) puede devolver "Junin" sin tilde, "Cusco"
+  // como "Cuzco", etc. Estos helpers buscan en el catálogo ignorando
+  // acentos/mayúsculas y devuelven la forma canónica (con acentos) que
+  // sí coincide con la BD del backend.
+
+  static String _norm(String? s) {
+    if (s == null) return '';
+    // NFD descompone "á" en "a" + "́"; el regex quita los combining marks.
+    return s
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim()
+        // Reemplazo manual cubierto por safety si dart:core no normaliza.
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ñ', 'n');
+  }
+
+  /// Encuentra el departamento canónico que matchea `input` ignorando
+  /// acentos y mayúsculas. Devuelve null si no hay match.
+  static String? findDepartmentCanonical(String? input) {
+    if (input == null || input.trim().isEmpty) return null;
+    final target = _norm(input);
+    for (final d in departments) {
+      if (_norm(d) == target) return d;
+    }
+    return null;
+  }
+
+  /// Encuentra la provincia canónica del departamento dado que matchea
+  /// `input`. Si el departamento es null o la provincia no existe en él,
+  /// devuelve null.
+  static String? findProvinceCanonical(String? department, String? input) {
+    if (department == null || input == null || input.trim().isEmpty) return null;
+    final list = provincesOf(department);
+    final target = _norm(input);
+    for (final p in list) {
+      if (_norm(p) == target) return p;
+    }
+    return null;
+  }
+
+  /// Encuentra el distrito canónico de la provincia dada que matchea
+  /// `input`. Si la provincia no tiene catálogo cargado, devuelve null.
+  static String? findDistrictCanonical(String? province, String? input) {
+    if (province == null || input == null || input.trim().isEmpty) return null;
+    final list = districtsOf(province);
+    final target = _norm(input);
+    for (final d in list) {
+      if (_norm(d) == target) return d;
+    }
+    return null;
+  }
 }

@@ -103,6 +103,15 @@ export const TrustStatus = {
 export type TrustStatus = (typeof TrustStatus)[keyof typeof TrustStatus]
 
 
+export const LocalitySource = {
+  SEED: 'SEED',
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+} as const
+
+export type LocalitySource = (typeof LocalitySource)[keyof typeof LocalitySource]
+
+
 export const NotificationType = {
   APROBADO: 'APROBADO',
   RECHAZADO: 'RECHAZADO',

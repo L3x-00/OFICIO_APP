@@ -24,6 +24,7 @@ import { SubastasModule } from './subastas/subastas.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { ReferralsModule } from './referrals/referrals.module.js';
 import { ChatModule } from './chat/chat.module.js';
+import { LocalitiesModule } from './localities/localities.module.js';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { ChatModule } from './chat/chat.module.js';
     PaymentsModule,
     ReferralsModule,
     ChatModule,
+    LocalitiesModule,
   ],
   controllers: [AppController],
   providers: [

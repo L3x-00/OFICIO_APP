@@ -1,9 +1,11 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { SubmitYapeDto } from './dto/submit-yape.dto.js';
@@ -22,10 +24,48 @@ const PLAN_PRIORITY: Record<string, number> = {
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     private prisma: PrismaService,
     private events: EventsGateway,
   ) {}
+
+  /**
+   * Expira suscripciones vencidas. Corre cada hora:
+   *
+   * - ESTANDAR/PREMIUM en GRACIA o ACTIVA con endDate pasada → degrada a
+   *   GRATIS + status VENCIDA. El proveedor pierde los beneficios de pago
+   *   y queda en plan gratuito hasta que pague una nueva suscripción.
+   *
+   * - Ajusta `planPriority` para que el proveedor caiga al final del
+   *   ranking público de listado.
+   */
+  @Cron(CronExpression.EVERY_HOUR)
+  async expireSubscriptions(): Promise<void> {
+    const now = new Date();
+    const expired = await this.prisma.subscription.findMany({
+      where: {
+        endDate: { lt: now },
+        status:  { in: ['GRACIA', 'ACTIVA'] },
+        plan:    { in: ['ESTANDAR', 'PREMIUM'] },
+      },
+      select: { id: true, providerId: true },
+    });
+    if (expired.length === 0) return;
+
+    await this.prisma.$transaction([
+      this.prisma.subscription.updateMany({
+        where: { id: { in: expired.map(s => s.id) } },
+        data:  { plan: 'GRATIS', status: 'VENCIDA' },
+      }),
+      this.prisma.provider.updateMany({
+        where: { id: { in: expired.map(s => s.providerId) } },
+        data:  { planPriority: PLAN_PRIORITY.GRATIS },
+      }),
+    ]);
+    this.logger.log(`[subs-cron] ${expired.length} suscripciones expiradas → GRATIS`);
+  }
 
   // ── PROVEEDOR: enviar comprobante ───────────────────────────
   async submitYapePayment(userId: number, dto: SubmitYapeDto) {

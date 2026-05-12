@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-enum SocialProvider { google, facebook, apple }
+import 'package:mobile/core/social_auth_service.dart';
 
 extension _SocialProviderX on SocialProvider {
   String get assetPath {
     switch (this) {
       case SocialProvider.google:   return 'assets/icons/google.svg';
       case SocialProvider.facebook: return 'assets/icons/facebook.svg';
-      case SocialProvider.apple:    return 'assets/icons/apple.svg';
+      case SocialProvider.tiktok:   return 'assets/icons/tiktok.svg';
     }
   }
 
@@ -16,12 +16,11 @@ extension _SocialProviderX on SocialProvider {
     switch (this) {
       case SocialProvider.google:   return 'Continuar con Google';
       case SocialProvider.facebook: return 'Continuar con Facebook';
-      case SocialProvider.apple:    return 'Continuar con Apple';
+      case SocialProvider.tiktok:   return 'Continuar con TikTok';
     }
   }
 
-  // Apple icon needs to be tinted to match text color; others use their own colors
-  bool get useAdaptiveColor => this == SocialProvider.apple;
+  bool get useAdaptiveColor => false;
 }
 
 class SocialLoginButton extends StatefulWidget {

@@ -153,6 +153,7 @@ export const LocalityScalarFieldEnum = {
   district: 'district',
   country: 'country',
   isActive: 'isActive',
+  source: 'source',
   createdAt: 'createdAt'
 } as const
 

@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/constants/peru_locations.dart';
 import 'package:mobile/core/services/geocoding_service.dart';
+import 'package:mobile/features/localities/data/dynamic_locations.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/join_us_modal.dart';
 import 'package:mobile/shared/widgets/location_picker_sheet.dart';
@@ -58,6 +59,11 @@ class _ProvidersViewState extends State<_ProvidersView>
         province:   user?.province,
         district:   user?.district,
       );
+      // Trae las localidades extras (USER/ADMIN) del backend para que los
+      // dropdowns del filter y el chip de ubicación las muestren además
+      // del catálogo estático. No bloquea: si falla, el catálogo seguido
+      // funciona — sólo no incluye lo que otros usuarios hayan sugerido.
+      DynamicLocations.instance.syncFromBackend();
     });
   }
 
@@ -130,6 +136,10 @@ class _ProvidersViewState extends State<_ProvidersView>
           _SearchBar(),
           // ── Chips unificados: tipo + categoría ────────────
           _FilterBar(),
+          // ── Chip de ubicación: estado actual del filtro espacial.
+          //    Si hay ubicación activa: muestra "📍 Dept · Prov · Dist" con X
+          //    para limpiar. Si no hay: ofrece detectar por GPS one-tap.
+          const _LocationChipBar(),
           // ── Subasta OficioApp banner ───────────────────────
           const _SubastaBanner(),
           const Expanded(child: _ProvidersList()),
@@ -1132,22 +1142,63 @@ class _ProvidersList extends StatelessWidget {
     }
 
     if (prov.providers.isEmpty) {
+      // Empty state distinto cuando la causa es el filtro de ubicación —
+      // el usuario debe entender que su zona no tiene proveedores aún
+      // y que puede ampliar el área desde aquí mismo.
+      final hasLocation = prov.department != null;
+      final locationLabel = [
+        if (prov.district != null) prov.district!,
+        if (prov.province != null) prov.province!,
+        if (prov.department != null) prov.department!,
+      ].join(' · ');
+
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.search_off_rounded, color: c.textMuted, size: 48),
-            const SizedBox(height: 12),
-            Text('No encontramos resultados', style: TextStyle(color: c.textSecondary)),
-            const SizedBox(height: 4),
-            Text('Prueba cambiando los filtros activos',
-                style: TextStyle(color: c.textMuted, fontSize: 12)),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: prov.clearFilters,
-              child: const Text('Limpiar filtros', style: TextStyle(color: AppColors.primary)),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                hasLocation ? Icons.location_off_rounded : Icons.search_off_rounded,
+                color: c.textMuted,
+                size: 48,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                hasLocation
+                    ? 'No hay servicios en tu zona aún'
+                    : 'No encontramos resultados',
+                style: TextStyle(color: c.textSecondary, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                hasLocation
+                    ? 'Buscamos en: $locationLabel.\nAmplía tu zona o quita el filtro para ver más.'
+                    : 'Prueba cambiando los filtros activos',
+                style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              if (hasLocation)
+                TextButton.icon(
+                  onPressed: () =>
+                      context.read<ProvidersProvider>().setUserLocation(),
+                  icon: const Icon(Icons.public_rounded,
+                      color: AppColors.primary, size: 16),
+                  label: const Text(
+                    'Ver servicios de todo el Perú',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                )
+              else
+                TextButton(
+                  onPressed: prov.clearFilters,
+                  child: const Text('Limpiar filtros',
+                      style: TextStyle(color: AppColors.primary)),
+                ),
+            ],
+          ),
         ),
       );
     }
@@ -1458,12 +1509,15 @@ class _FilterSheetState extends State<_FilterSheet> {
     _dist = _sanitizeDist(_prov, _dist);
   }
 
+  // Sanitización accent-insensitive contra el catálogo combinado
+  // (estático + extras runtime). Devuelve la forma canónica que matchea
+  // la BD del backend.
   String? _sanitizeDept(String? d) =>
-      (d != null && PeruLocations.departments.contains(d)) ? d : null;
+      DynamicLocations.instance.findDepartmentCanonical(d);
   String? _sanitizeProv(String? d, String? p) =>
-      (d != null && p != null && PeruLocations.provincesOf(d).contains(p)) ? p : null;
+      DynamicLocations.instance.findProvinceCanonical(d, p);
   String? _sanitizeDist(String? p, String? di) =>
-      (p != null && di != null && PeruLocations.districtsOf(p).contains(di)) ? di : null;
+      DynamicLocations.instance.findDistrictCanonical(p, di);
 
   @override
   void dispose() {
@@ -1539,16 +1593,34 @@ class _FilterSheetState extends State<_FilterSheet> {
         );
         return;
       }
-      // Sanea contra catálogo local. El geocoder puede devolver nombres
-      // sin tilde o con variantes que no matchean el catálogo Prisma.
+      // Sanea contra catálogo local con normalización accent-insensitive
+      // — el geocoder puede devolver "Junin" sin tilde y el helper devuelve
+      // la forma canónica "Junín" que matchea con la BD.
       final d  = _sanitizeDept(geo.department);
       final p  = _sanitizeProv(d, geo.province);
       final di = _sanitizeDist(p, geo.district);
+      if (d == null) {
+        // La ubicación detectada no está en el catálogo. Ofrecemos al
+        // usuario añadirla con un solo tap — el backend la guarda con
+        // source: USER y queda disponible para todos los demás usuarios.
+        _offerToAddLocation(
+          dept: geo.department,
+          prov: geo.province,
+          dist: geo.district,
+        );
+        return;
+      }
       setState(() {
         _dept = d;
         _prov = p;
         _dist = di;
       });
+      // Auto-aplica: tras detectar GPS, el filtro debe activarse sin que
+      // el usuario tenga que volver a tocar "Aplicar filtros". El sheet
+      // se cierra y los proveedores se recargan con la nueva ubicación.
+      if (!mounted) return;
+      _apply();
+      return;
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1556,6 +1628,70 @@ class _FilterSheetState extends State<_FilterSheet> {
       );
     } finally {
       if (mounted) setState(() => _gpsLoading = false);
+    }
+  }
+
+  /// Muestra un SnackBar con acción "Añadir al catálogo". Si el usuario
+  /// acepta, llama al backend (POST /localities/suggest), refresca el
+  /// catálogo dinámico, y aplica el filtro con la nueva ubicación.
+  ///
+  /// El registro queda en la BD compartida — si el usuario borra su
+  /// cuenta más tarde, la entrada de Locality NO se elimina (la tabla
+  /// no tiene FK a User; es un dato de catálogo de la plataforma).
+  void _offerToAddLocation({
+    required String? dept,
+    String? prov,
+    String? dist,
+  }) {
+    final messenger = ScaffoldMessenger.of(context);
+    final label = [
+      if (dist != null && dist.isNotEmpty) dist,
+      if (prov != null && prov.isNotEmpty) prov,
+      if (dept != null && dept.isNotEmpty) dept,
+    ].join(', ');
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        duration: const Duration(seconds: 8),
+        content: Text(
+          'Tu ubicación ($label) no está en el catálogo.',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        action: (dept != null && dept.isNotEmpty)
+            ? SnackBarAction(
+                label: 'Añadir',
+                onPressed: () => _suggestAndApply(dept, prov, dist),
+              )
+            : null,
+      ));
+  }
+
+  Future<void> _suggestAndApply(String dept, String? prov, String? dist) async {
+    try {
+      final created = await DynamicLocations.instance.suggest(
+        department: dept,
+        province:   prov,
+        district:   dist,
+      );
+      if (!mounted) return;
+      // Usar los valores devueltos por el backend (forma canónica
+      // guardada) en lugar de los del geocoder.
+      setState(() {
+        _dept = created.department;
+        _prov = created.province;
+        _dist = created.district;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ubicación añadida al catálogo')),
+      );
+      _apply();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo añadir: $e')),
+      );
     }
   }
 
@@ -1893,44 +2029,54 @@ class _FilterSheetState extends State<_FilterSheet> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Departamento
-                  _LocationDropdown(
-                    label: 'Departamento',
-                    value: _dept,
-                    items: PeruLocations.departments,
-                    onChanged: (v) => setState(() {
-                      _dept = v;
-                      _prov = null; // limpia niveles inferiores
-                      _dist = null;
-                    }),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Provincia (depende del departamento)
-                  _LocationDropdown(
-                    label: 'Provincia',
-                    value: _prov,
-                    items: _dept == null
-                        ? const <String>[]
-                        : PeruLocations.provincesOf(_dept!),
-                    enabled: _dept != null,
-                    onChanged: (v) => setState(() {
-                      _prov = v;
-                      _dist = null;
-                    }),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Distrito (depende de la provincia y solo si hay catálogo)
-                  _LocationDropdown(
-                    label: 'Distrito',
-                    value: _dist,
-                    items: _prov == null
-                        ? const <String>[]
-                        : PeruLocations.districtsOf(_prov!),
-                    enabled: _prov != null &&
-                             PeruLocations.districtsOf(_prov!).isNotEmpty,
-                    onChanged: (v) => setState(() => _dist = v),
+                  // Departamento — usa el catálogo dinámico (estático +
+                  // extras del backend). ListenableBuilder garantiza que
+                  // si llega un suggest mientras el sheet está abierto,
+                  // los dropdowns se refrescan en vivo.
+                  ListenableBuilder(
+                    listenable: DynamicLocations.instance,
+                    builder: (_, _) {
+                      final dyn = DynamicLocations.instance;
+                      final provList = _dept == null
+                          ? const <String>[]
+                          : dyn.provincesOf(_dept!);
+                      final distList = _prov == null
+                          ? const <String>[]
+                          : dyn.districtsOf(_prov!);
+                      return Column(
+                        children: [
+                          _LocationDropdown(
+                            label: 'Departamento',
+                            value: _dept,
+                            items: dyn.departments,
+                            onChanged: (v) => setState(() {
+                              _dept = v;
+                              _prov = null;
+                              _dist = null;
+                            }),
+                          ),
+                          const SizedBox(height: 10),
+                          _LocationDropdown(
+                            label: 'Provincia',
+                            value: _prov,
+                            items: provList,
+                            enabled: _dept != null,
+                            onChanged: (v) => setState(() {
+                              _prov = v;
+                              _dist = null;
+                            }),
+                          ),
+                          const SizedBox(height: 10),
+                          _LocationDropdown(
+                            label: 'Distrito',
+                            value: _dist,
+                            items: distList,
+                            enabled: _prov != null && distList.isNotEmpty,
+                            onChanged: (v) => setState(() => _dist = v),
+                          ),
+                        ],
+                      );
+                    },
                   ),
 
                   // Texto libre adicional (opcional) — sigue funcionando como
@@ -2441,6 +2587,296 @@ class _LocationDropdown extends StatelessWidget {
                 .toList(),
             onChanged: enabled ? onChanged : null,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Chip de ubicación activa / detección rápida por GPS ──────
+//
+// Vive entre los filtros de categoría y el banner de subastas. Cumple
+// dos propósitos:
+//
+//   1) Si hay un filtro de ubicación activo (`_department` set en el
+//      ProvidersProvider), muestra "📍 Dept · Prov · Dist" con un botón X
+//      para limpiar. Refuerza visualmente que la lista está restringida
+//      a esa zona, eliminando la confusión de "por qué veo servicios de
+//      otra ciudad" o "por qué no veo nada".
+//
+//   2) Si NO hay filtro de ubicación, ofrece un atajo one-tap "Detectar
+//      mi ubicación" que llama al mismo pipeline que el botón del filter
+//      sheet: GPS → reverse geocoding → sanitización contra el catálogo
+//      → aplicar. Sin abrir el sheet.
+class _LocationChipBar extends StatefulWidget {
+  const _LocationChipBar();
+
+  @override
+  State<_LocationChipBar> createState() => _LocationChipBarState();
+}
+
+class _LocationChipBarState extends State<_LocationChipBar> {
+  bool _busy = false;
+
+  Future<void> _detectGps() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permiso de ubicación denegado')),
+        );
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+      );
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      if (!mounted) return;
+      if (geo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No pudimos detectar tu ubicación')),
+        );
+        return;
+      }
+      // Sanea contra catálogo combinado (estático + extras de backend).
+      final dyn = DynamicLocations.instance;
+      final d = dyn.findDepartmentCanonical(geo.department);
+      if (d == null) {
+        // No matchea ni catálogo estático ni extras — ofrecer añadir.
+        _offerAddToCatalog(
+          dept: geo.department,
+          prov: geo.province,
+          dist: geo.district,
+        );
+        return;
+      }
+      final p  = dyn.findProvinceCanonical(d, geo.province);
+      final di = dyn.findDistrictCanonical(p, geo.district);
+      if (!mounted) return;
+      await context.read<ProvidersProvider>().setUserLocation(
+        department: d,
+        province:   p,
+        district:   di,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo obtener la ubicación')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _clearLocation() async {
+    await context.read<ProvidersProvider>().setUserLocation();
+  }
+
+  /// Mismo patrón que en el filter sheet: SnackBar con acción "Añadir".
+  /// Al confirmar, llama al backend (POST /localities/suggest), refresca
+  /// el catálogo dinámico y aplica el filtro con la ubicación creada.
+  void _offerAddToCatalog({
+    required String? dept,
+    String? prov,
+    String? dist,
+  }) {
+    final messenger = ScaffoldMessenger.of(context);
+    final label = [
+      if (dist != null && dist.isNotEmpty) dist,
+      if (prov != null && prov.isNotEmpty) prov,
+      if (dept != null && dept.isNotEmpty) dept,
+    ].join(', ');
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        duration: const Duration(seconds: 8),
+        content: Text(
+          'Tu ubicación ($label) no está en el catálogo.',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        action: (dept != null && dept.isNotEmpty)
+            ? SnackBarAction(
+                label: 'Añadir',
+                onPressed: () => _suggestAndApply(dept, prov, dist),
+              )
+            : null,
+      ));
+  }
+
+  Future<void> _suggestAndApply(String dept, String? prov, String? dist) async {
+    try {
+      final created = await DynamicLocations.instance.suggest(
+        department: dept,
+        province:   prov,
+        district:   dist,
+      );
+      if (!mounted) return;
+      await context.read<ProvidersProvider>().setUserLocation(
+        department: created.department,
+        province:   created.province,
+        district:   created.district,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ubicación añadida al catálogo')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo añadir: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final prov = context.watch<ProvidersProvider>();
+    final hasLocation = prov.department != null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        child: hasLocation
+            ? _ActiveLocationChip(
+                key: const ValueKey('active'),
+                c: c,
+                department: prov.department!,
+                province:   prov.province,
+                district:   prov.district,
+                onClear:    _clearLocation,
+              )
+            : _DetectGpsChip(
+                key: const ValueKey('detect'),
+                c: c,
+                busy: _busy,
+                onTap: _detectGps,
+              ),
+      ),
+    );
+  }
+}
+
+class _ActiveLocationChip extends StatelessWidget {
+  final AppThemeColors c;
+  final String department;
+  final String? province;
+  final String? district;
+  final VoidCallback onClear;
+  const _ActiveLocationChip({
+    super.key,
+    required this.c,
+    required this.department,
+    required this.province,
+    required this.district,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = <String>[
+      ?district,
+      ?province,
+      department,
+    ];
+    final label = parts.join(' · ');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.place_rounded, color: AppColors.primary, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Mostrando servicios en: $label',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: onClear,
+            customBorder: const CircleBorder(),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Icon(Icons.close_rounded, color: c.textMuted, size: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetectGpsChip extends StatelessWidget {
+  final AppThemeColors c;
+  final bool busy;
+  final VoidCallback onTap;
+  const _DetectGpsChip({
+    super.key,
+    required this.c,
+    required this.busy,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: busy ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(
+          children: [
+            busy
+                ? const SizedBox(
+                    width: 14, height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  )
+                : Icon(Icons.my_location_rounded, color: AppColors.primary, size: 16),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                busy
+                    ? 'Detectando tu ubicación…'
+                    : 'Detectar mi ubicación para ver servicios cercanos',
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 18),
+          ],
         ),
       ),
     );

@@ -163,8 +163,10 @@ class _LoginScreenState extends State<LoginScreen>
     final auth = context.read<AuthProvider>();
 
     final outcome = provider == SocialProvider.google
-        ? await SocialAuthService.signInWithGoogle()
-        : await SocialAuthService.signInWithFacebook();
+    ? await SocialAuthService.signInWithGoogle()
+    : provider == SocialProvider.facebook
+        ? await SocialAuthService.signInWithFacebook()
+        : await SocialAuthService.signInWithTikTok();
 
     if (!mounted) return;
 
@@ -331,6 +333,11 @@ class _LoginScreenState extends State<LoginScreen>
                   SocialLoginButton(
                     provider: SocialProvider.facebook,
                     onTap: () => _handleSocialLogin(SocialProvider.facebook),
+                  ),
+                  const SizedBox(height: 10),
+                  SocialLoginButton(
+                    provider: SocialProvider.tiktok,
+                    onTap: () => _handleSocialLogin(SocialProvider.tiktok),
                   ),
                 ],
                 const SizedBox(height: 20),

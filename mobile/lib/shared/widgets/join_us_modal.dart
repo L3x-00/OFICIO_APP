@@ -610,7 +610,7 @@ class _JoinUsModalState extends State<JoinUsModal>
           'Apareces en búsquedas',
           'Foto de perfil',
           'Hasta 3 fotos del servicio',
-          'Panel administrador Básico',
+          'Panel administrador',
         ],
         isHighlighted: false,
       ),

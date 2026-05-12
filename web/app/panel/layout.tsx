@@ -12,9 +12,34 @@ import {
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
 import { getSocket } from '@/lib/socket';
-import { Home, UserCog, Zap, Briefcase, BarChart3, Settings, Gift } from 'lucide-react';
-import { ProfileTypeProvider, useProfileType } from '@/lib/profile-type-context';
+import {
+  Home, UserCog, Zap, Briefcase, BarChart3, Settings, Gift, LogOut,
+  Wrench, Store, ChevronDown, Check,
+} from 'lucide-react';
+import { useRef, type ElementType } from 'react';
+import { ProfileTypeProvider, useProfileType, useProfileTypeOptional } from '@/lib/profile-type-context';
 import { api } from '@/lib/api';
+
+// ─── Meta de cada tipo de perfil (replica del Sidebar) ─────────
+const PROFILE_META: Record<'OFICIO' | 'NEGOCIO', {
+  label: string;
+  icon: ElementType;
+  color: string;
+  bg: string;
+}> = {
+  OFICIO: {
+    label: 'Profesional',
+    icon: Wrench,
+    color: 'text-primary-light',
+    bg: 'bg-primary/15',
+  },
+  NEGOCIO: {
+    label: 'Negocio',
+    icon: Store,
+    color: 'text-amber',
+    bg: 'bg-amber/15',
+  },
+};
 
 // ========== ANIMACIONES CON TIPADO CORRECTO ==========
 const pageVariants = {
@@ -133,8 +158,13 @@ function PanelGate({ children }: { children: React.ReactNode }) {
       {/* Sidebar (componente existente) */}
       <Sidebar />
 
+      {/* Top bar mobile-only: garantiza acceso al logout sin tener que
+          buscar entre las pestañas del bottom nav. En desktop la sidebar
+          ya expone el logout, por eso esta barra se oculta en md+. */}
+      <MobileTopBar />
+
       {/* Contenido principal con transición de páginas */}
-      <main className="flex-1 relative z-10 p-4 sm:p-6 lg:p-8 overflow-x-hidden pb-24 md:pb-8">
+      <main className="flex-1 relative z-10 p-4 pt-16 sm:p-6 md:pt-6 lg:p-8 overflow-x-hidden pb-24 md:pb-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
@@ -151,6 +181,150 @@ function PanelGate({ children }: { children: React.ReactNode }) {
 
       {/* Navegación inferior mejorada (glass + microinteracciones) */}
       <MobileBottomNav />
+    </div>
+  );
+}
+
+function MobileTopBar() {
+  const router = useRouter();
+
+  function handleLogout() {
+    clearSession();
+    router.push('/login');
+  }
+
+  return (
+    <motion.div
+      initial={{ y: -40, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="md:hidden fixed top-0 left-0 right-0 z-40 glass border-b border-white/10 backdrop-blur-xl"
+    >
+      <div className="flex items-center justify-between gap-3 px-4 h-14">
+        {/* Lado izquierdo: switcher de perfil (o label estático). */}
+        <MobilePanelSwitcher />
+        {/* Lado derecho: logout siempre visible. */}
+        <button
+          onClick={handleLogout}
+          aria-label="Cerrar sesión"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-rose/80 hover:text-rose bg-white/[0.03] border border-white/10 hover:border-rose/40 transition-colors text-[12.5px] font-medium flex-shrink-0"
+        >
+          <LogOut size={14} strokeWidth={1.75} />
+          <span>Salir</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+/**
+ * Versión mobile del PanelSwitcher del Sidebar. Usa el mismo contexto
+ * (`useProfileTypeOptional`) para mantener el estado sincronizado entre
+ * la barra superior móvil y la sidebar desktop. Si el usuario tiene un
+ * solo perfil, se renderiza como chip estático (sin dropdown).
+ */
+function MobilePanelSwitcher() {
+  const ctx = useProfileTypeOptional();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Cierra el dropdown si se hace tap fuera (espejo del sidebar).
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  // Sin contexto o sin perfiles disponibles → fallback al label "Panel"
+  // para que la barra siga teniendo algo visible alineado a la izquierda.
+  if (!ctx || ctx.availableTypes.length === 0) {
+    return (
+      <span className="font-display font-semibold text-white text-[15px] tracking-tightest">
+        Panel
+      </span>
+    );
+  }
+
+  const { activeType, availableTypes, setActiveType } = ctx;
+  const activeMeta = activeType ? PROFILE_META[activeType] : PROFILE_META.OFICIO;
+  const ActiveIcon = activeMeta.icon;
+  const onlyOne = availableTypes.length === 1;
+
+  return (
+    <div className="relative flex-1 min-w-0" ref={ref}>
+      <button
+        onClick={() => !onlyOne && setOpen((p) => !p)}
+        disabled={onlyOne}
+        aria-haspopup={!onlyOne}
+        aria-expanded={open}
+        className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-full border transition-all ${
+          onlyOne
+            ? 'border-white/10 bg-white/[0.03] cursor-default'
+            : 'border-white/10 bg-white/[0.04] hover:border-primary/40 hover:bg-white/[0.07] cursor-pointer'
+        }`}
+      >
+        <div className={`w-7 h-7 rounded-lg ${activeMeta.bg} flex items-center justify-center flex-shrink-0`}>
+          <ActiveIcon size={14} className={activeMeta.color} />
+        </div>
+        <div className="flex flex-col items-start min-w-0 flex-1">
+          <span className="text-[9px] uppercase tracking-wider text-white/40 font-semibold leading-none">
+            Panel
+          </span>
+          <span className="text-white text-[12.5px] font-bold truncate leading-tight">
+            {activeMeta.label}
+          </span>
+        </div>
+        {!onlyOne && (
+          <ChevronDown
+            size={14}
+            className={`text-white/40 flex-shrink-0 transition-transform duration-200 ${
+              open ? 'rotate-180 text-primary-light' : ''
+            }`}
+          />
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && !onlyOne && (
+          <motion.div
+            initial={{ opacity: 0, y: -5, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.96 }}
+            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+            className="absolute left-0 right-0 top-full mt-2 z-50 glass-card rounded-xl shadow-glow-sm py-1.5 overflow-hidden border border-white/10"
+          >
+            {availableTypes.map((t) => {
+              const m = PROFILE_META[t];
+              const Icon = m.icon;
+              const isActive = t === activeType;
+              return (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setActiveType(t);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${
+                    isActive
+                      ? 'bg-primary/10 text-primary-light'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center flex-shrink-0`}>
+                    <Icon size={15} className={m.color} />
+                  </div>
+                  <span className="text-[13px] font-medium flex-1">{m.label}</span>
+                  {isActive && <Check size={14} className="text-primary" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
