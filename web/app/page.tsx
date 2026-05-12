@@ -7,7 +7,7 @@ import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
 import CtaProviderSection from '@/components/cta-provider-section';
 import FaqSection from '@/components/faq-section';
-import UserManual from '@/components/user-manual';
+import UserManual from '@/components/user-manual'; 
 export default function HomePage() {
   return (
     <>

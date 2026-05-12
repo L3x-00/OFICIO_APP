@@ -153,3 +153,23 @@ export interface Opportunity extends ServiceRequest {
   distanceKm: number;
   canParticipate: boolean;
 }
+// ========== TIPOS PARA EL MANUAL DE USUARIO ==========
+import { LucideIcon } from 'lucide-react';
+
+export interface GuideStep {
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+  accent: 'blue' | 'orange' | 'purple' | 'amber' | 'green' | 'rose';
+  screenshot?: string;
+  links?: { label: string; href: string }[];
+  subSteps?: string[];
+}
+
+export interface GuideSection {
+  id: string;
+  title: string;
+  icon: LucideIcon;
+  accent: GuideStep['accent'];
+  content: GuideStep[];
+}
