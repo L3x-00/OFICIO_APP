@@ -19,12 +19,13 @@ const STACK_COUNT = 5;
 const FALLBACK_IMG = '/images/portada.jpeg';
 const STORAGE_KEY = 'oficio_showcase_expanded';
 
-const STACK_LAYOUT: { rotate: number; x: number; y: number }[] = [
-  { rotate: 1.2,  x:  4,   y: 0 },
-  { rotate: -3,   x: -16,  y: 6 },
-  { rotate: 5,    x:  18,  y: 12 },
-  { rotate: -7,   x: -28,  y: 18 },
-  { rotate: 8,    x:  30,  y: 22 },
+// Layout del collage - desplazamientos relativos para crear el efecto de pila
+const STACK_LAYOUT: { rotate: number; x: number; y: number; zIndex: number }[] = [
+  { rotate: 2,   x: -12,  y: -8,  zIndex: 1 },
+  { rotate: -2.5, x: 14,   y: -4,  zIndex: 2 },
+  { rotate: 3.5,  x: -8,   y: 2,   zIndex: 3 },
+  { rotate: -3,   x: 10,   y: 6,   zIndex: 4 },
+  { rotate: 4,    x: 0,    y: 12,  zIndex: 5 },
 ];
 
 // Variantes para la cascada del Grid
@@ -42,7 +43,7 @@ const cardVariants = {
     y: 0, 
     opacity: 1, 
     scale: 1, 
-    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } 
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } 
   }
 };
 
@@ -101,7 +102,7 @@ export default function ProvidersShowcase() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
         >
           <div className="max-w-xl">
             <span className="eyebrow">Servicios destacados</span>
@@ -133,6 +134,7 @@ export default function ProvidersShowcase() {
               key="stack"
               providers={providers.slice(0, STACK_COUNT)}
               onExpand={handleExpand}
+              totalCount={providers.length}
             />
           )}
 
@@ -149,14 +151,16 @@ export default function ProvidersShowcase() {
   );
 }
 
-/* ── Stack collage (vista colapsada) ───────────────────────── */
+/* ── Stack collage CORREGIDO (sin superposición) ───────────────────────── */
 
 function CollageStack({
   providers,
   onExpand,
+  totalCount,
 }: {
   providers: PublicProvider[];
   onExpand: () => void;
+  totalCount: number;
 }) {
   return (
     <motion.div 
@@ -164,37 +168,49 @@ function CollageStack({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col items-center gap-12"
+      className="flex flex-col items-center gap-8"
     >
-      <div
-        className="relative w-full max-w-[320px] sm:max-w-[360px] h-[400px] sm:h-[460px]"
-        aria-hidden="true"
-      >
-        {[...providers].reverse().map((p, idxFromBottom) => {
-          const realIndex = providers.length - 1 - idxFromBottom;
-          const layout = STACK_LAYOUT[realIndex] ?? STACK_LAYOUT[0];
-          return (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, y: 50, rotate: 0 }}
-              animate={{ opacity: 1, y: 0, rotate: layout.rotate, x: layout.x }}
-              transition={{ duration: 0.5, delay: realIndex * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-              className="absolute left-1/2 top-1/2 w-[280px] sm:w-[320px] -translate-x-1/2 -translate-y-1/2"
-              style={{
-                zIndex: providers.length - realIndex,
-                y: layout.y,
-              }}
-            >
-              <ProviderCard provider={p} variant="stack" />
-            </motion.div>
-          );
-        })}
+      {/* Contenedor del collage - centrado con margen automático */}
+      <div className="relative w-full max-w-[380px] mx-auto min-h-[420px] flex items-center justify-center">
+        <div className="relative w-[300px] sm:w-[340px] h-[400px]">
+          {providers.map((provider, idx) => {
+            const layout = STACK_LAYOUT[idx % STACK_LAYOUT.length];
+            // La tarjeta del fondo (índice 0) debe estar detrás
+            const zIndex = layout.zIndex;
+            return (
+              <motion.div
+                key={provider.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1,
+                  rotate: layout.rotate,
+                  x: layout.x,
+                  y: layout.y,
+                }}
+                transition={{ 
+                  duration: 0.5, 
+                  delay: idx * 0.1, 
+                  ease: [0.16, 1, 0.3, 1] as const 
+                }}
+                className="absolute left-1/2 top-0 w-[280px] sm:w-[300px] -translate-x-1/2"
+                style={{ 
+                  zIndex,
+                  transformOrigin: 'center center',
+                }}
+              >
+                <ProviderCard provider={provider} variant="stack" />
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Botón y contador - ahora debajo del collage */}
       <button
         type="button"
         onClick={onExpand}
-        className="btn btn-primary btn-lg press-effect group"
+        className="btn btn-primary btn-lg press-effect group mt-4"
       >
         Descubrir profesionales
         <ArrowRight
@@ -203,8 +219,8 @@ function CollageStack({
         />
       </button>
 
-      <p className="text-white/30 text-[13px] -mt-7">
-        {providers.length} de {MAX_VISIBLE} disponibles
+      <p className="text-white/40 text-xs -mt-2">
+        {totalCount} profesionales destacados
       </p>
     </motion.div>
   );
@@ -277,7 +293,7 @@ function ProviderCard({
 
   if (variant === 'stack') {
     return (
-      <article className="glass overflow-hidden select-none pointer-events-none border-primary/10 shadow-glow-sm" aria-hidden="true">
+      <article className="glass overflow-hidden border border-white/10 shadow-glow-sm" aria-hidden="true">
         <CoverImage src={cover} alt={provider.businessName} category={provider.category?.name} rating={rating} />
         <CardBody
           businessName={provider.businessName}
@@ -293,7 +309,7 @@ function ProviderCard({
   }
 
   return (
-    <article className="glass glass-hover overflow-hidden group cursor-pointer">
+    <article className="glass glass-hover overflow-hidden group cursor-pointer transition-all duration-300">
       <CoverImage
         src={cover}
         alt={provider.businessName}
@@ -379,40 +395,40 @@ function CardBody({
   description: string;
 }) {
   return (
-    <div className="p-5">
-      <h3 className="font-display font-semibold text-white text-[16px] leading-snug truncate">
+    <div className="p-4">
+      <h3 className="font-display font-semibold text-white text-[15px] leading-snug truncate">
         {businessName}
       </h3>
 
-      <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-center gap-2 mt-1.5">
         <StarRow value={rating} />
-        <span className="text-white/40 text-xs">
+        <span className="text-white/40 text-[11px]">
           {reviews > 0
             ? `(${reviews} ${reviews === 1 ? 'reseña' : 'reseñas'})`
-            : 'Sin reseñas aún'}
+            : 'Sin reseñas'}
         </span>
       </div>
 
       {location && (
-        <div className="flex items-center gap-1.5 mt-3 text-white/50 text-xs">
-          <MapPin size={12} className="text-accent flex-shrink-0" />
+        <div className="flex items-center gap-1.5 mt-2 text-white/50 text-[11px]">
+          <MapPin size={11} className="text-accent flex-shrink-0" />
           <span className="truncate">{location}</span>
         </div>
       )}
 
       {phoneShown && (
-        <div className="flex items-center gap-1.5 mt-1 text-white/50 text-xs">
+        <div className="flex items-center gap-1.5 mt-1 text-white/50 text-[11px]">
           {isWhats ? (
-            <MessageCircle size={12} className="text-accent flex-shrink-0" />
+            <MessageCircle size={11} className="text-accent flex-shrink-0" />
           ) : (
-            <Phone size={12} className="text-white/40 flex-shrink-0" />
+            <Phone size={11} className="text-white/40 flex-shrink-0" />
           )}
           <span className="truncate">{phoneShown}</span>
         </div>
       )}
 
       {description && (
-        <p className="text-white/40 text-[13.5px] leading-relaxed mt-3">
+        <p className="text-white/40 text-xs leading-relaxed mt-2 line-clamp-2">
           {description}
         </p>
       )}
@@ -427,8 +443,8 @@ function StarRow({ value }: { value: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          size={12}
-          className={i < full ? 'text-amber fill-amber' : 'text-white/10'}
+          size={11}
+          className={i < full ? 'text-amber fill-amber' : 'text-white/20'}
         />
       ))}
     </div>
@@ -461,7 +477,7 @@ function EmptyState() {
         <Briefcase size={26} className="text-white/40" />
       </div>
       <h3 className="font-display font-semibold text-white text-[17px] mb-2">
-        Estamos preparando los mejores profesionales de tu zona
+        Estamos preparando los mejores profesionales
       </h3>
       <p className="text-white/40 text-sm">¡Vuelve pronto!</p>
     </div>
