@@ -183,24 +183,28 @@ export default function Footer() {
                 <SocialIcon
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
                   label="Gmail"
+                  color="#EA4335"
                 >
                   <GmailIcon />
                 </SocialIcon>
                 <SocialIcon
                   href="https://www.tiktok.com/@ofiapp.pe"
                   label="TikTok"
+                  color="#00F2EA"
                 >
                   <TikTokIcon />
                 </SocialIcon>
                 <SocialIcon
                   href="https://www.facebook.com/profile.php?id=61585849044376"
                   label="Facebook"
+                  color="#1877F2"
                 >
                   <FacebookIcon />
                 </SocialIcon>
                 <SocialIcon
                   href="https://www.instagram.com/ofiapp.pe/"
                   label="Instagram"
+                  color="#E4405F"
                 >
                   <InstagramIcon />
                 </SocialIcon>
@@ -349,7 +353,7 @@ export default function Footer() {
 
 // Componente para íconos sociales (mejor hover)
 // ── Íconos SVG inline de redes sociales ────────────────
-function SocialIcon({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
+function SocialIcon({ href, label, color, children }: { href: string; label: string; color: string; children: React.ReactNode }) {
   return (
     <a
       href={href}
@@ -357,8 +361,9 @@ function SocialIcon({ href, label, children }: { href: string; label: string; ch
       rel="noopener noreferrer"
       aria-label={label}
       className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
+      style={{ color: color ? '' : 'inherit' }}
     >
-      <span className="w-5 h-5 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+      <span className="w-5 h-5 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity" style={{ color }}>
         {children}
       </span>
     </a>
