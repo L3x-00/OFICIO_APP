@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { ACCENT } from './constants';
-import type { GuideSection } from './types';
+import { MANUAL_ACCENT } from '@/lib/constants';  // ← Cambiado de './constants'
+import type { GuideSection } from '@/lib/types';
 
 interface GuideCardProps {
   section: GuideSection;
@@ -21,13 +21,13 @@ const cardVariants = {
 
 export default function GuideCard({ section, onClick }: GuideCardProps) {
   const Icon = section.icon;
-  const a = ACCENT[section.accent];
+  const a = MANUAL_ACCENT[section.accent];
 
   return (
     <motion.button
       variants={cardVariants}
       onClick={onClick}
-      className="glass rounded-xl overflow-hidden group text-left w-full transition-all duration-300 hover:shadow-glow-md hover:border-primary/30"
+      className="glass rounded-xl overflow-hidden group text-left w-full transition-all duration-300 hover:shadow-glow-md hover:border-primary/30 cursor-pointer"
     >
       <div className="px-6 py-5 flex items-center gap-4">
         <div className={`w-11 h-11 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center flex-shrink-0`}>

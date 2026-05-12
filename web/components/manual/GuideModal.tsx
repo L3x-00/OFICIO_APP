@@ -2,8 +2,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, ExternalLink, Image as ImageIcon } from 'lucide-react';
-import { ACCENT } from './constants';
-import type { GuideSection } from './types';
+import { MANUAL_ACCENT } from '@/lib/constants';  // ← Cambiado
+import type { GuideSection } from '@/lib/types';
 
 interface GuideModalProps {
   section: GuideSection | null;
@@ -31,7 +31,7 @@ export default function GuideModal({ section, isOpen, onClose }: GuideModalProps
   if (!section) return null;
 
   const Icon = section.icon;
-  const a = ACCENT[section.accent];
+  const a = MANUAL_ACCENT[section.accent];
 
   return (
     <AnimatePresence>
@@ -44,6 +44,7 @@ export default function GuideModal({ section, isOpen, onClose }: GuideModalProps
             className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={onClose}
           />
+          
           <motion.div
             variants={modalVariants}
             initial="hidden"
@@ -52,7 +53,7 @@ export default function GuideModal({ section, isOpen, onClose }: GuideModalProps
             className="relative glass rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto shadow-glow-lg border border-white/10"
           >
             {/* Header */}
-            <div className="sticky top-0 glass border-b border-white/10 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 glass border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center`}>
                   <Icon size={20} strokeWidth={1.75} className={a.text} />
@@ -67,6 +68,7 @@ export default function GuideModal({ section, isOpen, onClose }: GuideModalProps
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-full glass flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                aria-label="Cerrar"
               >
                 <X size={18} />
               </button>
@@ -76,7 +78,7 @@ export default function GuideModal({ section, isOpen, onClose }: GuideModalProps
             <div className="px-6 py-5 space-y-5">
               {section.content.map((step, idx) => {
                 const StepIcon = step.icon;
-                const sa = ACCENT[step.accent];
+                const sa = MANUAL_ACCENT[step.accent];
                 return (
                   <div key={idx} className="glass rounded-xl p-5 border border-white/5">
                     <div className="flex items-start gap-3">

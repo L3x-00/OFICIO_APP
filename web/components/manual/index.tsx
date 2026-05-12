@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Headphones, Download, ExternalLink } from 'lucide-react';
-import { GUIDE_SECTIONS } from './constants';
+import { GUIDE_SECTIONS } from '@/lib/constants';  // ← Cambiado
 import GuideCard from './GuideCard';
 import GuideModal from './GuideModal';
-import type { GuideSection } from './types';
+import type { GuideSection } from '@/lib/types';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,6 +38,7 @@ export default function UserManual() {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+        {/* Encabezado */}
         <motion.div
           className="max-w-2xl mb-14 sm:mb-16"
           initial={{ opacity: 0, y: 20 }}
@@ -55,6 +56,7 @@ export default function UserManual() {
           </p>
         </motion.div>
 
+        {/* Grid de tarjetas */}
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={containerVariants}
@@ -67,6 +69,7 @@ export default function UserManual() {
           ))}
         </motion.div>
 
+        {/* Footer con enlaces */}
         <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0 }}
