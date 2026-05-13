@@ -82,8 +82,8 @@ class DashboardProfileModel {
       // El backend (`provider-profile/me`) anida la categoría como
       // `category: { id, name, slug }`. Como fallback aceptamos también
       // `categoryId` plano en la raíz por si una respuesta lo trae así.
-      categoryId:    (json['category']?['id'] as int?) ?? json['categoryId'] as int?,
-      categoryName:  json['category']?['name'] as String?,
+      categoryId:    _firstCategoryId(json),
+      categoryName:  _firstCategoryName(json),
       categories:    (json['providerCategories'] as List?)
                        ?.map((pc) => ProfileCategory.fromJson(pc['category'] as Map<String, dynamic>))
                        .toList() ?? [],
@@ -133,6 +133,36 @@ class DashboardProfileModel {
       scheduleJson:   scheduleJson    ?? this.scheduleJson,
       totalFavorites: totalFavorites,
     );
+  }
+
+  static int? _firstCategoryId(Map<String, dynamic> json) {
+    final pcList = json['providerCategories'];
+    if (pcList is List && pcList.isNotEmpty) {
+      final first = pcList.first;
+      if (first is Map<String, dynamic>) {
+        final cat = first['category'];
+        if (cat is Map<String, dynamic>) {
+          final id = cat['id'];
+          if (id is int) return id;
+        }
+      }
+    }
+    return (json['category']?['id'] as int?) ?? (json['categoryId'] as int?);
+  }
+
+  static String? _firstCategoryName(Map<String, dynamic> json) {
+    final pcList = json['providerCategories'];
+    if (pcList is List && pcList.isNotEmpty) {
+      final first = pcList.first;
+      if (first is Map<String, dynamic>) {
+        final cat = first['category'];
+        if (cat is Map<String, dynamic>) {
+          final name = cat['name'] as String?;
+          if (name != null && name.isNotEmpty) return name;
+        }
+      }
+    }
+    return json['category']?['name'] as String?;
   }
 }
 

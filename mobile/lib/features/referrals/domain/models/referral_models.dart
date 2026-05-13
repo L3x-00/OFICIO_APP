@@ -188,9 +188,23 @@ class RewardProvider {
       averageRating:
           (json['averageRating'] as num?)?.toDouble() ?? 0,
       coverUrl: cover,
-      categoryName: (json['category'] as Map<String, dynamic>?)?['name']
-          as String?,
+      categoryName: _firstProviderCategoryName(json),
     );
+  }
+
+  static String? _firstProviderCategoryName(Map<String, dynamic> json) {
+    final pcList = json['providerCategories'];
+    if (pcList is List && pcList.isNotEmpty) {
+      final first = pcList.first;
+      if (first is Map<String, dynamic>) {
+        final cat = first['category'];
+        if (cat is Map<String, dynamic>) {
+          final name = cat['name'] as String?;
+          if (name != null && name.isNotEmpty) return name;
+        }
+      }
+    }
+    return (json['category'] as Map<String, dynamic>?)?['name'] as String?;
   }
 }
 

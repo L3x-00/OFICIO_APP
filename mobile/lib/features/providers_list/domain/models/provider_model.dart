@@ -94,7 +94,7 @@ class ProviderModel {
     return ProviderModel(
       id:            json['id'] as int,
       businessName:  json['businessName'] as String,
-      categoryName:  json['category']?['name'] as String? ?? '',
+      categoryName:  _firstCategoryName(json),
       phone:         json['phone'] as String,
       whatsapp:      json['whatsapp'] as String?,
       averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
@@ -142,6 +142,24 @@ class ProviderModel {
       telegram:               json['telegram']    as String?,
       whatsappBiz:            json['whatsappBiz'] as String?,
     );
+  }
+
+  /// Lee la primera categoría — soporta la nueva relación M:N
+  /// (`providerCategories: [{ category: {name} }]`) y el legado
+  /// (`category: {name}`) como fallback defensivo.
+  static String _firstCategoryName(Map<String, dynamic> json) {
+    final pcList = json['providerCategories'];
+    if (pcList is List && pcList.isNotEmpty) {
+      final first = pcList.first;
+      if (first is Map<String, dynamic>) {
+        final cat = first['category'];
+        if (cat is Map<String, dynamic>) {
+          final name = cat['name'] as String?;
+          if (name != null && name.isNotEmpty) return name;
+        }
+      }
+    }
+    return (json['category']?['name'] as String?) ?? '';
   }
 
   static List<ServiceItem> _parseServices(dynamic scheduleJson) {
