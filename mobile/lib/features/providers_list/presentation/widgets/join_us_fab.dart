@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
-import '../../../../shared/widgets/join_us_modal.dart';
+import '../../../auth/presentation/widgets/join_us/join_us_modal.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 
