@@ -4,7 +4,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/favorites_provider.dart';
 import '../../../providers_list/presentation/widgets/service_card.dart';
-import '../../../providers_list/presentation/screens/provider_detail_sheet.dart';
+import '../../../providers_list/presentation/screens/provider_detail_screen.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';

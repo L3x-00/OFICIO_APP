@@ -1,0 +1,353 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/constans/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
+import '../providers/providers_provider.dart';
+import 'parent_category_icons.dart';
+
+/// Barra de filtros jerárquica.
+///
+/// Filas:
+///   - Fila 0 (opcional): chip "Mostrando en: <zona>" cuando hay filtro
+///     de ubicación activo, con botón "Ver todos".
+///   - Fila 1 (siempre): chips de tipo (Todos / Profesionales / Negocios).
+///   - Fila 2 (toggleable): macrocategorías → al tocar, se expande a
+///     subcategorías con un botón "← Volver".
+class FilterBar extends StatelessWidget {
+  const FilterBar({super.key});
+
+  static const _typeChips = [
+    _TypeChipData(label: 'Todos',         icon: Icons.apps_rounded,       value: null,           activeColor: AppColors.amber),
+    _TypeChipData(label: 'Profesionales', icon: Icons.handyman_rounded,   value: 'PROFESSIONAL', activeColor: AppColors.primary),
+    _TypeChipData(label: 'Negocios',      icon: Icons.storefront_rounded, value: 'BUSINESS',     activeColor: Color(0xFF8E2DE2)),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final prov     = context.watch<ProvidersProvider>();
+    final expanded = prov.expandedParentSlug;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Fila 0: chip de ubicación activa ─────────
+          if (prov.hasLocationFilter)
+            _LocationChip(prov: prov),
+
+          // ── Fila 1: tipo chips (siempre visible) ──────
+          SizedBox(
+            height: 46,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              itemCount: _typeChips.length,
+              itemBuilder: (_, i) {
+                final t = _typeChips[i];
+                final isSel = prov.selectedType == t.value;
+                return _TypeChip(
+                  data: t,
+                  isSelected: isSel,
+                  onTap: () => prov.setType(isSel && t.value != null ? null : t.value),
+                );
+              },
+            ),
+          ),
+
+          // ── Fila 2: macrocategorías o subcategorías ───
+          if (prov.showCategoryFilter && prov.categories.isNotEmpty)
+            SizedBox(
+              height: 42,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.06, 0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
+                    child: child,
+                  ),
+                ),
+                child: expanded == null
+                    ? _ParentChipRow(key: const ValueKey('parents'), prov: prov)
+                    : _SubChipRow(key: ValueKey('sub_$expanded'), prov: prov),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Chip de ubicación activa ──────────────────────────────
+
+class _LocationChip extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _LocationChip({required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c     = context.colors;
+    final parts = [
+      if (prov.district   != null) prov.district!,
+      if (prov.province   != null) prov.province!,
+      if (prov.department != null) prov.department!,
+    ];
+    final label = parts.isNotEmpty ? parts.first : 'Mi ubicación';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      child: Row(
+        children: [
+          Icon(Icons.location_on_rounded, size: 13, color: AppColors.primary),
+          const SizedBox(width: 4),
+          Text(
+            'Mostrando en: $label',
+            style: TextStyle(color: c.textSecondary, fontSize: 12),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: prov.clearLocationFilter,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: c.bgCard,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: Text('Ver todos', style: TextStyle(color: c.textMuted, fontSize: 11)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Fila de macrocategorías ────────────────────────────────
+
+class _ParentChipRow extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _ParentChipRow({super.key, required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      itemCount: prov.categories.length,
+      itemBuilder: (_, i) {
+        final parent = prov.categories[i];
+        final icon   = kParentCategoryIcons[parent.slug] ?? Icons.category_rounded;
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () => prov.setParentCategory(parent.slug),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: c.bgCard,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: c.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 13, color: c.textSecondary),
+                  const SizedBox(width: 5),
+                  Text(
+                    parent.name,
+                    style: TextStyle(color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 3),
+                  Icon(Icons.chevron_right_rounded, size: 14, color: c.textMuted),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Fila de subcategorías (con botón atrás) ───────────────
+
+class _SubChipRow extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _SubChipRow({super.key, required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c       = context.colors;
+    final parent  = prov.expandedParent;
+    final subs    = prov.expandedChildren;
+    final icon    = kParentCategoryIcons[prov.expandedParentSlug] ?? Icons.category_rounded;
+
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      itemCount: 1 + 1 + subs.length, // back + separator + subcats
+      itemBuilder: (_, i) {
+        // Botón "← Nombre"
+        if (i == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: prov.collapseParent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.arrow_back_ios_new_rounded, size: 11, color: AppColors.primary),
+                    const SizedBox(width: 5),
+                    Icon(icon, size: 13, color: AppColors.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      parent?.name ?? '',
+                      style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        // Separador
+        if (i == 1) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12, left: 4),
+            child: Center(
+              child: Container(width: 1.5, height: 18, color: c.border),
+            ),
+          );
+        }
+        // Subcategorías
+        final sub       = subs[i - 2];
+        final isSel     = prov.selectedCategory == sub.slug;
+        return _CategoryChip(
+          label:      sub.name,
+          isSelected: isSel,
+          onTap:      () => prov.setCategory(isSel ? null : sub.slug),
+        );
+      },
+    );
+  }
+}
+
+// ── Chip de tipo (Todos / Profesionales / Negocios) ────────
+
+class _TypeChipData {
+  final String label;
+  final IconData icon;
+  final String? value;
+  final Color activeColor;
+  const _TypeChipData({
+    required this.label,
+    required this.icon,
+    required this.value,
+    required this.activeColor,
+  });
+}
+
+class _TypeChip extends StatelessWidget {
+  final _TypeChipData data;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _TypeChip({required this.data, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? data.activeColor
+                : data.activeColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected
+                  ? data.activeColor
+                  : data.activeColor.withValues(alpha: 0.25),
+              width: isSelected ? 0 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                data.icon,
+                size: 13,
+                color: isSelected ? Colors.white : data.activeColor,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                data.label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : data.activeColor,
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Chip de categoría ──────────────────────────────────────
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _CategoryChip({required this.label, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : c.bgCard,
+            borderRadius: BorderRadius.circular(20),
+            border: isSelected
+                ? null
+                : Border.all(color: c.border),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : c.textSecondary,
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

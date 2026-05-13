@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/services/geocoding_service.dart';
+import '../../../localities/data/dynamic_locations.dart';
 import '../../data/providers_repository.dart';
 import '../../domain/models/provider_model.dart';
 
@@ -42,6 +46,13 @@ class ProvidersProvider extends ChangeNotifier {
 
   /// Umbral de distancia (metros) que dispara recarga del backend.
   static const double _reloadDistanceMeters = 2000.0;
+
+  // ── Stream GPS en tiempo real (gestionado por el Provider) ────
+  StreamSubscription<Position>? _gpsSub;
+  /// Etiqueta de provincia detectada por el stream GPS (sobreescribe
+  /// la del filtro para mostrar la zona real al usuario en tiempo real).
+  String? _liveProvince;
+  String? get liveProvince => _liveProvince;
 
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers            => _providers;
@@ -333,5 +344,183 @@ class ProvidersProvider extends ChangeNotifier {
       );
       notifyListeners();
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // GPS — Detección puntual + Stream en segundo plano
+  // ═══════════════════════════════════════════════════════════
+
+  /// Detecta la ubicación actual del usuario por GPS y la aplica como filtro.
+  ///
+  /// Pipeline:
+  ///   1. Solicita permisos de ubicación (si están denegados, muestra SnackBar).
+  ///   2. Lee posición con baja precisión (rápido).
+  ///   3. Reverse geocoding → department/province/district.
+  ///   4. Sanea contra el catálogo dinámico (estático + extras backend).
+  ///   5. Si la ubicación no está en el catálogo, ofrece añadirla.
+  ///   6. Aplica el filtro vía [setUserLocation].
+  ///
+  /// [context] se usa SOLO para mostrar SnackBars de feedback al usuario.
+  /// Si se pasa `null`, los errores se silencian y la función simplemente
+  /// retorna `false`. Devuelve `true` si el filtro se aplicó correctamente.
+  Future<bool> detectAndSetGpsLocation(BuildContext? context) async {
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _showSnack(context, 'Permiso de ubicación denegado');
+        return false;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+      );
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      if (geo == null) {
+        _showSnack(context, 'No pudimos detectar tu ubicación');
+        return false;
+      }
+      // Sanea contra catálogo combinado (estático + extras de backend).
+      final dyn = DynamicLocations.instance;
+      final d = dyn.findDepartmentCanonical(geo.department);
+      if (d == null) {
+        // No matchea ni catálogo estático ni extras — ofrecer añadir.
+        _offerAddToCatalog(
+          context: context,
+          dept: geo.department,
+          prov: geo.province,
+          dist: geo.district,
+        );
+        return false;
+      }
+      final p  = dyn.findProvinceCanonical(d, geo.province);
+      final di = dyn.findDistrictCanonical(p, geo.district);
+      await setUserLocation(department: d, province: p, district: di);
+      return true;
+    } catch (_) {
+      _showSnack(context, 'No se pudo obtener la ubicación');
+      return false;
+    }
+  }
+
+  /// Helper interno — muestra un SnackBar si hay context válido.
+  void _showSnack(BuildContext? context, String msg) {
+    if (context == null || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  /// SnackBar con acción "Añadir al catálogo". Si el usuario acepta, llama
+  /// al backend (POST /localities/suggest), refresca el catálogo dinámico
+  /// y aplica el filtro con la nueva ubicación.
+  void _offerAddToCatalog({
+    required BuildContext? context,
+    required String? dept,
+    String? prov,
+    String? dist,
+  }) {
+    if (context == null || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final label = [
+      if (dist != null && dist.isNotEmpty) dist,
+      if (prov != null && prov.isNotEmpty) prov,
+      if (dept != null && dept.isNotEmpty) dept,
+    ].join(', ');
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        duration: const Duration(seconds: 8),
+        content: Text(
+          'Tu ubicación ($label) no está en el catálogo.',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        action: (dept != null && dept.isNotEmpty)
+            ? SnackBarAction(
+                label: 'Añadir',
+                onPressed: () => _suggestAndApply(context, dept, prov, dist),
+              )
+            : null,
+      ));
+  }
+
+  Future<void> _suggestAndApply(BuildContext context, String dept, String? prov, String? dist) async {
+    try {
+      final created = await DynamicLocations.instance.suggest(
+        department: dept,
+        province:   prov,
+        district:   dist,
+      );
+      await setUserLocation(
+        department: created.department,
+        province:   created.province,
+        district:   created.district,
+      );
+      _showSnack(context, 'Ubicación añadida al catálogo');
+    } catch (e) {
+      _showSnack(context, 'No se pudo añadir: $e');
+    }
+  }
+
+  // ── Stream GPS en segundo plano ─────────────────────────────
+
+  /// Arranca el stream de posición — solo actualiza [liveProvince] y, si la
+  /// posición se aleja >= 2 km del último query o cambia de zona, dispara
+  /// una recarga del backend.
+  ///
+  /// Idempotente: si ya hay un stream activo, no abre otro.
+  Future<void> startGpsStream() async {
+    if (_gpsSub != null) return;
+    LocationPermission perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied) {
+      perm = await Geolocator.requestPermission();
+    }
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
+      return;
+    }
+
+    const settings = LocationSettings(
+      accuracy:       LocationAccuracy.medium,
+      distanceFilter: 100, // metros
+    );
+
+    _gpsSub = Geolocator.getPositionStream(locationSettings: settings)
+        .listen(_onStreamPosition, onError: (_) {/* silent fallback */});
+  }
+
+  /// Detiene el stream GPS y libera recursos. Llamar en dispose() y al
+  /// pausar la app (didChangeAppLifecycleState).
+  void stopGpsStream() {
+    _gpsSub?.cancel();
+    _gpsSub = null;
+  }
+
+  Future<void> _onStreamPosition(Position pos) async {
+    final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+    if (geo == null) return;
+
+    // 1. Actualiza el label de la pill (sin recargar el backend).
+    if (geo.province != _liveProvince) {
+      _liveProvince = geo.province;
+      notifyListeners();
+    }
+
+    // 2. Si la zona cambió o la distancia >= 2 km, recarga el backend.
+    await updateLocationFromGps(
+      lat:           pos.latitude,
+      lng:           pos.longitude,
+      newDepartment: geo.department,
+      newProvince:   geo.province,
+      newDistrict:   geo.district,
+    );
+  }
+
+  @override
+  void dispose() {
+    _gpsSub?.cancel();
+    super.dispose();
   }
 }
