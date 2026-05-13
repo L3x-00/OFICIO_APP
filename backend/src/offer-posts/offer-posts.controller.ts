@@ -9,7 +9,7 @@ import { Roles } from '../auth/roles.decorator.js';
 import { OfferPostsService } from './offer-posts.service.js';
 import { CreateOfferPostDto } from './dto/create-offer-post.dto.js';
 import { ReportOfferDto } from './dto/report-offer.dto.js';
-import { multerImageConfig } from '../common/multer-image.config.js';
+import { memOpts as multerImageConfig } from '../common/multer-image.config.js';
 
 // ── RUTAS PÚBLICAS ────────────────────────────────────────────
 @Controller('offers')

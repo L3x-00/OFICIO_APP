@@ -29,8 +29,8 @@ export class FavoritesService {
       include: {
         provider: {
           include: {
-            category: { select: { name: true } },
-            images:   { orderBy: { order: 'asc' }, take: 1 },
+            providerCategories: { select: { category: { select: { name: true } } } },
+            images:             { orderBy: { order: 'asc' }, take: 1 },
           },
         },
       },

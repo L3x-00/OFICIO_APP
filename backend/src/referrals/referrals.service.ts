@@ -257,7 +257,7 @@ export class ReferralsService {
             whatsapp: true,
             averageRating: true,
             type: true,
-            category: { select: { name: true } },
+            providerCategories: { select: { category: { select: { name: true, id: true } } } },
             images: { select: { url: true, isCover: true, order: true } },
           },
         },

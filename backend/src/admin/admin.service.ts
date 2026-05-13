@@ -995,9 +995,9 @@ async updateProvider(
         where: { isActive: true, parentId: null },
         select: {
           id: true, name: true, slug: true,
-          _count: { select: { providers: true } },
+          _count: { select: { providerCategories: true } },
         },
-        orderBy: { providers: { _count: 'desc' } },
+        orderBy: { providerCategories: { _count: 'desc' } },
         take: 10,
       }),
 
@@ -1102,7 +1102,7 @@ async updateProvider(
       include: {
         children: { select: { id: true, name: true, slug: true, isActive: true } },
         parent:   { select: { id: true, name: true } },
-        _count:   { select: { providers: true } },
+        _count:   { select: { providerCategories: true } },
       },
       orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
     });
