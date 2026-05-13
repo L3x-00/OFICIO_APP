@@ -246,7 +246,7 @@ export class ReferralsService {
   // ── RECOMPENSAS (catálogo público) ─────────────────────────
 
   async listActiveRewards() {
-    return this.prisma.referralReward.findMany({
+    const rewards = await this.prisma.referralReward.findMany({
       where: { isActive: true },
       include: {
         provider: {
@@ -264,6 +264,20 @@ export class ReferralsService {
       },
       orderBy: [{ coinsCost: 'asc' }, { createdAt: 'desc' }],
     });
+    // Inyecta alias `category: {name}` derivado del primer providerCategories
+    // para retrocompatibilidad con frontend web (lee r.provider.category?.name).
+    return rewards.map((r) => ({
+      ...r,
+      provider: r.provider
+        ? {
+            ...r.provider,
+            category: {
+              name: r.provider.providerCategories?.[0]?.category?.name ?? 'Sin categoría',
+              id:   r.provider.providerCategories?.[0]?.category?.id ?? null,
+            },
+          }
+        : r.provider,
+    }));
   }
 
   // ── CANJE DE MONEDAS ───────────────────────────────────────

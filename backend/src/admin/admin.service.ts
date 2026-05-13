@@ -26,6 +26,18 @@ export class AdminService {
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
 
+  /**
+   * Inyecta un alias `category: { name }` derivado de la primera entrada en
+   * `providerCategories[0].category` para retrocompatibilidad con el frontend
+   * admin/web que aún lee `provider.category.name` (modelo singular legado).
+   * No altera `providerCategories` — coexisten ambos.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private withCategoryAlias<T extends { providerCategories?: Array<{ category: { name: string } }> }>(p: T): T & { category: { name: string } } {
+    const name = p?.providerCategories?.[0]?.category?.name ?? 'Sin categoría';
+    return { ...p, category: { name } };
+  }
+
   // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
     const now          = new Date();
@@ -88,6 +100,7 @@ export class AdminService {
 
     return subscriptions.map((sub) => ({
       ...sub,
+      provider: this.withCategoryAlias(sub.provider),
       daysLeft: Math.ceil(
         (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       ),
@@ -289,7 +302,12 @@ export class AdminService {
       this.prisma.provider.count({ where }),
     ]);
 
-    return { data: providers, total, page, lastPage: Math.ceil(total / limit) };
+    return {
+      data: providers.map((p) => this.withCategoryAlias(p)),
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
 
   // ── OPCIONES PARA FORMULARIOS ─────────────────────────────
@@ -604,7 +622,7 @@ async updateProvider(
   // ── VERIFICACIÓN ──────────────────────────────────────────
 
   async getPendingVerifications() {
-    return this.prisma.provider.findMany({
+    const providers = await this.prisma.provider.findMany({
       where: { verificationStatus: 'PENDIENTE' },
       include: {
         user:               { select: { email: true, firstName: true, lastName: true, createdAt: true } },
@@ -615,6 +633,7 @@ async updateProvider(
       },
       orderBy: { createdAt: 'asc' },
     });
+    return providers.map((p) => this.withCategoryAlias(p));
   }
 
   async approveVerification(id: number) {
@@ -1021,8 +1040,8 @@ async updateProvider(
     ]);
 
     return {
-      topRatedProviders,
-      mostReviewedProviders,
+      topRatedProviders: topRatedProviders.map((p) => this.withCategoryAlias(p)),
+      mostReviewedProviders: mostReviewedProviders.map((p) => this.withCategoryAlias(p)),
       mostActiveUsers,
       popularCategories,
       recentRegistrations,

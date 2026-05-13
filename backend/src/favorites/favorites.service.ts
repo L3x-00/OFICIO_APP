@@ -37,6 +37,13 @@ export class FavoritesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return favorites.map((f) => f.provider);
+    // Inyecta alias `category: {name}` derivado del primer providerCategories
+    // para retrocompatibilidad con frontend (cliente/page.tsx lee p.category?.name).
+    return favorites.map((f) => ({
+      ...f.provider,
+      category: {
+        name: f.provider.providerCategories?.[0]?.category?.name ?? 'Sin categoría',
+      },
+    }));
   }
 }
