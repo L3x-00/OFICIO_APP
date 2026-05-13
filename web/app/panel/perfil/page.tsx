@@ -18,9 +18,9 @@ const SOCIAL_FIELDS = [
   { key: 'tiktok', label: 'TikTok', svg: '/images/social/tiktok.svg' },
   { key: 'facebook', label: 'Facebook', svg: '/images/social/facebook.svg' },
   { key: 'linkedin', label: 'LinkedIn', svg: '/images/social/linkedin.svg' },
-  { key: 'twitterX', label: 'Twitter (X)', svg: '/images/social/X.svg' },
+  { key: 'twitterX', label: 'Twitter (X)', svg: '/images/social/twitterx.svg' },
   { key: 'telegram', label: 'Telegram', svg: '/images/social/telegram.svg' },
-  { key: 'whatsappBiz', label: 'WhatsApp Business', svg: '/images/social/whatsapp-3.svg' },
+  { key: 'whatsappBiz', label: 'WhatsApp Business', svg: '/images/social/whatsapp.svg' },
 ];
 
 const DAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
