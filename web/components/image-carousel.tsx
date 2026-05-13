@@ -7,32 +7,32 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const slides = [
   {
-    src: '/images/provedoresmultiple.png',
+    src: '/images/coin.png',
     alt: 'Red de profesionales verificados',
     caption: 'Cientos de profesionales verificados en tu ciudad',
   },
   {
-    src: '/images/provedo.cliente.png',
+    src: '/images/coin.png',
     alt: 'Conexión entre proveedor y cliente',
     caption: 'Conexión directa entre clientes y expertos',
   },
   {
-    src: '/images/portadad2.png',
+    src: '/images/coin.png',
     alt: 'OficioApp – marketplace de servicios',
     caption: 'El marketplace de servicios locales más confiable del Perú',
   },
   {
-    src: '/images/provedor.png',
+    src: '/images/coin.png',
     alt: 'Proveedor en OficioApp',
     caption: 'Crea tu perfil profesional y empieza a recibir clientes',
   },
   {
-    src: '/images/promocionar.png',
+    src: '/images/coin.png',
     alt: 'Promociona tu negocio',
     caption: 'Promociona tu negocio y aumenta tus ventas',
   },
   {
-    src: '/images/Gemini_Generated_Image_rlxpperlxpperlxp.png',
+    src: '/images/coin.png',
     alt: 'Servicios locales a tu alcance',
     caption: 'Servicios locales a tu alcance, cuando los necesites',
   },
