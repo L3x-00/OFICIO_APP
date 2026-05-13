@@ -21,6 +21,9 @@ import 'features/favorites/presentation/providers/favorites_provider.dart';
 import 'features/favorites/presentation/screens/favorites_screen.dart';
 import 'features/providers_list/presentation/screens/providers_screen.dart';
 import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
+import 'features/provider_dashboard/presentation/providers/offer_posts_provider.dart';
+import 'features/offer_posts/presentation/providers/offers_provider.dart';
+import 'features/offer_posts/presentation/screens/offers_screen.dart';
 import 'features/notifications/domain/models/notification_model.dart';
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/notifications/presentation/screens/notifications_screen.dart';
@@ -72,6 +75,8 @@ void main() async {
           ),
           ChangeNotifierProvider(create: (_) => FavoritesProvider()),
           ChangeNotifierProvider(create: (_) => DashboardProvider()),
+          ChangeNotifierProvider(create: (_) => OfferPostsProvider()),
+          ChangeNotifierProvider(create: (_) => PublicOffersProvider()),
           ChangeNotifierProvider(create: (_) => NotificationsProvider()),
           ChangeNotifierProvider(create: (_) => ProvidersProvider()),
           ChangeNotifierProvider(create: (_) => ChatProvider()),
@@ -784,7 +789,7 @@ class _MainNavigationState extends State<_MainNavigation> {
 
   void _handleTabTap(int index) {
     setState(() => _currentIndex = index);
-    if (index == 3 && !_isGuest) {
+    if (index == 4 && !_isGuest) {
       context.read<AuthProvider>().refreshUser();
     }
   }
@@ -829,6 +834,7 @@ class _MainNavigationState extends State<_MainNavigation> {
           children: [
             const ProvidersScreen(),
             FavoritesScreen(userId: _isGuest ? null : widget.userId!),
+            const OffersScreen(),
             const NotificationsScreen(),
             ProfileScreen(key: ValueKey(authUserId)),
           ],
@@ -872,6 +878,7 @@ class _BottomNav extends StatelessWidget {
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'Explorar'),
           const BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
+          const BottomNavigationBarItem(icon: Icon(Icons.local_offer_outlined), activeIcon: Icon(Icons.local_offer_rounded), label: 'Ofertas'),
           BottomNavigationBarItem(
             label: 'Alertas',
             icon: Consumer<NotificationsProvider>(

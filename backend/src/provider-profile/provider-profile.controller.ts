@@ -55,6 +55,12 @@ export class ProviderProfileController {
     return this.service.getMyNotifications(req.user.userId);
   }
 
+  // PATCH /provider-profile/me/notifications/read-all
+  @Patch('me/notifications/read-all')
+  markAllNotificationsRead(@Request() req: any) {
+    return this.service.markAllNotificationsRead(req.user.userId);
+  }
+
   // PATCH /provider-profile/me/notifications/:id/read
   @Patch('me/notifications/:id/read')
   markNotificationRead(

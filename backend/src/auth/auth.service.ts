@@ -112,7 +112,7 @@ data: {
   whatsapp?: string | null;
   description?: string;
   address?: string;
-  categoryId?: number;
+  categoryIds?: number[]; // hasta 7 categorías (subcategorías hoja)
   localityId?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scheduleJson?: any;
@@ -170,17 +170,22 @@ data: {
       localityId = firstLocality?.id ?? 1;
     }
 
-    // Validar categoryId: si no viene o no existe, usar la primera subcategoría disponible
-    let categoryId = data.categoryId;
-    if (categoryId) {
-      const catExists = await this.prisma.category.findUnique({ where: { id: categoryId } });
-      if (!catExists) categoryId = undefined;
+    // Validar categoryIds: filtrar solo las que existen, máx 7.
+    // Si ninguna es válida, asignar la primera subcategoría disponible como fallback.
+    let validCategoryIds: number[] = [];
+    if (data.categoryIds && data.categoryIds.length > 0) {
+      const ids = data.categoryIds.slice(0, 7);
+      const found = await this.prisma.category.findMany({
+        where: { id: { in: ids }, isActive: true },
+        select: { id: true },
+      });
+      validCategoryIds = found.map(c => c.id);
     }
-    if (!categoryId) {
+    if (validCategoryIds.length === 0) {
       const firstCategory = await this.prisma.category.findFirst({
         where: { parentId: { not: null }, isActive: true },
       });
-      categoryId = firstCategory?.id ?? 1;
+      if (firstCategory) validCategoryIds = [firstCategory.id];
     }
 
     // Upload images to R2 before transaction
@@ -219,8 +224,10 @@ data: {
           telegram:         data.telegram?.trim() || null,
           whatsappBiz:      data.whatsappBiz?.trim() || null,
           type:             data.type,
-          categoryId,
           localityId,
+          providerCategories: {
+            create: validCategoryIds.map(cid => ({ categoryId: cid })),
+          },
           verificationStatus: 'PENDIENTE',
           isVisible: false, // no aparece en la app hasta ser aprobado
           scheduleJson: data.type === 'NEGOCIO' && data.scheduleJson

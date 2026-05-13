@@ -15,6 +15,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey     = GlobalKey<FormState>();
   final _emailCtrl   = TextEditingController();
+  String? _emailError;
 
   @override
   void dispose() {
@@ -23,6 +24,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _submit() async {
+    setState(() => _emailError = null);
     if (!_formKey.currentState!.validate()) return;
 
     final auth = context.read<AuthProvider>();
@@ -32,8 +34,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     if (!mounted) return;
 
-    // Navegar siempre a la siguiente pantalla (nunca revelar si el email existe)
-    final devToken = data?['_devToken'] as String?;
+    if (data == null) {
+      // Backend returned error — email not found or invalid
+      setState(() => _emailError = 'Correo no registrado o correo inválido');
+      return;
+    }
+
+    final devToken = data['_devToken'] as String?;
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -109,10 +116,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 controller:  _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 style: TextStyle(color: c.textPrimary, fontSize: 15),
+                onChanged: (_) {
+                  if (_emailError != null) setState(() => _emailError = null);
+                },
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Ingresa tu correo';
                   if (!v.contains('@') || !v.contains('.')) return 'Correo inválido';
-                  return null;
+                  return _emailError;
                 },
                 decoration: InputDecoration(
                   labelText:  'Correo electrónico',
@@ -120,6 +130,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   prefixIcon: Icon(Icons.email_outlined, color: c.textMuted, size: 20),
                   filled:     true,
                   fillColor:  c.bgCard,
+                  errorText:  _emailError,
                   errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),

@@ -43,6 +43,12 @@ export type Locality = Prisma.LocalityModel
  */
 export type Category = Prisma.CategoryModel
 /**
+ * Model ProviderCategory
+ * Tabla de unión proveedor ↔ categorías (muchos a muchos).
+ * Un proveedor puede tener hasta 7 categorías.
+ */
+export type ProviderCategory = Prisma.ProviderCategoryModel
+/**
  * Model Provider
  * 
  */
@@ -171,3 +177,18 @@ export type ChatRoom = Prisma.ChatRoomModel
  * 
  */
 export type ChatMessage = Prisma.ChatMessageModel
+/**
+ * Model OfferPost
+ * Límites por plan: GRATIS=1 activa/12h, ESTANDAR=4/24h, PREMIUM=8/72h
+ */
+export type OfferPost = Prisma.OfferPostModel
+/**
+ * Model OfferPostCategory
+ * Categorías asignadas a una oferta (heredadas de las categorías del proveedor)
+ */
+export type OfferPostCategory = Prisma.OfferPostCategoryModel
+/**
+ * Model OfferReport
+ * Reportes de clientes sobre ofertas inapropiadas
+ */
+export type OfferReport = Prisma.OfferReportModel

@@ -3,6 +3,7 @@ import 'package:mobile/core/constans/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -21,9 +22,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = context.read<AuthProvider>().user;
+    // Fallback: if user.phone is empty, try the provider profile phone
+    String phone = user?.phone ?? '';
+    if (phone.isEmpty) {
+      try {
+        final provPhone = context.read<DashboardProvider>().profile?.phone ?? '';
+        if (provPhone.isNotEmpty) phone = provPhone;
+      } catch (_) {}
+    }
     _firstNameCtrl = TextEditingController(text: user?.firstName ?? '');
     _lastNameCtrl  = TextEditingController(text: user?.lastName  ?? '');
-    _phoneCtrl     = TextEditingController(text: user?.phone     ?? '');
+    _phoneCtrl     = TextEditingController(text: phone);
   }
 
   @override

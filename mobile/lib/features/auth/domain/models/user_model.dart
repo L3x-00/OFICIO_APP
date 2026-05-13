@@ -13,6 +13,8 @@ class UserModel {
   final String? department;
   final String? province;
   final String? district;
+  // Monedas del sistema de referidos
+  final int coins;
 
   const UserModel({
     required this.id,
@@ -27,6 +29,7 @@ class UserModel {
     this.department,
     this.province,
     this.district,
+    this.coins = 0,
   });
 
   String get fullName => '$firstName $lastName';
@@ -60,6 +63,7 @@ class UserModel {
       department: json['department'] as String?,
       province:   json['province'] as String?,
       district:   json['district'] as String?,
+      coins:      json['coins'] as int? ?? 0,
     );
   }
 
@@ -76,6 +80,7 @@ class UserModel {
     String? department,
     String? province,
     String? district,
+    int? coins,
   }) {
     return UserModel(
       id:         id,
@@ -90,6 +95,7 @@ class UserModel {
       department: department ?? this.department,
       province:   province   ?? this.province,
       district:   district   ?? this.district,
+      coins:      coins      ?? this.coins,
     );
   }
 
@@ -105,5 +111,6 @@ class UserModel {
     'department': department,
     'province':   province,
     'district':   district,
+    'coins':      coins,
   };
 }

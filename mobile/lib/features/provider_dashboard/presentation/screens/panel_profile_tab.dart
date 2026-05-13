@@ -36,6 +36,9 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
   bool _showAddressCard = false;
   bool _scheduleExpanded = false;
 
+  bool _hasAddress(DashboardProfileModel? profile) =>
+      profile?.address != null && profile!.address!.isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -231,8 +234,20 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
         if (!widget.isNegocio) ...[
           GestureDetector(
             onTap: () => setState(() => _showAddressCard = !_showAddressCard),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: _showAddressCard
+                    ? AppColors.primary.withValues(alpha: 0.08)
+                    : context.colors.bgCard,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _showAddressCard
+                      ? AppColors.primary.withValues(alpha: 0.35)
+                      : context.colors.border,
+                ),
+              ),
               child: Row(
                 children: [
                   Icon(
@@ -243,14 +258,21 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                     color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    _showAddressCard ? 'Ocultar dirección' : 'Agregar dirección (opcional)',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
-                      fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Text(
+                      _hasAddress(profile)
+                          ? 'Editar dirección'
+                          : 'Agregar dirección (opcional)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
+                  if (_hasAddress(profile))
+                    Icon(Icons.check_circle_rounded,
+                        size: 14, color: AppColors.available),
                 ],
               ),
             ),
@@ -264,7 +286,13 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                 context: context,
                 title: 'Dirección',
                 initialValue: profile?.address ?? '',
-                onSave: (val) => dash.updateProfile(address: val),
+                onSave: (val) async {
+                  final ok = await dash.updateProfile(address: val);
+                  if (ok && mounted && val.isNotEmpty) {
+                    context.showSuccessSnack('Dirección guardada');
+                  }
+                  return ok;
+                },
               ),
             ),
         ] else
@@ -276,7 +304,13 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
               context: context,
               title: 'Dirección',
               initialValue: profile?.address ?? '',
-              onSave: (val) => dash.updateProfile(address: val),
+              onSave: (val) async {
+                final ok = await dash.updateProfile(address: val);
+                if (ok && mounted && val.isNotEmpty) {
+                  context.showSuccessSnack('Dirección guardada');
+                }
+                return ok;
+              },
             ),
           ),
         _EditCard(

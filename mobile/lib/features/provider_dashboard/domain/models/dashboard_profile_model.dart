@@ -1,3 +1,17 @@
+class ProfileCategory {
+  final int id;
+  final String name;
+  final String? slug;
+
+  const ProfileCategory({required this.id, required this.name, this.slug});
+
+  factory ProfileCategory.fromJson(Map<String, dynamic> json) => ProfileCategory(
+    id:   json['id'] as int,
+    name: json['name'] as String,
+    slug: json['slug'] as String?,
+  );
+}
+
 /// Modelo del perfil de proveedor para el panel de control
 class DashboardProfileModel {
   final int id;
@@ -17,6 +31,7 @@ class DashboardProfileModel {
   /// del WebSocket (recibe notificaciones solo para esta categoría).
   final int? categoryId;
   final String? categoryName;
+  final List<ProfileCategory> categories;
   final String? localityName;
   final List<ProfileImage> images;
   final SubscriptionInfo? subscription;
@@ -39,6 +54,7 @@ class DashboardProfileModel {
     this.hasHomeService = false,
     this.categoryId,
     this.categoryName,
+    this.categories = const [],
     this.localityName,
     required this.images,
     this.subscription,
@@ -68,6 +84,9 @@ class DashboardProfileModel {
       // `categoryId` plano en la raíz por si una respuesta lo trae así.
       categoryId:    (json['category']?['id'] as int?) ?? json['categoryId'] as int?,
       categoryName:  json['category']?['name'] as String?,
+      categories:    (json['providerCategories'] as List?)
+                       ?.map((pc) => ProfileCategory.fromJson(pc['category'] as Map<String, dynamic>))
+                       .toList() ?? [],
       localityName:  json['locality']?['name'] as String?,
       images:        (json['images'] as List?)
                        ?.map((img) => ProfileImage.fromJson(img as Map<String, dynamic>))
@@ -107,6 +126,7 @@ class DashboardProfileModel {
       hasHomeService: hasHomeService  ?? this.hasHomeService,
       categoryId:     categoryId,
       categoryName:   categoryName,
+      categories:     categories,
       localityName:   localityName,
       images:         images          ?? this.images,
       subscription:   subscription,

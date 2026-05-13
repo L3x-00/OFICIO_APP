@@ -122,6 +122,7 @@ model User {
 
   // Chat interno: salas donde el usuario participa como cliente
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
+  offerReports     OfferReport[]
 
   @@map("users")
 }
@@ -197,12 +198,29 @@ model Category {
   forType  String? // 'OFICIO' | 'NEGOCIO' | null (ambos)
   isActive Boolean @default(true)
 
-  parent          Category?        @relation("SubCategories", fields: [parentId], references: [id])
-  children        Category[]       @relation("SubCategories")
-  providers       Provider[]
-  serviceRequests ServiceRequest[]
+  parent              Category?          @relation("SubCategories", fields: [parentId], references: [id])
+  children            Category[]         @relation("SubCategories")
+  providerCategories  ProviderCategory[]
+  serviceRequests     ServiceRequest[]
+  offerPostCategories OfferPostCategory[]
 
   @@map("categories")
+}
+
+/// Tabla de unión proveedor ↔ categorías (muchos a muchos).
+/// Un proveedor puede tener hasta 7 categorías.
+model ProviderCategory {
+  id         Int @id @default(autoincrement())
+  providerId Int
+  categoryId Int
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, categoryId])
+  @@index([providerId])
+  @@index([categoryId])
+  @@map("provider_categories")
 }
 
 // ─────────────────────────────────────────
@@ -267,15 +285,14 @@ model Provider {
   planPriority Int @default(4)
 
   localityId Int
-  categoryId Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   // Relaciones
-  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  locality         Locality                 @relation(fields: [localityId], references: [id])
-  category         Category                 @relation(fields: [categoryId], references: [id])
-  images           ProviderImage[]
+  user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locality           Locality                 @relation(fields: [localityId], references: [id])
+  providerCategories ProviderCategory[]
+  images             ProviderImage[]
   reviews          Review[]
   favorites        Favorite[]
   subscription     Subscription?
@@ -295,6 +312,7 @@ model Provider {
 
   // Chat interno: salas donde este perfil participa como proveedor
   chatsAsProvider  ChatRoom[]       @relation("ProviderChats")
+  offerPosts       OfferPost[]
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
@@ -302,7 +320,6 @@ model Provider {
   @@index([isVisible, verificationStatus]) // filtro base de todos los queries públicos
   @@index([isVisible, verificationStatus, averageRating]) // + ordenamiento por rating
   @@index([type]) // filtro por tipo (OFICIO / NEGOCIO)
-  @@index([categoryId]) // filtro por categoría
   @@index([localityId]) // filtro por localidad
   @@map("providers")
 }
@@ -831,4 +848,62 @@ model ChatMessage {
 
   @@index([chatRoomId, createdAt])
   @@map("chat_messages")
+}
+
+// ─────────────────────────────────────────
+// OFERTAS DE PROVEEDORES (publicaciones)
+// ─────────────────────────────────────────
+
+/// Límites por plan: GRATIS=1 activa/12h, ESTANDAR=4/24h, PREMIUM=8/72h
+model OfferPost {
+  id          Int      @id @default(autoincrement())
+  providerId  Int
+  title       String   // Título corto de la oferta
+  description String   // Descripción detallada
+  price       Float?   // Precio opcional (null = "consultar")
+  photoUrl    String?  // Imagen de la oferta (opcional)
+  expiresAt   DateTime // Calculado según plan al crear
+  isActive    Boolean  @default(true) // false cuando expira o el proveedor la elimina
+  createdAt   DateTime @default(now())
+
+  provider   Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  categories OfferPostCategory[]
+  reports    OfferReport[]
+
+  @@index([providerId, isActive])
+  @@index([isActive, expiresAt]) // para el cronjob de expiración
+  @@map("offer_posts")
+}
+
+/// Categorías asignadas a una oferta (heredadas de las categorías del proveedor)
+model OfferPostCategory {
+  id          Int @id @default(autoincrement())
+  offerPostId Int
+  categoryId  Int
+
+  offerPost OfferPost @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
+  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([offerPostId, categoryId])
+  @@index([offerPostId])
+  @@index([categoryId])
+  @@map("offer_post_categories")
+}
+
+/// Reportes de clientes sobre ofertas inapropiadas
+model OfferReport {
+  id          Int      @id @default(autoincrement())
+  offerPostId Int
+  reporterId  Int      // userId del cliente que reporta
+  reason      String   // SPAM | PRECIO_FALSO | CONTENIDO_INAPROPIADO | OTRO
+  createdAt   DateTime @default(now())
+  isResolved  Boolean  @default(false)
+
+  offerPost OfferPost @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
+  reporter  User      @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([offerPostId, reporterId]) // un cliente reporta una oferta max una vez
+  @@index([offerPostId])
+  @@index([isResolved])
+  @@map("offer_reports")
 }

@@ -28,6 +28,22 @@ class PlanLimits {
   static int items(String plan, {required bool isNegocio}) =>
       isNegocio ? products(plan) : services(plan);
 
+  // ── Ofertas activas (OfferPost) ──────────────────────────
+  static int offers(String plan) => switch (plan.toUpperCase()) {
+        'PREMIUM'  => 8,
+        'ESTANDAR' => 4,
+        _          => 1, // GRATIS
+      };
+
+  static int offerDurationHours(String plan) => switch (plan.toUpperCase()) {
+        'PREMIUM'  => 72,
+        'ESTANDAR' => 24,
+        _          => 12,
+      };
+
+  static bool canPublishOffer(String plan, int activeOffers) =>
+      activeOffers < offers(plan);
+
   // ── Fotos por producto (NEGOCIO) ─────────────────────────
   /// GRATIS no puede subir foto por producto; ESTANDAR/PREMIUM sí.
   static bool hasProductPhotos(String plan) =>

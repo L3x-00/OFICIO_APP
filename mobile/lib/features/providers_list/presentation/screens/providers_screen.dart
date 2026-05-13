@@ -23,6 +23,8 @@ import '../../../../features/subastas/presentation/screens/my_requests_screen.da
 import '../../../../features/subastas/presentation/screens/publish_request_sheet.dart';
 import '../../../../features/chat/presentation/providers/chat_provider.dart';
 import '../../../../features/chat/presentation/screens/chat_screen.dart';
+import '../../../../features/referrals/presentation/screens/referral_screen.dart';
+import '../../../../features/offer_posts/presentation/screens/offers_screen.dart';
 
 class ProvidersScreen extends StatelessWidget {
   const ProvidersScreen({super.key});
@@ -43,14 +45,20 @@ class _ProvidersView extends StatefulWidget {
 }
 
 class _ProvidersViewState extends State<_ProvidersView>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
 
   @override
   bool get wantKeepAlive => true;
 
+  StreamSubscription<Position>? _gpsSub;
+
+  // Live province label shown in the location pill (null = use ProvidersProvider value)
+  String? _liveProvince;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final user = context.read<AuthProvider>().user;
@@ -64,7 +72,70 @@ class _ProvidersViewState extends State<_ProvidersView>
       // del catálogo estático. No bloquea: si falla, el catálogo seguido
       // funciona — sólo no incluye lo que otros usuarios hayan sugerido.
       DynamicLocations.instance.syncFromBackend();
+      _startGpsStream();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _gpsSub?.cancel();
+    super.dispose();
+  }
+
+  // Pause GPS when app goes to background, resume when foregrounded.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _gpsSub?.cancel();
+      _gpsSub = null;
+    } else if (state == AppLifecycleState.resumed && _gpsSub == null) {
+      _startGpsStream();
+    }
+  }
+
+  Future<void> _startGpsStream() async {
+    // Check/request permission without blocking the UI.
+    LocationPermission perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied) {
+      perm = await Geolocator.requestPermission();
+    }
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
+      // Fallback: keep using profile location — no stream.
+      return;
+    }
+
+    const settings = LocationSettings(
+      accuracy:       LocationAccuracy.medium,
+      distanceFilter: 100, // metres — fine-grained for pill update
+    );
+
+    _gpsSub = Geolocator.getPositionStream(locationSettings: settings)
+        .listen(_onPosition, onError: (_) {/* silent fallback */});
+  }
+
+  Future<void> _onPosition(Position pos) async {
+    // 1. Reverse-geocode (cached — no network hit if same 111m cell).
+    final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+    if (!mounted) return;
+
+    // 2. Update live pill immediately (UI-only, no backend call).
+    if (geo != null) {
+      setState(() => _liveProvince = geo.province);
+    }
+
+    // 3. Ask ProvidersProvider whether this warrants a backend reload.
+    if (geo != null) {
+      context.read<ProvidersProvider>().updateLocationFromGps(
+        lat:           pos.latitude,
+        lng:           pos.longitude,
+        newDepartment: geo.department,
+        newProvince:   geo.province,
+        newDistrict:   geo.district,
+      );
+    }
   }
 
   @override
@@ -79,22 +150,39 @@ class _ProvidersViewState extends State<_ProvidersView>
       appBar: AppBar(
         backgroundColor: c.bg,
         elevation: 0,
-        // ── Botón refresh (esquina superior izquierda) ─────
-        leading: Consumer<ProvidersProvider>(
-          builder: (_, prov, _) => IconButton(
-            tooltip: 'Actualizar lista',
-            icon: prov.isLoading
-                ? SizedBox(
-                    width: 18, height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: c.textPrimary,
+        // ── Ícono de monedas (esquina superior izquierda) ─────
+        leading: Consumer<AuthProvider>(
+          builder: (_, auth, _) {
+            final coins = auth.user?.coins ?? 0;
+            return GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ReferralScreen(),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.monetization_on_rounded,
+                        color: AppColors.amber, size: 22),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$coins',
+                      style: TextStyle(
+                        color: AppColors.amber,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
-                  )
-                : Icon(Icons.refresh_rounded, color: c.textPrimary),
-            onPressed: prov.isLoading ? null : prov.loadProviders,
-          ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
+        leadingWidth: 72,
         title: Row(
           children: [
             Image.asset(
@@ -132,16 +220,14 @@ class _ProvidersViewState extends State<_ProvidersView>
       ),
       body: Column(
         children: [
-          _GreetingHeader(),
+          _GreetingHeader(liveProvince: _liveProvince),
           _SearchBar(),
           // ── Chips unificados: tipo + categoría ────────────
           _FilterBar(),
-          // ── Chip de ubicación: estado actual del filtro espacial.
-          //    Si hay ubicación activa: muestra "📍 Dept · Prov · Dist" con X
-          //    para limpiar. Si no hay: ofrece detectar por GPS one-tap.
-          const _LocationChipBar(),
           // ── Subasta OficioApp banner ───────────────────────
           const _SubastaBanner(),
+          // ── Ofertas activas banner ─────────────────────────
+          const _OffersBanner(),
           const Expanded(child: _ProvidersList()),
         ],
       ),
@@ -238,6 +324,81 @@ class _SubastaBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// BANNER DE OFERTAS
+// ═══════════════════════════════════════════════════════════
+
+class _OffersBanner extends StatelessWidget {
+  const _OffersBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: () {
+        // Navigate to Ofertas tab (index 2 in bottom nav).
+        // Use root Navigator to avoid nesting issues.
+        final scaffold = Scaffold.maybeOf(context);
+        if (scaffold == null) return;
+        // Find _MainNavigationState and call _handleTabTap(2).
+        // Simplest: push OffersScreen as a modal route.
+        Navigator.of(context, rootNavigator: false).push(
+          MaterialPageRoute(
+            builder: (_) => const _OffersFullPage(),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2D1B00), Color(0xFF4A2E00)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.amber.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: AppColors.amber.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('¡Ofertas y promociones 💸',
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                  Text('Descuentos de proveedores verificados',
+                      style: TextStyle(color: c.textMuted, fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.amber, size: 14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Opens OffersScreen as a standalone route from the banner.
+// PublicOffersProvider is already in the global MultiProvider tree.
+class _OffersFullPage extends StatelessWidget {
+  const _OffersFullPage();
+
+  @override
+  Widget build(BuildContext context) => const OffersScreen();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -842,6 +1003,9 @@ void _showLoginRequiredDialog(BuildContext context) {
 // ─── Encabezado de saludo ─────────────────────────────────
 
 class _GreetingHeader extends StatelessWidget {
+  final String? liveProvince;
+  const _GreetingHeader({this.liveProvince});
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -870,7 +1034,7 @@ class _GreetingHeader extends StatelessWidget {
               ],
             ),
           ),
-          _LocationButton(),
+          _LocationButton(liveProvince: liveProvince),
         ],
       ),
     );
@@ -880,17 +1044,21 @@ class _GreetingHeader extends StatelessWidget {
 // ─── Botón de ubicación ───────────────────────────────────
 
 class _LocationButton extends StatelessWidget {
+  /// Province label from live GPS (overrides ProvidersProvider value when set).
+  final String? liveProvince;
+  const _LocationButton({this.liveProvince});
+
   @override
   Widget build(BuildContext context) {
     final c    = context.colors;
     final prov = context.watch<ProvidersProvider>();
 
-    final parts = [
-      if (prov.district   != null) prov.district!,
-      if (prov.province   != null) prov.province!,
-      if (prov.department != null) prov.department!,
-    ];
-    final label = parts.isNotEmpty ? parts.first : 'Ubicación';
+    // Live GPS province takes priority over the stored filter value.
+    final label = liveProvince
+        ?? prov.province
+        ?? prov.district
+        ?? prov.department
+        ?? 'Ubicación';
 
     return GestureDetector(
       onTap: () async {

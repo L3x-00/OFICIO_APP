@@ -1,6 +1,6 @@
 import {
   IsEmail, IsString, IsOptional, IsEnum, IsNumber, IsPositive,
-  MinLength, MaxLength,
+  IsArray, ArrayMaxSize, MinLength, MaxLength,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
@@ -56,9 +56,9 @@ export class CreateProviderDto {
   @IsOptional() @IsString() @MaxLength(200)
   address?: string;
 
-  // ── Categoría y localidad
-  @Type(() => Number) @IsNumber() @IsPositive()
-  categoryId: number;
+  // ── Categorías y localidad (hasta 7 categorías)
+  @IsArray() @ArrayMaxSize(7) @IsNumber({}, { each: true }) @IsPositive({ each: true }) @Type(() => Number)
+  categoryIds: number[];
 
   @Type(() => Number) @IsNumber() @IsPositive()
   localityId: number;

@@ -78,7 +78,7 @@ export class AdminService {
       include: {
         provider: {
           include: {
-            category: { select: { name: true } },
+            providerCategories: { select: { category: { select: { name: true } } } },
             locality:  { select: { name: true } },
           },
         },
@@ -196,7 +196,7 @@ export class AdminService {
     const topProviderData = topProviderIds.length > 0
       ? await this.prisma.provider.findMany({
           where: { id: { in: topProviderIds } },
-          select: { id: true, businessName: true, type: true, category: { select: { name: true } } },
+          select: { id: true, businessName: true, type: true, providerCategories: { select: { category: { select: { name: true } } } } },
         })
       : [];
     const topProviderMap = new Map(topProviderData.map((p) => [p.id, p]));
@@ -251,7 +251,7 @@ export class AdminService {
           providerId:   t.providerId,
           businessName: p?.businessName ?? `Proveedor #${t.providerId}`,
           type:         p?.type ?? 'OFICIO',
-          categoryName: p?.category?.name ?? '—',
+          categoryName: p?.providerCategories?.[0]?.category?.name ?? '—',
           clicks:       t._count.id,
         };
       }),
@@ -277,7 +277,7 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          category:         { select: { name: true } },
+          providerCategories: { select: { category: { select: { name: true } } } },
           locality:         { select: { name: true } },
           subscription:     { select: { plan: true, status: true, endDate: true } },
           user:             { select: { email: true, firstName: true, lastName: true, createdAt: true } },
@@ -315,7 +315,7 @@ async createProvider(data: {
   whatsapp?: string;
   description?: string;
   address?: string;
-  categoryId: number | string;
+  categoryIds: (number | string)[]; // hasta 7 categorías
   localityId: number | string;
   type: string;
   dni?: string;
@@ -385,7 +385,6 @@ async createProvider(data: {
         whatsapp:        data.whatsapp ?? null,
         description:     data.description ?? null,
         address:         data.address ?? null,
-        categoryId:      Number(data.categoryId),
         localityId:      Number(data.localityId),
         type:            data.type as any,
         dni:             data.dni ?? null,
@@ -394,8 +393,11 @@ async createProvider(data: {
         razonSocial:     data.razonSocial ?? null,
         hasDelivery:     data.hasDelivery === true || data.hasDelivery === 'true',
         scheduleJson:    parsedSchedule as any,
+        providerCategories: {
+          create: data.categoryIds.slice(0, 7).map(cid => ({ categoryId: Number(cid) })),
+        },
       },
-      include: { category: true, locality: true },
+      include: { providerCategories: { select: { category: true } }, locality: true },
     });
 
     // 3. GUARDAR IMÁGENES EN LA TABLA provider_images
@@ -452,10 +454,10 @@ async updateProvider(
   return this.prisma.provider.update({
     where: { id },
     data,
-    include: { 
-      category: true, 
+    include: {
+      providerCategories: { select: { category: true } },
       locality: true,
-      images: true // Para que el admin vea las fotos actuales al actualizar
+      images: true,
     },
   });
 }
@@ -605,9 +607,9 @@ async updateProvider(
     return this.prisma.provider.findMany({
       where: { verificationStatus: 'PENDIENTE' },
       include: {
-        user:     { select: { email: true, firstName: true, lastName: true, createdAt: true } },
-        category: { select: { name: true } },
-        locality: { select: { name: true } },
+        user:               { select: { email: true, firstName: true, lastName: true, createdAt: true } },
+        providerCategories: { select: { category: { select: { name: true } } } },
+        locality:           { select: { name: true } },
         verificationDocs: true,
         images: true,
       },
@@ -958,7 +960,7 @@ async updateProvider(
         where: { totalReviews: { gt: 0 } },
         select: {
           id: true, businessName: true, averageRating: true, totalReviews: true,
-          category: { select: { name: true } },
+          providerCategories: { select: { category: { select: { name: true } } } },
           locality: { select: { name: true } },
           isVerified: true,
         },
@@ -971,7 +973,7 @@ async updateProvider(
         where: { totalReviews: { gt: 0 } },
         select: {
           id: true, businessName: true, totalReviews: true, averageRating: true,
-          category: { select: { name: true } },
+          providerCategories: { select: { category: { select: { name: true } } } },
         },
         orderBy: { totalReviews: 'desc' },
         take: 10,
@@ -1065,10 +1067,10 @@ async updateProvider(
   async exportProvidersCSV(): Promise<string> {
     const providers = await this.prisma.provider.findMany({
       include: {
-        user:         { select: { email: true, firstName: true, lastName: true } },
-        category:     { select: { name: true } },
-        locality:     { select: { name: true } },
-        subscription: { select: { plan: true, status: true } },
+        user:               { select: { email: true, firstName: true, lastName: true } },
+        providerCategories: { select: { category: { select: { name: true } } } },
+        locality:           { select: { name: true } },
+        subscription:       { select: { plan: true, status: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -1080,7 +1082,7 @@ async updateProvider(
       `"${p.user.email}"`,
       `"${p.user.firstName} ${p.user.lastName}"`,
       `"${p.phone}"`,
-      `"${p.category.name}"`,
+      `"${p.providerCategories.map(pc => pc.category.name).join('; ')}"`,
       `"${p.locality.name}"`,
       p.averageRating.toFixed(2),
       p.totalReviews,

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsPositive, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsPositive, IsArray, ArrayMaxSize, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateProviderDto {
@@ -28,10 +28,12 @@ export class UpdateProviderDto {
   address?: string;
 
   @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(7)
+  @IsNumber({}, { each: true })
+  @IsPositive({ each: true })
   @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  categoryId?: number;
+  categoryIds?: number[];
 
   @IsOptional()
   @Type(() => Number)

@@ -56,6 +56,7 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   Locality: 'Locality',
   Category: 'Category',
+  ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
@@ -80,7 +81,10 @@ export const ModelName = {
   ReferralReward: 'ReferralReward',
   CoinRedemption: 'CoinRedemption',
   ChatRoom: 'ChatRoom',
-  ChatMessage: 'ChatMessage'
+  ChatMessage: 'ChatMessage',
+  OfferPost: 'OfferPost',
+  OfferPostCategory: 'OfferPostCategory',
+  OfferReport: 'OfferReport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -173,6 +177,15 @@ export const CategoryScalarFieldEnum = {
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
 
 
+export const ProviderCategoryScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  categoryId: 'categoryId'
+} as const
+
+export type ProviderCategoryScalarFieldEnum = (typeof ProviderCategoryScalarFieldEnum)[keyof typeof ProviderCategoryScalarFieldEnum]
+
+
 export const ProviderScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -212,7 +225,6 @@ export const ProviderScalarFieldEnum = {
   totalRecommendations: 'totalRecommendations',
   planPriority: 'planPriority',
   localityId: 'localityId',
-  categoryId: 'categoryId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -558,6 +570,42 @@ export const ChatMessageScalarFieldEnum = {
 } as const
 
 export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
+
+
+export const OfferPostScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  title: 'title',
+  description: 'description',
+  price: 'price',
+  photoUrl: 'photoUrl',
+  expiresAt: 'expiresAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+} as const
+
+export type OfferPostScalarFieldEnum = (typeof OfferPostScalarFieldEnum)[keyof typeof OfferPostScalarFieldEnum]
+
+
+export const OfferPostCategoryScalarFieldEnum = {
+  id: 'id',
+  offerPostId: 'offerPostId',
+  categoryId: 'categoryId'
+} as const
+
+export type OfferPostCategoryScalarFieldEnum = (typeof OfferPostCategoryScalarFieldEnum)[keyof typeof OfferPostCategoryScalarFieldEnum]
+
+
+export const OfferReportScalarFieldEnum = {
+  id: 'id',
+  offerPostId: 'offerPostId',
+  reporterId: 'reporterId',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  isResolved: 'isResolved'
+} as const
+
+export type OfferReportScalarFieldEnum = (typeof OfferReportScalarFieldEnum)[keyof typeof OfferReportScalarFieldEnum]
 
 
 export const SortOrder = {

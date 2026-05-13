@@ -339,7 +339,10 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
             const SizedBox(height: 14),
             _InfoRow(label: 'Categoría', value: profile.categoryName ?? 'Sin categoría'),
             _InfoRow(label: 'Localidad', value: profile.localityName ?? 'Sin localidad'),
-            _InfoRow(label: 'Fotos', value: '${profile.images.length}/4'),
+            _InfoRow(
+              label: 'Fotos',
+              value: '${profile.images.length}/${PlanLimits.photos(profile.subscription?.plan ?? 'GRATIS')}',
+            ),
             _InfoRow(
               label: 'Verificado',
               value: profile.isVerified ? 'Sí ✓' : 'Pendiente',

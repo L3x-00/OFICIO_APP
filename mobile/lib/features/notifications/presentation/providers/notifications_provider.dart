@@ -161,11 +161,18 @@ class NotificationsProvider extends ChangeNotifier {
 
   // ── Acciones del usuario ────────────────────────────────────
 
-  void markAllRead() {
+  Future<void> markAllRead() async {
+    // Optimistic update
     for (final n in _items) {
       n.isRead = true;
     }
     notifyListeners();
+    // Persist to backend (fire-and-forget; UI already updated)
+    try {
+      await _dio.patch('/provider-profile/me/notifications/read-all');
+    } on DioException catch (e) {
+      if (kDebugMode) debugPrint('[Notifications] markAllRead: ${e.message}');
+    }
   }
 
   void markRead(String id) {

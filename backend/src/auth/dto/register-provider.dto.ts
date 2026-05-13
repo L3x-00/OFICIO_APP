@@ -1,6 +1,6 @@
 import {
   IsString, IsOptional, IsEnum, IsNumber, IsPositive, IsBoolean, IsObject,
-  MinLength, MaxLength, Matches, ValidateIf,
+  IsArray, ArrayMaxSize, MinLength, MaxLength, Matches, ValidateIf,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
@@ -85,10 +85,12 @@ export class RegisterProviderDto {
   address?: string;
 
   @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(7)
+  @IsNumber({}, { each: true })
+  @IsPositive({ each: true })
   @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  categoryId?: number;
+  categoryIds?: number[];
 
   @IsOptional()
   @Type(() => Number)

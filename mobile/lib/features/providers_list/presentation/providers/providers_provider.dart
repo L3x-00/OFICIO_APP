@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/errors/failures.dart';
@@ -33,6 +34,14 @@ class ProvidersProvider extends ChangeNotifier {
 
   // Preferencia: mostrar cápsulas de categoría en la pantalla principal
   bool _showCategoryFilter = false;
+
+  // ── Ubicación GPS para recarga inteligente ────────────────
+  /// Última posición (lat/lng) que se usó para consultar el backend.
+  double? _lastQueriedLat;
+  double? _lastQueriedLng;
+
+  /// Umbral de distancia (metros) que dispara recarga del backend.
+  static const double _reloadDistanceMeters = 2000.0;
 
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers            => _providers;
@@ -267,6 +276,53 @@ class ProvidersProvider extends ChangeNotifier {
     _district   = null;
     loadProviders();
   }
+
+  // ── Actualización GPS en tiempo real ─────────────────────
+
+  /// Llama desde el stream GPS de la pantalla principal.
+  /// [lat]/[lng]: posición actual.
+  /// [newProvince]/[newDistrict]: resultado de geocodificación inversa.
+  ///
+  /// Regla de recarga — dispara `loadProviders()` solo si:
+  ///   a) La nueva posición está ≥ 2 km de la última consultada, O
+  ///   b) La provincia o distrito cambió.
+  /// En ambos casos actualiza también la ubicación del filtro.
+  Future<void> updateLocationFromGps({
+    required double lat,
+    required double lng,
+    required String? newDepartment,
+    required String? newProvince,
+    required String? newDistrict,
+  }) async {
+    if (newProvince == null || newDistrict == null || newDepartment == null) return;
+
+    final zoneChanged = newProvince != _province || newDistrict != _district;
+    final distFar = _lastQueriedLat != null &&
+        _haversineMeters(_lastQueriedLat!, _lastQueriedLng!, lat, lng) >= _reloadDistanceMeters;
+
+    if (!zoneChanged && !distFar) return;
+
+    _department = newDepartment;
+    _province   = newProvince;
+    _district   = newDistrict;
+    _lastQueriedLat = lat;
+    _lastQueriedLng = lng;
+
+    await loadProviders();
+  }
+
+  /// Haversine — retorna distancia en metros entre dos coordenadas.
+  static double _haversineMeters(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371000.0;
+    final dLat = _rad(lat2 - lat1);
+    final dLng = _rad(lng2 - lng1);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_rad(lat1)) * math.cos(_rad(lat2)) *
+        math.sin(dLng / 2) * math.sin(dLng / 2);
+    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
+  static double _rad(double deg) => deg * math.pi / 180;
 
   // ── Toggle favorito (local) ───────────────────────────────
   void toggleFavorite(int providerId) {

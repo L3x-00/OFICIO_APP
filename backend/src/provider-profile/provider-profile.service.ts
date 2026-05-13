@@ -31,7 +31,7 @@ export class ProviderProfileService {
     const provider = await this.prisma.provider.findFirst({
       where,
       include: {
-        category:     { select: { id: true, name: true, slug: true } },
+        providerCategories: { select: { category: { select: { id: true, name: true, slug: true } } } },
         locality:     { select: { id: true, name: true, department: true } },
         images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         subscription: { select: { plan: true, status: true, endDate: true } },
@@ -76,7 +76,7 @@ export class ProviderProfileService {
       where: { id: provider.id },
       data,
       include: {
-        category:     { select: { id: true, name: true, slug: true } },
+        providerCategories: { select: { category: { select: { id: true, name: true, slug: true } } } },
         locality:     { select: { id: true, name: true, department: true } },
         images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         subscription: { select: { plan: true, status: true, endDate: true } },
@@ -126,6 +126,15 @@ export class ProviderProfileService {
       where: { id: notifId },
       data: { isRead: true },
     });
+  }
+
+  async markAllNotificationsRead(userId: number) {
+    const provider = await this.findProviderByUser(userId);
+    await this.prisma.adminNotification.updateMany({
+      where: { providerId: provider.id, isRead: false },
+      data: { isRead: true },
+    });
+    return { ok: true };
   }
 
   // ── IMÁGENES DEL PROVEEDOR ───────────────────────────────

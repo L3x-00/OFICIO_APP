@@ -25,6 +25,7 @@ import { PaymentsModule } from './payments/payments.module.js';
 import { ReferralsModule } from './referrals/referrals.module.js';
 import { ChatModule } from './chat/chat.module.js';
 import { LocalitiesModule } from './localities/localities.module.js';
+import { OfferPostsModule } from './offer-posts/offer-posts.module.js';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { LocalitiesModule } from './localities/localities.module.js';
     ReferralsModule,
     ChatModule,
     LocalitiesModule,
+    OfferPostsModule,
   ],
   controllers: [AppController],
   providers: [

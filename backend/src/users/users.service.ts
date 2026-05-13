@@ -34,9 +34,12 @@ export class UsersService {
         plenaCoordinacion:  true,
         scheduleJson:       true,
         address:            true,
-        categoryId:         true,
-        category: {
-          select: { id: true, name: true, parentId: true, parent: { select: { id: true, name: true } } },
+        providerCategories: {
+          select: {
+            category: {
+              select: { id: true, name: true, slug: true, parentId: true, parent: { select: { id: true, name: true } } },
+            },
+          },
         },
         notifications: {
           where:   { isRead: false },
@@ -80,10 +83,13 @@ export class UsersService {
         plenaCoordinacion:   p.plenaCoordinacion,
         scheduleJson:        p.scheduleJson,
         address:             p.address,
-        categoryId:          p.categoryId,
-        categoryName:        p.category?.name,
-        parentCategoryId:    p.category?.parentId,
-        parentCategoryName:  p.category?.parent?.name,
+        categories:          p.providerCategories.map(pc => ({
+          id:               pc.category.id,
+          name:             pc.category.name,
+          slug:             pc.category.slug,
+          parentId:         pc.category.parentId,
+          parentName:       pc.category.parent?.name ?? null,
+        })),
         pendingNotifications: p.notifications,
       })),
     };

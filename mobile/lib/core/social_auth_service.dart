@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Resultado del intento de login social.
 enum SocialSignInResult { success, cancelled, error }
@@ -99,36 +103,100 @@ class SocialAuthService {
     }
   }
 
-  /// Inicia sesión con TikTok.
-  /// Abre el navegador externo para autorización OAuth.
+  /// Inicia sesión con TikTok via OAuth 2.0 + PKCE.
+  ///
+  /// Usa Chrome Custom Tabs (Android) / ASWebAuthenticationSession (iOS) para
+  /// mostrar el flujo de autorización dentro de la app sin saltar a la app
+  /// nativa de TikTok. El callback se captura con el scheme `oficioapp://`.
+  ///
+  /// IMPORTANTE — portal TikTok Sandbox:
+  ///   redirect_uri registrado debe ser exactamente: oficioapp://callback
   static Future<SocialSignInOutcome> signInWithTikTok() async {
-    const clientKey  = 'sbaw6yplcjwthcm1gq';
-    const redirectUri = 'https://www.oficioapp.org.pe/auth/tiktok/callback';
+    const clientKey   = 'sbaw6yplcjwthcm1gq';
+    // El redirect_uri debe coincidir exactamente con el registrado en TikTok.
+    // Usa el custom scheme para que el OS devuelva el control a la app.
+    const redirectUri = 'oficioapp://callback';
+    const callbackScheme = 'oficioapp';
 
-    final state = DateTime.now().millisecondsSinceEpoch.toString();
+    // PKCE: code_verifier aleatorio + code_challenge = SHA-256(verifier) en base64url
+    final verifier   = _generateCodeVerifier();
+    final challenge  = _codeChallenge(verifier);
+    final state      = _randomHex(16);
 
-    final authUrl = 'https://www.tiktok.com/v2/auth/authorize/'
-        '?client_key=$clientKey'
-        '&response_type=code'
-        '&scope=user.info.basic'
-        '&redirect_uri=$redirectUri'
-        '&state=$state';
+    final authUri = Uri.https('www.tiktok.com', '/v2/auth/authorize/', {
+      'client_key':             clientKey,
+      'response_type':          'code',
+      'scope':                  'user.info.basic',
+      'redirect_uri':           redirectUri,
+      'state':                  state,
+      'code_challenge':         challenge,
+      'code_challenge_method':  'S256',
+    });
 
     try {
-      final uri = Uri.parse(authUrl);
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      // flutter_web_auth_2 abre Chrome Custom Tab y espera hasta que la URL
+      // comience con `callbackScheme://`. El AndroidManifest ya tiene el
+      // intent-filter para `oficioapp://callback`.
+      final result = await FlutterWebAuth2.authenticate(
+        url:             authUri.toString(),
+        callbackUrlScheme: callbackScheme,
+        options: const FlutterWebAuth2Options(
+          // iOS/macOS: sesión efímera, no reutiliza cookies de Safari.
+          preferEphemeral: true,
+          // Android: FLAG_ACTIVITY_NO_HISTORY evita que el Custom Tab quede
+          // en el back-stack y fuerza sesión limpia sin cookies persistentes.
+          intentFlags: ephemeralIntentFlags,
+        ),
+      );
 
-      if (!launched) {
-        return SocialSignInOutcome.error('No se pudo abrir TikTok');
+      // Extraer el `code` y verificar que el `state` coincide (CSRF guard).
+      final callbackUri = Uri.parse(result);
+      final returnedState = callbackUri.queryParameters['state'];
+      if (returnedState != state) {
+        return SocialSignInOutcome.error('State mismatch — posible ataque CSRF');
       }
 
-      // Con url_launcher no podemos capturar la redirección automáticamente.
-      // Para la demo de Sandbox, devolvemos un resultado exitoso simbólico.
-      // En producción, necesitarás un esquema de URL personalizado o un backend intermedio.
-      return SocialSignInOutcome.success('tiktok_pending_code');
+      final code = callbackUri.queryParameters['code'];
+      if (code == null || code.isEmpty) {
+        final error = callbackUri.queryParameters['error'] ?? 'Sin código de autorización';
+        return SocialSignInOutcome.error('TikTok rechazó la autorización: $error');
+      }
+
+      // Devuelve el code + verifier al caller para que el backend intercambie
+      // el code por un access_token (exchange seguro server-side).
+      // Se codifica como JSON compacto en el campo idToken para no romper la API.
+      final payload = jsonEncode({'code': code, 'code_verifier': verifier});
+      return SocialSignInOutcome.success(payload);
+
+    } on PlatformException catch (e) {
+      // ACTIVITY_RESULT_CANCELED = usuario cerró el Custom Tab sin autorizar.
+      if (e.code == 'ACTIVITY_RESULT_CANCELED' || e.code == 'UserCanceled') {
+        return SocialSignInOutcome.cancelled();
+      }
+      return SocialSignInOutcome.error('TikTok OAuth cancelado: ${e.message}');
     } catch (e) {
       return SocialSignInOutcome.error('Error al iniciar sesión con TikTok: $e');
     }
+  }
+
+  // ── PKCE helpers ────────────────────────────────────────────
+
+  static String _generateCodeVerifier() {
+    final rng = Random.secure();
+    final bytes = List<int>.generate(32, (_) => rng.nextInt(256));
+    return base64UrlEncode(bytes).replaceAll('=', '');
+  }
+
+  static String _codeChallenge(String verifier) {
+    final bytes = utf8.encode(verifier);
+    final digest = sha256.convert(bytes);
+    return base64UrlEncode(digest.bytes).replaceAll('=', '');
+  }
+
+  static String _randomHex(int length) {
+    final rng = Random.secure();
+    final bytes = List<int>.generate(length, (_) => rng.nextInt(256));
+    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
   /// Cierra la sesión de Firebase.

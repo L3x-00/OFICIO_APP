@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
@@ -230,11 +231,15 @@ class PanelSettingsTab extends StatelessWidget {
   }
 
   Widget _buildProfileHeader(BuildContext context, AuthProvider auth, DashboardProfileModel? profile) {
-    final c = context.colors;
+    final c       = context.colors;
     final name    = profile?.businessName ?? auth.user?.fullName ?? 'Mi negocio';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     final type    = profile?.type == 'NEGOCIO' ? 'Negocio' : 'Profesional';
     final plan    = profile?.subscription?.planLabel ?? 'Gratis';
+    // Use first provider photo, then user avatar, then initial fallback
+    final avatarUrl = profile?.images.isNotEmpty == true
+        ? profile!.images.first.url
+        : auth.user?.avatarUrl;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -253,15 +258,34 @@ class PanelSettingsTab extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.amber, width: 2),
             ),
-            child: Center(
-              child: Text(
-                initial,
-                style: TextStyle(
-                  color: AppColors.amber,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            child: ClipOval(
+              child: avatarUrl != null && avatarUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: avatarUrl,
+                      fit: BoxFit.cover,
+                      width: 60,
+                      height: 60,
+                      errorWidget: (_, __, err) => Center(
+                        child: Text(
+                          initial,
+                          style: TextStyle(
+                            color: AppColors.amber,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          color: AppColors.amber,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 14),

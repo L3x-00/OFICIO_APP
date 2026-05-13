@@ -340,6 +340,7 @@ export type UserWhereInput = {
   referralReceived?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
   redemptions?: Prisma.CoinRedemptionListRelationFilter
   chatsAsClient?: Prisma.ChatRoomListRelationFilter
+  offerReports?: Prisma.OfferReportListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -377,6 +378,7 @@ export type UserOrderByWithRelationInput = {
   referralReceived?: Prisma.ReferralOrderByWithRelationInput
   redemptions?: Prisma.CoinRedemptionOrderByRelationAggregateInput
   chatsAsClient?: Prisma.ChatRoomOrderByRelationAggregateInput
+  offerReports?: Prisma.OfferReportOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -417,6 +419,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   referralReceived?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
   redemptions?: Prisma.CoinRedemptionListRelationFilter
   chatsAsClient?: Prisma.ChatRoomListRelationFilter
+  offerReports?: Prisma.OfferReportListRelationFilter
 }, "id" | "email" | "phone" | "firebaseUid">
 
 export type UserOrderByWithAggregationInput = {
@@ -503,6 +506,7 @@ export type UserCreateInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -540,6 +544,7 @@ export type UserUncheckedCreateInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserUpdateInput = {
@@ -576,6 +581,7 @@ export type UserUpdateInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -613,6 +619,7 @@ export type UserUncheckedUpdateInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1007,6 +1014,20 @@ export type UserUpdateOneRequiredWithoutChatsAsClientNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutChatsAsClientInput, Prisma.UserUpdateWithoutChatsAsClientInput>, Prisma.UserUncheckedUpdateWithoutChatsAsClientInput>
 }
 
+export type UserCreateNestedOneWithoutOfferReportsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOfferReportsInput, Prisma.UserUncheckedCreateWithoutOfferReportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOfferReportsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutOfferReportsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOfferReportsInput, Prisma.UserUncheckedCreateWithoutOfferReportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOfferReportsInput
+  upsert?: Prisma.UserUpsertWithoutOfferReportsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOfferReportsInput, Prisma.UserUpdateWithoutOfferReportsInput>, Prisma.UserUncheckedUpdateWithoutOfferReportsInput>
+}
+
 export type UserCreateWithoutOtpCodesInput = {
   email: string
   phone?: string | null
@@ -1040,6 +1061,7 @@ export type UserCreateWithoutOtpCodesInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutOtpCodesInput = {
@@ -1076,6 +1098,7 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutOtpCodesInput = {
@@ -1127,6 +1150,7 @@ export type UserUpdateWithoutOtpCodesInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOtpCodesInput = {
@@ -1163,6 +1187,7 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -1198,6 +1223,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -1234,6 +1260,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -1285,6 +1312,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -1321,6 +1349,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutProvidersInput = {
@@ -1356,6 +1385,7 @@ export type UserCreateWithoutProvidersInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutProvidersInput = {
@@ -1392,6 +1422,7 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutProvidersInput = {
@@ -1443,6 +1474,7 @@ export type UserUpdateWithoutProvidersInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProvidersInput = {
@@ -1479,6 +1511,7 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutReviewsInput = {
@@ -1514,6 +1547,7 @@ export type UserCreateWithoutReviewsInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutReviewsInput = {
@@ -1550,6 +1584,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutReviewsInput = {
@@ -1601,6 +1636,7 @@ export type UserUpdateWithoutReviewsInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsInput = {
@@ -1637,6 +1673,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutReviewRepliesInput = {
@@ -1672,6 +1709,7 @@ export type UserCreateWithoutReviewRepliesInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutReviewRepliesInput = {
@@ -1708,6 +1746,7 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutReviewRepliesInput = {
@@ -1759,6 +1798,7 @@ export type UserUpdateWithoutReviewRepliesInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewRepliesInput = {
@@ -1795,6 +1835,7 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutFavoritesInput = {
@@ -1830,6 +1871,7 @@ export type UserCreateWithoutFavoritesInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutFavoritesInput = {
@@ -1866,6 +1908,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutFavoritesInput = {
@@ -1917,6 +1960,7 @@ export type UserUpdateWithoutFavoritesInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFavoritesInput = {
@@ -1953,6 +1997,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutRecommendationsInput = {
@@ -1988,6 +2033,7 @@ export type UserCreateWithoutRecommendationsInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutRecommendationsInput = {
@@ -2024,6 +2070,7 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutRecommendationsInput = {
@@ -2075,6 +2122,7 @@ export type UserUpdateWithoutRecommendationsInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRecommendationsInput = {
@@ -2111,6 +2159,7 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutProviderReportsInput = {
@@ -2146,6 +2195,7 @@ export type UserCreateWithoutProviderReportsInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutProviderReportsInput = {
@@ -2182,6 +2232,7 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutProviderReportsInput = {
@@ -2233,6 +2284,7 @@ export type UserUpdateWithoutProviderReportsInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProviderReportsInput = {
@@ -2269,6 +2321,7 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutPlatformIssuesInput = {
@@ -2304,6 +2357,7 @@ export type UserCreateWithoutPlatformIssuesInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutPlatformIssuesInput = {
@@ -2340,6 +2394,7 @@ export type UserUncheckedCreateWithoutPlatformIssuesInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutPlatformIssuesInput = {
@@ -2391,6 +2446,7 @@ export type UserUpdateWithoutPlatformIssuesInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
@@ -2427,6 +2483,7 @@ export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutServiceRequestsInput = {
@@ -2462,6 +2519,7 @@ export type UserCreateWithoutServiceRequestsInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutServiceRequestsInput = {
@@ -2498,6 +2556,7 @@ export type UserUncheckedCreateWithoutServiceRequestsInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutServiceRequestsInput = {
@@ -2549,6 +2608,7 @@ export type UserUpdateWithoutServiceRequestsInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutServiceRequestsInput = {
@@ -2585,6 +2645,7 @@ export type UserUncheckedUpdateWithoutServiceRequestsInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutPenaltyInput = {
@@ -2620,6 +2681,7 @@ export type UserCreateWithoutPenaltyInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutPenaltyInput = {
@@ -2656,6 +2718,7 @@ export type UserUncheckedCreateWithoutPenaltyInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutPenaltyInput = {
@@ -2707,6 +2770,7 @@ export type UserUpdateWithoutPenaltyInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPenaltyInput = {
@@ -2743,6 +2807,7 @@ export type UserUncheckedUpdateWithoutPenaltyInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutReferralCodeInput = {
@@ -2778,6 +2843,7 @@ export type UserCreateWithoutReferralCodeInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutReferralCodeInput = {
@@ -2814,6 +2880,7 @@ export type UserUncheckedCreateWithoutReferralCodeInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutReferralCodeInput = {
@@ -2865,6 +2932,7 @@ export type UserUpdateWithoutReferralCodeInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralCodeInput = {
@@ -2901,6 +2969,7 @@ export type UserUncheckedUpdateWithoutReferralCodeInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutReferralsSentInput = {
@@ -2936,6 +3005,7 @@ export type UserCreateWithoutReferralsSentInput = {
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutReferralsSentInput = {
@@ -2972,6 +3042,7 @@ export type UserUncheckedCreateWithoutReferralsSentInput = {
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutReferralsSentInput = {
@@ -3012,6 +3083,7 @@ export type UserCreateWithoutReferralReceivedInput = {
   referralsSent?: Prisma.ReferralCreateNestedManyWithoutInviterInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutReferralReceivedInput = {
@@ -3048,6 +3120,7 @@ export type UserUncheckedCreateWithoutReferralReceivedInput = {
   referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutInviterInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutReferralReceivedInput = {
@@ -3099,6 +3172,7 @@ export type UserUpdateWithoutReferralsSentInput = {
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralsSentInput = {
@@ -3135,6 +3209,7 @@ export type UserUncheckedUpdateWithoutReferralsSentInput = {
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUpsertWithoutReferralReceivedInput = {
@@ -3181,6 +3256,7 @@ export type UserUpdateWithoutReferralReceivedInput = {
   referralsSent?: Prisma.ReferralUpdateManyWithoutInviterNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralReceivedInput = {
@@ -3217,6 +3293,7 @@ export type UserUncheckedUpdateWithoutReferralReceivedInput = {
   referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutInviterNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutRedemptionsInput = {
@@ -3252,6 +3329,7 @@ export type UserCreateWithoutRedemptionsInput = {
   referralsSent?: Prisma.ReferralCreateNestedManyWithoutInviterInput
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutRedemptionsInput = {
@@ -3288,6 +3366,7 @@ export type UserUncheckedCreateWithoutRedemptionsInput = {
   referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutInviterInput
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutRedemptionsInput = {
@@ -3339,6 +3418,7 @@ export type UserUpdateWithoutRedemptionsInput = {
   referralsSent?: Prisma.ReferralUpdateManyWithoutInviterNestedInput
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRedemptionsInput = {
@@ -3375,6 +3455,7 @@ export type UserUncheckedUpdateWithoutRedemptionsInput = {
   referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutInviterNestedInput
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutChatsAsClientInput = {
@@ -3410,6 +3491,7 @@ export type UserCreateWithoutChatsAsClientInput = {
   referralsSent?: Prisma.ReferralCreateNestedManyWithoutInviterInput
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
 }
 
 export type UserUncheckedCreateWithoutChatsAsClientInput = {
@@ -3446,6 +3528,7 @@ export type UserUncheckedCreateWithoutChatsAsClientInput = {
   referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutInviterInput
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
 }
 
 export type UserCreateOrConnectWithoutChatsAsClientInput = {
@@ -3497,6 +3580,7 @@ export type UserUpdateWithoutChatsAsClientInput = {
   referralsSent?: Prisma.ReferralUpdateManyWithoutInviterNestedInput
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChatsAsClientInput = {
@@ -3533,6 +3617,169 @@ export type UserUncheckedUpdateWithoutChatsAsClientInput = {
   referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutInviterNestedInput
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
+}
+
+export type UserCreateWithoutOfferReportsInput = {
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  firebaseUid?: string | null
+  fcmToken?: string | null
+  isActive?: boolean
+  isEmailVerified?: boolean
+  coins?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  providers?: Prisma.ProviderCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
+  serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
+  penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
+  referralCode?: Prisma.ReferralCodeCreateNestedOneWithoutUserInput
+  referralsSent?: Prisma.ReferralCreateNestedManyWithoutInviterInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
+  redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
+  chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+}
+
+export type UserUncheckedCreateWithoutOfferReportsInput = {
+  id?: number
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  firebaseUid?: string | null
+  fcmToken?: string | null
+  isActive?: boolean
+  isEmailVerified?: boolean
+  coins?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
+  serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
+  penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
+  referralCode?: Prisma.ReferralCodeUncheckedCreateNestedOneWithoutUserInput
+  referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutInviterInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
+  redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
+  chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+}
+
+export type UserCreateOrConnectWithoutOfferReportsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOfferReportsInput, Prisma.UserUncheckedCreateWithoutOfferReportsInput>
+}
+
+export type UserUpsertWithoutOfferReportsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOfferReportsInput, Prisma.UserUncheckedUpdateWithoutOfferReportsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOfferReportsInput, Prisma.UserUncheckedCreateWithoutOfferReportsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOfferReportsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOfferReportsInput, Prisma.UserUncheckedUpdateWithoutOfferReportsInput>
+}
+
+export type UserUpdateWithoutOfferReportsInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  coins?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providers?: Prisma.ProviderUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
+  serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
+  penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
+  referralCode?: Prisma.ReferralCodeUpdateOneWithoutUserNestedInput
+  referralsSent?: Prisma.ReferralUpdateManyWithoutInviterNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
+  redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
+  chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOfferReportsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  coins?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providers?: Prisma.ProviderUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
+  serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
+  penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
+  referralCode?: Prisma.ReferralCodeUncheckedUpdateOneWithoutUserNestedInput
+  referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutInviterNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
+  redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
+  chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
 }
 
 
@@ -3554,6 +3801,7 @@ export type UserCountOutputType = {
   referralsSent: number
   redemptions: number
   chatsAsClient: number
+  offerReports: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3570,6 +3818,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   referralsSent?: boolean | UserCountOutputTypeCountReferralsSentArgs
   redemptions?: boolean | UserCountOutputTypeCountRedemptionsArgs
   chatsAsClient?: boolean | UserCountOutputTypeCountChatsAsClientArgs
+  offerReports?: boolean | UserCountOutputTypeCountOfferReportsArgs
 }
 
 /**
@@ -3673,6 +3922,13 @@ export type UserCountOutputTypeCountChatsAsClientArgs<ExtArgs extends runtime.Ty
   where?: Prisma.ChatRoomWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountOfferReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OfferReportWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3709,6 +3965,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   referralReceived?: boolean | Prisma.User$referralReceivedArgs<ExtArgs>
   redemptions?: boolean | Prisma.User$redemptionsArgs<ExtArgs>
   chatsAsClient?: boolean | Prisma.User$chatsAsClientArgs<ExtArgs>
+  offerReports?: boolean | Prisma.User$offerReportsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3793,6 +4050,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   referralReceived?: boolean | Prisma.User$referralReceivedArgs<ExtArgs>
   redemptions?: boolean | Prisma.User$redemptionsArgs<ExtArgs>
   chatsAsClient?: boolean | Prisma.User$chatsAsClientArgs<ExtArgs>
+  offerReports?: boolean | Prisma.User$offerReportsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -3817,6 +4075,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     referralReceived: Prisma.$ReferralPayload<ExtArgs> | null
     redemptions: Prisma.$CoinRedemptionPayload<ExtArgs>[]
     chatsAsClient: Prisma.$ChatRoomPayload<ExtArgs>[]
+    offerReports: Prisma.$OfferReportPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -4247,6 +4506,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   referralReceived<T extends Prisma.User$referralReceivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$referralReceivedArgs<ExtArgs>>): Prisma.Prisma__ReferralClient<runtime.Types.Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   redemptions<T extends Prisma.User$redemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$redemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CoinRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatsAsClient<T extends Prisma.User$chatsAsClientArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$chatsAsClientArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatRoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  offerReports<T extends Prisma.User$offerReportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$offerReportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5053,6 +5313,30 @@ export type User$chatsAsClientArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ChatRoomScalarFieldEnum | Prisma.ChatRoomScalarFieldEnum[]
+}
+
+/**
+ * User.offerReports
+ */
+export type User$offerReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OfferReport
+   */
+  select?: Prisma.OfferReportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OfferReport
+   */
+  omit?: Prisma.OfferReportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OfferReportInclude<ExtArgs> | null
+  where?: Prisma.OfferReportWhereInput
+  orderBy?: Prisma.OfferReportOrderByWithRelationInput | Prisma.OfferReportOrderByWithRelationInput[]
+  cursor?: Prisma.OfferReportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OfferReportScalarFieldEnum | Prisma.OfferReportScalarFieldEnum[]
 }
 
 /**

@@ -1,12 +1,16 @@
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constans/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/plan_limits.dart';
 import '../providers/dashboard_provider.dart';
+import '../providers/offer_posts_provider.dart';
 import '../../domain/models/service_item_model.dart';
+import '../../domain/models/offer_post_model.dart';
 import '../../../../features/payments/presentation/screens/plan_selector_sheet.dart';
+import '../../../../features/trust_validation/presentation/screens/trust_validation_form_screen.dart';
 
 class PanelServicesTab extends StatefulWidget {
   final bool isNegocio;
@@ -21,9 +25,19 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
   bool _isSaving = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+      context.read<OfferPostsProvider>().load(type: type);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
-    final dash = context.watch<DashboardProvider>();
+    final c      = context.colors;
+    final dash   = context.watch<DashboardProvider>();
+    final offers = context.watch<OfferPostsProvider>();
     final services       = dash.services;
     final plan           = dash.profile?.subscription?.plan ?? 'GRATIS';
     final limit          = PlanLimits.items(plan, isNegocio: widget.isNegocio);
@@ -71,6 +85,17 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
               limit:       limit,
               isNegocio:   widget.isNegocio,
               limitLabel:  limitLabel,
+            ),
+          ),
+
+          // ── Sección de Ofertas ──────────────────────────────
+          SliverToBoxAdapter(
+            child: _OfferPostsSection(
+              plan:      plan,
+              offers:    offers.activeOffers,
+              isLoading: offers.status == OfferPostsStatus.loading,
+              onPublish: () => _showOfferForm(context, offers, plan),
+              onDelete:  (id) => offers.deleteOffer(id),
             ),
           ),
 
@@ -135,6 +160,225 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
               child: const Icon(Icons.add_rounded, color: Colors.black),
             )
           : null,
+    );
+  }
+
+  // ── DIALOGO DE OFERTA ────────────────────────────────────
+
+  void _showOfferForm(BuildContext context, OfferPostsProvider offersProvider, String plan) {
+    final c = context.colors;
+
+    // ── Trust gate: bloquear si el proveedor no está validado ──
+    final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+    final trustStatus = context.read<AuthProvider>().providerDataFor(type)?['trustStatus'] as String? ?? 'NONE';
+    if (trustStatus != 'APPROVED') {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: c.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.lock_rounded, color: AppColors.amber, size: 20),
+              const SizedBox(width: 8),
+              Text('Perfil sin validar', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Text(
+            'Solo los profesionales con identidad verificada pueden publicar ofertas.\n\nValida tus datos para desbloquear esta función.',
+            style: TextStyle(color: c.textSecondary, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Ahora no', style: TextStyle(color: c.textMuted)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => TrustValidationFormScreen(providerType: type)),
+                );
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber),
+              child: const Text('Validar mis datos', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final activeCount = offersProvider.activeOffers.length;
+    final maxOffers   = PlanLimits.offers(plan);
+    final hours       = PlanLimits.offerDurationHours(plan);
+
+    if (!PlanLimits.canPublishOffer(plan, activeCount)) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: c.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Límite alcanzado', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          content: Text(
+            'Tu plan $plan permite $maxOffers oferta(s) activa(s) a la vez.\nSube de plan para publicar más.',
+            style: TextStyle(color: c.textSecondary),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text('Cerrar', style: TextStyle(color: c.textMuted))),
+            ElevatedButton(
+              onPressed: () { Navigator.pop(context); PlanSelectorSheet.show(context); },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber),
+              child: const Text('Ver planes', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final titleCtrl = TextEditingController();
+    final descCtrl  = TextEditingController();
+    final priceCtrl = TextEditingController();
+    String? pickedPath;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: c.bgCard,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setInner) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40, height: 4,
+                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(2)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 20),
+                          const SizedBox(width: 8),
+                          Text('Publicar Oferta', style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+                            child: Text('${hours}h vigencia', style: const TextStyle(color: AppColors.amber, fontSize: 11, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text('La oferta expirará automáticamente en $hours horas.', style: TextStyle(color: c.textMuted, fontSize: 12)),
+                      const SizedBox(height: 20),
+                      _FormField(controller: titleCtrl, label: 'Título de la oferta *', hint: 'Ej: 20% off en instalaciones eléctricas'),
+                      const SizedBox(height: 12),
+                      _FormField(controller: descCtrl, label: 'Descripción *', hint: 'Detalla qué incluye la oferta', maxLines: 3),
+                      const SizedBox(height: 12),
+                      // ── Categorías del perfil (read-only) ─────
+                      Builder(builder: (bCtx) {
+                        final cats = bCtx.read<DashboardProvider>().profile?.categories ?? [];
+                        if (cats.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Categorías de la oferta', style: TextStyle(color: c.textSecondary, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: cats.map((cat) => Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.amber.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
+                                ),
+                                child: Text(cat.name, style: const TextStyle(color: AppColors.amber, fontSize: 12, fontWeight: FontWeight.w600)),
+                              )).toList(),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      }),
+                      _FormField(controller: priceCtrl, label: 'Precio (opcional)', hint: 'Ej: 80', keyboardType: TextInputType.number),
+                      const SizedBox(height: 12),
+                      // Foto opcional
+                      GestureDetector(
+                        onTap: () async {
+                          final picker = ImagePicker();
+                          final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 75);
+                          if (img != null) setInner(() => pickedPath = img.path);
+                        },
+                        child: Container(
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: c.bgInput,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: pickedPath != null ? AppColors.amber : Colors.white.withValues(alpha: 0.08)),
+                          ),
+                          child: Center(
+                            child: pickedPath != null
+                                ? Row(mainAxisSize: MainAxisSize.min, children: [
+                                    const Icon(Icons.check_circle_rounded, color: AppColors.amber, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text('Foto seleccionada', style: TextStyle(color: AppColors.amber, fontSize: 13)),
+                                  ])
+                                : Row(mainAxisSize: MainAxisSize.min, children: [
+                                    Icon(Icons.add_photo_alternate_rounded, color: c.textMuted, size: 20),
+                                    const SizedBox(width: 6),
+                                    Text('Añadir foto (opcional)', style: TextStyle(color: c.textMuted, fontSize: 13)),
+                                  ]),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: offersProvider.isSubmitting ? null : () async {
+                            if (titleCtrl.text.trim().length < 5) return;
+                            if (descCtrl.text.trim().length < 10) return;
+                            Navigator.pop(sheetCtx);
+                            final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+                            await offersProvider.createOffer(
+                              title: titleCtrl.text.trim(),
+                              description: descCtrl.text.trim(),
+                              price: double.tryParse(priceCtrl.text.trim()),
+                              photoPath: pickedPath,
+                              type: type,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.amber,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: offersProvider.isSubmitting
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                              : const Text('Publicar oferta', style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -645,6 +889,145 @@ class _EmptyServices extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Sección de Ofertas ───────────────────────────────────────
+
+class _OfferPostsSection extends StatelessWidget {
+  final String plan;
+  final List<OfferPostModel> offers;
+  final bool isLoading;
+  final VoidCallback onPublish;
+  final void Function(int id) onDelete;
+
+  const _OfferPostsSection({
+    required this.plan,
+    required this.offers,
+    required this.isLoading,
+    required this.onPublish,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Divider(color: Colors.white.withValues(alpha: 0.06)),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Row(
+            children: [
+              const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 16),
+              const SizedBox(width: 6),
+              Text('Mis Ofertas', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+                child: Text('${offers.length}/${PlanLimits.offers(plan)}', style: const TextStyle(color: AppColors.amber, fontSize: 11, fontWeight: FontWeight.w600)),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: onPublish,
+                icon: const Icon(Icons.add_rounded, size: 16),
+                label: const Text('Publicar'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.amber,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (isLoading)
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator(color: AppColors.amber, strokeWidth: 2)),
+          )
+        else if (offers.isEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Text(
+              'Sin ofertas activas. Publica una promoción o precio especial.',
+              style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            child: Column(
+              children: offers.map((o) => _OfferCard(offer: o, onDelete: () => onDelete(o.id))).toList(),
+            ),
+          ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _OfferCard extends StatelessWidget {
+  final OfferPostModel offer;
+  final VoidCallback onDelete;
+
+  const _OfferCard({required this.offer, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.amber.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40, height: 40,
+            decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(offer.title, style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(5)),
+                      child: Text(offer.priceLabel, style: const TextStyle(color: AppColors.amber, fontSize: 11, fontWeight: FontWeight.w600)),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(offer.timeLeftLabel, style: TextStyle(color: c.textMuted, fontSize: 11)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onDelete,
+            icon: Icon(Icons.delete_rounded, size: 18, color: AppColors.busy),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            splashRadius: 18,
+          ),
+        ],
       ),
     );
   }

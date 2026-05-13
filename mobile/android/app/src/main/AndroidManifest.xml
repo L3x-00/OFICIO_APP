@@ -15,6 +15,14 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Chrome Custom Tabs (requerido por flutter_web_auth_2 en Android 11+) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <!-- Necesario para que CustomTabsClient pueda enlazar con Chrome -->
+        <package android:name="com.android.chrome" />
     </queries>
 
     <!-- ── Red ──────────────────────────────────────────────── -->

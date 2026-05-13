@@ -30,7 +30,7 @@ class NotificationsScreen extends StatelessWidget {
         actions: [
           if (isLoggedIn && notifs.unreadCount > 0)
             TextButton(
-              onPressed: notifs.markAllRead,
+              onPressed: () => notifs.markAllRead(),
               child: const Text(
                 'Marcar todas leídas',
                 style: TextStyle(color: AppColors.primary, fontSize: 12),

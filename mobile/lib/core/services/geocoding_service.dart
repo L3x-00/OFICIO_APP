@@ -16,14 +16,29 @@ class GeocodingResult {
 }
 
 /// Geocodificación inversa usando Nominatim (OpenStreetMap) — sin API key.
+/// Incluye caché en memoria con clave redondeada a 3 decimales (~111m de precisión)
+/// para evitar llamadas repetidas a Nominatim en cada tick del stream GPS.
 class GeocodingService {
-  static const _baseUrl = 'https://nominatim.openstreetmap.org/reverse';
+  static const _baseUrl   = 'https://nominatim.openstreetmap.org/reverse';
   static const _userAgent = 'OficioApp/1.0';
-  static const _timeout = Duration(seconds: 10);
+  static const _timeout   = Duration(seconds: 10);
+
+  // Clave: "lat3,lng3" (redondeado a 3 decimales ≈ 111m de celda)
+  static final Map<String, GeocodingResult> _cache = {};
+
+  static String _cacheKey(double lat, double lng) =>
+      '${lat.toStringAsFixed(3)},${lng.toStringAsFixed(3)}';
 
   /// Convierte coordenadas GPS en departamento, provincia y distrito del Perú.
   /// Retorna `null` si la API falla o no encuentra resultados.
+  /// Devuelve resultado cacheado si la celda ya fue consultada.
   static Future<GeocodingResult?> reverseGeocode(double lat, double lng) async {
+    final key = _cacheKey(lat, lng);
+    if (_cache.containsKey(key)) {
+      debugPrint('[Geocoding] Cache hit: $key');
+      return _cache[key];
+    }
+
     final uri = Uri.parse(_baseUrl).replace(queryParameters: {
       'format':          'json',
       'lat':             lat.toString(),
@@ -40,7 +55,6 @@ class GeocodingService {
         headers: {'User-Agent': _userAgent},
       ).timeout(_timeout);
 
-      // El body de Nominatim puede pesar varios KB. Solo loguear en debug.
       if (kDebugMode) {
         debugPrint('[Geocoding] Status: ${response.statusCode}');
         debugPrint('[Geocoding] Body: ${response.body}');
@@ -48,26 +62,25 @@ class GeocodingService {
 
       if (response.statusCode != 200) return null;
 
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final json    = jsonDecode(response.body) as Map<String, dynamic>;
       final address = json['address'] as Map<String, dynamic>?;
       if (address == null) return null;
 
-      // Nominatim usa distintos campos según la región
       final department = _clean(
-        address['state'] as String? ??
-        address['region'] as String?,
+        address['state']    as String? ??
+        address['region']   as String?,
       );
       final province = _clean(
-        address['province'] as String? ??
-        address['county'] as String? ??
-        address['city'] as String? ??
+        address['province']     as String? ??
+        address['county']       as String? ??
+        address['city']         as String? ??
         address['municipality'] as String?,
       );
       final district = _clean(
-        address['city'] as String? ??
-        address['town'] as String? ??
+        address['city']    as String? ??
+        address['town']    as String? ??
         address['village'] as String? ??
-        address['suburb'] as String?,
+        address['suburb']  as String?,
       );
 
       if (department == null || province == null || district == null) {
@@ -75,11 +88,13 @@ class GeocodingService {
         return null;
       }
 
-      return GeocodingResult(
+      final result = GeocodingResult(
         department: department,
         province:   province,
         district:   district,
       );
+      _cache[key] = result;
+      return result;
     } catch (e) {
       debugPrint('[Geocoding] Error: $e');
       return null;
@@ -88,7 +103,6 @@ class GeocodingService {
 
   static String? _clean(String? value) {
     if (value == null || value.trim().isEmpty) return null;
-    // Quitar "Departamento de " / "Región " prefijos comunes en Perú
     return value
         .replaceFirst(RegExp(r'^(?:Departamento|Región|Provincia) de ', caseSensitive: false), '')
         .trim();

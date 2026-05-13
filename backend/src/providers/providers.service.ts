@@ -52,10 +52,10 @@ export class ProvidersService {
     const where: Prisma.ProviderWhereInput = { isVisible: true, verificationStatus: 'APROBADO' };
 
     if (parentCategorySlug) {
-      // Muestra proveedores cuya categoría es hija de la macrocategoría dada
-      where.category = { parent: { slug: parentCategorySlug } };
+      // Muestra proveedores cuya categoría (cualquiera de las suyas) es hija de la macrocategoría dada
+      where.providerCategories = { some: { category: { parent: { slug: parentCategorySlug } } } };
     } else if (categorySlug) {
-      where.category = { slug: categorySlug };
+      where.providerCategories = { some: { category: { slug: categorySlug } } };
     }
     if (availability) {
       where.availability = availability as AvailabilityStatus;
@@ -142,7 +142,7 @@ export class ProvidersService {
             ],
           },
         },
-        { category: { name: { contains: q, mode: 'insensitive' } } },
+        { providerCategories: { some: { category: { name: { contains: q, mode: 'insensitive' } } } } },
       ];
     }
 
@@ -178,7 +178,9 @@ export class ProvidersService {
         skip,
         take: limit,
         include: {
-          category:     { select: { name: true, slug: true, iconUrl: true } },
+          providerCategories: {
+            select: { category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
+          },
           images:       { orderBy: { order: 'asc' } },
           user:         { select: { firstName: true, lastName: true, avatarUrl: true } },
           locality:     { select: { name: true, department: true, province: true, district: true } },
@@ -202,7 +204,9 @@ export class ProvidersService {
     return this.prisma.provider.findUnique({
       where: { id },
       include: {
-        category: { select: { name: true, slug: true } },
+        providerCategories: {
+          select: { category: { select: { id: true, name: true, slug: true } } },
+        },
         images: { orderBy: { order: 'asc' } },
         user: { select: { firstName: true, lastName: true, avatarUrl: true } },
         locality: { select: { name: true, department: true } },
