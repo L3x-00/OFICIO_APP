@@ -8,6 +8,7 @@ import TestimonialsSection from '@/components/testimonials-section';
 import CtaProviderSection from '@/components/cta-provider-section';
 import FaqSection from '@/components/faq-section';
 import UserManual from '@/components/user-manual'; 
+import ImageCarousel from '@/components/image-carousel';
 export default function HomePage() {
   return (
     <>
@@ -38,6 +39,9 @@ export default function HomePage() {
           SECCIÓN 5: User Manual - Manual de usuario
           Guía paso a paso para nuevos usuarios, profesional y negocios
       ============================================ */}
+
+       <ImageCarousel />
+    
        <UserManual />
 
       {/* ============================================

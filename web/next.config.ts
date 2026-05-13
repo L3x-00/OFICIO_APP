@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
         hostname: "minio",
         port: "9000",
       },
+      // Tu propio dominio en producción
+      {
+        protocol: "https",
+        hostname: "www.oficioapp.org.pe",
+      },
     ],
   },
   async headers() {

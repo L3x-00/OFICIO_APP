@@ -12,27 +12,27 @@ const slides = [
     caption: 'Cientos de profesionales verificados en tu ciudad',
   },
   {
-    src: '/images/coin.png',
+    src: '/images/portada.png',
     alt: 'Conexión entre proveedor y cliente',
     caption: 'Conexión directa entre clientes y expertos',
   },
   {
-    src: '/images/coin.png',
+    src: '/images/provedor.png',
     alt: 'OficioApp – marketplace de servicios',
     caption: 'El marketplace de servicios locales más confiable del Perú',
   },
   {
-    src: '/images/coin.png',
+    src: '/images/portada2.png',
     alt: 'Proveedor en OficioApp',
     caption: 'Crea tu perfil profesional y empieza a recibir clientes',
   },
   {
-    src: '/images/coin.png',
+    src: '/images/promociona2.png',
     alt: 'Promociona tu negocio',
     caption: 'Promociona tu negocio y aumenta tus ventas',
   },
   {
-    src: '/images/coin.png',
+    src: '/images/promocionar.png',
     alt: 'Servicios locales a tu alcance',
     caption: 'Servicios locales a tu alcance, cuando los necesites',
   },
@@ -101,13 +101,10 @@ export default function ImageCarousel() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
               className="absolute inset-0"
             >
-              <Image
+              <img
                 src={slides[current].src}
                 alt={slides[current].alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 90vw"
-                priority={current === 0}
+                className="absolute inset-0 w-full h-full object-cover"
               />
               {/* Gradient overlay para texto */}
               <div className="absolute inset-0 bg-gradient-to-t from-dark-premium/80 via-dark-premium/20 to-transparent" />

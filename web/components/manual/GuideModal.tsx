@@ -95,14 +95,17 @@ export default function GuideModal({ section, isOpen, onClose }: GuideModalProps
                         </p>
 
                         {step.screenshot && (
-                          <div className="mt-3 bg-white/[0.02] border border-dashed border-white/10 rounded-lg p-4 text-center hover:border-primary/30 transition-colors">
-                            <div className="flex flex-col items-center gap-1.5">
-                              <ImageIcon size={20} className="text-white/30" strokeWidth={1.75} />
-                              <p className="text-white/50 text-[12px] font-medium">{step.screenshot}</p>
-                              <span className="text-[10px] text-white/30">(Espacio para captura real)</span>
-                            </div>
-                          </div>
-                        )}
+  <div className="mt-3 flex justify-center">
+    <div className="rounded-2xl overflow-hidden border-2 border-white/10 shadow-xl" style={{ maxWidth: '280px' }}>
+      <img
+        src={`/images/manual/${step.screenshot}`}
+        alt={step.title}
+        className="w-full h-auto block"
+        loading="lazy"
+      />
+    </div>
+  </div>
+)}
 
                         {step.subSteps && step.subSteps.length > 0 && (
                           <ul className="mt-3 space-y-1.5">

@@ -38,7 +38,7 @@ import {
           desc: 'En la pantalla principal, usa los filtros de categoría, ubicación y rating para encontrar al profesional ideal.',
           icon: Search,
           accent: 'blue',
-          screenshot: 'Pantalla de exploración con filtros de categoría y ubicación',
+          screenshot: 'servicios.jpeg',
           subSteps: [
             'Selecciona una categoría (electricista, gasfitero, chef, etc.)',
             'Filtra por departamento, provincia y distrito',
