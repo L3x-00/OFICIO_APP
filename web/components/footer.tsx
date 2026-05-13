@@ -179,36 +179,60 @@ export default function Footer() {
             </div>
 
             <span className="eyebrow block mt-6 mb-3">Síguenos</span>
-              <div className="flex items-center gap-2">
-                <SocialIcon
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
-                  label="Gmail"
-                  color="#EA4335"
-                >
-                  <GmailIcon />
-                </SocialIcon>
-                <SocialIcon
-                  href="https://www.tiktok.com/@ofiapp.pe"
-                  label="TikTok"
-                  color="#00F2EA"
-                >
-                  <TikTokIcon />
-                </SocialIcon>
-                <SocialIcon
-                  href="https://www.facebook.com/profile.php?id=61585849044376"
-                  label="Facebook"
-                  color="#1877F2"
-                >
-                  <FacebookIcon />
-                </SocialIcon>
-                <SocialIcon
-                  href="https://www.instagram.com/ofiapp.pe/"
-                  label="Instagram"
-                  color="#E4405F"
-                >
-                  <InstagramIcon />
-                </SocialIcon>
-              </div>
+            <div className="flex items-center gap-2">
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Gmail"
+                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
+              >
+                <img
+                  src="/images/social/gmail.svg"
+                  alt="Gmail"
+                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </a>
+              <a
+                href="https://www.tiktok.com/@ofiapp.pe"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
+              >
+                <img
+                  src="/images/social/tiktok.svg"
+                  alt="TikTok"
+                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </a>
+              <a
+                href="https://www.facebook.com/profile.php?id=61585849044376"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
+              >
+                <img
+                  src="/images/social/facebook.svg"
+                  alt="Facebook"
+                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </a>
+              <a
+                href="https://www.instagram.com/ofiapp.pe/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
+              >
+                <img
+                  src="/images/social/instagram.svg"
+                  alt="Instagram"
+                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </a>
+            </div>
           </motion.div>
 
           {/* Explorar */}
@@ -348,76 +372,5 @@ export default function Footer() {
       />
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </motion.footer>
-  );
-}
-
-// Componente para íconos sociales (mejor hover)
-// ── Íconos SVG inline de redes sociales ────────────────
-function SocialIcon({ href, label, color, children }: { href: string; label: string; color: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
-      style={{ color: color ? '' : 'inherit' }}
-    >
-      <span className="w-5 h-5 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity" style={{ color }}>
-        {children}
-      </span>
-    </a>
-  );
-}
-
-// SVG inline para Gmail
-function GmailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-      <path d="M2 6l10 7 10-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
-    </svg>
-  );
-}
-
-// SVG inline para TikTok
-function TikTokIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-      <path
-        d="M17.5 4h-2.3c-.4 1.8-1.6 3-3.5 3.2v2.2c1.4-.1 2.7-.5 3.8-1.3v5.6c0 2.9-2.4 5.3-5.3 5.3S4.9 16.7 4.9 13.8s2.4-5.3 5.3-5.3c.2 0 .4 0 .6.1v2.5c-.2 0-.4-.1-.6-.1-1.5 0-2.8 1.2-2.8 2.8s1.3 2.8 2.8 2.8 2.8-1.2 2.8-2.8V4z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        fill="none"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// SVG inline para Facebook
-function FacebookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-      <path
-        d="M18 2h-3c-2.8 0-5 2.2-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7c0-.6.4-1 1-1h3V2z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
-
-// SVG inline para Instagram
-function InstagramIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-      <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.8" fill="none" />
-      <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8" fill="none" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-    </svg>
   );
 }
