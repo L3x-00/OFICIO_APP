@@ -7,35 +7,20 @@ import { api } from '@/lib/api';
 import { profileSchema } from '@/lib/validators';
 import { useProfileType } from '@/lib/profile-type-context';
 import {
-  Camera,
-  Upload,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  Globe,
-  Music,
-  Send,
-  MessageCircle,
-  Shield,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Star,
-  Loader2,
-  Save,
+  Camera, Upload, Trash2, ChevronDown, ChevronUp, Plus,
+  Shield, CheckCircle, XCircle, Clock, Star, Loader2, Save,
 } from 'lucide-react';
 import type { Provider } from '@/lib/types';
 
 const SOCIAL_FIELDS = [
-  { key: 'website', label: 'Página web', icon: Globe },
-  { key: 'instagram', label: 'Instagram', icon: Camera },
-  { key: 'tiktok', label: 'TikTok', icon: Music },
-  { key: 'facebook', label: 'Facebook', icon: MessageCircle },
-  { key: 'linkedin', label: 'LinkedIn', icon: Globe },
-  { key: 'twitterX', label: 'Twitter (X)', icon: Send },
-  { key: 'telegram', label: 'Telegram', icon: Send },
-  { key: 'whatsappBiz', label: 'WhatsApp Business', icon: MessageCircle },
+  { key: 'website', label: 'Página web', svg: '/images/social/website.svg' },
+  { key: 'instagram', label: 'Instagram', svg: '/images/social/instagram.svg' },
+  { key: 'tiktok', label: 'TikTok', svg: '/images/social/tiktok.svg' },
+  { key: 'facebook', label: 'Facebook', svg: '/images/social/facebook.svg' },
+  { key: 'linkedin', label: 'LinkedIn', svg: '/images/social/linkedin.svg' },
+  { key: 'twitterX', label: 'Twitter (X)', svg: '/images/social/X.svg' },
+  { key: 'telegram', label: 'Telegram', svg: '/images/social/telegram.svg' },
+  { key: 'whatsappBiz', label: 'WhatsApp Business', svg: '/images/social/whatsapp-3.svg' },
 ];
 
 const DAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
@@ -438,13 +423,13 @@ export default function PanelPerfilPage() {
         onToggle={() => setShowSocial(!showSocial)}
       >
         <div className="grid sm:grid-cols-2 gap-4">
-          {SOCIAL_FIELDS.map(({ key, label, icon: Icon }) => (
+          {SOCIAL_FIELDS.map(({ key, label, svg }) => (
             <InputField
               key={key}
               label={label}
               value={socialFields[key] || ''}
               onChange={(v) => setSocialFields((prev) => ({ ...prev, [key]: v }))}
-              icon={<Icon size={16} />}
+              icon={svg}
             />
           ))}
         </div>
@@ -571,7 +556,7 @@ function InputField({
   value: string;
   onChange: (v: string) => void;
   type?: string;
-  icon?: React.ReactNode;
+  icon?: string;  // ← ahora es string (ruta del SVG)
 }) {
   return (
     <div>
@@ -579,11 +564,15 @@ function InputField({
         {label}
       </label>
       <div className="relative group">
-        {icon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors">
-            {icon}
-          </div>
-        )}
+          {icon && (
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30">
+              <img
+                src={icon}
+                alt=""
+                className="w-5 h-5 object-contain opacity-70"
+              />
+            </div>
+          )}
         <input
           type={type}
           value={value}
