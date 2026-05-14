@@ -105,18 +105,17 @@ class _SocialIconButton extends StatelessWidget {
         width:  40,
         height: 40,
         decoration: BoxDecoration(
-          color: data.color.withValues(alpha: 0.12),
+          color: data.color.withValues(alpha: 0.12), // Fondo sutil de la marca
           shape: BoxShape.circle,
-          border: Border.all(color: data.color.withValues(alpha: 0.4)),
+          border: Border.all(color: data.color.withValues(alpha: 0.4)), // Borde de la marca
         ),
-        // Reemplazamos Icon() por SvgPicture.asset()
+        // Aquí renderizamos el SVG con sus colores originales
         child: Center(
           child: SvgPicture.asset(
             data.svgPath,
             width: 20,
             height: 20,
-            // Aplicamos el color de marca oficial al SVG
-            colorFilter: ColorFilter.mode(data.color, BlendMode.srcIn),
+            // ¡Hemos eliminado colorFilter! Así mostrará sus colores reales.
           ),
         ),
       ),

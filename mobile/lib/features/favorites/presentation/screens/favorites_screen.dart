@@ -77,7 +77,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         final provider = favProv.favorites[index].copyWith(
                           isFavorite: true,
                         );
-                        return ServiceCard(
+                        return ServiceCardDefault(
                           provider: provider,
                           onTap: () =>
                               ProviderDetailSheet.show(context, provider),

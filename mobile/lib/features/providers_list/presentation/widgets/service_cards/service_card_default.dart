@@ -9,7 +9,7 @@ import 'card_provider_info.dart';
 import 'card_service_chips.dart';
 
 /// Tarjeta principal de servicio — variante por defecto ("detalles").
-class ServiceCard extends StatelessWidget {
+class ServiceCardDefault extends StatelessWidget {
   final ProviderModel provider;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteToggle;
@@ -20,7 +20,7 @@ class ServiceCard extends StatelessWidget {
   /// Abre el chat interno con este proveedor
   final VoidCallback? onChat;
 
-  const ServiceCard({
+  const ServiceCardDefault({
     super.key,
     required this.provider,
     this.onTap,

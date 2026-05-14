@@ -106,7 +106,7 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
                       entry.$3,
                       width: 18,
                       height: 18,
-                      colorFilter: ColorFilter.mode(c.textMuted, BlendMode.srcIn),
+                      // Sin colorFilter para que brillen los colores originales de marca
                     ),
                   ),
                   prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 18),
