@@ -3,7 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/constans/app_colors.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/provider_model.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/constans/app_colors.dart';
+import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../payments/presentation/providers/payments_provider.dart';
 import '../../../../payments/presentation/screens/payment_history_screen.dart';

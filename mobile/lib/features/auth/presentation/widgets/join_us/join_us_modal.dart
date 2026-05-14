@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../../../provider_dashboard/presentation/screens/provider_panel.dart';
 import 'join_us_components.dart';

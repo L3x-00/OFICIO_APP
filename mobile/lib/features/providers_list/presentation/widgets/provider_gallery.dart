@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import '../../../../core/constans/app_colors.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 
 /// Galería de imágenes del proveedor con PageView e indicadores.

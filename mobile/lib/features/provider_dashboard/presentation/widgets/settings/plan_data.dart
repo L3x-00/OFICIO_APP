@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 
 /// Modelo de un plan de suscripción para mostrar en la sección de planes.
 class PlanData {

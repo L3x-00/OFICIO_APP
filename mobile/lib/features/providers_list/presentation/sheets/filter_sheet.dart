@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constans/app_colors.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/localities/data/dynamic_locations.dart';

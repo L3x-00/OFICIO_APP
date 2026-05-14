@@ -153,7 +153,7 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
             onPressed: () => Navigator.pop(context, false),
           ),
-          title: Image.asset('assets/images/yape/yape logo.png',
+          title: Image.asset('assets/images/yape/yape.svg',
               height: 28, errorBuilder: (ctx, err, st) =>
               const Text('Yape', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
           centerTitle: true,
@@ -261,7 +261,7 @@ class _StepSummary extends StatelessWidget {
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset('assets/images/yape/QR.jpeg',
+                  child: Image.asset('assets/images/yape/qr.svg',
                       width: 200, height: 200, fit: BoxFit.cover,
                       errorBuilder: (ctx, err, st) => Container(
                         width: 200, height: 200,

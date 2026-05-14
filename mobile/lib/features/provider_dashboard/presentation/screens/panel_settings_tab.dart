@@ -5,13 +5,13 @@ import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../referrals/presentation/screens/referral_screen.dart';
 import '../providers/dashboard_provider.dart';
-import 'settings/home_service_toggle.dart';
-import 'settings/legal_sheet.dart';
-import 'settings/logout_button.dart';
-import 'settings/profile_header.dart';
-import 'settings/settings_components.dart';
-import 'settings/settings_dialogs.dart';
-import 'settings/subscription_section.dart';
+import '../widgets/settings/home_service_toggle.dart';
+import '../widgets/settings/legal_sheet.dart';
+import '../widgets/settings/logout_button.dart';
+import '../widgets/settings/profile_header.dart';
+import '../widgets/settings/settings_components.dart';
+import '../widgets/settings/settings_dialogs.dart';
+import '../widgets/settings/subscription_section.dart';
 
 /// Tab "Configuración" del panel del proveedor.
 ///

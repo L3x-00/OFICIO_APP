@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/constans/app_colors.dart';
+import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../../core/utils/plan_limits.dart';
 import '../../../../payments/presentation/screens/plan_selector_sheet.dart';

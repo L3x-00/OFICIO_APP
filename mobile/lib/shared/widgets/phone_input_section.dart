@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/constans/app_colors.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_theme_colors.dart';
 
 // Países comunes para Latinoamérica / España

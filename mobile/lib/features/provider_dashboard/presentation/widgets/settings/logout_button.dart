@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 
 /// Botón outline "Cerrar sesión" en color busy (rojo). La acción concreta
 /// vive en el `onTap` que se pasa (típicamente `showLogoutDialog`).

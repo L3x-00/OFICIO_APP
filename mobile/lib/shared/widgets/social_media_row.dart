@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Fila horizontal con iconos de redes sociales clicables.
+/// Fila horizontal con iconos SVG de redes sociales clicables.
 /// Cada icono usa el color de su marca y abre la URL correspondiente.
 class SocialMediaRow extends StatelessWidget {
   final String? website;
@@ -42,14 +43,14 @@ class SocialMediaRow extends StatelessWidget {
     if (!hasAny) return const SizedBox.shrink();
 
     final icons = <_SocialIcon>[
-      if (_v(website))     _SocialIcon(Icons.public_rounded,     const Color(0xFF1F2937), website!,     prefix: 'https://'),
-      if (_v(instagram))   _SocialIcon(Icons.camera_alt_rounded, const Color(0xFFE4405F), instagram!,   prefix: 'https://instagram.com/'),
-      if (_v(tiktok))      _SocialIcon(Icons.music_note_rounded, const Color(0xFF000000), tiktok!,      prefix: 'https://tiktok.com/@'),
-      if (_v(facebook))    _SocialIcon(Icons.facebook_rounded,   const Color(0xFF1877F2), facebook!,    prefix: 'https://facebook.com/'),
-      if (_v(linkedin))    _SocialIcon(Icons.work_rounded,       const Color(0xFF0A66C2), linkedin!,    prefix: 'https://linkedin.com/in/'),
-      if (_v(twitterX))    _SocialIcon(Icons.alternate_email,    const Color(0xFF000000), twitterX!,    prefix: 'https://x.com/'),
-      if (_v(telegram))    _SocialIcon(Icons.send_rounded,       const Color(0xFF26A5E4), telegram!,    prefix: 'https://t.me/'),
-      if (_v(whatsappBiz)) _SocialIcon(Icons.chat_rounded,       const Color(0xFF25D366), whatsappBiz!, prefix: 'https://wa.me/'),
+      if (_v(website))     _SocialIcon('assets/icons/website.svg',   const Color(0xFF1F2937), website!,     prefix: 'https://'),
+      if (_v(instagram))   _SocialIcon('assets/icons/instagram.svg', const Color(0xFFE4405F), instagram!,   prefix: 'https://instagram.com/'),
+      if (_v(tiktok))      _SocialIcon('assets/icons/tiktok.svg',    const Color(0xFF000000), tiktok!,      prefix: 'https://tiktok.com/@'),
+      if (_v(facebook))    _SocialIcon('assets/icons/facebook.svg',  const Color(0xFF1877F2), facebook!,    prefix: 'https://facebook.com/'),
+      if (_v(linkedin))    _SocialIcon('assets/icons/linkedin.svg',  const Color(0xFF0A66C2), linkedin!,    prefix: 'https://linkedin.com/in/'),
+      if (_v(twitterX))    _SocialIcon('assets/icons/twitterx.svg',  const Color(0xFF000000), twitterX!,    prefix: 'https://x.com/'),
+      if (_v(telegram))    _SocialIcon('assets/icons/telegram.svg',  const Color(0xFF26A5E4), telegram!,    prefix: 'https://t.me/'),
+      if (_v(whatsappBiz)) _SocialIcon('assets/icons/whatsapp.svg',  const Color(0xFF25D366), whatsappBiz!, prefix: 'https://wa.me/'),
     ];
 
     return Wrap(
@@ -61,11 +62,12 @@ class SocialMediaRow extends StatelessWidget {
 }
 
 class _SocialIcon {
-  final IconData icon;
+  final String svgPath; // Cambiado de IconData a String (ruta del SVG)
   final Color color;
   final String value;
   final String prefix;
-  const _SocialIcon(this.icon, this.color, this.value, {required this.prefix});
+  
+  const _SocialIcon(this.svgPath, this.color, this.value, {required this.prefix});
 
   Uri get url {
     final v = value.trim();
@@ -107,7 +109,16 @@ class _SocialIconButton extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: data.color.withValues(alpha: 0.4)),
         ),
-        child: Icon(data.icon, color: data.color, size: 20),
+        // Reemplazamos Icon() por SvgPicture.asset()
+        child: Center(
+          child: SvgPicture.asset(
+            data.svgPath,
+            width: 20,
+            height: 20,
+            // Aplicamos el color de marca oficial al SVG
+            colorFilter: ColorFilter.mode(data.color, BlendMode.srcIn),
+          ),
+        ),
       ),
     );
   }

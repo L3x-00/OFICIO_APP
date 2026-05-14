@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/constans/app_colors.dart';
+import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 
 /// Título de sección reusable (ícono + texto). Compartido por las

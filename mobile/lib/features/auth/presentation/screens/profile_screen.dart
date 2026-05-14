@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:mobile/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
@@ -11,7 +12,7 @@ import '../providers/auth_provider.dart';
 import '../../../providers_list/presentation/providers/providers_provider.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
-import 'onboarding_screen.dart';
+
 import 'saved_accounts_screen.dart';
 import 'login_screen.dart';
 import '../../../../features/provider_dashboard/presentation/screens/provider_panel.dart';

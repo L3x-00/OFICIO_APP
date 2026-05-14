@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/constans/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Asegúrate de tener este paquete
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 
 class OnboardingSocialSection extends StatefulWidget {
@@ -35,15 +36,16 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
   Widget build(BuildContext context) {
     final c = context.colors;
 
+    // Mapeo: (Key, Label, Ruta del SVG)
     const networks = [
-      ('website',     'Página web',          Icons.language_rounded),
-      ('instagram',   'Instagram',            Icons.camera_alt_rounded),
-      ('tiktok',      'TikTok',               Icons.music_note_rounded),
-      ('facebook',    'Facebook',             Icons.facebook_rounded),
-      ('linkedin',    'LinkedIn',             Icons.work_rounded),
-      ('twitterX',    'Twitter / X',          Icons.alternate_email_rounded),
-      ('telegram',    'Telegram',             Icons.send_rounded),
-      ('whatsappBiz', 'WhatsApp (negocio)',   Icons.chat_rounded),
+      ('website',     'Página web',          'assets/icons/website.svg'),
+      ('instagram',   'Instagram',            'assets/icons/instagram.svg'),
+      ('tiktok',      'TikTok',               'assets/icons/tiktok.svg'),
+      ('facebook',    'Facebook',             'assets/icons/facebook.svg'),
+      ('linkedin',    'LinkedIn',             'assets/icons/linkedin.svg'),
+      ('twitterX',    'Twitter / X',          'assets/icons/twitterx.svg'),
+      ('telegram',    'Telegram',             'assets/icons/telegram.svg'),
+      ('whatsappBiz', 'WhatsApp (negocio)',   'assets/icons/whatsapp.svg'),
     ];
 
     final controllers = {
@@ -89,7 +91,7 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
         ),
         if (_expanded) ...[
           const SizedBox(height: 12),
-          ...networks.map(((String key, String label, IconData icon) entry) {
+          ...networks.map(((String key, String label, String svgPath) entry) {
             final ctrl = controllers[entry.$1]!;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -97,7 +99,17 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
                 controller: ctrl,
                 style: TextStyle(color: c.textPrimary, fontSize: 14),
                 decoration: InputDecoration(
-                  prefixIcon: Icon(entry.$3, color: c.textMuted, size: 18),
+                  // Aquí reemplazamos el Icon() por SvgPicture.asset()
+                  prefixIcon: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 12.0, end: 8.0),
+                    child: SvgPicture.asset(
+                      entry.$3,
+                      width: 18,
+                      height: 18,
+                      colorFilter: ColorFilter.mode(c.textMuted, BlendMode.srcIn),
+                    ),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 18),
                   labelText: entry.$2,
                   labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
                   filled: true,

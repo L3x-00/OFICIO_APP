@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constans/app_colors.dart';
+import '../constants/app_colors.dart';
 
 /// Colores que cambian según el tema (claro/oscuro).
 /// Los colores de marca (amber, primary, status) permanecen estáticos en AppColors.

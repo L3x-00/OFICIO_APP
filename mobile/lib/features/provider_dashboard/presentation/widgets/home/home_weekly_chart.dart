@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../../../../core/constans/app_colors.dart';
+import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
 

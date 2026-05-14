@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/constans/app_colors.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../screens/login_screen.dart';
-import '../../screens/onboarding_screen.dart';
 import 'join_us_plans.dart';
 import 'profile_preview_mock.dart';
 

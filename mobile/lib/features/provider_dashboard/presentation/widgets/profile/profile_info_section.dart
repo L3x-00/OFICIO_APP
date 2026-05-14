@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/constans/app_colors.dart';
+import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../../shared/widgets/phone_input_section.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
