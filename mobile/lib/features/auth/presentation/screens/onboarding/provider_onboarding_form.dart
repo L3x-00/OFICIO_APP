@@ -5,29 +5,41 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/utils/permission_service.dart';
+import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
 import 'package:mobile/features/referrals/data/referrals_repository.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../../../provider_dashboard/data/dashboard_repository.dart';
 import '../../../../providers_list/data/providers_repository.dart';
 import '../../../../../core/errors/failures.dart';
-import '../../../../../shared/widgets/location_picker_sheet.dart';
-import '../../../../../shared/widgets/phone_input_section.dart';
 import '../../../../../shared/widgets/collapsible_schedule.dart';
+import '../../../../../shared/widgets/phone_input_section.dart';
 import 'widgets/onboarding_photo_section.dart';
 import 'widgets/onboarding_address_section.dart';
 import 'widgets/onboarding_social_section.dart';
+
+// Nuevos imports factorizados
+import 'widgets/onboarding_form_components.dart';
+import 'widgets/onboarding_category_section.dart';
+import 'widgets/onboarding_location_section.dart';
+import 'widgets/onboarding_delivery_section.dart';
 
 class ProviderOnboardingForm extends StatefulWidget {
   final String? providerType;
   final bool isStandalone;
   final Map<String, dynamic>? initialData;
+  /// Plan elegido en [OnboardingPlansSheet] antes de entrar al formulario.
+  /// Determina el flujo de submit: si es GRATIS se registra directo; si es
+  /// pagado, se ofrece "Adquirir plan" (→ Yape) o "Registrarme con plan
+  /// gratis" (registro normal). Si llega null, se asume GRATIS.
+  final String? selectedPlan;
 
   const ProviderOnboardingForm({
     super.key,
     this.providerType,
     this.isStandalone = false,
     this.initialData,
+    this.selectedPlan,
   });
 
   @override
@@ -39,8 +51,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   final _businessNameController    = TextEditingController();
   final _dniController             = TextEditingController();
   final _rucController             = TextEditingController();
-  final _nombreComercialController = TextEditingController();
-  final _razonSocialController     = TextEditingController();
+  // Nota: "Nombre Comercial" y "Razón Social" se eliminaron del formulario.
+  // El backend los infiere durante la validación de identidad/SUNAT así que
+  // pedirlos aquí era redundante y confundía a los usuarios.
   final _descriptionController     = TextEditingController();
   final _addressController         = TextEditingController();
   final _mapsUrlController         = TextEditingController();
@@ -110,8 +123,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       _addressController.text         = d['address']         ?? '';
       _dniController.text             = d['dni']             ?? '';
       _rucController.text             = d['ruc']             ?? '';
-      _nombreComercialController.text = d['nombreComercial'] ?? '';
-      _razonSocialController.text     = d['razonSocial']     ?? '';
       if (d['scheduleJson'] is Map<String, dynamic>) {
         _scheduleJson = Map<String, dynamic>.from(d['scheduleJson'] as Map);
       }
@@ -123,8 +134,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _businessNameController.dispose();
     _dniController.dispose();
     _rucController.dispose();
-    _nombreComercialController.dispose();
-    _razonSocialController.dispose();
     _descriptionController.dispose();
     _addressController.dispose();
     _mapsUrlController.dispose();
@@ -140,7 +149,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     super.dispose();
   }
 
-  // ── Categories ───────────────────────────────────────────
+  // ── Data Loaders & Helpers ───────────────────────────────
 
   Future<void> _loadCategories() async {
     final result = await ProvidersRepository().getCategories(forType: widget.providerType);
@@ -150,117 +159,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       failure: (_) {},
     );
   }
-
-  Future<void> _showCategoryPicker() async {
-    if (_categories.isEmpty) return;
-    final c = context.colors;
-    final isNegocio = !_isOficio;
-
-    CategoryModel? pickerParent;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: c.bgCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModal) {
-          final items = pickerParent == null ? _categories : pickerParent!.children;
-          final title = pickerParent == null
-              ? (isNegocio ? 'Sector de tu negocio' : 'Selecciona una categoría')
-              : pickerParent!.name;
-
-          return DraggableScrollableSheet(
-            initialChildSize: 0.6,
-            minChildSize: 0.4,
-            maxChildSize: 0.92,
-            expand: false,
-            builder: (_, scrollCtrl) => SafeArea(
-              child: Column(
-                children: [
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 36, height: 4,
-                    decoration: BoxDecoration(
-                      color: c.textMuted.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 12, 20, 8),
-                    child: Row(
-                      children: [
-                        if (pickerParent != null)
-                          IconButton(
-                            icon: Icon(Icons.arrow_back_rounded, color: c.textSecondary),
-                            onPressed: () => setModal(() => pickerParent = null),
-                          )
-                        else
-                          const SizedBox(width: 48),
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              color: c.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(height: 1, color: c.border),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: scrollCtrl,
-                      itemCount: items.length,
-                      itemBuilder: (_, i) {
-                        final item = items[i];
-                        final isSelected = _selectedCategoryId == item.id;
-                        final hasChildren = item.children.isNotEmpty;
-                        return ListTile(
-                          title: Text(
-                            item.name,
-                            style: TextStyle(
-                              color: isSelected ? AppColors.primary : c.textPrimary,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                          trailing: hasChildren
-                              ? Icon(Icons.chevron_right, color: c.textMuted)
-                              : isSelected
-                                  ? const Icon(Icons.check_circle, color: AppColors.primary)
-                                  : null,
-                          onTap: () {
-                            if (hasChildren) {
-                              setModal(() => pickerParent = item);
-                            } else {
-                              setState(() {
-                                _selectedCategoryId   = item.id;
-                                _selectedCategoryName = item.name;
-                                _selectedParentName   = pickerParent?.name ?? '';
-                              });
-                              Navigator.pop(ctx);
-                            }
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ── GPS / Maps ───────────────────────────────────────────
 
   Future<void> _fetchGpsLocation() async {
     setState(() => _gpsLoading = true);
@@ -300,8 +198,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _showSnack('No se pudieron extraer coordenadas del enlace.', isError: true);
   }
 
-  // ── Photos ───────────────────────────────────────────────
-
   Future<void> _pickPhoto() async {
     if (_photos.length >= _maxPhotos) return;
     final picker = ImagePicker();
@@ -311,330 +207,192 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     }
   }
 
-  void _removePhoto(int index) {
-    setState(() => _photos.removeAt(index));
-  }
-
-  void _reorderPhotos(int from, int to) {
-    setState(() {
-      final item = _photos.removeAt(from);
-      _photos.insert(to, item);
-    });
-  }
-
-  // ── Helpers ──────────────────────────────────────────────
+  void _removePhoto(int index) => setState(() => _photos.removeAt(index));
+  void _reorderPhotos(int from, int to) => setState(() {
+    final item = _photos.removeAt(from);
+    _photos.insert(to, item);
+  });
 
   void _showSnack(String msg, {bool isError = false}) {
     if (!mounted) return;
-    if (isError) {
-      context.showErrorSnack(msg);
-    } else {
-      context.showSuccessSnack(msg);
+    if (isError) { context.showErrorSnack(msg); } 
+    else { context.showSuccessSnack(msg); }
+  }
+
+  // ── Submit Logic ─────────────────────────────────────────
+
+  /// Plan elegido en la sheet previa al formulario. `null` o vacío equivale
+  /// a GRATIS (registro directo sin pasarela de pago).
+  String get _planChoice => widget.selectedPlan ?? 'GRATIS';
+
+  /// Entry point del botón "Registrarme como profesional/negocio".
+  ///
+  /// Si el plan elegido es pagado (ESTANDAR/PREMIUM), abre primero un sheet
+  /// con dos opciones — "Adquirir plan X" (registro + pago Yape) o
+  /// "Registrarme con plan gratis" (registro directo). Para GRATIS va al
+  /// flujo de submit normal sin diálogos extra.
+  Future<void> _onSubmitPressed() async {
+    if (!_validateRequired()) return;
+    if (_planChoice == 'GRATIS') {
+      await _submit(goToPayment: false);
+      return;
     }
+    final chosen = await _showPlanChoiceSheet();
+    if (chosen == null) return; // canceló
+    await _submit(goToPayment: chosen == 'paid');
   }
 
-  Widget _buildOficioDomicilioSection() {
+  /// Sheet de confirmación final con dos botones explícitos:
+  ///   - "Adquirir plan X" → returns 'paid'
+  ///   - "Registrarme con plan gratis" → returns 'free'
+  ///   - "Cambiar plan" cierra y regresa al onboarding para reelegir.
+  Future<String?> _showPlanChoiceSheet() async {
     final c = context.colors;
-    return _buildToggleRow(
-      c: c,
-      value: _hasDelivery,
-      onChanged: (v) => setState(() => _hasDelivery = v),
-      icon: Icons.home_repair_service_rounded,
-      label: 'Ofrezco servicios a domicilio',
-      subtitle: 'Me desplazo al lugar del cliente',
-    );
-  }
-
-  Widget _buildDeliverySection() {
-    final c = context.colors;
-    return Column(
-      children: [
-        _buildToggleRow(
-          c: c,
-          value: _hasDelivery,
-          onChanged: (v) => setState(() {
-            _hasDelivery = v;
-            if (!v) _plenaCoordinacion = false;
-          }),
-          icon: Icons.delivery_dining_rounded,
-          label: 'Ofrezco servicio de delivery',
-          subtitle: 'Entrego pedidos a domicilio',
-        ),
-        if (_hasDelivery) ...[
-          const SizedBox(height: 10),
-          _buildToggleRow(
-            c: c,
-            value: _plenaCoordinacion,
-            onChanged: (v) => setState(() => _plenaCoordinacion = v),
-            icon: Icons.handshake_rounded,
-            label: 'Plena coordinación',
-            subtitle: 'Coordino detalles con el cliente antes del envío',
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildToggleRow({
-    required AppThemeColors c,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    required IconData icon,
-    required String label,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: value ? AppColors.primary.withValues(alpha: 0.06) : c.bgCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: value ? AppColors.primary.withValues(alpha: 0.4) : c.border,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: value ? AppColors.primary : c.textMuted, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w500)),
-                Text(subtitle, style: TextStyle(color: c.textMuted, fontSize: 12)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.primary,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType? keyboardType,
-    int maxLines = 1,
-    int? maxLength,
-  }) {
-    final c = context.colors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: c.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          maxLength: maxLength,
-          style: TextStyle(color: c.textPrimary),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
-            prefixIcon: maxLines == 1
-                ? Icon(icon, color: c.textMuted, size: 20)
-                : null,
-            counterText: '',
-            filled: true,
-            fillColor: c.bgCard,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
-            ),
-            contentPadding: EdgeInsets.all(maxLines > 1 ? 16 : 14),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategorySelector(AppThemeColors c) {
-    final hasCategories = _categories.isNotEmpty;
-    final isSelected    = _selectedCategoryId != null;
-    final isNegocio     = !_isOficio;
-    final displayText   = isSelected && _selectedParentName.isNotEmpty
-        ? '$_selectedParentName › $_selectedCategoryName'
-        : isNegocio
-            ? 'Selecciona el tipo de negocio'
-            : 'Selecciona una categoría';
-
-    return GestureDetector(
-      onTap: hasCategories ? _showCategoryPicker : null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    final paidPlan = _planChoice;
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: c.bgCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.5)
-                : c.border,
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Row(
+        padding: EdgeInsets.fromLTRB(
+          24, 16, 24,
+          MediaQuery.of(ctx).padding.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(
-              isNegocio ? Icons.storefront_outlined : Icons.category_outlined,
-              color: isSelected ? AppColors.primary : c.textMuted,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isNegocio ? 'Tipo de negocio *' : 'Categoría del servicio',
-                    style: TextStyle(color: c.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    displayText,
-                    style: TextStyle(
-                      color: isSelected ? c.textPrimary : c.textMuted,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (!hasCategories)
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: c.textMuted,
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: c.textMuted.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-              )
-            else
-              Icon(Icons.arrow_drop_down, color: c.textMuted),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLocationSection(AppThemeColors c) {
-    final hasLoc = _hasAdminLocation;
-    return GestureDetector(
-      onTap: () async {
-        final result = await LocationPickerSheet.show(
-          context,
-          initialDepartment: _department,
-          initialProvince:   _province,
-          initialDistrict:   _district,
-        );
-        if (result != null && mounted) {
-          setState(() {
-            _department = result.department;
-            _province   = result.province;
-            _district   = result.district;
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: c.bg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: hasLoc
-                ? AppColors.primary.withValues(alpha: 0.4)
-                : AppColors.busy.withValues(alpha: 0.5),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              hasLoc ? Icons.location_on_rounded : Icons.location_off_rounded,
-              color: hasLoc ? AppColors.primary : AppColors.busy,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    hasLoc
-                        ? '$_district, $_province'
-                        : 'Seleccionar ubicación *',
-                    style: TextStyle(
-                      color: hasLoc ? c.textPrimary : AppColors.busy,
-                      fontSize: 14,
-                      fontWeight: hasLoc ? FontWeight.w500 : FontWeight.normal,
-                    ),
-                  ),
-                  if (hasLoc)
-                    Text(
-                      _department!,
-                      style: TextStyle(color: c.textSecondary, fontSize: 12),
-                    ),
-                ],
               ),
             ),
-            Icon(Icons.edit_rounded, color: c.textMuted, size: 16),
+            const SizedBox(height: 16),
+            Text(
+              'Elige cómo registrarte',
+              style: TextStyle(
+                  color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Seleccionaste el plan $paidPlan. Puedes adquirirlo ahora o '
+              'empezar gratis y suscribirte luego desde tu panel.',
+              style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 22),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(ctx).pop('paid'),
+              icon: const Icon(Icons.workspace_premium_rounded, size: 18),
+              label: Text('Adquirir plan $paidPlan',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.of(ctx).pop('free'),
+              icon: const Icon(Icons.handshake_rounded, size: 18),
+              label: const Text('Registrarme con plan gratis',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: c.textPrimary,
+                side: BorderSide(color: c.border),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            const SizedBox(height: 6),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                // Cierra el sheet y deja que el usuario vuelva atrás para
+                // reabrir el onboarding de planes — no perdemos los datos
+                // del form porque seguimos en la misma pantalla.
+              },
+              child: Text('Cambiar de plan',
+                  style: TextStyle(color: c.textMuted)),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ── Submit ───────────────────────────────────────────────
-
-  Future<void> _submit() async {
+  /// Valida los campos obligatorios. Devuelve `true` si todo OK.
+  /// Reglas (front + backend coinciden):
+  ///   - businessName: requerido, ≥ 2 caracteres.
+  ///   - description: requerido, ≥ 10 caracteres (texto significativo).
+  ///   - categoría: requerido (al menos una).
+  ///   - fotos: al menos 1.
+  ///   - teléfono: 9 dígitos peruanos o internacional.
+  ///   - ubicación: requerida para NEGOCIO.
+  bool _validateRequired() {
     final name = _businessNameController.text.trim();
+    final description = _descriptionController.text.trim();
     final dni  = _dniController.text.trim();
     final ruc  = _rucController.text.trim();
 
     if (name.isEmpty) {
       _showSnack('El nombre es obligatorio.', isError: true);
-      return;
+      return false;
+    }
+    if (description.length < 10) {
+      _showSnack('La descripción es obligatoria (mínimo 10 caracteres).', isError: true);
+      return false;
+    }
+    if (_selectedCategoryId == null) {
+      _showSnack('Selecciona una categoría.', isError: true);
+      return false;
+    }
+    if (_photos.isEmpty) {
+      _showSnack('Sube al menos una foto del servicio o negocio.', isError: true);
+      return false;
     }
     if (_phone.isEmpty) {
       _showSnack('El teléfono de contacto es obligatorio.', isError: true);
-      return;
+      return false;
     }
     if (!_phone.startsWith('+') && !RegExp(r'^\d{9}$').hasMatch(_phone)) {
       _showSnack('El teléfono debe tener 9 dígitos (número peruano).', isError: true);
-      return;
+      return false;
     }
     if (!_isOficio && !_hasAdminLocation) {
       _showSnack('Selecciona tu departamento, provincia y distrito.', isError: true);
-      return;
+      return false;
     }
     if (_isOficio && dni.isNotEmpty && !RegExp(r'^\d{8}$').hasMatch(dni)) {
       _showSnack('El DNI debe tener exactamente 8 dígitos.', isError: true);
-      return;
+      return false;
     }
     if (!_isOficio && ruc.isNotEmpty && !RegExp(r'^\d{11}$').hasMatch(ruc)) {
       _showSnack('El RUC debe tener exactamente 11 dígitos.', isError: true);
-      return;
+      return false;
     }
+    return true;
+  }
+
+  Future<void> _submit({bool goToPayment = false}) async {
+    if (!_validateRequired()) return;
+
+    final name = _businessNameController.text.trim();
+    final dni  = _dniController.text.trim();
+    final ruc  = _rucController.text.trim();
 
     setState(() => _isLoading = true);
 
@@ -646,14 +404,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       type:              widget.providerType ?? 'OFICIO',
       dni:               _isOficio && dni.isNotEmpty ? dni : null,
       ruc:               !_isOficio && ruc.isNotEmpty ? ruc : null,
-      nombreComercial:   !_isOficio ? _nombreComercialController.text.trim() : null,
-      razonSocial:       !_isOficio ? _razonSocialController.text.trim() : null,
       hasDelivery:       !_isOficio ? _hasDelivery : false,
       plenaCoordinacion: !_isOficio && _hasDelivery ? _plenaCoordinacion : false,
       hasHomeService:    _isOficio ? _hasDelivery : false,
       description:       _descriptionController.text.trim(),
       address:           _addressController.text.trim(),
-      categoryId:        _selectedCategoryId,
+      categoryIds:       _selectedCategoryId == null ? null : [_selectedCategoryId!],
       scheduleJson:      !_isOficio && _scheduleJson.isNotEmpty ? _scheduleJson : null,
       website:           _websiteCtrl.text.trim().isEmpty    ? null : _websiteCtrl.text.trim(),
       instagram:         _instagramCtrl.text.trim().isEmpty  ? null : _instagramCtrl.text.trim(),
@@ -725,7 +481,28 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       );
     }
 
+    // Si el usuario eligió un plan pagado: en lugar del diálogo de éxito,
+    // saltamos al flujo de pago Yape pre-llenado con el plan elegido. La
+    // suscripción se activa cuando el admin aprueba el comprobante.
+    if (goToPayment && _planChoice != 'GRATIS') {
+      await _goToPaymentFlow(_planChoice);
+      return;
+    }
+
     _showSuccessDialog();
+  }
+
+  /// Lanza la pantalla de Yape con el plan elegido pre-cargado. Al volver
+  /// (sin importar si pagó o canceló) finalizamos el onboarding para que
+  /// el router lleve al usuario al home.
+  Future<void> _goToPaymentFlow(String plan) async {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    // Importación tardía para evitar ciclo: payments depende de auth, no al revés.
+    await YapePaymentScreen.show(context, plan: plan);
+    if (!mounted) return;
+    auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
+    if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _showSuccessDialog() {
@@ -811,7 +588,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     );
   }
 
-  // ── Build ────────────────────────────────────────────────
+  // ── Build Orchestator ────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -835,7 +612,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.providerType != null) ...[
-              _TypeBadge(isOficio: _isOficio),
+              TypeBadge(isOficio: _isOficio),
               const SizedBox(height: 14),
             ],
 
@@ -848,16 +625,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              _formSubtitle,
-              style: TextStyle(color: c.textSecondary, fontSize: 14),
-            ),
+            Text(_formSubtitle, style: TextStyle(color: c.textSecondary, fontSize: 14)),
             const SizedBox(height: 24),
 
-            _FormSectionHeader(label: 'INFORMACIÓN BÁSICA'),
+            // ── INFORMACIÓN BÁSICA ───────────────────
+            const FormSectionHeader(label: 'INFORMACIÓN BÁSICA'),
             const SizedBox(height: 12),
 
-            _buildField(
+            FormFieldTile(
               controller: _businessNameController,
               label: _isOficio ? 'Nombre del profesional *' : 'Nombre del negocio *',
               hint:  _isOficio ? 'Ej: Juan Electricista' : 'Ej: Restaurante El Sabor',
@@ -866,7 +641,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             const SizedBox(height: 14),
 
             if (_isOficio) ...[
-              _buildField(
+              FormFieldTile(
                 controller: _dniController,
                 label: 'DNI del titular (opcional)',
                 hint: '12345678',
@@ -878,7 +653,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ],
 
             if (!_isOficio) ...[
-              _buildField(
+              FormFieldTile(
                 controller: _rucController,
                 label: 'RUC (opcional)',
                 hint: '20123456789',
@@ -887,20 +662,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 maxLength: 11,
               ),
               const SizedBox(height: 14),
-              _buildField(
-                controller: _nombreComercialController,
-                label: 'Nombre Comercial (opcional)',
-                hint: 'Ej: El Sabor Peruano',
-                icon: Icons.label_outline,
-              ),
-              const SizedBox(height: 14),
-              _buildField(
-                controller: _razonSocialController,
-                label: 'Razón Social (opcional)',
-                hint: 'Ej: Inversiones El Sabor S.A.C.',
-                icon: Icons.business_outlined,
-              ),
-              const SizedBox(height: 14),
+              // Nombre Comercial y Razón Social se eliminaron: el backend los
+              // toma de SUNAT durante la validación de identidad, así que
+              // pedirlos aquí era redundante.
             ],
 
             PhoneInputSection(
@@ -926,15 +690,27 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               const SizedBox(height: 14),
             ],
 
-            _FormSectionHeader(label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO'),
+            // ── CATEGORÍA / TIPO DE NEGOCIO ──────────
+            FormSectionHeader(label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO'),
             const SizedBox(height: 12),
-            _buildCategorySelector(context.colors),
+            OnboardingCategorySection(
+              providerType: widget.providerType,
+              selectedCategoryId: _selectedCategoryId,
+              selectedCategoryName: _selectedCategoryName,
+              selectedParentName: _selectedParentName,
+              categories: _categories,
+              onSelected: (result) => setState(() {
+                _selectedCategoryId   = result.id;
+                _selectedCategoryName = result.name;
+                _selectedParentName   = result.parentName;
+              }),
+            ),
             const SizedBox(height: 24),
 
-            _FormSectionHeader(label: 'DESCRIPCIÓN'),
+            // ── DESCRIPCIÓN ──────────────────────────
+            const FormSectionHeader(label: 'DESCRIPCIÓN'),
             const SizedBox(height: 12),
-
-            _buildField(
+            FormFieldTile(
               controller: _descriptionController,
               label: _isOficio ? 'Describe tu servicio' : 'Describe tu negocio',
               hint:  _isOficio
@@ -945,11 +721,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 24),
 
-            _FormSectionHeader(
+            // ── DOMICILIO / DELIVERY ─────────────────
+            FormSectionHeader(
               label: _isOficio ? 'SERVICIOS A DOMICILIO' : 'SERVICIO DE DELIVERY',
             ),
             const SizedBox(height: 12),
-            _isOficio ? _buildOficioDomicilioSection() : _buildDeliverySection(),
+            OnboardingDeliverySection(
+              isOficio: _isOficio,
+              hasDelivery: _hasDelivery,
+              plenaCoordinacion: _plenaCoordinacion,
+              onDeliveryChanged: (v) => setState(() => _hasDelivery = v),
+              onPlenaChanged: (v) => setState(() => _plenaCoordinacion = v),
+            ),
             const SizedBox(height: 24),
 
             if (!_isOficio) ...[
@@ -960,12 +743,34 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               const SizedBox(height: 24),
             ],
 
-            _FormSectionHeader(label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *'),
+            // ── UBICACIÓN ────────────────────────────
+            FormSectionHeader(label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *'),
             const SizedBox(height: 12),
-            _buildLocationSection(context.colors),
+            GestureDetector(
+              onTap: () async {
+                final locSection = OnboardingLocationSection(
+                  department: _department,
+                  province: _province,
+                  district: _district,
+                );
+                final result = await locSection.showPicker(context);
+                if (result != null && mounted) {
+                  setState(() {
+                    _department = result.department;
+                    _province   = result.province;
+                    _district   = result.district;
+                  });
+                }
+              },
+              child: OnboardingLocationSection(
+                department: _department,
+                province: _province,
+                district: _district,
+              ),
+            ),
             const SizedBox(height: 24),
 
-            const SizedBox(height: 8),
+            // ── REDES SOCIALES ──────────────────────
             OnboardingSocialSection(
               websiteCtrl:     _websiteCtrl,
               instagramCtrl:   _instagramCtrl,
@@ -978,7 +783,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 24),
 
-            _FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
+            // ── FOTOS ───────────────────────────────
+            const FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
             const SizedBox(height: 12),
             OnboardingPhotoSection(
               photos:          _photos,
@@ -989,7 +795,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 32),
 
-            _FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
+            // ── CÓDIGO REFERIDO ─────────────────────
+            const FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -1031,10 +838,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
             const SizedBox(height: 32),
 
+            // ── BOTONES DE ACCIÓN ───────────────────
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
+                onPressed: _isLoading ? null : _onSubmitPressed,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -1053,9 +861,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Crear mi perfil de proveedor',
-                        style: TextStyle(
+                    : Text(
+                        _isOficio
+                            ? 'Registrarme como profesional'
+                            : 'Registrarme como negocio',
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1082,64 +892,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Shared form helpers (used by ProviderOnboardingForm) ──
-
-class _FormSectionHeader extends StatelessWidget {
-  final String label;
-  const _FormSectionHeader({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Text(
-      label,
-      style: TextStyle(
-        color: c.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
-      ),
-    );
-  }
-}
-
-class _TypeBadge extends StatelessWidget {
-  final bool isOficio;
-  const _TypeBadge({required this.isOficio});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isOficio ? AppColors.primary : const Color(0xFF8E2DE2);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isOficio ? Icons.handyman_rounded : Icons.storefront_rounded,
-            size: 14,
-            color: color,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            isOficio ? 'Profesional Independiente' : 'Negocio',
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

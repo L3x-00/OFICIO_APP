@@ -169,7 +169,10 @@ class AuthRepository {
     // comunes
     String? description,
     String? address,
-    int? categoryId,
+    /// Lista de ids de categoría a asociar al proveedor. Backend espera el
+    /// nombre plural `categoryIds` (la versión singular `categoryId` se
+    /// rechaza por `forbidNonWhitelisted`).
+    List<int>? categoryIds,
     int? localityId,
     Map<String, dynamic>? scheduleJson,
     // redes sociales
@@ -197,7 +200,7 @@ class AuthRepository {
         if (type == 'OFICIO') 'hasHomeService': hasHomeService,
         if (description != null && description.isNotEmpty) 'description': description,
         if (address != null && address.isNotEmpty) 'address': address,
-        'categoryId': ?categoryId,
+        if (categoryIds != null && categoryIds.isNotEmpty) 'categoryIds': categoryIds,
         'localityId': ?localityId,
         if (scheduleJson != null && scheduleJson.isNotEmpty) 'scheduleJson': scheduleJson,
         'website':     ?website,

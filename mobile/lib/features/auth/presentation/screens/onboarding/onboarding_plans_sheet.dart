@@ -3,9 +3,17 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/utils/plan_limits.dart';
 
-class OnboardingPlansSheet extends StatelessWidget {
+/// Sheet de selección de plan en el onboarding del proveedor.
+///
+/// Antes solo confirmaba con un "Continuar" (todos arrancaban GRATIS).
+/// Ahora cada tarjeta es seleccionable; el plan elegido se devuelve al
+/// caller vía [onContinue] para que el formulario de registro sepa qué
+/// flujo mostrar al final (pago vs. plan gratis).
+class OnboardingPlansSheet extends StatefulWidget {
   final String providerType;
-  final VoidCallback onContinue;
+  /// Recibe el id del plan elegido ('GRATIS' | 'ESTANDAR' | 'PREMIUM').
+  /// Default: 'GRATIS' si el usuario presiona continuar sin marcar nada.
+  final ValueChanged<String> onContinue;
 
   const OnboardingPlansSheet({
     super.key,
@@ -13,13 +21,19 @@ class OnboardingPlansSheet extends StatelessWidget {
     required this.onContinue,
   });
 
-  bool get _isNegocio => providerType == 'NEGOCIO';
+  @override
+  State<OnboardingPlansSheet> createState() => _OnboardingPlansSheetState();
+}
+
+class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
+  String _selected = 'GRATIS';
+
+  bool get _isNegocio => widget.providerType == 'NEGOCIO';
 
   @override
   Widget build(BuildContext context) {
     final c      = context.colors;
     final accent = _isNegocio ? AppColors.amber : AppColors.primary;
-    final label  = _isNegocio ? 'negocio' : 'perfil profesional';
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -87,7 +101,7 @@ class OnboardingPlansSheet extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Column(
                   children: [
-                    OnboardingPlanCard(
+                    _SelectablePlanCard(
                       planId:    'GRATIS',
                       title:     'Gratis',
                       price:     'S/ 0',
@@ -95,7 +109,8 @@ class OnboardingPlansSheet extends StatelessWidget {
                       color:     const Color(0xFF6B7280),
                       icon:      Icons.storefront_rounded,
                       isNegocio: _isNegocio,
-                      isCurrent: true,
+                      isSelected: _selected == 'GRATIS',
+                      onTap:      () => setState(() => _selected = 'GRATIS'),
                       features: [
                         _feat(Icons.photo_library_rounded, '${PlanLimits.photos('GRATIS')} fotos de perfil'),
                         _feat(
@@ -107,7 +122,7 @@ class OnboardingPlansSheet extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    OnboardingPlanCard(
+                    _SelectablePlanCard(
                       planId:    'ESTANDAR',
                       title:     'Estándar',
                       price:     'S/ 19.90',
@@ -116,6 +131,8 @@ class OnboardingPlansSheet extends StatelessWidget {
                       icon:      Icons.verified_rounded,
                       isNegocio: _isNegocio,
                       isPopular: true,
+                      isSelected: _selected == 'ESTANDAR',
+                      onTap:      () => setState(() => _selected = 'ESTANDAR'),
                       features: [
                         _feat(Icons.photo_library_rounded, '${PlanLimits.photos('ESTANDAR')} fotos de perfil'),
                         _feat(
@@ -129,7 +146,7 @@ class OnboardingPlansSheet extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    OnboardingPlanCard(
+                    _SelectablePlanCard(
                       planId:    'PREMIUM',
                       title:     'Premium',
                       price:     'S/ 39.90',
@@ -137,6 +154,8 @@ class OnboardingPlansSheet extends StatelessWidget {
                       color:     AppColors.premium,
                       icon:      Icons.workspace_premium_rounded,
                       isNegocio: _isNegocio,
+                      isSelected: _selected == 'PREMIUM',
+                      onTap:      () => setState(() => _selected = 'PREMIUM'),
                       features: [
                         _feat(Icons.photo_library_rounded, '${PlanLimits.photos('PREMIUM')} fotos de perfil'),
                         _feat(
@@ -180,7 +199,7 @@ class OnboardingPlansSheet extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: onContinue,
+                  onPressed: () => widget.onContinue(_selected),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: _isNegocio ? const Color(0xFF3D2B00) : Colors.white,
@@ -189,7 +208,9 @@ class OnboardingPlansSheet extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Continuar con mi $label',
+                    _selected == 'GRATIS'
+                        ? 'Continuar con plan gratis'
+                        : 'Continuar con plan $_selected',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
@@ -339,6 +360,143 @@ class PlanBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+/// Variante seleccionable de [OnboardingPlanCard]: el borde y el badge
+/// reflejan el estado `isSelected`; todo el card es tappable. El widget
+/// original sigue existiendo para callsites que solo muestran el plan
+/// vigente sin permitir cambiarlo.
+class _SelectablePlanCard extends StatelessWidget {
+  final String planId;
+  final String title;
+  final String price;
+  final String priceNote;
+  final Color color;
+  final IconData icon;
+  final bool isNegocio;
+  final bool isPopular;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final List<PlanFeatureItem> features;
+
+  const _SelectablePlanCard({
+    required this.planId,
+    required this.title,
+    required this.price,
+    required this.priceNote,
+    required this.color,
+    required this.icon,
+    required this.isNegocio,
+    required this.features,
+    required this.isSelected,
+    required this.onTap,
+    this.isPopular = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: c.isDark ? 0.14 : 0.08)
+              : c.bg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected ? color : c.border,
+            width: isSelected ? 2.0 : 1.0,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(title,
+                              style: TextStyle(
+                                  color: color,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold)),
+                          if (isPopular) ...[
+                            const SizedBox(width: 6),
+                            PlanBadge(label: '⭐ Popular', color: AppColors.standard),
+                          ],
+                          if (planId == 'GRATIS') ...[
+                            const SizedBox(width: 6),
+                            PlanBadge(label: 'Empieza aquí', color: color),
+                          ],
+                        ],
+                      ),
+                      Text('$price $priceNote',
+                          style: TextStyle(color: c.textMuted, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? color : Colors.transparent,
+                    border: Border.all(color: isSelected ? color : c.border, width: 2),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...features.map((f) => Padding(
+              padding: const EdgeInsets.only(bottom: 7),
+              child: Row(
+                children: [
+                  Icon(
+                    f.locked ? Icons.lock_outline_rounded : f.icon,
+                    color: f.locked ? c.textMuted : color,
+                    size: 15,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      f.text,
+                      style: TextStyle(
+                        color: f.locked ? c.textMuted : c.textSecondary,
+                        fontSize: 13,
+                        decoration: f.locked ? TextDecoration.lineThrough : null,
+                        decorationColor: c.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ),
+      ),
     );
   }
 }

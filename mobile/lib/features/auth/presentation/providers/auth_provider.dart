@@ -80,6 +80,19 @@ class AuthProvider extends ChangeNotifier {
   final Map<String, String>              _rejectionReasonByType    = {}; // tipo → motivo
   final Map<String, Map<String, dynamic>> _providerDataByType      = {}; // tipo → datos completos
 
+  /// Cuando el admin recién aprueba un perfil, guardamos aquí el `providerId`
+  /// + displayName para que la pantalla principal (no el panel) muestre el
+  /// modal de bienvenida en tiempo real. Persiste hasta que el listener lo
+  /// consume vía [clearPendingProviderApproval]. La gate de "ya visto" la
+  /// administra [WelcomeProviderPlanModal] vía SharedPreferences.
+  ProviderApprovalPayload? _pendingProviderApproval;
+  ProviderApprovalPayload? get pendingProviderApproval => _pendingProviderApproval;
+
+  void clearPendingProviderApproval() {
+    _pendingProviderApproval = null;
+    notifyListeners();
+  }
+
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null && !_needsOnboarding && !_needsEmailVerification;
@@ -166,6 +179,11 @@ class AuthProvider extends ChangeNotifier {
       // Refrescar token ANTES de conectar el socket y sincronizar
       await _refreshUserToken();
       await _syncProviderStatus();
+      // Caso de aprobación recibida en background (FCM): la app puede abrir
+      // recién aquí. Si el sync revela un perfil APROBADO, encolamos el
+      // welcome modal — el gate de SharedPreferences evita re-mostrarlo si
+      // el usuario ya lo vio.
+      _enqueueProviderWelcomeIfNeeded();
       _connectSocketForUser(_user!.id);
     }
     _isInitialized = true;
@@ -236,6 +254,11 @@ class AuthProvider extends ChangeNotifier {
       // Sincronizar estado Y refrescar token para que el JWT tenga role:PROVEEDOR
       _syncProviderStatus().then((_) async {
         await _refreshUserToken();
+        // Encolar el modal de bienvenida — la pantalla principal lo
+        // consume en cuanto este notifyListeners se propague.
+        _enqueueProviderWelcomeIfNeeded(
+          preferredType: payload['targetProfileType'] as String?,
+        );
         notifyListeners();
       });
       return;
@@ -258,6 +281,31 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
       });
     }
+  }
+
+  /// Si tras la sincronización hay un perfil de proveedor APROBADO, arma
+  /// el [ProviderApprovalPayload] para que la pantalla principal abra el
+  /// modal de bienvenida. Prefiere el `preferredType` (viene del evento
+  /// socket); si no, toma el primer aprobado disponible.
+  void _enqueueProviderWelcomeIfNeeded({String? preferredType}) {
+    final approvedTypes = _verificationStatusByType.entries
+        .where((e) => e.value == 'APROBADO')
+        .map((e) => e.key)
+        .toList();
+    if (approvedTypes.isEmpty) return;
+    final type = approvedTypes.contains(preferredType)
+        ? preferredType!
+        : approvedTypes.first;
+    final data = _providerDataByType[type];
+    if (data == null) return;
+    final id = data['id'];
+    if (id is! int) return;
+    final name = (data['businessName'] as String?) ?? _user?.firstName ?? '';
+    _pendingProviderApproval = ProviderApprovalPayload(
+      providerId:  id,
+      displayName: name,
+      type:        type,
+    );
   }
 
   /// Refresca el access token para que el JWT refleje el nuevo rol (PROVEEDOR).
@@ -356,6 +404,13 @@ class AuthProvider extends ChangeNotifier {
             if (_user!.role != expectedRole) {
               _user = _user!.copyWith(role: expectedRole);
             }
+          }
+
+          // Encolar el modal de bienvenida si hay un perfil aprobado y
+          // todavía no se mostró (el flag persistido en SharedPreferences
+          // dentro de WelcomeProviderPlanModal evita repetir).
+          if (hasAnyApproved && _pendingProviderApproval == null) {
+            _enqueueProviderWelcomeIfNeeded();
           }
         } else {
           // Sin perfiles — limpiar TODOS los mapas para evitar contaminación multicuentas
@@ -633,7 +688,10 @@ class AuthProvider extends ChangeNotifier {
     // comunes
     String? description,
     String? address,
-    int? categoryId,
+    /// Una o más categorías asociadas al proveedor. El backend valida el
+    /// arreglo bajo el nombre `categoryIds`; mantenemos esa forma desde el
+    /// provider para evitar transforms espurios en el repositorio.
+    List<int>? categoryIds,
     Map<String, dynamic>? scheduleJson,
     // redes sociales
     String? website,
@@ -663,7 +721,7 @@ class AuthProvider extends ChangeNotifier {
       hasHomeService:   hasHomeService,
       description:      description,
       address:          address,
-      categoryId:       categoryId,
+      categoryIds:      categoryIds,
       scheduleJson:     scheduleJson,
       website:          website,
       instagram:        instagram,
@@ -960,5 +1018,26 @@ class AuthProvider extends ChangeNotifier {
       failure: (_) => notifyListeners(),
     );
   }
+}
+
+/// Payload del evento "perfil aprobado" cuando el admin acepta la
+/// validación. La pantalla principal lo consume para abrir el modal de
+/// bienvenida + plan ESTANDAR de cortesía sin esperar a que el usuario
+/// entre al panel.
+class ProviderApprovalPayload {
+  /// id del Provider aprobado — clave para el flag "ya visto" persistido
+  /// en SharedPreferences por [WelcomeProviderPlanModal].
+  final int providerId;
+  /// businessName a saludar en la primera diapositiva del carrusel.
+  final String displayName;
+  /// 'OFICIO' o 'NEGOCIO' — solo para tracking; el carrusel actual es
+  /// genérico.
+  final String type;
+
+  const ProviderApprovalPayload({
+    required this.providerId,
+    required this.displayName,
+    required this.type,
+  });
 }
 

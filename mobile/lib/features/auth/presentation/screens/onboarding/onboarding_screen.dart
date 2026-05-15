@@ -187,11 +187,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => OnboardingPlansSheet(
         providerType: type,
-        onContinue: () {
+        onContinue: (selectedPlan) {
           Navigator.pop(context);
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => ProviderOnboardingForm(providerType: type),
+              builder: (_) => ProviderOnboardingForm(
+                providerType: type,
+                selectedPlan: selectedPlan,
+              ),
             ),
           );
         },

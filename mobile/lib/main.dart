@@ -1,38 +1,27 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'core/services/fcm_service.dart';
-import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/theme/app_theme_colors.dart';
-import 'package:mobile/core/theme/theme_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'core/constants/app_colors.dart';
+import 'core/router/app_router.dart';
+import 'core/services/fcm_service.dart';
+import 'core/theme/app_theme_colors.dart';
+import 'core/theme/theme_provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/providers/registration_provider.dart';
-import 'features/auth/presentation/screens/splash_screen.dart';
-import 'features/auth/presentation/screens/welcome_screen.dart';
-import 'features/auth/presentation/screens/onboarding/onboarding_screen.dart';
-import 'features/auth/presentation/screens/otp_verification_screen.dart';
-import 'features/auth/presentation/screens/profile_screen.dart';
 import 'features/auth/presentation/screens/welcome_onboarding_modal.dart';
+import 'features/provider_dashboard/presentation/widgets/welcome_provider_plan_modal.dart';
+import 'features/chat/presentation/providers/chat_provider.dart';
 import 'features/favorites/presentation/providers/favorites_provider.dart';
-import 'features/favorites/presentation/screens/favorites_screen.dart';
-import 'features/providers_list/presentation/screens/providers_screen.dart';
-import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
-import 'features/provider_dashboard/presentation/providers/offer_posts_provider.dart';
-import 'features/offer_posts/presentation/providers/offers_provider.dart';
-import 'features/offer_posts/presentation/screens/offers_screen.dart';
 import 'features/notifications/domain/models/notification_model.dart';
 import 'features/notifications/presentation/providers/notifications_provider.dart';
-import 'features/notifications/presentation/screens/notifications_screen.dart';
+import 'features/offer_posts/presentation/providers/offers_provider.dart';
+import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
+import 'features/provider_dashboard/presentation/providers/offer_posts_provider.dart';
 import 'features/providers_list/presentation/providers/providers_provider.dart';
-import 'features/chat/presentation/providers/chat_provider.dart';
-import 'features/chat/presentation/screens/chat_screen.dart';
-import 'features/subastas/presentation/providers/subastas_provider.dart';
-import 'features/subastas/presentation/screens/my_requests_screen.dart';
-import 'features/subastas/presentation/screens/oportunidades_tab.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -40,11 +29,23 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FcmService.setNavigatorKey(_navigatorKey);
+
+  // ── Providers raíz inicializados antes de runApp ───────────
+  // Necesitamos `AuthProvider.initialize()` resuelto antes de construir
+  // el router, porque éste lee el `navigationState` para el `redirect`.
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();
 
+  final registration = RegistrationProvider();
+  final auth = AuthProvider()..attachRegistration(registration);
+  await auth.initialize();
+
+  final router = createRouter(
+    authProvider: auth,
+    navigatorKey: _navigatorKey,
+  );
+
   // DSN configurado en build con --dart-define=SENTRY_DSN=https://...
-  // Si no se provee, Sentry queda deshabilitado (no lanza errores).
   const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 
   await SentryFlutter.init(
@@ -61,18 +62,8 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: themeProvider),
-          ChangeNotifierProvider(create: (_) => RegistrationProvider()),
-          // AuthProvider depende de RegistrationProvider (lo recibe por
-          // attachRegistration). Usamos ChangeNotifierProxyProvider para
-          // bindearlos sin crear ciclos.
-          ChangeNotifierProxyProvider<RegistrationProvider, AuthProvider>(
-            create: (_) => AuthProvider(),
-            update: (_, reg, auth) {
-              auth ??= AuthProvider();
-              auth.attachRegistration(reg);
-              return auth;
-            },
-          ),
+          ChangeNotifierProvider.value(value: registration),
+          ChangeNotifierProvider.value(value: auth),
           ChangeNotifierProvider(create: (_) => FavoritesProvider()),
           ChangeNotifierProvider(create: (_) => DashboardProvider()),
           ChangeNotifierProvider(create: (_) => OfferPostsProvider()),
@@ -81,57 +72,73 @@ void main() async {
           ChangeNotifierProvider(create: (_) => ProvidersProvider()),
           ChangeNotifierProvider(create: (_) => ChatProvider()),
         ],
-        child: const OficioApp(),
+        child: OficioApp(router: router),
       ),
     ),
   );
 }
 
 class OficioApp extends StatelessWidget {
-  const OficioApp({super.key});
+  final GoRouter router;
+  const OficioApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context) {
     final themeMode = context.watch<ThemeProvider>().mode;
-    return MaterialApp(
-      navigatorKey: _navigatorKey,
-      title: 'OficioApp',
-      debugShowCheckedModeBanner: false,
-      locale: const Locale('es', '419'),
-      supportedLocales: const [Locale('es', '419'), Locale('es'), Locale('en')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme:      AppThemeColors.buildLight(),
-      darkTheme:  AppThemeColors.buildDark(),
-      themeMode:  themeMode,
-      themeAnimationDuration: const Duration(milliseconds: 250),
-      themeAnimationCurve: Curves.easeInOut,
-      home: const _AppRoot(),
+    return _AuthSideEffects(
+      router: router,
+      child: MaterialApp.router(
+        title: 'OficioApp',
+        debugShowCheckedModeBanner: false,
+        locale: const Locale('es', '419'),
+        supportedLocales: const [Locale('es', '419'), Locale('es'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme:      AppThemeColors.buildLight(),
+        darkTheme:  AppThemeColors.buildDark(),
+        themeMode:  themeMode,
+        themeAnimationDuration: const Duration(milliseconds: 250),
+        themeAnimationCurve: Curves.easeInOut,
+        routerConfig: router,
+      ),
     );
   }
 }
 
-/// Árbol de navegación basado en el estado de autenticación.
-/// Stateful para poder detectar el flag [wasDeactivated] y mostrar
-/// el diálogo de cuenta desactivada antes de redirigir al login.
-class _AppRoot extends StatefulWidget {
-  const _AppRoot();
+/// Escucha los cambios de [AuthProvider] para disparar los efectos
+/// laterales globales: sincronización de providers dependientes (favoritos,
+/// chat, notificaciones), inicialización de FCM, modal de bienvenida tras
+/// onboarding, diálogos de desactivación, rechazo de validación y
+/// promoción de plan.
+///
+/// La UI sigue siendo manejada por GoRouter; este widget solo orquesta
+/// los efectos secundarios que viven fuera del flujo de navegación.
+class _AuthSideEffects extends StatefulWidget {
+  final Widget child;
+  final GoRouter router;
+
+  const _AuthSideEffects({required this.child, required this.router});
 
   @override
-  State<_AppRoot> createState() => _AppRootState();
+  State<_AuthSideEffects> createState() => _AuthSideEffectsState();
 }
 
-class _AppRootState extends State<_AppRoot> {
-  /// Último estado de navegación conocido — permite detectar transiciones.
+class _AuthSideEffectsState extends State<_AuthSideEffects> {
   AppNavigationState? _prevNavState;
+  bool _fcmInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    context.read<AuthProvider>().addListener(_onAuthChanged);
+    final auth = context.read<AuthProvider>();
+    auth.addListener(_onAuthChanged);
+    // Sync inicial — auth ya está inicializado cuando llegamos aquí.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onAuthChanged();
+    });
   }
 
   @override
@@ -140,21 +147,17 @@ class _AppRootState extends State<_AppRoot> {
     super.dispose();
   }
 
-  bool _fcmInitialized = false;
-
   void _onAuthChanged() {
     final auth   = context.read<AuthProvider>();
     final notifs = context.read<NotificationsProvider>();
     final favs   = context.read<FavoritesProvider>();
     final chat   = context.read<ChatProvider>();
 
-    // Sincronizar NotificationsProvider, FavoritesProvider y ChatProvider con auth
     if (auth.user != null) {
       notifs.setUser(userId: auth.user!.id, role: auth.user!.role);
       favs.initialize(auth.user!.id);
       chat.initialize(auth.user!.id);
 
-      // Inicializar FCM una sola vez por sesión
       if (!_fcmInitialized) {
         _fcmInitialized = true;
         FcmService.onMessageTap        = _handleFcmTap;
@@ -170,25 +173,32 @@ class _AppRootState extends State<_AppRoot> {
 
     final current = auth.navigationState;
 
-    // ── Mostrar modal de bienvenida al completar onboarding por primera vez ──
+    // ── Modal de bienvenida tras completar onboarding ─────────
+    // Usamos el navigatorKey de la app (root del MaterialApp.router) en vez
+    // de `context` porque este widget vive *encima* de MaterialApp y su
+    // context no tiene Navigator en scope — sin el navigatorKey el dialog
+    // se silencia y el usuario nunca veía la bienvenida tras presionar
+    // "Continuar" como cliente.
     if (_prevNavState == AppNavigationState.needsOnboarding &&
         current == AppNavigationState.authenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        final navCtx = _navigatorKey.currentContext;
+        if (navCtx == null || !navCtx.mounted) return;
         showDialog(
-          context: context,
+          context: navCtx,
           barrierDismissible: false,
           barrierColor: Colors.black.withValues(alpha: 0.65),
-          builder: (_) => WelcomeOnboardingModal(
+          builder: (dialogCtx) => WelcomeOnboardingModal(
             onDismiss: () =>
-                Navigator.of(context, rootNavigator: true).pop(),
+                Navigator.of(dialogCtx, rootNavigator: true).pop(),
           ),
         );
       });
     }
     _prevNavState = current;
 
-    // ── Cuenta desactivada remotamente ──────────────────────────────────────
+    // ── Cuenta desactivada remotamente ────────────────────────
     if (auth.wasDeactivated && mounted) {
       auth.clearDeactivatedFlag();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -197,7 +207,7 @@ class _AppRootState extends State<_AppRoot> {
       });
     }
 
-    // ── Validación de confianza rechazada ────────────────────────────────────
+    // ── Validación de confianza rechazada ─────────────────────
     if (auth.pendingTrustRejection != null && mounted) {
       final rejection = auth.pendingTrustRejection!;
       auth.clearTrustRejection();
@@ -207,11 +217,30 @@ class _AppRootState extends State<_AppRoot> {
       });
     }
 
-    // ── Promoción de plan ─────────────────────────────────────────────────────
+    // ── Aprobación de perfil de proveedor (modal en home) ─────
+    // Se dispara cuando el admin aprueba el perfil — el carrusel de
+    // bienvenida + plan ESTANDAR de cortesía aparece en la pantalla
+    // principal en tiempo real, sin esperar a que el usuario entre al
+    // panel del proveedor. La gate "ya visto" la administra el propio
+    // modal vía SharedPreferences por providerId.
+    final approval = auth.pendingProviderApproval;
+    if (approval != null && mounted) {
+      auth.clearPendingProviderApproval();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final navCtx = _navigatorKey.currentContext;
+        if (navCtx == null || !navCtx.mounted) return;
+        await WelcomeProviderPlanModal.showIfFirstTime(
+          navCtx,
+          displayName: approval.displayName,
+          providerId:  approval.providerId,
+        );
+      });
+    }
+
+    // ── Promoción de plan ─────────────────────────────────────
     if (auth.pendingPlanPromotion != null && mounted) {
       final payload = auth.pendingPlanPromotion!;
       auth.clearPlanPromotion();
-      // Recargar dashboard para que los límites/efectos del plan se apliquen de inmediato
       context.read<DashboardProvider>().loadDashboard(
         providerType: auth.activeProfileType,
       );
@@ -222,8 +251,8 @@ class _AppRootState extends State<_AppRoot> {
     }
   }
 
-  /// Inserta cualquier notificación recibida (foreground/tap) al
-  /// NotificationsProvider para que aparezca en la pantalla "Alertas".
+  /// Inserta una notificación push recibida (foreground/tap) en el
+  /// `NotificationsProvider` para que aparezca en el tab de Alertas.
   void _handleFcmInbound(RemoteMessage message) {
     if (!mounted) return;
     final notif = AppNotification.fromSocket({
@@ -237,37 +266,23 @@ class _AppRootState extends State<_AppRoot> {
     context.read<NotificationsProvider>().addLocal(notif);
   }
 
-  /// Navega a la pantalla adecuada según los datos de la notificación push.
+  /// Deep-link FCM → ruta GoRouter correspondiente.
   void _handleFcmTap(RemoteMessage message) {
     if (!mounted) return;
     final type = message.data['type'] as String?;
     debugPrint('[FCM] Navegando por tipo: $type, data: ${message.data}');
-    final navigator = Navigator.of(context, rootNavigator: true);
     switch (type) {
       case 'NEW_REVIEW':
       case 'PROVIDER_APPROVED':
       case 'PROVIDER_REJECTED':
       case 'PLAN_APROBADO':
       case 'PLAN_RECHAZADO':
-        // Abrir perfil del proveedor / panel
-        navigator.push(
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
-        );
+        widget.router.go('/profile');
       case 'NEW_OFFER':
-        // Cliente: tiene una nueva oferta en una de sus solicitudes
-        navigator.push(
-          MaterialPageRoute(
-            builder: (_) => ChangeNotifierProvider(
-              create: (_) => SubastasProvider(),
-              child: const MyRequestsScreen(),
-            ),
-          ),
-        );
+        widget.router.push('/my-requests');
       case 'OFFER_ACCEPTED':
-        // Proveedor ganador: ir al tab de oportunidades
-        navigator.push(
-          MaterialPageRoute(builder: (_) => const OportunidadesTab()),
-        );
+        // El tab de oportunidades vive dentro del panel del proveedor.
+        widget.router.push('/provider-panel');
       case 'CHAT_MESSAGE':
         _openChatFromPush(message.data);
       default:
@@ -275,10 +290,6 @@ class _AppRootState extends State<_AppRoot> {
     }
   }
 
-  /// Deep link de un push de chat. El payload del backend trae:
-  ///   { type: 'CHAT_MESSAGE', chatRoomId, messageId, senderId }
-  /// Garantizamos que el `ChatProvider` tenga la sala cargada antes de
-  /// empujar la pantalla, así el `ChatScreen` resuelve la otra parte.
   Future<void> _openChatFromPush(Map<String, dynamic> data) async {
     final roomId = int.tryParse('${data['chatRoomId'] ?? ''}');
     if (roomId == null) {
@@ -287,26 +298,16 @@ class _AppRootState extends State<_AppRoot> {
     }
 
     final auth = context.read<AuthProvider>();
-    if (auth.user == null) {
-      // No hay sesión — el push se registró con la cuenta anterior.
-      // Mejor no empujar a un chat que no le pertenece.
-      return;
-    }
+    if (auth.user == null) return;
 
     final chat = context.read<ChatProvider>();
-    // Asegurar que `currentUserId` y los listeners estén configurados
-    // (idempotente si ya estaba inicializado).
     await chat.initialize(auth.user!.id);
-    // Si la sala todavía no estaba en la bandeja (chat nuevo recibido
-    // mientras la app estaba cerrada), recargamos.
     if (!chat.rooms.any((r) => r.id == roomId)) {
       await chat.loadRooms();
     }
 
     if (!mounted) return;
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(builder: (_) => ChatScreen(roomId: roomId)),
-    );
+    widget.router.push('/chat/$roomId');
   }
 
   void _showTrustRejectionDialog(TrustRejectionPayload rejection) {
@@ -731,180 +732,5 @@ class _AppRootState extends State<_AppRoot> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-
-    return switch (auth.navigationState) {
-      AppNavigationState.loading                => const SplashScreen(),
-      AppNavigationState.unauthenticated        => const WelcomeScreen(),
-      AppNavigationState.guest                  => const _MainNavigation(userId: null),
-      AppNavigationState.needsEmailVerification => const OtpVerificationScreen(),
-      AppNavigationState.needsOnboarding        => const OnboardingScreen(),
-      AppNavigationState.authenticated          => _MainNavigation(userId: auth.user!.id),
-    };
-  }
-}
-
-/// Navegación principal con 3 pestañas
-class _MainNavigation extends StatefulWidget {
-  final int? userId;
-  const _MainNavigation({this.userId});
-
-  @override
-  State<_MainNavigation> createState() => _MainNavigationState();
-}
-
-class _MainNavigationState extends State<_MainNavigation> {
-  int _currentIndex = 0;
-  DateTime? _lastBackPress;
-
-  bool get _isGuest => widget.userId == null;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!_isGuest) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        context.read<FavoritesProvider>().initialize(widget.userId!);
-        context.read<AuthProvider>().refreshUser();
-      });
-    }
-  }
-
-  @override
-  void didUpdateWidget(_MainNavigation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Transición guest → autenticado: state reutilizado, initState no vuelve a correr.
-    // refreshUser fuerza notifyListeners para que ProfileScreen (offstage en IndexedStack)
-    // reconstruya con auth.user ya no-nulo.
-    if (oldWidget.userId == null && widget.userId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        context.read<FavoritesProvider>().initialize(widget.userId!);
-        context.read<AuthProvider>().refreshUser();
-      });
-    }
-  }
-
-  void _handleTabTap(int index) {
-    setState(() => _currentIndex = index);
-    if (index == 4 && !_isGuest) {
-      context.read<AuthProvider>().refreshUser();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Seleccionar solo userId: rebuild solo en login/logout, no en cada notificación.
-    // ValueKey fuerza destrucción+recreación de ProfileScreen cuando userId cambia
-    // (null→id al logear, id→null al salir), garantizando que build() corra con
-    // auth.user ya cargado — soluciona el blank screen en IndexedStack offstage.
-    final authUserId = context.select<AuthProvider, int?>(
-      (auth) => auth.user?.id,
-    );
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        final now = DateTime.now();
-        final isSecondPress = _lastBackPress != null &&
-            now.difference(_lastBackPress!) < const Duration(seconds: 2);
-        if (isSecondPress) {
-          _lastBackPress = null;
-          // ignore: deprecated_member_use
-          SystemNavigator.pop();
-        } else {
-          _lastBackPress = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Desliza otra vez para salir de la app'),
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [
-            const ProvidersScreen(),
-            FavoritesScreen(userId: _isGuest ? null : widget.userId!),
-            const OffersScreen(),
-            const NotificationsScreen(),
-            ProfileScreen(key: ValueKey(authUserId)),
-          ],
-        ),
-        bottomNavigationBar: _BottomNav(
-          currentIndex: _currentIndex,
-          onTap: _handleTabTap,
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  const _BottomNav({required this.currentIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Container(
-      decoration: BoxDecoration(
-        color: c.bgCard,
-        border: Border(top: BorderSide(color: c.border)),
-        boxShadow: c.isDark
-            ? null
-            : [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, -2))],
-      ),
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: c.textMuted,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'Explorar'),
-          const BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
-          const BottomNavigationBarItem(icon: Icon(Icons.local_offer_outlined), activeIcon: Icon(Icons.local_offer_rounded), label: 'Ofertas'),
-          BottomNavigationBarItem(
-            label: 'Alertas',
-            icon: Consumer<NotificationsProvider>(
-              builder: (_, notifs, _) => Badge(
-                isLabelVisible: notifs.unreadCount > 0,
-                label: Text(
-                  notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
-                  style: const TextStyle(fontSize: 10),
-                ),
-                child: const Icon(Icons.notifications_none_rounded),
-              ),
-            ),
-            activeIcon: Consumer<NotificationsProvider>(
-              builder: (_, notifs, _) => Badge(
-                isLabelVisible: notifs.unreadCount > 0,
-                label: Text(
-                  notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
-                  style: const TextStyle(fontSize: 10),
-                ),
-                child: const Icon(Icons.notifications_rounded),
-              ),
-            ),
-          ),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'Perfil'),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => widget.child;
 }
