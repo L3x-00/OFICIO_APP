@@ -232,6 +232,11 @@ model Provider {
   userId            Int // sin @unique: un usuario puede tener OFICIO y NEGOCIO
   type              ProviderType @default(OFICIO)
   businessName      String // Nombre del servicio o negocio
+  // Slug URL-friendly único derivado de businessName. Vanity URL:
+  // oficioapp.org.pe/p/{slug}. Generado automáticamente en creación;
+  // editable una sola vez por el propio proveedor (gate en service).
+  slug              String?      @unique
+  slugEditedAt      DateTime?
   description       String?
   dni               String? // DNI del titular — solo OFICIO
   ruc               String? // RUC del negocio — solo NEGOCIO (11 dígitos)

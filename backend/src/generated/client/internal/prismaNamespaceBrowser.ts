@@ -191,6 +191,8 @@ export const ProviderScalarFieldEnum = {
   userId: 'userId',
   type: 'type',
   businessName: 'businessName',
+  slug: 'slug',
+  slugEditedAt: 'slugEditedAt',
   description: 'description',
   dni: 'dni',
   ruc: 'ruc',

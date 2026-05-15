@@ -9,6 +9,7 @@ import { EventsGateway } from '../events/events.gateway.js';
 import { EmailService } from '../email/email.service.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { MinioService } from '../common/minio.service.js';
+import { uniqueSlug } from '../common/slug.util.js';
 import { randomUUID } from 'crypto';
 
 // OTP_EXPIRY_MS: 10 minutos
@@ -193,6 +194,17 @@ data: {
       ? await Promise.all(files.map(f => this.minio.uploadFile(f.buffer, f.originalname, 'providers/gallery')))
       : [];
 
+    // Slug único para la Vanity URL pública (/p/:slug). Se calcula fuera de
+    // la transacción para evitar largos round-trips dentro del lock; la
+    // probabilidad de colisión entre el check y el create es muy baja.
+    const baseSlug = data.businessName;
+    const providerSlug = await uniqueSlug(baseSlug, async (candidate) =>
+      Boolean(await this.prisma.provider.findUnique({
+        where: { slug: candidate },
+        select: { id: true },
+      })),
+    );
+
     const provider = await this.prisma.$transaction(async (tx) => {
       // El rol del usuario se mantiene como USUARIO hasta que el admin APRUEBE.
       // La suscripción de gracia también se crea al momento de la aprobación.
@@ -201,6 +213,7 @@ data: {
         data: {
           userId,
           businessName:     data.businessName,
+          slug:             providerSlug,
           phone:            data.phone,
           // OFICIO-only
           dni:              data.type === 'OFICIO' ? (data.dni?.trim() || null) : null,

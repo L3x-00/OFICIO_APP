@@ -82,6 +82,50 @@ export class ProviderOffersController {
   }
 }
 
+// ── RUTAS ADMIN OFERTAS ───────────────────────────────────────
+// Listado completo de ofertas (activas/expiradas) con filtros para el
+// panel admin: ubicación, tipo de proveedor, slug de categoría. Reusa
+// `listOffers` del service pero pasa `includeInactive=true`.
+@Controller('admin/offers')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
+export class AdminOffersController {
+  constructor(private service: OfferPostsService) {}
+
+  @Get()
+  list(
+    @Query('providerType')  providerType?: string,
+    @Query('department')    department?: string,
+    @Query('province')      province?: string,
+    @Query('district')      district?: string,
+    @Query('categorySlug')  categorySlug?: string,
+    @Query('categorySlugs') categorySlugs?: string,
+    @Query('page')          page?: string,
+    @Query('limit')         limit?: string,
+  ) {
+    return this.service.listOffers({
+      providerType,
+      department,
+      province,
+      district,
+      categorySlug,
+      categorySlugs,
+      page:  page  ? parseInt(page,  10) : 1,
+      limit: limit ? parseInt(limit, 10) : 30,
+    });
+  }
+
+  /**
+   * Categorías que actualmente tienen ofertas vivas. El admin las muestra
+   * como chips de filtro para no exponer toda la taxonomía cuando muchas
+   * categorías no tienen ofertas.
+   */
+  @Get('categories')
+  categories() {
+    return this.service.getOfferCategories();
+  }
+}
+
 // ── RUTAS ADMIN ───────────────────────────────────────────────
 @Controller('admin/offer-reports')
 @UseGuards(JwtAuthGuard, RolesGuard)

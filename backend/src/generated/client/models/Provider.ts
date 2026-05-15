@@ -55,6 +55,8 @@ export type ProviderMinAggregateOutputType = {
   userId: number | null
   type: $Enums.ProviderType | null
   businessName: string | null
+  slug: string | null
+  slugEditedAt: Date | null
   description: string | null
   dni: string | null
   ruc: string | null
@@ -97,6 +99,8 @@ export type ProviderMaxAggregateOutputType = {
   userId: number | null
   type: $Enums.ProviderType | null
   businessName: string | null
+  slug: string | null
+  slugEditedAt: Date | null
   description: string | null
   dni: string | null
   ruc: string | null
@@ -139,6 +143,8 @@ export type ProviderCountAggregateOutputType = {
   userId: number
   type: number
   businessName: number
+  slug: number
+  slugEditedAt: number
   description: number
   dni: number
   ruc: number
@@ -208,6 +214,8 @@ export type ProviderMinAggregateInputType = {
   userId?: true
   type?: true
   businessName?: true
+  slug?: true
+  slugEditedAt?: true
   description?: true
   dni?: true
   ruc?: true
@@ -250,6 +258,8 @@ export type ProviderMaxAggregateInputType = {
   userId?: true
   type?: true
   businessName?: true
+  slug?: true
+  slugEditedAt?: true
   description?: true
   dni?: true
   ruc?: true
@@ -292,6 +302,8 @@ export type ProviderCountAggregateInputType = {
   userId?: true
   type?: true
   businessName?: true
+  slug?: true
+  slugEditedAt?: true
   description?: true
   dni?: true
   ruc?: true
@@ -422,6 +434,8 @@ export type ProviderGroupByOutputType = {
   userId: number
   type: $Enums.ProviderType
   businessName: string
+  slug: string | null
+  slugEditedAt: Date | null
   description: string | null
   dni: string | null
   ruc: string | null
@@ -488,6 +502,8 @@ export type ProviderWhereInput = {
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
+  slug?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
   ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -551,6 +567,8 @@ export type ProviderOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  slug?: Prisma.SortOrderInput | Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   dni?: Prisma.SortOrderInput | Prisma.SortOrder
   ruc?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -611,6 +629,7 @@ export type ProviderOrderByWithRelationInput = {
 
 export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  slug?: string
   userId_type?: Prisma.ProviderUserIdTypeCompoundUniqueInput
   AND?: Prisma.ProviderWhereInput | Prisma.ProviderWhereInput[]
   OR?: Prisma.ProviderWhereInput[]
@@ -618,6 +637,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
+  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
   ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -674,13 +694,15 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   referralRewards?: Prisma.ReferralRewardListRelationFilter
   chatsAsProvider?: Prisma.ChatRoomListRelationFilter
   offerPosts?: Prisma.OfferPostListRelationFilter
-}, "id" | "userId_type">
+}, "id" | "slug" | "userId_type">
 
 export type ProviderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  slug?: Prisma.SortOrderInput | Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   dni?: Prisma.SortOrderInput | Prisma.SortOrder
   ruc?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -732,6 +754,8 @@ export type ProviderScalarWhereWithAggregatesInput = {
   userId?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeWithAggregatesFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringWithAggregatesFilter<"Provider"> | string
+  slug?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   ruc?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
@@ -773,6 +797,8 @@ export type ProviderScalarWhereWithAggregatesInput = {
 export type ProviderCreateInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -835,6 +861,8 @@ export type ProviderUncheckedCreateInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -894,6 +922,8 @@ export type ProviderUncheckedCreateInput = {
 export type ProviderUpdateInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -956,6 +986,8 @@ export type ProviderUncheckedUpdateInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1017,6 +1049,8 @@ export type ProviderCreateManyInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -1058,6 +1092,8 @@ export type ProviderCreateManyInput = {
 export type ProviderUpdateManyMutationInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1100,6 +1136,8 @@ export type ProviderUncheckedUpdateManyInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1163,6 +1201,8 @@ export type ProviderCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
   ruc?: Prisma.SortOrder
@@ -1218,6 +1258,8 @@ export type ProviderMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
   ruc?: Prisma.SortOrder
@@ -1260,6 +1302,8 @@ export type ProviderMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrder
   description?: Prisma.SortOrder
   dni?: Prisma.SortOrder
   ruc?: Prisma.SortOrder
@@ -1414,6 +1458,10 @@ export type ProviderUpdateOneRequiredWithoutProviderCategoriesNestedInput = {
 
 export type EnumProviderTypeFieldUpdateOperationsInput = {
   set?: $Enums.ProviderType
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -1687,6 +1735,8 @@ export type ProviderUpdateOneRequiredWithoutOfferPostsNestedInput = {
 export type ProviderCreateWithoutUserInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -1747,6 +1797,8 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   id?: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -1837,6 +1889,8 @@ export type ProviderScalarWhereInput = {
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
+  slug?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
   dni?: Prisma.StringNullableFilter<"Provider"> | string | null
   ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
@@ -1878,6 +1932,8 @@ export type ProviderScalarWhereInput = {
 export type ProviderCreateWithoutLocalityInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -1939,6 +1995,8 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2023,6 +2081,8 @@ export type ProviderUpdateManyWithWhereWithoutLocalityInput = {
 export type ProviderCreateWithoutProviderCategoriesInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2084,6 +2144,8 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2158,6 +2220,8 @@ export type ProviderUpdateToOneWithWhereWithoutProviderCategoriesInput = {
 export type ProviderUpdateWithoutProviderCategoriesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2219,6 +2283,8 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2277,6 +2343,8 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
 export type ProviderCreateWithoutImagesInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2338,6 +2406,8 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2412,6 +2482,8 @@ export type ProviderUpdateToOneWithWhereWithoutImagesInput = {
 export type ProviderUpdateWithoutImagesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2473,6 +2545,8 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2531,6 +2605,8 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
 export type ProviderCreateWithoutSubscriptionInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2592,6 +2668,8 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2666,6 +2744,8 @@ export type ProviderUpdateToOneWithWhereWithoutSubscriptionInput = {
 export type ProviderUpdateWithoutSubscriptionInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2727,6 +2807,8 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2785,6 +2867,8 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
 export type ProviderCreateWithoutPlanRequestsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2846,6 +2930,8 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -2920,6 +3006,8 @@ export type ProviderUpdateToOneWithWhereWithoutPlanRequestsInput = {
 export type ProviderUpdateWithoutPlanRequestsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2981,6 +3069,8 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3039,6 +3129,8 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
 export type ProviderCreateWithoutReviewsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3100,6 +3192,8 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3174,6 +3268,8 @@ export type ProviderUpdateToOneWithWhereWithoutReviewsInput = {
 export type ProviderUpdateWithoutReviewsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3235,6 +3331,8 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3293,6 +3391,8 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
 export type ProviderCreateWithoutFavoritesInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3354,6 +3454,8 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3428,6 +3530,8 @@ export type ProviderUpdateToOneWithWhereWithoutFavoritesInput = {
 export type ProviderUpdateWithoutFavoritesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3489,6 +3593,8 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3547,6 +3653,8 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
 export type ProviderCreateWithoutVerificationDocsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3608,6 +3716,8 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3682,6 +3792,8 @@ export type ProviderUpdateToOneWithWhereWithoutVerificationDocsInput = {
 export type ProviderUpdateWithoutVerificationDocsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3743,6 +3855,8 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3801,6 +3915,8 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
 export type ProviderCreateWithoutAnalyticsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3862,6 +3978,8 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -3936,6 +4054,8 @@ export type ProviderUpdateToOneWithWhereWithoutAnalyticsInput = {
 export type ProviderUpdateWithoutAnalyticsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3997,6 +4117,8 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4055,6 +4177,8 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
 export type ProviderCreateWithoutNotificationsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4116,6 +4240,8 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4190,6 +4316,8 @@ export type ProviderUpdateToOneWithWhereWithoutNotificationsInput = {
 export type ProviderUpdateWithoutNotificationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4251,6 +4379,8 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4309,6 +4439,8 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
 export type ProviderCreateWithoutRecommendationsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4370,6 +4502,8 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4444,6 +4578,8 @@ export type ProviderUpdateToOneWithWhereWithoutRecommendationsInput = {
 export type ProviderUpdateWithoutRecommendationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4505,6 +4641,8 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4563,6 +4701,8 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
 export type ProviderCreateWithoutReportsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4624,6 +4764,8 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4698,6 +4840,8 @@ export type ProviderUpdateToOneWithWhereWithoutReportsInput = {
 export type ProviderUpdateWithoutReportsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4759,6 +4903,8 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4817,6 +4963,8 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
 export type ProviderCreateWithoutTrustValidationsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4878,6 +5026,8 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -4952,6 +5102,8 @@ export type ProviderUpdateToOneWithWhereWithoutTrustValidationsInput = {
 export type ProviderUpdateWithoutTrustValidationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5013,6 +5165,8 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5071,6 +5225,8 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
 export type ProviderCreateWithoutOffersInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5132,6 +5288,8 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5206,6 +5364,8 @@ export type ProviderUpdateToOneWithWhereWithoutOffersInput = {
 export type ProviderUpdateWithoutOffersInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5267,6 +5427,8 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5325,6 +5487,8 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
 export type ProviderCreateWithoutYapePaymentsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5386,6 +5550,8 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5460,6 +5626,8 @@ export type ProviderUpdateToOneWithWhereWithoutYapePaymentsInput = {
 export type ProviderUpdateWithoutYapePaymentsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5521,6 +5689,8 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5579,6 +5749,8 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
 export type ProviderCreateWithoutReferralReceivedInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5640,6 +5812,8 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5714,6 +5888,8 @@ export type ProviderUpdateToOneWithWhereWithoutReferralReceivedInput = {
 export type ProviderUpdateWithoutReferralReceivedInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5775,6 +5951,8 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5833,6 +6011,8 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
 export type ProviderCreateWithoutReferralRewardsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5894,6 +6074,8 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -5968,6 +6150,8 @@ export type ProviderUpdateToOneWithWhereWithoutReferralRewardsInput = {
 export type ProviderUpdateWithoutReferralRewardsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6029,6 +6213,8 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6087,6 +6273,8 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
 export type ProviderCreateWithoutChatsAsProviderInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -6148,6 +6336,8 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -6222,6 +6412,8 @@ export type ProviderUpdateToOneWithWhereWithoutChatsAsProviderInput = {
 export type ProviderUpdateWithoutChatsAsProviderInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6283,6 +6475,8 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6341,6 +6535,8 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
 export type ProviderCreateWithoutOfferPostsInput = {
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -6402,6 +6598,8 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -6476,6 +6674,8 @@ export type ProviderUpdateToOneWithWhereWithoutOfferPostsInput = {
 export type ProviderUpdateWithoutOfferPostsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6537,6 +6737,8 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6596,6 +6798,8 @@ export type ProviderCreateManyUserInput = {
   id?: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -6637,6 +6841,8 @@ export type ProviderCreateManyUserInput = {
 export type ProviderUpdateWithoutUserInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6697,6 +6903,8 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6757,6 +6965,8 @@ export type ProviderUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6800,6 +7010,8 @@ export type ProviderCreateManyLocalityInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   description?: string | null
   dni?: string | null
   ruc?: string | null
@@ -6840,6 +7052,8 @@ export type ProviderCreateManyLocalityInput = {
 export type ProviderUpdateWithoutLocalityInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6901,6 +7115,8 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6961,6 +7177,8 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -7169,6 +7387,8 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   userId?: boolean
   type?: boolean
   businessName?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
   description?: boolean
   dni?: boolean
   ruc?: boolean
@@ -7233,6 +7453,8 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   userId?: boolean
   type?: boolean
   businessName?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
   description?: boolean
   dni?: boolean
   ruc?: boolean
@@ -7278,6 +7500,8 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   userId?: boolean
   type?: boolean
   businessName?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
   description?: boolean
   dni?: boolean
   ruc?: boolean
@@ -7323,6 +7547,8 @@ export type ProviderSelectScalar = {
   userId?: boolean
   type?: boolean
   businessName?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
   description?: boolean
   dni?: boolean
   ruc?: boolean
@@ -7361,7 +7587,7 @@ export type ProviderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "website" | "instagram" | "tiktok" | "facebook" | "linkedin" | "twitterX" | "telegram" | "whatsappBiz" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "trustStatus" | "isTrusted" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "slug" | "slugEditedAt" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "website" | "instagram" | "tiktok" | "facebook" | "linkedin" | "twitterX" | "telegram" | "whatsappBiz" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "trustStatus" | "isTrusted" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -7423,6 +7649,8 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     userId: number
     type: $Enums.ProviderType
     businessName: string
+    slug: string | null
+    slugEditedAt: Date | null
     description: string | null
     dni: string | null
     ruc: string | null
@@ -7906,6 +8134,8 @@ export interface ProviderFieldRefs {
   readonly userId: Prisma.FieldRef<"Provider", 'Int'>
   readonly type: Prisma.FieldRef<"Provider", 'ProviderType'>
   readonly businessName: Prisma.FieldRef<"Provider", 'String'>
+  readonly slug: Prisma.FieldRef<"Provider", 'String'>
+  readonly slugEditedAt: Prisma.FieldRef<"Provider", 'DateTime'>
   readonly description: Prisma.FieldRef<"Provider", 'String'>
   readonly dni: Prisma.FieldRef<"Provider", 'String'>
   readonly ruc: Prisma.FieldRef<"Provider", 'String'>

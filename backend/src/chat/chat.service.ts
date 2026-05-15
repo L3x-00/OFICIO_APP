@@ -278,6 +278,77 @@ export class ChatService {
   // ── CLEANUP CRON ──────────────────────────────────────────
 
   /**
+   * Listado admin de salas de chat con filtros. Devuelve solo salas con
+   * al menos un mensaje (para evitar mostrar habitaciones sin contenido)
+   * + el último mensaje + datos minimal del cliente y proveedor.
+   */
+  async adminList(filters: {
+    providerType?: string;
+    department?:   string;
+    province?:     string;
+    district?:     string;
+    activeWithin?: number;
+    page?:         number;
+    limit?:        number;
+  }) {
+    const { providerType, department, province, district, activeWithin } = filters;
+    const page  = Math.max(1, filters.page ?? 1);
+    const limit = Math.min(100, Math.max(1, filters.limit ?? 30));
+
+    const providerWhere: any = {};
+    const type = (providerType ?? '').toUpperCase();
+    if (type === 'OFICIO' || type === 'NEGOCIO') providerWhere.type = type;
+
+    if (department || province || district) {
+      providerWhere.locality = {
+        ...(department ? { department } : {}),
+        ...(province   ? { province  } : {}),
+        ...(district   ? { district  } : {}),
+      };
+    }
+
+    const messageFilter = activeWithin && activeWithin > 0
+      ? { some: { createdAt: { gte: new Date(Date.now() - activeWithin * 24 * 60 * 60 * 1000) } } }
+      : { some: {} }; // al menos un mensaje
+
+    const where: any = {
+      messages: messageFilter,
+      ...(Object.keys(providerWhere).length > 0 ? { provider: providerWhere } : {}),
+    };
+
+    const [rooms, total] = await Promise.all([
+      this.prisma.chatRoom.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          client:   { select: { id: true, firstName: true, lastName: true, email: true } },
+          provider: {
+            select: {
+              id: true, businessName: true, type: true,
+              locality: { select: { name: true, department: true, province: true, district: true } },
+            },
+          },
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: { id: true, content: true, createdAt: true, senderId: true },
+          },
+        },
+      }),
+      this.prisma.chatRoom.count({ where }),
+    ]);
+
+    return {
+      data:  rooms,
+      total,
+      page,
+      lastPage: Math.max(1, Math.ceil(total / limit)),
+    };
+  }
+
+  /**
    * Una vez al día (03:00 UTC) borra los mensajes con más de 15 días.
    * Las salas permanecen — la conversación se limpia, no la relación.
    */

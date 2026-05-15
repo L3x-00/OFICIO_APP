@@ -8,16 +8,21 @@ import { Toaster } from 'sonner';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Verificamos si la ruta actual es el login
-  const isLoginPage = pathname === '/login';
+  // Páginas que NO usan el LayoutShell del admin: login y los perfiles
+  // públicos `/p/:slug` (Vanity URLs). Estas últimas son tarjetas
+  // standalone con sus propios meta tags y look — no deben heredar la
+  // sidebar/topbar del panel admin.
+  const isLoginPage  = pathname === '/login';
+  const isPublicPage = pathname?.startsWith('/p/');
 
   return (
     <html lang="es">
       <body className="bg-bg-dark text-white antialiased">
-        {/* Si estamos en el login, renderizamos los children directamente.
-            Si no, cargamos el LayoutShell que contiene el Sidebar y la protección.
+        {/* Si estamos en el login o en perfil público, renderizamos children
+            directamente. Si no, cargamos el LayoutShell con Sidebar +
+            protección.
         */}
-        {isLoginPage ? (
+        {(isLoginPage || isPublicPage) ? (
           <main>{children}</main>
         ) : (
           <LayoutShell>{children}</LayoutShell>

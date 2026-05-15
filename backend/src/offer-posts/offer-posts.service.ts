@@ -229,6 +229,23 @@ export class OfferPostsService {
     return { data: offers, total, page, lastPage: Math.ceil(total / limit) };
   }
 
+  /**
+   * Devuelve la lista distinta de categorías que actualmente tienen
+   * al menos una oferta activa. Usado por el panel admin como chips de
+   * filtro para no inundar al admin con la taxonomía completa.
+   */
+  async getOfferCategories() {
+    const rows = await this.prisma.offerPostCategory.findMany({
+      where: {
+        offerPost: { isActive: true, expiresAt: { gt: new Date() } },
+      },
+      select: { category: { select: { id: true, name: true, slug: true } } },
+      distinct: ['categoryId'],
+      orderBy: { categoryId: 'asc' },
+    });
+    return rows.map((r) => r.category);
+  }
+
   // ── LISTAR OFERTAS DEL PROVEEDOR (propio panel) ──────────
   async getMyOffers(providerId: number) {
     return this.prisma.offerPost.findMany({

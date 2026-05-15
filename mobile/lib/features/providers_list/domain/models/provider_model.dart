@@ -4,6 +4,10 @@ import '../../../provider_dashboard/domain/models/service_item_model.dart';
 /// Mapea exactamente con la tabla `providers` del backend
 class ProviderModel {
   final int id;
+  /// Slug URL-friendly único — base de la Vanity URL pública
+  /// `oficioapp.org.pe/p/{slug}`. Null para registros migrados antes de
+  /// que existiera el campo; en ese caso la app cae al deep-link por id.
+  final String? slug;
   final String businessName;
   final String categoryName;
   final String phone;
@@ -52,6 +56,7 @@ class ProviderModel {
 
   const ProviderModel({
     required this.id,
+    this.slug,
     required this.businessName,
     required this.categoryName,
     required this.phone,
@@ -93,6 +98,7 @@ class ProviderModel {
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
     return ProviderModel(
       id:            json['id'] as int,
+      slug:          json['slug'] as String?,
       businessName:  json['businessName'] as String,
       categoryName:  _firstCategoryName(json),
       phone:         json['phone'] as String,
@@ -222,6 +228,7 @@ class ProviderModel {
   }) {
     return ProviderModel(
       id:               id,
+      slug:             slug,
       businessName:     businessName,
       categoryName:     categoryName,
       phone:            phone,

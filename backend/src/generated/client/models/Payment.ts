@@ -478,10 +478,6 @@ export type PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput = {
   deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[]
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type PaymentCreateWithoutSubscriptionInput = {
   amount: number
   currency?: string

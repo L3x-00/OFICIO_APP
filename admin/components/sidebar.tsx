@@ -3,12 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Users, Star, ShieldCheck, BarChart2,
-  Tag, Zap, Bell, FileBarChart, UserCog, ChevronRight,
-  Activity, CreditCard, Shield, Wallet, Gift, Coins,
+  LayoutDashboard, Star, BarChart2,
+  Tag, Zap, Bell, FileBarChart, ChevronRight,
+  Activity, Gift, Coins, MessageSquare, Tag as TagIcon,
+  ShieldCheck, UsersRound,
 } from 'lucide-react';
 import { useState } from 'react';
 
+// Sidebar reorganizada en torno a flujos: las páginas duales
+// (Pagos+Solicitudes, Verificación+Validación, Proveedores+Usuarios) se
+// fusionaron en rutas tabuladas para reducir context-switching y unificar
+// filtros — cada tab reusa los componentes originales.
 const navGroups = [
   {
     label: 'Principal',
@@ -19,22 +24,26 @@ const navGroups = [
     ],
   },
   {
+    label: 'Marketplace',
+    items: [
+      { href: '/marketplace/offers', label: 'Ofertas', icon: TagIcon },
+      { href: '/marketplace/chats',  label: 'Chats',   icon: MessageSquare },
+    ],
+  },
+  {
     label: 'Gestión',
     items: [
-      { href: '/providers', label: 'Proveedores', icon: Users },
-      { href: '/users', label: 'Usuarios', icon: UserCog },
+      { href: '/management', label: 'Proveedores y Usuarios', icon: UsersRound },
       { href: '/categories', label: 'Categorías', icon: Tag },
-      { href: '/reviews', label: 'Reseñas', icon: Star },
+      { href: '/reviews',    label: 'Reseñas',    icon: Star },
     ],
   },
   {
     label: 'Operaciones',
     items: [
-      { href: '/verification', label: 'Verificación', icon: ShieldCheck },
-      { href: '/trust-validation', label: 'Validación', icon: Shield },
-      { href: '/plan-requests',   label: 'Solicitudes de Plan', icon: CreditCard },
-      { href: '/yape-payments',   label: 'Pagos Yape',           icon: Wallet },
-      { href: '/notifications',   label: 'Notificaciones',       icon: Bell },
+      { href: '/operations/queue',    label: 'Verificación y Validación', icon: ShieldCheck },
+      { href: '/operations/payments', label: 'Pagos y Solicitudes',       icon: Activity },
+      { href: '/notifications',       label: 'Notificaciones',            icon: Bell },
     ],
   },
   {

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/social_media_row.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -143,6 +145,23 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     await Future.wait([_loadReviews(), _refreshProviderStats()]);
   }
 
+  /// Lanza el share-sheet nativo (Android/iOS) o Web Share API con la
+  /// Vanity URL del proveedor + un copy con el nombre. La URL apunta al
+  /// dominio público (`oficioapp.org.pe/p/:slug`) que sirve la tarjeta
+  /// SSR con OG tags — al pegarla en WhatsApp / Facebook se ve preview
+  /// con foto y descripción.
+  ///
+  /// Tracking analítico fire-and-forget (mismo bus que call/whatsapp).
+  Future<void> _shareProfile(ProviderModel p) async {
+    if (p.slug == null || p.slug!.isEmpty) return;
+    unawaited(_providersRepo.trackEvent(p.id, 'view'));
+    final url = '${DioClient.publicWebUrl}/p/${p.slug}';
+    final text = p.type == ProviderType.negocio
+        ? 'Mira el negocio ${p.businessName} en OficioApp'
+        : 'Mira el perfil de ${p.businessName} en OficioApp';
+    await Share.share('$text\n$url', subject: p.businessName);
+  }
+
   Future<void> _makeCall() async {
     // Tracking analítico — fire-and-forget; nunca debe bloquear la llamada.
     unawaited(_providersRepo.trackEvent(_provider.id, 'call_click'));
@@ -215,16 +234,35 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       ),
       child: Column(
         children: [
-          // ── Handle ─────────────────────────────────────────
+          // ── Handle + acción compartir ─────────────────────
+          // El botón de compartir solo aparece si el provider tiene `slug`
+          // (Vanity URL pública configurada). Si todavía no, el ícono
+          // queda oculto para no enseñar una opción rota.
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: c.textMuted.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
-              ),
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+            child: Row(
+              children: [
+                const SizedBox(width: 40), // simetría con el botón derecho
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                        color: c.textMuted.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+                if (p.slug != null && p.slug!.isNotEmpty)
+                  IconButton(
+                    tooltip: 'Compartir perfil',
+                    icon: Icon(Icons.ios_share_rounded, color: c.textSecondary, size: 20),
+                    onPressed: () => _shareProfile(p),
+                  )
+                else
+                  const SizedBox(width: 40),
+              ],
             ),
           ),
 

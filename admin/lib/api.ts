@@ -763,3 +763,88 @@ export const deleteReward = (id: number) =>
   fetchApi<{ success: boolean }>(`/admin/rewards/${id}`, {
     method: 'DELETE',
   });
+
+// ── MARKETPLACE: OFERTAS & CHATS (admin) ──────────────────
+export interface AdminOfferItem {
+  id: number;
+  title: string;
+  description: string;
+  price: number | null;
+  photoUrl: string | null;
+  expiresAt: string;
+  isActive: boolean;
+  createdAt: string;
+  provider: {
+    id: number;
+    businessName: string;
+    type: 'OFICIO' | 'NEGOCIO';
+    averageRating: number;
+    locality?: { name?: string; province?: string; district?: string } | null;
+  };
+  categories: Array<{ category: { id: number; name: string; slug: string } }>;
+}
+
+export interface AdminOffersPage {
+  data: AdminOfferItem[];
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
+export const getAdminOffers = (params: {
+  providerType?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+  categorySlug?: string;
+  page?: number;
+}) => {
+  const q = new URLSearchParams({ page: String(params.page ?? 1), limit: '30' });
+  if (params.providerType) q.append('providerType', params.providerType);
+  if (params.department)   q.append('department',   params.department);
+  if (params.province)     q.append('province',     params.province);
+  if (params.district)     q.append('district',     params.district);
+  if (params.categorySlug) q.append('categorySlug', params.categorySlug);
+  return fetchApi<AdminOffersPage>(`/admin/offers?${q}`);
+};
+
+export const getAdminOfferCategories = () =>
+  fetchApi<Array<{ id: number; name: string; slug: string }>>('/admin/offers/categories');
+
+export interface AdminChatRoom {
+  id: number;
+  createdAt: string;
+  client: { id: number; firstName: string; lastName: string; email: string };
+  provider: {
+    id: number;
+    businessName: string;
+    type: 'OFICIO' | 'NEGOCIO';
+    locality?: { name?: string; department?: string; province?: string; district?: string } | null;
+  };
+  messages: Array<{ id: number; content: string; createdAt: string; senderId: number }>;
+}
+
+export interface AdminChatsPage {
+  data: AdminChatRoom[];
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
+export const getAdminChats = (params: {
+  providerType?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+  /** Días con actividad reciente (1, 3 o 7). 0/undefined = sin filtro. */
+  activeWithin?: number;
+  page?: number;
+}) => {
+  const q = new URLSearchParams({ page: String(params.page ?? 1), limit: '30' });
+  if (params.providerType) q.append('providerType', params.providerType);
+  if (params.department)   q.append('department',   params.department);
+  if (params.province)     q.append('province',     params.province);
+  if (params.district)     q.append('district',     params.district);
+  if (params.activeWithin) q.append('activeWithin', String(params.activeWithin));
+  return fetchApi<AdminChatsPage>(`/admin/chats?${q}`);
+};
