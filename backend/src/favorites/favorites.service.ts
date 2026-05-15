@@ -30,7 +30,16 @@ export class FavoritesService {
         provider: {
           include: {
             providerCategories: { select: { category: { select: { name: true } } } },
-            images:             { orderBy: { order: 'asc' }, take: 1 },
+            // Devolvemos varias imágenes ordenadas por isCover→order para
+            // que el cliente pueda elegir la cover (con `isCover=true`) y
+            // las miniaturas. Antes solo enviábamos 1 imagen sin importar
+            // si era la portada, así que las tarjetas de favoritos
+            // quedaban sin foto cuando la primera era una miniatura.
+            images: {
+              select: { id: true, url: true, isCover: true },
+              orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
+              take: 4,
+            },
           },
         },
       },

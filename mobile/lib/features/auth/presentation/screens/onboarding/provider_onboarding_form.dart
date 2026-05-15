@@ -451,7 +451,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
           debugPrint('[Onboarding] Foto ${i + 1}/${_photos.length}: ${photo.name} (${photo.path})');
           final url = await repo.uploadProviderPhotoFile(photo);
           debugPrint('[Onboarding] URL obtenida: $url');
-          await repo.saveProviderImage(url, type: widget.providerType);
+          // La primera foto se marca como cover explícitamente para que la
+          // tarjeta del perfil tenga foto garantizada en cuanto se apruebe
+          // el proveedor — sin depender del fallback `existingCount===0`
+          // del backend.
+          await repo.saveProviderImage(
+            url,
+            type: widget.providerType,
+            isCover: i == 0,
+          );
           debugPrint('[Onboarding] Foto ${i + 1} guardada en el perfil');
         } catch (e, st) {
           uploadErrors++;

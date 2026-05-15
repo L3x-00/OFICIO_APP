@@ -107,15 +107,8 @@ class ProviderModel {
       type:          ProviderType.fromString(
                        json['type'] as String? ?? 'OFICIO',
                      ),
-      coverImageUrl: (json['images'] as List?)
-                       ?.where((img) => img['isCover'] == true)
-                       .map((img) => img['url'] as String)
-                       .firstOrNull,
-      thumbnailUrls: (json['images'] as List?)
-                       ?.where((img) => img['isCover'] != true)
-                       .take(3)
-                       .map((img) => img['url'] as String)
-                       .toList() ?? [],
+      coverImageUrl: _coverFromImages(json['images'] as List?),
+      thumbnailUrls: _thumbnailsFromImages(json['images'] as List?),
       latitude:     (json['latitude'] as num?)?.toDouble(),
       longitude:    (json['longitude'] as num?)?.toDouble(),
       isFavorite:   json['isFavorite'] as bool? ?? false,
@@ -142,6 +135,48 @@ class ProviderModel {
       telegram:               json['telegram']    as String?,
       whatsappBiz:            json['whatsappBiz'] as String?,
     );
+  }
+
+  /// Cover image robusto: prefiere la que tenga `isCover==true`; si ningún
+  /// elemento tiene el flag (datos antiguos, race en `addImage`, o respuesta
+  /// que no incluyó el campo), usa la primera de la lista. Así la tarjeta
+  /// del perfil nunca queda sin foto cuando existe al menos una.
+  static String? _coverFromImages(List? images) {
+    if (images == null || images.isEmpty) return null;
+    final flagged = images
+        .where((img) => img is Map && img['isCover'] == true)
+        .map((img) => (img as Map)['url'] as String?)
+        .firstOrNull;
+    if (flagged != null && flagged.isNotEmpty) return flagged;
+    final first = images.first;
+    if (first is Map<String, dynamic>) return first['url'] as String?;
+    return null;
+  }
+
+  /// Miniaturas: todas las imágenes menos la cover elegida arriba. Si no
+  /// hubo cover marcada, descarta la primera (que ya se usó como cover en
+  /// el fallback) para no duplicarla en el carrusel.
+  static List<String> _thumbnailsFromImages(List? images) {
+    if (images == null || images.isEmpty) return const [];
+    final urls = images
+        .whereType<Map>()
+        .map((img) => img['url'] as String?)
+        .whereType<String>()
+        .toList();
+    if (urls.isEmpty) return const [];
+
+    final hasFlaggedCover =
+        images.any((img) => img is Map && img['isCover'] == true);
+    if (hasFlaggedCover) {
+      return images
+          .whereType<Map>()
+          .where((img) => img['isCover'] != true)
+          .take(3)
+          .map((img) => img['url'] as String)
+          .toList();
+    }
+    // Sin cover explícita: la primera ya se usó como cover en _coverFromImages.
+    return urls.skip(1).take(3).toList();
   }
 
   /// Lee la primera categoría — soporta la nueva relación M:N

@@ -145,11 +145,21 @@ class DashboardRepository {
   }
 
   /// Vincula la URL de una imagen subida al perfil del proveedor en la BD.
-  Future<ProfileImageRef> saveProviderImage(String url, {String? type}) async {
+  ///
+  /// [isCover] le indica al backend que esta imagen debe quedar marcada
+  /// como portada (override del flag automático `existingCount===0`).
+  /// El form de onboarding lo pasa `true` para la primera foto para
+  /// evitar races donde dos uploads concurrentes vean `existingCount=0`
+  /// y ambos terminen como cover (o peor, ninguno).
+  Future<ProfileImageRef> saveProviderImage(
+    String url, {
+    String? type,
+    bool isCover = false,
+  }) async {
     final response = await _dio.post(
       '/provider-profile/me/images',
       queryParameters: type != null ? {'type': type} : null,
-      data: {'url': url},
+      data: {'url': url, if (isCover) 'isCover': true},
     );
     return ProfileImageRef.fromJson(response.data as Map<String, dynamic>);
   }

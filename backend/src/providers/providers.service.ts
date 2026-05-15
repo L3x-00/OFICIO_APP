@@ -181,7 +181,11 @@ export class ProvidersService {
           providerCategories: {
             select: { category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
           },
-          images:       { orderBy: { order: 'asc' } },
+          // Cover primero para que las tarjetas siempre tengan foto incluso
+          // si se filtra por `isCover==true` en el cliente — y si por algún
+          // motivo ningún ProviderImage tiene el flag, la primera por
+          // `order` queda al frente como fallback.
+          images:       { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
           user:         { select: { firstName: true, lastName: true, avatarUrl: true } },
           locality:     { select: { name: true, department: true, province: true, district: true } },
           subscription: { select: { plan: true, status: true } },
@@ -207,7 +211,7 @@ export class ProvidersService {
         providerCategories: {
           select: { category: { select: { id: true, name: true, slug: true } } },
         },
-        images: { orderBy: { order: 'asc' } },
+        images: { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         user: { select: { firstName: true, lastName: true, avatarUrl: true } },
         locality: { select: { name: true, department: true } },
         reviews: {
