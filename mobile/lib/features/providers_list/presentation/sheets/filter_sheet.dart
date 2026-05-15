@@ -161,494 +161,526 @@ class _FilterSheetState extends State<FilterSheet> {
     }
   }
 
+  // ── MÉTODO BUILD PRINCIPAL (REFACTORIZADO) ──────────────────
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
 
     return Container(
-      decoration: BoxDecoration(
-        color: c.bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      decoration: _buildSheetDecoration(c),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Handle + Header ───────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Column(
-              children: [
-                Center(
-                  child: Container(
-                    width: 40, height: 4,
-                    decoration: BoxDecoration(
-                      color: c.textMuted.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.tune_rounded, color: AppColors.primary, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Filtros avanzados',
-                          style: TextStyle(
-                              color: c.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    TextButton.icon(
-                      onPressed: _clear,
-                      icon: const Icon(Icons.refresh_rounded,
-                          size: 16, color: AppColors.primary),
-                      label: const Text('Limpiar',
-                          style: TextStyle(color: AppColors.primary, fontSize: 13)),
-                    ),
-                  ],
-                ),
-              ],
+          _buildHeader(c),
+          const Divider(height: 1),
+          _buildScrollableContent(c),
+          _buildBottomButtons(c),
+        ],
+      ),
+    );
+  }
+
+  // ── SECCIONES DEL BUILD DESGLOSADAS ─────────────────────────
+
+  BoxDecoration _buildSheetDecoration(AppThemeColors c) {
+    return BoxDecoration(
+      color: c.bg,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    );
+  }
+
+  Widget _buildHeader(AppThemeColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Column(
+        children: [
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
-
-          const Divider(height: 1),
-
-          // ── Contenido con scroll ──────────────────────
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                left: 20, right: 20, top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
                 children: [
-                  // ── CATEGORÍAS ───────────────────────
-                  const _SectionLabel(label: 'CATEGORÍA'),
-                  const SizedBox(height: 10),
-                  _CategorySheetSection(
-                    categories:      widget.prov.categories,
-                    selectedParent:  _sheetParentSlug,
-                    selectedLeaf:    _sheetCategory,
-                    onParentTap:     (slug) => setState(() {
-                      _sheetParentSlug = _sheetParentSlug == slug ? null : slug;
-                      _sheetCategory   = null;
-                    }),
-                    onLeafTap:       (slug) => setState(() {
-                      _sheetCategory = _sheetCategory == slug ? null : slug;
-                    }),
+                  Icon(Icons.tune_rounded, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Filtros avanzados',
+                    style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 20),
-
-                  // ── DISPONIBILIDAD ────────────────────
-                  const _SectionLabel(label: 'DISPONIBILIDAD'),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _FilterChip(
-                        label: '🟢  Disponible ahora',
-                        isSelected: _availability == 'DISPONIBLE',
-                        color: AppColors.available,
-                        onTap: () => setState(() => _availability =
-                            _availability == 'DISPONIBLE' ? null : 'DISPONIBLE'),
-                      ),
-                      _FilterChip(
-                        label: '🟠  Con demora',
-                        isSelected: _availability == 'CON_DEMORA',
-                        color: AppColors.delayed,
-                        onTap: () => setState(() => _availability =
-                            _availability == 'CON_DEMORA' ? null : 'CON_DEMORA'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ── VERIFICACIÓN ──────────────────────
-                  const _SectionLabel(label: 'VERIFICACIÓN'),
-                  const SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () => setState(() => _verifiedOnly = !_verifiedOnly),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: _verifiedOnly
-                            ? AppColors.verified.withValues(alpha: 0.08)
-                            : c.bgCard,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: _verifiedOnly
-                              ? AppColors.verified.withValues(alpha: 0.4)
-                              : c.border,
-                          width: _verifiedOnly ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.verified_rounded,
-                            color: _verifiedOnly
-                                ? AppColors.verified
-                                : c.textMuted,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Solo proveedores verificados',
-                                  style: TextStyle(
-                                    color: c.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  'Con el check azul de confianza',
-                                  style: TextStyle(
-                                      color: c.textMuted, fontSize: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Switch(
-                            value: _verifiedOnly,
-                            onChanged: (v) =>
-                                setState(() => _verifiedOnly = v),
-                            activeThumbColor: AppColors.verified,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ── ORDENAR POR ───────────────────────
-                  const _SectionLabel(label: 'ORDENAR POR'),
-                  const SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: c.bgCard,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: c.border),
-                    ),
-                    child: Column(
-                      children: List.generate(_sortOptions.length, (i) {
-                        final opt = _sortOptions[i];
-                        final isSelected = _sortBy == opt.value;
-                        final isLast = i == _sortOptions.length - 1;
-                        return Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () =>
-                                  setState(() => _sortBy = opt.value),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                          .withValues(alpha: 0.06)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.vertical(
-                                    top: i == 0
-                                        ? const Radius.circular(14)
-                                        : Radius.zero,
-                                    bottom: isLast
-                                        ? const Radius.circular(14)
-                                        : Radius.zero,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? AppColors.primary
-                                                .withValues(alpha: 0.15)
-                                            : c.bgInput,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        opt.icon,
-                                        size: 18,
-                                        color: isSelected
-                                            ? AppColors.primary
-                                            : c.textMuted,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            opt.label,
-                                            style: TextStyle(
-                                              color: isSelected
-                                                  ? AppColors.primary
-                                                  : c.textPrimary,
-                                              fontSize: 14,
-                                              fontWeight: isSelected
-                                                  ? FontWeight.bold
-                                                  : FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            opt.subtitle,
-                                            style: TextStyle(
-                                                color: c.textMuted,
-                                                fontSize: 11),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Radio indicator
-                                    AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 180),
-                                      width: 20,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? AppColors.primary
-                                              : c.border,
-                                          width: isSelected ? 0 : 1.5,
-                                        ),
-                                        color: isSelected
-                                            ? AppColors.primary
-                                            : Colors.transparent,
-                                      ),
-                                      child: isSelected
-                                          ? const Icon(Icons.check,
-                                              color: Colors.white, size: 13)
-                                          : null,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            if (!isLast)
-                              Divider(
-                                height: 1,
-                                indent: 14,
-                                endIndent: 14,
-                                color: c.border,
-                              ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ── UBICACIÓN (estructurada: Dept → Prov → Dist) ──
-                  const _SectionLabel(label: 'UBICACIÓN'),
-                  const SizedBox(height: 10),
-                  // Botón GPS
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _gpsLoading ? null : _useMyGps,
-                      icon: _gpsLoading
-                          ? const SizedBox(
-                              width: 14, height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primary,
-                              ),
-                            )
-                          : const Icon(Icons.my_location_rounded,
-                              size: 16, color: AppColors.primary),
-                      label: Text(
-                        _gpsLoading ? 'Detectando…' : 'Usar mi ubicación actual',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Departamento — usa el catálogo dinámico (estático +
-                  // extras del backend). ListenableBuilder garantiza que
-                  // si llega un suggest mientras el sheet está abierto,
-                  // los dropdowns se refrescan en vivo.
-                  ListenableBuilder(
-                    listenable: DynamicLocations.instance,
-                    builder: (_, _) {
-                      final dyn = DynamicLocations.instance;
-                      final provList = _dept == null
-                          ? const <String>[]
-                          : dyn.provincesOf(_dept!);
-                      final distList = _prov == null
-                          ? const <String>[]
-                          : dyn.districtsOf(_prov!);
-                      return Column(
-                        children: [
-                          _LocationDropdown(
-                            label: 'Departamento',
-                            value: _dept,
-                            items: dyn.departments,
-                            onChanged: (v) => setState(() {
-                              _dept = v;
-                              _prov = null;
-                              _dist = null;
-                            }),
-                          ),
-                          const SizedBox(height: 10),
-                          _LocationDropdown(
-                            label: 'Provincia',
-                            value: _prov,
-                            items: provList,
-                            enabled: _dept != null,
-                            onChanged: (v) => setState(() {
-                              _prov = v;
-                              _dist = null;
-                            }),
-                          ),
-                          const SizedBox(height: 10),
-                          _LocationDropdown(
-                            label: 'Distrito',
-                            value: _dist,
-                            items: distList,
-                            enabled: _prov != null && distList.isNotEmpty,
-                            onChanged: (v) => setState(() => _dist = v),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-
-                  // Texto libre adicional (opcional) — sigue funcionando como
-                  // filtro suelto sobre `address`. Lo mantengo para que el
-                  // usuario pueda matizar (calle, urbanización).
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: _locationCtrl,
-                    style: TextStyle(color: c.textPrimary),
-                    decoration: InputDecoration(
-                      hintText: 'Dirección (opcional): Jr. Lima, Av…',
-                      hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
-                      prefixIcon: const Icon(
-                          Icons.location_on_outlined,
-                          color: AppColors.amber, size: 20),
-                      filled: true,
-                      fillColor: c.bgCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                            color: AppColors.primary, width: 1.5),
-                      ),
-                    ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-                  const SizedBox(height: 24),
                 ],
               ),
-            ),
+              TextButton.icon(
+                onPressed: _clear,
+                icon: const Icon(Icons.refresh_rounded,
+                    size: 16, color: AppColors.primary),
+                label: const Text('Limpiar',
+                    style: TextStyle(color: AppColors.primary, fontSize: 13)),
+              ),
+            ],
           ),
+        ],
+      ),
+    );
+  }
 
-          // ── Botones fijos en la parte inferior ────────
-          Container(
-            padding: EdgeInsets.fromLTRB(
-              20, 12, 20,
-              MediaQuery.of(context).padding.bottom + 16,
+  Widget _buildScrollableContent(AppThemeColors c) {
+    return Flexible(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: 20, right: 20, top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildCategorySection(),
+            _buildAvailabilitySection(c),
+            _buildVerificationSection(c),
+            _buildSortBySection(c),
+            _buildLocationSection(c),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionLabel(label: 'CATEGORÍA'),
+        const SizedBox(height: 10),
+        _CategorySheetSection(
+          categories:      widget.prov.categories,
+          selectedParent:  _sheetParentSlug,
+          selectedLeaf:    _sheetCategory,
+          onParentTap:     (slug) => setState(() {
+            _sheetParentSlug = _sheetParentSlug == slug ? null : slug;
+            _sheetCategory   = null;
+          }),
+          onLeafTap:       (slug) => setState(() {
+            _sheetCategory = _sheetCategory == slug ? null : slug;
+          }),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildAvailabilitySection(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionLabel(label: 'DISPONIBILIDAD'),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          children: [
+            _FilterChip(
+              label: '🟢  Disponible ahora',
+              isSelected: _availability == 'DISPONIBLE',
+              color: AppColors.available,
+              onTap: () => setState(() => _availability =
+                  _availability == 'DISPONIBLE' ? null : 'DISPONIBLE'),
             ),
+            _FilterChip(
+              label: '🟠  Con demora',
+              isSelected: _availability == 'CON_DEMORA',
+              color: AppColors.delayed,
+              onTap: () => setState(() => _availability =
+                  _availability == 'CON_DEMORA' ? null : 'CON_DEMORA'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildVerificationSection(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionLabel(label: 'VERIFICACIÓN'),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: () => setState(() => _verifiedOnly = !_verifiedOnly),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: c.bg,
-              border: Border(top: BorderSide(color: c.border)),
+              color: _verifiedOnly
+                  ? AppColors.verified.withValues(alpha: 0.08)
+                  : c.bgCard,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _verifiedOnly
+                    ? AppColors.verified.withValues(alpha: 0.4)
+                    : c.border,
+                width: _verifiedOnly ? 1.5 : 1,
+              ),
             ),
             child: Row(
               children: [
-                // Botón Limpiar
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton(
-                    onPressed: _clear,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: c.border),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: Text(
-                      'Limpiar',
-                      style: TextStyle(
-                          color: c.textSecondary,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
+                Icon(
+                  Icons.verified_rounded,
+                  color: _verifiedOnly
+                      ? AppColors.verified
+                      : c.textMuted,
+                  size: 20,
                 ),
                 const SizedBox(width: 12),
-                // Botón Aplicar
                 Expanded(
-                  flex: 4,
-                  child: ElevatedButton(
-                    onPressed: _apply,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_rounded, size: 18),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'Aplicar filtros',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Solo proveedores verificados',
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        if (_hasLocalChanges) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.amber,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
+                      Text(
+                        'Con el check azul de confianza',
+                        style: TextStyle(
+                            color: c.textMuted, fontSize: 11),
+                      ),
+                    ],
                   ),
                 ),
+                Switch(
+                  value: _verifiedOnly,
+                  onChanged: (v) =>
+                      setState(() => _verifiedOnly = v),
+                  activeThumbColor: AppColors.verified,
+                ),
               ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildSortBySection(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionLabel(label: 'ORDENAR POR'),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: c.bgCard,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.border),
+          ),
+          child: Column(
+            children: List.generate(_sortOptions.length, (i) {
+              final opt = _sortOptions[i];
+              final isSelected = _sortBy == opt.value;
+              final isLast = i == _sortOptions.length - 1;
+              return Column(
+                children: [
+                  _buildSortOptionItem(opt, isSelected, isLast, i, c),
+                  if (!isLast)
+                    Divider(
+                      height: 1,
+                      indent: 14,
+                      endIndent: 14,
+                      color: c.border,
+                    ),
+                ],
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildSortOptionItem(_SortOption opt, bool isSelected, bool isLast, int index, AppThemeColors c) {
+    return GestureDetector(
+      onTap: () => setState(() => _sortBy = opt.value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.06)
+              : Colors.transparent,
+          borderRadius: BorderRadius.vertical(
+            top: index == 0
+                ? const Radius.circular(14)
+                : Radius.zero,
+            bottom: isLast
+                ? const Radius.circular(14)
+                : Radius.zero,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : c.bgInput,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                opt.icon,
+                size: 18,
+                color: isSelected ? AppColors.primary : c.textMuted,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    opt.label,
+                    style: TextStyle(
+                      color: isSelected ? AppColors.primary : c.textPrimary,
+                      fontSize: 14,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    opt.subtitle,
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : c.border,
+                  width: isSelected ? 0 : 1.5,
+                ),
+                color: isSelected ? AppColors.primary : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 13)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationSection(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionLabel(label: 'UBICACIÓN'),
+        const SizedBox(height: 10),
+        _buildGpsButton(),
+        const SizedBox(height: 12),
+        ListenableBuilder(
+          listenable: DynamicLocations.instance,
+          builder: (_, _) {
+            final dyn = DynamicLocations.instance;
+            final provList = _dept == null
+                ? const <String>[]
+                : dyn.provincesOf(_dept!);
+            final distList = _prov == null
+                ? const <String>[]
+                : dyn.districtsOf(_prov!);
+            return Column(
+              children: [
+                _LocationDropdown(
+                  label: 'Departamento',
+                  value: _dept,
+                  items: dyn.departments,
+                  onChanged: (v) => setState(() {
+                    _dept = v;
+                    _prov = null;
+                    _dist = null;
+                  }),
+                ),
+                const SizedBox(height: 10),
+                _LocationDropdown(
+                  label: 'Provincia',
+                  value: _prov,
+                  items: provList,
+                  enabled: _dept != null,
+                  onChanged: (v) => setState(() {
+                    _prov = v;
+                    _dist = null;
+                  }),
+                ),
+                const SizedBox(height: 10),
+                _LocationDropdown(
+                  label: 'Distrito',
+                  value: _dist,
+                  items: distList,
+                  enabled: _prov != null && distList.isNotEmpty,
+                  onChanged: (v) => setState(() => _dist = v),
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 14),
+        _buildAddressTextField(c),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildGpsButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _gpsLoading ? null : _useMyGps,
+        icon: _gpsLoading
+            ? const SizedBox(
+                width: 14, height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : const Icon(Icons.my_location_rounded,
+                size: 16, color: AppColors.primary),
+        label: Text(
+          _gpsLoading ? 'Detectando…' : 'Usar mi ubicación actual',
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddressTextField(AppThemeColors c) {
+    return TextField(
+      controller: _locationCtrl,
+      style: TextStyle(color: c.textPrimary),
+      decoration: InputDecoration(
+        hintText: 'Dirección (opcional): Jr. Lima, Av…',
+        hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+        prefixIcon: const Icon(
+            Icons.location_on_outlined,
+            color: AppColors.amber, size: 20),
+        filled: true,
+        fillColor: c.bgCard,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+              color: AppColors.primary, width: 1.5),
+        ),
+      ),
+      onChanged: (_) => setState(() {}),
+    );
+  }
+
+  Widget _buildBottomButtons(AppThemeColors c) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20, 12, 20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
+      decoration: BoxDecoration(
+        color: c.bg,
+        border: Border(top: BorderSide(color: c.border)),
+      ),
+      child: Row(
+        children: [
+          // Botón Limpiar
+          Expanded(
+            flex: 2,
+            child: OutlinedButton(
+              onPressed: _clear,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: c.border),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Text(
+                'Limpiar',
+                style: TextStyle(
+                    color: c.textSecondary,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Botón Aplicar
+          Expanded(
+            flex: 4,
+            child: ElevatedButton(
+              onPressed: _apply,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check_rounded, size: 18),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'Aplicar filtros',
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  if (_hasLocalChanges) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.amber,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
