@@ -3,6 +3,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import '../../../domain/models/provider_model.dart';
+import 'card_contact_actions.dart';
 import 'card_helpers.dart';
 
 /// Variante LISTA — fila compacta (~72px) para el modo de vista en lista.
@@ -121,6 +122,24 @@ class ServiceCardList extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
+            // Acciones rápidas. Para planes ESTANDAR/PREMIUM exponemos
+            // WhatsApp + llamada incluso en la vista lista (incluyendo
+            // favoritos), para que la conversión no muera por falta de un
+            // CTA visible.
+            if (!isOwnCard && isPaidPlan(plan)) ...[
+              _MiniContactBtn(
+                icon: Icons.chat_rounded,
+                color: AppColors.whatsapp,
+                onTap: () => CardContactActions.openWhatsApp(context, provider),
+              ),
+              const SizedBox(width: 6),
+              _MiniContactBtn(
+                icon: Icons.call_rounded,
+                color: AppColors.call,
+                onTap: () => CardContactActions.makeCall(context, provider),
+              ),
+              const SizedBox(width: 6),
+            ],
             // Disponibilidad dot + favorito (oculto si es tarjeta propia)
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -164,6 +183,38 @@ class ServiceCardList extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Botón redondo compacto (32×32) para WhatsApp / llamada dentro de la
+/// fila de la variante Lista. Más pequeño que `IconActionButton` del
+/// default card porque comparte espacio con el dot de disponibilidad y
+/// el corazón de favorito.
+class _MiniContactBtn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _MiniContactBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Icon(icon, color: color, size: 16),
       ),
     );
   }

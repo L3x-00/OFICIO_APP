@@ -51,6 +51,11 @@ class CoverImage extends StatelessWidget {
           Positioned(top: provider.isVerified ? 44 : 12, right: 12, child: const TrustedBadge()),
         if (provider.distanceKm != null)
           Positioned(top: 12, left: 12, child: DistanceBadge(km: provider.distanceKm!)),
+        // Badge "A domicilio" abajo-izquierda en OFICIO con toggle activo —
+        // antes solo aparecía dentro del detail sheet, así que el usuario
+        // no sabía desde la lista quién atiende a domicilio.
+        if (provider.type == ProviderType.oficio && provider.hasHomeService)
+          const Positioned(bottom: 10, left: 12, child: HomeServiceBadge()),
       ],
     );
   }

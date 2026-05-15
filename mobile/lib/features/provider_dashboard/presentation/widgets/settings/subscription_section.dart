@@ -150,15 +150,43 @@ class _PlanCardState extends State<PlanCard> {
   Future<void> _openConfirmSheet() async {
     if (widget.isCurrent || widget.plan.id == 'GRATIS') return;
 
-    // If user has an active paid plan, block and redirect to cancel flow
     final dash = context.read<DashboardProvider>();
+
+    // Bloquear si hay un YapePayment en revisión: el botón no debe iniciar
+    // un nuevo pago hasta que el admin resuelva el anterior, evita que el
+    // usuario duplique comprobantes mientras espera aprobación.
+    if (dash.pendingPaymentPlan != null) {
+      final c = context.colors;
+      await showDialog(
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+          backgroundColor: c.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Pago en revisión',
+              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          content: Text(
+            'Ya enviaste el comprobante del plan ${dash.pendingPaymentPlan}. Te avisaremos cuando el equipo lo apruebe o rechace.',
+            style: TextStyle(color: c.textSecondary, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: Text('Entendido', style: TextStyle(color: AppColors.primary)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // If user has an active paid plan, block and redirect to cancel flow
     final sub  = dash.profile?.subscription;
     final hasActivePaidPlan = sub != null && sub.isActive && sub.plan != 'GRATIS';
     if (hasActivePaidPlan) {
       final c = context.colors;
       await showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (dialogCtx) => AlertDialog(
           backgroundColor: c.bgCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text('Plan activo detectado',
@@ -169,7 +197,10 @@ class _PlanCardState extends State<PlanCard> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              // Usa dialogCtx para que Navigator.pop cierre el diálogo y no
+              // la ruta padre — con go_router, pop sobre el context del
+              // árbol mata la pantalla y rebota al home.
+              onPressed: () => Navigator.of(dialogCtx).pop(),
               child: Text('Entendido', style: TextStyle(color: AppColors.primary)),
             ),
           ],
@@ -180,6 +211,9 @@ class _PlanCardState extends State<PlanCard> {
 
     final ok = await YapePaymentScreen.show(context, plan: widget.plan.id);
     if (ok == true && mounted) {
+      // Marca local + recarga del dashboard para que la pill "Revisión
+      // pendiente" aparezca al instante sin esperar al próximo refresh.
+      dash.markPaymentPending(widget.plan.id);
       context.showInfoSnack('Comprobante enviado. Te notificaremos cuando se valide.');
     }
   }
@@ -190,7 +224,13 @@ class _PlanCardState extends State<PlanCard> {
     final plan    = widget.plan;
     final current = widget.isCurrent;
     final isFree  = plan.id == 'GRATIS';
-    final tappable = !current && !isFree;
+    // Reactivo: cuando llega PLAN_APROBADO/RECHAZADO el provider notifica
+    // y `pendingForThisPlan` cambia, re-renderizando la tarjeta sin pasos
+    // extra.
+    final pendingPlan = context.watch<DashboardProvider>().pendingPaymentPlan;
+    final pendingForThisPlan = pendingPlan == plan.id;
+    final pendingForOtherPlan = pendingPlan != null && pendingPlan != plan.id;
+    final tappable = !current && !isFree && pendingPlan == null;
 
     return GestureDetector(
       onTapDown:   tappable ? (_) => setState(() => _pressed = true)  : null,
@@ -330,7 +370,54 @@ class _PlanCardState extends State<PlanCard> {
             )),
 
             // ── CTA button (solo si no es actual ni gratis) ─
-            if (tappable) ...[
+            if (pendingForThisPlan) ...[
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: plan.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: plan.color.withValues(alpha: 0.45)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 14, height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2, color: plan.color,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Revisión pendiente',
+                      style: TextStyle(
+                          color: plan.color,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ] else if (pendingForOtherPlan && !current && !isFree) ...[
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: c.bgInput,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: c.border),
+                ),
+                child: Center(
+                  child: Text(
+                    'Tienes otro pago en revisión',
+                    style: TextStyle(color: c.textMuted, fontSize: 13),
+                  ),
+                ),
+              ),
+            ] else if (tappable) ...[
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,

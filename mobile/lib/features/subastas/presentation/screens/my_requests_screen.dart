@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/service_request_model.dart';
 import '../providers/subastas_provider.dart';
 import '../widgets/offer_comparison_sheet.dart';
+import 'publish_request_sheet.dart';
 
 class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
@@ -29,6 +30,18 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
 
     return Scaffold(
       backgroundColor: c.bg,
+      // FAB siempre visible: el botón "Publicar necesidad" del empty state
+      // dependía de una ruta `/subastas/publish` que go_router no tiene
+      // registrada, por eso no hacía nada. Ahora se abre el sheet
+      // directamente y, además, queda disponible aunque ya existan
+      // solicitudes (antes el botón desaparecía).
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        onPressed: () => _openPublishSheet(context),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Publicar necesidad'),
+      ),
       appBar: AppBar(
         backgroundColor: c.bg,
         elevation: 0,
@@ -48,12 +61,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
           return const Center(child: CircularProgressIndicator(color: AppColors.primary));
         }
         if (prov.myRequests.isEmpty) {
-          return _EmptyRequests(onPublish: () async {
-            final nav = Navigator.of(context);
-            final subProv = context.read<SubastasProvider>();
-            final ok = await nav.pushNamed('/subastas/publish');
-            if (ok == true) subProv.loadMyRequests();
-          });
+          return _EmptyRequests(onPublish: () => _openPublishSheet(context));
         }
         return RefreshIndicator(
           onRefresh: () => context.read<SubastasProvider>().loadMyRequests(),
@@ -71,6 +79,12 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
         );
       }),
     );
+  }
+
+  Future<void> _openPublishSheet(BuildContext context) async {
+    final subProv = context.read<SubastasProvider>();
+    final ok = await PublishRequestSheet.show(context);
+    if (ok == true) subProv.loadMyRequests();
   }
 }
 

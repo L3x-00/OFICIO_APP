@@ -241,9 +241,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects> {
     if (auth.pendingPlanPromotion != null && mounted) {
       final payload = auth.pendingPlanPromotion!;
       auth.clearPlanPromotion();
-      context.read<DashboardProvider>().loadDashboard(
-        providerType: auth.activeProfileType,
-      );
+      final dash = context.read<DashboardProvider>();
+      // Limpia el flag local de "pago en revisión" — el plan acaba de
+      // aprobarse, así que los CTAs deben rehabilitarse al instante.
+      dash.clearPendingPaymentPlan();
+      dash.loadDashboard(providerType: auth.activeProfileType);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _showPlanPromotionDialog(payload);

@@ -10,6 +10,7 @@ import '../../../../trust_validation/presentation/screens/trust_validation_form_
 import '../../providers/dashboard_provider.dart';
 import '../../providers/offer_posts_provider.dart';
 import 'service_components.dart';
+import 'package:mobile/shared/widgets/app_snack_bar.dart';
 
 /// Bottom sheet para publicar una oferta. El método estático [show]
 /// aplica DOS gates antes de abrir el formulario:
@@ -148,17 +149,40 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
   }
 
   Future<void> _publish() async {
-    if (_titleCtrl.text.trim().length < 5) return;
-    if (_descCtrl.text.trim().length < 10) return;
-    Navigator.pop(context);
+    // Antes silenciaba violaciones de validación devolviendo sin feedback,
+    // por eso el botón parecía "no hacer nada". Ahora mostramos snack.
+    if (_titleCtrl.text.trim().length < 5) {
+      context.showErrorSnack('El título debe tener al menos 5 caracteres.');
+      return;
+    }
+    if (_descCtrl.text.trim().length < 10) {
+      context.showErrorSnack('La descripción debe tener al menos 10 caracteres.');
+      return;
+    }
+
     final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
-    await widget.offersProvider.createOffer(
+    // Capturamos messenger ANTES del pop: el context del sheet deja de ser
+    // válido tras cerrarlo y el snack no se vería.
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+    final ok = await widget.offersProvider.createOffer(
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),
       price: double.tryParse(_priceCtrl.text.trim()),
       photoPath: _pickedPath,
       type: type,
     );
+    if (!mounted) return;
+    if (ok) {
+      nav.pop();
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Oferta publicada')),
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(content: Text(widget.offersProvider.error ?? 'No se pudo publicar la oferta')),
+      );
+    }
   }
 
   @override

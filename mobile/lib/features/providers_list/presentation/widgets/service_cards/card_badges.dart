@@ -27,6 +27,35 @@ class VerifiedBadge extends StatelessWidget {
   }
 }
 
+/// Badge "Atiende a domicilio" — visible en tarjetas OFICIO cuyo perfil
+/// activó el toggle de servicio a domicilio. Aparece junto al resto de
+/// badges sobre la foto de portada.
+class HomeServiceBadge extends StatelessWidget {
+  const HomeServiceBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Color(0xFF06B6D4);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8)],
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.directions_run_rounded, color: Colors.white, size: 13),
+          SizedBox(width: 4),
+          Text('A domicilio',
+              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
 /// Badge "Confiable" — escudo verde para proveedores con validación de
 /// confianza aprobada.
 class TrustedBadge extends StatelessWidget {

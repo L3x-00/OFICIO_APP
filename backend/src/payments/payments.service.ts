@@ -109,15 +109,19 @@ export class PaymentsService {
   }
 
   // ── PROVEEDOR: historial ─────────────────────────────────────
+  // Antes filtraba `isVisible: true` y solo tomaba el primer provider
+  // del usuario — eso vaciaba el historial para perfiles PENDIENTE o
+  // RECHAZADO y para usuarios con doble perfil OFICIO+NEGOCIO. Ahora se
+  // listan los pagos de TODOS los provider IDs asociados al usuario.
   async getMyPayments(userId: number) {
-    const provider = await this.prisma.provider.findFirst({
-      where: { userId, isVisible: true },
+    const providers = await this.prisma.provider.findMany({
+      where: { userId },
       select: { id: true },
     });
-    if (!provider) return [];
+    if (providers.length === 0) return [];
 
     return this.prisma.yapePayment.findMany({
-      where: { providerId: provider.id },
+      where: { providerId: { in: providers.map((p) => p.id) } },
       orderBy: { createdAt: 'desc' },
     });
   }

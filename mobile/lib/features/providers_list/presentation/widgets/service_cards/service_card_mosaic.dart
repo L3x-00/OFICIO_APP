@@ -4,6 +4,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import '../../../domain/models/provider_model.dart';
 import 'card_badges.dart';
+import 'card_contact_actions.dart';
 import 'card_helpers.dart';
 
 /// Variante MOSAICO — tile para grilla de 2 columnas.
@@ -136,12 +137,28 @@ class ServiceCardMosaic extends StatelessWidget {
                           style: TextStyle(color: c.textSecondary, fontSize: 10),
                         ),
                         const Spacer(),
-                        Text(
-                          provider.categoryName,
-                          style: TextStyle(color: c.textMuted, fontSize: 9),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        // En la grilla 2-col los botones WhatsApp/llamada
+                        // solo aparecen para planes pagados — para gratis
+                        // se mantiene la etiqueta de categoría sin saturar.
+                        if (!isOwnCard && isPaidPlan(plan)) ...[
+                          _GridContactBtn(
+                            icon: Icons.chat_rounded,
+                            color: AppColors.whatsapp,
+                            onTap: () => CardContactActions.openWhatsApp(context, provider),
+                          ),
+                          const SizedBox(width: 4),
+                          _GridContactBtn(
+                            icon: Icons.call_rounded,
+                            color: AppColors.call,
+                            onTap: () => CardContactActions.makeCall(context, provider),
+                          ),
+                        ] else
+                          Text(
+                            provider.categoryName,
+                            style: TextStyle(color: c.textMuted, fontSize: 9),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                       ],
                     ),
                   ],
@@ -160,6 +177,36 @@ class ServiceCardMosaic extends StatelessWidget {
       height: double.infinity,
       color: c.bgInput,
       child: Icon(Icons.storefront_rounded, size: 32, color: c.textMuted),
+    );
+  }
+}
+
+/// Botón cuadrado mini (22×22) para WhatsApp / llamada dentro de la
+/// grilla 2-col. Espacio muy reducido — íconos sin etiquetas.
+class _GridContactBtn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _GridContactBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Icon(icon, color: color, size: 12),
+      ),
     );
   }
 }

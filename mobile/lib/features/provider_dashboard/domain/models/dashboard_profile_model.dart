@@ -232,12 +232,17 @@ class SubscriptionInfo {
 class DashboardAnalytics {
   final int whatsappClicks;
   final int callClicks;
+  /// Vistas de la tarjeta del proveedor. Antes el panel mostraba siempre 0
+  /// porque ignorábamos este conteo aunque el backend ya recibía los
+  /// eventos `view` desde `ProviderDetailSheet`.
+  final int views;
   final int totalClicks;
   final List<DailyClickEntry> dailyClicks;
 
   const DashboardAnalytics({
     required this.whatsappClicks,
     required this.callClicks,
+    required this.views,
     required this.totalClicks,
     required this.dailyClicks,
   });
@@ -247,7 +252,8 @@ class DashboardAnalytics {
     return DashboardAnalytics(
       whatsappClicks: summary['whatsappClicks'] as int? ?? 0,
       callClicks:     summary['callClicks'] as int? ?? 0,
-      totalClicks:    summary['totalClicks'] as int? ?? 0,
+      views:          summary['views']          as int? ?? 0,
+      totalClicks:    summary['totalClicks']    as int? ?? 0,
       dailyClicks:    (json['dailyClicks'] as List?)
                         ?.map((e) => DailyClickEntry.fromJson(e as Map<String, dynamic>))
                         .toList() ?? [],

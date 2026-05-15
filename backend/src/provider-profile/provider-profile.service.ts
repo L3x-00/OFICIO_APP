@@ -233,12 +233,18 @@ export class ProviderProfileService {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    const [whatsappClicks, callClicks, recentEvents] = await Promise.all([
+    const [whatsappClicks, callClicks, views, recentEvents] = await Promise.all([
       this.prisma.providerAnalytic.count({
         where: { providerId: provider.id, eventType: 'whatsapp_click', createdAt: { gte: since } },
       }),
       this.prisma.providerAnalytic.count({
         where: { providerId: provider.id, eventType: 'call_click', createdAt: { gte: since } },
+      }),
+      // Conteo de vistas — antes el panel mostraba 0 porque solo contábamos
+      // clicks. Las llamadas a `trackEvent(id, 'view')` desde
+      // ProviderDetailSheet quedaban en la tabla pero no se exponían.
+      this.prisma.providerAnalytic.count({
+        where: { providerId: provider.id, eventType: 'view', createdAt: { gte: since } },
       }),
       this.prisma.providerAnalytic.findMany({
         where: { providerId: provider.id, createdAt: { gte: since } },
@@ -247,16 +253,22 @@ export class ProviderProfileService {
       }),
     ]);
 
-    const byDay: Record<string, { whatsapp: number; calls: number }> = {};
+    const byDay: Record<string, { whatsapp: number; calls: number; views: number }> = {};
     for (const event of recentEvents) {
       const day = event.createdAt.toISOString().split('T')[0];
-      if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0 };
+      if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0, views: 0 };
       if (event.eventType === 'whatsapp_click') byDay[day].whatsapp++;
-      if (event.eventType === 'call_click') byDay[day].calls++;
+      if (event.eventType === 'call_click')     byDay[day].calls++;
+      if (event.eventType === 'view')           byDay[day].views++;
     }
 
     return {
-      summary: { whatsappClicks, callClicks, totalClicks: whatsappClicks + callClicks },
+      summary: {
+        whatsappClicks,
+        callClicks,
+        views,
+        totalClicks: whatsappClicks + callClicks,
+      },
       dailyClicks: Object.entries(byDay).map(([date, counts]) => ({ date, ...counts })),
     };
   }

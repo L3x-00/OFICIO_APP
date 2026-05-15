@@ -254,7 +254,11 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
     final ctrl = TextEditingController(text: initialValue);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      // Recibimos el `dialogCtx` y lo usamos para Navigator.pop. Con
+      // go_router, hacer pop sobre el context del árbol cierra la pantalla
+      // padre y rebota al home; el dialog context apunta solo al overlay
+      // del diálogo y se cierra como corresponde.
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(title, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
@@ -279,11 +283,11 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.amber,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -296,8 +300,16 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
 
     if (ok == true && mounted) {
       widget.onSavingChanged(true);
-      await onSave(ctrl.text.trim());
+      final saved = await onSave(ctrl.text.trim());
       if (mounted) widget.onSavingChanged(false);
+      // Feedback al usuario — antes podía guardar pero parecer que no.
+      if (mounted) {
+        if (saved) {
+          context.showSuccessSnack('$title actualizado');
+        } else {
+          context.showErrorSnack('No se pudo guardar $title');
+        }
+      }
     }
   }
 }

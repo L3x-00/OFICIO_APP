@@ -3,6 +3,8 @@ import '../../data/dashboard_repository.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 import '../../domain/models/service_item_model.dart';
 import '../../../../features/providers_list/domain/models/review_model.dart';
+import '../../../../features/payments/data/payments_repository.dart';
+import '../../../../core/errors/failures.dart';
 import '../../../../core/network/socket_service.dart'; // <--- NUEVO IMPORT
 
 export '../../data/dashboard_repository.dart'
@@ -12,6 +14,7 @@ enum DashboardStatus { idle, loading, loaded, error }
 
 class DashboardProvider extends ChangeNotifier {
   final _repo = DashboardRepository();
+  final _paymentsRepo = PaymentsRepository();
 
   DashboardProfileModel?      _profile;
   DashboardAnalytics?         _analytics;
@@ -23,6 +26,13 @@ class DashboardProvider extends ChangeNotifier {
   String?                     _error;
   bool                        _isUploadingPhoto = false;
   String?                     _currentProviderType;
+
+  /// Plan del último YapePayment en estado PENDIENTE (revisión admin
+  /// pendiente). Si está set, las tarjetas de plan se deshabilitan y
+  /// muestran "Revisión pendiente" en lugar de los CTAs de upgrade.
+  /// Se limpia automáticamente al recibir PLAN_APROBADO o PLAN_RECHAZADO.
+  String? _pendingPaymentPlan;
+  String? get pendingPaymentPlan => _pendingPaymentPlan;
 
   DashboardProfileModel?     get profile              => _profile;
   DashboardAnalytics?        get analytics            => _analytics;
@@ -58,6 +68,11 @@ class DashboardProvider extends ChangeNotifier {
 
       // Extraer servicios del scheduleJson
       _services = _parseServices(_profile!.scheduleJson);
+
+      // Hidrata estado de "revisión pendiente" desde el backend para que el
+      // refresh post-tab-switch siga mostrando el chip de pendiente sin
+      // depender del estado en memoria local.
+      _refreshPendingPaymentPlan();
 
       // Cargar reseñas del proveedor
       try {
@@ -97,6 +112,37 @@ class DashboardProvider extends ChangeNotifier {
     SocketService.instance.emit('joinCategoryRooms', {
       'categoryIds': [categoryId],
     });
+  }
+
+  /// Trae el último YapePayment PENDIENTE del proveedor para que la sección
+  /// de planes muestre "Revisión pendiente" en tiempo real. Silencioso: si
+  /// falla la red no rompe la carga del dashboard.
+  Future<void> _refreshPendingPaymentPlan() async {
+    try {
+      final result = await _paymentsRepo.getMyPayments();
+      if (!result.isSuccess) return;
+      final pending = result.data
+          .where((p) => p.status.toUpperCase() == 'PENDING')
+          .toList();
+      _pendingPaymentPlan = pending.isEmpty ? null : pending.first.plan;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// Llamado desde la UI tras un submit de Yape exitoso para que la sección
+  /// de planes refleje el estado pendiente sin esperar al próximo refresh.
+  void markPaymentPending(String plan) {
+    _pendingPaymentPlan = plan.toUpperCase();
+    notifyListeners();
+  }
+
+  /// Limpia el flag — invocado desde el listener de PLAN_APROBADO /
+  /// PLAN_RECHAZADO en main.dart para que las tarjetas se rehabiliten
+  /// inmediatamente.
+  void clearPendingPaymentPlan() {
+    if (_pendingPaymentPlan == null) return;
+    _pendingPaymentPlan = null;
+    notifyListeners();
   }
 
   // Carga notificaciones sin afectar el estado principal
