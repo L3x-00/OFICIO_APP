@@ -11,6 +11,7 @@ import '../../data/providers_repository.dart';
 import '../../data/reviews_repository.dart';
 import '../../domain/models/provider_model.dart';
 import '../../domain/models/review_model.dart';
+import '../providers/providers_provider.dart';
 import '../sheets/report_sheet.dart';
 import '../widgets/provider_contact_bar.dart';
 import '../widgets/provider_gallery.dart';
@@ -49,6 +50,11 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   final _reviewsRepo   = ReviewsRepository();
   final _providersRepo = ProvidersRepository();
 
+  /// Copia mutable del proveedor — se refresca tras dejar reseña / recomendar
+  /// para que los contadores (`averageRating`, `totalReviews`,
+  /// `totalRecommendations`) reflejen el valor real al instante.
+  late ProviderModel _provider = widget.provider;
+
   List<ReviewModel> _reviews = [];
   bool _reviewsLoading  = false;
   bool _reviewsError    = false;
@@ -57,13 +63,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   bool get _isOwnCard {
     final auth = context.read<AuthProvider>();
     return auth.user != null &&
-        widget.provider.userId != null &&
-        widget.provider.userId == auth.user!.id;
+        _provider.userId != null &&
+        _provider.userId == auth.user!.id;
   }
 
   /// Color de acento según el tipo de proveedor:
   /// NEGOCIO → morado | OFICIO → azul primary
-  Color get _accent => widget.provider.type == ProviderType.negocio
+  Color get _accent => _provider.type == ProviderType.negocio
       ? const Color(0xFF8E2DE2)
       : AppColors.primary;
 
@@ -80,10 +86,10 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
   List<String> get _allImages {
     final images = <String>[];
-    if (widget.provider.coverImageUrl != null) {
-      images.add(widget.provider.coverImageUrl!);
+    if (_provider.coverImageUrl != null) {
+      images.add(_provider.coverImageUrl!);
     }
-    images.addAll(widget.provider.thumbnailUrls);
+    images.addAll(_provider.thumbnailUrls);
     return images;
   }
 
@@ -93,13 +99,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     _loadReviews();
     // Tracking analítico: registra una vista del perfil al abrir el sheet.
     // Fire-and-forget — el repo absorbe errores internamente.
-    unawaited(_providersRepo.trackEvent(widget.provider.id, 'view'));
+    unawaited(_providersRepo.trackEvent(_provider.id, 'view'));
   }
 
   Future<void> _loadReviews() async {
     setState(() { _reviewsLoading = true; _reviewsError = false; });
     try {
-      final reviews = await _reviewsRepo.getProviderReviews(widget.provider.id);
+      final reviews = await _reviewsRepo.getProviderReviews(_provider.id);
       if (!mounted) return;
       setState(() => _reviews = reviews);
 
@@ -107,7 +113,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       final uid = context.read<AuthProvider>().user?.id ?? 0;
       if (uid != 0) {
         final recommended = await _providersRepo.checkRecommendation(
-            widget.provider.id, uid);
+            _provider.id, uid);
         if (mounted) setState(() => _isRecommended = recommended);
       }
     } catch (_) {
@@ -117,10 +123,30 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     }
   }
 
+  /// Refresca los contadores del proveedor (rating, reseñas, recomendaciones)
+  /// desde el backend. Se llama después de crear/editar reseña o cambiar
+  /// recomendación para que la tarjeta refleje el cambio al instante,
+  /// tanto en este sheet como en la lista del home (propagado vía
+  /// `ProvidersProvider.refreshProvider`).
+  Future<void> _refreshProviderStats() async {
+    final updated = await context
+        .read<ProvidersProvider>()
+        .refreshProvider(_provider.id);
+    if (!mounted || updated == null) return;
+    setState(() => _provider = updated.copyWith(isFavorite: _provider.isFavorite));
+  }
+
+  /// Recarga reseñas y refresca contadores en paralelo. Pasado como
+  /// callback a [ProviderContactBar] para que tras crear/editar/recomendar
+  /// la UI quede coherente sin pedir un refresh manual al usuario.
+  Future<void> _onReviewActionDone() async {
+    await Future.wait([_loadReviews(), _refreshProviderStats()]);
+  }
+
   Future<void> _makeCall() async {
     // Tracking analítico — fire-and-forget; nunca debe bloquear la llamada.
-    unawaited(_providersRepo.trackEvent(widget.provider.id, 'call_click'));
-    final uri = Uri.parse('tel:${widget.provider.phone}');
+    unawaited(_providersRepo.trackEvent(_provider.id, 'call_click'));
+    final uri = Uri.parse('tel:${_provider.phone}');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
@@ -163,7 +189,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final screenHeight = MediaQuery.of(context).size.height;
-    final p = widget.provider;
+    final p = _provider;
     final hasSchedule = p.scheduleJson != null &&
         ScheduleTable.hasScheduleData(p.scheduleJson!);
     final hasServices = (p.scheduleJson?['services'] is List) &&
@@ -304,7 +330,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             myReview: _myReview,
             isRecommended: _isRecommended,
             repo: _providersRepo,
-            onReloadReviews: _loadReviews,
+            onReloadReviews: _onReviewActionDone,
           ),
         ],
       ),
@@ -351,7 +377,48 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       );
     }
 
-    if (_reviews.isEmpty) return const SizedBox.shrink();
+    // Empty state visible: proveedores recién aprobados sin reseñas todavía
+    // necesitan que la sección exista (con placeholder) para que el botón
+    // "Dejar una reseña" del contact bar tenga contexto visual.
+    if (_reviews.isEmpty) {
+      final c = context.colors;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionTitle('Reseñas'),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            decoration: BoxDecoration(
+              color: c.bgCard,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: c.border),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.rate_review_outlined, color: c.textMuted, size: 26),
+                const SizedBox(height: 6),
+                Text(
+                  'Aún sin reseñas',
+                  style: TextStyle(
+                      color: c.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Sé el primero en dejar una reseña tras contratar este servicio.',
+                  style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +427,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
         const SizedBox(height: 12),
         ..._reviews.take(5).map((r) => ReviewCard(
               review: r,
-              providerUserId: widget.provider.userId ?? 0,
+              providerUserId: _provider.userId ?? 0,
             )),
         const SizedBox(height: 8),
       ],
@@ -378,8 +445,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           if (auth.user == null) { _showLoginRequired(); return; }
           ReportSheet.show(
             context,
-            providerId:    widget.provider.id,
-            providerName:  widget.provider.businessName,
+            providerId:    _provider.id,
+            providerName:  _provider.businessName,
             userId:        auth.user!.id,
             repo:          _providersRepo,
           );

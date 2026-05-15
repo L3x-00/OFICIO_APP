@@ -10,7 +10,12 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
 
-enum _FavViewMode { lista, mosaico }
+/// Modos de visualización del listado de favoritos. Replican los tres
+/// estilos consistentes con la pantalla principal:
+///   - lista       → fila compacta (ServiceCardList)
+///   - cuadricula  → grid 2 columnas (ServiceCardMosaic)
+///   - mosaico     → tarjeta full-width compacta (ServiceCardContent)
+enum _FavViewMode { lista, cuadricula, mosaico }
 
 class FavoritesScreen extends StatefulWidget {
   final int? userId;
@@ -22,6 +27,19 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
   _FavViewMode _viewMode = _FavViewMode.lista;
+
+  @override
+  void initState() {
+    super.initState();
+    // Garantiza que los favoritos se carguen al entrar al tab, incluso si
+    // el provider quedó en estado vacío tras un cambio de cuenta o el
+    // primer toggle no disparó un reload completo.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || widget.userId == null) return;
+      final favs = context.read<FavoritesProvider>();
+      favs.initialize(widget.userId!);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,72 +72,89 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             )
           : Consumer<FavoritesProvider>(
               builder: (context, favProv, _) {
-                if (favProv.isLoading) {
+                if (favProv.isLoading && favProv.favorites.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   );
                 }
                 if (favProv.favorites.isEmpty) {
-                  return _buildEmpty(c);
+                  return RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: favProv.loadFavorites,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                        _buildEmpty(c),
+                      ],
+                    ),
+                  );
                 }
-
-                final isMosaic = _viewMode == _FavViewMode.mosaico;
                 return RefreshIndicator(
                   color: AppColors.primary,
                   onRefresh: favProv.loadFavorites,
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(isMosaic ? 12 : 16),
-                    itemCount: isMosaic
-                        ? (favProv.favorites.length / 2).ceil()
-                        : favProv.favorites.length,
-                    itemBuilder: (context, index) {
-                      if (!isMosaic) {
-                        final provider = favProv.favorites[index].copyWith(
-                          isFavorite: true,
-                        );
-                        return ServiceCardDefault(
-                          provider: provider,
-                          onTap: () =>
-                              ProviderDetailSheet.show(context, provider),
-                          onFavoriteToggle: () => favProv.toggle(provider.id),
-                          onChat: () => _openChat(context, provider.id),
-                        );
-                      }
-                      // Mosaic: pair two cards per row
-                      final left = index * 2;
-                      final right = left + 1;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ServiceCardMosaic(
-                                provider: favProv.favorites[left]
-                                    .copyWith(isFavorite: true),
-                                onTap: () => ProviderDetailSheet.show(
-                                    context, favProv.favorites[left]),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: right < favProv.favorites.length
-                                  ? ServiceCardMosaic(
-                                      provider: favProv.favorites[right]
-                                          .copyWith(isFavorite: true),
-                                      onTap: () => ProviderDetailSheet.show(
-                                          context, favProv.favorites[right]),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                  child: _buildContent(favProv),
                 );
               },
             ),
     );
+  }
+
+  Widget _buildContent(FavoritesProvider favProv) {
+    final favs = favProv.favorites;
+
+    switch (_viewMode) {
+      case _FavViewMode.cuadricula:
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.70,
+          ),
+          itemCount: favs.length,
+          itemBuilder: (_, i) {
+            final provider = favs[i].copyWith(isFavorite: true);
+            return ServiceCardMosaic(
+              provider: provider,
+              onTap: () => ProviderDetailSheet.show(context, provider),
+            );
+          },
+        );
+
+      case _FavViewMode.mosaico:
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          itemCount: favs.length,
+          itemBuilder: (_, i) {
+            final provider = favs[i].copyWith(isFavorite: true);
+            return ServiceCardContent(
+              provider: provider,
+              onTap: () => ProviderDetailSheet.show(context, provider),
+              onFavoriteToggle: () => favProv.toggle(provider.id),
+              onChat: () => _openChat(context, provider.id),
+            );
+          },
+        );
+
+      case _FavViewMode.lista:
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          itemCount: favs.length,
+          itemBuilder: (_, i) {
+            final provider = favs[i].copyWith(isFavorite: true);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: ServiceCardList(
+                provider: provider,
+                onTap: () => ProviderDetailSheet.show(context, provider),
+                onFavoriteToggle: () => favProv.toggle(provider.id),
+              ),
+            );
+          },
+        );
+    }
   }
 
   Future<void> _openChat(BuildContext context, int providerId) async {
@@ -151,52 +186,50 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildEmpty(AppThemeColors c) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.favorite.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.favorite_border_rounded,
-                color: AppColors.favorite,
-                size: 40,
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.favorite.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Sin favoritos aún',
-              style: TextStyle(
-                color: c.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            child: const Icon(
+              Icons.favorite_border_rounded,
+              color: AppColors.favorite,
+              size: 40,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Guarda profesionales y negocios\nque te interesen para encontrarlos rápido.',
-              style: TextStyle(
-                color: c.textSecondary,
-                fontSize: 13,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Sin favoritos aún',
+            style: TextStyle(
+              color: c.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Guarda profesionales y negocios\nque te interesen para encontrarlos rápido.',
+            style: TextStyle(
+              color: c.textSecondary,
+              fontSize: 13,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 }
 
-// ── Toggle mosaico / lista ────────────────────────────────
+// ── Toggle de modos (Lista / Cuadrícula / Mosaico) ────────
 
 class _ViewToggle extends StatelessWidget {
   final _FavViewMode viewMode;
@@ -208,23 +241,39 @@ class _ViewToggle extends StatelessWidget {
     final c = context.colors;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ToggleBtn(
-            icon: Icons.view_list_rounded,
-            active: viewMode == _FavViewMode.lista,
-            onTap: () => onChanged(_FavViewMode.lista),
-            c: c,
-          ),
-          const SizedBox(width: 4),
-          _ToggleBtn(
-            icon: Icons.grid_view_rounded,
-            active: viewMode == _FavViewMode.mosaico,
-            onTap: () => onChanged(_FavViewMode.mosaico),
-            c: c,
-          ),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: c.border),
+        ),
+        padding: const EdgeInsets.all(2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ToggleBtn(
+              icon: Icons.view_list_rounded,
+              tooltip: 'Lista',
+              active: viewMode == _FavViewMode.lista,
+              onTap: () => onChanged(_FavViewMode.lista),
+              c: c,
+            ),
+            _ToggleBtn(
+              icon: Icons.grid_view_rounded,
+              tooltip: 'Cuadrícula',
+              active: viewMode == _FavViewMode.cuadricula,
+              onTap: () => onChanged(_FavViewMode.cuadricula),
+              c: c,
+            ),
+            _ToggleBtn(
+              icon: Icons.view_stream_rounded,
+              tooltip: 'Mosaico',
+              active: viewMode == _FavViewMode.mosaico,
+              onTap: () => onChanged(_FavViewMode.mosaico),
+              c: c,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -232,25 +281,36 @@ class _ViewToggle extends StatelessWidget {
 
 class _ToggleBtn extends StatelessWidget {
   final IconData icon;
+  final String tooltip;
   final bool active;
   final VoidCallback onTap;
   final AppThemeColors c;
-  const _ToggleBtn({required this.icon, required this.active, required this.onTap, required this.c});
+  const _ToggleBtn({
+    required this.icon,
+    required this.tooltip,
+    required this.active,
+    required this.onTap,
+    required this.c,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: active ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          icon,
-          color: active ? AppColors.primary : c.textMuted,
-          size: 20,
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: active ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: active ? AppColors.primary : c.textMuted,
+            size: 18,
+          ),
         ),
       ),
     );

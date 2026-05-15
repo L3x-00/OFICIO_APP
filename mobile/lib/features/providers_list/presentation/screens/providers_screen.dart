@@ -104,8 +104,10 @@ class _ProvidersViewState extends State<_ProvidersView>
     super.build(context);
     final c = context.colors;
     // Watch para que la pill del header se actualice cuando el stream GPS
-    // emite una nueva provincia (liveProvince).
-    final liveProvince = context.watch<ProvidersProvider>().liveProvince;
+    // emite una nueva provincia / distrito en tiempo real.
+    final providers   = context.watch<ProvidersProvider>();
+    final liveProvince = providers.liveProvince;
+    final liveDistrict = providers.liveDistrict;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -184,7 +186,7 @@ class _ProvidersViewState extends State<_ProvidersView>
       ),
       body: Column(
         children: [
-          GreetingHeader(liveProvince: liveProvince),
+          GreetingHeader(liveProvince: liveProvince, liveDistrict: liveDistrict),
           const CollapsibleSearchBar(),
           const FilterBar(),
           const SubastaBanner(),

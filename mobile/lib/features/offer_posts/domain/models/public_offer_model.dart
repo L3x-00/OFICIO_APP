@@ -64,6 +64,10 @@ class OfferProviderInfo {
   final String businessName;
   final double averageRating;
   final bool isVerified;
+  /// 'OFICIO' (profesional) o 'NEGOCIO'. Necesario para mostrar el botón
+  /// correcto en el detalle ("Ver perfil profesional" vs "Ver negocio")
+  /// y para el badge de tipo.
+  final String? type;
   final String? phone;
   final String? whatsapp;
   final String? coverUrl;
@@ -75,12 +79,15 @@ class OfferProviderInfo {
     required this.businessName,
     required this.averageRating,
     required this.isVerified,
+    this.type,
     this.phone,
     this.whatsapp,
     this.coverUrl,
     this.localityName,
     this.plan,
   });
+
+  bool get isBusiness => (type ?? '').toUpperCase() == 'NEGOCIO';
 
   factory OfferProviderInfo.fromJson(Map<String, dynamic> j) {
     final images = j['images'] as List? ?? [];
@@ -91,6 +98,7 @@ class OfferProviderInfo {
       businessName:  j['businessName'] as String,
       averageRating: (j['averageRating'] as num?)?.toDouble() ?? 0,
       isVerified:    j['isVerified'] as bool? ?? false,
+      type:          j['type'] as String?,
       phone:         j['phone'] as String?,
       whatsapp:      j['whatsapp'] as String?,
       coverUrl:      coverUrl,

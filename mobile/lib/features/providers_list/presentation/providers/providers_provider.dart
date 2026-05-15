@@ -54,6 +54,12 @@ class ProvidersProvider extends ChangeNotifier {
   String? _liveProvince;
   String? get liveProvince => _liveProvince;
 
+  /// Distrito detectado por el stream GPS. Junto con [liveProvince] arma
+  /// la etiqueta "Distrito · Provincia" en el header de la pantalla
+  /// principal.
+  String? _liveDistrict;
+  String? get liveDistrict => _liveDistrict;
+
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers            => _providers;
   List<CategoryModel> get categories           => _categories;
@@ -335,6 +341,28 @@ class ProvidersProvider extends ChangeNotifier {
 
   static double _rad(double deg) => deg * math.pi / 180;
 
+  /// Refresca los datos de un proveedor concreto desde el backend y
+  /// reemplaza la copia en memoria (lista pública). Útil tras dejar una
+  /// reseña o recomendar — los contadores `averageRating`, `totalReviews`
+  /// y `totalRecommendations` quedan al instante con el valor real.
+  ///
+  /// Devuelve el modelo refrescado para que el caller (p. ej. el detail
+  /// sheet) pueda usarlo directamente, o `null` si la consulta falló.
+  Future<ProviderModel?> refreshProvider(int id) async {
+    final result = await _repo.getProviderDetail(id);
+    if (!result.isSuccess) return null;
+    final updated = result.data;
+    final idx = _providers.indexWhere((p) => p.id == id);
+    if (idx != -1) {
+      // Preserva el flag de favorito local — el endpoint /providers/:id no
+      // siempre incluye el contexto del usuario actual.
+      final wasFav = _providers[idx].isFavorite;
+      _providers[idx] = updated.copyWith(isFavorite: wasFav);
+      notifyListeners();
+    }
+    return updated;
+  }
+
   // ── Toggle favorito (local) ───────────────────────────────
   void toggleFavorite(int providerId) {
     final idx = _providers.indexWhere((p) => p.id == providerId);
@@ -502,9 +530,14 @@ class ProvidersProvider extends ChangeNotifier {
     final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
     if (geo == null) return;
 
-    // 1. Actualiza el label de la pill (sin recargar el backend).
-    if (geo.province != _liveProvince) {
+    // 1. Actualiza el label de la pill (sin recargar el backend). Provincia
+    //    y distrito se sincronizan por separado: cualquiera de los dos que
+    //    cambie redibuja el chip del greeting header.
+    final provChanged = geo.province != _liveProvince;
+    final distChanged = geo.district != _liveDistrict;
+    if (provChanged || distChanged) {
       _liveProvince = geo.province;
+      _liveDistrict = geo.district;
       notifyListeners();
     }
 

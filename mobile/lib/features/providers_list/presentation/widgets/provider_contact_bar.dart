@@ -167,6 +167,9 @@ class ProviderContactBar extends StatelessWidget {
           userId:     userId,
           repo:       repo,
         );
+        // Refresca de nuevo tras la recomendación para que
+        // `totalRecommendations` quede al día en la tarjeta.
+        if (context.mounted) await onReloadReviews();
       }
     }
   }

@@ -9,11 +9,14 @@ import '../providers/providers_provider.dart';
 /// Saludo del usuario + botón de ubicación. Se renderiza en la cabecera
 /// de la pantalla de proveedores.
 ///
-/// [liveProvince] permite sobreescribir la etiqueta del botón con la
-/// provincia detectada por el stream GPS (en vivo, no requiere recarga).
+/// [liveProvince] y [liveDistrict] permiten sobreescribir la etiqueta del
+/// botón con la zona detectada por el stream GPS (en vivo, no requiere
+/// recarga). Cuando ambos están presentes se compone "Distrito · Provincia"
+/// para que el usuario vea su ubicación real, no solo el departamento.
 class GreetingHeader extends StatelessWidget {
   final String? liveProvince;
-  const GreetingHeader({super.key, this.liveProvince});
+  final String? liveDistrict;
+  const GreetingHeader({super.key, this.liveProvince, this.liveDistrict});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,7 @@ class GreetingHeader extends StatelessWidget {
               ],
             ),
           ),
-          _LocationButton(liveProvince: liveProvince),
+          _LocationButton(liveProvince: liveProvince, liveDistrict: liveDistrict),
         ],
       ),
     );
@@ -53,19 +56,35 @@ class GreetingHeader extends StatelessWidget {
 class _LocationButton extends StatelessWidget {
   /// Province label from live GPS (overrides ProvidersProvider value when set).
   final String? liveProvince;
-  const _LocationButton({this.liveProvince});
+  /// District label from live GPS. Combinado con [liveProvince] produce
+  /// "Distrito · Provincia".
+  final String? liveDistrict;
+  const _LocationButton({this.liveProvince, this.liveDistrict});
 
   @override
   Widget build(BuildContext context) {
     final c    = context.colors;
     final prov = context.watch<ProvidersProvider>();
 
-    // Live GPS province takes priority over the stored filter value.
-    final label = liveProvince
-        ?? prov.province
-        ?? prov.district
-        ?? prov.department
-        ?? 'Ubicación';
+    // El label prioriza el GPS en vivo (distrito + provincia) sobre el
+    // filtro almacenado. Si solo hay uno, se muestra. Fallback final:
+    // valores del filtro, luego departamento del perfil.
+    final liveParts = <String>[
+      if (liveDistrict != null && liveDistrict!.isNotEmpty) liveDistrict!,
+      if (liveProvince != null && liveProvince!.isNotEmpty) liveProvince!,
+    ];
+    String label;
+    if (liveParts.isNotEmpty) {
+      label = liveParts.join(' · ');
+    } else {
+      final storedParts = <String>[
+        if (prov.district != null && prov.district!.isNotEmpty) prov.district!,
+        if (prov.province != null && prov.province!.isNotEmpty) prov.province!,
+      ];
+      label = storedParts.isNotEmpty
+          ? storedParts.join(' · ')
+          : (prov.department ?? 'Ubicación');
+    }
 
     return GestureDetector(
       onTap: () async {

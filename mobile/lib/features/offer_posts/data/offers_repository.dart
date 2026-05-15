@@ -7,17 +7,27 @@ class OffersRepository {
 
   Future<OffersPage> getOffers({
     String? categorySlug,
+    /// Lista de slugs para filtro multi-categoría (OR). Se serializa en CSV
+    /// porque el backend espera un query string plano.
+    List<String>? categorySlugs,
+    /// 'OFICIO' o 'NEGOCIO'. null = ambos.
+    String? providerType,
     String? department,
     String? province,
     String? district,
     int page = 1,
     int limit = 20,
   }) async {
+    final csv = (categorySlugs == null || categorySlugs.isEmpty)
+        ? null
+        : categorySlugs.join(',');
     final response = await _dio.get('/offers', queryParameters: {
-      'categorySlug': categorySlug,
-      'department':   department,
-      'province':     province,
-      'district':     district,
+      'categorySlug':  categorySlug,
+      'categorySlugs': csv,
+      'providerType':  providerType,
+      'department':    department,
+      'province':      province,
+      'district':      district,
       'page':  page,
       'limit': limit,
     }..removeWhere((_, v) => v == null));

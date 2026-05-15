@@ -45,10 +45,24 @@ class SubastasRepository {
     }
   }
 
-  Future<ApiResult<List<ServiceRequestModel>>> getMyRequests() async {
+  /// Trae las solicitudes del cliente autenticado. El backend pagina la
+  /// respuesta (`{ data, total, page, lastPage }`) así que aquí devolvemos
+  /// solo la primera página — la pantalla `MyRequestsScreen` no necesita
+  /// scroll infinito todavía.
+  ///
+  /// Es defensivo: si en algún momento el backend volviera a devolver una
+  /// lista plana, también se mapea correctamente.
+  Future<ApiResult<List<ServiceRequestModel>>> getMyRequests({int page = 1, int limit = 50}) async {
     try {
-      final res = await _dio.get('/subastas/requests/mine');
-      final list = (res.data as List)
+      final res = await _dio.get('/subastas/requests/mine', queryParameters: {
+        'page':  page,
+        'limit': limit,
+      });
+      final body = res.data;
+      final List rawList = body is Map<String, dynamic>
+          ? (body['data'] as List? ?? const [])
+          : (body as List? ?? const []);
+      final list = rawList
           .map((j) => ServiceRequestModel.fromJson(j as Map<String, dynamic>))
           .toList();
       return Success(list);

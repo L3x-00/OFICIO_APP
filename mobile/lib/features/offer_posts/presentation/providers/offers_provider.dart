@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import '../../data/offers_repository.dart';
 import '../../domain/models/public_offer_model.dart';
 
+/// Estado de la pantalla de ofertas públicas.
+///
+/// Filtros soportados:
+///   - [providerType]   → 'OFICIO' | 'NEGOCIO' | null (todas)
+///   - [categorySlugs]  → multi-select, OR lógico
+///   - [department] / [province] / [district] → ubicación
+///
+/// Tanto el toggle de tipo como el sheet de filtros avanzados pasan por
+/// aquí para que las query strings al backend queden coherentes con la
+/// UI; nada se filtra solo en cliente.
 class PublicOffersProvider extends ChangeNotifier {
   final _repo = OffersRepository();
 
@@ -9,43 +19,95 @@ class PublicOffersProvider extends ChangeNotifier {
   bool   _isLoading  = false;
   bool   _hasMore    = true;
   int    _page       = 1;
-  String? _categorySlug;
-  String? _department;
-  String? _province;
-  String? _district;
 
-  List<PublicOfferModel> get offers     => List.unmodifiable(_offers);
-  bool                   get isLoading  => _isLoading;
-  bool                   get hasMore    => _hasMore;
-  String?                get categorySlug => _categorySlug;
+  String?       _providerType;
+  List<String>  _categorySlugs = const [];
+  String?       _department;
+  String?       _province;
+  String?       _district;
 
+  List<PublicOfferModel> get offers       => List.unmodifiable(_offers);
+  bool                   get isLoading    => _isLoading;
+  bool                   get hasMore      => _hasMore;
+  String?                get providerType => _providerType;
+  List<String>           get categorySlugs => List.unmodifiable(_categorySlugs);
+  String?                get department   => _department;
+  String?                get province     => _province;
+  String?                get district     => _district;
+
+  /// True cuando el usuario tiene al menos un filtro avanzado activo. El
+  /// pill de tipo no cuenta — sirve para mostrar el badge "punto" sobre el
+  /// botón de filtros.
+  bool get hasAdvancedFilters =>
+      _categorySlugs.isNotEmpty ||
+      _department != null ||
+      _province   != null ||
+      _district   != null;
+
+  /// Carga inicial con la ubicación del usuario. Resetea la paginación.
   Future<void> load({
-    String? categorySlug,
     String? department,
     String? province,
     String? district,
-    bool reset = true,
-  }) async {
+  }) {
+    _department = department;
+    _province   = province;
+    _district   = district;
+    return _fetch(reset: true);
+  }
+
+  Future<void> loadMore() {
+    if (!_hasMore || _isLoading) return Future.value();
+    return _fetch(reset: false);
+  }
+
+  Future<void> setProviderType(String? type) {
+    if (_providerType == type) return Future.value();
+    _providerType = type;
+    return _fetch(reset: true);
+  }
+
+  /// Aplica un snapshot completo de filtros desde el sheet. Cualquier null
+  /// limpia el nivel correspondiente.
+  Future<void> applyAdvanced({
+    required List<String> categorySlugs,
+    String? department,
+    String? province,
+    String? district,
+  }) {
+    _categorySlugs = List.unmodifiable(categorySlugs);
+    _department    = department;
+    _province      = province;
+    _district      = district;
+    return _fetch(reset: true);
+  }
+
+  /// Limpia todos los filtros avanzados. No toca [providerType].
+  Future<void> clearAdvanced() {
+    _categorySlugs = const [];
+    _department    = null;
+    _province      = null;
+    _district      = null;
+    return _fetch(reset: true);
+  }
+
+  Future<void> _fetch({required bool reset}) async {
     if (reset) {
-      _offers = [];
-      _page   = 1;
+      _offers  = [];
+      _page    = 1;
       _hasMore = true;
-      _categorySlug = categorySlug;
-      _department   = department;
-      _province     = province;
-      _district     = district;
     }
-    if (!_hasMore || _isLoading) return;
 
     _isLoading = true;
     notifyListeners();
 
     try {
       final result = await _repo.getOffers(
-        categorySlug: _categorySlug,
-        department:   _department,
-        province:     _province,
-        district:     _district,
+        categorySlugs: _categorySlugs,
+        providerType:  _providerType,
+        department:    _department,
+        province:      _province,
+        district:      _district,
         page:  _page,
         limit: 20,
       );
@@ -59,22 +121,6 @@ class PublicOffersProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
-
-  Future<void> loadMore() => load(reset: false);
-
-  Future<void> setCategory(String? slug) => load(
-    categorySlug: slug,
-    department:   _department,
-    province:     _province,
-    district:     _district,
-  );
-
-  Future<void> setLocation({String? department, String? province, String? district}) => load(
-    categorySlug: _categorySlug,
-    department:   department,
-    province:     province,
-    district:     district,
-  );
 
   Future<void> reportOffer(int offerId, String reason) async {
     await _repo.reportOffer(offerId, reason);

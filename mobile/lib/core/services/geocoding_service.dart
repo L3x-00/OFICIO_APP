@@ -3,16 +3,23 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// Resultado de geocodificación inversa adaptado al sistema de ubicaciones del Perú.
+///
+/// Los campos son nullables porque Nominatim no siempre devuelve los tres
+/// niveles (zonas rurales suelen carecer de `province`/`county`). Aún con
+/// campos parciales, el resultado se considera válido si al menos hay
+/// `district` o `province` — eso basta para refrescar la pill del header.
 class GeocodingResult {
-  final String department;
-  final String province;
-  final String district;
+  final String? department;
+  final String? province;
+  final String? district;
 
   const GeocodingResult({
-    required this.department,
-    required this.province,
-    required this.district,
+    this.department,
+    this.province,
+    this.district,
   });
+
+  bool get isEmpty => department == null && province == null && district == null;
 }
 
 /// Geocodificación inversa usando Nominatim (OpenStreetMap) — sin API key.
@@ -83,16 +90,15 @@ class GeocodingService {
         address['suburb']  as String?,
       );
 
-      if (department == null || province == null || district == null) {
-        debugPrint('[Geocoding] Campos incompletos: dept=$department, prov=$province, dist=$district');
-        return null;
-      }
-
       final result = GeocodingResult(
         department: department,
         province:   province,
         district:   district,
       );
+      if (result.isEmpty) {
+        debugPrint('[Geocoding] Sin campos utilizables: dept=$department, prov=$province, dist=$district');
+        return null;
+      }
       _cache[key] = result;
       return result;
     } catch (e) {
