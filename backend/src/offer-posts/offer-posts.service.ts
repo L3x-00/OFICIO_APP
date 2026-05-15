@@ -126,18 +126,47 @@ export class OfferPostsService {
   // ── LISTAR OFERTAS PÚBLICAS ──────────────────────────────
   async listOffers(filters: {
     categorySlug?: string;
+    /** CSV de slugs para filtro multi-categoría (OR lógico). Tiene prioridad
+     * sobre `categorySlug` si llega con al menos un valor. */
+    categorySlugs?: string;
+    /** 'OFICIO' | 'NEGOCIO' — filtra por el tipo del proveedor que publica. */
+    providerType?: string;
     department?: string;
     province?: string;
     district?: string;
     page?: number;
     limit?: number;
   }) {
-    const { categorySlug, department, province, district, page = 1, limit = 20 } = filters;
+    const {
+      categorySlug,
+      categorySlugs,
+      providerType,
+      department,
+      province,
+      district,
+      page = 1,
+      limit = 20,
+    } = filters;
 
     const where: any = { isActive: true, expiresAt: { gt: new Date() } };
 
-    if (categorySlug) {
+    // Multi-categoría (OR): el slug aislado se mantiene por compat. Si llega
+    // CSV con valores, se prioriza.
+    const slugList = (categorySlugs ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    if (slugList.length > 0) {
+      where.categories = { some: { category: { slug: { in: slugList } } } };
+    } else if (categorySlug) {
       where.categories = { some: { category: { slug: categorySlug } } };
+    }
+
+    // Filtrado por tipo de proveedor (Profesional/Negocio).
+    const normalizedType = (providerType ?? '').trim().toUpperCase();
+    if (normalizedType === 'OFICIO' || normalizedType === 'NEGOCIO') {
+      where.provider = { ...(where.provider ?? {}), type: normalizedType };
     }
 
     // Filtrar por localidad del proveedor
@@ -163,7 +192,10 @@ export class OfferPostsService {
         .map(l => l.id);
 
       if (matchIds.length > 0) {
-        where.provider = { localityId: { in: matchIds } };
+        where.provider = {
+          ...(where.provider ?? {}),
+          localityId: { in: matchIds },
+        };
       } else {
         where.id = -1; // sin resultados
       }
@@ -181,6 +213,7 @@ export class OfferPostsService {
           provider: {
             select: {
               id: true, businessName: true, averageRating: true, isVerified: true,
+              type: true,
               phone: true, whatsapp: true,
               images: { where: { isCover: true }, select: { url: true }, take: 1 },
               locality: { select: { name: true, province: true, district: true } },

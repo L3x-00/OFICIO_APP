@@ -18,15 +18,19 @@ export class OffersPublicController {
 
   @Get()
   list(
-    @Query('categorySlug') categorySlug?: string,
-    @Query('department')   department?: string,
-    @Query('province')     province?: string,
-    @Query('district')     district?: string,
-    @Query('page')         page?: string,
-    @Query('limit')        limit?: string,
+    @Query('categorySlug')  categorySlug?: string,
+    @Query('categorySlugs') categorySlugs?: string,
+    @Query('providerType')  providerType?: string,
+    @Query('department')    department?: string,
+    @Query('province')      province?: string,
+    @Query('district')      district?: string,
+    @Query('page')          page?: string,
+    @Query('limit')         limit?: string,
   ) {
     return this.service.listOffers({
       categorySlug,
+      categorySlugs,
+      providerType,
       department,
       province,
       district,

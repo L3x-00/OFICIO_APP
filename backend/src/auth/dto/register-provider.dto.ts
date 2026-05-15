@@ -74,23 +74,32 @@ export class RegisterProviderDto {
   @MaxLength(30)
   whatsapp?: string | null;
 
-  @IsOptional()
-  @IsString()
+  // Descripción del servicio/negocio. Obligatoria para que las tarjetas
+  // tengan contenido útil; sin ella el catálogo se ve vacío.
+  @IsString({ message: 'La descripción es obligatoria' })
+  @MinLength(10, { message: 'La descripción debe tener al menos 10 caracteres' })
   @MaxLength(1000)
-  description?: string;
+  description: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(200)
   address?: string;
 
-  @IsOptional()
-  @IsArray()
+  // Al menos una categoría es obligatoria — si llega vacío, el catálogo no
+  // sabría en qué bucket mostrar al proveedor.
+  @IsArray({ message: 'Selecciona al menos una categoría' })
   @ArrayMaxSize(7)
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @Type(() => Number)
-  categoryIds?: number[];
+  @Transform(({ value }) => {
+    // Soporta tanto array como valor escalar (form-data envía cada item como string).
+    if (value === undefined || value === null || value === '') return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+  })
+  categoryIds: number[];
 
   @IsOptional()
   @Type(() => Number)

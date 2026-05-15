@@ -97,8 +97,19 @@ export class ProviderProfileService {
 
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
 
+  /**
+   * Lookup tolerante — devuelve `null` si el usuario aún no tiene perfil de
+   * proveedor. Útil para endpoints que el cliente puede llamar sin haber
+   * registrado proveedor (notificaciones, marcado de leídas) sin que la app
+   * vea un 404 que rompa la UX.
+   */
+  private async findProviderByUserOrNull(userId: number) {
+    return this.prisma.provider.findFirst({ where: { userId } });
+  }
+
   async getMyNotifications(userId: number) {
-    const provider = await this.findProviderByUser(userId);
+    const provider = await this.findProviderByUserOrNull(userId);
+    if (!provider) return { data: [], unreadCount: 0 };
 
     const [notifications, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
@@ -115,7 +126,8 @@ export class ProviderProfileService {
   }
 
   async markNotificationRead(userId: number, notifId: number) {
-    const provider = await this.findProviderByUser(userId);
+    const provider = await this.findProviderByUserOrNull(userId);
+    if (!provider) return { ok: true };
 
     const notif = await this.prisma.adminNotification.findFirst({
       where: { id: notifId, providerId: provider.id },
@@ -129,7 +141,8 @@ export class ProviderProfileService {
   }
 
   async markAllNotificationsRead(userId: number) {
-    const provider = await this.findProviderByUser(userId);
+    const provider = await this.findProviderByUserOrNull(userId);
+    if (!provider) return { ok: true };
     await this.prisma.adminNotification.updateMany({
       where: { providerId: provider.id, isRead: false },
       data: { isRead: true },
