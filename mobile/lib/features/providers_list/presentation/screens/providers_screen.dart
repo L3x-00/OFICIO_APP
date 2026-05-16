@@ -98,16 +98,11 @@ class _ProvidersViewState extends State<_ProvidersView>
       builder: (_) => FilterSheet(prov: prov),
     );
   }
-
  // ... todo el código anterior de _ProvidersViewState ...
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final c = context.colors;
-    final providers   = context.watch<ProvidersProvider>();
-    final liveProvince = providers.liveProvince;
-    final liveDistrict = providers.liveDistrict;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -194,8 +189,12 @@ class _ProvidersViewState extends State<_ProvidersView>
         top: false,
         bottom: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GreetingHeader(liveProvince: liveProvince, liveDistrict: liveDistrict),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: GreetingHeader(),
+            ),
             const _SearchAndLocationRow(),
             const FilterBar(),
             const SubastaBanner(),
@@ -220,22 +219,21 @@ class _SearchAndLocationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<ProvidersProvider>();
-    final hasLocation = prov.hasLocationFilter;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Row(
         children: [
           const Expanded(child: CollapsibleSearchBar()),
-          if (hasLocation) ...[
-            const SizedBox(width: 8),
-            _CompactLocationChip(prov: prov),
-          ],
+          const SizedBox(width: 8),
+          _CompactLocationChip(prov: prov),
         ],
       ),
     );
   }
 }
+
+// ── Chip de ubicación compacto ────────────────────────────
 
 // ── Chip de ubicación compacto ────────────────────────────
 
@@ -246,39 +244,72 @@ class _CompactLocationChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final parts = [
-      if (prov.district != null) prov.district!,
-      if (prov.province != null) prov.province!,
-      if (prov.department != null) prov.department!,
-    ];
-    final label = parts.isNotEmpty ? parts.first : '';
+    final hasFilter = prov.hasLocationFilter;
+    
+    // Construir label solo si hay filtro
+    String label = '';
+    if (hasFilter) {
+      final parts = [
+        if (prov.district != null) prov.district!,
+        if (prov.province != null) prov.province!,
+        if (prov.department != null) prov.department!,
+      ];
+      label = parts.isNotEmpty ? parts.first : '';
+    }
 
     return GestureDetector(
-      onTap: prov.clearLocationFilter,
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => FilterSheet(prov: prov),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.10),
+          color: hasFilter
+              ? AppColors.primary.withValues(alpha: 0.10)
+              : AppColors.amber.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+          border: Border.all(
+            color: hasFilter
+                ? AppColors.primary.withValues(alpha: 0.35)
+                : AppColors.amber.withValues(alpha: 0.25),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 16),
+            Icon(
+              hasFilter ? Icons.location_on_rounded : Icons.public_rounded,
+              color: hasFilter ? AppColors.primary : AppColors.amber,
+              size: 14,
+            ),
             const SizedBox(width: 4),
             Text(
-              label,
+              hasFilter ? 'Mostrando en: $label' : 'Mostrando todos los servicios',
               style: TextStyle(
                 color: c.textPrimary,
-                fontSize: 12,
+                fontSize: 11.5,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 4),
-            Icon(Icons.close_rounded, color: c.textMuted, size: 14),
+            if (hasFilter) ...[
+              const SizedBox(width: 2),
+              const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+              const SizedBox(width: 2),
+              GestureDetector(
+                onTap: () => prov.clearLocationFilter(),
+                child: Icon(Icons.close_rounded, color: c.textMuted, size: 14),
+              ),
+            ] else ...[
+              const SizedBox(width: 2),
+              const Icon(Icons.arrow_drop_down_rounded, color: AppColors.amber, size: 18),
+            ],
           ],
         ),
       ),

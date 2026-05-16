@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import '../../features/localities/data/dynamic_locations.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/constants/peru_locations.dart';
@@ -73,8 +75,8 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
     _district   = widget.initialDistrict;
   }
 
-  List<String> get _provinces   => _department == null ? [] : PeruLocations.provincesOf(_department!);
-  List<String> get _districts   => _province   == null ? [] : PeruLocations.districtsOf(_province!);
+  List<String> get _provinces => _department == null ? [] : DynamicLocations.instance.provincesOf(_department!);
+  List<String> get _districts   => _province   == null ? [] : DynamicLocations.instance.districtsOf(_province!);
   bool         get _canConfirm  => _department != null && _province != null && _district != null;
 
   void _onDepartmentChanged(String? val) => setState(() {
@@ -101,10 +103,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
-      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
 
       if (geo != null) {
         setState(() {

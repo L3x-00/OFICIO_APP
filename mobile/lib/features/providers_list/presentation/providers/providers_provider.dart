@@ -470,9 +470,9 @@ class ProvidersProvider extends ChangeNotifier {
         return false;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
-      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
       if (geo == null) {
         _showSnack(context, 'No pudimos detectar tu ubicación');
         return false;
@@ -594,7 +594,7 @@ class ProvidersProvider extends ChangeNotifier {
   }
 
   Future<void> _onStreamPosition(Position pos) async {
-    final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+    final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
     if (geo == null) return;
 
     // 1. Actualiza el label de la pill (sin recargar el backend). Provincia

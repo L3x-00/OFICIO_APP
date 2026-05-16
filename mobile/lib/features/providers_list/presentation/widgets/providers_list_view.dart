@@ -10,6 +10,7 @@ import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 import '../../domain/models/provider_model.dart';
 import '../providers/providers_provider.dart';
 import '../screens/provider_detail_screen.dart';
+import '../sheets/filter_sheet.dart';
 import 'login_required_dialog.dart';
 import 'service_card.dart';
 
@@ -93,12 +94,18 @@ class ProvidersListView extends StatelessWidget {
               const SizedBox(height: 16),
               if (hasLocation)
                 TextButton.icon(
-                  onPressed: () =>
-                      context.read<ProvidersProvider>().setUserLocation(),
-                  icon: const Icon(Icons.public_rounded,
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => FilterSheet(prov: prov),
+                    );
+                  },
+                  icon: const Icon(Icons.close_rounded,
                       color: AppColors.primary, size: 16),
                   label: const Text(
-                    'Ver servicios de todo el Perú',
+                    'Quitar filtro de ubicación',
                     style: TextStyle(color: AppColors.primary),
                   ),
                 )

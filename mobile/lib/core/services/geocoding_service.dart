@@ -39,9 +39,9 @@ class GeocodingService {
   /// Convierte coordenadas GPS en departamento, provincia y distrito del Perú.
   /// Retorna `null` si la API falla o no encuentra resultados.
   /// Devuelve resultado cacheado si la celda ya fue consultada.
-  static Future<GeocodingResult?> reverseGeocode(double lat, double lng) async {
+  static Future<GeocodingResult?> reverseGeocode(double lat, double lng, {bool force = false}) async {
     final key = _cacheKey(lat, lng);
-    if (_cache.containsKey(key)) {
+    if (!force && _cache.containsKey(key)) {
       debugPrint('[Geocoding] Cache hit: $key');
       return _cache[key];
     }
@@ -80,6 +80,7 @@ class GeocodingService {
       final province = _clean(
         address['province']     as String? ??
         address['county']       as String? ??
+        address['region']       as String? ??
         address['city']         as String? ??
         address['municipality'] as String?,
       );

@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 import '../../data/providers_repository.dart';
 import '../providers/providers_provider.dart';
 import '../widgets/parent_category_icons.dart';
-
+import 'package:geolocator/geolocator.dart';
+import '../../../../core/services/geocoding_service.dart';
+import '../widgets/expand_search_banner.dart';
 /// Hoja de filtros avanzados — categorías, disponibilidad, verificación,
 /// orden y ubicación estructurada (jerarquía peruana).
 class FilterSheet extends StatefulWidget {
@@ -81,9 +83,9 @@ class _FilterSheetState extends State<FilterSheet> {
     _dist = widget.prov.district   ?? auth.user?.district;
     // Sanea: si el dept del usuario no está en el catálogo local, lo
     // descartamos para no mostrar opciones inválidas.
-    _dept = _sanitizeDept(_dept);
-    _prov = _sanitizeProv(_dept, _prov);
-    _dist = _sanitizeDist(_prov, _dist);
+    _dept = _dept ?? widget.prov.department;
+    _prov = _prov ?? widget.prov.province;
+    _dist = _dist ?? widget.prov.district;
   }
 
   // Sanitización accent-insensitive contra el catálogo combinado
@@ -129,6 +131,8 @@ class _FilterSheetState extends State<FilterSheet> {
       _prov = null;
       _dist = null;
     });
+    // Aplicar inmediatamente para que los servicios también se limpien
+    _apply();
   }
 
   bool get _hasLocalChanges =>
@@ -147,19 +151,69 @@ class _FilterSheetState extends State<FilterSheet> {
   // Delegado al Provider: el método [detectAndSetGpsLocation] encapsula
   // permisos, geocoding, sanitización y SnackBar de "Añadir al catálogo".
   // Cuando retorna true (filtro aplicado), cerramos el sheet automáticamente.
-  Future<void> _useMyGps() async {
-    if (_gpsLoading) return;
-    setState(() => _gpsLoading = true);
-    final applied = await widget.prov.detectAndSetGpsLocation(context);
-    if (!mounted) return;
-    setState(() => _gpsLoading = false);
-    if (applied) {
-      // El provider ya recargó proveedores y actualizó el filtro.
-      // Cerramos el sheet — los dropdowns locales quedan desactualizados pero
-      // ya no importan.
-      Navigator.pop(context);
+ Future<void> _useMyGps() async {
+  if (_gpsLoading) return;
+  setState(() => _gpsLoading = true);
+
+  try {
+    // 1. Permisos
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
     }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permiso de ubicación denegado')),
+      );
+      return;
+    }
+
+    // 2. GPS con ALTA precisión (coordenadas frescas, sin caché)
+    final pos = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+    );
+
+    // 4. Reverse geocoding fresco
+    final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
+    if (!mounted) return;
+
+    if (geo == null || geo.department == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo obtener la ubicación')),
+      );
+      return;
+    }
+
+    // 5. Sanitizar contra catálogo
+    final dept = _sanitizeDept(geo.department);
+    final prov = _sanitizeProv(dept, geo.province);
+    final dist = _sanitizeDist(prov, geo.district);
+
+    if (dept == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tu ubicación no está en el catálogo')),
+      );
+      return;
+    }
+
+    // 6. Actualizar dropdowns locales
+    setState(() {
+      _dept = dept;
+      _prov = prov;
+      _dist = dist;
+    });
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $e')),
+    );
+  } finally {
+    if (mounted) setState(() => _gpsLoading = false);
   }
+}
 
   // ── MÉTODO BUILD PRINCIPAL (REFACTORIZADO) ──────────────────
   @override
@@ -548,6 +602,21 @@ class _FilterSheetState extends State<FilterSheet> {
         ),
         const SizedBox(height: 14),
         _buildAddressTextField(c),
+        const SizedBox(height: 14),
+        // ── Banner para ampliar búsqueda a todo el departamento ──
+        if (_dept != null)
+        ExpandSearchBanner(
+          department: _dept!,
+          // true = búsqueda ampliada (solo dept, sin prov/dist)
+          isExpanded: _dept != null && _prov == null && _dist == null,
+          onExpand: () {
+            setState(() {
+              _prov = null;
+              _dist = null;
+            });
+            _apply();
+          },
+        ),
         const SizedBox(height: 24),
       ],
     );

@@ -34,8 +34,8 @@ class FilterBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── Fila 0: chip de ubicación activa ─────────
-          if (prov.hasLocationFilter)
-            _LocationChip(prov: prov),
+          //-- if (prov.hasLocationFilter) se repite el chip de ubicaion debajo de la barra de búsqueda, así que lo quitamos de aquí para evitar redundancia visual. Si el usuario activa un filtro de ubicación, lo verá reflejado en el texto del header ("Mostrando en: ...") y podrá quitarlo desde ahí también.
+          // --  _LocationChip(prov: prov),
 
           // ── Fila 1: tipo chips (siempre visible) ──────
           SizedBox(
