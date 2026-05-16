@@ -96,10 +96,15 @@ class ProviderContactBar extends StatelessWidget {
   }
 
   void _showLoginRequired(BuildContext context) {
-    final c = context.colors;
+    final c       = context.colors;
+    // Capturamos el rootNavigator ANTES del pop. Con go_router en el shell,
+    // hacer Navigator.pop(context) sobre el context del árbol cierra la
+    // ruta padre y deja el diálogo colgado — usamos `dialogCtx` para el
+    // pop y `rootNav` para la navegación posterior.
+    final rootNav = Navigator.of(context, rootNavigator: true);
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Inicia sesión para continuar',
@@ -108,13 +113,13 @@ class ProviderContactBar extends StatelessWidget {
             style: TextStyle(color: c.textSecondary, height: 1.5)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: Text('Ahora no', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(MaterialPageRoute(
+              Navigator.of(dialogCtx).pop();
+              rootNav.push(MaterialPageRoute(
                 builder: (_) => const LoginScreen(initialMode: AuthMode.login),
               ));
             },

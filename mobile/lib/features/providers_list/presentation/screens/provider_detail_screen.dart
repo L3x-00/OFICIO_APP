@@ -170,10 +170,11 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   void _showLoginRequired() {
-    final c = context.colors;
+    final c       = context.colors;
+    final rootNav = Navigator.of(context, rootNavigator: true);
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Inicia sesión para continuar',
@@ -182,13 +183,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             style: TextStyle(color: c.textSecondary, height: 1.5)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: Text('Ahora no', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(MaterialPageRoute(
+              Navigator.of(dialogCtx).pop();
+              rootNav.push(MaterialPageRoute(
                 builder: (_) => const LoginScreen(initialMode: AuthMode.login),
               ));
             },
