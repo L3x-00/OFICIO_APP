@@ -65,7 +65,7 @@ class ProviderTypeSelectorSheet extends StatelessWidget {
               color: AppColors.primary,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.of(context).push(
+                Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
                     builder: (_) => const ProviderPanel(providerType: 'OFICIO'),
                   ),
@@ -82,7 +82,7 @@ class ProviderTypeSelectorSheet extends StatelessWidget {
               color: const Color(0xFF8E2DE2),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.of(context).push(
+                Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
                     builder: (_) => const ProviderPanel(providerType: 'NEGOCIO'),
                   ),

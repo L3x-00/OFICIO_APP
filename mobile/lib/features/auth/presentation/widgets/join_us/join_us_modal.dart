@@ -65,7 +65,9 @@ class _JoinUsModalState extends State<JoinUsModal>
   // ─── Navegación a panel ─────────────────────────────────
 
   void _openPanel(BuildContext ctx, String type) {
-    Navigator.of(ctx).push(
+    // rootNavigator: el panel debe salir del shell tabuado para no
+    // dejar visible la bottom nav del cliente debajo.
+    Navigator.of(ctx, rootNavigator: true).push(
       MaterialPageRoute(builder: (_) => ProviderPanel(providerType: type)),
     );
   }

@@ -38,6 +38,20 @@ class DashboardProfileModel {
   final Map<String, dynamic>? scheduleJson;
   final int totalFavorites;
 
+  // ── Redes sociales (todas opcionales) ────────────────────
+  // NEGOCIO usa solo: whatsappBiz, website, tiktok, facebook, instagram.
+  // OFICIO usa todas. La sección del perfil filtra qué campos exponer
+  // según `type` — guardamos todas en el modelo para no perder valores
+  // si el tipo cambia.
+  final String? website;
+  final String? instagram;
+  final String? tiktok;
+  final String? facebook;
+  final String? linkedin;
+  final String? twitterX;
+  final String? telegram;
+  final String? whatsappBiz;
+
   const DashboardProfileModel({
     required this.id,
     required this.businessName,
@@ -60,6 +74,14 @@ class DashboardProfileModel {
     this.subscription,
     this.scheduleJson,
     this.totalFavorites = 0,
+    this.website,
+    this.instagram,
+    this.tiktok,
+    this.facebook,
+    this.linkedin,
+    this.twitterX,
+    this.telegram,
+    this.whatsappBiz,
   });
 
   bool get isPaused => availability == 'OCUPADO';
@@ -96,6 +118,14 @@ class DashboardProfileModel {
                        : null,
       scheduleJson:  json['scheduleJson'] as Map<String, dynamic>?,
       totalFavorites: json['totalFavorites'] as int? ?? 0,
+      website:        json['website']     as String?,
+      instagram:      json['instagram']   as String?,
+      tiktok:         json['tiktok']      as String?,
+      facebook:       json['facebook']    as String?,
+      linkedin:       json['linkedin']    as String?,
+      twitterX:       json['twitterX']    as String?,
+      telegram:       json['telegram']    as String?,
+      whatsappBiz:    json['whatsappBiz'] as String?,
     );
   }
 
@@ -109,6 +139,16 @@ class DashboardProfileModel {
     bool? hasHomeService,
     List<ProfileImage>? images,
     Map<String, dynamic>? scheduleJson,
+    // Para los social fields pasamos `Object?` con sentinel — un `null`
+    // explícito significa "limpiar", `undefined` significa "no tocar".
+    Object? website     = _kSentinel,
+    Object? instagram   = _kSentinel,
+    Object? tiktok      = _kSentinel,
+    Object? facebook    = _kSentinel,
+    Object? linkedin    = _kSentinel,
+    Object? twitterX    = _kSentinel,
+    Object? telegram    = _kSentinel,
+    Object? whatsappBiz = _kSentinel,
   }) {
     return DashboardProfileModel(
       id:             id,
@@ -132,8 +172,19 @@ class DashboardProfileModel {
       subscription:   subscription,
       scheduleJson:   scheduleJson    ?? this.scheduleJson,
       totalFavorites: totalFavorites,
+      website:     identical(website,     _kSentinel) ? this.website     : website     as String?,
+      instagram:   identical(instagram,   _kSentinel) ? this.instagram   : instagram   as String?,
+      tiktok:      identical(tiktok,      _kSentinel) ? this.tiktok      : tiktok      as String?,
+      facebook:    identical(facebook,    _kSentinel) ? this.facebook    : facebook    as String?,
+      linkedin:    identical(linkedin,    _kSentinel) ? this.linkedin    : linkedin    as String?,
+      twitterX:    identical(twitterX,    _kSentinel) ? this.twitterX    : twitterX    as String?,
+      telegram:    identical(telegram,    _kSentinel) ? this.telegram    : telegram    as String?,
+      whatsappBiz: identical(whatsappBiz, _kSentinel) ? this.whatsappBiz : whatsappBiz as String?,
     );
   }
+
+  /// Sentinel para distinguir "no pasado" vs "pasado como null" en copyWith.
+  static const _Sentinel _kSentinel = _Sentinel();
 
   static int? _firstCategoryId(Map<String, dynamic> json) {
     final pcList = json['providerCategories'];
@@ -281,4 +332,11 @@ class DailyClickEntry {
       calls:    json['calls'] as int? ?? 0,
     );
   }
+}
+
+/// Marca interna para distinguir, en `copyWith`, "no se pasó nada" de
+/// "se pasó null explícitamente". Vivimos así porque Dart no soporta
+/// optional arguments con default real `undefined`.
+class _Sentinel {
+  const _Sentinel();
 }

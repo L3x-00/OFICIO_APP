@@ -7,6 +7,7 @@ import '../widgets/profile/profile_availability_section.dart';
 import '../widgets/profile/profile_info_section.dart';
 import '../widgets/profile/profile_photos_section.dart';
 import '../widgets/profile/profile_plan_section.dart';
+import '../widgets/profile/profile_social_section.dart';
 import '../widgets/profile/profile_trust_section.dart';
 
 /// Tab "Perfil" del panel del proveedor.
@@ -80,6 +81,14 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                       isNegocio: widget.isNegocio,
                       isPaused: widget.isPaused,
                       onPauseToggle: widget.onPauseToggle,
+                    ),
+                    const SizedBox(height: 20),
+                    // Redes sociales — editables inline. OFICIO ve todas;
+                    // NEGOCIO limitado a whatsappBiz/web/tiktok/fb/ig.
+                    ProfileSocialSection(
+                      profile: profile,
+                      isNegocio: widget.isNegocio,
+                      onSavingChanged: _setSaving,
                     ),
                     const SizedBox(height: 20),
                     // Validación de confianza

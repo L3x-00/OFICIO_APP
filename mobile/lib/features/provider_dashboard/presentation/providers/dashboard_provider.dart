@@ -185,6 +185,17 @@ class DashboardProvider extends ChangeNotifier {
     String? whatsapp,
     String? address,
     Map<String, dynamic>? scheduleJson,
+    // Redes sociales — el sheet de edición las pasa una por una. Un
+    // valor null aquí significa "no tocar"; el sheet manda String vacío
+    // para limpiar un campo.
+    String? website,
+    String? instagram,
+    String? tiktok,
+    String? facebook,
+    String? linkedin,
+    String? twitterX,
+    String? telegram,
+    String? whatsappBiz,
   }) async {
     try {
       final updated = await _repo.updateMyProfile(
@@ -194,6 +205,14 @@ class DashboardProvider extends ChangeNotifier {
         whatsapp:     whatsapp,
         address:      address,
         scheduleJson: scheduleJson,
+        website:      website,
+        instagram:    instagram,
+        tiktok:       tiktok,
+        facebook:     facebook,
+        linkedin:     linkedin,
+        twitterX:     twitterX,
+        telegram:     telegram,
+        whatsappBiz:  whatsappBiz,
         type:         _currentProviderType,
       );
       _profile = updated;

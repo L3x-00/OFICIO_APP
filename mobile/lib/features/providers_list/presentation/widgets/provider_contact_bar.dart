@@ -198,7 +198,9 @@ class ProviderContactBar extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).push(
+                // rootNavigator: el panel debe salir del shell tabuado
+                // para ocultar la bottom nav del cliente.
+                Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
                     builder: (_) => ProviderPanel(
                       providerType: provider.type == ProviderType.negocio

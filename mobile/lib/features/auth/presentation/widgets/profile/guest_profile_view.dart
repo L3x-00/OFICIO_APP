@@ -90,7 +90,9 @@ class GuestProfileView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).push(
+                  // rootNavigator: el login sale del shell para no dejar
+                  // visible la bottom nav del cliente debajo.
+                  onPressed: () => Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(builder: (_) => const LoginScreen()),
                   ),
                   style: ElevatedButton.styleFrom(

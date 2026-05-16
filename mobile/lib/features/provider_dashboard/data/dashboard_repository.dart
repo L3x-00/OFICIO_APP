@@ -28,6 +28,19 @@ class DashboardRepository {
     Map<String, dynamic>? scheduleJson,
     bool? hasHomeService,
     String? type,
+    // ── Redes sociales ───────────────────────────────────────
+    // Mapeo: oficio = todas; negocio = whatsappBiz, website, tiktok,
+    // facebook, instagram. La sección del perfil filtra antes de enviar
+    // — el backend acepta todos los campos sin discriminar por tipo,
+    // así que el filtrado del frontend es la verdad operativa.
+    String? website,
+    String? instagram,
+    String? tiktok,
+    String? facebook,
+    String? linkedin,
+    String? twitterX,
+    String? telegram,
+    String? whatsappBiz,
   }) async {
     final body = <String, dynamic>{
       'businessName': ?businessName,
@@ -37,6 +50,15 @@ class DashboardRepository {
       'address':      ?address,
       'scheduleJson': ?scheduleJson,
       'hasHomeService': ?hasHomeService,
+      // String vacío => limpiar valor en backend (DTO acepta null/'').
+      'website':     ?website,
+      'instagram':   ?instagram,
+      'tiktok':      ?tiktok,
+      'facebook':    ?facebook,
+      'linkedin':    ?linkedin,
+      'twitterX':    ?twitterX,
+      'telegram':    ?telegram,
+      'whatsappBiz': ?whatsappBiz,
     };
     final response = await _dio.patch(
       '/provider-profile/me',

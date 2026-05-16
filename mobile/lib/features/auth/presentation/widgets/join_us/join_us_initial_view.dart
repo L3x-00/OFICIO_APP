@@ -391,7 +391,9 @@ class JoinUsInitialView extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.of(context).push(
+                      // rootNavigator: el login sale del shell del
+                      // cliente para no dejar visible la bottom nav.
+                      Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
                           builder: (_) => const LoginScreen(
                             initialMode: AuthMode.register,

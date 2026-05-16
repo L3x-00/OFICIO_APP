@@ -132,7 +132,7 @@ class _JoinUsFABState extends State<JoinUsFAB>
       _showPanelChoiceModal(context);
     } else {
       final type = oficioApproved ? 'OFICIO' : 'NEGOCIO';
-      Navigator.of(context).push(
+      Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(builder: (_) => ProviderPanel(providerType: type)),
       );
     }
@@ -187,7 +187,7 @@ class _JoinUsFABState extends State<JoinUsFAB>
                 color: AppColors.primary,
                 onTap: () {
                   Navigator.pop(sheetCtx);
-                  Navigator.of(context).push(
+                  Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
                       builder: (_) => const ProviderPanel(providerType: 'OFICIO'),
                     ),
@@ -202,7 +202,7 @@ class _JoinUsFABState extends State<JoinUsFAB>
                 color: const Color(0xFF8E2DE2),
                 onTap: () {
                   Navigator.pop(sheetCtx);
-                  Navigator.of(context).push(
+                  Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
                       builder: (_) => const ProviderPanel(providerType: 'NEGOCIO'),
                     ),

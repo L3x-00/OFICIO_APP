@@ -164,7 +164,9 @@ class _GuestBody extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.of(context).push(
+                // rootNavigator: el login debe salir del shell del
+                // cliente para no dejar visible la bottom nav debajo.
+                onPressed: () => Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ),
                 style: ElevatedButton.styleFrom(

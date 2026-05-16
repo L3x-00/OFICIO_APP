@@ -22,8 +22,10 @@ class ProfileNavigationHelper {
   }
 
   /// Navega directamente al panel del tipo indicado ('OFICIO' o 'NEGOCIO').
+  /// `rootNavigator: true` saca el panel del shell del cliente para no
+  /// dejar visible la bottom nav del cliente debajo.
   static void openProviderPanel(BuildContext context, String type) {
-    Navigator.of(context).push(
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => ProviderPanel(providerType: type),
       ),

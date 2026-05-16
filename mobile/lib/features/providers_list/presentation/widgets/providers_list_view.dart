@@ -199,7 +199,10 @@ class ProvidersListView extends StatelessWidget {
         });
       }
 
-      void goToDashboard() => Navigator.of(context).push(MaterialPageRoute(
+      // `rootNavigator: true` empuja ProviderPanel POR ENCIMA del AppShell
+      // (StatefulShellRoute) — sin esto la nueva ruta vive dentro del
+      // shell y se sigue viendo la bottom nav del cliente debajo.
+      void goToDashboard() => Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
         builder: (_) => ProviderPanel(
           providerType: p.type == ProviderType.negocio ? 'NEGOCIO' : 'OFICIO',
         ),

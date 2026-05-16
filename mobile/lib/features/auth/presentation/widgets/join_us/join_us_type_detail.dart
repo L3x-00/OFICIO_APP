@@ -196,8 +196,10 @@ class JoinUsTypeDetail extends StatelessWidget {
                             ),
                           );
                         } else {
-                          // Sin sesión → flujo de registro habitual
-                          Navigator.of(context).push(
+                          // Sin sesión → flujo de registro habitual.
+                          // rootNavigator: el login debe salir del shell
+                          // para no dejar visible la bottom nav.
+                          Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(
                               builder: (_) => const LoginScreen(
                                 initialMode: AuthMode.register,
