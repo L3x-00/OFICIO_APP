@@ -82,52 +82,6 @@ class FilterBar extends StatelessWidget {
     );
   }
 }
-
-// ── Chip de ubicación activa ──────────────────────────────
-
-class _LocationChip extends StatelessWidget {
-  final ProvidersProvider prov;
-  const _LocationChip({required this.prov});
-
-  @override
-  Widget build(BuildContext context) {
-    final c     = context.colors;
-    final parts = [
-      if (prov.district   != null) prov.district!,
-      if (prov.province   != null) prov.province!,
-      if (prov.department != null) prov.department!,
-    ];
-    final label = parts.isNotEmpty ? parts.first : 'Mi ubicación';
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-      child: Row(
-        children: [
-          Icon(Icons.location_on_rounded, size: 13, color: AppColors.primary),
-          const SizedBox(width: 4),
-          Text(
-            'Mostrando en: $label',
-            style: TextStyle(color: c.textSecondary, fontSize: 12),
-          ),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: prov.clearLocationFilter,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-              decoration: BoxDecoration(
-                color: c.bgCard,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-              ),
-              child: Text('Ver todos', style: TextStyle(color: c.textMuted, fontSize: 11)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ── Fila de macrocategorías ────────────────────────────────
 
 class _ParentChipRow extends StatelessWidget {
