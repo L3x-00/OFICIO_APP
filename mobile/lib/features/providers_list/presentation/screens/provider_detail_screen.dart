@@ -40,6 +40,10 @@ class ProviderDetailSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      // Forzar que el sheet viva en el root navigator para que
+      // Navigator.pop() del _TabAwareShell pueda cerrarlo al cambiar de tab.
+      // false = mantiene las hojas de ruta existentes (comportamiento default).
+      useRootNavigator: true,
       builder: (_) => ProviderDetailSheet(provider: provider),
     );
   }

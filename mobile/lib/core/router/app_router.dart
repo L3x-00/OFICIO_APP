@@ -29,6 +29,7 @@ import '../../features/trust_validation/presentation/screens/trust_validation_fo
 import 'app_shell.dart';
 import 'router_notifier.dart';
 
+
 // ── Rutas públicas (no requieren autenticación) ─────────────
 const _publicPaths = <String>{
   '/welcome',
