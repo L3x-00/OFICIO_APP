@@ -3,50 +3,66 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Modal de bienvenida exclusivo para proveedores recién aprobados con
-/// el plan de cortesía ESTANDAR de 1 mes. Carrusel de 4 páginas que
-/// explica los beneficios; al final, botón "Entendido" que cierra.
+/// Modal de bienvenida con carrousel por plan. Tres variantes:
+///   - `WelcomePlan.estandarTrial` — primer registro aprobado (ESTANDAR
+///     gratis 1 mes de cortesía).
+///   - `WelcomePlan.estandar`      — pago ESTANDAR aprobado por admin.
+///   - `WelcomePlan.premium`       — pago PREMIUM aprobado por admin.
 ///
-/// Trigger: se invoca desde `PanelHomeTab` cuando se detecta que el
-/// provider tiene `subscription.plan == 'ESTANDAR'`,
-/// `subscription.status == 'GRACIA'` y no se ha mostrado antes (flag en
-/// SharedPreferences `seen_welcome_estandar_{providerId}`).
+/// El flag "ya visto" se persiste por `(providerId, plan)` — un mismo
+/// proveedor puede ver el modal del trial primero y luego, si compra
+/// PREMIUM, ver el de premium una sola vez.
+enum WelcomePlan { estandarTrial, estandar, premium }
+
 class WelcomeProviderPlanModal extends StatefulWidget {
   /// Nombre o businessName que se saluda en el primer slide.
   final String displayName;
   /// providerId — usado para construir la clave de SharedPreferences que
   /// marca que el modal ya se vio.
   final int providerId;
+  /// Variante de plan que define el copy y los slides del carrusel.
+  final WelcomePlan plan;
 
   const WelcomeProviderPlanModal({
     super.key,
     required this.displayName,
     required this.providerId,
+    this.plan = WelcomePlan.estandarTrial,
   });
 
-  /// Llave de persistencia del flag "ya visto" por proveedor.
-  static String _flagKey(int providerId) => 'seen_welcome_estandar_$providerId';
-
-  /// Devuelve true si el modal aún NO se ha mostrado para este providerId.
-  static Future<bool> shouldShow(int providerId) async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_flagKey(providerId)) != true;
+  /// Llave de persistencia del flag "ya visto" por proveedor + plan.
+  /// Trial preserva la llave legacy para no re-mostrar a usuarios que ya
+  /// vieron el carrousel antes de este cambio.
+  static String _flagKey(int providerId, WelcomePlan plan) {
+    switch (plan) {
+      case WelcomePlan.estandarTrial: return 'seen_welcome_estandar_$providerId';
+      case WelcomePlan.estandar:      return 'seen_welcome_estandar_paid_$providerId';
+      case WelcomePlan.premium:       return 'seen_welcome_premium_$providerId';
+    }
   }
 
-  /// Marca este providerId como "ya vio el modal". Idempotente.
-  static Future<void> markShown(int providerId) async {
+  /// Devuelve true si el modal aún NO se ha mostrado para este
+  /// providerId + plan.
+  static Future<bool> shouldShow(int providerId, {WelcomePlan plan = WelcomePlan.estandarTrial}) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_flagKey(providerId), true);
+    return prefs.getBool(_flagKey(providerId, plan)) != true;
+  }
+
+  /// Marca este providerId + plan como "ya vio el modal". Idempotente.
+  static Future<void> markShown(int providerId, {WelcomePlan plan = WelcomePlan.estandarTrial}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_flagKey(providerId, plan), true);
   }
 
   /// Helper conveniente: muestra el modal y registra el flag al cerrarlo.
-  /// No vuelve a abrirlo si ya se mostró antes.
+  /// No vuelve a abrirlo si ya se mostró antes para este plan.
   static Future<void> showIfFirstTime(
     BuildContext context, {
     required String displayName,
     required int providerId,
+    WelcomePlan plan = WelcomePlan.estandarTrial,
   }) async {
-    if (!await shouldShow(providerId)) return;
+    if (!await shouldShow(providerId, plan: plan)) return;
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
@@ -55,9 +71,10 @@ class WelcomeProviderPlanModal extends StatefulWidget {
       builder: (_) => WelcomeProviderPlanModal(
         displayName: displayName,
         providerId: providerId,
+        plan: plan,
       ),
     );
-    await markShown(providerId);
+    await markShown(providerId, plan: plan);
   }
 
   @override
@@ -71,9 +88,20 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
   late final Animation<double> _fade;
   int _currentPage = 0;
 
-  // Páginas del carrusel — la primera es saludo + anuncio del trial,
-  // las siguientes describen beneficios concretos del plan ESTANDAR.
-  static const _slides = <_Slide>[
+  /// Slide deck por variante de plan. Cada uno arma su propio mensaje
+  /// (trial, estandar pagado, premium) sin compartir slides sueltos —
+  /// más fácil de mantener y evita ramas condicionales por slide.
+  List<_Slide> get _slides {
+    switch (widget.plan) {
+      case WelcomePlan.estandarTrial: return _trialSlides;
+      case WelcomePlan.estandar:      return _estandarSlides;
+      case WelcomePlan.premium:       return _premiumSlides;
+    }
+  }
+
+  // Trial = primer registro aprobado. Comunica el regalo + qué viene
+  // dentro del plan ESTANDAR.
+  static const _trialSlides = <_Slide>[
     _Slide(
       icon: Icons.celebration_rounded,
       gradient: [Color(0xFFFFB300), Color(0xFFFF8F00)],
@@ -124,6 +152,109 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
           'confianza inmediata en los clientes. Profesionales '
           'verificados convierten más.',
       pill: 'CONFIANZA',
+    ),
+  ];
+
+  // Estándar pagado: post-aprobación de Yape. Foco en "pago activado"
+  // + recordatorio de los beneficios continuos del plan.
+  static const _estandarSlides = <_Slide>[
+    _Slide(
+      icon: Icons.verified_rounded,
+      gradient: [Color(0xFF22D3EE), Color(0xFF0EA5E9)],
+      title: '¡Tu pago fue aprobado!',
+      bodyTemplate:
+          'Tu plan Estándar ya está activo. Sigues apareciendo antes en '
+          'búsqueda, publicas más fotos y servicios, y mantienes el '
+          'badge azul de proveedor verificado.',
+      pill: 'PLAN ESTÁNDAR ACTIVO',
+    ),
+    _Slide(
+      icon: Icons.trending_up_rounded,
+      gradient: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+      title: 'Mayor visibilidad',
+      bodyTemplate:
+          'Tu perfil sigue en posición preferente en la búsqueda. '
+          'Más clientes te encuentran primero cuando filtran por '
+          'categoría o ciudad.',
+      pill: 'MÁS VISIBILIDAD',
+    ),
+    _Slide(
+      icon: Icons.photo_library_rounded,
+      gradient: [Color(0xFF00E676), Color(0xFF00897B)],
+      title: '6 fotos y 6 servicios',
+      bodyTemplate:
+          'Galería ampliada hasta 6 fotos y publica hasta 6 servicios '
+          'o productos. Más detalle convierte mejor.',
+      pill: 'CATÁLOGO',
+    ),
+    _Slide(
+      icon: Icons.insights_rounded,
+      gradient: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+      title: 'Estadísticas en tiempo real',
+      bodyTemplate:
+          'Mira visitas, llamadas y mensajes por día. Mide qué '
+          'servicios generan interés real y optimiza tu oferta.',
+      pill: 'INSIGHTS',
+    ),
+  ];
+
+  // Premium: máxima visibilidad + funciones exclusivas.
+  static const _premiumSlides = <_Slide>[
+    _Slide(
+      icon: Icons.workspace_premium_rounded,
+      gradient: [Color(0xFFFFD54F), Color(0xFFFF8F00)],
+      title: '¡Tu pago Premium fue aprobado!',
+      bodyTemplate:
+          'Tu plan Premium ya está activo. Tienes la mayor visibilidad '
+          'posible, posición #1 en búsqueda garantizada y soporte '
+          'prioritario 24/7.',
+      pill: 'PLAN PREMIUM ACTIVO',
+    ),
+    _Slide(
+      icon: Icons.star_rounded,
+      gradient: [Color(0xFFFFC107), Color(0xFFFF5722)],
+      title: 'Posición #1 garantizada',
+      bodyTemplate:
+          'Premium ocupa el primer lugar en cada búsqueda relevante. '
+          'Tus clientes te ven antes que a la competencia.',
+      pill: 'TOP RANKING',
+    ),
+    _Slide(
+      icon: Icons.photo_library_rounded,
+      gradient: [Color(0xFF00E676), Color(0xFF00897B)],
+      title: 'Catálogo ilimitado',
+      bodyTemplate:
+          'Hasta 10 fotos de perfil y servicios/productos sin límite '
+          'práctico. Si es Negocio, fotos ilimitadas por producto.',
+      pill: 'SIN LÍMITES',
+    ),
+    _Slide(
+      icon: Icons.insights_rounded,
+      gradient: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+      title: 'Estadísticas avanzadas',
+      bodyTemplate:
+          'Métricas profundas — origen de visitas, horarios de mayor '
+          'demanda, conversión por categoría. Decisiones con data real.',
+      pill: 'ANALYTICS PRO',
+    ),
+    _Slide(
+      icon: Icons.support_agent_rounded,
+      gradient: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+      title: 'Soporte prioritario 24/7',
+      bodyTemplate:
+          'Atención prioritaria de nuestro equipo. Cualquier problema '
+          'o solicitud se resuelve sin filas.',
+      pill: 'PRIORIDAD',
+    ),
+    _Slide(
+      icon: Icons.workspace_premium_rounded,
+      gradient: [Color(0xFFFFC107), Color(0xFFFF8F00)],
+      title: 'Badge Premium dorado',
+      bodyTemplate:
+          'Tu tarjeta pública luce la insignia Premium. Genera '
+          'confianza inmediata y convierte mejor que cualquier otro '
+          'perfil.',
+      pill: 'CONFIANZA MÁXIMA',
     ),
   ];
 

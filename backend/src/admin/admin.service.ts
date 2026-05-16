@@ -706,19 +706,29 @@ async updateProvider(
     });
     this.eventsGateway.emitAdminEvent('PROVIDER_APPROVED', { providerId: id, businessName: updated.businessName });
 
-    // Notificar al proveedor específico en la app móvil
+    // Notificar al proveedor específico en la app móvil. Texto explícito
+    // del plan de bienvenida (ESTANDAR gratis por 1 mes) para que el
+    // push tenga el contexto completo en background — antes solo decía
+    // "ya apareces en la plataforma" y el usuario no sabía que recibía
+    // un trial.
+    const approveTitle = '¡Perfil aprobado! ✅';
+    const approveBody  =
+      `Tu perfil "${updated.businessName}" fue aprobado. ` +
+      'Plan Estándar activado gratis por 1 mes de bienvenida.';
+
     this.eventsGateway.emitNotification({
       type: 'PROVIDER_APPROVED',
-      title: '¡Perfil aprobado! ✅',
-      body: `Tu perfil "${updated.businessName}" fue aprobado. ¡Ya apareces en la plataforma!`,
+      title: approveTitle,
+      body:  approveBody,
       targetUserId: provider.userId,
+      targetProfileType: updated.type,
     });
 
     this.push.sendToUser(
       provider.userId,
-      '¡Perfil aprobado! ✅',
-      `Tu perfil "${updated.businessName}" fue aprobado. ¡Ya apareces en la plataforma!`,
-      { type: 'PROVIDER_APPROVED' },
+      approveTitle,
+      approveBody,
+      { type: 'PROVIDER_APPROVED', plan: 'ESTANDAR', trial: 'true' },
     );
 
     // Sistema de referidos: si este provider tiene un referral pendiente,

@@ -8,6 +8,7 @@ import {
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 import { SubmitYapeDto } from './dto/submit-yape.dto.js';
 
 const YapePaymentStatus = {
@@ -29,6 +30,7 @@ export class PaymentsService {
   constructor(
     private prisma: PrismaService,
     private events: EventsGateway,
+    private push:   PushNotificationsService,
   ) {}
 
   /**
@@ -153,6 +155,7 @@ export class PaymentsService {
         provider: {
           select: {
             userId: true,
+            type:   true, // necesario para `targetProfileType` del push
             subscription: { select: { id: true } },
           },
         },
@@ -223,15 +226,30 @@ export class PaymentsService {
       }
     });
 
-    // 5. Notificar al proveedor — usar PLAN_APROBADO para que la app
-    // dispare el modal de bienvenida con beneficios del plan
+    // 5. Notificar al proveedor — `PLAN_APROBADO` dispara el modal de
+    // bienvenida con beneficios del plan en la app. El push asegura
+    // que llegue al device aunque la app esté en background/cerrada.
     const planLabel = payment.plan.charAt(0) + payment.plan.slice(1).toLowerCase();
+    const title = '¡Pago aprobado con éxito!';
+    const body  = `Tu plan ${planLabel} ha sido activado con éxito.`;
+
     this.events.emitNotification({
       type:         'PLAN_APROBADO',
-      title:        `¡Plan ${planLabel} activado!`,
-      body:         `Tu pago fue verificado. Ya tienes acceso a todas las funciones del plan ${payment.plan}.`,
+      title,
+      body,
       targetUserId: payment.provider.userId,
+      // Plan exacto + tipo de perfil. El cliente usa `plan` para elegir
+      // el set de slides del carrousel (ESTANDAR vs PREMIUM).
+      targetProfileType: payment.provider.type,
+      plan:         payment.plan,
     });
+
+    this.push.sendToUser(
+      payment.provider.userId,
+      title,
+      body,
+      { type: 'PLAN_APROBADO', plan: payment.plan },
+    );
 
     return { success: true };
   }

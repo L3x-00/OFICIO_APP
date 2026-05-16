@@ -30,6 +30,9 @@ export interface NotificationPayload {
   targetRole?: string;
   /** Si está presente, solo el perfil de este tipo (OFICIO|NEGOCIO) debe procesarlo */
   targetProfileType?: string;
+  /** Plan asociado al evento (`ESTANDAR`/`PREMIUM`). Lo usa la app para
+   * elegir el set de slides del carrousel de bienvenida. */
+  plan?: string;
 }
 
 interface SocketUser {

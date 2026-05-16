@@ -237,11 +237,17 @@ class AuthProvider extends ChangeNotifier {
       if (targetProfileType != null && targetProfileType != _activeProfileType) return;
       _syncProviderStatus().then((_) {
         if (type == 'PLAN_APROBADO') {
-          final rawPlan = payload['body'] as String? ?? '';
-          final planMatch = RegExp(r'plan (\w+)').firstMatch(rawPlan);
-          final planName = planMatch?.group(1) ?? targetProfileType ?? 'ESTANDAR';
+          // Backend ahora envía `plan` explícito (ESTANDAR/PREMIUM).
+          // Mantenemos el regex como fallback para payloads legacy o
+          // FCM background con shape distinto.
+          final explicit = (payload['plan'] as String?)?.toUpperCase();
+          final rawBody  = payload['body'] as String? ?? '';
+          final match    = RegExp(r'[Pp]lan (\w+)').firstMatch(rawBody);
+          final planName = explicit
+              ?? match?.group(1)?.toUpperCase()
+              ?? 'ESTANDAR';
           _pendingPlanPromotion = PlanActivationPayload(
-            plan: planName.toUpperCase(),
+            plan: planName,
             title: payload['title'] as String? ?? '¡Plan activado!',
           );
         }

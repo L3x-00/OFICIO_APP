@@ -238,6 +238,10 @@ class _AuthSideEffectsState extends State<_AuthSideEffects> {
     }
 
     // ── Promoción de plan ─────────────────────────────────────
+    // Disparado al recibir PLAN_APROBADO (Yape aprobado por el admin).
+    // Se prefiere el carrusel WelcomeProviderPlanModal con variante
+    // del plan exacto sobre el dialog plano anterior — comunica
+    // mejor "tu plan está activo" + lista los beneficios del plan.
     if (auth.pendingPlanPromotion != null && mounted) {
       final payload = auth.pendingPlanPromotion!;
       auth.clearPlanPromotion();
@@ -248,9 +252,51 @@ class _AuthSideEffectsState extends State<_AuthSideEffects> {
       dash.loadDashboard(providerType: auth.activeProfileType);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _showPlanPromotionDialog(payload);
+        _showPlanActivationCarousel(payload);
       });
     }
+  }
+
+  /// Mapea el plan del payload a la variante del carrousel y lo lanza
+  /// usando el navigator del router (siempre disponible, no depende de
+  /// la pantalla actual). El gate por (providerId, plan) en
+  /// `WelcomeProviderPlanModal.showIfFirstTime` evita re-mostrar si el
+  /// usuario ya lo vio.
+  Future<void> _showPlanActivationCarousel(PlanActivationPayload payload) async {
+    final navCtx = _navigatorKey.currentContext;
+    if (navCtx == null || !navCtx.mounted) return;
+
+    final auth = navCtx.read<AuthProvider>();
+    final dash = navCtx.read<DashboardProvider>();
+
+    // providerId: del dashboard si está cargado; si no, busca en
+    // providerDataFor del auth. Sin id, no podemos persistir el flag
+    // "ya visto" por plan — caemos al dialog clásico.
+    int? providerId = dash.profile?.id;
+    providerId ??= () {
+      final data = auth.providerDataFor(auth.activeProfileType ?? 'OFICIO');
+      final raw  = data?['id'];
+      return raw is int ? raw : null;
+    }();
+    if (providerId == null) {
+      _showPlanPromotionDialog(payload);
+      return;
+    }
+
+    final variant = switch (payload.plan.toUpperCase()) {
+      'PREMIUM'  => WelcomePlan.premium,
+      'ESTANDAR' => WelcomePlan.estandar,
+      _          => WelcomePlan.estandar,
+    };
+    final displayName = dash.profile?.businessName
+        ?? auth.user?.firstName
+        ?? '';
+    await WelcomeProviderPlanModal.showIfFirstTime(
+      navCtx,
+      displayName: displayName,
+      providerId:  providerId,
+      plan:        variant,
+    );
   }
 
   /// Inserta una notificación push recibida (foreground/tap) en el
