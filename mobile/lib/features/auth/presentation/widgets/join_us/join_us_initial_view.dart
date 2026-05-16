@@ -300,7 +300,9 @@ class JoinUsInitialView extends StatelessWidget {
                       reason: auth.rejectionReasonFor('OFICIO'),
                       onReRegister: () {
                         Navigator.pop(context);
-                        Navigator.of(context).push(MaterialPageRoute(
+                        // rootNavigator: el form de registro sale del
+                        // shell del cliente para no mostrar bottom nav.
+                        Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                           builder: (_) => ProviderOnboardingForm(
                             providerType: 'OFICIO',
                             isStandalone: true,
@@ -346,7 +348,9 @@ class JoinUsInitialView extends StatelessWidget {
                       reason: auth.rejectionReasonFor('NEGOCIO'),
                       onReRegister: () {
                         Navigator.pop(context);
-                        Navigator.of(context).push(MaterialPageRoute(
+                        // rootNavigator: el form de registro sale del
+                        // shell del cliente para no mostrar bottom nav.
+                        Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                           builder: (_) => ProviderOnboardingForm(
                             providerType: 'NEGOCIO',
                             isStandalone: true,

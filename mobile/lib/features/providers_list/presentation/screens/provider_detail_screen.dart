@@ -235,35 +235,19 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       ),
       child: Column(
         children: [
-          // ── Handle + acción compartir ─────────────────────
-          // El botón de compartir solo aparece si el provider tiene `slug`
-          // (Vanity URL pública configurada). Si todavía no, el ícono
-          // queda oculto para no enseñar una opción rota.
+          // ── Handle ─────────────────────────────────────────
+          // El botón de compartir vivía aquí; se movió como overlay en
+          // la galería (inferior-derecha de la foto) para que esté
+          // visualmente sobre el contenido y libere espacio en el
+          // header.
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
-            child: Row(
-              children: [
-                const SizedBox(width: 40), // simetría con el botón derecho
-                Expanded(
-                  child: Center(
-                    child: Container(
-                      width: 40, height: 4,
-                      decoration: BoxDecoration(
-                        color: c.textMuted.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                ),
-                if (p.slug != null && p.slug!.isNotEmpty)
-                  IconButton(
-                    tooltip: 'Compartir perfil',
-                    icon: Icon(Icons.ios_share_rounded, color: c.textSecondary, size: 20),
-                    onPressed: () => _shareProfile(p),
-                  )
-                else
-                  const SizedBox(width: 40),
-              ],
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: c.textMuted.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
 
@@ -275,7 +259,16 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (_allImages.isNotEmpty)
-                    ProviderGallery(images: _allImages, accent: _accent),
+                    ProviderGallery(
+                      images: _allImages,
+                      accent: _accent,
+                      // Solo renderiza el botón si hay slug — si no
+                      // está configurada la Vanity URL pública, ocultar
+                      // la opción evita mostrar acción rota.
+                      trailingAction: (p.slug != null && p.slug!.isNotEmpty)
+                          ? _ShareFab(onTap: () => _shareProfile(p))
+                          : null,
+                    ),
 
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -499,6 +492,30 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+    );
+  }
+}
+
+/// FAB compacto para compartir el perfil — se monta como overlay en la
+/// esquina inferior-derecha de la galería del proveedor. Fondo oscuro
+/// translúcido para mantener contraste sobre cualquier foto.
+class _ShareFab extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ShareFab({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.55),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: const Padding(
+          padding: EdgeInsets.all(10),
+          child: Icon(Icons.ios_share_rounded, color: Colors.white, size: 20),
         ),
       ),
     );

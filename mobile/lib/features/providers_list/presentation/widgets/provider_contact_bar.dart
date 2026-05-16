@@ -183,8 +183,12 @@ class ProviderContactBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
 
+    // Bottom padding dinámico: respeta el inset de gesture-nav del
+    // sistema. El 28px fijo previo se solapaba con la barra de
+    // navegación en algunos Android.
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + bottomInset),
       decoration: BoxDecoration(
         color: c.bgCard,
         border: Border(

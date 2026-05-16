@@ -788,6 +788,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               twitterCtrl:     _twitterCtrl,
               telegramCtrl:    _telegramCtrl,
               whatsappBizCtrl: _whatsappBizCtrl,
+              isNegocio:       !_isOficio,
             ),
             const SizedBox(height: 24),
 

@@ -12,6 +12,9 @@ class OnboardingSocialSection extends StatefulWidget {
   final TextEditingController twitterCtrl;
   final TextEditingController telegramCtrl;
   final TextEditingController whatsappBizCtrl;
+  /// true cuando el form pertenece a un NEGOCIO. Filtra las redes a las
+  /// 5 típicas (WhatsApp Biz, web, IG, TikTok, FB). OFICIO ve todas.
+  final bool isNegocio;
 
   const OnboardingSocialSection({
     super.key,
@@ -23,6 +26,7 @@ class OnboardingSocialSection extends StatefulWidget {
     required this.twitterCtrl,
     required this.telegramCtrl,
     required this.whatsappBizCtrl,
+    this.isNegocio = false,
   });
 
   @override
@@ -36,8 +40,11 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
   Widget build(BuildContext context) {
     final c = context.colors;
 
-    // Mapeo: (Key, Label, Ruta del SVG)
+    // Mapeo: (Key, Label, Ruta del SVG). El orden coloca primero las
+    // redes que NEGOCIO también usa para no reordenar visualmente la
+    // sección al cambiar de tipo de perfil.
     const networks = [
+      ('whatsappBiz', 'WhatsApp (negocio)',   'assets/icons/whatsapp.svg'),
       ('website',     'Página web',          'assets/icons/website.svg'),
       ('instagram',   'Instagram',            'assets/icons/instagram.svg'),
       ('tiktok',      'TikTok',               'assets/icons/tiktok.svg'),
@@ -45,8 +52,15 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
       ('linkedin',    'LinkedIn',             'assets/icons/linkedin.svg'),
       ('twitterX',    'Twitter / X',          'assets/icons/twitterx.svg'),
       ('telegram',    'Telegram',             'assets/icons/telegram.svg'),
-      ('whatsappBiz', 'WhatsApp (negocio)',   'assets/icons/whatsapp.svg'),
     ];
+
+    // NEGOCIO: limitar a las 5 redes típicas. El backend acepta todos
+    // los campos, así que el filtrado vive solo en UI (mismo criterio
+    // que la sección editable del panel del proveedor).
+    const negocioAllowed = {'whatsappBiz', 'website', 'instagram', 'tiktok', 'facebook'};
+    final visible = widget.isNegocio
+        ? networks.where((n) => negocioAllowed.contains(n.$1)).toList()
+        : networks;
 
     final controllers = {
       'website':     widget.websiteCtrl,
@@ -91,7 +105,7 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
         ),
         if (_expanded) ...[
           const SizedBox(height: 12),
-          ...networks.map(((String key, String label, String svgPath) entry) {
+          ...visible.map(((String key, String label, String svgPath) entry) {
             final ctrl = controllers[entry.$1]!;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),

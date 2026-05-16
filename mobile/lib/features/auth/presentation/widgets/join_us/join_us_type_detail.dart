@@ -186,8 +186,11 @@ class JoinUsTypeDetail extends StatelessWidget {
                         Navigator.pop(context); // Cerrar modal
 
                         if (alreadyLoggedIn) {
-                          // Usuario ya tiene sesión → ir directo al formulario
-                          Navigator.of(context).push(
+                          // Usuario ya tiene sesión → ir directo al
+                          // formulario. rootNavigator saca la pantalla
+                          // del shell del cliente para no dejar visible
+                          // la bottom nav debajo.
+                          Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(
                               builder: (_) => ProviderOnboardingForm(
                                 providerType: type,

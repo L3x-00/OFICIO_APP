@@ -9,11 +9,15 @@ import '../../../../core/theme/app_theme_colors.dart';
 class ProviderGallery extends StatefulWidget {
   final List<String> images;
   final Color accent;
+  /// Botón opcional para superponer en la esquina inferior-derecha de la
+  /// galería (típicamente, "Compartir perfil"). Si es null no se renderiza.
+  final Widget? trailingAction;
 
   const ProviderGallery({
     super.key,
     required this.images,
     required this.accent,
+    this.trailingAction,
   });
 
   @override
@@ -134,6 +138,16 @@ class _ProviderGalleryState extends State<ProviderGallery> {
               ),
             ),
           ),
+
+          // Acción superpuesta en la esquina inferior-derecha (compartir
+          // perfil). Lift levantado por encima del row de indicadores
+          // para que no choquen.
+          if (widget.trailingAction != null)
+            Positioned(
+              bottom: widget.images.length > 1 ? 32 : 12,
+              right: 12,
+              child: widget.trailingAction!,
+            ),
         ],
       ),
     );

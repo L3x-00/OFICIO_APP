@@ -210,7 +210,10 @@ class PendingApprovalBanner extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(ctx).pop();
                         final auth = context.read<AuthProvider>();
-                        Navigator.of(context).push(MaterialPageRoute(
+                        // rootNavigator: el form de re-registro sale del
+                        // shell del cliente para no dejar visible la
+                        // bottom nav debajo.
+                        Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                           builder: (_) => ProviderOnboardingForm(
                             providerType: providerType,
                             isStandalone: true,

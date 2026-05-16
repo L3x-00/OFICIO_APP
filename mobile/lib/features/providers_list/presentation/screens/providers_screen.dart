@@ -99,12 +99,12 @@ class _ProvidersViewState extends State<_ProvidersView>
     );
   }
 
+ // ... todo el código anterior de _ProvidersViewState ...
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final c = context.colors;
-    // Watch para que la pill del header se actualice cuando el stream GPS
-    // emite una nueva provincia / distrito en tiempo real.
     final providers   = context.watch<ProvidersProvider>();
     final liveProvince = providers.liveProvince;
     final liveDistrict = providers.liveDistrict;
@@ -116,50 +116,22 @@ class _ProvidersViewState extends State<_ProvidersView>
       appBar: AppBar(
         backgroundColor: c.bg,
         elevation: 0,
-        // ── Ícono de monedas (esquina superior izquierda) ─────
-        leading: Consumer<AuthProvider>(
-          builder: (_, auth, _) {
-            final coins = auth.user?.coins ?? 0;
-            return GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ReferralScreen(),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.monetization_on_rounded,
-                        color: AppColors.amber, size: 22),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$coins',
-                      style: TextStyle(
-                        color: AppColors.amber,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+        // ── Logo (esquina superior izquierda) ─────
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Image.asset(
+            c.isDark
+                ? 'assets/images/logo/logo_dark.png'
+                : 'assets/images/logo/logo_light.png',
+            width: 32,
+            height: 32,
+            filterQuality: FilterQuality.high,
+          ),
         ),
-        leadingWidth: 72,
+        leadingWidth: 48,
+        // ── Nombre de la app + monedas ─────────────
         title: Row(
           children: [
-            Image.asset(
-              c.isDark
-                  ? 'assets/images/logo/logo_dark.png'
-                  : 'assets/images/logo/logo_light.png',
-              width: 32,
-              height: 32,
-              filterQuality: FilterQuality.high,
-            ),
-            const SizedBox(width: 10),
             Text(
               'OficioApp',
               style: TextStyle(
@@ -167,6 +139,36 @@ class _ProvidersViewState extends State<_ProvidersView>
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
+            ),
+            const Spacer(),
+            // Monedas a la derecha del título
+            Consumer<AuthProvider>(
+              builder: (_, auth, _) {
+                final coins = auth.user?.coins ?? 0;
+                return GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ReferralScreen(),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.monetization_on_rounded,
+                          color: AppColors.amber, size: 20),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$coins',
+                        style: const TextStyle(
+                          color: AppColors.amber,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -184,15 +186,101 @@ class _ProvidersViewState extends State<_ProvidersView>
           ),
         ],
       ),
-      body: Column(
+      // SafeArea horizontal: en phones con notch/dynamic-island las
+      // sombras de las tarjetas se cortaban contra el borde del
+      // display. top=false porque el AppBar ya respeta el inset; bottom
+      // lo maneja la BottomNavigationBar del AppShell.
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: Column(
+          children: [
+            GreetingHeader(liveProvince: liveProvince, liveDistrict: liveDistrict),
+            const _SearchAndLocationRow(),
+            const FilterBar(),
+            const SubastaBanner(),
+            const OffersBanner(),
+            const Expanded(child: ProvidersListView()),
+          ],
+        ),
+      ),
+    );
+  }
+} // ← ESTE ES EL CIERRE DE _ProvidersViewState
+
+// ══════════════════════════════════════════════════════════════
+// CLASES AUXILIARES (FUERA de _ProvidersViewState)
+// ══════════════════════════════════════════════════════════════
+
+// ── Fila combinada: barra de búsqueda + chip de ubicación ──
+
+class _SearchAndLocationRow extends StatelessWidget {
+  const _SearchAndLocationRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final prov = context.watch<ProvidersProvider>();
+    final hasLocation = prov.hasLocationFilter;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Row(
         children: [
-          GreetingHeader(liveProvince: liveProvince, liveDistrict: liveDistrict),
-          const CollapsibleSearchBar(),
-          const FilterBar(),
-          const SubastaBanner(),
-          const OffersBanner(),
-          const Expanded(child: ProvidersListView()),
+          const Expanded(child: CollapsibleSearchBar()),
+          if (hasLocation) ...[
+            const SizedBox(width: 8),
+            _CompactLocationChip(prov: prov),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+// ── Chip de ubicación compacto ────────────────────────────
+
+class _CompactLocationChip extends StatelessWidget {
+  final ProvidersProvider prov;
+  const _CompactLocationChip({required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final parts = [
+      if (prov.district != null) prov.district!,
+      if (prov.province != null) prov.province!,
+      if (prov.department != null) prov.department!,
+    ];
+    final label = parts.isNotEmpty ? parts.first : '';
+
+    return GestureDetector(
+      onTap: prov.clearLocationFilter,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.close_rounded, color: c.textMuted, size: 14),
+          ],
+        ),
       ),
     );
   }
