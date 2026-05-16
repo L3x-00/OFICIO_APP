@@ -118,17 +118,67 @@ class ProvidersProvider extends ChangeNotifier {
       _location.isNotEmpty ||
       _department != null;
 
+  // ── Persistencia de ubicación ─────────────────────────────
+  // Antes la ubicación vivía solo en memoria: cerrar la app o reiniciar
+  // el provider la perdía y el catálogo volvía a "todos". Ahora se
+  // guarda en SharedPreferences y se hidrata en `init()`, lo que el
+  // usuario eligió persiste hasta que se mueva físicamente (stream GPS
+  // actualiza ≥2km o cambio de distrito/provincia).
+  static const _kLocDept = 'loc_department';
+  static const _kLocProv = 'loc_province';
+  static const _kLocDist = 'loc_district';
+  static const _kLocLat  = 'loc_last_lat';
+  static const _kLocLng  = 'loc_last_lng';
+
+  Future<void> _persistLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    Future<void> setOrRemove(String key, String? value) async {
+      if (value == null || value.isEmpty) {
+        await prefs.remove(key);
+      } else {
+        await prefs.setString(key, value);
+      }
+    }
+    await setOrRemove(_kLocDept, _department);
+    await setOrRemove(_kLocProv, _province);
+    await setOrRemove(_kLocDist, _district);
+    if (_lastQueriedLat != null && _lastQueriedLng != null) {
+      await prefs.setDouble(_kLocLat, _lastQueriedLat!);
+      await prefs.setDouble(_kLocLng, _lastQueriedLng!);
+    } else {
+      await prefs.remove(_kLocLat);
+      await prefs.remove(_kLocLng);
+    }
+  }
+
+  Future<void> _hydrateLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    _department      = prefs.getString(_kLocDept);
+    _province        = prefs.getString(_kLocProv);
+    _district        = prefs.getString(_kLocDist);
+    _lastQueriedLat  = prefs.getDouble(_kLocLat);
+    _lastQueriedLng  = prefs.getDouble(_kLocLng);
+  }
+
   // ── Carga inicial ─────────────────────────────────────────
   /// [department] / [province] / [district]: ubicación del usuario registrada.
   /// Se aplican desde la primera carga — no hay flash de "todos los proveedores".
+  ///
+  /// Hidrata primero los valores persistidos en SharedPreferences. Si no
+  /// hay nada guardado, cae a los args (perfil del user). Así una vez
+  /// que el usuario eligió "ubicación actual", su zona se respeta entre
+  /// sesiones aunque el perfil tenga otro departamento.
   Future<void> init({
     String? department,
     String? province,
     String? district,
   }) async {
-    _department = department;
-    _province   = province;
-    _district   = district;
+    await _hydrateLocation();
+    if (_department == null && department != null) {
+      _department = department;
+      _province   = province;
+      _district   = district;
+    }
     await Future.wait([loadCategories(), loadProviders(), loadPreferences()]);
   }
 
@@ -205,6 +255,9 @@ class ProvidersProvider extends ChangeNotifier {
       _province   = province;
       _district   = district;
     }
+    // Persist el snapshot del sheet — el chip único del header debe
+    // reflejar lo elegido aquí y mantenerlo tras reinicio.
+    await _persistLocation();
     await loadProviders();
   }
 
@@ -252,6 +305,10 @@ class ProvidersProvider extends ChangeNotifier {
 
   /// Aplica el filtro de ubicación estructurado (jerarquía peruana).
   /// Llamar desde AuthProvider cuando el usuario actualiza su ubicación.
+  ///
+  /// Persiste el snapshot en SharedPreferences para sobrevivir reinicios:
+  /// la única forma de cambiar la zona es que el usuario la edite o que
+  /// el stream GPS detecte movimiento ≥2km / cambio de distrito.
   Future<void> setUserLocation({
     String? department,
     String? province,
@@ -260,6 +317,7 @@ class ProvidersProvider extends ChangeNotifier {
     _department = department;
     _province   = province;
     _district   = district;
+    await _persistLocation();
     await loadProviders();
   }
 
@@ -286,12 +344,17 @@ class ProvidersProvider extends ChangeNotifier {
     loadProviders();
   }
 
-  /// Limpia también los filtros de ubicación del usuario
-  void clearLocationFilter() {
+  /// Limpia también los filtros de ubicación del usuario y borra la
+  /// copia persistida — al volver a abrir la app no habrá zona activa
+  /// hasta que se vuelva a detectar / elegir.
+  Future<void> clearLocationFilter() async {
     _department = null;
     _province   = null;
     _district   = null;
-    loadProviders();
+    _lastQueriedLat = null;
+    _lastQueriedLng = null;
+    await _persistLocation();
+    await loadProviders();
   }
 
   // ── Actualización GPS en tiempo real ─────────────────────
@@ -325,6 +388,10 @@ class ProvidersProvider extends ChangeNotifier {
     _lastQueriedLat = lat;
     _lastQueriedLng = lng;
 
+    // Persiste el snapshot — `_lastQueriedLat/Lng` también, para que
+    // tras reiniciar la app el umbral de 2 km siga aplicando sobre la
+    // última posición conocida (no contra null).
+    await _persistLocation();
     await loadProviders();
   }
 
