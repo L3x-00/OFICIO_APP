@@ -14,7 +14,7 @@ import Sidebar from '@/components/sidebar';
 import { getSocket } from '@/lib/socket';
 import {
   Home, UserCog, Zap, Briefcase, BarChart3, Settings, Gift, LogOut,
-  Wrench, Store, ChevronDown, Check,
+  Wrench, Store, ChevronDown, Check, MessageSquare, User as UserIcon,
 } from 'lucide-react';
 import { useRef, type ElementType } from 'react';
 import { ProfileTypeProvider, useProfileType, useProfileTypeOptional } from '@/lib/profile-type-context';
@@ -334,13 +334,16 @@ function MobileBottomNav() {
   const router = useRouter();
 
   const tabs = [
-    { label: 'Inicio', Icon: Home, href: '/panel' },
-    { label: 'Perfil', Icon: UserCog, href: '/panel/perfil' },
-    { label: 'Ofertas', Icon: Zap, href: '/panel/ofertas' },
-    { label: 'Servicios', Icon: Briefcase, href: '/panel/servicios' },
-    { label: 'Stats', Icon: BarChart3, href: '/panel/estadisticas' },
-    { label: 'Ajustes', Icon: Settings, href: '/panel/ajustes' },
-    { label: 'Referidos', Icon: Gift, href: '/panel/referidos' },
+    { label: 'Inicio',    Icon: Home,          href: '/panel' },
+    { label: 'Perfil',    Icon: UserCog,       href: '/panel/perfil' },
+    { label: 'Mensajes',  Icon: MessageSquare, href: '/panel/mensajes' },
+    { label: 'Ofertas',   Icon: Zap,           href: '/panel/ofertas' },
+    { label: 'Servicios', Icon: Briefcase,     href: '/panel/servicios' },
+    { label: 'Stats',     Icon: BarChart3,     href: '/panel/estadisticas' },
+    { label: 'Referidos', Icon: Gift,          href: '/panel/referidos' },
+    // Cliente: salta al panel del rol USUARIO sin perder sesión.
+    { label: 'Cliente',   Icon: UserIcon,      href: '/cliente' },
+    { label: 'Ajustes',   Icon: Settings,      href: '/panel/ajustes' },
   ];
 
   return (

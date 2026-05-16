@@ -485,4 +485,87 @@ export const api = {
       fullName:       raw.fullName,
     };
   },
+
+  // ─── CHAT (proveedor ↔ cliente) ──────────────────────────
+  //
+  // Las salas + mensajes se filtran por rol vía query string para
+  // que un user con doble perfil OFICIO + NEGOCIO + cliente tenga
+  // bandejas independientes (mismo contrato que el mobile).
+  async getChatRooms(opts: {
+    scope?: "client" | "provider";
+    type?: "OFICIO" | "NEGOCIO";
+  } = {}): Promise<ChatRoomSummary[]> {
+    const qs = new URLSearchParams();
+    if (opts.scope) qs.set("scope", opts.scope);
+    if (opts.type)  qs.set("type",  opts.type);
+    const path = qs.toString() ? `/chat/rooms/mine?${qs}` : "/chat/rooms/mine";
+    return apiFetch<ChatRoomSummary[]>(path);
+  },
+
+  async getChatMessages(
+    roomId: number,
+    page = 1,
+    limit = 30,
+  ): Promise<ChatMessagesPage> {
+    return apiFetch<ChatMessagesPage>(
+      `/chat/rooms/${roomId}/messages?page=${page}&limit=${limit}`,
+    );
+  },
+
+  async sendChatMessage(args: {
+    chatRoomId: number;
+    senderId: number;
+    content: string;
+  }): Promise<ChatMessage> {
+    return apiFetch<ChatMessage>("/chat/messages", {
+      method: "POST",
+      body: JSON.stringify(args),
+    });
+  },
+
+  async markChatRoomRead(roomId: number): Promise<{ updated: number }> {
+    return apiFetch<{ updated: number }>(`/chat/rooms/${roomId}/read`, {
+      method: "PATCH",
+    });
+  },
 };
+
+// ─── Tipos del chat ──────────────────────────────────────────
+export interface ChatMessage {
+  id: number;
+  chatRoomId: number;
+  senderId: number;
+  content: string;
+  status: "SENT" | "DELIVERED" | "READ";
+  createdAt: string;
+}
+
+export interface ChatMessagesPage {
+  items: ChatMessage[];
+  page: number;
+  limit: number;
+  total: number;
+  hasMore: boolean;
+}
+
+export interface ChatRoomSummary {
+  id: number;
+  clientId: number;
+  providerId: number;
+  createdAt: string;
+  client: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+  };
+  provider: {
+    id: number;
+    businessName: string;
+    userId: number;
+    images: Array<{ url: string }>;
+  };
+  lastMessage: ChatMessage | null;
+  lastActivityAt: string;
+  unreadCount: number;
+}

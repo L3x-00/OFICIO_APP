@@ -19,6 +19,8 @@ import {
   Wrench,
   LayoutDashboard,
   Gift,
+  MessageSquare,
+  User as UserIcon,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { clearSession, getUser } from '@/lib/auth';
@@ -26,13 +28,15 @@ import { disconnectSocket } from '@/lib/socket';
 import { useProfileTypeOptional } from '@/lib/profile-type-context';
 
 const tabs = [
-  { label: 'Inicio',       icon: Home,      href: '/panel' },
-  { label: 'Perfil',       icon: UserCog,   href: '/panel/perfil' },
-  { label: 'Ofertas',      icon: Zap,       href: '/panel/ofertas' },
-  { label: 'Servicios',    icon: Briefcase, href: '/panel/servicios' },
-  { label: 'Estadísticas', icon: BarChart3, href: '/panel/estadisticas' },
-  { label: 'Referidos',    icon: Gift,      href: '/panel/referidos' },
-  { label: 'Ajustes',      icon: Settings,  href: '/panel/ajustes' },
+  { label: 'Inicio',       icon: Home,          href: '/panel' },
+  { label: 'Perfil',       icon: UserCog,       href: '/panel/perfil' },
+  { label: 'Mensajes',     icon: MessageSquare, href: '/panel/mensajes' },
+  { label: 'Ofertas',      icon: Zap,           href: '/panel/ofertas' },
+  { label: 'Servicios',    icon: Briefcase,     href: '/panel/servicios' },
+  { label: 'Estadísticas', icon: BarChart3,     href: '/panel/estadisticas' },
+  { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },
+  { label: 'Panel Cliente',icon: UserIcon,      href: '/cliente' },
+  { label: 'Ajustes',      icon: Settings,      href: '/panel/ajustes' },
 ];
 
 export default function Sidebar() {
