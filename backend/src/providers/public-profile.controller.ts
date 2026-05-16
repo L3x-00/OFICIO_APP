@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException, Patch, Body, UseGuards, Request, BadRequestException, ConflictException } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, Patch, Body, UseGuards, Request, BadRequestException, ConflictException, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { slugify, uniqueSlug } from '../common/slug.util.js';
@@ -15,8 +15,47 @@ import { slugify, uniqueSlug } from '../common/slug.util.js';
  * og:title y og:description sin pegarle a múltiples endpoints.
  */
 @Controller('profiles')
-export class PublicProfileController {
+export class PublicProfileController implements OnModuleInit {
+  private readonly logger = new Logger(PublicProfileController.name);
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Backfill al arrancar: rellena `slug` para todos los provider
+   * existentes que aún tengan null (creados antes de la migración).
+   * Idempotente; un provider con slug ya no se toca. Se ejecuta en
+   * background para no demorar el bootstrap del módulo.
+   */
+  onModuleInit() {
+    this.backfillMissingSlugs().catch((err) => {
+      this.logger.warn(`backfillMissingSlugs failed: ${err?.message ?? err}`);
+    });
+  }
+
+  private async backfillMissingSlugs() {
+    const pending = await this.prisma.provider.findMany({
+      where: { slug: null },
+      select: { id: true, businessName: true },
+    });
+    if (pending.length === 0) return;
+
+    this.logger.log(`Backfill: ${pending.length} provider(s) sin slug.`);
+    for (const p of pending) {
+      try {
+        const candidate = await uniqueSlug(p.businessName, async (slug) =>
+          Boolean(await this.prisma.provider.findUnique({
+            where: { slug },
+            select: { id: true },
+          })),
+        );
+        await this.prisma.provider.update({
+          where: { id: p.id },
+          data:  { slug: candidate },
+        });
+      } catch (err) {
+        this.logger.warn(`Backfill slug provider#${p.id}: ${err}`);
+      }
+    }
+  }
 
   /**
    * GET /profiles/:slug — público, sin autenticación. Indexable por Google.
@@ -27,8 +66,17 @@ export class PublicProfileController {
    */
   @Get(':slug')
   async getBySlug(@Param('slug') slug: string) {
+    // Fallback por id numérico: enlaces antiguos (o de proveedores
+    // creados antes del backfill de slug) apuntan a `/p/123`. Si el
+    // param parsea como entero, buscamos por id; si no, por slug.
+    const asInt = parseInt(slug, 10);
+    const byId  = Number.isFinite(asInt) && String(asInt) === slug;
+    const lookupWhere = byId
+      ? { id: asInt, isVisible: true }
+      : { slug, isVisible: true };
+
     const provider = await this.prisma.provider.findFirst({
-      where: { slug, isVisible: true },
+      where: lookupWhere,
       select: {
         id:                   true,
         slug:                 true,
@@ -62,6 +110,23 @@ export class PublicProfileController {
 
     if (!provider) {
       throw new NotFoundException('Perfil no encontrado');
+    }
+
+    // Backfill lazy: si caímos aquí por id (o por slug null), genera
+    // un slug ahora y persístelo. La próxima vez resuelve por slug y
+    // queda registrado en URLs compartidas.
+    if (!provider.slug) {
+      const generated = await uniqueSlug(provider.businessName, async (candidate) =>
+        Boolean(await this.prisma.provider.findUnique({
+          where: { slug: candidate },
+          select: { id: true },
+        })),
+      );
+      await this.prisma.provider.update({
+        where: { id: provider.id },
+        data:  { slug: generated },
+      });
+      provider.slug = generated;
     }
 
     const cover = provider.images[0]?.url ?? null;

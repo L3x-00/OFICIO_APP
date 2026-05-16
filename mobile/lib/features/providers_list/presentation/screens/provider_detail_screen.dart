@@ -153,9 +153,12 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   ///
   /// Tracking analítico fire-and-forget (mismo bus que call/whatsapp).
   Future<void> _shareProfile(ProviderModel p) async {
-    if (p.slug == null || p.slug!.isEmpty) return;
     unawaited(_providersRepo.trackEvent(p.id, 'view'));
-    final url = '${DioClient.publicWebUrl}/p/${p.slug}';
+    // Prefer slug; si todavía no se generó (perfil viejo sin backfill),
+    // cae al id numérico — el backend resuelve `/profiles/:id` también
+    // y backfilla el slug al primer hit.
+    final pathSegment = (p.slug != null && p.slug!.isNotEmpty) ? p.slug! : '${p.id}';
+    final url = '${DioClient.publicWebUrl}/p/$pathSegment';
     final text = p.type == ProviderType.negocio
         ? 'Mira el negocio ${p.businessName} en OficioApp'
         : 'Mira el perfil de ${p.businessName} en OficioApp';
@@ -262,12 +265,11 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                     ProviderGallery(
                       images: _allImages,
                       accent: _accent,
-                      // Solo renderiza el botón si hay slug — si no
-                      // está configurada la Vanity URL pública, ocultar
-                      // la opción evita mostrar acción rota.
-                      trailingAction: (p.slug != null && p.slug!.isNotEmpty)
-                          ? _ShareFab(onTap: () => _shareProfile(p))
-                          : null,
+                      // Siempre disponible: si el provider aún no tiene
+                      // slug, _shareProfile cae al id numérico (que el
+                      // backend resuelve y backfilla el slug en el
+                      // primer hit).
+                      trailingAction: _ShareFab(onTap: () => _shareProfile(p)),
                     ),
 
                   Padding(
