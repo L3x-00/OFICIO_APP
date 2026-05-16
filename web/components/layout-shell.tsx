@@ -6,7 +6,13 @@ import Footer from '@/components/footer';
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideChrome = pathname?.startsWith('/panel') || pathname?.startsWith('/cliente');
+  // `/p/*` = vanity URLs públicas de proveedores. Renderizan su propio
+  // chrome (header de marca + tarjeta full-bleed), no usan el Footer
+  // global ni reciben la animación de fade para evitar conflictos con
+  // los meta tags SSR del preview de WhatsApp/Facebook.
+  const hideChrome = pathname?.startsWith('/panel')
+    || pathname?.startsWith('/cliente')
+    || pathname?.startsWith('/p/');
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-premium">

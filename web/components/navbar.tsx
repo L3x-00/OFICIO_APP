@@ -100,7 +100,11 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  if (pathname?.startsWith('/panel') || pathname?.startsWith('/cliente')) {
+  // Oculta el navbar en panel/cliente y también en vanity URLs `/p/*` —
+  // las tarjetas públicas tienen su propio header de marca minimalista.
+  if (pathname?.startsWith('/panel')
+      || pathname?.startsWith('/cliente')
+      || pathname?.startsWith('/p/')) {
     return null;
   }
 

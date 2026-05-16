@@ -1,10 +1,22 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 const WHATSAPP_URL = 'https://wa.link/5d7yqt';
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
+  // Ocultar en panel/cliente (UX interna) y en vanity URLs `/p/*` — la
+  // tarjeta pública tiene sus propios CTAs hacia el proveedor.
+  if (
+    pathname?.startsWith('/panel')
+    || pathname?.startsWith('/cliente')
+    || pathname?.startsWith('/p/')
+  ) {
+    return null;
+  }
+
   return (
     <motion.a
       href={WHATSAPP_URL}
