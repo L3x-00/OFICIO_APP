@@ -68,11 +68,22 @@ export class ChatController {
     return this.chat.sendMessage(req.user.userId, dto);
   }
 
-  // GET /chat/rooms/mine — bandeja de entrada con último mensaje
+  // GET /chat/rooms/mine?scope=client|provider&type=OFICIO|NEGOCIO
+  // El cliente y cada perfil del proveedor tienen bandejas
+  // independientes; sin scope, devolvemos todo (compat para llamadas
+  // legacy).
   @Get('rooms/mine')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  myRooms(@Request() req: any) {
-    return this.chat.getRoomsForUser(req.user.userId);
+  myRooms(
+    @Request() req: any,
+    @Query('scope') scope?: string,
+    @Query('type')  type?: string,
+  ) {
+    const safeScope = scope === 'client' || scope === 'provider' ? scope : undefined;
+    return this.chat.getRoomsForUser(req.user.userId, {
+      scope: safeScope,
+      providerType: type,
+    });
   }
 
   // GET /chat/rooms/:roomId/messages?page=1&limit=30 — historial paginado

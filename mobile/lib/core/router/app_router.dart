@@ -128,7 +128,10 @@ GoRouter createRouter({
           return ChatScreen(roomId: roomId);
         },
       ),
-      GoRoute(path: '/chats',         builder: (_, _) => const ChatListScreen()),
+      // scope:'client' aísla la bandeja del cliente — un user con
+      // doble perfil (OFICIO+NEGOCIO) no ve aquí mensajes recibidos
+      // como proveedor; esos viven en el panel respectivo.
+      GoRoute(path: '/chats',         builder: (_, _) => const ChatListScreen(scope: 'client')),
       GoRoute(path: '/referrals',     builder: (_, _) => const ReferralScreen()),
       GoRoute(
         path: '/my-requests',

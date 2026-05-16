@@ -52,11 +52,29 @@ export class ChatService {
    * con el último mensaje y la cuenta de no-leídos para previsualizar
    * la bandeja. Ordenadas por última actividad (descendente).
    */
-  async getRoomsForUser(userId: number) {
+  async getRoomsForUser(
+    userId: number,
+    opts: { scope?: 'client' | 'provider'; providerType?: string } = {},
+  ) {
+    // Filtro según rol activo: cliente vs. proveedor (y opcionalmente
+    // por tipo OFICIO/NEGOCIO para que un mismo userId con doble
+    // perfil no mezcle las dos bandejas).
+    let where: any;
+    if (opts.scope === 'client') {
+      where = { clientId: userId };
+    } else if (opts.scope === 'provider') {
+      const type = (opts.providerType ?? '').toUpperCase();
+      const providerFilter: any = { userId };
+      if (type === 'OFICIO' || type === 'NEGOCIO') providerFilter.type = type;
+      where = { provider: providerFilter };
+    } else {
+      // Compat: sin scope explícito, comportamiento previo (cliente +
+      // proveedor sin separar).
+      where = { OR: [{ clientId: userId }, { provider: { userId } }] };
+    }
+
     const rooms = await this.prisma.chatRoom.findMany({
-      where: {
-        OR: [{ clientId: userId }, { provider: { userId } }],
-      },
+      where,
       include: {
         client: {
           select: { id: true, firstName: true, lastName: true, avatarUrl: true },

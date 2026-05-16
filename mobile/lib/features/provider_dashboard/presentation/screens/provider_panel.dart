@@ -86,7 +86,14 @@ class _ProviderPanelState extends State<ProviderPanel> {
                 PanelStatsTab(
                   onNavigateToSettings: () => setState(() => _currentIndex = 6),
                 ),
-                const ChatListScreen(),
+                // scope:'provider' + providerType separa la bandeja
+                // de cada perfil. Si el user es OFICIO y NEGOCIO a la
+                // vez, ver mensajes en el panel de NEGOCIO no muestra
+                // los del panel de OFICIO ni los del rol cliente.
+                ChatListScreen(
+                  scope:        'provider',
+                  providerType: widget.providerType ?? auth.activeProfileType,
+                ),
                 const PanelSettingsTab(),
               ],
             ),

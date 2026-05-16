@@ -32,9 +32,20 @@ class ChatRepository {
     return ChatMessageModel.fromJson(Map<String, dynamic>.from(res.data as Map));
   }
 
-  /// GET /chat/rooms/mine — bandeja de entrada con preview y unreadCount.
-  Future<List<ChatRoomSummary>> getMyRooms() async {
-    final res = await _dio.get('/chat/rooms/mine');
+  /// GET /chat/rooms/mine?scope=&type= — bandeja filtrada por rol
+  /// (`client` | `provider`) y opcionalmente por tipo de perfil
+  /// (`OFICIO`|`NEGOCIO`). Sin scope devuelve todo (compat).
+  Future<List<ChatRoomSummary>> getMyRooms({
+    String? scope,
+    String? providerType,
+  }) async {
+    final res = await _dio.get(
+      '/chat/rooms/mine',
+      queryParameters: {
+        if (scope != null && scope.isNotEmpty)                 'scope': scope,
+        if (providerType != null && providerType.isNotEmpty)   'type':  providerType,
+      },
+    );
     final list = res.data as List;
     return list
         .map((e) => ChatRoomSummary.fromJson(Map<String, dynamic>.from(e as Map)))

@@ -254,8 +254,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SectionItem(
                 icon: Icons.forum_outlined,
                 label: 'Mis mensajes',
+                // scope:'client' — la entrada a "Mis mensajes" desde el
+                // perfil cliente vive en la bandeja del cliente, no
+                // mezcla con los mensajes recibidos como proveedor.
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ChatListScreen()),
+                  MaterialPageRoute(builder: (_) => const ChatListScreen(scope: 'client')),
                 ),
               ),
               SectionItem(

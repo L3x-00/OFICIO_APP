@@ -19,6 +19,12 @@ class ChatProvider extends ChangeNotifier {
   /// User.id del logueado — necesario para identificar mensajes propios.
   int? _currentUserId;
 
+  /// Rol activo de la bandeja: `client` o `provider`. null = no filtrar.
+  String? _activeScope;
+  /// Tipo de perfil de proveedor activo (OFICIO|NEGOCIO) cuando
+  /// `_activeScope == 'provider'`. null = sin filtro de tipo.
+  String? _activeProviderType;
+
   bool _loadingRooms = false;
   String? _error;
 
@@ -93,7 +99,10 @@ class ChatProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _rooms = await _repo.getMyRooms();
+      _rooms = await _repo.getMyRooms(
+        scope:        _activeScope,
+        providerType: _activeProviderType,
+      );
     } catch (e) {
       _error = 'No se pudieron cargar las conversaciones.';
       debugPrint('[Chat] loadRooms error: $e');
@@ -101,6 +110,27 @@ class ChatProvider extends ChangeNotifier {
       _loadingRooms = false;
       notifyListeners();
     }
+  }
+
+  /// Cambia la bandeja activa y refresca. `scope = 'client'` muestra solo
+  /// las conversaciones donde el user es el cliente; `'provider'` filtra
+  /// las que pertenecen a su perfil de proveedor (opcionalmente acotado
+  /// a `providerType` OFICIO/NEGOCIO para mantener bandejas separadas
+  /// entre los dos perfiles del mismo usuario).
+  ///
+  /// Idempotente: si el scope/type no cambió, no recarga.
+  Future<void> setScope({String? scope, String? providerType}) async {
+    if (_activeScope == scope && _activeProviderType == providerType) return;
+    _activeScope        = scope;
+    _activeProviderType = providerType;
+    // Limpia el cache local — cada bandeja vive en su propio set de
+    // salas, no queremos arrastrar las del scope anterior mientras
+    // refrescamos.
+    _rooms = [];
+    _messagesByRoom.clear();
+    _paging.clear();
+    notifyListeners();
+    await loadRooms();
   }
 
   /// Siembra inicial con el `lastMessage` del resumen mientras cargamos

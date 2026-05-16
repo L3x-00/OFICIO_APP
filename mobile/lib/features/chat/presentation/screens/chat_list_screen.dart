@@ -8,8 +8,21 @@ import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
 
 /// Bandeja de entrada — lista de conversaciones del usuario actual.
+///
+/// El mismo widget se reusa en dos contextos: tab `/chats` del shell
+/// del cliente y tab "Mensajes" del panel del proveedor. Para que un
+/// mismo userId con doble perfil (OFICIO + NEGOCIO) no mezcle bandejas,
+/// el caller pasa `scope` y opcionalmente `providerType` — esto se
+/// reenvía al backend y se cachea por separado en el ChatProvider.
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({super.key});
+  /// `client` para la tab del cliente, `provider` para el panel del
+  /// proveedor. null = compat (todo).
+  final String? scope;
+  /// `OFICIO` o `NEGOCIO` cuando scope = provider, para separar las
+  /// bandejas de cada perfil del mismo usuario.
+  final String? providerType;
+
+  const ChatListScreen({super.key, this.scope, this.providerType});
 
   @override
   State<ChatListScreen> createState() => _ChatListScreenState();
@@ -19,10 +32,32 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   void initState() {
     super.initState();
-    // Refrescamos al entrar; ChatProvider ya gestiona "no recargar si está cargando"
+    // setScope no-op si nada cambió; si scope/type difieren del último
+    // (p. ej. el usuario alterna entre la tab del cliente y la del
+    // panel), limpia el cache local y refetchea.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChatProvider>().loadRooms();
+      context.read<ChatProvider>().setScope(
+        scope:        widget.scope,
+        providerType: widget.providerType,
+      );
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // El padre puede cambiar el providerType en caliente (switcher de
+    // perfil dentro del panel). Reactua re-aplicando el scope.
+    if (oldWidget.scope != widget.scope ||
+        oldWidget.providerType != widget.providerType) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<ChatProvider>().setScope(
+          scope:        widget.scope,
+          providerType: widget.providerType,
+        );
+      });
+    }
   }
 
   @override
