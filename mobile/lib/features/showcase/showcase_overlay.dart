@@ -113,10 +113,13 @@ class ShowcaseTarget extends StatelessWidget {
   final ShowcaseStep step;
   final bool isLast;
   final Widget child;
-  /// Tamaño aproximado del target — se usa para `height`/`width` del
-  /// container del tooltip (showcaseview lo requiere cuando se usa
-  /// `withWidget`). Default razonable para botones; el caller puede
-  /// ajustar para widgets grandes (tarjetas).
+
+  /// NOTA: estos params existen por compatibilidad con call-sites
+  /// previos pero NO se usan — en `Showcase.withWidget`, los argumentos
+  /// `height`/`width` describen el tamaño del *container del tooltip*,
+  /// no el del target. El spotlight se calcula del RenderBox real del
+  /// child. Usamos un container fijo (320x160) que envuelve al
+  /// [ShowcaseTooltipCard].
   final double targetHeight;
   final double targetWidth;
 
@@ -133,9 +136,14 @@ class ShowcaseTarget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Showcase.withWidget(
       key: step.key,
-      height: targetHeight,
-      width:  targetWidth,
+      // Dimensiones del tooltip — fijas, NO del target. El tooltip
+      // real (ShowcaseTooltipCard) se limita a maxWidth=320 vía
+      // BoxConstraints interno; aquí reservamos el slot que el lib
+      // posiciona junto al spotlight.
+      height: 160,
+      width:  320,
       targetBorderRadius: BorderRadius.circular(12),
+      targetPadding: const EdgeInsets.all(4),
       overlayColor: Colors.black,
       overlayOpacity: 0.78,
       disposeOnTap: false,
@@ -194,6 +202,11 @@ class _ShowcaseRootState extends State<ShowcaseRoot> {
   @override
   Widget build(BuildContext context) {
     return ShowCaseWidget(
+      // Scroll automático si el target queda fuera del viewport
+      // (ej. la primera ServiceCard cuando hay banners arriba que
+      // empujan la lista hacia abajo).
+      enableAutoScroll: true,
+      autoPlayDelay: const Duration(milliseconds: 300),
       onFinish: () {
         ShowcaseManager.markSeen(
           userId: _activeUserId,
@@ -279,10 +292,11 @@ class _AutoStartState extends State<_AutoStart> {
       final steps = widget.isGuest
           ? kShowcaseStepsGuest
           : kShowcaseStepsRegistered;
-      // Pequeño delay extra para asegurar que el bottom nav del shell
-      // padre también está montado (vive fuera de esta sub-tree pero
-      // sus keys están registradas globalmente).
-      await Future<void>.delayed(const Duration(milliseconds: 250));
+      // Delay extra para asegurar que TODOS los Showcase descendants
+      // del ShowCaseWidget (bottom nav del AppShell, primera tarjeta
+      // tras el sliver, banners, etc.) ya hayan montado su RenderBox
+      // — startShowCase falla silenciosamente si un key no resuelve.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
       ShowCaseWidget.of(context).startShowCase(steps.map((s) => s.key).toList());
     });
