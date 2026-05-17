@@ -464,7 +464,10 @@ model Payment {
   amount         Float
   currency       String        @default("PEN")
   method         PaymentMethod
-  reference      String? // Número de operación
+  // Reference es el id único del gateway (paymentId de MercadoPago,
+  // verificationCode de Yape). @unique evita duplicar el registro
+  // cuando MP reintenta el webhook — gate de idempotencia.
+  reference      String?       @unique
   confirmedAt    DateTime?
   createdAt      DateTime      @default(now())
 
