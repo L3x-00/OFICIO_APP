@@ -23,6 +23,8 @@ import 'widgets/onboarding_form_components.dart';
 import 'widgets/onboarding_category_section.dart';
 import 'widgets/onboarding_location_section.dart';
 import 'widgets/onboarding_delivery_section.dart';
+import 'widgets/plan_choice_sheet.dart';
+import 'widgets/registration_success_dialog.dart';
 
 class ProviderOnboardingForm extends StatefulWidget {
   final String? providerType;
@@ -237,101 +239,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       await _submit(goToPayment: false);
       return;
     }
-    final chosen = await _showPlanChoiceSheet();
+    final chosen = await PlanChoiceSheet.show(context, planChoice: _planChoice);
     if (chosen == null) return; // canceló
     await _submit(goToPayment: chosen == 'paid');
-  }
-
-  /// Sheet de confirmación final con dos botones explícitos:
-  ///   - "Adquirir plan X" → returns 'paid'
-  ///   - "Registrarme con plan gratis" → returns 'free'
-  ///   - "Cambiar plan" cierra y regresa al onboarding para reelegir.
-  Future<String?> _showPlanChoiceSheet() async {
-    final c = context.colors;
-    final paidPlan = _planChoice;
-    return showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: c.bgCard,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.fromLTRB(
-          24, 16, 24,
-          MediaQuery.of(ctx).padding.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: c.textMuted.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Elige cómo registrarte',
-              style: TextStyle(
-                  color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Seleccionaste el plan $paidPlan. Puedes adquirirlo ahora o '
-              'empezar gratis y suscribirte luego desde tu panel.',
-              style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 22),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.of(ctx).pop('paid'),
-              icon: const Icon(Icons.workspace_premium_rounded, size: 18),
-              label: Text('Adquirir plan $paidPlan',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.of(ctx).pop('free'),
-              icon: const Icon(Icons.handshake_rounded, size: 18),
-              label: const Text('Registrarme con plan gratis',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: c.textPrimary,
-                side: BorderSide(color: c.border),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                // Cierra el sheet y deja que el usuario vuelva atrás para
-                // reabrir el onboarding de planes — no perdemos los datos
-                // del form porque seguimos en la misma pantalla.
-              },
-              child: Text('Cambiar de plan',
-                  style: TextStyle(color: c.textMuted)),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   /// Valida los campos obligatorios. Devuelve `true` si todo OK.
@@ -387,8 +297,25 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     return true;
   }
 
+  /// Entry point del submit. Orquesta:
+  ///   1. Registro (provider en backend) — corta si falla.
+  ///   2. Subida de fotos (best-effort, no bloquea).
+  ///   3. Pasos finales (referral, refresh, location, pago o diálogo).
   Future<void> _submit({bool goToPayment = false}) async {
-    if (!_validateRequired()) return;
+    final success = await _performProviderRegistration();
+    if (!success) return;
+
+    await _handlePhotoUploads();
+    if (!mounted) return;
+
+    await _processFinalSteps(goToPayment);
+  }
+
+  /// Valida → llama a `registerProvider` con el payload completo.
+  /// Devuelve true si el backend creó el perfil; false si hubo error
+  /// (ya muestra el snack y resetea `_isLoading`).
+  Future<bool> _performProviderRegistration() async {
+    if (!_validateRequired()) return false;
 
     final name = _businessNameController.text.trim();
     final dni  = _dniController.text.trim();
@@ -421,13 +348,60 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       whatsappBiz:       _whatsappBizCtrl.text.trim().isEmpty ? null : _whatsappBizCtrl.text.trim(),
     );
 
-    if (!mounted) return;
+    if (!mounted) return false;
 
     if (!result) {
       setState(() => _isLoading = false);
       _showSnack(auth.error ?? 'Error al crear el perfil', isError: true);
-      return;
+      return false;
     }
+    return true;
+  }
+
+  /// Sube las fotos seleccionadas. La primera se marca como cover. Es
+  /// best-effort: errores parciales o totales solo muestran snack — no
+  /// bloquean el flujo (el usuario puede re-subirlas desde el panel).
+  /// No toca `_isLoading` (lo gestiona `_processFinalSteps`).
+  Future<void> _handlePhotoUploads() async {
+    if (_photos.isEmpty) return;
+
+    final repo = DashboardRepository();
+    int uploadErrors = 0;
+    debugPrint('[Onboarding] Subiendo ${_photos.length} foto(s) para tipo=${widget.providerType}');
+    for (int i = 0; i < _photos.length; i++) {
+      final photo = _photos[i];
+      try {
+        debugPrint('[Onboarding] Foto ${i + 1}/${_photos.length}: ${photo.name} (${photo.path})');
+        final url = await repo.uploadProviderPhotoFile(photo);
+        debugPrint('[Onboarding] URL obtenida: $url');
+        // La primera foto se marca como cover explícitamente para que la
+        // tarjeta del perfil tenga foto garantizada en cuanto se apruebe
+        // el proveedor — sin depender del fallback `existingCount===0`
+        // del backend.
+        await repo.saveProviderImage(
+          url,
+          type: widget.providerType,
+          isCover: i == 0,
+        );
+        debugPrint('[Onboarding] Foto ${i + 1} guardada en el perfil');
+      } catch (e, st) {
+        uploadErrors++;
+        debugPrint('[Onboarding] ERROR foto ${i + 1}: $e\n$st');
+      }
+    }
+    if (!mounted) return;
+    if (uploadErrors > 0 && uploadErrors < _photos.length) {
+      _showSnack('Algunas fotos no se subieron. Puedes agregarlas desde el panel.');
+    } else if (uploadErrors == _photos.length) {
+      _showSnack('No se pudieron subir las fotos. Agrégalas desde tu panel.', isError: true);
+    }
+  }
+
+  /// Pasos finales tras el registro + fotos: referral, refresh del
+  /// estado, persistir ubicación y decidir flujo de cierre (pago o
+  /// diálogo de éxito).
+  Future<void> _processFinalSteps(bool goToPayment) async {
+    final auth = context.read<AuthProvider>();
 
     final refCode = _referralCodeCtrl.text.trim();
     if (refCode.isNotEmpty) {
@@ -441,45 +415,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       }
     }
 
-    if (_photos.isNotEmpty) {
-      final repo = DashboardRepository();
-      int uploadErrors = 0;
-      debugPrint('[Onboarding] Subiendo ${_photos.length} foto(s) para tipo=${widget.providerType}');
-      for (int i = 0; i < _photos.length; i++) {
-        final photo = _photos[i];
-        try {
-          debugPrint('[Onboarding] Foto ${i + 1}/${_photos.length}: ${photo.name} (${photo.path})');
-          final url = await repo.uploadProviderPhotoFile(photo);
-          debugPrint('[Onboarding] URL obtenida: $url');
-          // La primera foto se marca como cover explícitamente para que la
-          // tarjeta del perfil tenga foto garantizada en cuanto se apruebe
-          // el proveedor — sin depender del fallback `existingCount===0`
-          // del backend.
-          await repo.saveProviderImage(
-            url,
-            type: widget.providerType,
-            isCover: i == 0,
-          );
-          debugPrint('[Onboarding] Foto ${i + 1} guardada en el perfil');
-        } catch (e, st) {
-          uploadErrors++;
-          debugPrint('[Onboarding] ERROR foto ${i + 1}: $e\n$st');
-        }
-      }
-      if (!mounted) return;
-      if (uploadErrors > 0 && uploadErrors < _photos.length) {
-        _showSnack('Algunas fotos no se subieron. Puedes agregarlas desde el panel.');
-      } else if (uploadErrors == _photos.length) {
-        _showSnack('No se pudieron subir las fotos. Agrégalas desde tu panel.', isError: true);
-      }
-    }
-
-    if (!mounted) return;
-
     await auth.refreshProviderStatus();
     if (!mounted) return;
-
-    setState(() => _isLoading = false);
 
     if (_hasAdminLocation) {
       auth.updateLocation(
@@ -489,9 +426,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       );
     }
 
-    // Si el usuario eligió un plan pagado: en lugar del diálogo de éxito,
-    // saltamos al flujo de pago Yape pre-llenado con el plan elegido. La
-    // suscripción se activa cuando el admin aprueba el comprobante.
+    setState(() => _isLoading = false);
+
+    // Si el usuario eligió un plan pagado: en lugar del diálogo de
+    // éxito, saltamos al flujo de pago Yape pre-llenado con el plan
+    // elegido. La suscripción se activa cuando el admin aprueba el
+    // comprobante.
     if (goToPayment && _planChoice != 'GRATIS') {
       await _goToPaymentFlow(_planChoice);
       return;
@@ -514,85 +454,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   }
 
   void _showSuccessDialog() {
-    final c = context.colors;
     final auth = context.read<AuthProvider>();
-    final isNegocio = widget.providerType == 'NEGOCIO';
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => Dialog(
-        backgroundColor: c.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color: AppColors.available.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded,
-                  color: AppColors.available,
-                  size: 44,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                isNegocio ? '¡Negocio Registrado!' : '¡Perfil Profesional Creado!',
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                isNegocio
-                    ? 'Negocio creado con éxito. Se te notificará una vez que sea aprobado por el equipo.'
-                    : 'Tu perfil está siendo revisado. Te notificaremos cuando esté aprobado.',
-                style: TextStyle(
-                  color: c.textSecondary,
-                  fontSize: 14,
-                  height: 1.6,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    auth.completeOnboarding(
-                      role: widget.providerType ?? 'OFICIO',
-                    );
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    'Ir al inicio',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    RegistrationSuccessDialog.show(
+      context,
+      isNegocio: !_isOficio,
+      onAccept: () {
+        auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
+        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      },
     );
   }
 
