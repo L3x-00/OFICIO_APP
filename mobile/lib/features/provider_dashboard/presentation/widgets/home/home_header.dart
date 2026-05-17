@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
+import '../../../../showcase/showcase_data.dart';
+import '../../../../showcase/showcase_overlay.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
 
 /// Cabecera del tab Home: saludo + nombre + badge de estado, banner de
@@ -59,7 +61,21 @@ class HomeHeader extends StatelessWidget {
         ),
         if (profile?.subscription != null) ...[
           const SizedBox(height: 12),
-          SubscriptionBanner(sub: profile!.subscription!),
+          // ShowcaseTarget se hidrata con copy dinámico (GRATIS vs
+          // pago) en `buildAdminHomeSteps`. Aquí usamos la misma key
+          // — el deck activo decide el texto del tooltip.
+          ShowcaseTarget(
+            step: ShowcaseStep(
+              key: kAdminPlanBadgeKey,
+              title: 'Tu plan actual',
+              description: profile!.subscription!.plan == 'GRATIS'
+                  ? 'Estás en plan Gratis. Toca para ver cómo destacar más.'
+                  : 'Aquí ves tu membresía. Toca para descubrir cómo '
+                    'obtener más beneficios y visibilidad.',
+            ),
+            isLast: false,
+            child: SubscriptionBanner(sub: profile!.subscription!),
+          ),
         ],
         if (!isNegocio && (profile?.hasHomeService ?? false)) ...[
           const SizedBox(height: 10),

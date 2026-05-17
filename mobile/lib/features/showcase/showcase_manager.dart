@@ -43,4 +43,57 @@ class ShowcaseManager {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyForUser(userId, isGuest: isGuest));
   }
+
+  // ── Panel del proveedor ──────────────────────────────────
+  //
+  // Flag por (tab, userId, providerType). Cada perfil (OFICIO /
+  // NEGOCIO) tiene su propio set de flags — un mismo usuario con
+  // ambos perfiles ve el tutorial dos veces, una en cada panel.
+  // Formato: `has_seen_admin_{tab}_{userId}_{providerType}`.
+
+  static String _adminKey({
+    required String tab,
+    required int    userId,
+    required String providerType,
+  }) {
+    return 'has_seen_admin_${tab}_${userId}_${providerType.toLowerCase()}';
+  }
+
+  static Future<bool> hasSeenAdminTab({
+    required String tab,
+    required int    userId,
+    required String providerType,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_adminKey(
+      tab:          tab,
+      userId:       userId,
+      providerType: providerType,
+    )) ?? false;
+  }
+
+  static Future<void> markSeenAdminTab({
+    required String tab,
+    required int    userId,
+    required String providerType,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(
+      _adminKey(tab: tab, userId: userId, providerType: providerType),
+      true,
+    );
+  }
+
+  static Future<void> resetAdminTab({
+    required String tab,
+    required int    userId,
+    required String providerType,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_adminKey(
+      tab:          tab,
+      userId:       userId,
+      providerType: providerType,
+    ));
+  }
 }

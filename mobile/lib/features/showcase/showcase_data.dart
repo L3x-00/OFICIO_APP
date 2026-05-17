@@ -130,6 +130,142 @@ bool isLastShowcaseStep(GlobalKey key, {required bool isGuest}) {
   return deck.isNotEmpty && deck.last.key == key;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// FEATURE DISCOVERY — PANEL DEL PROVEEDOR (admin)
+// ═══════════════════════════════════════════════════════════════
+//
+// Selectivo: solo resaltamos lo que NO es obvio y aporta valor real
+// (límites de plan, vista pública, switch de perfil). Tutoriales por
+// tab — no un walkthrough lineal del panel completo.
+//
+// Aislamiento: prefijos `kAdmin…` para no chocar con las keys del
+// deck cliente y para que el filtro de "qué paso aplica a qué deck"
+// sea trivial de auditar.
+
+// ── TAB INICIO ───────────────────────────────────────────────
+final GlobalKey kAdminPublicPreviewKey = GlobalKey(debugLabel: 'sc.admin.publicPreview');
+final GlobalKey kAdminPlanBadgeKey     = GlobalKey(debugLabel: 'sc.admin.planBadge');
+final GlobalKey kAdminSwitchRoleKey    = GlobalKey(debugLabel: 'sc.admin.switchRole');
+
+// ── TAB SERVICIOS ────────────────────────────────────────────
+final GlobalKey kAdminServiceQuotaKey  = GlobalKey(debugLabel: 'sc.admin.serviceQuota');
+final GlobalKey kAdminAddServiceKey    = GlobalKey(debugLabel: 'sc.admin.addService');
+
+// ── TAB ESTADÍSTICAS ─────────────────────────────────────────
+final GlobalKey kAdminStatsPeriodKey    = GlobalKey(debugLabel: 'sc.admin.statsPeriod');
+final GlobalKey kAdminStatsBreakdownKey = GlobalKey(debugLabel: 'sc.admin.statsBreakdown');
+final GlobalKey kAdminStatsChartKey     = GlobalKey(debugLabel: 'sc.admin.statsChart');
+
+/// Identificador del tab del panel para la clave de SharedPreferences.
+/// Mantenido como String literal (no enum) para que el formato de la
+/// key —`has_seen_admin_{tab}_{userId}_{providerType}`— quede claro
+/// en el storage.
+class AdminTab {
+  static const String home     = 'home';
+  static const String services = 'services';
+  static const String stats    = 'stats';
+}
+
+/// Builder de los pasos para el tab INICIO. Los pasos opcionales
+/// (switch de rol, copy alternativo por plan GRATIS) dependen del
+/// estado en runtime — por eso es función, no constante.
+List<ShowcaseStep> buildAdminHomeSteps({
+  required String plan,
+  required bool   hasBothProfiles,
+}) {
+  final isFree = plan == 'GRATIS';
+  return [
+    ShowcaseStep(
+      key: kAdminPublicPreviewKey,
+      title: 'Así te ven tus clientes',
+      description:
+          'Si eres plan GRATIS, WhatsApp y llamadas aparecen '
+          'bloqueados. Sube a Estándar o Premium para activarlos.',
+    ),
+    ShowcaseStep(
+      key: kAdminPlanBadgeKey,
+      title: 'Tu plan actual',
+      description: isFree
+          ? 'Estás en plan Gratis. Toca para ver cómo destacar más.'
+          : 'Aquí ves tu membresía. Toca para descubrir cómo '
+            'obtener más beneficios y visibilidad.',
+    ),
+    if (hasBothProfiles)
+      ShowcaseStep(
+        key: kAdminSwitchRoleKey,
+        title: 'Tienes dos perfiles',
+        description:
+            'Puedes alternar entre tu perfil de Profesional y '
+            'Negocio. Cada uno tiene su propio panel, estadísticas '
+            'y configuración.',
+      ),
+  ];
+}
+
+/// Builder de pasos para el tab SERVICIOS. El paso del FAB sólo
+/// aparece si el usuario ya llegó al límite — no tiene sentido
+/// destacar "necesitas publicar más" si todavía puede añadir.
+List<ShowcaseStep> buildAdminServicesSteps({
+  required bool atLimit,
+}) {
+  return [
+    ShowcaseStep(
+      key: kAdminServiceQuotaKey,
+      title: 'Tu cupo de servicios',
+      description:
+          'Con plan Gratis solo puedes publicar 1 servicio. Sube a '
+          'Estándar (6) o Premium (ilimitado) para mostrar todo lo '
+          'que haces.',
+    ),
+    if (atLimit)
+      ShowcaseStep(
+        key: kAdminAddServiceKey,
+        title: '¿Necesitas publicar más?',
+        description:
+            'Has llegado al límite de tu plan. Toca aquí para ver '
+            'cómo expandir tu catálogo.',
+      ),
+  ];
+}
+
+/// Builder de pasos para el tab ESTADÍSTICAS. El copy del gráfico
+/// cambia si no hay datos todavía (evita prometer "tus días fuertes"
+/// cuando todo está en cero).
+List<ShowcaseStep> buildAdminStatsSteps({
+  required bool hasChartData,
+}) {
+  return [
+    ShowcaseStep(
+      key: kAdminStatsPeriodKey,
+      title: 'Mide tu crecimiento',
+      description:
+          'Cambia el rango de tiempo para ver tu evolución. Ideal '
+          'para medir el impacto de tus promociones.',
+    ),
+    ShowcaseStep(
+      key: kAdminStatsBreakdownKey,
+      title: '¿Cómo te contactan?',
+      description:
+          'Descubre si tus clientes prefieren WhatsApp o llamadas '
+          'y optimiza tu disponibilidad.',
+    ),
+    ShowcaseStep(
+      key: kAdminStatsChartKey,
+      title: hasChartData ? 'Tus días fuertes' : 'Tu crecimiento diario',
+      description: hasChartData
+          ? 'Identifica qué días recibes más contactos. ¡Publica '
+            'ofertas esos días para maximizar!'
+          : 'Aquí verás tu crecimiento diario. ¡Sigue promocionándote!',
+    ),
+  ];
+}
+
+/// `isLast` para los decks del panel admin. Como cada tab tiene su
+/// propio deck pequeño, el helper recibe la lista activa.
+bool isLastAdminStep(GlobalKey key, List<ShowcaseStep> deck) {
+  return deck.isNotEmpty && deck.last.key == key;
+}
+
 /// Orden y copy de los pasos para usuario INVITADO. Reusa keys del set
 /// registrado donde aplica + paso propio para el CTA de login.
 final List<ShowcaseStep> kShowcaseStepsGuest = [

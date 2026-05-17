@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/plan_limits.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../payments/presentation/screens/plan_selector_sheet.dart';
+import '../../../showcase/showcase_data.dart';
+import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/offer_posts_provider.dart';
 import '../../domain/models/service_item_model.dart';
@@ -46,6 +50,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
   @override
   Widget build(BuildContext context) {
     final c      = context.colors;
+    final auth   = context.watch<AuthProvider>();
     final dash   = context.watch<DashboardProvider>();
     final offers = context.watch<OfferPostsProvider>();
     final services       = dash.services;
@@ -56,7 +61,15 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
     final labelSingular  = widget.isNegocio ? 'producto' : 'servicio';
     final limitLabel     = PlanLimits.itemsLabel(plan, isNegocio: widget.isNegocio);
 
-    return Scaffold(
+    final servicesSteps = buildAdminServicesSteps(atLimit: atLimit);
+
+    return AdminTabShowcase(
+      tab:          AdminTab.services,
+      userId:       auth.user?.id,
+      providerType: widget.isNegocio ? 'NEGOCIO' : 'OFICIO',
+      isApproved:   dash.profile?.isVerified ?? false,
+      steps:        servicesSteps,
+      child: Scaffold(
       backgroundColor: c.bg,
       body: SafeArea(
         child: RefreshIndicator(
@@ -89,12 +102,16 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
               // ── Banner de límite de plan ────────────────────────
               SliverToBoxAdapter(
-                child: PlanLimitBanner(
-                  plan:        plan,
-                  current:     services.length,
-                  limit:       limit,
-                  isNegocio:   widget.isNegocio,
-                  limitLabel:  limitLabel,
+                child: ShowcaseTarget(
+                  step: servicesSteps.firstWhere((s) => s.key == kAdminServiceQuotaKey),
+                  isLast: isLastAdminStep(kAdminServiceQuotaKey, servicesSteps),
+                  child: PlanLimitBanner(
+                    plan:        plan,
+                    current:     services.length,
+                    limit:       limit,
+                    isNegocio:   widget.isNegocio,
+                    limitLabel:  limitLabel,
+                  ),
                 ),
               ),
 
@@ -166,13 +183,49 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
           ),
         ),
       ),
-      floatingActionButton: (services.isNotEmpty && !atLimit)
-          ? FloatingActionButton(
-              onPressed: () => ServiceFormSheet.show(context, dash, onSaving: _setSaving),
-              backgroundColor: AppColors.amber,
-              child: const Icon(Icons.add_rounded, color: Colors.black),
-            )
-          : null,
+      floatingActionButton: _buildAddFab(
+        atLimit:      atLimit,
+        showFab:      services.isNotEmpty,
+        servicesSteps: servicesSteps,
+        dash:         dash,
+      ),
+      ),
+    );
+  }
+
+  /// FAB del tab:
+  ///   - normal (puede añadir): icono `+`, abre el form sheet.
+  ///   - en el límite: pill "Subir plan" — siempre visible para que el
+  ///     paso del tutorial `kAdminAddServiceKey` tenga target real.
+  ///   - sin services + sin límite: null (el empty state ya muestra
+  ///     su propio CTA).
+  Widget? _buildAddFab({
+    required bool atLimit,
+    required bool showFab,
+    required List<ShowcaseStep> servicesSteps,
+    required DashboardProvider dash,
+  }) {
+    if (atLimit) {
+      // El paso del FAB SOLO existe en `servicesSteps` cuando atLimit
+      // — `buildAdminServicesSteps` lo agregó condicionalmente, así
+      // que aquí siempre existe la entrada.
+      return ShowcaseTarget(
+        step: servicesSteps.firstWhere((s) => s.key == kAdminAddServiceKey),
+        isLast: isLastAdminStep(kAdminAddServiceKey, servicesSteps),
+        child: FloatingActionButton.extended(
+          onPressed: () => PlanSelectorSheet.show(context),
+          backgroundColor: AppColors.busy,
+          icon: const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
+          label: const Text('Subir plan',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+    if (!showFab) return null;
+    return FloatingActionButton(
+      onPressed: () => ServiceFormSheet.show(context, dash, onSaving: _setSaving),
+      backgroundColor: AppColors.amber,
+      child: const Icon(Icons.add_rounded, color: Colors.black),
     );
   }
 

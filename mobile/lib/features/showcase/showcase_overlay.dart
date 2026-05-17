@@ -305,3 +305,176 @@ class _AutoStartState extends State<_AutoStart> {
   @override
   Widget build(BuildContext context) => widget.child;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PANEL DEL PROVEEDOR — wrapper + trigger por tab
+// ═══════════════════════════════════════════════════════════════
+
+/// Envuelve el `ProviderPanel` con su PROPIO `ShowCaseWidget` —
+/// aislado del cliente. Razón: el deck del cliente vive bajo el
+/// `ShowcaseRoot` del `AppShell`; cuando el user abre el panel vía
+/// `rootNavigator.push(...)`, esta ruta queda FUERA del subtree del
+/// shell, así que necesita su propio root. Beneficio extra: los
+/// GlobalKey del panel nunca colisionan con los del cliente porque
+/// viven en árboles `Overlay` distintos.
+///
+/// `markSeen` se delega al [AdminTabShowcase] que conoce el tab
+/// activo — el `onFinish` aquí solo dispara la persistencia con los
+/// datos registrados.
+class AdminShowcaseWrapper extends StatefulWidget {
+  final Widget child;
+  const AdminShowcaseWrapper({super.key, required this.child});
+
+  static _AdminShowcaseWrapperState? _of(BuildContext context) =>
+      context.findAncestorStateOfType<_AdminShowcaseWrapperState>();
+
+  @override
+  State<AdminShowcaseWrapper> createState() => _AdminShowcaseWrapperState();
+}
+
+class _AdminShowcaseWrapperState extends State<AdminShowcaseWrapper> {
+  // Datos del tab que está corriendo el tutorial en este momento — el
+  // `AdminTabShowcase` los registra cuando dispara el showcase para
+  // que `onFinish` sepa contra qué clave persistir.
+  String? _activeTab;
+  int?    _activeUserId;
+  String? _activeProviderType;
+
+  void _registerActive({
+    required String tab,
+    required int    userId,
+    required String providerType,
+  }) {
+    _activeTab          = tab;
+    _activeUserId       = userId;
+    _activeProviderType = providerType;
+  }
+
+  void _clearActive() {
+    _activeTab          = null;
+    _activeUserId       = null;
+    _activeProviderType = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ShowCaseWidget(
+      // autoScroll para que pasos debajo del pliegue (gráfico, FAB)
+      // hagan scroll automático al viewport antes del spotlight.
+      enableAutoScroll: true,
+      autoPlayDelay: const Duration(milliseconds: 300),
+      onFinish: () {
+        final tab    = _activeTab;
+        final userId = _activeUserId;
+        final type   = _activeProviderType;
+        if (tab != null && userId != null && type != null) {
+          ShowcaseManager.markSeenAdminTab(
+            tab:          tab,
+            userId:       userId,
+            providerType: type,
+          );
+        }
+        _clearActive();
+      },
+      builder: (ctx) => widget.child,
+    );
+  }
+}
+
+/// Disparador por tab. Móntalo dentro del tab correspondiente (Home,
+/// Services o Stats). Cuando el tab se monta:
+///   1. Verifica que `verificationStatus`/`isVerified` == aprobado.
+///   2. Verifica que NO se haya visto antes (clave por tab + user +
+///      providerType).
+///   3. Construye los pasos dinámicos (filtra los condicionales:
+///      switch-role solo si hay ambos perfiles, FAB solo si está en
+///      el límite, etc.).
+///   4. Dispara `startShowCase` tras un delay de 300ms para que la
+///      animación de transición del tab termine antes del spotlight.
+///
+/// Si el user cambia de tab mid-tour, el `ProviderPanel` llama a
+/// [dismissActive] desde el `onTap` del BottomNav — el `markSeen`
+/// del `onFinish` se ejecuta y ese tab queda marcado.
+class AdminTabShowcase extends StatefulWidget {
+  /// Identificador del tab — usa [AdminTab.home/services/stats].
+  final String tab;
+  /// userId del provider activo (no del rol cliente).
+  final int? userId;
+  /// 'OFICIO' o 'NEGOCIO'.
+  final String providerType;
+  /// True si el provider ya está aprobado. Si false, NO se dispara.
+  final bool isApproved;
+  /// Pasos del deck — generados por `buildAdmin{Tab}Steps(...)`. Si
+  /// la lista está vacía, el tab no tiene tutorial.
+  final List<ShowcaseStep> steps;
+  final Widget child;
+
+  const AdminTabShowcase({
+    super.key,
+    required this.tab,
+    required this.userId,
+    required this.providerType,
+    required this.isApproved,
+    required this.steps,
+    required this.child,
+  });
+
+  /// Cancela el tutorial activo (cualquier tab). Lo llama el
+  /// `ProviderPanel` al cambiar de tab. Es seguro llamarlo cuando no
+  /// hay tutorial activo — `dismiss()` es idempotente.
+  static void dismissActive(BuildContext context) {
+    try {
+      ShowCaseWidget.of(context).dismiss();
+    } catch (_) {
+      // Sin ShowCaseWidget ancestro — nada que cancelar.
+    }
+  }
+
+  @override
+  State<AdminTabShowcase> createState() => _AdminTabShowcaseState();
+}
+
+class _AdminTabShowcaseState extends State<AdminTabShowcase> {
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maybeStart();
+  }
+
+  void _maybeStart() {
+    if (_started) return;
+    if (!widget.isApproved)      return;
+    if (widget.userId == null)   return;
+    if (widget.steps.isEmpty)    return;
+    _started = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final seen = await ShowcaseManager.hasSeenAdminTab(
+        tab:          widget.tab,
+        userId:       widget.userId!,
+        providerType: widget.providerType,
+      );
+      if (seen || !mounted) return;
+
+      // 300ms para que la animación de cambio de tab termine antes
+      // del spotlight (el spec del producto lo pide explícito).
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      if (!mounted) return;
+
+      AdminShowcaseWrapper._of(context)?._registerActive(
+        tab:          widget.tab,
+        userId:       widget.userId!,
+        providerType: widget.providerType,
+      );
+      ShowCaseWidget.of(context).startShowCase(
+        widget.steps.map((s) => s.key).toList(),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}

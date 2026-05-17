@@ -6,6 +6,8 @@ import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../../../features/subastas/presentation/screens/oportunidades_tab.dart';
 import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
+import '../../../showcase/showcase_data.dart';
+import '../../../showcase/showcase_overlay.dart';
 import 'panel_home_tab.dart';
 import 'panel_profile_tab.dart';
 import 'panel_services_tab.dart';
@@ -52,7 +54,8 @@ class _ProviderPanelState extends State<ProviderPanel> {
     final auth    = context.watch<AuthProvider>();
     final isNeg   = (widget.providerType ?? auth.activeProfileType) == 'NEGOCIO';
 
-    return Scaffold(
+    return AdminShowcaseWrapper(
+      child: Scaffold(
       backgroundColor: c.bg,
       appBar: _PanelAppBar(
         activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
@@ -103,9 +106,15 @@ class _ProviderPanelState extends State<ProviderPanel> {
       ),
       bottomNavigationBar: _PanelBottomNav(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        // Cancelar showcase activo ANTES de cambiar de tab — el
+        // tutorial de un tab no debe seguir corriendo en otro.
+        onTap: (i) {
+          AdminTabShowcase.dismissActive(context);
+          setState(() => _currentIndex = i);
+        },
         isPaused: _isPaused,
         isNegocio: isNeg,
+      ),
       ),
     );
   }
@@ -197,46 +206,25 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
         behavior: HitTestBehavior.opaque,
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: isNeg
-                    ? AppColors.amber.withValues(alpha: 0.12)
-                    : AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: (isNeg ? AppColors.amber : AppColors.primary)
-                      .withValues(alpha: 0.35),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isNeg ? Icons.store_rounded : Icons.handyman_rounded,
-                    size: 14,
-                    color: isNeg ? AppColors.amber : AppColors.primary,
+            // Solo el caso "ambos perfiles" lleva ShowcaseTarget — si
+            // el user tiene un único perfil, el chip es estático y no
+            // aporta valor destacarlo.
+            _canSwitch
+              ? ShowcaseTarget(
+                  step: ShowcaseStep(
+                    key: kAdminSwitchRoleKey,
+                    title: 'Tienes dos perfiles',
+                    description:
+                        'Puedes alternar entre tu perfil de Profesional '
+                        'y Negocio. Cada uno tiene su propio panel, '
+                        'estadísticas y configuración.',
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: isNeg ? AppColors.amber : AppColors.primary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (_canSwitch) ...[
-                    const SizedBox(width: 6),
-                    Icon(
-                      Icons.swap_horiz_rounded,
-                      size: 14,
-                      color: isNeg ? AppColors.amber : AppColors.primary,
-                    ),
-                  ],
-                ],
-              ),
-            ),
+                  // El builder de pasos pone este como ÚLTIMO del deck
+                  // home, así que mostramos "Empezar".
+                  isLast: true,
+                  child: _buildSwitchChip(context, isNeg, label),
+                )
+              : _buildSwitchChip(context, isNeg, label),
           ],
         ),
       ),
@@ -291,6 +279,49 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildSwitchChip(BuildContext context, bool isNeg, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isNeg
+            ? AppColors.amber.withValues(alpha: 0.12)
+            : AppColors.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (isNeg ? AppColors.amber : AppColors.primary)
+              .withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isNeg ? Icons.store_rounded : Icons.handyman_rounded,
+            size: 14,
+            color: isNeg ? AppColors.amber : AppColors.primary,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: isNeg ? AppColors.amber : AppColors.primary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (_canSwitch) ...[
+            const SizedBox(width: 6),
+            Icon(
+              Icons.swap_horiz_rounded,
+              size: 14,
+              color: isNeg ? AppColors.amber : AppColors.primary,
+            ),
+          ],
+        ],
+      ),
     );
   }
 

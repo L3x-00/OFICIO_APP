@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../showcase/showcase_data.dart';
+import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/welcome_provider_plan_modal.dart';
 import '../widgets/home/home_header.dart';
@@ -87,7 +89,20 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
         ? dash.profile!.images.first.url
         : null;
 
-    return RefreshIndicator(
+    final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
+    final hasBothProfiles = auth.hasOficioProfile && auth.hasNegocioProfile;
+    final homeSteps = buildAdminHomeSteps(
+      plan:            plan,
+      hasBothProfiles: hasBothProfiles,
+    );
+
+    return AdminTabShowcase(
+      tab:          AdminTab.home,
+      userId:       auth.user?.id,
+      providerType: _providerType,
+      isApproved:   dash.profile?.isVerified ?? false,
+      steps:        homeSteps,
+      child: RefreshIndicator(
       onRefresh: () => context.read<DashboardProvider>().loadDashboard(providerType: _providerType),
       color: AppColors.amber,
       backgroundColor: c.bgCard,
@@ -108,7 +123,11 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
             profile: dash.profile,
           ),
           SliverToBoxAdapter(
-            child: HomeContactPreview(profile: dash.profile),
+            child: ShowcaseTarget(
+              step: homeSteps.firstWhere((s) => s.key == kAdminPublicPreviewKey),
+              isLast: isLastAdminStep(kAdminPublicPreviewKey, homeSteps),
+              child: HomeContactPreview(profile: dash.profile),
+            ),
           ),
           SliverToBoxAdapter(
             child: HomeNotificationsSection(
@@ -133,6 +152,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
+      ),
       ),
     );
   }

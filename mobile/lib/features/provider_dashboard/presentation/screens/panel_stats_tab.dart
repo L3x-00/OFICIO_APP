@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/plan_limits.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../showcase/showcase_data.dart';
+import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
@@ -21,6 +24,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
   @override
   Widget build(BuildContext context) {
     final c    = context.colors;
+    final auth = context.watch<AuthProvider>();
     final dash = context.watch<DashboardProvider>();
     final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
 
@@ -29,7 +33,17 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
       return _StatsUpsellScreen(plan: plan, onNavigateToSettings: widget.onNavigateToSettings);
     }
 
-    return Scaffold(
+    final hasChartData = (dash.analytics?.dailyClicks ?? []).isNotEmpty;
+    final statsSteps   = buildAdminStatsSteps(hasChartData: hasChartData);
+    final providerType = auth.activeProfileType ?? 'OFICIO';
+
+    return AdminTabShowcase(
+      tab:          AdminTab.stats,
+      userId:       auth.user?.id,
+      providerType: providerType,
+      isApproved:   dash.profile?.isVerified ?? false,
+      steps:        statsSteps,
+      child: Scaffold(
       backgroundColor: c.bg,
       body: CustomScrollView(
         slivers: [
@@ -47,20 +61,39 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
               ),
             ],
           ),
-          SliverToBoxAdapter(child: _buildPeriodSelector()),
+          SliverToBoxAdapter(
+            child: ShowcaseTarget(
+              step: statsSteps.firstWhere((s) => s.key == kAdminStatsPeriodKey),
+              isLast: isLastAdminStep(kAdminStatsPeriodKey, statsSteps),
+              child: _buildPeriodSelector(),
+            ),
+          ),
           if (dash.isLoading && dash.analytics == null)
             const SliverFillRemaining(
               child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
             )
           else ...[
             SliverToBoxAdapter(child: _buildSummaryCards(dash)),
-            SliverToBoxAdapter(child: _buildContactBreakdown(dash)),
-            SliverToBoxAdapter(child: _buildDailyChart(dash)),
+            SliverToBoxAdapter(
+              child: ShowcaseTarget(
+                step: statsSteps.firstWhere((s) => s.key == kAdminStatsBreakdownKey),
+                isLast: isLastAdminStep(kAdminStatsBreakdownKey, statsSteps),
+                child: _buildContactBreakdown(dash),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: ShowcaseTarget(
+                step: statsSteps.firstWhere((s) => s.key == kAdminStatsChartKey),
+                isLast: isLastAdminStep(kAdminStatsChartKey, statsSteps),
+                child: _buildDailyChart(dash),
+              ),
+            ),
             SliverToBoxAdapter(child: _buildProfileInfo(dash)),
             SliverToBoxAdapter(child: _buildRatingSection(dash)),
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ],
+      ),
       ),
     );
   }
@@ -217,7 +250,33 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
   Widget _buildDailyChart(DashboardProvider dash) {
     final c = context.colors;
     final entries = dash.analytics?.dailyClicks ?? [];
-    if (entries.isEmpty) return const SizedBox.shrink();
+    if (entries.isEmpty) {
+      // Placeholder mínimo — sin él, el ShowcaseTarget del paso
+      // `chart` quedaría con tamaño cero y el spotlight no aparece.
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: c.bgCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.show_chart_rounded, color: c.textMuted, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Aún no hay actividad. Tu crecimiento diario aparecerá aquí.',
+                  style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     // Mostrar últimos 14 días como máximo
     final displayEntries = entries.length > 14
