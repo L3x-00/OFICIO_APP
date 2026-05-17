@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../data/auth_repository.dart';
@@ -354,63 +355,9 @@ class AuthProvider extends ChangeNotifier {
     result.when(
       success: (data) {
         if (data['hasProvider'] == true) {
-          final profiles = data['profiles'] as List<dynamic>? ?? [];
-          _providerProfiles.clear();
-          _providerVerificationStatus = null;
-          _verificationStatusByType.clear();
-          _rejectionReasonByType.clear();
-          _providerDataByType.clear();
-
-          bool hasAnyApproved = false;
-
-          for (final raw in profiles) {
-            final profile = raw as Map<String, dynamic>;
-            final rawType = profile['type'] as String? ?? 'OFICIO';
-            // Mapear alias del backend a tipos canónicos internos
-            final internalType = switch (rawType) {
-              'PROFESSIONAL' => 'OFICIO',
-              'BUSINESS'     => 'NEGOCIO',
-              _              => rawType,
-            };
-            _providerProfiles.add(internalType);
-            _activeProfileType ??= internalType;
-            _providerDataByType[internalType] = profile;
-
-            // Priorizar estado APROBADO; si ninguno aprobado, mostrar el último
-            final status = profile['verificationStatus'] as String?;
-            if (_providerVerificationStatus == null || status == 'APROBADO') {
-              _providerVerificationStatus = status;
-            }
-            if (status == 'APROBADO') hasAnyApproved = true;
-
-            // Guardar estado por tipo para que el banner muestre PENDIENTE vs RECHAZADO
-            if (status != null) _verificationStatusByType[internalType] = status;
-
-            // Si fue rechazado, extraer el motivo de la primera notificación RECHAZADO
-            if (status == 'RECHAZADO') {
-              final notifications = profile['pendingNotifications'] as List<dynamic>? ?? [];
-              final rejectionNotif = notifications.firstWhere(
-                (n) => (n as Map<String, dynamic>)['type'] == 'RECHAZADO',
-                orElse: () => null,
-              );
-              if (rejectionNotif != null) {
-                final msg = (rejectionNotif as Map<String, dynamic>)['message'] as String? ?? '';
-                // Extraer el motivo después de "Motivo: "
-                final idx = msg.indexOf('Motivo: ');
-                _rejectionReasonByType[internalType] =
-                    idx >= 0 ? msg.substring(idx + 8) : msg;
-              }
-            }
-          }
-
-          // Sincronizar el rol local del usuario con el que el backend asignó
-          // (el admin lo eleva a PROVEEDOR al aprobar, o lo baja a USUARIO al rechazar)
-          if (_user != null) {
-            final expectedRole = hasAnyApproved ? 'PROVEEDOR' : 'USUARIO';
-            if (_user!.role != expectedRole) {
-              _user = _user!.copyWith(role: expectedRole);
-            }
-          }
+          final profiles = (data['profiles'] as List<dynamic>?) ?? const [];
+          final hasAnyApproved = _parseProviderProfiles(profiles);
+          _syncUserRole(hasAnyApproved);
 
           // Encolar el modal de bienvenida si hay un perfil aprobado y
           // todavía no se mostró (el flag persistido en SharedPreferences
@@ -419,22 +366,87 @@ class AuthProvider extends ChangeNotifier {
             _enqueueProviderWelcomeIfNeeded();
           }
         } else {
-          // Sin perfiles — limpiar TODOS los mapas para evitar contaminación multicuentas
+          // Sin perfiles — limpiar TODOS los mapas para evitar
+          // contaminación multicuentas.
           _providerProfiles.clear();
           _activeProfileType = null;
           _providerVerificationStatus = null;
           _verificationStatusByType.clear();
           _rejectionReasonByType.clear();
           _providerDataByType.clear();
-          if (_user != null && _user!.role == 'PROVEEDOR') {
-            _user = _user!.copyWith(role: 'USUARIO');
-          }
+          _syncUserRole(false);
         }
       },
-      failure: (_) {}, // Silencioso
-      
+      failure: (_) {}, // Silencioso — no es crítico para el flujo principal.
     );
-    
+  }
+
+  /// Limpia los mapas de proveedor, mapea los alias del backend
+  /// (PROFESSIONAL/BUSINESS → OFICIO/NEGOCIO), llena
+  /// [_rejectionReasonByType] (extrayendo el motivo después de
+  /// "Motivo: ") y devuelve true si AL MENOS un perfil quedó en
+  /// estado APROBADO.
+  bool _parseProviderProfiles(List<dynamic> profiles) {
+    _providerProfiles.clear();
+    _providerVerificationStatus = null;
+    _verificationStatusByType.clear();
+    _rejectionReasonByType.clear();
+    _providerDataByType.clear();
+
+    bool hasAnyApproved = false;
+
+    for (final raw in profiles) {
+      final profile = raw as Map<String, dynamic>;
+      final rawType = profile['type'] as String? ?? 'OFICIO';
+      final internalType = switch (rawType) {
+        'PROFESSIONAL' => 'OFICIO',
+        'BUSINESS'     => 'NEGOCIO',
+        _              => rawType,
+      };
+      _providerProfiles.add(internalType);
+      _activeProfileType ??= internalType;
+      _providerDataByType[internalType] = profile;
+
+      // Priorizar estado APROBADO; si ninguno aprobado, mostrar el último.
+      final status = profile['verificationStatus'] as String?;
+      if (_providerVerificationStatus == null || status == 'APROBADO') {
+        _providerVerificationStatus = status;
+      }
+      if (status == 'APROBADO') hasAnyApproved = true;
+
+      // Guardar estado por tipo para que el banner distinga PENDIENTE
+      // vs RECHAZADO.
+      if (status != null) _verificationStatusByType[internalType] = status;
+
+      // Si fue rechazado, extraer el motivo de la primera notificación
+      // RECHAZADO. El mensaje viene con prefijo "Motivo: " desde el admin.
+      if (status == 'RECHAZADO') {
+        final notifications = profile['pendingNotifications'] as List<dynamic>? ?? [];
+        final rejectionNotif = notifications.firstWhere(
+          (n) => (n as Map<String, dynamic>)['type'] == 'RECHAZADO',
+          orElse: () => null,
+        );
+        if (rejectionNotif != null) {
+          final msg = (rejectionNotif as Map<String, dynamic>)['message'] as String? ?? '';
+          final idx = msg.indexOf('Motivo: ');
+          _rejectionReasonByType[internalType] =
+              idx >= 0 ? msg.substring(idx + 8) : msg;
+        }
+      }
+    }
+
+    return hasAnyApproved;
+  }
+
+  /// Alinea el `role` local del [_user] con el rol esperado según
+  /// haya o no perfiles aprobados. Solo aplica `copyWith` cuando el
+  /// rol cambia — evita notifyListeners() innecesarios.
+  void _syncUserRole(bool hasAnyApproved) {
+    if (_user == null) return;
+    final expectedRole = hasAnyApproved ? 'PROVEEDOR' : 'USUARIO';
+    if (_user!.role != expectedRole) {
+      _user = _user!.copyWith(role: expectedRole);
+    }
   }
 
   Future<bool> login(String email, String password, {bool rememberSession = false}) async {
@@ -517,7 +529,10 @@ class AuthProvider extends ChangeNotifier {
       final freshUser = await _repo.getCurrentUser();
       freshUser.when(
         success: (u) => _user = u,
-        failure: (_) {},
+        // Notificar igual: la sesión básica ya está creada (data.user);
+        // si el fetch extendido falla, la UI debe reaccionar al menos
+        // a los datos del social-login.
+        failure: (_) => notifyListeners(),
       );
       await _syncProviderStatus();
       _connectSocketForUser(_user!.id);
@@ -532,7 +547,7 @@ class AuthProvider extends ChangeNotifier {
   bool _savedAccountLimitReached = false;
   bool get savedAccountLimitReached => _savedAccountLimitReached;
 
-  String? get userRole => null;
+  String? get userRole => _user?.role;
   void clearSavedAccountLimitFlag() {
     _savedAccountLimitReached = false;
     notifyListeners();
@@ -741,8 +756,12 @@ class AuthProvider extends ChangeNotifier {
 
     result.when(
       success: (_) {
-        // El rol sigue siendo USUARIO hasta que el admin apruebe.
-        // Solo actualizamos el estado de perfiles (pendiente).
+        // El rol sigue siendo USUARIO hasta que el admin apruebe — pero
+        // localmente debemos marcar el perfil como PENDIENTE para que
+        // canBecomeRole(type) deje de devolver true inmediatamente
+        // después del registro y la UI no ofrezca volver a registrarse.
+        _providerProfiles.add(type);
+        _verificationStatusByType[type] = 'PENDIENTE';
       },
       failure: (e) => _error = e.message,
     );
@@ -846,7 +865,7 @@ class AuthProvider extends ChangeNotifier {
     // token, para que la petición DELETE viaje con la cookie/JWT vigente.
     // Falla silenciosa: si no hay red o la respuesta es 401, igual seguimos
     // con el logout local.
-    FcmService.instance.clearToken().ignore();
+    unawaited(FcmService.instance.clearToken());
 
     // Limpiar estado local inmediatamente → UI navega a WelcomeScreen sin esperar red
     _user = null;
