@@ -418,11 +418,38 @@ model Subscription {
   endDate     DateTime // Fecha de vencimiento
   graceMonths Int                @default(2) // Meses gratis otorgados
   priceUSD    Float              @default(0)
+  // @updatedAt en Prisma actualiza este campo SOLO cuando la mutación
+  // pasa por el cliente Prisma. La migración 20260517160000 agrega un
+  // trigger BEFORE UPDATE que lo asegura incluso para mutaciones por
+  // SQL crudo (cron jobs, otra app que comparta la BD, etc).
+  updatedAt   DateTime           @updatedAt @default(now())
 
   provider Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
   payments Payment[]
+  auditLog SubscriptionAuditLog[]
 
   @@map("subscriptions")
+}
+
+// Auditoría de cambios de status en suscripciones. Una fila por cada
+// transición — útil para entender cómo llegó una suscripción a un
+// estado y quién/qué la cambió (admin manual, cron de expiración, etc).
+// `changedBy` es nullable: cambios automáticos del sistema (cron de
+// expireSubscriptions) no tienen userId asociado.
+model SubscriptionAuditLog {
+  id             Int      @id @default(autoincrement())
+  subscriptionId Int
+  oldStatus      SubscriptionStatus
+  newStatus      SubscriptionStatus
+  oldPlan        SubscriptionPlan
+  newPlan        SubscriptionPlan
+  changedAt      DateTime @default(now())
+  changedBy      Int?     // userId del admin que disparó el cambio, null = sistema
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, changedAt])
+  @@map("subscription_audit_log")
 }
 
 model Payment {
