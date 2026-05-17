@@ -38,6 +38,24 @@ export class AdminService {
     return { ...p, category: { name } };
   }
 
+  // ── DASHBOARD STATS (materialized view) ──────────────────
+  // Lee admin_dashboard_stats (migración 20260517170000_optimizations_part5).
+  // Una sola fila precomputada con counts/sumas; los aggregates ad-hoc
+  // del dashboard antiguo eran ~10 queries cada vez.
+  async getDashboardStats() {
+    const rows = await this.prisma.$queryRaw<any[]>`
+      SELECT * FROM admin_dashboard_stats
+    `;
+    return rows[0] ?? null;
+  }
+
+  // Refresca la MV. CONCURRENTLY no bloquea lecturas — el dashboard
+  // sigue respondiendo con datos viejos mientras el refresh corre.
+  async refreshDashboardStats() {
+    await this.prisma.$executeRaw`SELECT refresh_admin_dashboard_stats()`;
+    return { success: true, refreshedAt: new Date().toISOString() };
+  }
+
   // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
     const now          = new Date();

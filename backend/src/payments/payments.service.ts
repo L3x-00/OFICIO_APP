@@ -167,6 +167,11 @@ export class PaymentsService {
     endDate.setMonth(endDate.getMonth() + 1);
 
     await this.prisma.$transaction(async (tx) => {
+      // Marcar al admin como autor de cambios de subscriptions dentro
+      // de esta tx — el trigger subscriptions_audit_trg lee este GUC
+      // para poblar subscription_audit_log.changedBy.
+      await tx.$executeRaw`SELECT set_config('app.current_user_id', ${adminId.toString()}, true)`;
+
       // 1. Marcar pago aprobado
       await tx.yapePayment.update({
         where: { id: paymentId },
@@ -260,16 +265,20 @@ export class PaymentsService {
       throw new BadRequestException('No tienes un plan activo que cancelar');
     }
 
-    await this.prisma.$transaction([
-      this.prisma.subscription.update({
+    // El usuario inicia su propia cancelación: registramos su userId en
+    // el audit log via SET LOCAL — distingue user-driven vs admin-driven
+    // vs sistema-cron (que queda NULL).
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.current_user_id', ${userId.toString()}, true)`;
+      await tx.subscription.update({
         where: { providerId: provider.id },
         data: { status: 'CANCELADA', plan: 'GRATIS' },
-      }),
-      this.prisma.provider.update({
+      });
+      await tx.provider.update({
         where: { id: provider.id },
         data: { planPriority: 3 },
-      }),
-    ]);
+      });
+    });
 
     const planLabel = provider.subscription.plan.charAt(0) + provider.subscription.plan.slice(1).toLowerCase();
     this.events.emitNotification({
@@ -300,14 +309,20 @@ export class PaymentsService {
     if (payment.status !== YapePaymentStatus.PENDING)
       throw new BadRequestException('Este pago ya fue procesado');
 
-    await this.prisma.yapePayment.update({
-      where: { id: paymentId },
-      data: {
-        status:             YapePaymentStatus.REJECTED,
-        rejectionReason:    reason ?? null,
-        reviewedAt:         new Date(),
-        reviewedByAdminId:  adminId,
-      },
+    // El reject no cambia subscriptions.status directamente, pero envolvemos
+    // en tx + SET LOCAL por consistencia: si alguna lógica futura toca
+    // subscriptions desde aquí, el audit log atribuye al admin correcto.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.current_user_id', ${adminId.toString()}, true)`;
+      await tx.yapePayment.update({
+        where: { id: paymentId },
+        data: {
+          status:             YapePaymentStatus.REJECTED,
+          rejectionReason:    reason ?? null,
+          reviewedAt:         new Date(),
+          reviewedByAdminId:  adminId,
+        },
+      });
     });
 
     this.events.emitNotification({

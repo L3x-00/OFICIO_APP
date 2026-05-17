@@ -384,9 +384,15 @@ model Provider {
 
   // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
-  // Índices para los filtros más frecuentes del listado público
+  // Índices para los filtros más frecuentes del listado público.
+  // La migración 20260517170000 agrega además:
+  //   - providers_location_geog_gist (GiST sobre columna generada PostGIS)
+  //   - providers_search_tsv_gin (GIN sobre tsvector spanish)
+  //   - providers_businessname_trgm / description_trgm (trigram para typos)
+  // Esas no se declaran aquí porque Prisma no las puede expresar.
   @@index([isVisible, verificationStatus]) // filtro base de todos los queries públicos
   @@index([isVisible, verificationStatus, averageRating]) // + ordenamiento por rating
+  @@index([isVisible, verificationStatus, localityId]) // + filtro de ubicación (caso típico post-Parte 2)
   @@index([type]) // filtro por tipo (OFICIO / NEGOCIO)
   @@index([localityId]) // filtro por localidad
   @@map("providers")
@@ -582,6 +588,7 @@ model ProviderAnalytic {
   provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId, eventType]) // conteo de clics por tipo
+  @@index([providerId, eventType, createdAt]) // dashboard: evento × rango de fechas
   @@index([createdAt]) // filtros por rango de fechas en analytics
   @@map("provider_analytics")
 }
@@ -743,6 +750,7 @@ model ServiceRequest {
   offers   Offer[]
 
   @@index([userId])
+  @@index([userId, status]) // "mis solicitudes activas"
   @@index([status])
   @@index([categoryId])
   @@index([status, categoryId, expiresAt])

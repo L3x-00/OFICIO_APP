@@ -41,6 +41,21 @@ export class AdminController {
     return this.adminService.getAnalytics(days ? parseInt(days) : 30);
   }
 
+  // ── DASHBOARD STATS (materialized view) ───────────────────
+  // Lee de admin_dashboard_stats (migración 20260517170000). Una sola
+  // fila precomputada — ~10x más rápido que los aggregates ad-hoc.
+  @Get('dashboard/stats')
+  getDashboardStats() {
+    return this.adminService.getDashboardStats();
+  }
+
+  // Fuerza el refresh manual (botón "Actualizar" del panel admin).
+  // La automatización en background queda para pg_cron o un @Cron.
+  @Post('dashboard/refresh')
+  refreshDashboardStats() {
+    return this.adminService.refreshDashboardStats();
+  }
+
   // ── GESTIÓN DE PROVEEDORES ────────────────────────────────
 
   @Get('providers')
