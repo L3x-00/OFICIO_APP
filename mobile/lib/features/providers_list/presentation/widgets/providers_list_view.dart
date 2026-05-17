@@ -7,6 +7,8 @@ import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
+import '../../../showcase/showcase_data.dart';
+import '../../../showcase/showcase_overlay.dart';
 import '../../domain/models/provider_model.dart';
 import '../providers/providers_provider.dart';
 import '../screens/provider_detail_screen.dart';
@@ -241,7 +243,7 @@ class ProvidersListView extends StatelessWidget {
         }
       }
 
-      return switch (prov.viewMode) {
+      final card = switch (prov.viewMode) {
         ViewMode.lista => ServiceCardList(
           provider: p,
           isOwnCard: isOwnCard,
@@ -270,6 +272,20 @@ class ProvidersListView extends StatelessWidget {
           onChat: isOwnCard ? null : openChat,
         ),
       };
+
+      // Solo la primera tarjeta es el target del paso "Tarjeta del
+      // proveedor" — el spotlight necesita una sola key por paso.
+      if (i == 0) {
+        final isGuest = auth.isGuest || auth.user == null;
+        return ShowcaseTarget(
+          step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
+              .firstWhere((s) => s.key == kShowcaseProviderCard),
+          isLast: isLastShowcaseStep(kShowcaseProviderCard, isGuest: isGuest),
+          targetHeight: 200, targetWidth: double.infinity,
+          child: card,
+        );
+      }
+      return card;
     }
 
     final isMosaicos = prov.viewMode == ViewMode.mosaicos;

@@ -5,6 +5,8 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../localities/data/dynamic_locations.dart';
 import '../../../referrals/presentation/screens/referral_screen.dart';
+import '../../../showcase/showcase_data.dart';
+import '../../../showcase/showcase_overlay.dart';
 import '../providers/providers_provider.dart';
 import '../sheets/filter_sheet.dart';
 import '../widgets/filter_bar.dart';
@@ -103,10 +105,22 @@ class _ProvidersViewState extends State<_ProvidersView>
   Widget build(BuildContext context) {
     super.build(context);
     final c = context.colors;
+    final auth    = context.watch<AuthProvider>();
+    final isGuest = auth.isGuest || auth.user == null;
+    final userId  = auth.user?.id;
 
-    return Scaffold(
+    return HomeShowcaseHost(
+      userId:  userId,
+      isGuest: isGuest,
+      child: Scaffold(
       backgroundColor: c.bg,
-      floatingActionButton: const JoinUsFAB(),
+      floatingActionButton: ShowcaseTarget(
+        step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseJoinUsFab),
+        isLast: isLastShowcaseStep(kShowcaseJoinUsFab, isGuest: isGuest),
+        targetHeight: 56,
+        targetWidth: 56,
+        child: const JoinUsFAB(),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         backgroundColor: c.bg,
@@ -136,47 +150,62 @@ class _ProvidersViewState extends State<_ProvidersView>
               ),
             ),
             const Spacer(),
-            // Monedas a la derecha del título
-            Consumer<AuthProvider>(
-              builder: (_, auth, _) {
-                final coins = auth.user?.coins ?? 0;
-                return GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ReferralScreen(),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.monetization_on_rounded,
-                          color: AppColors.amber, size: 20),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$coins',
-                        style: const TextStyle(
-                          color: AppColors.amber,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
+            // Monedas a la derecha del título — wrapper showcase
+            // (solo aplica al deck registered; en guest la key no
+            // aparece en startShowCase y el spotlight nunca se
+            // dispara sobre ella).
+            ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseCoinsIcon),
+              isLast: isLastShowcaseStep(kShowcaseCoinsIcon, isGuest: isGuest),
+              targetHeight: 28, targetWidth: 60,
+              child: Consumer<AuthProvider>(
+                builder: (_, auth, _) {
+                  final coins = auth.user?.coins ?? 0;
+                  return GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ReferralScreen(),
                       ),
-                    ],
-                  ),
-                );
-              },
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.monetization_on_rounded,
+                            color: AppColors.amber, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$coins',
+                          style: const TextStyle(
+                            color: AppColors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
         actions: [
-          Consumer<ProvidersProvider>(
-            builder: (_, prov, _) => IconButton(
-              tooltip: 'Filtros avanzados',
-              icon: Badge(
-                isLabelVisible: prov.hasActiveFilters,
-                backgroundColor: AppColors.amber,
-                child: Icon(Icons.tune_rounded, color: c.textPrimary),
+          // Botón de filtros — el deck lo destaca como "Filtros
+          // avanzados". Mismo spec en registered y guest.
+          ShowcaseTarget(
+            step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseFiltersIcon),
+            isLast: isLastShowcaseStep(kShowcaseFiltersIcon, isGuest: isGuest),
+            targetHeight: 40, targetWidth: 40,
+            child: Consumer<ProvidersProvider>(
+              builder: (_, prov, _) => IconButton(
+                tooltip: 'Filtros avanzados',
+                icon: Badge(
+                  isLabelVisible: prov.hasActiveFilters,
+                  backgroundColor: AppColors.amber,
+                  child: Icon(Icons.tune_rounded, color: c.textPrimary),
+                ),
+                onPressed: () => _showFilterSheet(context, prov),
               ),
-              onPressed: () => _showFilterSheet(context, prov),
             ),
           ),
         ],
@@ -197,11 +226,19 @@ class _ProvidersViewState extends State<_ProvidersView>
             ),
             const _SearchAndLocationRow(),
             const FilterBar(),
-            const SubastaBanner(),
+            // Banner subasta wrapped — paso "publica tus necesidades"
+            // del deck registered (no aparece en guest).
+            ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseSubastaBanner),
+              isLast: isLastShowcaseStep(kShowcaseSubastaBanner, isGuest: isGuest),
+              targetHeight: 90, targetWidth: 360,
+              child: const SubastaBanner(),
+            ),
             const OffersBanner(),
             const Expanded(child: ProvidersListView()),
           ],
         ),
+      ),
       ),
     );
   }
@@ -218,15 +255,31 @@ class _SearchAndLocationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prov = context.watch<ProvidersProvider>();
+    final prov    = context.watch<ProvidersProvider>();
+    final auth    = context.watch<AuthProvider>();
+    final isGuest = auth.isGuest || auth.user == null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Row(
         children: [
-          const Expanded(child: CollapsibleSearchBar()),
+          Expanded(
+            child: ShowcaseTarget(
+              step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
+                  .firstWhere((s) => s.key == kShowcaseSearchBar),
+              isLast: isLastShowcaseStep(kShowcaseSearchBar, isGuest: isGuest),
+              targetHeight: 44, targetWidth: 240,
+              child: const CollapsibleSearchBar(),
+            ),
+          ),
           const SizedBox(width: 8),
-          _CompactLocationChip(prov: prov),
+          ShowcaseTarget(
+            step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
+                .firstWhere((s) => s.key == kShowcaseLocationChip),
+            isLast: isLastShowcaseStep(kShowcaseLocationChip, isGuest: isGuest),
+            targetHeight: 36, targetWidth: 120,
+            child: _CompactLocationChip(prov: prov),
+          ),
         ],
       ),
     );

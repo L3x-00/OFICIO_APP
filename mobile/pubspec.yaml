@@ -35,6 +35,11 @@ dependencies:
   # en Android/iOS). Usado en ProviderDetailSheet → ícono compartir.
   share_plus: ^10.1.4
 
+  # Feature discovery / coach marks — tutorial spotlight para
+  # usuarios nuevos (registrados e invitados) en la pantalla
+  # principal. Orquestado por features/showcase/.
+  showcaseview: ^3.0.0
+
   # Navegación y utilidades
   go_router: ^14.8.1
   image_picker: ^1.2.1

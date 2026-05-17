@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../theme/app_theme_colors.dart';
 import '../../features/notifications/presentation/providers/notifications_provider.dart';
+import '../../features/showcase/showcase_data.dart';
+import '../../features/showcase/showcase_overlay.dart';
 
 /// Shell del [StatefulShellRoute] — Scaffold con bottom navigation que
 /// preserva el stack y estado de cada uno de los 5 tabs principales.
@@ -33,6 +35,16 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    // ShowcaseRoot envuelve todo el shell — así los `Showcase` del
+    // bottom nav y los de la pantalla principal comparten el mismo
+    // `ShowCaseWidget` ancestro. `HomeShowcaseHost` (dentro de
+    // ProvidersScreen) se encarga del trigger y del markSeen.
+    return ShowcaseRoot(
+      child: _buildShell(context),
+    );
+  }
+
+  Widget _buildShell(BuildContext context) {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -97,18 +109,41 @@ class _BottomNav extends StatelessWidget {
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'Explorar'),
-          const BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), activeIcon: Icon(Icons.favorite_rounded), label: 'Favoritos'),
-          const BottomNavigationBarItem(icon: Icon(Icons.local_offer_outlined), activeIcon: Icon(Icons.local_offer_rounded), label: 'Ofertas'),
+          BottomNavigationBarItem(
+            label: 'Favoritos',
+            icon: ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseFavTab),
+              isLast: isLastShowcaseStep(kShowcaseFavTab, isGuest: false),
+              targetHeight: 32, targetWidth: 32,
+              child: const Icon(Icons.favorite_border_rounded),
+            ),
+            activeIcon: const Icon(Icons.favorite_rounded),
+          ),
+          BottomNavigationBarItem(
+            label: 'Ofertas',
+            icon: ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseOffersTab),
+              isLast: isLastShowcaseStep(kShowcaseOffersTab, isGuest: false),
+              targetHeight: 32, targetWidth: 32,
+              child: const Icon(Icons.local_offer_outlined),
+            ),
+            activeIcon: const Icon(Icons.local_offer_rounded),
+          ),
           BottomNavigationBarItem(
             label: 'Alertas',
-            icon: Consumer<NotificationsProvider>(
-              builder: (_, notifs, _) => Badge(
-                isLabelVisible: notifs.unreadCount > 0,
-                label: Text(
-                  notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
-                  style: const TextStyle(fontSize: 10),
+            icon: ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseAlertsTab),
+              isLast: isLastShowcaseStep(kShowcaseAlertsTab, isGuest: false),
+              targetHeight: 32, targetWidth: 32,
+              child: Consumer<NotificationsProvider>(
+                builder: (_, notifs, _) => Badge(
+                  isLabelVisible: notifs.unreadCount > 0,
+                  label: Text(
+                    notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  child: const Icon(Icons.notifications_none_rounded),
                 ),
-                child: const Icon(Icons.notifications_none_rounded),
               ),
             ),
             activeIcon: Consumer<NotificationsProvider>(
@@ -122,7 +157,16 @@ class _BottomNav extends StatelessWidget {
               ),
             ),
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'Perfil'),
+          BottomNavigationBarItem(
+            label: 'Perfil',
+            icon: ShowcaseTarget(
+              step: kShowcaseStepsGuest.firstWhere((s) => s.key == kShowcaseProfileTab),
+              isLast: isLastShowcaseStep(kShowcaseProfileTab, isGuest: true),
+              targetHeight: 32, targetWidth: 32,
+              child: const Icon(Icons.person_outline_rounded),
+            ),
+            activeIcon: const Icon(Icons.person_rounded),
+          ),
         ],
       ),
     );
