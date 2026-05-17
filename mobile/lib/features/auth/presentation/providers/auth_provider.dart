@@ -9,40 +9,39 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/socket_service.dart';
 import '../../../../core/services/fcm_service.dart';
+import 'auth/auth_models.dart';
 import 'registration_provider.dart';
 
-/// Estado de navegación del usuario
-enum AppNavigationState {
-  loading,                // Verificando sesión guardada
-  unauthenticated,        // Sin sesión
-  guest,                  // Navega como invitado (sin cuenta)
-  needsEmailVerification, // Registrado pero email no verificado
-  needsOnboarding,        // Email verificado pero sin elegir rol
-  authenticated,          // Listo para usar la app
-}
+// Re-export para que el resto de la app pueda seguir importando solo
+// `auth_provider.dart` y resolver `AppNavigationState` y los payload
+// types sin tocar nada más.
+export 'auth/auth_models.dart';
 
-class TrustRejectionPayload {
-  final String reason;
-  final String profileType;
-  final String? rejectedAt;
-  const TrustRejectionPayload({required this.reason, required this.profileType, this.rejectedAt});
-}
+// Splits de responsabilidad — `part of` para que cada mixin acceda al
+// estado privado de la clase sin romper la encapsulación de la API
+// pública (la única forma en Dart de tener mixins + private state es
+// compartir library; con import puro habría que exponer todo o
+// duplicar abstracciones que solo añaden ruido).
+part 'auth/auth_socket_mixin.dart';
+part 'auth/auth_provider_logic_mixin.dart';
+part 'auth/auth_recovery_mixin.dart';
 
-class PlanActivationPayload {
-  final String plan;
-  final String title;
-  const PlanActivationPayload({required this.plan, required this.title});
-}
+class AuthProvider extends ChangeNotifier
+    with AuthSocketMixin, AuthProviderLogicMixin, AuthRecoveryMixin {
+  @override
+  final AuthRepository _repo = AuthRepository();
 
-class AuthProvider extends ChangeNotifier {
-  final _repo = AuthRepository();
-
+  @override
   UserModel? _user;
   bool _isInitialized = false;
+  @override
   bool _needsOnboarding = false;
+  @override
   bool _needsEmailVerification = false;
   bool _isGuest = false;
+  @override
   String? _error;
+  @override
   bool _isLoading = false;
 
   // ── Registro pendiente ───────────────────────────────────────
@@ -50,6 +49,7 @@ class AuthProvider extends ChangeNotifier {
   // adjuntamos vía `attachRegistration` desde main.dart para evitar
   // ciclos de dependencia y para no acoplar la sesión activa con el
   // flujo transitorio de registro.
+  @override
   RegistrationProvider? _registration;
 
   void attachRegistration(RegistrationProvider reg) {
@@ -58,10 +58,12 @@ class AuthProvider extends ChangeNotifier {
 
   /// Compat: getter delegado al RegistrationProvider.
   String? get pendingEmail => _registration?.pendingEmail;
+  @override
   String? get _pendingRegistrationId => _registration?.pendingId;
 
   /// true cuando el servidor notificó que esta cuenta fue desactivada.
   /// _AppRoot escucha este flag para mostrar el diálogo de desactivación.
+  @override
   bool _wasDeactivated = false;
   bool get wasDeactivated => _wasDeactivated;
 
@@ -71,21 +73,29 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ── Multi-perfil de proveedor ─────────────────────────────
-  // Almacena los tipos de perfil que tiene el usuario: 'OFICIO', 'NEGOCIO'
+  // Almacena los tipos de perfil que tiene el usuario: 'OFICIO', 'NEGOCIO'.
+  @override
   final Set<String> _providerProfiles = {};
+  @override
   String? _activeProfileType;
-  // Estado de verificación sincronizado con el backend
+  // Estado de verificación sincronizado con el backend.
+  @override
   String? _providerVerificationStatus; // 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
-  // Estado y motivo de rechazo por tipo de perfil
-  final Map<String, String>              _verificationStatusByType = {}; // tipo → status
-  final Map<String, String>              _rejectionReasonByType    = {}; // tipo → motivo
-  final Map<String, Map<String, dynamic>> _providerDataByType      = {}; // tipo → datos completos
+  // Estado y motivo de rechazo por tipo de perfil.
+  @override
+  final Map<String, String>               _verificationStatusByType = {};
+  @override
+  final Map<String, String>               _rejectionReasonByType    = {};
+  @override
+  final Map<String, Map<String, dynamic>> _providerDataByType       = {};
 
-  /// Cuando el admin recién aprueba un perfil, guardamos aquí el `providerId`
-  /// + displayName para que la pantalla principal (no el panel) muestre el
-  /// modal de bienvenida en tiempo real. Persiste hasta que el listener lo
-  /// consume vía [clearPendingProviderApproval]. La gate de "ya visto" la
-  /// administra [WelcomeProviderPlanModal] vía SharedPreferences.
+  /// Cuando el admin recién aprueba un perfil, guardamos aquí el
+  /// `providerId` + displayName para que la pantalla principal (no el
+  /// panel) muestre el modal de bienvenida en tiempo real. Persiste
+  /// hasta que el listener lo consume vía [clearPendingProviderApproval].
+  /// La gate de "ya visto" la administra `WelcomeProviderPlanModal` vía
+  /// SharedPreferences.
+  @override
   ProviderApprovalPayload? _pendingProviderApproval;
   ProviderApprovalPayload? get pendingProviderApproval => _pendingProviderApproval;
 
@@ -103,31 +113,31 @@ class AuthProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
-  Set<String> get providerProfiles          => Set.unmodifiable(_providerProfiles);
-  String?     get activeProfileType         => _activeProfileType;
+  Set<String> get providerProfiles           => Set.unmodifiable(_providerProfiles);
+  String?     get activeProfileType          => _activeProfileType;
   String?     get providerVerificationStatus => _providerVerificationStatus;
   bool get hasOficioProfile  => _providerProfiles.contains('OFICIO');
   bool get hasNegocioProfile => _providerProfiles.contains('NEGOCIO');
-  /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO
+  /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO.
   bool get hasApprovedProvider =>
       _verificationStatusByType.values.any((s) => s == 'APROBADO');
 
-  /// Devuelve el status de verificación para un tipo específico ('OFICIO'|'NEGOCIO')
+  /// Devuelve el status de verificación para un tipo específico ('OFICIO'|'NEGOCIO').
   String? verificationStatusFor(String type) => _verificationStatusByType[type];
 
-  /// Devuelve el motivo de rechazo para un tipo específico (null si no fue rechazado)
+  /// Devuelve el motivo de rechazo para un tipo específico (null si no fue rechazado).
   String? rejectionReasonFor(String type) => _rejectionReasonByType[type];
 
-  /// Devuelve los datos completos del perfil de proveedor para pre-llenar el formulario
+  /// Devuelve los datos completos del perfil de proveedor para pre-llenar el formulario.
   Map<String, dynamic>? providerDataFor(String type) => _providerDataByType[type];
 
-  /// Refresca el estado del proveedor desde el servidor (útil post-validación)
+  /// Refresca el estado del proveedor desde el servidor (útil post-validación).
   Future<void> refreshProviderStatus() async {
     await _syncProviderStatus();
     notifyListeners();
   }
 
-  /// Elimina la cuenta del usuario en cascada y hace logout local
+  /// Elimina la cuenta del usuario en cascada y hace logout local.
   Future<bool> deleteAccount() async {
     try {
       SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
@@ -150,15 +160,17 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Devuelve true si el usuario autenticado puede registrar un nuevo perfil
-  /// del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no lo tiene.
+  /// Devuelve true si el usuario autenticado puede registrar un nuevo
+  /// perfil del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no
+  /// lo tiene.
   bool canBecomeRole(String type) => !_providerProfiles.contains(type);
 
-  /// true si al menos uno de los tipos de proveedor está disponible para registrar.
+  /// true si al menos uno de los tipos de proveedor está disponible
+  /// para registrar.
   bool get canBecomeAnyProvider =>
       canBecomeRole('OFICIO') || canBecomeRole('NEGOCIO');
 
-  /// Estado calculado para la navegación
+  /// Estado calculado para la navegación.
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
     if (_user == null && _isGuest) return AppNavigationState.guest;
@@ -168,22 +180,24 @@ class AuthProvider extends ChangeNotifier {
     return AppNavigationState.authenticated;
   }
 
-  /// Permite navegar la app sin registrarse
+  /// Permite navegar la app sin registrarse.
   void browseAsGuest() {
     _isGuest = true;
     notifyListeners();
   }
 
-    Future<void> initialize() async {
+  // ── Bootstrap ──────────────────────────────────────────────
+
+  Future<void> initialize() async {
     _user = await _repo.restoreSession();
     if (_user != null) {
-      // Refrescar token ANTES de conectar el socket y sincronizar
+      // Refrescar token ANTES de conectar el socket y sincronizar.
       await _refreshUserToken();
       await _syncProviderStatus();
-      // Caso de aprobación recibida en background (FCM): la app puede abrir
-      // recién aquí. Si el sync revela un perfil APROBADO, encolamos el
-      // welcome modal — el gate de SharedPreferences evita re-mostrarlo si
-      // el usuario ya lo vio.
+      // Caso de aprobación recibida en background (FCM): la app puede
+      // abrir recién aquí. Si el sync revela un perfil APROBADO,
+      // encolamos el welcome modal — el gate de SharedPreferences
+      // evita re-mostrarlo si el usuario ya lo vio.
       _enqueueProviderWelcomeIfNeeded();
       _connectSocketForUser(_user!.id);
     }
@@ -191,132 +205,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-    // ── Socket ─────────────────────────────────────────────────
-
-  Future<void> _connectSocketForUser(int userId) async {
-    final socket = SocketService.instance;
-    // Siempre re-registrar listeners (pueden haber sido limpiados en logout anterior)
-    socket.removeDeactivationListener(_handleRemoteDeactivation);
-    socket.removeNotificationListener(_handleRemoteNotification);
-    socket.addDeactivationListener(_handleRemoteDeactivation);
-    socket.addNotificationListener(_handleRemoteNotification);
-    
-    // Obtener el token JWT guardado para autenticar el WebSocket
-    final token = await AuthLocalStorage.getAccessToken();
-    
-    // Forzar reconexión con la sala correcta cada vez que cambia el userId
-    socket.reconnectForUser(DioClient.baseUrl, userId, token ?? '');
-  }
-
-  /// Callback que el SocketService invoca cuando el servidor emite
-  /// `userDeactivated` con el userId de esta sesión.
-  void _handleRemoteDeactivation(int userId) {
-    if (_user?.id != userId) return;
-    _wasDeactivated = true;
-    // logout() es async pero no necesitamos await aquí;
-    // la UI reacciona al cambio de navigationState.
-    logout();
-  }
-
-  /// Callback que el SocketService invoca cuando el servidor emite
-  /// el evento `notification` genérico.
-  /// Filtra por targetUserId y reacciona a PROVIDER_APPROVED / PROVIDER_REJECTED.
-  void _handleRemoteNotification(Map<String, dynamic> payload) {
-    // Comparación type-safe: el socket puede enviar int o double para userId
-    final rawTargetId = payload['targetUserId'];
-    if (rawTargetId != null) {
-      final targetId = rawTargetId is int
-          ? rawTargetId
-          : int.tryParse(rawTargetId.toString().replaceAll('.0', ''));
-      if (targetId != _user?.id) return;
-    }
-
-    final type = payload['type'] as String?;
-
-    if (type == 'PLAN_APROBADO' || type == 'PLAN_RECHAZADO') {
-      final targetProfileType = payload['targetProfileType'] as String?;
-      if (targetProfileType != null && targetProfileType != _activeProfileType) return;
-      _syncProviderStatus().then((_) {
-        if (type == 'PLAN_APROBADO') {
-          // Backend ahora envía `plan` explícito (ESTANDAR/PREMIUM).
-          // Mantenemos el regex como fallback para payloads legacy o
-          // FCM background con shape distinto.
-          final explicit = (payload['plan'] as String?)?.toUpperCase();
-          final rawBody  = payload['body'] as String? ?? '';
-          final match    = RegExp(r'[Pp]lan (\w+)').firstMatch(rawBody);
-          final planName = explicit
-              ?? match?.group(1)?.toUpperCase()
-              ?? 'ESTANDAR';
-          _pendingPlanPromotion = PlanActivationPayload(
-            plan: planName,
-            title: payload['title'] as String? ?? '¡Plan activado!',
-          );
-        }
-        notifyListeners();
-      });
-      return;
-    }
-
-    if (type == 'PROVIDER_APPROVED') {
-      // Sincronizar estado Y refrescar token para que el JWT tenga role:PROVEEDOR
-      _syncProviderStatus().then((_) async {
-        await _refreshUserToken();
-        // Encolar el modal de bienvenida — la pantalla principal lo
-        // consume en cuanto este notifyListeners se propague.
-        _enqueueProviderWelcomeIfNeeded(
-          preferredType: payload['targetProfileType'] as String?,
-        );
-        notifyListeners();
-      });
-      return;
-    }
-
-    if (type == 'PROVIDER_REJECTED') {
-      _syncProviderStatus().then((_) => notifyListeners());
-      return;
-    }
-
-    if (type == 'TRUST_APPROVED' || type == 'TRUST_REJECTED') {
-      _syncProviderStatus().then((_) {
-        if (type == 'TRUST_REJECTED') {
-          _pendingTrustRejection = TrustRejectionPayload(
-            reason: payload['body'] as String? ?? '',
-            profileType: payload['targetProfileType'] as String? ?? 'OFICIO',
-            rejectedAt: payload['rejectedAt'] as String?,
-          );
-        }
-        notifyListeners();
-      });
-    }
-  }
-
-  /// Si tras la sincronización hay un perfil de proveedor APROBADO, arma
-  /// el [ProviderApprovalPayload] para que la pantalla principal abra el
-  /// modal de bienvenida. Prefiere el `preferredType` (viene del evento
-  /// socket); si no, toma el primer aprobado disponible.
-  void _enqueueProviderWelcomeIfNeeded({String? preferredType}) {
-    final approvedTypes = _verificationStatusByType.entries
-        .where((e) => e.value == 'APROBADO')
-        .map((e) => e.key)
-        .toList();
-    if (approvedTypes.isEmpty) return;
-    final type = approvedTypes.contains(preferredType)
-        ? preferredType!
-        : approvedTypes.first;
-    final data = _providerDataByType[type];
-    if (data == null) return;
-    final id = data['id'];
-    if (id is! int) return;
-    final name = (data['businessName'] as String?) ?? _user?.firstName ?? '';
-    _pendingProviderApproval = ProviderApprovalPayload(
-      providerId:  id,
-      displayName: name,
-      type:        type,
-    );
-  }
-
-  /// Refresca el access token para que el JWT refleje el nuevo rol (PROVEEDOR).
-  /// Silencioso en caso de error.
+  /// Refresca el access token para que el JWT refleje el nuevo rol
+  /// (PROVEEDOR). Silencioso en caso de error.
+  @override
   Future<void> _refreshUserToken() async {
     final result = await _repo.refreshTokens();
     result.when(
@@ -330,6 +221,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ── Trust rejection overlay ───────────────────────────────
+  @override
   TrustRejectionPayload? _pendingTrustRejection;
   TrustRejectionPayload? get pendingTrustRejection => _pendingTrustRejection;
 
@@ -339,6 +231,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ── Plan promotion overlay ────────────────────────────────
+  @override
   PlanActivationPayload? _pendingPlanPromotion;
   PlanActivationPayload? get pendingPlanPromotion => _pendingPlanPromotion;
 
@@ -347,107 +240,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sincroniza el estado del proveedor con el backend.
-  /// También refresca el rol del usuario para reflejar aprobaciones/rechazos.
-  /// Silencioso en caso de error (no crítico para el flujo principal).
-  Future<void> _syncProviderStatus() async {
-    final result = await _repo.getMyProviderStatus();
-    result.when(
-      success: (data) {
-        if (data['hasProvider'] == true) {
-          final profiles = (data['profiles'] as List<dynamic>?) ?? const [];
-          final hasAnyApproved = _parseProviderProfiles(profiles);
-          _syncUserRole(hasAnyApproved);
-
-          // Encolar el modal de bienvenida si hay un perfil aprobado y
-          // todavía no se mostró (el flag persistido en SharedPreferences
-          // dentro de WelcomeProviderPlanModal evita repetir).
-          if (hasAnyApproved && _pendingProviderApproval == null) {
-            _enqueueProviderWelcomeIfNeeded();
-          }
-        } else {
-          // Sin perfiles — limpiar TODOS los mapas para evitar
-          // contaminación multicuentas.
-          _providerProfiles.clear();
-          _activeProfileType = null;
-          _providerVerificationStatus = null;
-          _verificationStatusByType.clear();
-          _rejectionReasonByType.clear();
-          _providerDataByType.clear();
-          _syncUserRole(false);
-        }
-      },
-      failure: (_) {}, // Silencioso — no es crítico para el flujo principal.
-    );
-  }
-
-  /// Limpia los mapas de proveedor, mapea los alias del backend
-  /// (PROFESSIONAL/BUSINESS → OFICIO/NEGOCIO), llena
-  /// [_rejectionReasonByType] (extrayendo el motivo después de
-  /// "Motivo: ") y devuelve true si AL MENOS un perfil quedó en
-  /// estado APROBADO.
-  bool _parseProviderProfiles(List<dynamic> profiles) {
-    _providerProfiles.clear();
-    _providerVerificationStatus = null;
-    _verificationStatusByType.clear();
-    _rejectionReasonByType.clear();
-    _providerDataByType.clear();
-
-    bool hasAnyApproved = false;
-
-    for (final raw in profiles) {
-      final profile = raw as Map<String, dynamic>;
-      final rawType = profile['type'] as String? ?? 'OFICIO';
-      final internalType = switch (rawType) {
-        'PROFESSIONAL' => 'OFICIO',
-        'BUSINESS'     => 'NEGOCIO',
-        _              => rawType,
-      };
-      _providerProfiles.add(internalType);
-      _activeProfileType ??= internalType;
-      _providerDataByType[internalType] = profile;
-
-      // Priorizar estado APROBADO; si ninguno aprobado, mostrar el último.
-      final status = profile['verificationStatus'] as String?;
-      if (_providerVerificationStatus == null || status == 'APROBADO') {
-        _providerVerificationStatus = status;
-      }
-      if (status == 'APROBADO') hasAnyApproved = true;
-
-      // Guardar estado por tipo para que el banner distinga PENDIENTE
-      // vs RECHAZADO.
-      if (status != null) _verificationStatusByType[internalType] = status;
-
-      // Si fue rechazado, extraer el motivo de la primera notificación
-      // RECHAZADO. El mensaje viene con prefijo "Motivo: " desde el admin.
-      if (status == 'RECHAZADO') {
-        final notifications = profile['pendingNotifications'] as List<dynamic>? ?? [];
-        final rejectionNotif = notifications.firstWhere(
-          (n) => (n as Map<String, dynamic>)['type'] == 'RECHAZADO',
-          orElse: () => null,
-        );
-        if (rejectionNotif != null) {
-          final msg = (rejectionNotif as Map<String, dynamic>)['message'] as String? ?? '';
-          final idx = msg.indexOf('Motivo: ');
-          _rejectionReasonByType[internalType] =
-              idx >= 0 ? msg.substring(idx + 8) : msg;
-        }
-      }
-    }
-
-    return hasAnyApproved;
-  }
-
-  /// Alinea el `role` local del [_user] con el rol esperado según
-  /// haya o no perfiles aprobados. Solo aplica `copyWith` cuando el
-  /// rol cambia — evita notifyListeners() innecesarios.
-  void _syncUserRole(bool hasAnyApproved) {
-    if (_user == null) return;
-    final expectedRole = hasAnyApproved ? 'PROVEEDOR' : 'USUARIO';
-    if (_user!.role != expectedRole) {
-      _user = _user!.copyWith(role: expectedRole);
-    }
-  }
+  // ── Login / Logout ─────────────────────────────────────────
 
   Future<bool> login(String email, String password, {bool rememberSession = false}) async {
     _isGuest = false;
@@ -465,7 +258,7 @@ class AuthProvider extends ChangeNotifier {
       failure: (e) => _error = e.message,
     );
 
-    // Limpiar estado de cuenta anterior antes de sincronizar nueva
+    // Limpiar estado de cuenta anterior antes de sincronizar nueva.
     if (result.isSuccess && _user != null) {
       _providerProfiles.clear();
       _activeProfileType = null;
@@ -476,7 +269,7 @@ class AuthProvider extends ChangeNotifier {
       _connectSocketForUser(_user!.id);
     }
 
-    // Guardar cuenta si el usuario lo solicitó
+    // Guardar cuenta si el usuario lo solicitó.
     if (result.isSuccess && rememberSession && _user != null) {
       final accessToken  = await AuthLocalStorage.getAccessToken();
       final refreshToken = await AuthLocalStorage.getRefreshToken();
@@ -500,7 +293,6 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
-  // ── LOGIN SOCIAL ────────────────────────────────────────
   Future<bool> loginWithSocial(String idToken) async {
     _isGuest = false;
     _isLoading = true;
@@ -512,7 +304,7 @@ class AuthProvider extends ChangeNotifier {
     result.when(
       success: (data) {
         _user = data.user;
-        // Nuevo usuario → ir a OnboardingScreen para elegir rol/tipo de cuenta
+        // Nuevo usuario → ir a OnboardingScreen para elegir rol/tipo de cuenta.
         _needsOnboarding = data.isNewUser || (data.user.role.isEmpty);
       },
       failure: (e) => _error = e.message,
@@ -524,8 +316,8 @@ class AuthProvider extends ChangeNotifier {
       _providerVerificationStatus = null;
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
-      // Forzar carga completa del perfil (incluye department/province/district
-      // que el endpoint /auth/social-login no devuelve)
+      // Forzar carga completa del perfil (incluye department/province/
+      // district que el endpoint /auth/social-login no devuelve).
       final freshUser = await _repo.getCurrentUser();
       freshUser.when(
         success: (u) => _user = u,
@@ -543,11 +335,12 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
-  /// true cuando el último intento de guardar cuenta falló por límite (máx. 3)
+  /// true cuando el último intento de guardar cuenta falló por límite (máx. 3).
   bool _savedAccountLimitReached = false;
   bool get savedAccountLimitReached => _savedAccountLimitReached;
 
   String? get userRole => _user?.role;
+
   void clearSavedAccountLimitFlag() {
     _savedAccountLimitReached = false;
     notifyListeners();
@@ -621,157 +414,41 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
-  /// Envía (o reenvía) el código OTP al email del usuario actual.
-  Future<bool> sendOtp() async {
-    if (_user == null) return false;
-    _isLoading = true;
+  @override
+  Future<void> logout() async {
+    // Desregistrar listeners antes de limpiar _user para evitar doble trigger.
+    SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
+    SocketService.instance.removeNotificationListener(_handleRemoteNotification);
+    SocketService.instance.disconnect();
+
+    // Limpiar token FCM (backend + Firebase) ANTES de invalidar el
+    // access token, para que la petición DELETE viaje con la cookie/JWT
+    // vigente. Falla silenciosa: si no hay red o la respuesta es 401,
+    // igual seguimos con el logout local.
+    unawaited(FcmService.instance.clearToken());
+
+    // Limpiar estado local inmediatamente → UI navega a WelcomeScreen
+    // sin esperar red.
+    _user = null;
+    _isGuest = false;
+    _needsOnboarding = false;
+    _needsEmailVerification = false;
     _error = null;
+    _providerProfiles.clear();
+    _activeProfileType = null;
+    _providerVerificationStatus = null;
+    _verificationStatusByType.clear();
+    _rejectionReasonByType.clear();
     notifyListeners();
 
-    final result = await _repo.sendOtp(_user!.id);
-
-    result.when(
-      success: (_) {},
-      failure: (e) => _error = e.message,
-    );
-
-    _isLoading = false;
-    notifyListeners();
-    return result.isSuccess;
+    // Invalidar tokens en el servidor en segundo plano.
+    _repo.logout().ignore();
   }
 
-  /// Verifica el código OTP del registro pendiente. Crea sesión completa si es válido.
-  Future<bool> verifyOtp(String code) async {
-    if (_pendingRegistrationId == null) {
-      _error = 'No hay registro pendiente. Vuelve a registrarte.';
-      notifyListeners();
-      return false;
-    }
+  // ── Perfil del usuario ─────────────────────────────────────
 
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final result = await _repo.verifyOtp(
-        pendingId: _pendingRegistrationId!,
-        code: code,
-      );
-
-      result.when(
-        success: (user) {
-          _user = user;
-          _registration?.clearPendingRegistration();
-          _needsEmailVerification = false;
-          _needsOnboarding = true;
-          _connectSocketForUser(user.id);
-          notifyListeners();
-        },
-        failure: (e) => _error = e.message,
-      );
-
-      _isLoading = false;
-      notifyListeners();
-      return result.isSuccess;
-
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  /// Reenvía OTP para el registro pendiente. Delegado a RegistrationProvider.
-  Future<bool> resendOtp() async {
-    final reg = _registration;
-    if (reg == null) return false;
-    return reg.resendOtp();
-  }
-
-
-  /// Registra el perfil de proveedor en el backend y actualiza el estado local.
-  /// Devuelve true si se creó con éxito, false si hubo error (ver [error]).
-  Future<bool> registerProvider({
-    required String businessName,
-    required String phone,
-    required String type,
-    String? whatsapp,
-    // OFICIO
-    String? dni,
-    // NEGOCIO
-    String? ruc,
-    String? nombreComercial,
-    String? razonSocial,
-    bool hasDelivery = false,
-    bool plenaCoordinacion = false,
-    bool hasHomeService = false,
-    // comunes
-    String? description,
-    String? address,
-    /// Una o más categorías asociadas al proveedor. El backend valida el
-    /// arreglo bajo el nombre `categoryIds`; mantenemos esa forma desde el
-    /// provider para evitar transforms espurios en el repositorio.
-    List<int>? categoryIds,
-    Map<String, dynamic>? scheduleJson,
-    // redes sociales
-    String? website,
-    String? instagram,
-    String? tiktok,
-    String? facebook,
-    String? linkedin,
-    String? twitterX,
-    String? telegram,
-    String? whatsappBiz,
-  }) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    final result = await _repo.registerProvider(
-      businessName:     businessName,
-      phone:            phone,
-      type:             type,
-      whatsapp:         whatsapp,
-      dni:              dni,
-      ruc:              ruc,
-      nombreComercial:  nombreComercial,
-      razonSocial:      razonSocial,
-      hasDelivery:      hasDelivery,
-      plenaCoordinacion: plenaCoordinacion,
-      hasHomeService:   hasHomeService,
-      description:      description,
-      address:          address,
-      categoryIds:      categoryIds,
-      scheduleJson:     scheduleJson,
-      website:          website,
-      instagram:        instagram,
-      tiktok:           tiktok,
-      facebook:         facebook,
-      linkedin:         linkedin,
-      twitterX:         twitterX,
-      telegram:         telegram,
-      whatsappBiz:      whatsappBiz,
-    );
-
-    result.when(
-      success: (_) {
-        // El rol sigue siendo USUARIO hasta que el admin apruebe — pero
-        // localmente debemos marcar el perfil como PENDIENTE para que
-        // canBecomeRole(type) deje de devolver true inmediatamente
-        // después del registro y la UI no ofrezca volver a registrarse.
-        _providerProfiles.add(type);
-        _verificationStatusByType[type] = 'PENDIENTE';
-      },
-      failure: (e) => _error = e.message,
-    );
-
-    _isLoading = false;
-    notifyListeners();
-    return result.isSuccess;
-  }
-
-  /// Guarda la ubicación del usuario en el backend y actualiza el estado local.
+  /// Guarda la ubicación del usuario en el backend y actualiza el
+  /// estado local.
   Future<bool> updateLocation({
     required String department,
     required String province,
@@ -794,7 +471,7 @@ class AuthProvider extends ChangeNotifier {
           province:   province,
           district:   district,
         );
-        // Persistir cambio en almacenamiento local
+        // Persistir cambio en almacenamiento local.
         AuthLocalStorage.getAccessToken().then((at) async {
           final rt = await AuthLocalStorage.getRefreshToken();
           if (at != null && rt != null && _user != null) {
@@ -829,59 +506,30 @@ class AuthProvider extends ChangeNotifier {
     final rt = await AuthLocalStorage.getRefreshToken();
     if (at != null && rt != null && _user != null) {
       await AuthLocalStorage.saveSession(
-        accessToken: at, 
-        refreshToken: rt, 
+        accessToken: at,
+        refreshToken: rt,
         user: _user!,
       );
     }
-    
-    notifyListeners(); // Ahora sí, el estado es sólido
+
+    notifyListeners();
   }
 
-  /// Agrega un perfil de proveedor adicional (mismo usuario, segundo perfil)
+  /// Agrega un perfil de proveedor adicional (mismo usuario, segundo perfil).
   void addProviderProfile({required String type}) {
     _providerProfiles.add(type);
     _verificationStatusByType[type] = 'PENDIENTE';
     _activeProfileType = type;
-    // El rol permanece el que ya tenía (no elevarlo hasta la aprobación)
+    // El rol permanece el que ya tenía (no elevarlo hasta la aprobación).
     notifyListeners();
   }
 
-  /// Cambia el perfil activo entre OFICIO y NEGOCIO
+  /// Cambia el perfil activo entre OFICIO y NEGOCIO.
   void switchProfile(String type) {
     if (_providerProfiles.contains(type)) {
       _activeProfileType = type;
       notifyListeners();
     }
-  }
-
-  Future<void> logout() async {
-    // Desregistrar listeners antes de limpiar _user para evitar doble trigger
-    SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
-    SocketService.instance.removeNotificationListener(_handleRemoteNotification);
-    SocketService.instance.disconnect();
-
-    // Limpiar token FCM (backend + Firebase) ANTES de invalidar el access
-    // token, para que la petición DELETE viaje con la cookie/JWT vigente.
-    // Falla silenciosa: si no hay red o la respuesta es 401, igual seguimos
-    // con el logout local.
-    unawaited(FcmService.instance.clearToken());
-
-    // Limpiar estado local inmediatamente → UI navega a WelcomeScreen sin esperar red
-    _user = null;
-    _isGuest = false;
-    _needsOnboarding = false;
-    _needsEmailVerification = false;
-    _error = null;
-    _providerProfiles.clear();
-    _activeProfileType = null;
-    _providerVerificationStatus = null;
-    _verificationStatusByType.clear();
-    _rejectionReasonByType.clear();
-    notifyListeners();
-
-    // Invalidar tokens en el servidor en segundo plano
-    _repo.logout().ignore();
   }
 
   /// Actualiza nombre, apellido y/o teléfono del usuario.
@@ -903,7 +551,7 @@ class AuthProvider extends ChangeNotifier {
           lastName:  updated.lastName,
           phone:     updated.phone,
         );
-        // Persisitir cambios localmente
+        // Persistir cambios localmente.
         if (_user != null) {
           AuthLocalStorage.getAccessToken().then((at) async {
             final rt = await AuthLocalStorage.getRefreshToken();
@@ -977,55 +625,11 @@ class AuthProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
-  /// Solicita el envío del código de recuperación. Devuelve el token de dev si disponible.
-  Future<Map<String, dynamic>?> forgotPassword(String email) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    Map<String, dynamic>? responseData;
-    final result = await _repo.forgotPassword(email);
-
-    result.when(
-      success: (data) => responseData = data,
-      failure: (e)    => _error = e.message,
-    );
-
-    _isLoading = false;
-    notifyListeners();
-    return responseData;
-  }
-
-  /// Restablece la contraseña usando el código de 6 dígitos recibido.
-  Future<bool> resetPassword({
-    required String email,
-    required String token,
-    required String newPassword,
-  }) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    final result = await _repo.resetPassword(
-      email:       email,
-      token:       token,
-      newPassword: newPassword,
-    );
-
-    result.when(
-      success: (_) {},
-      failure: (e) => _error = e.message,
-    );
-
-    _isLoading = false;
-    notifyListeners();
-    return result.isSuccess;
-  }
-
   void clearError() {
     _error = null;
     notifyListeners();
   }
+
   /// Compat: delega al RegistrationProvider adjunto.
   void clearPendingRegistration() {
     _registration?.clearPendingRegistration();
@@ -1038,31 +642,10 @@ class AuthProvider extends ChangeNotifier {
         _user = u;
         notifyListeners();
       },
-      // Notificar igual en fallo: si _user ya estaba seteado (login previo),
-      // los listeners reciben el dato cacheado en lugar de quedarse congelados.
+      // Notificar igual en fallo: si _user ya estaba seteado (login
+      // previo), los listeners reciben el dato cacheado en lugar de
+      // quedarse congelados.
       failure: (_) => notifyListeners(),
     );
   }
 }
-
-/// Payload del evento "perfil aprobado" cuando el admin acepta la
-/// validación. La pantalla principal lo consume para abrir el modal de
-/// bienvenida + plan ESTANDAR de cortesía sin esperar a que el usuario
-/// entre al panel.
-class ProviderApprovalPayload {
-  /// id del Provider aprobado — clave para el flag "ya visto" persistido
-  /// en SharedPreferences por [WelcomeProviderPlanModal].
-  final int providerId;
-  /// businessName a saludar en la primera diapositiva del carrusel.
-  final String displayName;
-  /// 'OFICIO' o 'NEGOCIO' — solo para tracking; el carrusel actual es
-  /// genérico.
-  final String type;
-
-  const ProviderApprovalPayload({
-    required this.providerId,
-    required this.displayName,
-    required this.type,
-  });
-}
-
