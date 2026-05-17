@@ -251,6 +251,7 @@ class ProvidersProvider extends ChangeNotifier {
       _province   = null;
       _district   = null;
     } else {
+      // Siempre actualizar los 3 niveles. null en prov/dist = búsqueda ampliada.
       _department = department;
       _province   = province;
       _district   = district;
