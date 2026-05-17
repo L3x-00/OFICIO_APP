@@ -7,7 +7,10 @@ import {
   Param,
   Query,
   ParseIntPipe,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { ReviewsService } from './reviews.service.js';
 import { CreateReviewDto, ModerateReviewDto, ValidateQrDto, CreateReviewReplyDto, UpdateReviewDto } from './dto/create-review.dto.js';
 
@@ -15,10 +18,13 @@ import { CreateReviewDto, ModerateReviewDto, ValidateQrDto, CreateReviewReplyDto
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
-  // POST /reviews — Crear reseña
+  // POST /reviews — Crear reseña.
+  // userId proviene SIEMPRE del JWT — ignoramos cualquier userId que
+  // venga en el body para evitar IDOR (suplantar reseñas).
   @Post()
-  create(@Body() body: CreateReviewDto) {
-    return this.reviewsService.create(body);
+  @UseGuards(JwtAuthGuard)
+  create(@Request() req: any, @Body() body: CreateReviewDto) {
+    return this.reviewsService.create({ ...body, userId: req.user.userId });
   }
 
   // GET /reviews/provider/:id — Reseñas de un proveedor
@@ -49,14 +55,17 @@ export class ReviewsController {
     });
   }
 
-  // PATCH /reviews/:id — Editar una reseña (autor)
+  // PATCH /reviews/:id — Editar una reseña (autor).
+  // userId del JWT — la validación de ownership en el service ahora es
+  // segura porque el id viene del token, no de un body manipulable.
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   updateReview(
+    @Request() req: any,
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateReviewDto,
   ) {
-    const { userId, ...data } = body;
-    return this.reviewsService.updateReview(id, userId, data);
+    return this.reviewsService.updateReview(id, req.user.userId, body);
   }
 
   // PATCH /reviews/:id/moderate — Ocultar o mostrar reseña

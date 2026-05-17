@@ -9,10 +9,9 @@ export class CreateReviewDto {
   @IsPositive()
   providerId: number;
 
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  userId: number;
+  // userId NO se acepta del cliente — el controller lo inyecta desde el
+  // JWT validado. Aceptarlo aquí sería un IDOR (suplantar reseñas).
+  userId?: number;
 
   @Type(() => Number)
   @IsNumber()
@@ -22,7 +21,7 @@ export class CreateReviewDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(500, { message: 'El comentario no puede exceder 500 caracteres' })
   comment?: string;
 
   @IsOptional()
@@ -70,7 +69,7 @@ export class UpdateReviewDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(500, { message: 'El comentario no puede exceder 500 caracteres' })
   comment?: string;
 
   @IsOptional()
@@ -78,10 +77,7 @@ export class UpdateReviewDto {
   @MaxLength(500)
   photoUrl?: string;
 
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  userId: number;
+  // userId NO se acepta del cliente — viene del JWT en el controller.
 }
 
 export class CreateReviewReplyDto {
