@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Req, Logger, Request, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { JwtAuthGuard } from '../../auth/jwt.guard.js';
 import { MercadoPagoService } from './mercadopago.service.js';
@@ -17,8 +18,11 @@ export class MercadoPagoController {
   // Crear preferencia de pago. userId del JWT (anti-IDOR); plan,
   // providerType validados por DTO; precio y descripción los pone
   // el servidor desde MercadoPagoService.PLAN_CATALOG (anti-tampering).
+  // Throttle: 5 preferencias/min por user — quien spamea agota cuota
+  // de MP innecesariamente.
   @Post('create-preference')
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   async createPreference(@Request() req: any, @Body() dto: CreatePreferenceDto) {
     return this.mpService.createPreference({
       userId:       req.user.userId,
@@ -27,7 +31,11 @@ export class MercadoPagoController {
     });
   }
 
+ // Throttle del webhook: 60 req/min por IP. Webhooks legítimos de MP
+ // nunca superan esto incluso en picos. Mitiga el brute-force de
+ // payment IDs que un atacante intentaría para forzar lookups.
  @Post('webhook')
+ @Throttle({ default: { ttl: 60_000, limit: 60 } })
 async webhook(@Req() req: any) {
   // C-02: validar firma HMAC antes de procesar nada. Sin esto,
   // un atacante envía POST falsificado y activa planes "gratis".
