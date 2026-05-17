@@ -87,6 +87,7 @@ class _ProviderPanelState extends State<ProviderPanel> {
                 const OportunidadesTab(),
                 PanelServicesTab(isNegocio: isNeg),
                 PanelStatsTab(
+                  isNegocio: isNeg,
                   onNavigateToSettings: () => setState(() => _currentIndex = 6),
                 ),
                 // scope:'provider' + providerType separa la bandeja
@@ -211,16 +212,11 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
             // aporta valor destacarlo.
             _canSwitch
               ? ShowcaseTarget(
-                  step: ShowcaseStep(
-                    key: kAdminSwitchRoleKey,
-                    title: 'Tienes dos perfiles',
-                    description:
-                        'Puedes alternar entre tu perfil de Profesional '
-                        'y Negocio. Cada uno tiene su propio panel, '
-                        'estadísticas y configuración.',
-                  ),
-                  // El builder de pasos pone este como ÚLTIMO del deck
-                  // home, así que mostramos "Empezar".
+                  // C-10: misma constante que consume buildAdminHomeSteps —
+                  // evita divergencia si los textos cambian. El switch
+                  // role siempre es el ÚLTIMO paso del deck home (cuando
+                  // existe, hasBothProfiles=true).
+                  step: kAdminSwitchRoleStep,
                   isLast: true,
                   child: _buildSwitchChip(context, isNeg, label),
                 )

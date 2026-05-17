@@ -172,34 +172,7 @@ class _BottomNav extends StatelessWidget {
     );
   }
 }
-/// Wrapper que cierra cualquier bottom sheet abierto cuando el usuario
-/// cambia de tab.
-class _TabAwareShell extends StatefulWidget {
-  final StatefulNavigationShell navigationShell;
-  const _TabAwareShell({required this.navigationShell});
-
-  @override
-  State<_TabAwareShell> createState() => _TabAwareShellState();
-}
-
-class _TabAwareShellState extends State<_TabAwareShell> {
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.navigationShell.currentIndex;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final newIndex = widget.navigationShell.currentIndex;
-    if (newIndex != _currentIndex) {
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      _currentIndex = newIndex;
-    }
-    return AppShell(navigationShell: widget.navigationShell);
-  }
-}
+// C-11: _TabAwareShell vivía aquí pero nunca se instanciaba — código
+// muerto desde la refactorización a IndexedStack en StatefulShellRoute.
+// Borrado para reducir confusión (el comentario "no interfiere con el
+// showcase" del spec original era trivialmente cierto: no existía).

@@ -115,6 +115,13 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
               isPaused: widget.isPaused,
               profile: dash.profile,
               coverUrl: coverUrl,
+              // C-10: pasamos el step real del deck. firstWhereOrNull
+              // evita crash si el deck no incluye planBadge (futuro
+              // flag que lo deshabilite). Hoy siempre está presente.
+              planBadgeStep: homeSteps
+                  .where((s) => s.key == kAdminPlanBadgeKey)
+                  .firstOrNull,
+              planBadgeIsLast: isLastAdminStep(kAdminPlanBadgeKey, homeSteps),
             ),
           ),
           HomeStatsGrid(

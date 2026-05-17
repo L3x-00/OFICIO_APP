@@ -206,6 +206,10 @@ class _ShowcaseRootState extends State<ShowcaseRoot> {
       // (ej. la primera ServiceCard cuando hay banners arriba que
       // empujan la lista hacia abajo).
       enableAutoScroll: true,
+      // C-7: bloquear tap en el fondo oscuro para que el user no
+      // dismiss accidentalmente el tour tocando fuera del spotlight.
+      // Avance/cierre solo via los botones del ShowcaseTooltipCard.
+      disableBarrierInteraction: true,
       autoPlayDelay: const Duration(milliseconds: 300),
       onFinish: () {
         ShowcaseManager.markSeen(
@@ -277,28 +281,65 @@ class _AutoStartState extends State<_AutoStart> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _maybeStart();
+  }
+
+  /// C-8: si cambia la identidad (guest → registrado tras login en la
+  /// misma sesión, o user logout → guest), reseteamos `_started` para
+  /// reevaluar contra el deck del nuevo rol.
+  @override
+  void didUpdateWidget(covariant _AutoStart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId || oldWidget.isGuest != widget.isGuest) {
+      _started = false;
+      _maybeStart();
+    }
+  }
+
+  Future<void> _maybeStart() async {
     if (_started) return;
-    _started = true;
     // Esperamos a que el primer frame se pinte para que todos los
     // GlobalKey estén montados — startShowCase falla silenciosamente
     // si una key no está en el árbol.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+      if (!mounted || _started) return;
       final seen = await ShowcaseManager.hasSeen(
         userId: widget.userId,
         isGuest: widget.isGuest,
       );
-      if (seen || !mounted) return;
+      if (!mounted) return;
+      if (seen) {
+        // C-5: solo marcamos _started cuando ya tenemos respuesta —
+        // si hasSeen fallara, didChangeDependencies puede reintentar.
+        _started = true;
+        return;
+      }
       final steps = widget.isGuest
           ? kShowcaseStepsGuest
           : kShowcaseStepsRegistered;
       // Delay extra para asegurar que TODOS los Showcase descendants
       // del ShowCaseWidget (bottom nav del AppShell, primera tarjeta
-      // tras el sliver, banners, etc.) ya hayan montado su RenderBox
-      // — startShowCase falla silenciosamente si un key no resuelve.
+      // tras el sliver, banners, etc.) ya hayan montado su RenderBox.
       await Future<void>.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
-      ShowCaseWidget.of(context).startShowCase(steps.map((s) => s.key).toList());
+
+      // C-1 + C-2: filtrar pasos cuya GlobalKey NO está montada.
+      //   - Lista de providers vacía → kShowcaseProviderCard sin target.
+      //   - Tab activo en bottom nav → activeIcon sin la key del icon.
+      //   - Cualquier otro widget colapsado por condicional.
+      // startShowCase con keys faltantes rompe el deck o las salta de
+      // forma inconsistente — mejor filtrarlas explícito.
+      final liveKeys = steps
+          .where((s) => s.key.currentContext != null)
+          .map((s) => s.key)
+          .toList();
+      if (liveKeys.isEmpty) {
+        // Nada que mostrar — no marcamos seen para que en la próxima
+        // build (cuando carguen los providers) se reintente.
+        return;
+      }
+      _started = true;
+      ShowCaseWidget.of(context).startShowCase(liveKeys);
     });
   }
 
@@ -362,6 +403,8 @@ class _AdminShowcaseWrapperState extends State<AdminShowcaseWrapper> {
       // autoScroll para que pasos debajo del pliegue (gráfico, FAB)
       // hagan scroll automático al viewport antes del spotlight.
       enableAutoScroll: true,
+      // C-7: bloquear tap en el fondo oscuro.
+      disableBarrierInteraction: true,
       autoPlayDelay: const Duration(milliseconds: 300),
       onFinish: () {
         final tab    = _activeTab;
@@ -443,35 +486,67 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
     _maybeStart();
   }
 
+  /// C-4: didChangeDependencies SOLO corre cuando una InheritedWidget
+  /// cambia — no cuando los props del widget cambian. Si la primera
+  /// build llegó con `isApproved=false` (dashboard aún cargando) y
+  /// luego el padre re-builda con `isApproved=true`, sin esto el tour
+  /// nunca dispara. didUpdateWidget cubre ese caso.
+  @override
+  void didUpdateWidget(covariant AdminTabShowcase oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_started) return;
+    final approvedChanged = oldWidget.isApproved != widget.isApproved;
+    final stepsChanged    = oldWidget.steps.length != widget.steps.length;
+    final userChanged     = oldWidget.userId != widget.userId;
+    if (approvedChanged || stepsChanged || userChanged) {
+      _maybeStart();
+    }
+  }
+
   void _maybeStart() {
     if (_started) return;
     if (!widget.isApproved)      return;
     if (widget.userId == null)   return;
     if (widget.steps.isEmpty)    return;
-    _started = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+      if (!mounted || _started) return;
       final seen = await ShowcaseManager.hasSeenAdminTab(
         tab:          widget.tab,
         userId:       widget.userId!,
         providerType: widget.providerType,
       );
-      if (seen || !mounted) return;
+      if (!mounted) return;
+      if (seen) {
+        // C-5: marcar _started solo tras conocer el flag — si
+        // hasSeen fallara, didUpdateWidget puede reintentar.
+        _started = true;
+        return;
+      }
 
       // 300ms para que la animación de cambio de tab termine antes
       // del spotlight (el spec del producto lo pide explícito).
       await Future<void>.delayed(const Duration(milliseconds: 300));
       if (!mounted) return;
 
+      // C-1: filtrar pasos cuya key no esté montada en el árbol —
+      // pasos condicionales (FAB solo en atLimit, switch role solo
+      // si dual profile) pueden estar declarados en `widget.steps`
+      // pero el wrapper físico estar oculto si el render del padre
+      // ya filtró ese caso. Defensa en profundidad.
+      final liveKeys = widget.steps
+          .where((s) => s.key.currentContext != null)
+          .map((s) => s.key)
+          .toList();
+      if (liveKeys.isEmpty) return;
+
       AdminShowcaseWrapper._of(context)?._registerActive(
         tab:          widget.tab,
         userId:       widget.userId!,
         providerType: widget.providerType,
       );
-      ShowCaseWidget.of(context).startShowCase(
-        widget.steps.map((s) => s.key).toList(),
-      );
+      _started = true;
+      ShowCaseWidget.of(context).startShowCase(liveKeys);
     });
   }
 

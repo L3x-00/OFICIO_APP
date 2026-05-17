@@ -166,6 +166,19 @@ class AdminTab {
   static const String stats    = 'stats';
 }
 
+/// Step "switch role" extraído como constante para que el
+/// `_PanelAppBar` (que vive fuera del tab Home) lo comparta con
+/// `buildAdminHomeSteps()`. Antes ambos lados declaraban su propio
+/// `ShowcaseStep` literal y divergían si alguien editaba uno solo.
+final ShowcaseStep kAdminSwitchRoleStep = ShowcaseStep(
+  key: kAdminSwitchRoleKey,
+  title: 'Tienes dos perfiles',
+  description:
+      'Puedes alternar entre tu perfil de Profesional y '
+      'Negocio. Cada uno tiene su propio panel, estadísticas '
+      'y configuración.',
+);
+
 /// Builder de los pasos para el tab INICIO. Los pasos opcionales
 /// (switch de rol, copy alternativo por plan GRATIS) dependen del
 /// estado en runtime — por eso es función, no constante.
@@ -190,15 +203,7 @@ List<ShowcaseStep> buildAdminHomeSteps({
           : 'Aquí ves tu membresía. Toca para descubrir cómo '
             'obtener más beneficios y visibilidad.',
     ),
-    if (hasBothProfiles)
-      ShowcaseStep(
-        key: kAdminSwitchRoleKey,
-        title: 'Tienes dos perfiles',
-        description:
-            'Puedes alternar entre tu perfil de Profesional y '
-            'Negocio. Cada uno tiene su propio panel, estadísticas '
-            'y configuración.',
-      ),
+    if (hasBothProfiles) kAdminSwitchRoleStep,
   ];
 }
 

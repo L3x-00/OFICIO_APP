@@ -14,6 +14,14 @@ class HomeHeader extends StatelessWidget {
   final bool isPaused;
   final DashboardProfileModel? profile;
   final String? coverUrl;
+  /// C-10: el step + isLast se reciben construidos desde el padre
+  /// (`panel_home_tab` los toma del deck via `buildAdminHomeSteps`).
+  /// Antes el wrapper declaraba su propio `ShowcaseStep` literal con
+  /// title/description hardcoded — divergía del deck si alguien
+  /// editaba showcase_data.dart y `isLast: false` quedaba mal cuando
+  /// el deck no tenía el paso del switch role (hasBothProfiles=false).
+  final ShowcaseStep? planBadgeStep;
+  final bool planBadgeIsLast;
 
   const HomeHeader({
     super.key,
@@ -22,6 +30,8 @@ class HomeHeader extends StatelessWidget {
     required this.isPaused,
     required this.profile,
     required this.coverUrl,
+    this.planBadgeStep,
+    this.planBadgeIsLast = false,
   });
 
   @override
@@ -61,21 +71,17 @@ class HomeHeader extends StatelessWidget {
         ),
         if (profile?.subscription != null) ...[
           const SizedBox(height: 12),
-          // ShowcaseTarget se hidrata con copy dinámico (GRATIS vs
-          // pago) en `buildAdminHomeSteps`. Aquí usamos la misma key
-          // — el deck activo decide el texto del tooltip.
-          ShowcaseTarget(
-            step: ShowcaseStep(
-              key: kAdminPlanBadgeKey,
-              title: 'Tu plan actual',
-              description: profile!.subscription!.plan == 'GRATIS'
-                  ? 'Estás en plan Gratis. Toca para ver cómo destacar más.'
-                  : 'Aquí ves tu membresía. Toca para descubrir cómo '
-                    'obtener más beneficios y visibilidad.',
-            ),
-            isLast: false,
-            child: SubscriptionBanner(sub: profile!.subscription!),
-          ),
+          // Step + isLast vienen del deck construido por el padre.
+          // Si el padre no los pasa (caso raro), renderizamos el
+          // banner sin spotlight.
+          if (planBadgeStep != null)
+            ShowcaseTarget(
+              step: planBadgeStep!,
+              isLast: planBadgeIsLast,
+              child: SubscriptionBanner(sub: profile!.subscription!),
+            )
+          else
+            SubscriptionBanner(sub: profile!.subscription!),
         ],
         if (!isNegocio && (profile?.hasHomeService ?? false)) ...[
           const SizedBox(height: 10),

@@ -11,8 +11,18 @@ import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 
 class PanelStatsTab extends StatefulWidget {
+  /// C-13: providerType del panel actual — pasado desde provider_panel
+  /// para alinear con sus hermanos (PanelHomeTab, PanelServicesTab).
+  /// Antes este tab calculaba el tipo desde `auth.activeProfileType`
+  /// directo, lo que podía desincronizarse del panel activo y persistir
+  /// el flag del showcase con la clave equivocada.
+  final bool isNegocio;
   final VoidCallback? onNavigateToSettings;
-  const PanelStatsTab({super.key, this.onNavigateToSettings});
+  const PanelStatsTab({
+    super.key,
+    required this.isNegocio,
+    this.onNavigateToSettings,
+  });
 
   @override
   State<PanelStatsTab> createState() => _PanelStatsTabState();
@@ -35,7 +45,12 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
 
     final hasChartData = (dash.analytics?.dailyClicks ?? []).isNotEmpty;
     final statsSteps   = buildAdminStatsSteps(hasChartData: hasChartData);
-    final providerType = auth.activeProfileType ?? 'OFICIO';
+    // C-13: providerType del prop del panel (consistente con sus
+    // hermanos). El fallback a auth.activeProfileType queda como
+    // defensa si el prop llegara null (no debería).
+    final providerType = widget.isNegocio
+        ? 'NEGOCIO'
+        : (auth.activeProfileType ?? 'OFICIO');
 
     return AdminTabShowcase(
       tab:          AdminTab.stats,
