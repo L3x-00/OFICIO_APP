@@ -10,6 +10,9 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/utils/permission_service.dart';
 import '../../data/reviews_repository.dart';
 import '../../domain/models/review_model.dart';
+import 'photo_evidence_picker.dart';
+import 'photo_source_sheet.dart';
+import 'verification_selector.dart';
 
 /// Bottom sheet para crear o editar una reseña.
 /// - [existingReview] null → modo creación; no null → modo edición.
@@ -131,43 +134,50 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
     });
   }
 
+  Future<void> _onShowSourcePicker() async {
+    final source = await PhotoSourceSheet.show(context);
+    if (source != null && mounted) await _pickImage(source);
+  }
+
   // ─── Submit ─────────────────────────────────────────────
 
-  Future<void> _submitReview() async {
+  /// Validación síncrona. Devuelve `null` si pasa; si no, el mensaje
+  /// de error listo para mostrar en `_errorMessage`.
+  String? _validateReview() {
     if (_rating == 0) {
-      setState(() => _errorMessage = 'Por favor selecciona una calificación');
-      return;
+      return 'Por favor selecciona una calificación';
     }
-
-    // En create mode: foto y verificación son obligatorias
     if (!_isEditMode) {
+      // En create mode: foto y verificación son obligatorias.
       if (_selectedImage == null) {
-        setState(() => _errorMessage = 'La foto es obligatoria como evidencia');
-        return;
+        return 'La foto es obligatoria como evidencia';
       }
       if (_validationMethod == 0) {
-        setState(() => _errorMessage = 'Elige un método de verificación (GPS o QR)');
-        return;
+        return 'Elige un método de verificación (GPS o QR)';
       }
       if (_validationMethod == 1 && _gpsPosition == null) {
-        setState(() => _errorMessage = 'Primero obtén tu ubicación GPS');
-        return;
+        return 'Primero obtén tu ubicación GPS';
       }
       if (_validationMethod == 2 && _qrController.text.trim().isEmpty) {
-        setState(() => _errorMessage = 'Ingresa el código QR del proveedor');
-        return;
+        return 'Ingresa el código QR del proveedor';
       }
     } else {
-      // En edit mode: si no hay foto nueva ni existente, error
+      // En edit mode: si no hay foto nueva ni existente, error.
       if (_selectedImage == null && !_keepExistingPhoto) {
-        setState(() => _errorMessage = 'La foto es obligatoria');
-        return;
+        return 'La foto es obligatoria';
       }
     }
+    return null;
+  }
 
+  /// Subida real al backend. Asume que la validación ya pasó. Maneja
+  /// el `_isLoading`, sube la foto si corresponde, llama a create o
+  /// update según el modo y gestiona el error "ya existe" como éxito
+  /// silencioso (cierra con `true`).
+  Future<void> _performSubmit() async {
     setState(() { _isLoading = true; _errorMessage = null; });
     try {
-      // Determinar URL de foto final
+      // Determinar URL de foto final.
       String photoUrl;
       if (_selectedImage != null) {
         photoUrl = await _repo.uploadPhoto(_selectedImage!);
@@ -215,6 +225,15 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _submitReview() async {
+    final error = _validateReview();
+    if (error != null) {
+      setState(() => _errorMessage = error);
+      return;
+    }
+    await _performSubmit();
   }
 
   String _extractErrorMessage(Object e) {
@@ -304,7 +323,19 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
             Text('Sube una foto del trabajo realizado o del local',
                 style: TextStyle(color: c.textMuted, fontSize: 12)),
             const SizedBox(height: 10),
-            _buildPhotoSelector(c),
+            PhotoEvidencePicker(
+              selectedImage:      _selectedImage,
+              existingPhotoUrl:   _isEditMode ? widget.existingReview!.photoUrl : null,
+              isEditMode:         _isEditMode,
+              keepExistingPhoto:  _keepExistingPhoto,
+              onPickImage:        _pickImage,
+              onRemovePhoto:      () => setState(() {
+                _selectedImage     = null;
+                _keepExistingPhoto = _isEditMode; // en edit, vuelve a la original
+              }),
+              onShowSourcePicker: _onShowSourcePicker,
+              colors:             c,
+            ),
             const SizedBox(height: 20),
 
             // ── Comentario ────────────────────────────────
@@ -332,7 +363,15 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
 
             // ── Verificación (solo create mode) ───────────
             if (!_isEditMode) ...[
-              _buildVerificationSelector(c),
+              VerificationSelector(
+                validationMethod: _validationMethod,
+                gpsPosition:      _gpsPosition,
+                gpsLoading:       _gpsLoading,
+                qrController:     _qrController,
+                onSelectMethod:   (v) => setState(() => _validationMethod = v),
+                onFetchGps:       _fetchGpsLocation,
+                colors:           c,
+              ),
               const SizedBox(height: 16),
             ] else ...[
               // En edit mode, mostrar aviso de verificación ya hecha
@@ -414,127 +453,6 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
     );
   }
 
-  // ─── Selector de foto ────────────────────────────────────
-
-  Widget _buildPhotoSelector(AppThemeColors c) {
-    // Prioridad: nueva foto local > foto existente en red > picker vacío
-    if (_selectedImage != null) {
-      return Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Image.file(_selectedImage!,
-                height: 160, width: double.infinity, fit: BoxFit.cover),
-          ),
-          Positioned(
-            top: 8, right: 8,
-            child: GestureDetector(
-              onTap: () => setState(() {
-                _selectedImage     = null;
-                _keepExistingPhoto = _isEditMode; // en edit, vuelve a la original
-              }),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6), shape: BoxShape.circle),
-                child: const Icon(Icons.close, color: Colors.white, size: 18),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (_isEditMode && _keepExistingPhoto && widget.existingReview!.photoUrl.isNotEmpty) {
-      return Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Image.network(
-              widget.existingReview!.photoUrl,
-              height: 160,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _photoPickerRow(c),
-            ),
-          ),
-          // Botón para reemplazar
-          Positioned(
-            bottom: 8, right: 8,
-            child: GestureDetector(
-              onTap: () => _showPhotoSourcePicker(),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.edit_rounded, color: Colors.white, size: 14),
-                    SizedBox(width: 5),
-                    Text('Cambiar', style: TextStyle(color: Colors.white, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return _photoPickerRow(c);
-  }
-
-  Widget _photoPickerRow(AppThemeColors c) {
-    return Row(
-      children: [
-        Expanded(
-          child: _PhotoOptionButton(
-            icon: Icons.camera_alt_rounded,
-            label: 'Cámara',
-            bgCard: c.bgCard,
-            onTap: () => _pickImage(ImageSource.camera),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _PhotoOptionButton(
-            icon: Icons.photo_library_rounded,
-            label: 'Galería',
-            bgCard: c.bgCard,
-            onTap: () => _pickImage(ImageSource.gallery),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _showPhotoSourcePicker() async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_rounded),
-              title: const Text('Cámara'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Galería'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source != null && mounted) await _pickImage(source);
-  }
-
   // ─── Toggle recomendación ────────────────────────────────
 
   Widget _buildRecommendToggle(AppThemeColors c) {
@@ -603,268 +521,9 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
     );
   }
 
-  // ─── Selector de verificación (solo create mode) ─────────
-
-  Widget _buildVerificationSelector(AppThemeColors c) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Verificación anti-fraude *',
-            style: TextStyle(
-                color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 4),
-        Text('Elige cómo verificar que usaste este servicio',
-            style: TextStyle(color: c.textMuted, fontSize: 12)),
-        const SizedBox(height: 12),
-
-        // GPS
-        _VerificationOption(
-          icon: Icons.gps_fixed_rounded,
-          title: 'Verificar con GPS',
-          subtitle: _gpsPosition != null
-              ? 'Ubicación obtenida ✓'
-              : 'Confirma que estuviste en el lugar',
-          isSelected: _validationMethod == 1,
-          onTap: () {
-            setState(() => _validationMethod = 1);
-            if (_gpsPosition == null) _fetchGpsLocation();
-          },
-        ),
-
-        if (_validationMethod == 1) ...[
-          const SizedBox(height: 10),
-          if (_gpsLoading)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  const SizedBox(width: 14),
-                  const SizedBox(
-                    width: 16, height: 16,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppColors.primary),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('Obteniendo ubicación...',
-                      style: TextStyle(color: c.textMuted, fontSize: 13)),
-                ],
-              ),
-            )
-          else if (_gpsPosition != null)
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.available.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppColors.available.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.available, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Ubicación verificada',
-                            style: TextStyle(
-                                color: AppColors.available,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600)),
-                        Text(
-                          'Lat: ${_gpsPosition!.latitude.toStringAsFixed(5)}  Lng: ${_gpsPosition!.longitude.toStringAsFixed(5)}',
-                          style: TextStyle(color: c.textMuted, fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: _fetchGpsLocation,
-                    child:
-                        Icon(Icons.refresh_rounded, color: c.textMuted, size: 18),
-                  ),
-                ],
-              ),
-            )
-          else
-            GestureDetector(
-              onTap: _fetchGpsLocation,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.my_location_rounded,
-                        color: AppColors.primary, size: 18),
-                    const SizedBox(width: 8),
-                    Text('Obtener mi ubicación actual',
-                        style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-            ),
-        ],
-
-        const SizedBox(height: 8),
-
-        // QR
-        _VerificationOption(
-          icon: Icons.qr_code_scanner_rounded,
-          title: 'Código QR del proveedor',
-          subtitle: 'El proveedor te da un código al terminar',
-          isSelected: _validationMethod == 2,
-          onTap: () => setState(() => _validationMethod = 2),
-        ),
-        if (_validationMethod == 2) ...[
-          const SizedBox(height: 12),
-          TextField(
-            controller: _qrController,
-            style: TextStyle(color: c.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Ingresa el código del proveedor',
-              hintStyle: TextStyle(color: c.textMuted),
-              prefixIcon: Icon(Icons.lock_outline, color: c.textMuted),
-              filled: true,
-              fillColor: c.bgCard,
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
   // ─── devuelve el estado de recomendación al padre ─────────
   /// Llama a esto en el pop para que el padre sepa si cambió la rec.
   bool get recommendationChanged =>
       _isEditMode && _isRecommended != widget.initiallyRecommended;
   bool get currentRecommendation => _isRecommended;
-}
-
-// ─────────────────────────────────────────────────────────
-
-class _PhotoOptionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color bgCard;
-  final VoidCallback onTap;
-  const _PhotoOptionButton(
-      {required this.icon,
-      required this.label,
-      required this.bgCard,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          color: bgCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 28),
-            const SizedBox(height: 6),
-            Text(label,
-                style: TextStyle(
-                    color: context.colors.textSecondary, fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _VerificationOption extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool isSelected;
-  final VoidCallback onTap;
-  const _VerificationOption(
-      {required this.icon,
-      required this.title,
-      required this.subtitle,
-      required this.isSelected,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : c.bgCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.5)
-                  : c.border),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : c.bgInput,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon,
-                  color: isSelected ? AppColors.primary : c.textMuted,
-                  size: 20),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: TextStyle(
-                          color: isSelected
-                              ? c.textPrimary
-                              : c.textSecondary,
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal)),
-                  Text(subtitle,
-                      style:
-                          TextStyle(color: c.textMuted, fontSize: 12)),
-                ],
-              ),
-            ),
-            if (isSelected)
-              const Icon(Icons.check_circle_rounded,
-                  color: AppColors.primary, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
 }
