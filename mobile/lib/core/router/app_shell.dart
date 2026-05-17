@@ -97,6 +97,14 @@ class _BottomNav extends StatelessWidget {
             ? null
             : [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, -2))],
       ),
+      // C-2: las GlobalKeys del showcase (kShowcaseFavTab, etc.)
+      // viven en `item.icon`. Cuando un tab está activo,
+      // BottomNavigationBar renderiza `activeIcon` y el `icon`
+      // queda desmontado (sin RenderBox). Por eso el tutorial del
+      // cliente arranca SIEMPRE desde tab 0 (Explorar): los tabs
+      // 1-4 están inactivos, sus `icon` están montados, las keys
+      // resuelven. Defensa adicional: _AutoStart filtra keys cuyo
+      // currentContext sea null antes de startShowCase (C-1).
       child: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: onTap,

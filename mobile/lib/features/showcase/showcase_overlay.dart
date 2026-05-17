@@ -4,6 +4,29 @@ import '../../core/constants/app_colors.dart';
 import 'showcase_data.dart';
 import 'showcase_manager.dart';
 
+/// Polling defensivo: espera hasta que TODAS las `keys` tengan
+/// `currentContext` (= están montadas y han pasado por su primera
+/// build) o hasta `maxMs`. Retorna las keys que sí están montadas
+/// al momento de salir (puede ser un subset si el timeout expira
+/// antes de que algunas monten).
+///
+/// Reemplaza al `await Future.delayed(500)` fijo que era frágil en
+/// equipos lentos (Android low-end con slivers grandes podían tardar
+/// > 500ms en montar la primera ServiceCard).
+Future<List<GlobalKey>> _waitForKeys(
+  List<GlobalKey> keys, {
+  int maxMs = 1500,
+  int pollMs = 80,
+}) async {
+  final start = DateTime.now();
+  while (true) {
+    final live = keys.where((k) => k.currentContext != null).toList();
+    if (live.length == keys.length) return live;
+    if (DateTime.now().difference(start).inMilliseconds >= maxMs) return live;
+    await Future<void>.delayed(Duration(milliseconds: pollMs));
+  }
+}
+
 /// Tooltip custom reusable: title + description + botones "Omitir" /
 /// "Siguiente" o "Empezar" en el último paso. Cada widget target lo
 /// declara como `Showcase.withWidget(container: ShowcaseTooltipCard(...))`.
@@ -317,27 +340,21 @@ class _AutoStartState extends State<_AutoStart> {
       final steps = widget.isGuest
           ? kShowcaseStepsGuest
           : kShowcaseStepsRegistered;
-      // Delay extra para asegurar que TODOS los Showcase descendants
-      // del ShowCaseWidget (bottom nav del AppShell, primera tarjeta
-      // tras el sliver, banners, etc.) ya hayan montado su RenderBox.
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
 
-      // C-1 + C-2: filtrar pasos cuya GlobalKey NO está montada.
-      //   - Lista de providers vacía → kShowcaseProviderCard sin target.
-      //   - Tab activo en bottom nav → activeIcon sin la key del icon.
-      //   - Cualquier otro widget colapsado por condicional.
-      // startShowCase con keys faltantes rompe el deck o las salta de
-      // forma inconsistente — mejor filtrarlas explícito.
-      final liveKeys = steps
-          .where((s) => s.key.currentContext != null)
-          .map((s) => s.key)
-          .toList();
-      if (liveKeys.isEmpty) {
-        // Nada que mostrar — no marcamos seen para que en la próxima
-        // build (cuando carguen los providers) se reintente.
-        return;
-      }
+      // C-6: polling con timeout en vez de delay fijo. En equipos
+      // lentos un sliver grande puede tardar > 500ms en montar la
+      // primera ServiceCard; antes el delay fijo disparaba con la
+      // key sin RenderBox. Ahora esperamos hasta que TODAS las keys
+      // del deck estén montadas, máximo 1.5s.
+      //
+      // C-1 + C-2: el polling retorna el subset que SÍ se montó al
+      // expirar el timeout (caso edge: empty state de providers
+      // donde kShowcaseProviderCard nunca aparece). Si liveKeys
+      // queda vacío, NO marcamos seen para que la próxima build
+      // (cuando carguen los providers) reintente.
+      final liveKeys = await _waitForKeys(steps.map((s) => s.key).toList());
+      if (!mounted) return;
+      if (liveKeys.isEmpty) return;
       _started = true;
       ShowCaseWidget.of(context).startShowCase(liveKeys);
     });
@@ -381,6 +398,13 @@ class _AdminShowcaseWrapperState extends State<AdminShowcaseWrapper> {
   int?    _activeUserId;
   String? _activeProviderType;
 
+  /// C-9: bandera para distinguir "dismiss por user" (botón Omitir o
+  /// Empezar) vs "dismiss programático" (cambio de tab). Solo el
+  /// primero marca el tab como visto. El segundo deja el flag intacto
+  /// para que el user vea el tour si vuelve al tab en una sesión
+  /// futura.
+  bool _suppressNextOnFinishMark = false;
+
   void _registerActive({
     required String tab,
     required int    userId,
@@ -397,6 +421,14 @@ class _AdminShowcaseWrapperState extends State<AdminShowcaseWrapper> {
     _activeProviderType = null;
   }
 
+  /// Llamado por `AdminTabShowcase.dismissActive` antes del `dismiss`
+  /// programático. El onFinish leerá esta bandera y se saltará el
+  /// `markSeenAdminTab` — el user no completó el tour, solo cambió
+  /// de tab, así que no lo consideramos "visto".
+  void _suppressNextOnFinish() {
+    _suppressNextOnFinishMark = true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ShowCaseWidget(
@@ -407,6 +439,16 @@ class _AdminShowcaseWrapperState extends State<AdminShowcaseWrapper> {
       disableBarrierInteraction: true,
       autoPlayDelay: const Duration(milliseconds: 300),
       onFinish: () {
+        if (_suppressNextOnFinishMark) {
+          // C-9: fue un dismiss programático (cambio de tab). No
+          // marcamos seen — el user no terminó el tour. La sesión
+          // actual queda con `_started=true` (no re-dispara hasta
+          // restart de app), pero al volver a abrir la app verá el
+          // tour normalmente desde SharedPreferences.
+          _suppressNextOnFinishMark = false;
+          _clearActive();
+          return;
+        }
         final tab    = _activeTab;
         final userId = _activeUserId;
         final type   = _activeProviderType;
@@ -465,7 +507,13 @@ class AdminTabShowcase extends StatefulWidget {
   /// Cancela el tutorial activo (cualquier tab). Lo llama el
   /// `ProviderPanel` al cambiar de tab. Es seguro llamarlo cuando no
   /// hay tutorial activo — `dismiss()` es idempotente.
+  ///
+  /// C-9: marca el dismiss como "programático" en el wrapper antes
+  /// de invocar al ShowCaseWidget. El onFinish del wrapper detecta
+  /// esa bandera y se salta el `markSeenAdminTab` — el user no
+  /// completó el tour, solo cambió de tab. Próxima sesión lo verá.
   static void dismissActive(BuildContext context) {
+    AdminShowcaseWrapper._of(context)?._suppressNextOnFinish();
     try {
       ShowCaseWidget.of(context).dismiss();
     } catch (_) {
@@ -478,6 +526,14 @@ class AdminTabShowcase extends StatefulWidget {
 }
 
 class _AdminTabShowcaseState extends State<AdminTabShowcase> {
+  /// C-15: flag de instancia. Como AdminTabShowcase es child de
+  /// IndexedStack, su State persiste mientras viva el panel —
+  /// volver al mismo tab dentro de la misma sesión NO re-dispara
+  /// el tour aunque `dismissActive` (C-9) ya NO marque seen en
+  /// SharedPreferences. Trade-off intencional para que el user no
+  /// vea spotlight de nuevo apenas toca otro tab y vuelve. Para
+  /// re-disparo en sesiones futuras: SharedPreferences sigue limpio
+  /// y la próxima vez que abra la app, el deck arranca normal.
   bool _started = false;
 
   @override
@@ -524,20 +580,22 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
         return;
       }
 
-      // 300ms para que la animación de cambio de tab termine antes
-      // del spotlight (el spec del producto lo pide explícito).
+      // C-6: 300ms iniciales para que la animación de cambio de
+      // tab termine, luego polling hasta 1s para que las keys
+      // condicionales (FAB en atLimit, switch role en dual) monten
+      // su RenderBox tras la primera build.
       await Future<void>.delayed(const Duration(milliseconds: 300));
       if (!mounted) return;
 
-      // C-1: filtrar pasos cuya key no esté montada en el árbol —
-      // pasos condicionales (FAB solo en atLimit, switch role solo
-      // si dual profile) pueden estar declarados en `widget.steps`
-      // pero el wrapper físico estar oculto si el render del padre
-      // ya filtró ese caso. Defensa en profundidad.
-      final liveKeys = widget.steps
-          .where((s) => s.key.currentContext != null)
-          .map((s) => s.key)
-          .toList();
+      // C-1: filtrar pasos cuya key no esté montada en el árbol.
+      // Pasos condicionales pueden estar declarados en `widget.steps`
+      // pero el wrapper físico oculto si el render del padre ya filtró
+      // ese caso (ej. FAB no aparece si !atLimit). Defensa en profundidad.
+      final liveKeys = await _waitForKeys(
+        widget.steps.map((s) => s.key).toList(),
+        maxMs: 1000,
+      );
+      if (!mounted) return;
       if (liveKeys.isEmpty) return;
 
       AdminShowcaseWrapper._of(context)?._registerActive(

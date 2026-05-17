@@ -39,6 +39,17 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
     final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
 
     // ── Plan GRATIS: Gestión de visitas bloqueada ─────────────
+    //
+    // C-14: el tutorial de stats NO dispara cuando el plan no tiene
+    // acceso a estadísticas. Retornamos _StatsUpsellScreen ANTES de
+    // montar el AdminTabShowcase, así que `_started` ni siquiera se
+    // evalúa. Comportamiento intencional: no tiene sentido enseñar
+    // "Mide tu crecimiento" sobre widgets que el user no puede ver.
+    //
+    // Si el user paga y pasa a ESTANDAR/PREMIUM mientras la app
+    // está abierta, el plan cambia → `hasStatsAccess` retorna true
+    // → este early-return deja de aplicar → AdminTabShowcase se
+    // monta por primera vez y dispara el tour. ✓
     if (!PlanLimits.hasStatsAccess(plan)) {
       return _StatsUpsellScreen(plan: plan, onNavigateToSettings: widget.onNavigateToSettings);
     }
