@@ -6,7 +6,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../subastas/presentation/providers/subastas_provider.dart';
 import '../../../subastas/presentation/screens/my_requests_screen.dart';
 import '../../../subastas/presentation/screens/publish_request_sheet.dart';
-
+import '../../../auth/presentation/screens/login_screen.dart';
 /// Banner promocional para subastas — solo visible para clientes (no
 /// proveedores). Abre el sheet de publicar pedido y, si el usuario lo
 /// publica, navega a la pantalla de mis pedidos.
@@ -16,30 +16,36 @@ class SubastaBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final auth = context.watch<AuthProvider>();
-    if (auth.user == null || auth.user!.isProvider) return const SizedBox.shrink();
-
+    // Mostrar para todos: invitados, clientes y proveedores
     return GestureDetector(
       onTap: () async {
-        final nav = Navigator.of(context);
-        final result = await showModalBottomSheet<bool>(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
+      final auth = context.read<AuthProvider>();
+      
+      // Si es invitado, mostrar diálogo de registro
+      if (auth.user == null) {
+        _showLoginRequired(context);
+        return;
+      }
+      
+      final nav = Navigator.of(context);
+      final result = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => SubastasProvider(),
+          child: const PublishRequestSheet(),
+        ),
+      );
+      if (result == true && context.mounted) {
+        nav.push(MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
             create: (_) => SubastasProvider(),
-            child: const PublishRequestSheet(),
+            child: const MyRequestsScreen(),
           ),
-        );
-        if (result == true && context.mounted) {
-          nav.push(MaterialPageRoute(
-            builder: (_) => ChangeNotifierProvider(
-              create: (_) => SubastasProvider(),
-              child: const MyRequestsScreen(),
-            ),
-          ));
-        }
-      },
+        ));
+      }
+    },
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -86,4 +92,45 @@ class SubastaBanner extends StatelessWidget {
       ),
     );
   }
+}
+void _showLoginRequired(BuildContext context) {
+  final c = context.colors;
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: c.bgCard,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Row(
+        children: [
+          Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 24),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text('Inicia sesión', style: TextStyle(fontSize: 17)),
+          ),
+        ],
+      ),
+      content: const Text(
+        'Para publicar una necesidad y recibir ofertas de profesionales, necesitas crear una cuenta gratuita.',
+        style: TextStyle(fontSize: 13, height: 1.5),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Ahora no'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(ctx);
+            Navigator.of(context).pushNamed('/login');
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: const Text('Iniciar sesión'),
+        ),
+      ],
+    ),
+  );
 }

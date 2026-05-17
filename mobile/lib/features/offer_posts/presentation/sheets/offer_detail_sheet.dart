@@ -22,6 +22,7 @@ class OfferDetailSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      useRootNavigator: true,
       builder: (_) => OfferDetailSheet(offer: offer),
     );
   }

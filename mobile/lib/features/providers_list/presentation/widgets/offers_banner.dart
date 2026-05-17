@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../offer_posts/presentation/screens/offers_screen.dart';
@@ -14,11 +15,9 @@ class OffersBanner extends StatelessWidget {
     final c = context.colors;
     return GestureDetector(
       onTap: () {
-        Navigator.of(context, rootNavigator: false).push(
-          MaterialPageRoute(
-            builder: (_) => const _OffersFullPage(),
-          ),
-        );
+        // Cambiar al tab de Ofertas (índice 2) en lugar de abrir una ruta nueva
+        final shell = StatefulNavigationShell.of(context);
+        shell.goBranch(2); // Tab 2 = Ofertas
       },
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -60,11 +59,4 @@ class OffersBanner extends StatelessWidget {
       ),
     );
   }
-}
-
-class _OffersFullPage extends StatelessWidget {
-  const _OffersFullPage();
-
-  @override
-  Widget build(BuildContext context) => const OffersScreen();
 }
