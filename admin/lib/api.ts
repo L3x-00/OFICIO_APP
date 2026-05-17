@@ -122,6 +122,17 @@ export const getAnalytics = (days: number = 30) => {
   return fetchApi<AnalyticsResponse>(`/admin/analytics?${params.toString()}`);
 };
 
+// ── GEO-STATS de usuarios (mapa de calor por ciudad) ──────
+export interface UserGeoStatsRow {
+  city: string;
+  department: string;
+  country: string;
+  userCount: number;
+  lastAccess: string;  // ISO timestamp
+}
+export const getUsersGeoStats = () =>
+  fetchApi<UserGeoStatsRow[]>('/admin/users/geo-stats');
+
 // ── PROVEEDORES ────────────────────────────────────────────
 export const getProviders = (page = 1, search?: string) => {
   const params = new URLSearchParams({ page: String(page), limit: '15' });

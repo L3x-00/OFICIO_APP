@@ -56,6 +56,16 @@ export class AdminController {
     return this.adminService.refreshDashboardStats();
   }
 
+  // ── GEO-STATS: mapa de calor por ciudad ───────────────────
+  // Resuelve users.lastIp contra ip-api.com (batch) y agrupa por
+  // (city, department). Cachea 1h para no saturar la API gratuita.
+  // Retorna: [{ city, department, country, userCount, lastAccess }]
+  // ordenado por userCount DESC.
+  @Get('users/geo-stats')
+  getUsersGeoStats() {
+    return this.adminService.getUsersGeoStats();
+  }
+
   // ── GESTIÓN DE PROVEEDORES ────────────────────────────────
 
   @Get('providers')

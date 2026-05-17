@@ -56,6 +56,121 @@ export class AdminService {
     return { success: true, refreshedAt: new Date().toISOString() };
   }
 
+  // ── GEO-STATS: mapa de calor de usuarios por ciudad ───────
+  //
+  // Lee users.lastIp + users.lastLoginAt, resuelve geolocalización
+  // contra ip-api.com (batch HTTP, gratis, sin API key) y devuelve
+  // agregado por (city, department).
+  //
+  // Cache: 1h por endpoint completo (admins consultan rara vez).
+  // El batch de ip-api permite hasta 100 IPs por request y 45 req/min
+  // por IP origen — con el cache un dashboard activo no excede eso.
+
+  private static readonly GEO_CACHE_KEY = 'admin:users-geo-stats';
+  private static readonly GEO_CACHE_TTL = 60 * 60; // segundos
+
+  async getUsersGeoStats() {
+    // 1. Cache hit
+    const cached = await this.cacheManager.get(AdminService.GEO_CACHE_KEY);
+    if (cached) return cached;
+
+    // 2. IPs distintas con conteo y última conexión.
+    //    Limit 500 para no saturar ip-api (5 batch calls de 100).
+    const rows = await this.prisma.$queryRaw<Array<{
+      ip: string; user_count: number; last_access: Date;
+    }>>`
+      SELECT "lastIp"          AS ip,
+             count(*)::int     AS user_count,
+             max("lastLoginAt") AS last_access
+      FROM users
+      WHERE "lastIp" IS NOT NULL
+        AND "lastLoginAt" IS NOT NULL
+      GROUP BY "lastIp"
+      ORDER BY user_count DESC
+      LIMIT 500
+    `;
+
+    if (rows.length === 0) {
+      const empty: any[] = [];
+      await this.cacheManager.set(
+        AdminService.GEO_CACHE_KEY, empty, AdminService.GEO_CACHE_TTL * 1000,
+      );
+      return empty;
+    }
+
+    // 3. Batch resolve a ip-api.com (chunks de 100).
+    const ipToGeo = new Map<string, { city: string; department: string; country: string }>();
+    const ips = rows.map(r => r.ip);
+    for (let i = 0; i < ips.length; i += 100) {
+      const chunk = ips.slice(i, i + 100);
+      try {
+        const resp = await fetch(
+          'http://ip-api.com/batch?fields=status,query,country,regionName,city',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(chunk),
+          },
+        );
+        if (!resp.ok) {
+          // Rate limit u otro error — saltamos chunk, devolvemos
+          // resultados parciales antes que fallar todo.
+          continue;
+        }
+        const data = await resp.json() as Array<{
+          status: string; query: string; country?: string;
+          regionName?: string; city?: string;
+        }>;
+        for (const item of data) {
+          if (item.status !== 'success') continue;
+          ipToGeo.set(item.query, {
+            city:       item.city ?? 'Desconocida',
+            department: item.regionName ?? item.country ?? 'Desconocido',
+            country:    item.country ?? 'Desconocido',
+          });
+        }
+      } catch {
+        // Falla de red → resultados parciales con lo que ya cacheamos.
+      }
+    }
+
+    // 4. Agrupar por (city, department).
+    const grouped = new Map<string, {
+      city: string; department: string; country: string;
+      userCount: number; lastAccess: string;
+    }>();
+    for (const r of rows) {
+      const geo = ipToGeo.get(r.ip);
+      if (!geo) continue; // IP que no pudimos resolver
+      const key = `${geo.city}|${geo.department}`;
+      const existing = grouped.get(key);
+      const lastAccess = (r.last_access instanceof Date
+        ? r.last_access
+        : new Date(r.last_access)).toISOString();
+      if (existing) {
+        existing.userCount += Number(r.user_count);
+        if (lastAccess > existing.lastAccess) existing.lastAccess = lastAccess;
+      } else {
+        grouped.set(key, {
+          city:       geo.city,
+          department: geo.department,
+          country:    geo.country,
+          userCount:  Number(r.user_count),
+          lastAccess,
+        });
+      }
+    }
+
+    const result = Array.from(grouped.values())
+      .sort((a, b) => b.userCount - a.userCount);
+
+    // 5. Cachear 1h.
+    await this.cacheManager.set(
+      AdminService.GEO_CACHE_KEY, result, AdminService.GEO_CACHE_TTL * 1000,
+    );
+    return result;
+  }
+
   // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
     const now          = new Date();

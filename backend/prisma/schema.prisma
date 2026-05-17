@@ -28,6 +28,7 @@ model User {
   fcmToken         String?          @unique
   coins            Int              @default(0)
   lastIp           String?
+  lastLoginAt      DateTime?
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
   redemptions      CoinRedemption[]
   favorites        Favorite[]

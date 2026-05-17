@@ -296,13 +296,17 @@ data: {
       throw new UnauthorizedException('Contraseña incorrecta');
     }
 
-    // Log de IP para auditoría (fire-and-forget, no bloquea el login)
-    if (ip) {
-      this.prisma.user.update({
-        where: { id: user.id },
-        data: { lastIp: ip },
-      }).catch(() => {});
-    }
+    // Log de IP + timestamp de último login para auditoría y para el
+    // mapa de calor del admin (fire-and-forget, no bloquea el login).
+    // Update ocurre solo después de validar credenciales — intentos
+    // fallidos NO contaminan lastIp/lastLoginAt.
+    this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginAt: new Date(),
+        ...(ip ? { lastIp: ip } : {}),
+      },
+    }).catch(() => {});
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
