@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/errors/failures.dart';
 import '../../data/payments_repository.dart';
@@ -94,22 +95,35 @@ class PaymentsProvider extends ChangeNotifier {
 
   Future<void> payWithMercadoPago({
     required String plan,
-    required double price,
-    required String description,
+    required String providerType,
   }) async {
+    _mpInitPoint = null;  // B-08: limpiar valor stale de intentos previos
     _mpLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       _mpInitPoint = await _repo.createMercadoPagoPreference(
-        plan: plan,
-        price: price,
-        description: description,
+        plan:         plan,
+        providerType: providerType,
       );
-    } catch (e) {
-      _error = 'No se pudo iniciar el pago con MercadoPago';
-      _mpInitPoint = null;
+    } on DioException catch (e) {
+      // B-05: mensaje diferenciado por tipo de error para mejor UX
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        _error = 'Sin conexión. Verifica tu internet e intenta otra vez.';
+      } else if (e.response?.statusCode == 401) {
+        _error = 'Tu sesión expiró. Vuelve a iniciar sesión.';
+      } else if (e.response?.statusCode == 429) {
+        _error = 'Demasiados intentos. Espera un momento.';
+      } else if (e.response?.statusCode == 400) {
+        // 400 incluye errores de validación del DTO server-side
+        _error = 'No se pudo iniciar el pago: datos inválidos.';
+      } else {
+        _error = 'No se pudo iniciar el pago. Intenta más tarde.';
+      }
+    } catch (_) {
+      _error = 'Error inesperado al iniciar pago con MercadoPago.';
     }
 
     _mpLoading = false;

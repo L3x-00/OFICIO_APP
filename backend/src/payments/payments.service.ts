@@ -349,21 +349,33 @@ export class PaymentsService {
   async activateSubscriptionFromPayment(params: {
     userId: number;
     plan: string; // 'ESTANDAR' | 'PREMIUM'
+    /// Identifica a qué perfil aplicar el plan cuando el user tiene
+    /// ambos (OFICIO + NEGOCIO). Undefined = pago legacy sin type en
+    /// el external_reference; cae al findFirst histórico (peor caso).
+    providerType?: 'OFICIO' | 'NEGOCIO';
     amount: number;
     paymentMethod: string;
     paymentId: string;
     dateApproved: string;
   }) {
-    const { userId, plan, amount, paymentMethod, paymentId, dateApproved } = params;
+    const { userId, plan, providerType, amount, paymentMethod, paymentId, dateApproved } = params;
 
-    // 1. Buscar el provider por userId
-    const provider = await this.prisma.provider.findFirst({
-      where: { userId },
-      select: { id: true, businessName: true, type: true },
-    });
+    // 1. Buscar el provider. Si vino providerType, lookup exacto via
+    //    @@unique([userId, type]). Si no (legacy), findFirst —
+    //    en users con OFICIO+NEGOCIO esto activa uno al azar (bug
+    //    A-02 de la auditoría; solo aplica a pagos en vuelo).
+    const provider = providerType
+      ? await this.prisma.provider.findUnique({
+          where: { userId_type: { userId, type: providerType as any } },
+          select: { id: true, businessName: true, type: true },
+        })
+      : await this.prisma.provider.findFirst({
+          where: { userId },
+          select: { id: true, businessName: true, type: true },
+        });
 
     if (!provider) {
-      this.logger.error(`No se encontró provider para userId=${userId}`);
+      this.logger.error(`No se encontró provider para userId=${userId}, type=${providerType ?? 'legacy'}`);
       return;
     }
 

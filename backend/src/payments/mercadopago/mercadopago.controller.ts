@@ -1,40 +1,29 @@
-import { Controller, Post, Body, Get, Query, Req, Logger, Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Req, Logger, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt.guard.js';
 import { MercadoPagoService } from './mercadopago.service.js';
 import { PaymentsService } from '../payments.service.js';
+import { CreatePreferenceDto } from './dto/create-preference.dto.js';
+
 @Controller('payments/mercadopago')
 export class MercadoPagoController {
   private readonly logger = new Logger(MercadoPagoController.name);
 
   constructor(
     private readonly mpService: MercadoPagoService,
-    private readonly paymentsService: PaymentsService,  // ← NUEVO
-    ) {}
+    private readonly paymentsService: PaymentsService,
+  ) {}
 
-  // userId del JWT, no del body — antes un atacante podía crear
-  // preferencias con userId ajeno y enmascarar el origen de pagos.
+  // Crear preferencia de pago. userId del JWT (anti-IDOR); plan,
+  // providerType validados por DTO; precio y descripción los pone
+  // el servidor desde MercadoPagoService.PLAN_CATALOG (anti-tampering).
   @Post('create-preference')
   @UseGuards(JwtAuthGuard)
-  async createPreference(
-    @Request() req: any,
-    @Body() body: { plan: string; price: number; description: string },
-  ) {
-    return this.mpService.createPreference({ ...body, userId: req.user.userId });
-  }
-
-  @Get('success')
-  success(@Query('external_reference') ref: string) {
-    return { status: 'ok', message: 'Pago procesado. Redirigiendo...', ref };
-  }
-
-  @Get('failure')
-  failure() {
-    return { status: 'error', message: 'El pago fue rechazado o cancelado.' };
-  }
-
-  @Get('pending')
-  pending() {
-    return { status: 'pending', message: 'Pago pendiente de confirmación.' };
+  async createPreference(@Request() req: any, @Body() dto: CreatePreferenceDto) {
+    return this.mpService.createPreference({
+      userId:       req.user.userId,
+      plan:         dto.plan,
+      providerType: dto.providerType,
+    });
   }
 
  @Post('webhook')
@@ -82,30 +71,50 @@ private async handleApprovedPayment(payment: {
   paymentMethod: string;
   dateApproved: string;
 }) {
-  // El external_reference tiene el formato: "user_123_plan_ESTANDAR"
+  // Formato nuevo: "user_123_type_OFICIO_plan_ESTANDAR" (A-02).
+  // Formato legacy aceptado para pagos en vuelo: "user_123_plan_ESTANDAR".
   const ref = payment.externalReference;
   this.logger.log(`✅ Pago aprobado: ${ref}`);
 
-  // Parsear userId y plan del external_reference
-  const match = ref.match(/user_(\d+)_plan_(.+)/);
-  if (!match) {
+  const VALID_PLANS = new Set(['ESTANDAR', 'PREMIUM']);
+  const VALID_TYPES = new Set(['OFICIO', 'NEGOCIO']);
+
+  let userId: number;
+  let providerType: 'OFICIO' | 'NEGOCIO' | undefined;
+  let plan: string;
+
+  const newMatch    = ref.match(/^user_(\d+)_type_(OFICIO|NEGOCIO)_plan_(ESTANDAR|PREMIUM)$/);
+  const legacyMatch = ref.match(/^user_(\d+)_plan_(ESTANDAR|PREMIUM)$/);
+
+  if (newMatch) {
+    userId       = parseInt(newMatch[1], 10);
+    providerType = newMatch[2] as 'OFICIO' | 'NEGOCIO';
+    plan         = newMatch[3];
+  } else if (legacyMatch) {
+    userId = parseInt(legacyMatch[1], 10);
+    plan   = legacyMatch[2];
+    // providerType undefined → activateSubscriptionFromPayment caerá
+    // al findFirst legacy (riesgo controlado para pagos en vuelo).
+  } else {
     this.logger.error(`Formato de external_reference inválido: ${ref}`);
     return;
   }
 
-  const userId = parseInt(match[1], 10);
-  const plan = match[2]; // 'ESTANDAR' o 'PREMIUM'
+  if (!VALID_PLANS.has(plan) || (providerType && !VALID_TYPES.has(providerType))) {
+    this.logger.error(`Plan o providerType inválido en ref=${ref}`);
+    return;
+  }
 
-  this.logger.log(`🎯 Activando suscripción: userId=${userId}, plan=${plan}`);
+  this.logger.log(`🎯 Activando: userId=${userId}, type=${providerType ?? 'legacy'}, plan=${plan}`);
 
-  // Activar la suscripción (conecta con tu PaymentsService)
   await this.paymentsService.activateSubscriptionFromPayment({
     userId,
     plan,
-    amount: payment.amount,
+    providerType,
+    amount:        payment.amount,
     paymentMethod: 'mercadopago',
-    paymentId: payment.id.toString(),
-    dateApproved: payment.dateApproved,
+    paymentId:     payment.id.toString(),
+    dateApproved:  payment.dateApproved,
   });
 }
 }

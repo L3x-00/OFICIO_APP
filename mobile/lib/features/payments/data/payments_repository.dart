@@ -58,17 +58,16 @@ class PaymentsRepository {
     }
   }
   /// Crea una preferencia de pago en MercadoPago y devuelve la URL de pago.
-  /// El userId lo toma el backend del JWT — antes lo enviábamos en el body
-  /// y permitía que un atacante creara preferencias con userId ajeno.
+  /// userId del JWT; precio y descripción los pone el servidor desde su
+  /// catálogo (anti-tampering). providerType identifica a cuál perfil
+  /// (OFICIO/NEGOCIO) aplicar el plan en usuarios con ambos.
   Future<String> createMercadoPagoPreference({
     required String plan,
-    required double price,
-    required String description,
+    required String providerType,
   }) async {
     final res = await _dio.post('/payments/mercadopago/create-preference', data: {
-      'plan': plan,
-      'price': price,
-      'description': description,
+      'plan':         plan,
+      'providerType': providerType,
     });
     return res.data['initPoint'] as String;
   }

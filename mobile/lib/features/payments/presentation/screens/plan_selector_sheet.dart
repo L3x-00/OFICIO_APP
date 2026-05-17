@@ -245,10 +245,14 @@ class _PlanCard extends StatelessWidget {
                               final auth = context.read<AuthProvider>();
                               if (auth.user == null) return;
 
+                              // providerType: el perfil al que se aplica el plan.
+                              // activeProfileType es 'OFICIO' o 'NEGOCIO' según
+                              // el panel del que el user abrió el plan selector.
+                              final providerType = auth.activeProfileType ?? 'OFICIO';
+
                               await payProv.payWithMercadoPago(
-                                plan: planKey,
-                                price: price!,
-                                description: 'Plan $label - Servi',
+                                plan:         planKey,
+                                providerType: providerType,
                               );
 
                               if (!context.mounted) return;
