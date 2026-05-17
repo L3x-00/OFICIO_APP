@@ -12,19 +12,21 @@ import { SocialLoginDto } from './dto/social-login.dto.js';
 import { UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-
+import { Throttle } from '@nestjs/throttler';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   async register(@Body() dto: RegisterUserDto) {
     return this.authService.registerUser(dto);
   }
 
   @Post('login')
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async login(@Body() dto: LoginDto, @Request() req: any) {
+    return this.authService.login(dto.email, dto.password, req.ip);
   }
 
   // Registro de perfil de proveedor (usuario ya autenticado)

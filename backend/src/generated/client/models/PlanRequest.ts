@@ -40,7 +40,7 @@ export type PlanRequestMinAggregateOutputType = {
   id: number | null
   providerId: number | null
   plan: $Enums.SubscriptionPlan | null
-  status: string | null
+  status: $Enums.PlanRequestStatus | null
   reason: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -50,7 +50,7 @@ export type PlanRequestMaxAggregateOutputType = {
   id: number | null
   providerId: number | null
   plan: $Enums.SubscriptionPlan | null
-  status: string | null
+  status: $Enums.PlanRequestStatus | null
   reason: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -199,7 +199,7 @@ export type PlanRequestGroupByOutputType = {
   id: number
   providerId: number
   plan: $Enums.SubscriptionPlan
-  status: string
+  status: $Enums.PlanRequestStatus
   reason: string | null
   createdAt: Date
   updatedAt: Date
@@ -232,7 +232,7 @@ export type PlanRequestWhereInput = {
   id?: Prisma.IntFilter<"PlanRequest"> | number
   providerId?: Prisma.IntFilter<"PlanRequest"> | number
   plan?: Prisma.EnumSubscriptionPlanFilter<"PlanRequest"> | $Enums.SubscriptionPlan
-  status?: Prisma.StringFilter<"PlanRequest"> | string
+  status?: Prisma.EnumPlanRequestStatusFilter<"PlanRequest"> | $Enums.PlanRequestStatus
   reason?: Prisma.StringNullableFilter<"PlanRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PlanRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PlanRequest"> | Date | string
@@ -257,7 +257,7 @@ export type PlanRequestWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.PlanRequestWhereInput | Prisma.PlanRequestWhereInput[]
   providerId?: Prisma.IntFilter<"PlanRequest"> | number
   plan?: Prisma.EnumSubscriptionPlanFilter<"PlanRequest"> | $Enums.SubscriptionPlan
-  status?: Prisma.StringFilter<"PlanRequest"> | string
+  status?: Prisma.EnumPlanRequestStatusFilter<"PlanRequest"> | $Enums.PlanRequestStatus
   reason?: Prisma.StringNullableFilter<"PlanRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PlanRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PlanRequest"> | Date | string
@@ -286,7 +286,7 @@ export type PlanRequestScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"PlanRequest"> | number
   providerId?: Prisma.IntWithAggregatesFilter<"PlanRequest"> | number
   plan?: Prisma.EnumSubscriptionPlanWithAggregatesFilter<"PlanRequest"> | $Enums.SubscriptionPlan
-  status?: Prisma.StringWithAggregatesFilter<"PlanRequest"> | string
+  status?: Prisma.EnumPlanRequestStatusWithAggregatesFilter<"PlanRequest"> | $Enums.PlanRequestStatus
   reason?: Prisma.StringNullableWithAggregatesFilter<"PlanRequest"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PlanRequest"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PlanRequest"> | Date | string
@@ -294,7 +294,7 @@ export type PlanRequestScalarWhereWithAggregatesInput = {
 
 export type PlanRequestCreateInput = {
   plan: $Enums.SubscriptionPlan
-  status?: string
+  status?: $Enums.PlanRequestStatus
   reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -305,7 +305,7 @@ export type PlanRequestUncheckedCreateInput = {
   id?: number
   providerId: number
   plan: $Enums.SubscriptionPlan
-  status?: string
+  status?: $Enums.PlanRequestStatus
   reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -313,7 +313,7 @@ export type PlanRequestUncheckedCreateInput = {
 
 export type PlanRequestUpdateInput = {
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -324,7 +324,7 @@ export type PlanRequestUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -334,7 +334,7 @@ export type PlanRequestCreateManyInput = {
   id?: number
   providerId: number
   plan: $Enums.SubscriptionPlan
-  status?: string
+  status?: $Enums.PlanRequestStatus
   reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -342,7 +342,7 @@ export type PlanRequestCreateManyInput = {
 
 export type PlanRequestUpdateManyMutationInput = {
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -352,7 +352,7 @@ export type PlanRequestUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -450,9 +450,13 @@ export type PlanRequestUncheckedUpdateManyWithoutProviderNestedInput = {
   deleteMany?: Prisma.PlanRequestScalarWhereInput | Prisma.PlanRequestScalarWhereInput[]
 }
 
+export type EnumPlanRequestStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PlanRequestStatus
+}
+
 export type PlanRequestCreateWithoutProviderInput = {
   plan: $Enums.SubscriptionPlan
-  status?: string
+  status?: $Enums.PlanRequestStatus
   reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -461,7 +465,7 @@ export type PlanRequestCreateWithoutProviderInput = {
 export type PlanRequestUncheckedCreateWithoutProviderInput = {
   id?: number
   plan: $Enums.SubscriptionPlan
-  status?: string
+  status?: $Enums.PlanRequestStatus
   reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -500,7 +504,7 @@ export type PlanRequestScalarWhereInput = {
   id?: Prisma.IntFilter<"PlanRequest"> | number
   providerId?: Prisma.IntFilter<"PlanRequest"> | number
   plan?: Prisma.EnumSubscriptionPlanFilter<"PlanRequest"> | $Enums.SubscriptionPlan
-  status?: Prisma.StringFilter<"PlanRequest"> | string
+  status?: Prisma.EnumPlanRequestStatusFilter<"PlanRequest"> | $Enums.PlanRequestStatus
   reason?: Prisma.StringNullableFilter<"PlanRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PlanRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PlanRequest"> | Date | string
@@ -509,7 +513,7 @@ export type PlanRequestScalarWhereInput = {
 export type PlanRequestCreateManyProviderInput = {
   id?: number
   plan: $Enums.SubscriptionPlan
-  status?: string
+  status?: $Enums.PlanRequestStatus
   reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -517,7 +521,7 @@ export type PlanRequestCreateManyProviderInput = {
 
 export type PlanRequestUpdateWithoutProviderInput = {
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -526,7 +530,7 @@ export type PlanRequestUpdateWithoutProviderInput = {
 export type PlanRequestUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -535,7 +539,7 @@ export type PlanRequestUncheckedUpdateWithoutProviderInput = {
 export type PlanRequestUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPlanRequestStatusFieldUpdateOperationsInput | $Enums.PlanRequestStatus
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -606,7 +610,7 @@ export type $PlanRequestPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: number
     providerId: number
     plan: $Enums.SubscriptionPlan
-    status: string
+    status: $Enums.PlanRequestStatus
     reason: string | null
     createdAt: Date
     updatedAt: Date
@@ -1037,7 +1041,7 @@ export interface PlanRequestFieldRefs {
   readonly id: Prisma.FieldRef<"PlanRequest", 'Int'>
   readonly providerId: Prisma.FieldRef<"PlanRequest", 'Int'>
   readonly plan: Prisma.FieldRef<"PlanRequest", 'SubscriptionPlan'>
-  readonly status: Prisma.FieldRef<"PlanRequest", 'String'>
+  readonly status: Prisma.FieldRef<"PlanRequest", 'PlanRequestStatus'>
   readonly reason: Prisma.FieldRef<"PlanRequest", 'String'>
   readonly createdAt: Prisma.FieldRef<"PlanRequest", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PlanRequest", 'DateTime'>

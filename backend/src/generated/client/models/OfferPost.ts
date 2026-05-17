@@ -256,8 +256,8 @@ export type OfferPostWhereInput = {
   expiresAt?: Prisma.DateTimeFilter<"OfferPost"> | Date | string
   isActive?: Prisma.BoolFilter<"OfferPost"> | boolean
   createdAt?: Prisma.DateTimeFilter<"OfferPost"> | Date | string
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   categories?: Prisma.OfferPostCategoryListRelationFilter
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   reports?: Prisma.OfferReportListRelationFilter
 }
 
@@ -271,8 +271,8 @@ export type OfferPostOrderByWithRelationInput = {
   expiresAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  provider?: Prisma.ProviderOrderByWithRelationInput
   categories?: Prisma.OfferPostCategoryOrderByRelationAggregateInput
+  provider?: Prisma.ProviderOrderByWithRelationInput
   reports?: Prisma.OfferReportOrderByRelationAggregateInput
 }
 
@@ -289,8 +289,8 @@ export type OfferPostWhereUniqueInput = Prisma.AtLeast<{
   expiresAt?: Prisma.DateTimeFilter<"OfferPost"> | Date | string
   isActive?: Prisma.BoolFilter<"OfferPost"> | boolean
   createdAt?: Prisma.DateTimeFilter<"OfferPost"> | Date | string
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   categories?: Prisma.OfferPostCategoryListRelationFilter
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   reports?: Prisma.OfferReportListRelationFilter
 }, "id">
 
@@ -334,8 +334,8 @@ export type OfferPostCreateInput = {
   expiresAt: Date | string
   isActive?: boolean
   createdAt?: Date | string
-  provider: Prisma.ProviderCreateNestedOneWithoutOfferPostsInput
   categories?: Prisma.OfferPostCategoryCreateNestedManyWithoutOfferPostInput
+  provider: Prisma.ProviderCreateNestedOneWithoutOfferPostsInput
   reports?: Prisma.OfferReportCreateNestedManyWithoutOfferPostInput
 }
 
@@ -361,8 +361,8 @@ export type OfferPostUpdateInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  provider?: Prisma.ProviderUpdateOneRequiredWithoutOfferPostsNestedInput
   categories?: Prisma.OfferPostCategoryUpdateManyWithoutOfferPostNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutOfferPostsNestedInput
   reports?: Prisma.OfferReportUpdateManyWithoutOfferPostNestedInput
 }
 
@@ -687,8 +687,8 @@ export type OfferPostCreateWithoutReportsInput = {
   expiresAt: Date | string
   isActive?: boolean
   createdAt?: Date | string
-  provider: Prisma.ProviderCreateNestedOneWithoutOfferPostsInput
   categories?: Prisma.OfferPostCategoryCreateNestedManyWithoutOfferPostInput
+  provider: Prisma.ProviderCreateNestedOneWithoutOfferPostsInput
 }
 
 export type OfferPostUncheckedCreateWithoutReportsInput = {
@@ -728,8 +728,8 @@ export type OfferPostUpdateWithoutReportsInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  provider?: Prisma.ProviderUpdateOneRequiredWithoutOfferPostsNestedInput
   categories?: Prisma.OfferPostCategoryUpdateManyWithoutOfferPostNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutOfferPostsNestedInput
 }
 
 export type OfferPostUncheckedUpdateWithoutReportsInput = {
@@ -842,8 +842,8 @@ export type OfferPostSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   expiresAt?: boolean
   isActive?: boolean
   createdAt?: boolean
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   categories?: boolean | Prisma.OfferPost$categoriesArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   reports?: boolean | Prisma.OfferPost$reportsArgs<ExtArgs>
   _count?: boolean | Prisma.OfferPostCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offerPost"]>
@@ -888,8 +888,8 @@ export type OfferPostSelectScalar = {
 
 export type OfferPostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "title" | "description" | "price" | "photoUrl" | "expiresAt" | "isActive" | "createdAt", ExtArgs["result"]["offerPost"]>
 export type OfferPostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   categories?: boolean | Prisma.OfferPost$categoriesArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   reports?: boolean | Prisma.OfferPost$reportsArgs<ExtArgs>
   _count?: boolean | Prisma.OfferPostCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -903,8 +903,8 @@ export type OfferPostIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type $OfferPostPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "OfferPost"
   objects: {
-    provider: Prisma.$ProviderPayload<ExtArgs>
     categories: Prisma.$OfferPostCategoryPayload<ExtArgs>[]
+    provider: Prisma.$ProviderPayload<ExtArgs>
     reports: Prisma.$OfferReportPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1311,8 +1311,8 @@ readonly fields: OfferPostFieldRefs;
  */
 export interface Prisma__OfferPostClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   categories<T extends Prisma.OfferPost$categoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OfferPost$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPostCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   reports<T extends Prisma.OfferPost$reportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OfferPost$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.

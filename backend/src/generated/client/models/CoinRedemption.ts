@@ -44,7 +44,7 @@ export type CoinRedemptionMinAggregateOutputType = {
   id: number | null
   userId: number | null
   rewardId: number | null
-  plan: string | null
+  plan: $Enums.SubscriptionPlan | null
   coinsSpent: number | null
   status: $Enums.RedemptionStatus | null
   createdAt: Date | null
@@ -54,7 +54,7 @@ export type CoinRedemptionMaxAggregateOutputType = {
   id: number | null
   userId: number | null
   rewardId: number | null
-  plan: string | null
+  plan: $Enums.SubscriptionPlan | null
   coinsSpent: number | null
   status: $Enums.RedemptionStatus | null
   createdAt: Date | null
@@ -207,7 +207,7 @@ export type CoinRedemptionGroupByOutputType = {
   id: number
   userId: number
   rewardId: number | null
-  plan: string | null
+  plan: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status: $Enums.RedemptionStatus
   createdAt: Date
@@ -240,12 +240,12 @@ export type CoinRedemptionWhereInput = {
   id?: Prisma.IntFilter<"CoinRedemption"> | number
   userId?: Prisma.IntFilter<"CoinRedemption"> | number
   rewardId?: Prisma.IntNullableFilter<"CoinRedemption"> | number | null
-  plan?: Prisma.StringNullableFilter<"CoinRedemption"> | string | null
+  plan?: Prisma.EnumSubscriptionPlanNullableFilter<"CoinRedemption"> | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFilter<"CoinRedemption"> | number
   status?: Prisma.EnumRedemptionStatusFilter<"CoinRedemption"> | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFilter<"CoinRedemption"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   reward?: Prisma.XOR<Prisma.ReferralRewardNullableScalarRelationFilter, Prisma.ReferralRewardWhereInput> | null
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type CoinRedemptionOrderByWithRelationInput = {
@@ -256,8 +256,8 @@ export type CoinRedemptionOrderByWithRelationInput = {
   coinsSpent?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  user?: Prisma.UserOrderByWithRelationInput
   reward?: Prisma.ReferralRewardOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type CoinRedemptionWhereUniqueInput = Prisma.AtLeast<{
@@ -267,12 +267,12 @@ export type CoinRedemptionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CoinRedemptionWhereInput | Prisma.CoinRedemptionWhereInput[]
   userId?: Prisma.IntFilter<"CoinRedemption"> | number
   rewardId?: Prisma.IntNullableFilter<"CoinRedemption"> | number | null
-  plan?: Prisma.StringNullableFilter<"CoinRedemption"> | string | null
+  plan?: Prisma.EnumSubscriptionPlanNullableFilter<"CoinRedemption"> | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFilter<"CoinRedemption"> | number
   status?: Prisma.EnumRedemptionStatusFilter<"CoinRedemption"> | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFilter<"CoinRedemption"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   reward?: Prisma.XOR<Prisma.ReferralRewardNullableScalarRelationFilter, Prisma.ReferralRewardWhereInput> | null
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type CoinRedemptionOrderByWithAggregationInput = {
@@ -297,45 +297,45 @@ export type CoinRedemptionScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"CoinRedemption"> | number
   userId?: Prisma.IntWithAggregatesFilter<"CoinRedemption"> | number
   rewardId?: Prisma.IntNullableWithAggregatesFilter<"CoinRedemption"> | number | null
-  plan?: Prisma.StringNullableWithAggregatesFilter<"CoinRedemption"> | string | null
+  plan?: Prisma.EnumSubscriptionPlanNullableWithAggregatesFilter<"CoinRedemption"> | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntWithAggregatesFilter<"CoinRedemption"> | number
   status?: Prisma.EnumRedemptionStatusWithAggregatesFilter<"CoinRedemption"> | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CoinRedemption"> | Date | string
 }
 
 export type CoinRedemptionCreateInput = {
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutRedemptionsInput
   reward?: Prisma.ReferralRewardCreateNestedOneWithoutRedemptionsInput
+  user: Prisma.UserCreateNestedOneWithoutRedemptionsInput
 }
 
 export type CoinRedemptionUncheckedCreateInput = {
   id?: number
   userId: number
   rewardId?: number | null
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
 }
 
 export type CoinRedemptionUpdateInput = {
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutRedemptionsNestedInput
   reward?: Prisma.ReferralRewardUpdateOneWithoutRedemptionsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutRedemptionsNestedInput
 }
 
 export type CoinRedemptionUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   rewardId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -345,14 +345,14 @@ export type CoinRedemptionCreateManyInput = {
   id?: number
   userId: number
   rewardId?: number | null
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
 }
 
 export type CoinRedemptionUpdateManyMutationInput = {
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -362,7 +362,7 @@ export type CoinRedemptionUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   rewardId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -506,12 +506,16 @@ export type CoinRedemptionUncheckedUpdateManyWithoutRewardNestedInput = {
   deleteMany?: Prisma.CoinRedemptionScalarWhereInput | Prisma.CoinRedemptionScalarWhereInput[]
 }
 
+export type NullableEnumSubscriptionPlanFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionPlan | null
+}
+
 export type EnumRedemptionStatusFieldUpdateOperationsInput = {
   set?: $Enums.RedemptionStatus
 }
 
 export type CoinRedemptionCreateWithoutUserInput = {
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
@@ -521,7 +525,7 @@ export type CoinRedemptionCreateWithoutUserInput = {
 export type CoinRedemptionUncheckedCreateWithoutUserInput = {
   id?: number
   rewardId?: number | null
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
@@ -560,14 +564,14 @@ export type CoinRedemptionScalarWhereInput = {
   id?: Prisma.IntFilter<"CoinRedemption"> | number
   userId?: Prisma.IntFilter<"CoinRedemption"> | number
   rewardId?: Prisma.IntNullableFilter<"CoinRedemption"> | number | null
-  plan?: Prisma.StringNullableFilter<"CoinRedemption"> | string | null
+  plan?: Prisma.EnumSubscriptionPlanNullableFilter<"CoinRedemption"> | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFilter<"CoinRedemption"> | number
   status?: Prisma.EnumRedemptionStatusFilter<"CoinRedemption"> | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFilter<"CoinRedemption"> | Date | string
 }
 
 export type CoinRedemptionCreateWithoutRewardInput = {
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
@@ -577,7 +581,7 @@ export type CoinRedemptionCreateWithoutRewardInput = {
 export type CoinRedemptionUncheckedCreateWithoutRewardInput = {
   id?: number
   userId: number
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
@@ -612,14 +616,14 @@ export type CoinRedemptionUpdateManyWithWhereWithoutRewardInput = {
 export type CoinRedemptionCreateManyUserInput = {
   id?: number
   rewardId?: number | null
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
 }
 
 export type CoinRedemptionUpdateWithoutUserInput = {
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -629,7 +633,7 @@ export type CoinRedemptionUpdateWithoutUserInput = {
 export type CoinRedemptionUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   rewardId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -638,7 +642,7 @@ export type CoinRedemptionUncheckedUpdateWithoutUserInput = {
 export type CoinRedemptionUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   rewardId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -647,14 +651,14 @@ export type CoinRedemptionUncheckedUpdateManyWithoutUserInput = {
 export type CoinRedemptionCreateManyRewardInput = {
   id?: number
   userId: number
-  plan?: string | null
+  plan?: $Enums.SubscriptionPlan | null
   coinsSpent: number
   status?: $Enums.RedemptionStatus
   createdAt?: Date | string
 }
 
 export type CoinRedemptionUpdateWithoutRewardInput = {
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -664,7 +668,7 @@ export type CoinRedemptionUpdateWithoutRewardInput = {
 export type CoinRedemptionUncheckedUpdateWithoutRewardInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -673,7 +677,7 @@ export type CoinRedemptionUncheckedUpdateWithoutRewardInput = {
 export type CoinRedemptionUncheckedUpdateManyWithoutRewardInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  plan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.NullableEnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan | null
   coinsSpent?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumRedemptionStatusFieldUpdateOperationsInput | $Enums.RedemptionStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -689,8 +693,8 @@ export type CoinRedemptionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   coinsSpent?: boolean
   status?: boolean
   createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reward?: boolean | Prisma.CoinRedemption$rewardArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["coinRedemption"]>
 
 export type CoinRedemptionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -701,8 +705,8 @@ export type CoinRedemptionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   coinsSpent?: boolean
   status?: boolean
   createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reward?: boolean | Prisma.CoinRedemption$rewardArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["coinRedemption"]>
 
 export type CoinRedemptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -713,8 +717,8 @@ export type CoinRedemptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   coinsSpent?: boolean
   status?: boolean
   createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reward?: boolean | Prisma.CoinRedemption$rewardArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["coinRedemption"]>
 
 export type CoinRedemptionSelectScalar = {
@@ -729,29 +733,29 @@ export type CoinRedemptionSelectScalar = {
 
 export type CoinRedemptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "rewardId" | "plan" | "coinsSpent" | "status" | "createdAt", ExtArgs["result"]["coinRedemption"]>
 export type CoinRedemptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reward?: boolean | Prisma.CoinRedemption$rewardArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CoinRedemptionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reward?: boolean | Prisma.CoinRedemption$rewardArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CoinRedemptionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reward?: boolean | Prisma.CoinRedemption$rewardArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $CoinRedemptionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CoinRedemption"
   objects: {
-    user: Prisma.$UserPayload<ExtArgs>
     reward: Prisma.$ReferralRewardPayload<ExtArgs> | null
+    user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     userId: number
     rewardId: number | null
-    plan: string | null
+    plan: $Enums.SubscriptionPlan | null
     coinsSpent: number
     status: $Enums.RedemptionStatus
     createdAt: Date
@@ -1149,8 +1153,8 @@ readonly fields: CoinRedemptionFieldRefs;
  */
 export interface Prisma__CoinRedemptionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   reward<T extends Prisma.CoinRedemption$rewardArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CoinRedemption$rewardArgs<ExtArgs>>): Prisma.Prisma__ReferralRewardClient<runtime.Types.Result.GetResult<Prisma.$ReferralRewardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1183,7 +1187,7 @@ export interface CoinRedemptionFieldRefs {
   readonly id: Prisma.FieldRef<"CoinRedemption", 'Int'>
   readonly userId: Prisma.FieldRef<"CoinRedemption", 'Int'>
   readonly rewardId: Prisma.FieldRef<"CoinRedemption", 'Int'>
-  readonly plan: Prisma.FieldRef<"CoinRedemption", 'String'>
+  readonly plan: Prisma.FieldRef<"CoinRedemption", 'SubscriptionPlan'>
   readonly coinsSpent: Prisma.FieldRef<"CoinRedemption", 'Int'>
   readonly status: Prisma.FieldRef<"CoinRedemption", 'RedemptionStatus'>
   readonly createdAt: Prisma.FieldRef<"CoinRedemption", 'DateTime'>

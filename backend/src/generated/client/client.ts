@@ -88,6 +88,11 @@ export type ProviderImage = Prisma.ProviderImageModel
  */
 export type Subscription = Prisma.SubscriptionModel
 /**
+ * Model SubscriptionAuditLog
+ * 
+ */
+export type SubscriptionAuditLog = Prisma.SubscriptionAuditLogModel
+/**
  * Model Payment
  * 
  */
@@ -216,3 +221,8 @@ export type OfferPostCategory = Prisma.OfferPostCategoryModel
  * Reportes de clientes sobre ofertas inapropiadas
  */
 export type OfferReport = Prisma.OfferReportModel
+/**
+ * Model spatial_ref_sys
+ * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+ */
+export type spatial_ref_sys = Prisma.spatial_ref_sysModel

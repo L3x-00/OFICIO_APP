@@ -33,9 +33,9 @@ export type ProviderAvgAggregateOutputType = {
   longitude: number | null
   averageRating: number | null
   totalReviews: number | null
-  totalRecommendations: number | null
-  planPriority: number | null
   localityId: number | null
+  planPriority: number | null
+  totalRecommendations: number | null
 }
 
 export type ProviderSumAggregateOutputType = {
@@ -45,9 +45,9 @@ export type ProviderSumAggregateOutputType = {
   longitude: number | null
   averageRating: number | null
   totalReviews: number | null
-  totalRecommendations: number | null
-  planPriority: number | null
   localityId: number | null
+  planPriority: number | null
+  totalRecommendations: number | null
 }
 
 export type ProviderMinAggregateOutputType = {
@@ -55,27 +55,10 @@ export type ProviderMinAggregateOutputType = {
   userId: number | null
   type: $Enums.ProviderType | null
   businessName: string | null
-  slug: string | null
-  slugEditedAt: Date | null
   description: string | null
-  dni: string | null
-  ruc: string | null
-  nombreComercial: string | null
-  razonSocial: string | null
-  hasDelivery: boolean | null
-  plenaCoordinacion: boolean | null
-  hasHomeService: boolean | null
   phone: string | null
   whatsapp: string | null
   address: string | null
-  website: string | null
-  instagram: string | null
-  tiktok: string | null
-  facebook: string | null
-  linkedin: string | null
-  twitterX: string | null
-  telegram: string | null
-  whatsappBiz: string | null
   latitude: number | null
   longitude: number | null
   availability: $Enums.AvailabilityStatus | null
@@ -83,15 +66,32 @@ export type ProviderMinAggregateOutputType = {
   verificationStatus: $Enums.VerificationStatus | null
   isVerified: boolean | null
   hasCleanRecord: boolean | null
-  trustStatus: $Enums.TrustStatus | null
-  isTrusted: boolean | null
   averageRating: number | null
   totalReviews: number | null
-  totalRecommendations: number | null
-  planPriority: number | null
   localityId: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  dni: string | null
+  hasDelivery: boolean | null
+  hasHomeService: boolean | null
+  isTrusted: boolean | null
+  nombreComercial: string | null
+  planPriority: number | null
+  plenaCoordinacion: boolean | null
+  razonSocial: string | null
+  ruc: string | null
+  totalRecommendations: number | null
+  trustStatus: $Enums.TrustStatus | null
+  facebook: string | null
+  instagram: string | null
+  linkedin: string | null
+  telegram: string | null
+  tiktok: string | null
+  twitterX: string | null
+  website: string | null
+  whatsappBiz: string | null
+  slug: string | null
+  slugEditedAt: Date | null
 }
 
 export type ProviderMaxAggregateOutputType = {
@@ -99,27 +99,10 @@ export type ProviderMaxAggregateOutputType = {
   userId: number | null
   type: $Enums.ProviderType | null
   businessName: string | null
-  slug: string | null
-  slugEditedAt: Date | null
   description: string | null
-  dni: string | null
-  ruc: string | null
-  nombreComercial: string | null
-  razonSocial: string | null
-  hasDelivery: boolean | null
-  plenaCoordinacion: boolean | null
-  hasHomeService: boolean | null
   phone: string | null
   whatsapp: string | null
   address: string | null
-  website: string | null
-  instagram: string | null
-  tiktok: string | null
-  facebook: string | null
-  linkedin: string | null
-  twitterX: string | null
-  telegram: string | null
-  whatsappBiz: string | null
   latitude: number | null
   longitude: number | null
   availability: $Enums.AvailabilityStatus | null
@@ -127,15 +110,32 @@ export type ProviderMaxAggregateOutputType = {
   verificationStatus: $Enums.VerificationStatus | null
   isVerified: boolean | null
   hasCleanRecord: boolean | null
-  trustStatus: $Enums.TrustStatus | null
-  isTrusted: boolean | null
   averageRating: number | null
   totalReviews: number | null
-  totalRecommendations: number | null
-  planPriority: number | null
   localityId: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  dni: string | null
+  hasDelivery: boolean | null
+  hasHomeService: boolean | null
+  isTrusted: boolean | null
+  nombreComercial: string | null
+  planPriority: number | null
+  plenaCoordinacion: boolean | null
+  razonSocial: string | null
+  ruc: string | null
+  totalRecommendations: number | null
+  trustStatus: $Enums.TrustStatus | null
+  facebook: string | null
+  instagram: string | null
+  linkedin: string | null
+  telegram: string | null
+  tiktok: string | null
+  twitterX: string | null
+  website: string | null
+  whatsappBiz: string | null
+  slug: string | null
+  slugEditedAt: Date | null
 }
 
 export type ProviderCountAggregateOutputType = {
@@ -143,27 +143,10 @@ export type ProviderCountAggregateOutputType = {
   userId: number
   type: number
   businessName: number
-  slug: number
-  slugEditedAt: number
   description: number
-  dni: number
-  ruc: number
-  nombreComercial: number
-  razonSocial: number
-  hasDelivery: number
-  plenaCoordinacion: number
-  hasHomeService: number
   phone: number
   whatsapp: number
   address: number
-  website: number
-  instagram: number
-  tiktok: number
-  facebook: number
-  linkedin: number
-  twitterX: number
-  telegram: number
-  whatsappBiz: number
   latitude: number
   longitude: number
   scheduleJson: number
@@ -172,15 +155,32 @@ export type ProviderCountAggregateOutputType = {
   verificationStatus: number
   isVerified: number
   hasCleanRecord: number
-  trustStatus: number
-  isTrusted: number
   averageRating: number
   totalReviews: number
-  totalRecommendations: number
-  planPriority: number
   localityId: number
   createdAt: number
   updatedAt: number
+  dni: number
+  hasDelivery: number
+  hasHomeService: number
+  isTrusted: number
+  nombreComercial: number
+  planPriority: number
+  plenaCoordinacion: number
+  razonSocial: number
+  ruc: number
+  totalRecommendations: number
+  trustStatus: number
+  facebook: number
+  instagram: number
+  linkedin: number
+  telegram: number
+  tiktok: number
+  twitterX: number
+  website: number
+  whatsappBiz: number
+  slug: number
+  slugEditedAt: number
   _all: number
 }
 
@@ -192,9 +192,9 @@ export type ProviderAvgAggregateInputType = {
   longitude?: true
   averageRating?: true
   totalReviews?: true
-  totalRecommendations?: true
-  planPriority?: true
   localityId?: true
+  planPriority?: true
+  totalRecommendations?: true
 }
 
 export type ProviderSumAggregateInputType = {
@@ -204,9 +204,9 @@ export type ProviderSumAggregateInputType = {
   longitude?: true
   averageRating?: true
   totalReviews?: true
-  totalRecommendations?: true
-  planPriority?: true
   localityId?: true
+  planPriority?: true
+  totalRecommendations?: true
 }
 
 export type ProviderMinAggregateInputType = {
@@ -214,27 +214,10 @@ export type ProviderMinAggregateInputType = {
   userId?: true
   type?: true
   businessName?: true
-  slug?: true
-  slugEditedAt?: true
   description?: true
-  dni?: true
-  ruc?: true
-  nombreComercial?: true
-  razonSocial?: true
-  hasDelivery?: true
-  plenaCoordinacion?: true
-  hasHomeService?: true
   phone?: true
   whatsapp?: true
   address?: true
-  website?: true
-  instagram?: true
-  tiktok?: true
-  facebook?: true
-  linkedin?: true
-  twitterX?: true
-  telegram?: true
-  whatsappBiz?: true
   latitude?: true
   longitude?: true
   availability?: true
@@ -242,15 +225,32 @@ export type ProviderMinAggregateInputType = {
   verificationStatus?: true
   isVerified?: true
   hasCleanRecord?: true
-  trustStatus?: true
-  isTrusted?: true
   averageRating?: true
   totalReviews?: true
-  totalRecommendations?: true
-  planPriority?: true
   localityId?: true
   createdAt?: true
   updatedAt?: true
+  dni?: true
+  hasDelivery?: true
+  hasHomeService?: true
+  isTrusted?: true
+  nombreComercial?: true
+  planPriority?: true
+  plenaCoordinacion?: true
+  razonSocial?: true
+  ruc?: true
+  totalRecommendations?: true
+  trustStatus?: true
+  facebook?: true
+  instagram?: true
+  linkedin?: true
+  telegram?: true
+  tiktok?: true
+  twitterX?: true
+  website?: true
+  whatsappBiz?: true
+  slug?: true
+  slugEditedAt?: true
 }
 
 export type ProviderMaxAggregateInputType = {
@@ -258,27 +258,10 @@ export type ProviderMaxAggregateInputType = {
   userId?: true
   type?: true
   businessName?: true
-  slug?: true
-  slugEditedAt?: true
   description?: true
-  dni?: true
-  ruc?: true
-  nombreComercial?: true
-  razonSocial?: true
-  hasDelivery?: true
-  plenaCoordinacion?: true
-  hasHomeService?: true
   phone?: true
   whatsapp?: true
   address?: true
-  website?: true
-  instagram?: true
-  tiktok?: true
-  facebook?: true
-  linkedin?: true
-  twitterX?: true
-  telegram?: true
-  whatsappBiz?: true
   latitude?: true
   longitude?: true
   availability?: true
@@ -286,15 +269,32 @@ export type ProviderMaxAggregateInputType = {
   verificationStatus?: true
   isVerified?: true
   hasCleanRecord?: true
-  trustStatus?: true
-  isTrusted?: true
   averageRating?: true
   totalReviews?: true
-  totalRecommendations?: true
-  planPriority?: true
   localityId?: true
   createdAt?: true
   updatedAt?: true
+  dni?: true
+  hasDelivery?: true
+  hasHomeService?: true
+  isTrusted?: true
+  nombreComercial?: true
+  planPriority?: true
+  plenaCoordinacion?: true
+  razonSocial?: true
+  ruc?: true
+  totalRecommendations?: true
+  trustStatus?: true
+  facebook?: true
+  instagram?: true
+  linkedin?: true
+  telegram?: true
+  tiktok?: true
+  twitterX?: true
+  website?: true
+  whatsappBiz?: true
+  slug?: true
+  slugEditedAt?: true
 }
 
 export type ProviderCountAggregateInputType = {
@@ -302,27 +302,10 @@ export type ProviderCountAggregateInputType = {
   userId?: true
   type?: true
   businessName?: true
-  slug?: true
-  slugEditedAt?: true
   description?: true
-  dni?: true
-  ruc?: true
-  nombreComercial?: true
-  razonSocial?: true
-  hasDelivery?: true
-  plenaCoordinacion?: true
-  hasHomeService?: true
   phone?: true
   whatsapp?: true
   address?: true
-  website?: true
-  instagram?: true
-  tiktok?: true
-  facebook?: true
-  linkedin?: true
-  twitterX?: true
-  telegram?: true
-  whatsappBiz?: true
   latitude?: true
   longitude?: true
   scheduleJson?: true
@@ -331,15 +314,32 @@ export type ProviderCountAggregateInputType = {
   verificationStatus?: true
   isVerified?: true
   hasCleanRecord?: true
-  trustStatus?: true
-  isTrusted?: true
   averageRating?: true
   totalReviews?: true
-  totalRecommendations?: true
-  planPriority?: true
   localityId?: true
   createdAt?: true
   updatedAt?: true
+  dni?: true
+  hasDelivery?: true
+  hasHomeService?: true
+  isTrusted?: true
+  nombreComercial?: true
+  planPriority?: true
+  plenaCoordinacion?: true
+  razonSocial?: true
+  ruc?: true
+  totalRecommendations?: true
+  trustStatus?: true
+  facebook?: true
+  instagram?: true
+  linkedin?: true
+  telegram?: true
+  tiktok?: true
+  twitterX?: true
+  website?: true
+  whatsappBiz?: true
+  slug?: true
+  slugEditedAt?: true
   _all?: true
 }
 
@@ -434,27 +434,10 @@ export type ProviderGroupByOutputType = {
   userId: number
   type: $Enums.ProviderType
   businessName: string
-  slug: string | null
-  slugEditedAt: Date | null
   description: string | null
-  dni: string | null
-  ruc: string | null
-  nombreComercial: string | null
-  razonSocial: string | null
-  hasDelivery: boolean
-  plenaCoordinacion: boolean
-  hasHomeService: boolean
   phone: string
   whatsapp: string | null
   address: string | null
-  website: string | null
-  instagram: string | null
-  tiktok: string | null
-  facebook: string | null
-  linkedin: string | null
-  twitterX: string | null
-  telegram: string | null
-  whatsappBiz: string | null
   latitude: number | null
   longitude: number | null
   scheduleJson: runtime.JsonValue | null
@@ -463,15 +446,32 @@ export type ProviderGroupByOutputType = {
   verificationStatus: $Enums.VerificationStatus
   isVerified: boolean
   hasCleanRecord: boolean
-  trustStatus: $Enums.TrustStatus
-  isTrusted: boolean
   averageRating: number
   totalReviews: number
-  totalRecommendations: number
-  planPriority: number
   localityId: number
   createdAt: Date
   updatedAt: Date
+  dni: string | null
+  hasDelivery: boolean
+  hasHomeService: boolean
+  isTrusted: boolean
+  nombreComercial: string | null
+  planPriority: number
+  plenaCoordinacion: boolean
+  razonSocial: string | null
+  ruc: string | null
+  totalRecommendations: number
+  trustStatus: $Enums.TrustStatus
+  facebook: string | null
+  instagram: string | null
+  linkedin: string | null
+  telegram: string | null
+  tiktok: string | null
+  twitterX: string | null
+  website: string | null
+  whatsappBiz: string | null
+  slug: string | null
+  slugEditedAt: Date | null
   _count: ProviderCountAggregateOutputType | null
   _avg: ProviderAvgAggregateOutputType | null
   _sum: ProviderSumAggregateOutputType | null
@@ -502,27 +502,10 @@ export type ProviderWhereInput = {
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
-  slug?: Prisma.StringNullableFilter<"Provider"> | string | null
-  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
-  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
-  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
-  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
-  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
-  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
-  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
-  hasHomeService?: Prisma.BoolFilter<"Provider"> | boolean
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
-  website?: Prisma.StringNullableFilter<"Provider"> | string | null
-  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
-  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
-  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
-  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
-  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
-  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
-  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
@@ -531,35 +514,52 @@ export type ProviderWhereInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
-  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatFilter<"Provider"> | number
   totalReviews?: Prisma.IntFilter<"Provider"> | number
-  totalRecommendations?: Prisma.IntFilter<"Provider"> | number
-  planPriority?: Prisma.IntFilter<"Provider"> | number
   localityId?: Prisma.IntFilter<"Provider"> | number
   createdAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  locality?: Prisma.XOR<Prisma.LocalityScalarRelationFilter, Prisma.LocalityWhereInput>
+  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
+  hasHomeService?: Prisma.BoolFilter<"Provider"> | boolean
+  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
+  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  planPriority?: Prisma.IntFilter<"Provider"> | number
+  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
+  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
+  totalRecommendations?: Prisma.IntFilter<"Provider"> | number
+  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
+  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slug?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
+  notifications?: Prisma.AdminNotificationListRelationFilter
+  chatsAsProvider?: Prisma.ChatRoomListRelationFilter
+  favorites?: Prisma.FavoriteListRelationFilter
+  offerPosts?: Prisma.OfferPostListRelationFilter
+  offers?: Prisma.OfferListRelationFilter
+  planRequests?: Prisma.PlanRequestListRelationFilter
+  analytics?: Prisma.ProviderAnalyticListRelationFilter
   providerCategories?: Prisma.ProviderCategoryListRelationFilter
   images?: Prisma.ProviderImageListRelationFilter
-  reviews?: Prisma.ReviewListRelationFilter
-  favorites?: Prisma.FavoriteListRelationFilter
-  subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
-  verificationDocs?: Prisma.VerificationDocListRelationFilter
-  analytics?: Prisma.ProviderAnalyticListRelationFilter
-  notifications?: Prisma.AdminNotificationListRelationFilter
-  planRequests?: Prisma.PlanRequestListRelationFilter
-  recommendations?: Prisma.RecommendationListRelationFilter
   reports?: Prisma.ProviderReportListRelationFilter
-  trustValidations?: Prisma.TrustValidationRequestListRelationFilter
-  offers?: Prisma.OfferListRelationFilter
-  yapePayments?: Prisma.YapePaymentListRelationFilter
-  referralReceived?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
+  locality?: Prisma.XOR<Prisma.LocalityScalarRelationFilter, Prisma.LocalityWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  recommendations?: Prisma.RecommendationListRelationFilter
   referralRewards?: Prisma.ReferralRewardListRelationFilter
-  chatsAsProvider?: Prisma.ChatRoomListRelationFilter
-  offerPosts?: Prisma.OfferPostListRelationFilter
+  referralReceived?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
+  reviews?: Prisma.ReviewListRelationFilter
+  subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
+  trustValidations?: Prisma.TrustValidationRequestListRelationFilter
+  verificationDocs?: Prisma.VerificationDocListRelationFilter
+  yapePayments?: Prisma.YapePaymentListRelationFilter
 }
 
 export type ProviderOrderByWithRelationInput = {
@@ -567,27 +567,10 @@ export type ProviderOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
-  slug?: Prisma.SortOrderInput | Prisma.SortOrder
-  slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  dni?: Prisma.SortOrderInput | Prisma.SortOrder
-  ruc?: Prisma.SortOrderInput | Prisma.SortOrder
-  nombreComercial?: Prisma.SortOrderInput | Prisma.SortOrder
-  razonSocial?: Prisma.SortOrderInput | Prisma.SortOrder
-  hasDelivery?: Prisma.SortOrder
-  plenaCoordinacion?: Prisma.SortOrder
-  hasHomeService?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
-  website?: Prisma.SortOrderInput | Prisma.SortOrder
-  instagram?: Prisma.SortOrderInput | Prisma.SortOrder
-  tiktok?: Prisma.SortOrderInput | Prisma.SortOrder
-  facebook?: Prisma.SortOrderInput | Prisma.SortOrder
-  linkedin?: Prisma.SortOrderInput | Prisma.SortOrder
-  twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
-  telegram?: Prisma.SortOrderInput | Prisma.SortOrder
-  whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
   longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleJson?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -596,35 +579,52 @@ export type ProviderOrderByWithRelationInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
-  trustStatus?: Prisma.SortOrder
-  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  user?: Prisma.UserOrderByWithRelationInput
-  locality?: Prisma.LocalityOrderByWithRelationInput
+  dni?: Prisma.SortOrderInput | Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  hasHomeService?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrderInput | Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrderInput | Prisma.SortOrder
+  ruc?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  facebook?: Prisma.SortOrderInput | Prisma.SortOrder
+  instagram?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedin?: Prisma.SortOrderInput | Prisma.SortOrder
+  telegram?: Prisma.SortOrderInput | Prisma.SortOrder
+  tiktok?: Prisma.SortOrderInput | Prisma.SortOrder
+  twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
+  slug?: Prisma.SortOrderInput | Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  notifications?: Prisma.AdminNotificationOrderByRelationAggregateInput
+  chatsAsProvider?: Prisma.ChatRoomOrderByRelationAggregateInput
+  favorites?: Prisma.FavoriteOrderByRelationAggregateInput
+  offerPosts?: Prisma.OfferPostOrderByRelationAggregateInput
+  offers?: Prisma.OfferOrderByRelationAggregateInput
+  planRequests?: Prisma.PlanRequestOrderByRelationAggregateInput
+  analytics?: Prisma.ProviderAnalyticOrderByRelationAggregateInput
   providerCategories?: Prisma.ProviderCategoryOrderByRelationAggregateInput
   images?: Prisma.ProviderImageOrderByRelationAggregateInput
-  reviews?: Prisma.ReviewOrderByRelationAggregateInput
-  favorites?: Prisma.FavoriteOrderByRelationAggregateInput
-  subscription?: Prisma.SubscriptionOrderByWithRelationInput
-  verificationDocs?: Prisma.VerificationDocOrderByRelationAggregateInput
-  analytics?: Prisma.ProviderAnalyticOrderByRelationAggregateInput
-  notifications?: Prisma.AdminNotificationOrderByRelationAggregateInput
-  planRequests?: Prisma.PlanRequestOrderByRelationAggregateInput
-  recommendations?: Prisma.RecommendationOrderByRelationAggregateInput
   reports?: Prisma.ProviderReportOrderByRelationAggregateInput
-  trustValidations?: Prisma.TrustValidationRequestOrderByRelationAggregateInput
-  offers?: Prisma.OfferOrderByRelationAggregateInput
-  yapePayments?: Prisma.YapePaymentOrderByRelationAggregateInput
-  referralReceived?: Prisma.ReferralOrderByWithRelationInput
+  locality?: Prisma.LocalityOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
+  recommendations?: Prisma.RecommendationOrderByRelationAggregateInput
   referralRewards?: Prisma.ReferralRewardOrderByRelationAggregateInput
-  chatsAsProvider?: Prisma.ChatRoomOrderByRelationAggregateInput
-  offerPosts?: Prisma.OfferPostOrderByRelationAggregateInput
+  referralReceived?: Prisma.ReferralOrderByWithRelationInput
+  reviews?: Prisma.ReviewOrderByRelationAggregateInput
+  subscription?: Prisma.SubscriptionOrderByWithRelationInput
+  trustValidations?: Prisma.TrustValidationRequestOrderByRelationAggregateInput
+  verificationDocs?: Prisma.VerificationDocOrderByRelationAggregateInput
+  yapePayments?: Prisma.YapePaymentOrderByRelationAggregateInput
 }
 
 export type ProviderWhereUniqueInput = Prisma.AtLeast<{
@@ -637,26 +637,10 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
-  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
-  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
-  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
-  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
-  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
-  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
-  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
-  hasHomeService?: Prisma.BoolFilter<"Provider"> | boolean
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
-  website?: Prisma.StringNullableFilter<"Provider"> | string | null
-  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
-  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
-  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
-  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
-  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
-  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
-  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
@@ -665,35 +649,51 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
-  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatFilter<"Provider"> | number
   totalReviews?: Prisma.IntFilter<"Provider"> | number
-  totalRecommendations?: Prisma.IntFilter<"Provider"> | number
-  planPriority?: Prisma.IntFilter<"Provider"> | number
   localityId?: Prisma.IntFilter<"Provider"> | number
   createdAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  locality?: Prisma.XOR<Prisma.LocalityScalarRelationFilter, Prisma.LocalityWhereInput>
+  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
+  hasHomeService?: Prisma.BoolFilter<"Provider"> | boolean
+  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
+  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  planPriority?: Prisma.IntFilter<"Provider"> | number
+  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
+  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
+  totalRecommendations?: Prisma.IntFilter<"Provider"> | number
+  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
+  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
+  notifications?: Prisma.AdminNotificationListRelationFilter
+  chatsAsProvider?: Prisma.ChatRoomListRelationFilter
+  favorites?: Prisma.FavoriteListRelationFilter
+  offerPosts?: Prisma.OfferPostListRelationFilter
+  offers?: Prisma.OfferListRelationFilter
+  planRequests?: Prisma.PlanRequestListRelationFilter
+  analytics?: Prisma.ProviderAnalyticListRelationFilter
   providerCategories?: Prisma.ProviderCategoryListRelationFilter
   images?: Prisma.ProviderImageListRelationFilter
-  reviews?: Prisma.ReviewListRelationFilter
-  favorites?: Prisma.FavoriteListRelationFilter
-  subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
-  verificationDocs?: Prisma.VerificationDocListRelationFilter
-  analytics?: Prisma.ProviderAnalyticListRelationFilter
-  notifications?: Prisma.AdminNotificationListRelationFilter
-  planRequests?: Prisma.PlanRequestListRelationFilter
-  recommendations?: Prisma.RecommendationListRelationFilter
   reports?: Prisma.ProviderReportListRelationFilter
-  trustValidations?: Prisma.TrustValidationRequestListRelationFilter
-  offers?: Prisma.OfferListRelationFilter
-  yapePayments?: Prisma.YapePaymentListRelationFilter
-  referralReceived?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
+  locality?: Prisma.XOR<Prisma.LocalityScalarRelationFilter, Prisma.LocalityWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  recommendations?: Prisma.RecommendationListRelationFilter
   referralRewards?: Prisma.ReferralRewardListRelationFilter
-  chatsAsProvider?: Prisma.ChatRoomListRelationFilter
-  offerPosts?: Prisma.OfferPostListRelationFilter
+  referralReceived?: Prisma.XOR<Prisma.ReferralNullableScalarRelationFilter, Prisma.ReferralWhereInput> | null
+  reviews?: Prisma.ReviewListRelationFilter
+  subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
+  trustValidations?: Prisma.TrustValidationRequestListRelationFilter
+  verificationDocs?: Prisma.VerificationDocListRelationFilter
+  yapePayments?: Prisma.YapePaymentListRelationFilter
 }, "id" | "slug" | "userId_type">
 
 export type ProviderOrderByWithAggregationInput = {
@@ -701,27 +701,10 @@ export type ProviderOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
-  slug?: Prisma.SortOrderInput | Prisma.SortOrder
-  slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  dni?: Prisma.SortOrderInput | Prisma.SortOrder
-  ruc?: Prisma.SortOrderInput | Prisma.SortOrder
-  nombreComercial?: Prisma.SortOrderInput | Prisma.SortOrder
-  razonSocial?: Prisma.SortOrderInput | Prisma.SortOrder
-  hasDelivery?: Prisma.SortOrder
-  plenaCoordinacion?: Prisma.SortOrder
-  hasHomeService?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
-  website?: Prisma.SortOrderInput | Prisma.SortOrder
-  instagram?: Prisma.SortOrderInput | Prisma.SortOrder
-  tiktok?: Prisma.SortOrderInput | Prisma.SortOrder
-  facebook?: Prisma.SortOrderInput | Prisma.SortOrder
-  linkedin?: Prisma.SortOrderInput | Prisma.SortOrder
-  twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
-  telegram?: Prisma.SortOrderInput | Prisma.SortOrder
-  whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
   longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleJson?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -730,15 +713,32 @@ export type ProviderOrderByWithAggregationInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
-  trustStatus?: Prisma.SortOrder
-  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  dni?: Prisma.SortOrderInput | Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  hasHomeService?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrderInput | Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrderInput | Prisma.SortOrder
+  ruc?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  facebook?: Prisma.SortOrderInput | Prisma.SortOrder
+  instagram?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedin?: Prisma.SortOrderInput | Prisma.SortOrder
+  telegram?: Prisma.SortOrderInput | Prisma.SortOrder
+  tiktok?: Prisma.SortOrderInput | Prisma.SortOrder
+  twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
+  slug?: Prisma.SortOrderInput | Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProviderCountOrderByAggregateInput
   _avg?: Prisma.ProviderAvgOrderByAggregateInput
   _max?: Prisma.ProviderMaxOrderByAggregateInput
@@ -754,27 +754,10 @@ export type ProviderScalarWhereWithAggregatesInput = {
   userId?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeWithAggregatesFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringWithAggregatesFilter<"Provider"> | string
-  slug?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  slugEditedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  dni?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  ruc?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  nombreComercial?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  razonSocial?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  hasDelivery?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
-  plenaCoordinacion?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
-  hasHomeService?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   phone?: Prisma.StringWithAggregatesFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  website?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  instagram?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  tiktok?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  facebook?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  linkedin?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  twitterX?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  telegram?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
-  whatsappBiz?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableWithAggregatesFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableWithAggregatesFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableWithAggregatesFilter<"Provider">
@@ -783,41 +766,41 @@ export type ProviderScalarWhereWithAggregatesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusWithAggregatesFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
-  trustStatus?: Prisma.EnumTrustStatusWithAggregatesFilter<"Provider"> | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatWithAggregatesFilter<"Provider"> | number
   totalReviews?: Prisma.IntWithAggregatesFilter<"Provider"> | number
-  totalRecommendations?: Prisma.IntWithAggregatesFilter<"Provider"> | number
-  planPriority?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   localityId?: Prisma.IntWithAggregatesFilter<"Provider"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Provider"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Provider"> | Date | string
+  dni?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  hasHomeService?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  isTrusted?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  nombreComercial?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  planPriority?: Prisma.IntWithAggregatesFilter<"Provider"> | number
+  plenaCoordinacion?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  razonSocial?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  totalRecommendations?: Prisma.IntWithAggregatesFilter<"Provider"> | number
+  trustStatus?: Prisma.EnumTrustStatusWithAggregatesFilter<"Provider"> | $Enums.TrustStatus
+  facebook?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  slug?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Provider"> | Date | string | null
 }
 
 export type ProviderCreateInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -826,34 +809,51 @@ export type ProviderCreateInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateInput = {
@@ -861,27 +861,10 @@ export type ProviderUncheckedCreateInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -890,59 +873,59 @@ export type ProviderUncheckedCreateInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUpdateInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -951,34 +934,51 @@ export type ProviderUpdateInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateInput = {
@@ -986,27 +986,10 @@ export type ProviderUncheckedUpdateInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1015,33 +998,50 @@ export type ProviderUncheckedUpdateInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyInput = {
@@ -1049,27 +1049,10 @@ export type ProviderCreateManyInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1078,41 +1061,41 @@ export type ProviderCreateManyInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
 }
 
 export type ProviderUpdateManyMutationInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1121,14 +1104,31 @@ export type ProviderUpdateManyMutationInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProviderUncheckedUpdateManyInput = {
@@ -1136,27 +1136,10 @@ export type ProviderUncheckedUpdateManyInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1165,15 +1148,32 @@ export type ProviderUncheckedUpdateManyInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProviderListRelationFilter = {
@@ -1201,27 +1201,10 @@ export type ProviderCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
-  slugEditedAt?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  dni?: Prisma.SortOrder
-  ruc?: Prisma.SortOrder
-  nombreComercial?: Prisma.SortOrder
-  razonSocial?: Prisma.SortOrder
-  hasDelivery?: Prisma.SortOrder
-  plenaCoordinacion?: Prisma.SortOrder
-  hasHomeService?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
-  website?: Prisma.SortOrder
-  instagram?: Prisma.SortOrder
-  tiktok?: Prisma.SortOrder
-  facebook?: Prisma.SortOrder
-  linkedin?: Prisma.SortOrder
-  twitterX?: Prisma.SortOrder
-  telegram?: Prisma.SortOrder
-  whatsappBiz?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   scheduleJson?: Prisma.SortOrder
@@ -1230,15 +1213,32 @@ export type ProviderCountOrderByAggregateInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
-  trustStatus?: Prisma.SortOrder
-  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  dni?: Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  hasHomeService?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  ruc?: Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  facebook?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
+  linkedin?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  tiktok?: Prisma.SortOrder
+  twitterX?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrder
 }
 
 export type ProviderAvgOrderByAggregateInput = {
@@ -1248,9 +1248,9 @@ export type ProviderAvgOrderByAggregateInput = {
   longitude?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
 }
 
 export type ProviderMaxOrderByAggregateInput = {
@@ -1258,27 +1258,10 @@ export type ProviderMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
-  slugEditedAt?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  dni?: Prisma.SortOrder
-  ruc?: Prisma.SortOrder
-  nombreComercial?: Prisma.SortOrder
-  razonSocial?: Prisma.SortOrder
-  hasDelivery?: Prisma.SortOrder
-  plenaCoordinacion?: Prisma.SortOrder
-  hasHomeService?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
-  website?: Prisma.SortOrder
-  instagram?: Prisma.SortOrder
-  tiktok?: Prisma.SortOrder
-  facebook?: Prisma.SortOrder
-  linkedin?: Prisma.SortOrder
-  twitterX?: Prisma.SortOrder
-  telegram?: Prisma.SortOrder
-  whatsappBiz?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   availability?: Prisma.SortOrder
@@ -1286,15 +1269,32 @@ export type ProviderMaxOrderByAggregateInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
-  trustStatus?: Prisma.SortOrder
-  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  dni?: Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  hasHomeService?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  ruc?: Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  facebook?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
+  linkedin?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  tiktok?: Prisma.SortOrder
+  twitterX?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrder
 }
 
 export type ProviderMinOrderByAggregateInput = {
@@ -1302,27 +1302,10 @@ export type ProviderMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
-  slugEditedAt?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  dni?: Prisma.SortOrder
-  ruc?: Prisma.SortOrder
-  nombreComercial?: Prisma.SortOrder
-  razonSocial?: Prisma.SortOrder
-  hasDelivery?: Prisma.SortOrder
-  plenaCoordinacion?: Prisma.SortOrder
-  hasHomeService?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   whatsapp?: Prisma.SortOrder
   address?: Prisma.SortOrder
-  website?: Prisma.SortOrder
-  instagram?: Prisma.SortOrder
-  tiktok?: Prisma.SortOrder
-  facebook?: Prisma.SortOrder
-  linkedin?: Prisma.SortOrder
-  twitterX?: Prisma.SortOrder
-  telegram?: Prisma.SortOrder
-  whatsappBiz?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   availability?: Prisma.SortOrder
@@ -1330,15 +1313,32 @@ export type ProviderMinOrderByAggregateInput = {
   verificationStatus?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   hasCleanRecord?: Prisma.SortOrder
-  trustStatus?: Prisma.SortOrder
-  isTrusted?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  dni?: Prisma.SortOrder
+  hasDelivery?: Prisma.SortOrder
+  hasHomeService?: Prisma.SortOrder
+  isTrusted?: Prisma.SortOrder
+  nombreComercial?: Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  plenaCoordinacion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  ruc?: Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
+  trustStatus?: Prisma.SortOrder
+  facebook?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
+  linkedin?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  tiktok?: Prisma.SortOrder
+  twitterX?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  whatsappBiz?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  slugEditedAt?: Prisma.SortOrder
 }
 
 export type ProviderSumOrderByAggregateInput = {
@@ -1348,9 +1348,9 @@ export type ProviderSumOrderByAggregateInput = {
   longitude?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   totalReviews?: Prisma.SortOrder
-  totalRecommendations?: Prisma.SortOrder
-  planPriority?: Prisma.SortOrder
   localityId?: Prisma.SortOrder
+  planPriority?: Prisma.SortOrder
+  totalRecommendations?: Prisma.SortOrder
 }
 
 export type ProviderNullableScalarRelationFilter = {
@@ -1460,10 +1460,6 @@ export type EnumProviderTypeFieldUpdateOperationsInput = {
   set?: $Enums.ProviderType
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type NullableFloatFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -1480,16 +1476,20 @@ export type EnumVerificationStatusFieldUpdateOperationsInput = {
   set?: $Enums.VerificationStatus
 }
 
-export type EnumTrustStatusFieldUpdateOperationsInput = {
-  set?: $Enums.TrustStatus
-}
-
 export type FloatFieldUpdateOperationsInput = {
   set?: number
   increment?: number
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type EnumTrustStatusFieldUpdateOperationsInput = {
+  set?: $Enums.TrustStatus
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type ProviderCreateNestedOneWithoutImagesInput = {
@@ -1735,27 +1735,10 @@ export type ProviderUpdateOneRequiredWithoutOfferPostsNestedInput = {
 export type ProviderCreateWithoutUserInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1764,60 +1747,60 @@ export type ProviderCreateWithoutUserInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutUserInput = {
   id?: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1826,33 +1809,50 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutUserInput = {
@@ -1889,27 +1889,10 @@ export type ProviderScalarWhereInput = {
   userId?: Prisma.IntFilter<"Provider"> | number
   type?: Prisma.EnumProviderTypeFilter<"Provider"> | $Enums.ProviderType
   businessName?: Prisma.StringFilter<"Provider"> | string
-  slug?: Prisma.StringNullableFilter<"Provider"> | string | null
-  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   description?: Prisma.StringNullableFilter<"Provider"> | string | null
-  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
-  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
-  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
-  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
-  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
-  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
-  hasHomeService?: Prisma.BoolFilter<"Provider"> | boolean
   phone?: Prisma.StringFilter<"Provider"> | string
   whatsapp?: Prisma.StringNullableFilter<"Provider"> | string | null
   address?: Prisma.StringNullableFilter<"Provider"> | string | null
-  website?: Prisma.StringNullableFilter<"Provider"> | string | null
-  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
-  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
-  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
-  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
-  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
-  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
-  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
@@ -1918,41 +1901,41 @@ export type ProviderScalarWhereInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFilter<"Provider"> | boolean
   hasCleanRecord?: Prisma.BoolFilter<"Provider"> | boolean
-  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
   averageRating?: Prisma.FloatFilter<"Provider"> | number
   totalReviews?: Prisma.IntFilter<"Provider"> | number
-  totalRecommendations?: Prisma.IntFilter<"Provider"> | number
-  planPriority?: Prisma.IntFilter<"Provider"> | number
   localityId?: Prisma.IntFilter<"Provider"> | number
   createdAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Provider"> | Date | string
+  dni?: Prisma.StringNullableFilter<"Provider"> | string | null
+  hasDelivery?: Prisma.BoolFilter<"Provider"> | boolean
+  hasHomeService?: Prisma.BoolFilter<"Provider"> | boolean
+  isTrusted?: Prisma.BoolFilter<"Provider"> | boolean
+  nombreComercial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  planPriority?: Prisma.IntFilter<"Provider"> | number
+  plenaCoordinacion?: Prisma.BoolFilter<"Provider"> | boolean
+  razonSocial?: Prisma.StringNullableFilter<"Provider"> | string | null
+  ruc?: Prisma.StringNullableFilter<"Provider"> | string | null
+  totalRecommendations?: Prisma.IntFilter<"Provider"> | number
+  trustStatus?: Prisma.EnumTrustStatusFilter<"Provider"> | $Enums.TrustStatus
+  facebook?: Prisma.StringNullableFilter<"Provider"> | string | null
+  instagram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  linkedin?: Prisma.StringNullableFilter<"Provider"> | string | null
+  telegram?: Prisma.StringNullableFilter<"Provider"> | string | null
+  tiktok?: Prisma.StringNullableFilter<"Provider"> | string | null
+  twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
+  website?: Prisma.StringNullableFilter<"Provider"> | string | null
+  whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slug?: Prisma.StringNullableFilter<"Provider"> | string | null
+  slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
 }
 
 export type ProviderCreateWithoutLocalityInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1961,33 +1944,50 @@ export type ProviderCreateWithoutLocalityInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutLocalityInput = {
@@ -1995,27 +1995,10 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2024,32 +2007,49 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutLocalityInput = {
@@ -2081,27 +2081,10 @@ export type ProviderUpdateManyWithWhereWithoutLocalityInput = {
 export type ProviderCreateWithoutProviderCategoriesInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2110,33 +2093,50 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
-  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
@@ -2144,27 +2144,10 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2173,32 +2156,49 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutProviderCategoriesInput = {
@@ -2220,27 +2220,10 @@ export type ProviderUpdateToOneWithWhereWithoutProviderCategoriesInput = {
 export type ProviderUpdateWithoutProviderCategoriesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2249,33 +2232,50 @@ export type ProviderUpdateWithoutProviderCategoriesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
-  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
@@ -2283,27 +2283,10 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2312,58 +2295,58 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutImagesInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2372,33 +2355,50 @@ export type ProviderCreateWithoutImagesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
-  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutImagesInput = {
@@ -2406,27 +2406,10 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2435,32 +2418,49 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutImagesInput = {
@@ -2482,27 +2482,10 @@ export type ProviderUpdateToOneWithWhereWithoutImagesInput = {
 export type ProviderUpdateWithoutImagesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2511,33 +2494,50 @@ export type ProviderUpdateWithoutImagesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
-  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutImagesInput = {
@@ -2545,27 +2545,10 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2574,58 +2557,58 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutSubscriptionInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2634,33 +2617,50 @@ export type ProviderCreateWithoutSubscriptionInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutSubscriptionInput = {
@@ -2668,27 +2668,10 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2697,32 +2680,49 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutSubscriptionInput = {
@@ -2744,27 +2744,10 @@ export type ProviderUpdateToOneWithWhereWithoutSubscriptionInput = {
 export type ProviderUpdateWithoutSubscriptionInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2773,33 +2756,50 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
@@ -2807,27 +2807,10 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2836,58 +2819,58 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutPlanRequestsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2896,33 +2879,50 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
@@ -2930,27 +2930,10 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2959,32 +2942,49 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutPlanRequestsInput = {
@@ -3006,27 +3006,10 @@ export type ProviderUpdateToOneWithWhereWithoutPlanRequestsInput = {
 export type ProviderUpdateWithoutPlanRequestsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3035,33 +3018,50 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
@@ -3069,27 +3069,10 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3098,58 +3081,58 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReviewsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3158,33 +3141,50 @@ export type ProviderCreateWithoutReviewsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReviewsInput = {
@@ -3192,27 +3192,10 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3221,32 +3204,49 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReviewsInput = {
@@ -3268,27 +3268,10 @@ export type ProviderUpdateToOneWithWhereWithoutReviewsInput = {
 export type ProviderUpdateWithoutReviewsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3297,33 +3280,50 @@ export type ProviderUpdateWithoutReviewsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReviewsInput = {
@@ -3331,27 +3331,10 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3360,58 +3343,58 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutFavoritesInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3420,33 +3403,50 @@ export type ProviderCreateWithoutFavoritesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
-  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
-  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutFavoritesInput = {
@@ -3454,27 +3454,10 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3483,32 +3466,49 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
-  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutFavoritesInput = {
@@ -3530,27 +3530,10 @@ export type ProviderUpdateToOneWithWhereWithoutFavoritesInput = {
 export type ProviderUpdateWithoutFavoritesInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3559,33 +3542,50 @@ export type ProviderUpdateWithoutFavoritesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
-  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
-  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutFavoritesInput = {
@@ -3593,27 +3593,10 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3622,58 +3605,58 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
-  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutVerificationDocsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3682,33 +3665,50 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
@@ -3716,27 +3716,10 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3745,32 +3728,49 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutVerificationDocsInput = {
@@ -3792,27 +3792,10 @@ export type ProviderUpdateToOneWithWhereWithoutVerificationDocsInput = {
 export type ProviderUpdateWithoutVerificationDocsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3821,33 +3804,50 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
@@ -3855,27 +3855,10 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3884,58 +3867,58 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutAnalyticsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3944,33 +3927,50 @@ export type ProviderCreateWithoutAnalyticsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutAnalyticsInput = {
@@ -3978,27 +3978,10 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4007,32 +3990,49 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutAnalyticsInput = {
@@ -4054,27 +4054,10 @@ export type ProviderUpdateToOneWithWhereWithoutAnalyticsInput = {
 export type ProviderUpdateWithoutAnalyticsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4083,33 +4066,50 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
@@ -4117,27 +4117,10 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4146,58 +4129,58 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutNotificationsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4206,33 +4189,50 @@ export type ProviderCreateWithoutNotificationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutNotificationsInput = {
@@ -4240,27 +4240,10 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4269,32 +4252,49 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutNotificationsInput = {
@@ -4316,27 +4316,10 @@ export type ProviderUpdateToOneWithWhereWithoutNotificationsInput = {
 export type ProviderUpdateWithoutNotificationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4345,33 +4328,50 @@ export type ProviderUpdateWithoutNotificationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutNotificationsInput = {
@@ -4379,27 +4379,10 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4408,58 +4391,58 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutRecommendationsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4468,33 +4451,50 @@ export type ProviderCreateWithoutRecommendationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutRecommendationsInput = {
@@ -4502,27 +4502,10 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4531,32 +4514,49 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutRecommendationsInput = {
@@ -4578,27 +4578,10 @@ export type ProviderUpdateToOneWithWhereWithoutRecommendationsInput = {
 export type ProviderUpdateWithoutRecommendationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4607,33 +4590,50 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
@@ -4641,27 +4641,10 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4670,58 +4653,58 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReportsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4730,33 +4713,50 @@ export type ProviderCreateWithoutReportsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
   recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReportsInput = {
@@ -4764,27 +4764,10 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4793,32 +4776,49 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
   recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReportsInput = {
@@ -4840,27 +4840,10 @@ export type ProviderUpdateToOneWithWhereWithoutReportsInput = {
 export type ProviderUpdateWithoutReportsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4869,33 +4852,50 @@ export type ProviderUpdateWithoutReportsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
   recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReportsInput = {
@@ -4903,27 +4903,10 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4932,58 +4915,58 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutTrustValidationsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4992,33 +4975,50 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
@@ -5026,27 +5026,10 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5055,32 +5038,49 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
-  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
-  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutTrustValidationsInput = {
@@ -5102,27 +5102,10 @@ export type ProviderUpdateToOneWithWhereWithoutTrustValidationsInput = {
 export type ProviderUpdateWithoutTrustValidationsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5131,33 +5114,50 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
@@ -5165,27 +5165,10 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5194,58 +5177,58 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
-  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
-  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutOffersInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5254,33 +5237,50 @@ export type ProviderCreateWithoutOffersInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutOffersInput = {
@@ -5288,27 +5288,10 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5317,32 +5300,49 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutOffersInput = {
@@ -5364,27 +5364,10 @@ export type ProviderUpdateToOneWithWhereWithoutOffersInput = {
 export type ProviderUpdateWithoutOffersInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5393,33 +5376,50 @@ export type ProviderUpdateWithoutOffersInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutOffersInput = {
@@ -5427,27 +5427,10 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5456,58 +5439,58 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutYapePaymentsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5516,33 +5499,50 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
@@ -5550,27 +5550,10 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5579,32 +5562,49 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutYapePaymentsInput = {
@@ -5626,27 +5626,10 @@ export type ProviderUpdateToOneWithWhereWithoutYapePaymentsInput = {
 export type ProviderUpdateWithoutYapePaymentsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5655,33 +5638,50 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
@@ -5689,27 +5689,10 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5718,58 +5701,58 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReferralReceivedInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5778,33 +5761,50 @@ export type ProviderCreateWithoutReferralReceivedInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
@@ -5812,27 +5812,10 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5841,32 +5824,49 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReferralReceivedInput = {
@@ -5888,27 +5888,10 @@ export type ProviderUpdateToOneWithWhereWithoutReferralReceivedInput = {
 export type ProviderUpdateWithoutReferralReceivedInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5917,33 +5900,50 @@ export type ProviderUpdateWithoutReferralReceivedInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
@@ -5951,27 +5951,10 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5980,58 +5963,58 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReferralRewardsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6040,33 +6023,50 @@ export type ProviderCreateWithoutReferralRewardsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
@@ -6074,27 +6074,10 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6103,32 +6086,49 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReferralRewardsInput = {
@@ -6150,27 +6150,10 @@ export type ProviderUpdateToOneWithWhereWithoutReferralRewardsInput = {
 export type ProviderUpdateWithoutReferralRewardsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6179,33 +6162,50 @@ export type ProviderUpdateWithoutReferralRewardsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
@@ -6213,27 +6213,10 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6242,58 +6225,58 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutChatsAsProviderInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6302,33 +6285,50 @@ export type ProviderCreateWithoutChatsAsProviderInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
@@ -6336,27 +6336,10 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6365,32 +6348,49 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutChatsAsProviderInput = {
@@ -6412,27 +6412,10 @@ export type ProviderUpdateToOneWithWhereWithoutChatsAsProviderInput = {
 export type ProviderUpdateWithoutChatsAsProviderInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6441,33 +6424,50 @@ export type ProviderUpdateWithoutChatsAsProviderInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
@@ -6475,27 +6475,10 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6504,58 +6487,58 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutOfferPostsInput = {
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6564,33 +6547,50 @@ export type ProviderCreateWithoutOfferPostsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutProvidersInput
-  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutOfferPostsInput = {
@@ -6598,27 +6598,10 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6627,32 +6610,49 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
   providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
-  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
-  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
-  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
-  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
-  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
-  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
-  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
-  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
-  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
-  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
-  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
   referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutOfferPostsInput = {
@@ -6674,27 +6674,10 @@ export type ProviderUpdateToOneWithWhereWithoutOfferPostsInput = {
 export type ProviderUpdateWithoutOfferPostsInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6703,33 +6686,50 @@ export type ProviderUpdateWithoutOfferPostsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
@@ -6737,27 +6737,10 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6766,59 +6749,59 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyUserInput = {
   id?: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6827,41 +6810,41 @@ export type ProviderCreateManyUserInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   localityId: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
 }
 
 export type ProviderUpdateWithoutUserInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6870,60 +6853,60 @@ export type ProviderUpdateWithoutUserInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6932,60 +6915,60 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -6994,15 +6977,32 @@ export type ProviderUncheckedUpdateManyWithoutUserInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   localityId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProviderCreateManyLocalityInput = {
@@ -7010,27 +7010,10 @@ export type ProviderCreateManyLocalityInput = {
   userId: number
   type?: $Enums.ProviderType
   businessName: string
-  slug?: string | null
-  slugEditedAt?: Date | string | null
   description?: string | null
-  dni?: string | null
-  ruc?: string | null
-  nombreComercial?: string | null
-  razonSocial?: string | null
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone: string
   whatsapp?: string | null
   address?: string | null
-  website?: string | null
-  instagram?: string | null
-  tiktok?: string | null
-  facebook?: string | null
-  linkedin?: string | null
-  twitterX?: string | null
-  telegram?: string | null
-  whatsappBiz?: string | null
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -7039,40 +7022,40 @@ export type ProviderCreateManyLocalityInput = {
   verificationStatus?: $Enums.VerificationStatus
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: $Enums.TrustStatus
-  isTrusted?: boolean
   averageRating?: number
   totalReviews?: number
-  totalRecommendations?: number
-  planPriority?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  slug?: string | null
+  slugEditedAt?: Date | string | null
 }
 
 export type ProviderUpdateWithoutLocalityInput = {
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -7081,33 +7064,50 @@ export type ProviderUpdateWithoutLocalityInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutLocalityInput = {
@@ -7115,27 +7115,10 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -7144,32 +7127,49 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
   providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
-  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
-  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
-  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
-  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
-  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
-  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
-  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
-  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
-  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
-  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
-  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
-  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
   referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
-  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
-  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
@@ -7177,27 +7177,10 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -7206,14 +7189,31 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
-  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
   totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
-  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
-  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -7222,41 +7222,41 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
  */
 
 export type ProviderCountOutputType = {
+  notifications: number
+  chatsAsProvider: number
+  favorites: number
+  offerPosts: number
+  offers: number
+  planRequests: number
+  analytics: number
   providerCategories: number
   images: number
-  reviews: number
-  favorites: number
-  verificationDocs: number
-  analytics: number
-  notifications: number
-  planRequests: number
-  recommendations: number
   reports: number
-  trustValidations: number
-  offers: number
-  yapePayments: number
+  recommendations: number
   referralRewards: number
-  chatsAsProvider: number
-  offerPosts: number
+  reviews: number
+  trustValidations: number
+  verificationDocs: number
+  yapePayments: number
 }
 
 export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  notifications?: boolean | ProviderCountOutputTypeCountNotificationsArgs
+  chatsAsProvider?: boolean | ProviderCountOutputTypeCountChatsAsProviderArgs
+  favorites?: boolean | ProviderCountOutputTypeCountFavoritesArgs
+  offerPosts?: boolean | ProviderCountOutputTypeCountOfferPostsArgs
+  offers?: boolean | ProviderCountOutputTypeCountOffersArgs
+  planRequests?: boolean | ProviderCountOutputTypeCountPlanRequestsArgs
+  analytics?: boolean | ProviderCountOutputTypeCountAnalyticsArgs
   providerCategories?: boolean | ProviderCountOutputTypeCountProviderCategoriesArgs
   images?: boolean | ProviderCountOutputTypeCountImagesArgs
-  reviews?: boolean | ProviderCountOutputTypeCountReviewsArgs
-  favorites?: boolean | ProviderCountOutputTypeCountFavoritesArgs
-  verificationDocs?: boolean | ProviderCountOutputTypeCountVerificationDocsArgs
-  analytics?: boolean | ProviderCountOutputTypeCountAnalyticsArgs
-  notifications?: boolean | ProviderCountOutputTypeCountNotificationsArgs
-  planRequests?: boolean | ProviderCountOutputTypeCountPlanRequestsArgs
-  recommendations?: boolean | ProviderCountOutputTypeCountRecommendationsArgs
   reports?: boolean | ProviderCountOutputTypeCountReportsArgs
-  trustValidations?: boolean | ProviderCountOutputTypeCountTrustValidationsArgs
-  offers?: boolean | ProviderCountOutputTypeCountOffersArgs
-  yapePayments?: boolean | ProviderCountOutputTypeCountYapePaymentsArgs
+  recommendations?: boolean | ProviderCountOutputTypeCountRecommendationsArgs
   referralRewards?: boolean | ProviderCountOutputTypeCountReferralRewardsArgs
-  chatsAsProvider?: boolean | ProviderCountOutputTypeCountChatsAsProviderArgs
-  offerPosts?: boolean | ProviderCountOutputTypeCountOfferPostsArgs
+  reviews?: boolean | ProviderCountOutputTypeCountReviewsArgs
+  trustValidations?: boolean | ProviderCountOutputTypeCountTrustValidationsArgs
+  verificationDocs?: boolean | ProviderCountOutputTypeCountVerificationDocsArgs
+  yapePayments?: boolean | ProviderCountOutputTypeCountYapePaymentsArgs
 }
 
 /**
@@ -7267,6 +7267,55 @@ export type ProviderCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Ext
    * Select specific fields to fetch from the ProviderCountOutputType
    */
   select?: Prisma.ProviderCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AdminNotificationWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountChatsAsProviderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChatRoomWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountFavoritesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FavoriteWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountOfferPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OfferPostWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OfferWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountPlanRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlanRequestWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountAnalyticsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProviderAnalyticWhereInput
 }
 
 /**
@@ -7286,43 +7335,8 @@ export type ProviderCountOutputTypeCountImagesArgs<ExtArgs extends runtime.Types
 /**
  * ProviderCountOutputType without action
  */
-export type ProviderCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ReviewWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountFavoritesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.FavoriteWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountVerificationDocsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.VerificationDocWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountAnalyticsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ProviderAnalyticWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.AdminNotificationWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountPlanRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.PlanRequestWhereInput
+export type ProviderCountOutputTypeCountReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProviderReportWhereInput
 }
 
 /**
@@ -7335,8 +7349,15 @@ export type ProviderCountOutputTypeCountRecommendationsArgs<ExtArgs extends runt
 /**
  * ProviderCountOutputType without action
  */
-export type ProviderCountOutputTypeCountReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ProviderReportWhereInput
+export type ProviderCountOutputTypeCountReferralRewardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReferralRewardWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReviewWhereInput
 }
 
 /**
@@ -7349,8 +7370,8 @@ export type ProviderCountOutputTypeCountTrustValidationsArgs<ExtArgs extends run
 /**
  * ProviderCountOutputType without action
  */
-export type ProviderCountOutputTypeCountOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.OfferWhereInput
+export type ProviderCountOutputTypeCountVerificationDocsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VerificationDocWhereInput
 }
 
 /**
@@ -7360,54 +7381,16 @@ export type ProviderCountOutputTypeCountYapePaymentsArgs<ExtArgs extends runtime
   where?: Prisma.YapePaymentWhereInput
 }
 
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountReferralRewardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ReferralRewardWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountChatsAsProviderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChatRoomWhereInput
-}
-
-/**
- * ProviderCountOutputType without action
- */
-export type ProviderCountOutputTypeCountOfferPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.OfferPostWhereInput
-}
-
 
 export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
   type?: boolean
   businessName?: boolean
-  slug?: boolean
-  slugEditedAt?: boolean
   description?: boolean
-  dni?: boolean
-  ruc?: boolean
-  nombreComercial?: boolean
-  razonSocial?: boolean
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
-  website?: boolean
-  instagram?: boolean
-  tiktok?: boolean
-  facebook?: boolean
-  linkedin?: boolean
-  twitterX?: boolean
-  telegram?: boolean
-  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -7416,35 +7399,52 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: boolean
-  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
-  totalRecommendations?: boolean
-  planPriority?: boolean
   localityId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  dni?: boolean
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: boolean
+  planPriority?: boolean
+  plenaCoordinacion?: boolean
+  razonSocial?: boolean
+  ruc?: boolean
+  totalRecommendations?: boolean
+  trustStatus?: boolean
+  facebook?: boolean
+  instagram?: boolean
+  linkedin?: boolean
+  telegram?: boolean
+  tiktok?: boolean
+  twitterX?: boolean
+  website?: boolean
+  whatsappBiz?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
+  notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
+  chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
+  favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
+  offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
+  offers?: boolean | Prisma.Provider$offersArgs<ExtArgs>
+  planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
+  analytics?: boolean | Prisma.Provider$analyticsArgs<ExtArgs>
   providerCategories?: boolean | Prisma.Provider$providerCategoriesArgs<ExtArgs>
   images?: boolean | Prisma.Provider$imagesArgs<ExtArgs>
-  reviews?: boolean | Prisma.Provider$reviewsArgs<ExtArgs>
-  favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
-  subscription?: boolean | Prisma.Provider$subscriptionArgs<ExtArgs>
-  verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
-  analytics?: boolean | Prisma.Provider$analyticsArgs<ExtArgs>
-  notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
-  planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
-  recommendations?: boolean | Prisma.Provider$recommendationsArgs<ExtArgs>
   reports?: boolean | Prisma.Provider$reportsArgs<ExtArgs>
-  trustValidations?: boolean | Prisma.Provider$trustValidationsArgs<ExtArgs>
-  offers?: boolean | Prisma.Provider$offersArgs<ExtArgs>
-  yapePayments?: boolean | Prisma.Provider$yapePaymentsArgs<ExtArgs>
-  referralReceived?: boolean | Prisma.Provider$referralReceivedArgs<ExtArgs>
+  locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  recommendations?: boolean | Prisma.Provider$recommendationsArgs<ExtArgs>
   referralRewards?: boolean | Prisma.Provider$referralRewardsArgs<ExtArgs>
-  chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
-  offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
+  referralReceived?: boolean | Prisma.Provider$referralReceivedArgs<ExtArgs>
+  reviews?: boolean | Prisma.Provider$reviewsArgs<ExtArgs>
+  subscription?: boolean | Prisma.Provider$subscriptionArgs<ExtArgs>
+  trustValidations?: boolean | Prisma.Provider$trustValidationsArgs<ExtArgs>
+  verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
+  yapePayments?: boolean | Prisma.Provider$yapePaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["provider"]>
 
@@ -7453,27 +7453,10 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   userId?: boolean
   type?: boolean
   businessName?: boolean
-  slug?: boolean
-  slugEditedAt?: boolean
   description?: boolean
-  dni?: boolean
-  ruc?: boolean
-  nombreComercial?: boolean
-  razonSocial?: boolean
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
-  website?: boolean
-  instagram?: boolean
-  tiktok?: boolean
-  facebook?: boolean
-  linkedin?: boolean
-  twitterX?: boolean
-  telegram?: boolean
-  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -7482,17 +7465,34 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: boolean
-  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
-  totalRecommendations?: boolean
-  planPriority?: boolean
   localityId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  dni?: boolean
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: boolean
+  planPriority?: boolean
+  plenaCoordinacion?: boolean
+  razonSocial?: boolean
+  ruc?: boolean
+  totalRecommendations?: boolean
+  trustStatus?: boolean
+  facebook?: boolean
+  instagram?: boolean
+  linkedin?: boolean
+  telegram?: boolean
+  tiktok?: boolean
+  twitterX?: boolean
+  website?: boolean
+  whatsappBiz?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["provider"]>
 
 export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -7500,27 +7500,10 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   userId?: boolean
   type?: boolean
   businessName?: boolean
-  slug?: boolean
-  slugEditedAt?: boolean
   description?: boolean
-  dni?: boolean
-  ruc?: boolean
-  nombreComercial?: boolean
-  razonSocial?: boolean
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
-  website?: boolean
-  instagram?: boolean
-  tiktok?: boolean
-  facebook?: boolean
-  linkedin?: boolean
-  twitterX?: boolean
-  telegram?: boolean
-  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -7529,17 +7512,34 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: boolean
-  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
-  totalRecommendations?: boolean
-  planPriority?: boolean
   localityId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  dni?: boolean
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: boolean
+  planPriority?: boolean
+  plenaCoordinacion?: boolean
+  razonSocial?: boolean
+  ruc?: boolean
+  totalRecommendations?: boolean
+  trustStatus?: boolean
+  facebook?: boolean
+  instagram?: boolean
+  linkedin?: boolean
+  telegram?: boolean
+  tiktok?: boolean
+  twitterX?: boolean
+  website?: boolean
+  whatsappBiz?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["provider"]>
 
 export type ProviderSelectScalar = {
@@ -7547,27 +7547,10 @@ export type ProviderSelectScalar = {
   userId?: boolean
   type?: boolean
   businessName?: boolean
-  slug?: boolean
-  slugEditedAt?: boolean
   description?: boolean
-  dni?: boolean
-  ruc?: boolean
-  nombreComercial?: boolean
-  razonSocial?: boolean
-  hasDelivery?: boolean
-  plenaCoordinacion?: boolean
-  hasHomeService?: boolean
   phone?: boolean
   whatsapp?: boolean
   address?: boolean
-  website?: boolean
-  instagram?: boolean
-  tiktok?: boolean
-  facebook?: boolean
-  linkedin?: boolean
-  twitterX?: boolean
-  telegram?: boolean
-  whatsappBiz?: boolean
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
@@ -7576,100 +7559,100 @@ export type ProviderSelectScalar = {
   verificationStatus?: boolean
   isVerified?: boolean
   hasCleanRecord?: boolean
-  trustStatus?: boolean
-  isTrusted?: boolean
   averageRating?: boolean
   totalReviews?: boolean
-  totalRecommendations?: boolean
-  planPriority?: boolean
   localityId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  dni?: boolean
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: boolean
+  planPriority?: boolean
+  plenaCoordinacion?: boolean
+  razonSocial?: boolean
+  ruc?: boolean
+  totalRecommendations?: boolean
+  trustStatus?: boolean
+  facebook?: boolean
+  instagram?: boolean
+  linkedin?: boolean
+  telegram?: boolean
+  tiktok?: boolean
+  twitterX?: boolean
+  website?: boolean
+  whatsappBiz?: boolean
+  slug?: boolean
+  slugEditedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "slug" | "slugEditedAt" | "description" | "dni" | "ruc" | "nombreComercial" | "razonSocial" | "hasDelivery" | "plenaCoordinacion" | "hasHomeService" | "phone" | "whatsapp" | "address" | "website" | "instagram" | "tiktok" | "facebook" | "linkedin" | "twitterX" | "telegram" | "whatsappBiz" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "trustStatus" | "isTrusted" | "averageRating" | "totalReviews" | "totalRecommendations" | "planPriority" | "localityId" | "createdAt" | "updatedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "createdAt" | "updatedAt" | "dni" | "hasDelivery" | "hasHomeService" | "isTrusted" | "nombreComercial" | "planPriority" | "plenaCoordinacion" | "razonSocial" | "ruc" | "totalRecommendations" | "trustStatus" | "facebook" | "instagram" | "linkedin" | "telegram" | "tiktok" | "twitterX" | "website" | "whatsappBiz" | "slug" | "slugEditedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
+  chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
+  favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
+  offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
+  offers?: boolean | Prisma.Provider$offersArgs<ExtArgs>
+  planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
+  analytics?: boolean | Prisma.Provider$analyticsArgs<ExtArgs>
   providerCategories?: boolean | Prisma.Provider$providerCategoriesArgs<ExtArgs>
   images?: boolean | Prisma.Provider$imagesArgs<ExtArgs>
-  reviews?: boolean | Prisma.Provider$reviewsArgs<ExtArgs>
-  favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
-  subscription?: boolean | Prisma.Provider$subscriptionArgs<ExtArgs>
-  verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
-  analytics?: boolean | Prisma.Provider$analyticsArgs<ExtArgs>
-  notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
-  planRequests?: boolean | Prisma.Provider$planRequestsArgs<ExtArgs>
-  recommendations?: boolean | Prisma.Provider$recommendationsArgs<ExtArgs>
   reports?: boolean | Prisma.Provider$reportsArgs<ExtArgs>
-  trustValidations?: boolean | Prisma.Provider$trustValidationsArgs<ExtArgs>
-  offers?: boolean | Prisma.Provider$offersArgs<ExtArgs>
-  yapePayments?: boolean | Prisma.Provider$yapePaymentsArgs<ExtArgs>
-  referralReceived?: boolean | Prisma.Provider$referralReceivedArgs<ExtArgs>
+  locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  recommendations?: boolean | Prisma.Provider$recommendationsArgs<ExtArgs>
   referralRewards?: boolean | Prisma.Provider$referralRewardsArgs<ExtArgs>
-  chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
-  offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
+  referralReceived?: boolean | Prisma.Provider$referralReceivedArgs<ExtArgs>
+  reviews?: boolean | Prisma.Provider$reviewsArgs<ExtArgs>
+  subscription?: boolean | Prisma.Provider$subscriptionArgs<ExtArgs>
+  trustValidations?: boolean | Prisma.Provider$trustValidationsArgs<ExtArgs>
+  verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
+  yapePayments?: boolean | Prisma.Provider$yapePaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProviderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ProviderIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Provider"
   objects: {
-    user: Prisma.$UserPayload<ExtArgs>
-    locality: Prisma.$LocalityPayload<ExtArgs>
+    notifications: Prisma.$AdminNotificationPayload<ExtArgs>[]
+    chatsAsProvider: Prisma.$ChatRoomPayload<ExtArgs>[]
+    favorites: Prisma.$FavoritePayload<ExtArgs>[]
+    offerPosts: Prisma.$OfferPostPayload<ExtArgs>[]
+    offers: Prisma.$OfferPayload<ExtArgs>[]
+    planRequests: Prisma.$PlanRequestPayload<ExtArgs>[]
+    analytics: Prisma.$ProviderAnalyticPayload<ExtArgs>[]
     providerCategories: Prisma.$ProviderCategoryPayload<ExtArgs>[]
     images: Prisma.$ProviderImagePayload<ExtArgs>[]
-    reviews: Prisma.$ReviewPayload<ExtArgs>[]
-    favorites: Prisma.$FavoritePayload<ExtArgs>[]
-    subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
-    verificationDocs: Prisma.$VerificationDocPayload<ExtArgs>[]
-    analytics: Prisma.$ProviderAnalyticPayload<ExtArgs>[]
-    notifications: Prisma.$AdminNotificationPayload<ExtArgs>[]
-    planRequests: Prisma.$PlanRequestPayload<ExtArgs>[]
-    recommendations: Prisma.$RecommendationPayload<ExtArgs>[]
     reports: Prisma.$ProviderReportPayload<ExtArgs>[]
-    trustValidations: Prisma.$TrustValidationRequestPayload<ExtArgs>[]
-    offers: Prisma.$OfferPayload<ExtArgs>[]
-    yapePayments: Prisma.$YapePaymentPayload<ExtArgs>[]
-    referralReceived: Prisma.$ReferralPayload<ExtArgs> | null
+    locality: Prisma.$LocalityPayload<ExtArgs>
+    user: Prisma.$UserPayload<ExtArgs>
+    recommendations: Prisma.$RecommendationPayload<ExtArgs>[]
     referralRewards: Prisma.$ReferralRewardPayload<ExtArgs>[]
-    chatsAsProvider: Prisma.$ChatRoomPayload<ExtArgs>[]
-    offerPosts: Prisma.$OfferPostPayload<ExtArgs>[]
+    referralReceived: Prisma.$ReferralPayload<ExtArgs> | null
+    reviews: Prisma.$ReviewPayload<ExtArgs>[]
+    subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
+    trustValidations: Prisma.$TrustValidationRequestPayload<ExtArgs>[]
+    verificationDocs: Prisma.$VerificationDocPayload<ExtArgs>[]
+    yapePayments: Prisma.$YapePaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     userId: number
     type: $Enums.ProviderType
     businessName: string
-    slug: string | null
-    slugEditedAt: Date | null
     description: string | null
-    dni: string | null
-    ruc: string | null
-    nombreComercial: string | null
-    razonSocial: string | null
-    hasDelivery: boolean
-    plenaCoordinacion: boolean
-    hasHomeService: boolean
     phone: string
     whatsapp: string | null
     address: string | null
-    website: string | null
-    instagram: string | null
-    tiktok: string | null
-    facebook: string | null
-    linkedin: string | null
-    twitterX: string | null
-    telegram: string | null
-    whatsappBiz: string | null
     latitude: number | null
     longitude: number | null
     scheduleJson: runtime.JsonValue | null
@@ -7678,15 +7661,32 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     verificationStatus: $Enums.VerificationStatus
     isVerified: boolean
     hasCleanRecord: boolean
-    trustStatus: $Enums.TrustStatus
-    isTrusted: boolean
     averageRating: number
     totalReviews: number
-    totalRecommendations: number
-    planPriority: number
     localityId: number
     createdAt: Date
     updatedAt: Date
+    dni: string | null
+    hasDelivery: boolean
+    hasHomeService: boolean
+    isTrusted: boolean
+    nombreComercial: string | null
+    planPriority: number
+    plenaCoordinacion: boolean
+    razonSocial: string | null
+    ruc: string | null
+    totalRecommendations: number
+    trustStatus: $Enums.TrustStatus
+    facebook: string | null
+    instagram: string | null
+    linkedin: string | null
+    telegram: string | null
+    tiktok: string | null
+    twitterX: string | null
+    website: string | null
+    whatsappBiz: string | null
+    slug: string | null
+    slugEditedAt: Date | null
   }, ExtArgs["result"]["provider"]>
   composites: {}
 }
@@ -8081,26 +8081,26 @@ readonly fields: ProviderFieldRefs;
  */
 export interface Prisma__ProviderClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  locality<T extends Prisma.LocalityDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocalityDefaultArgs<ExtArgs>>): Prisma.Prisma__LocalityClient<runtime.Types.Result.GetResult<Prisma.$LocalityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  notifications<T extends Prisma.Provider$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  chatsAsProvider<T extends Prisma.Provider$chatsAsProviderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$chatsAsProviderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatRoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  favorites<T extends Prisma.Provider$favoritesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  offerPosts<T extends Prisma.Provider$offerPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$offerPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  offers<T extends Prisma.Provider$offersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$offersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  planRequests<T extends Prisma.Provider$planRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$planRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlanRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  analytics<T extends Prisma.Provider$analyticsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$analyticsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderAnalyticPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   providerCategories<T extends Prisma.Provider$providerCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$providerCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   images<T extends Prisma.Provider$imagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  reviews<T extends Prisma.Provider$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  favorites<T extends Prisma.Provider$favoritesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  subscription<T extends Prisma.Provider$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  verificationDocs<T extends Prisma.Provider$verificationDocsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$verificationDocsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerificationDocPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  analytics<T extends Prisma.Provider$analyticsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$analyticsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderAnalyticPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  notifications<T extends Prisma.Provider$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  planRequests<T extends Prisma.Provider$planRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$planRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlanRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  recommendations<T extends Prisma.Provider$recommendationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$recommendationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecommendationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reports<T extends Prisma.Provider$reportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  trustValidations<T extends Prisma.Provider$trustValidationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$trustValidationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TrustValidationRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  offers<T extends Prisma.Provider$offersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$offersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  yapePayments<T extends Prisma.Provider$yapePaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$yapePaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$YapePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  referralReceived<T extends Prisma.Provider$referralReceivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$referralReceivedArgs<ExtArgs>>): Prisma.Prisma__ReferralClient<runtime.Types.Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  locality<T extends Prisma.LocalityDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocalityDefaultArgs<ExtArgs>>): Prisma.Prisma__LocalityClient<runtime.Types.Result.GetResult<Prisma.$LocalityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  recommendations<T extends Prisma.Provider$recommendationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$recommendationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecommendationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   referralRewards<T extends Prisma.Provider$referralRewardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$referralRewardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReferralRewardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  chatsAsProvider<T extends Prisma.Provider$chatsAsProviderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$chatsAsProviderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatRoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  offerPosts<T extends Prisma.Provider$offerPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$offerPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  referralReceived<T extends Prisma.Provider$referralReceivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$referralReceivedArgs<ExtArgs>>): Prisma.Prisma__ReferralClient<runtime.Types.Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  reviews<T extends Prisma.Provider$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  subscription<T extends Prisma.Provider$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  trustValidations<T extends Prisma.Provider$trustValidationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$trustValidationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TrustValidationRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  verificationDocs<T extends Prisma.Provider$verificationDocsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$verificationDocsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerificationDocPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  yapePayments<T extends Prisma.Provider$yapePaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$yapePaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$YapePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8134,27 +8134,10 @@ export interface ProviderFieldRefs {
   readonly userId: Prisma.FieldRef<"Provider", 'Int'>
   readonly type: Prisma.FieldRef<"Provider", 'ProviderType'>
   readonly businessName: Prisma.FieldRef<"Provider", 'String'>
-  readonly slug: Prisma.FieldRef<"Provider", 'String'>
-  readonly slugEditedAt: Prisma.FieldRef<"Provider", 'DateTime'>
   readonly description: Prisma.FieldRef<"Provider", 'String'>
-  readonly dni: Prisma.FieldRef<"Provider", 'String'>
-  readonly ruc: Prisma.FieldRef<"Provider", 'String'>
-  readonly nombreComercial: Prisma.FieldRef<"Provider", 'String'>
-  readonly razonSocial: Prisma.FieldRef<"Provider", 'String'>
-  readonly hasDelivery: Prisma.FieldRef<"Provider", 'Boolean'>
-  readonly plenaCoordinacion: Prisma.FieldRef<"Provider", 'Boolean'>
-  readonly hasHomeService: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly phone: Prisma.FieldRef<"Provider", 'String'>
   readonly whatsapp: Prisma.FieldRef<"Provider", 'String'>
   readonly address: Prisma.FieldRef<"Provider", 'String'>
-  readonly website: Prisma.FieldRef<"Provider", 'String'>
-  readonly instagram: Prisma.FieldRef<"Provider", 'String'>
-  readonly tiktok: Prisma.FieldRef<"Provider", 'String'>
-  readonly facebook: Prisma.FieldRef<"Provider", 'String'>
-  readonly linkedin: Prisma.FieldRef<"Provider", 'String'>
-  readonly twitterX: Prisma.FieldRef<"Provider", 'String'>
-  readonly telegram: Prisma.FieldRef<"Provider", 'String'>
-  readonly whatsappBiz: Prisma.FieldRef<"Provider", 'String'>
   readonly latitude: Prisma.FieldRef<"Provider", 'Float'>
   readonly longitude: Prisma.FieldRef<"Provider", 'Float'>
   readonly scheduleJson: Prisma.FieldRef<"Provider", 'Json'>
@@ -8163,15 +8146,32 @@ export interface ProviderFieldRefs {
   readonly verificationStatus: Prisma.FieldRef<"Provider", 'VerificationStatus'>
   readonly isVerified: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly hasCleanRecord: Prisma.FieldRef<"Provider", 'Boolean'>
-  readonly trustStatus: Prisma.FieldRef<"Provider", 'TrustStatus'>
-  readonly isTrusted: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly averageRating: Prisma.FieldRef<"Provider", 'Float'>
   readonly totalReviews: Prisma.FieldRef<"Provider", 'Int'>
-  readonly totalRecommendations: Prisma.FieldRef<"Provider", 'Int'>
-  readonly planPriority: Prisma.FieldRef<"Provider", 'Int'>
   readonly localityId: Prisma.FieldRef<"Provider", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Provider", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Provider", 'DateTime'>
+  readonly dni: Prisma.FieldRef<"Provider", 'String'>
+  readonly hasDelivery: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly hasHomeService: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly isTrusted: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly nombreComercial: Prisma.FieldRef<"Provider", 'String'>
+  readonly planPriority: Prisma.FieldRef<"Provider", 'Int'>
+  readonly plenaCoordinacion: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly razonSocial: Prisma.FieldRef<"Provider", 'String'>
+  readonly ruc: Prisma.FieldRef<"Provider", 'String'>
+  readonly totalRecommendations: Prisma.FieldRef<"Provider", 'Int'>
+  readonly trustStatus: Prisma.FieldRef<"Provider", 'TrustStatus'>
+  readonly facebook: Prisma.FieldRef<"Provider", 'String'>
+  readonly instagram: Prisma.FieldRef<"Provider", 'String'>
+  readonly linkedin: Prisma.FieldRef<"Provider", 'String'>
+  readonly telegram: Prisma.FieldRef<"Provider", 'String'>
+  readonly tiktok: Prisma.FieldRef<"Provider", 'String'>
+  readonly twitterX: Prisma.FieldRef<"Provider", 'String'>
+  readonly website: Prisma.FieldRef<"Provider", 'String'>
+  readonly whatsappBiz: Prisma.FieldRef<"Provider", 'String'>
+  readonly slug: Prisma.FieldRef<"Provider", 'String'>
+  readonly slugEditedAt: Prisma.FieldRef<"Provider", 'DateTime'>
 }
     
 
@@ -8573,6 +8573,174 @@ export type ProviderDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
 }
 
 /**
+ * Provider.notifications
+ */
+export type Provider$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AdminNotification
+   */
+  select?: Prisma.AdminNotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AdminNotification
+   */
+  omit?: Prisma.AdminNotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AdminNotificationInclude<ExtArgs> | null
+  where?: Prisma.AdminNotificationWhereInput
+  orderBy?: Prisma.AdminNotificationOrderByWithRelationInput | Prisma.AdminNotificationOrderByWithRelationInput[]
+  cursor?: Prisma.AdminNotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AdminNotificationScalarFieldEnum | Prisma.AdminNotificationScalarFieldEnum[]
+}
+
+/**
+ * Provider.chatsAsProvider
+ */
+export type Provider$chatsAsProviderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChatRoom
+   */
+  select?: Prisma.ChatRoomSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChatRoom
+   */
+  omit?: Prisma.ChatRoomOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChatRoomInclude<ExtArgs> | null
+  where?: Prisma.ChatRoomWhereInput
+  orderBy?: Prisma.ChatRoomOrderByWithRelationInput | Prisma.ChatRoomOrderByWithRelationInput[]
+  cursor?: Prisma.ChatRoomWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatRoomScalarFieldEnum | Prisma.ChatRoomScalarFieldEnum[]
+}
+
+/**
+ * Provider.favorites
+ */
+export type Provider$favoritesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Favorite
+   */
+  select?: Prisma.FavoriteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Favorite
+   */
+  omit?: Prisma.FavoriteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FavoriteInclude<ExtArgs> | null
+  where?: Prisma.FavoriteWhereInput
+  orderBy?: Prisma.FavoriteOrderByWithRelationInput | Prisma.FavoriteOrderByWithRelationInput[]
+  cursor?: Prisma.FavoriteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FavoriteScalarFieldEnum | Prisma.FavoriteScalarFieldEnum[]
+}
+
+/**
+ * Provider.offerPosts
+ */
+export type Provider$offerPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OfferPost
+   */
+  select?: Prisma.OfferPostSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OfferPost
+   */
+  omit?: Prisma.OfferPostOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OfferPostInclude<ExtArgs> | null
+  where?: Prisma.OfferPostWhereInput
+  orderBy?: Prisma.OfferPostOrderByWithRelationInput | Prisma.OfferPostOrderByWithRelationInput[]
+  cursor?: Prisma.OfferPostWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OfferPostScalarFieldEnum | Prisma.OfferPostScalarFieldEnum[]
+}
+
+/**
+ * Provider.offers
+ */
+export type Provider$offersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Offer
+   */
+  select?: Prisma.OfferSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Offer
+   */
+  omit?: Prisma.OfferOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OfferInclude<ExtArgs> | null
+  where?: Prisma.OfferWhereInput
+  orderBy?: Prisma.OfferOrderByWithRelationInput | Prisma.OfferOrderByWithRelationInput[]
+  cursor?: Prisma.OfferWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OfferScalarFieldEnum | Prisma.OfferScalarFieldEnum[]
+}
+
+/**
+ * Provider.planRequests
+ */
+export type Provider$planRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PlanRequest
+   */
+  select?: Prisma.PlanRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PlanRequest
+   */
+  omit?: Prisma.PlanRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlanRequestInclude<ExtArgs> | null
+  where?: Prisma.PlanRequestWhereInput
+  orderBy?: Prisma.PlanRequestOrderByWithRelationInput | Prisma.PlanRequestOrderByWithRelationInput[]
+  cursor?: Prisma.PlanRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlanRequestScalarFieldEnum | Prisma.PlanRequestScalarFieldEnum[]
+}
+
+/**
+ * Provider.analytics
+ */
+export type Provider$analyticsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProviderAnalytic
+   */
+  select?: Prisma.ProviderAnalyticSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProviderAnalytic
+   */
+  omit?: Prisma.ProviderAnalyticOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProviderAnalyticInclude<ExtArgs> | null
+  where?: Prisma.ProviderAnalyticWhereInput
+  orderBy?: Prisma.ProviderAnalyticOrderByWithRelationInput | Prisma.ProviderAnalyticOrderByWithRelationInput[]
+  cursor?: Prisma.ProviderAnalyticWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProviderAnalyticScalarFieldEnum | Prisma.ProviderAnalyticScalarFieldEnum[]
+}
+
+/**
  * Provider.providerCategories
  */
 export type Provider$providerCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -8621,166 +8789,27 @@ export type Provider$imagesArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 /**
- * Provider.reviews
+ * Provider.reports
  */
-export type Provider$reviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Provider$reportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Review
+   * Select specific fields to fetch from the ProviderReport
    */
-  select?: Prisma.ReviewSelect<ExtArgs> | null
+  select?: Prisma.ProviderReportSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Review
+   * Omit specific fields from the ProviderReport
    */
-  omit?: Prisma.ReviewOmit<ExtArgs> | null
+  omit?: Prisma.ProviderReportOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ReviewInclude<ExtArgs> | null
-  where?: Prisma.ReviewWhereInput
-  orderBy?: Prisma.ReviewOrderByWithRelationInput | Prisma.ReviewOrderByWithRelationInput[]
-  cursor?: Prisma.ReviewWhereUniqueInput
+  include?: Prisma.ProviderReportInclude<ExtArgs> | null
+  where?: Prisma.ProviderReportWhereInput
+  orderBy?: Prisma.ProviderReportOrderByWithRelationInput | Prisma.ProviderReportOrderByWithRelationInput[]
+  cursor?: Prisma.ProviderReportWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[]
-}
-
-/**
- * Provider.favorites
- */
-export type Provider$favoritesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Favorite
-   */
-  select?: Prisma.FavoriteSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Favorite
-   */
-  omit?: Prisma.FavoriteOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.FavoriteInclude<ExtArgs> | null
-  where?: Prisma.FavoriteWhereInput
-  orderBy?: Prisma.FavoriteOrderByWithRelationInput | Prisma.FavoriteOrderByWithRelationInput[]
-  cursor?: Prisma.FavoriteWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.FavoriteScalarFieldEnum | Prisma.FavoriteScalarFieldEnum[]
-}
-
-/**
- * Provider.subscription
- */
-export type Provider$subscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Subscription
-   */
-  select?: Prisma.SubscriptionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Subscription
-   */
-  omit?: Prisma.SubscriptionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SubscriptionInclude<ExtArgs> | null
-  where?: Prisma.SubscriptionWhereInput
-}
-
-/**
- * Provider.verificationDocs
- */
-export type Provider$verificationDocsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the VerificationDoc
-   */
-  select?: Prisma.VerificationDocSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the VerificationDoc
-   */
-  omit?: Prisma.VerificationDocOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.VerificationDocInclude<ExtArgs> | null
-  where?: Prisma.VerificationDocWhereInput
-  orderBy?: Prisma.VerificationDocOrderByWithRelationInput | Prisma.VerificationDocOrderByWithRelationInput[]
-  cursor?: Prisma.VerificationDocWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.VerificationDocScalarFieldEnum | Prisma.VerificationDocScalarFieldEnum[]
-}
-
-/**
- * Provider.analytics
- */
-export type Provider$analyticsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ProviderAnalytic
-   */
-  select?: Prisma.ProviderAnalyticSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ProviderAnalytic
-   */
-  omit?: Prisma.ProviderAnalyticOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ProviderAnalyticInclude<ExtArgs> | null
-  where?: Prisma.ProviderAnalyticWhereInput
-  orderBy?: Prisma.ProviderAnalyticOrderByWithRelationInput | Prisma.ProviderAnalyticOrderByWithRelationInput[]
-  cursor?: Prisma.ProviderAnalyticWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ProviderAnalyticScalarFieldEnum | Prisma.ProviderAnalyticScalarFieldEnum[]
-}
-
-/**
- * Provider.notifications
- */
-export type Provider$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the AdminNotification
-   */
-  select?: Prisma.AdminNotificationSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the AdminNotification
-   */
-  omit?: Prisma.AdminNotificationOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AdminNotificationInclude<ExtArgs> | null
-  where?: Prisma.AdminNotificationWhereInput
-  orderBy?: Prisma.AdminNotificationOrderByWithRelationInput | Prisma.AdminNotificationOrderByWithRelationInput[]
-  cursor?: Prisma.AdminNotificationWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.AdminNotificationScalarFieldEnum | Prisma.AdminNotificationScalarFieldEnum[]
-}
-
-/**
- * Provider.planRequests
- */
-export type Provider$planRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the PlanRequest
-   */
-  select?: Prisma.PlanRequestSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the PlanRequest
-   */
-  omit?: Prisma.PlanRequestOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.PlanRequestInclude<ExtArgs> | null
-  where?: Prisma.PlanRequestWhereInput
-  orderBy?: Prisma.PlanRequestOrderByWithRelationInput | Prisma.PlanRequestOrderByWithRelationInput[]
-  cursor?: Prisma.PlanRequestWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.PlanRequestScalarFieldEnum | Prisma.PlanRequestScalarFieldEnum[]
+  distinct?: Prisma.ProviderReportScalarFieldEnum | Prisma.ProviderReportScalarFieldEnum[]
 }
 
 /**
@@ -8808,27 +8837,89 @@ export type Provider$recommendationsArgs<ExtArgs extends runtime.Types.Extension
 }
 
 /**
- * Provider.reports
+ * Provider.referralRewards
  */
-export type Provider$reportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Provider$referralRewardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ProviderReport
+   * Select specific fields to fetch from the ReferralReward
    */
-  select?: Prisma.ProviderReportSelect<ExtArgs> | null
+  select?: Prisma.ReferralRewardSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ProviderReport
+   * Omit specific fields from the ReferralReward
    */
-  omit?: Prisma.ProviderReportOmit<ExtArgs> | null
+  omit?: Prisma.ReferralRewardOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ProviderReportInclude<ExtArgs> | null
-  where?: Prisma.ProviderReportWhereInput
-  orderBy?: Prisma.ProviderReportOrderByWithRelationInput | Prisma.ProviderReportOrderByWithRelationInput[]
-  cursor?: Prisma.ProviderReportWhereUniqueInput
+  include?: Prisma.ReferralRewardInclude<ExtArgs> | null
+  where?: Prisma.ReferralRewardWhereInput
+  orderBy?: Prisma.ReferralRewardOrderByWithRelationInput | Prisma.ReferralRewardOrderByWithRelationInput[]
+  cursor?: Prisma.ReferralRewardWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ProviderReportScalarFieldEnum | Prisma.ProviderReportScalarFieldEnum[]
+  distinct?: Prisma.ReferralRewardScalarFieldEnum | Prisma.ReferralRewardScalarFieldEnum[]
+}
+
+/**
+ * Provider.referralReceived
+ */
+export type Provider$referralReceivedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Referral
+   */
+  select?: Prisma.ReferralSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Referral
+   */
+  omit?: Prisma.ReferralOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReferralInclude<ExtArgs> | null
+  where?: Prisma.ReferralWhereInput
+}
+
+/**
+ * Provider.reviews
+ */
+export type Provider$reviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Review
+   */
+  select?: Prisma.ReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Review
+   */
+  omit?: Prisma.ReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReviewInclude<ExtArgs> | null
+  where?: Prisma.ReviewWhereInput
+  orderBy?: Prisma.ReviewOrderByWithRelationInput | Prisma.ReviewOrderByWithRelationInput[]
+  cursor?: Prisma.ReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[]
+}
+
+/**
+ * Provider.subscription
+ */
+export type Provider$subscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Subscription
+   */
+  select?: Prisma.SubscriptionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Subscription
+   */
+  omit?: Prisma.SubscriptionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionWhereInput
 }
 
 /**
@@ -8856,27 +8947,27 @@ export type Provider$trustValidationsArgs<ExtArgs extends runtime.Types.Extensio
 }
 
 /**
- * Provider.offers
+ * Provider.verificationDocs
  */
-export type Provider$offersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Provider$verificationDocsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Offer
+   * Select specific fields to fetch from the VerificationDoc
    */
-  select?: Prisma.OfferSelect<ExtArgs> | null
+  select?: Prisma.VerificationDocSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Offer
+   * Omit specific fields from the VerificationDoc
    */
-  omit?: Prisma.OfferOmit<ExtArgs> | null
+  omit?: Prisma.VerificationDocOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.OfferInclude<ExtArgs> | null
-  where?: Prisma.OfferWhereInput
-  orderBy?: Prisma.OfferOrderByWithRelationInput | Prisma.OfferOrderByWithRelationInput[]
-  cursor?: Prisma.OfferWhereUniqueInput
+  include?: Prisma.VerificationDocInclude<ExtArgs> | null
+  where?: Prisma.VerificationDocWhereInput
+  orderBy?: Prisma.VerificationDocOrderByWithRelationInput | Prisma.VerificationDocOrderByWithRelationInput[]
+  cursor?: Prisma.VerificationDocWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.OfferScalarFieldEnum | Prisma.OfferScalarFieldEnum[]
+  distinct?: Prisma.VerificationDocScalarFieldEnum | Prisma.VerificationDocScalarFieldEnum[]
 }
 
 /**
@@ -8901,97 +8992,6 @@ export type Provider$yapePaymentsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.YapePaymentScalarFieldEnum | Prisma.YapePaymentScalarFieldEnum[]
-}
-
-/**
- * Provider.referralReceived
- */
-export type Provider$referralReceivedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Referral
-   */
-  select?: Prisma.ReferralSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Referral
-   */
-  omit?: Prisma.ReferralOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ReferralInclude<ExtArgs> | null
-  where?: Prisma.ReferralWhereInput
-}
-
-/**
- * Provider.referralRewards
- */
-export type Provider$referralRewardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ReferralReward
-   */
-  select?: Prisma.ReferralRewardSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ReferralReward
-   */
-  omit?: Prisma.ReferralRewardOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ReferralRewardInclude<ExtArgs> | null
-  where?: Prisma.ReferralRewardWhereInput
-  orderBy?: Prisma.ReferralRewardOrderByWithRelationInput | Prisma.ReferralRewardOrderByWithRelationInput[]
-  cursor?: Prisma.ReferralRewardWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ReferralRewardScalarFieldEnum | Prisma.ReferralRewardScalarFieldEnum[]
-}
-
-/**
- * Provider.chatsAsProvider
- */
-export type Provider$chatsAsProviderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChatRoom
-   */
-  select?: Prisma.ChatRoomSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChatRoom
-   */
-  omit?: Prisma.ChatRoomOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChatRoomInclude<ExtArgs> | null
-  where?: Prisma.ChatRoomWhereInput
-  orderBy?: Prisma.ChatRoomOrderByWithRelationInput | Prisma.ChatRoomOrderByWithRelationInput[]
-  cursor?: Prisma.ChatRoomWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ChatRoomScalarFieldEnum | Prisma.ChatRoomScalarFieldEnum[]
-}
-
-/**
- * Provider.offerPosts
- */
-export type Provider$offerPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the OfferPost
-   */
-  select?: Prisma.OfferPostSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the OfferPost
-   */
-  omit?: Prisma.OfferPostOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.OfferPostInclude<ExtArgs> | null
-  where?: Prisma.OfferPostWhereInput
-  orderBy?: Prisma.OfferPostOrderByWithRelationInput | Prisma.OfferPostOrderByWithRelationInput[]
-  cursor?: Prisma.OfferPostWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.OfferPostScalarFieldEnum | Prisma.OfferPostScalarFieldEnum[]
 }
 
 /**

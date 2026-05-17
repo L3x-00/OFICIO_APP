@@ -42,7 +42,7 @@ export type OfferReportMinAggregateOutputType = {
   id: number | null
   offerPostId: number | null
   reporterId: number | null
-  reason: string | null
+  reason: $Enums.OfferReportReason | null
   createdAt: Date | null
   isResolved: boolean | null
 }
@@ -51,7 +51,7 @@ export type OfferReportMaxAggregateOutputType = {
   id: number | null
   offerPostId: number | null
   reporterId: number | null
-  reason: string | null
+  reason: $Enums.OfferReportReason | null
   createdAt: Date | null
   isResolved: boolean | null
 }
@@ -197,7 +197,7 @@ export type OfferReportGroupByOutputType = {
   id: number
   offerPostId: number
   reporterId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt: Date
   isResolved: boolean
   _count: OfferReportCountAggregateOutputType | null
@@ -229,7 +229,7 @@ export type OfferReportWhereInput = {
   id?: Prisma.IntFilter<"OfferReport"> | number
   offerPostId?: Prisma.IntFilter<"OfferReport"> | number
   reporterId?: Prisma.IntFilter<"OfferReport"> | number
-  reason?: Prisma.StringFilter<"OfferReport"> | string
+  reason?: Prisma.EnumOfferReportReasonFilter<"OfferReport"> | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFilter<"OfferReport"> | Date | string
   isResolved?: Prisma.BoolFilter<"OfferReport"> | boolean
   offerPost?: Prisma.XOR<Prisma.OfferPostScalarRelationFilter, Prisma.OfferPostWhereInput>
@@ -255,7 +255,7 @@ export type OfferReportWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OfferReportWhereInput | Prisma.OfferReportWhereInput[]
   offerPostId?: Prisma.IntFilter<"OfferReport"> | number
   reporterId?: Prisma.IntFilter<"OfferReport"> | number
-  reason?: Prisma.StringFilter<"OfferReport"> | string
+  reason?: Prisma.EnumOfferReportReasonFilter<"OfferReport"> | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFilter<"OfferReport"> | Date | string
   isResolved?: Prisma.BoolFilter<"OfferReport"> | boolean
   offerPost?: Prisma.XOR<Prisma.OfferPostScalarRelationFilter, Prisma.OfferPostWhereInput>
@@ -283,13 +283,13 @@ export type OfferReportScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"OfferReport"> | number
   offerPostId?: Prisma.IntWithAggregatesFilter<"OfferReport"> | number
   reporterId?: Prisma.IntWithAggregatesFilter<"OfferReport"> | number
-  reason?: Prisma.StringWithAggregatesFilter<"OfferReport"> | string
+  reason?: Prisma.EnumOfferReportReasonWithAggregatesFilter<"OfferReport"> | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"OfferReport"> | Date | string
   isResolved?: Prisma.BoolWithAggregatesFilter<"OfferReport"> | boolean
 }
 
 export type OfferReportCreateInput = {
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
   offerPost: Prisma.OfferPostCreateNestedOneWithoutReportsInput
@@ -300,13 +300,13 @@ export type OfferReportUncheckedCreateInput = {
   id?: number
   offerPostId: number
   reporterId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
 }
 
 export type OfferReportUpdateInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
   offerPost?: Prisma.OfferPostUpdateOneRequiredWithoutReportsNestedInput
@@ -317,7 +317,7 @@ export type OfferReportUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   offerPostId?: Prisma.IntFieldUpdateOperationsInput | number
   reporterId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -326,13 +326,13 @@ export type OfferReportCreateManyInput = {
   id?: number
   offerPostId: number
   reporterId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
 }
 
 export type OfferReportUpdateManyMutationInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -341,7 +341,7 @@ export type OfferReportUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   offerPostId?: Prisma.IntFieldUpdateOperationsInput | number
   reporterId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -484,8 +484,12 @@ export type OfferReportUncheckedUpdateManyWithoutOfferPostNestedInput = {
   deleteMany?: Prisma.OfferReportScalarWhereInput | Prisma.OfferReportScalarWhereInput[]
 }
 
+export type EnumOfferReportReasonFieldUpdateOperationsInput = {
+  set?: $Enums.OfferReportReason
+}
+
 export type OfferReportCreateWithoutReporterInput = {
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
   offerPost: Prisma.OfferPostCreateNestedOneWithoutReportsInput
@@ -494,7 +498,7 @@ export type OfferReportCreateWithoutReporterInput = {
 export type OfferReportUncheckedCreateWithoutReporterInput = {
   id?: number
   offerPostId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
 }
@@ -532,13 +536,13 @@ export type OfferReportScalarWhereInput = {
   id?: Prisma.IntFilter<"OfferReport"> | number
   offerPostId?: Prisma.IntFilter<"OfferReport"> | number
   reporterId?: Prisma.IntFilter<"OfferReport"> | number
-  reason?: Prisma.StringFilter<"OfferReport"> | string
+  reason?: Prisma.EnumOfferReportReasonFilter<"OfferReport"> | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFilter<"OfferReport"> | Date | string
   isResolved?: Prisma.BoolFilter<"OfferReport"> | boolean
 }
 
 export type OfferReportCreateWithoutOfferPostInput = {
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
   reporter: Prisma.UserCreateNestedOneWithoutOfferReportsInput
@@ -547,7 +551,7 @@ export type OfferReportCreateWithoutOfferPostInput = {
 export type OfferReportUncheckedCreateWithoutOfferPostInput = {
   id?: number
   reporterId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
 }
@@ -581,13 +585,13 @@ export type OfferReportUpdateManyWithWhereWithoutOfferPostInput = {
 export type OfferReportCreateManyReporterInput = {
   id?: number
   offerPostId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
 }
 
 export type OfferReportUpdateWithoutReporterInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
   offerPost?: Prisma.OfferPostUpdateOneRequiredWithoutReportsNestedInput
@@ -596,7 +600,7 @@ export type OfferReportUpdateWithoutReporterInput = {
 export type OfferReportUncheckedUpdateWithoutReporterInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   offerPostId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -604,7 +608,7 @@ export type OfferReportUncheckedUpdateWithoutReporterInput = {
 export type OfferReportUncheckedUpdateManyWithoutReporterInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   offerPostId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -612,13 +616,13 @@ export type OfferReportUncheckedUpdateManyWithoutReporterInput = {
 export type OfferReportCreateManyOfferPostInput = {
   id?: number
   reporterId: number
-  reason: string
+  reason: $Enums.OfferReportReason
   createdAt?: Date | string
   isResolved?: boolean
 }
 
 export type OfferReportUpdateWithoutOfferPostInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reporter?: Prisma.UserUpdateOneRequiredWithoutOfferReportsNestedInput
@@ -627,7 +631,7 @@ export type OfferReportUpdateWithoutOfferPostInput = {
 export type OfferReportUncheckedUpdateWithoutOfferPostInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   reporterId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -635,7 +639,7 @@ export type OfferReportUncheckedUpdateWithoutOfferPostInput = {
 export type OfferReportUncheckedUpdateManyWithoutOfferPostInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   reporterId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumOfferReportReasonFieldUpdateOperationsInput | $Enums.OfferReportReason
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -708,7 +712,7 @@ export type $OfferReportPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: number
     offerPostId: number
     reporterId: number
-    reason: string
+    reason: $Enums.OfferReportReason
     createdAt: Date
     isResolved: boolean
   }, ExtArgs["result"]["offerReport"]>
@@ -1139,7 +1143,7 @@ export interface OfferReportFieldRefs {
   readonly id: Prisma.FieldRef<"OfferReport", 'Int'>
   readonly offerPostId: Prisma.FieldRef<"OfferReport", 'Int'>
   readonly reporterId: Prisma.FieldRef<"OfferReport", 'Int'>
-  readonly reason: Prisma.FieldRef<"OfferReport", 'String'>
+  readonly reason: Prisma.FieldRef<"OfferReport", 'OfferReportReason'>
   readonly createdAt: Prisma.FieldRef<"OfferReport", 'DateTime'>
   readonly isResolved: Prisma.FieldRef<"OfferReport", 'Boolean'>
 }

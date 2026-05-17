@@ -360,9 +360,9 @@ export type ServiceRequestWhereInput = {
   expiresAt?: Prisma.DateTimeFilter<"ServiceRequest"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"ServiceRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ServiceRequest"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   offers?: Prisma.OfferListRelationFilter
+  category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ServiceRequestOrderByWithRelationInput = {
@@ -385,9 +385,9 @@ export type ServiceRequestOrderByWithRelationInput = {
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  user?: Prisma.UserOrderByWithRelationInput
-  category?: Prisma.CategoryOrderByWithRelationInput
   offers?: Prisma.OfferOrderByRelationAggregateInput
+  category?: Prisma.CategoryOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ServiceRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -413,9 +413,9 @@ export type ServiceRequestWhereUniqueInput = Prisma.AtLeast<{
   expiresAt?: Prisma.DateTimeFilter<"ServiceRequest"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"ServiceRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ServiceRequest"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   offers?: Prisma.OfferListRelationFilter
+  category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type ServiceRequestOrderByWithAggregationInput = {
@@ -487,9 +487,9 @@ export type ServiceRequestCreateInput = {
   expiresAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutServiceRequestsInput
-  category: Prisma.CategoryCreateNestedOneWithoutServiceRequestsInput
   offers?: Prisma.OfferCreateNestedManyWithoutServiceRequestInput
+  category: Prisma.CategoryCreateNestedOneWithoutServiceRequestsInput
+  user: Prisma.UserCreateNestedOneWithoutServiceRequestsInput
 }
 
 export type ServiceRequestUncheckedCreateInput = {
@@ -532,9 +532,9 @@ export type ServiceRequestUpdateInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutServiceRequestsNestedInput
-  category?: Prisma.CategoryUpdateOneRequiredWithoutServiceRequestsNestedInput
   offers?: Prisma.OfferUpdateManyWithoutServiceRequestNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutServiceRequestsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutServiceRequestsNestedInput
 }
 
 export type ServiceRequestUncheckedUpdateInput = {
@@ -847,8 +847,8 @@ export type ServiceRequestCreateWithoutUserInput = {
   expiresAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
-  category: Prisma.CategoryCreateNestedOneWithoutServiceRequestsInput
   offers?: Prisma.OfferCreateNestedManyWithoutServiceRequestInput
+  category: Prisma.CategoryCreateNestedOneWithoutServiceRequestsInput
 }
 
 export type ServiceRequestUncheckedCreateWithoutUserInput = {
@@ -941,8 +941,8 @@ export type ServiceRequestCreateWithoutCategoryInput = {
   expiresAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutServiceRequestsInput
   offers?: Prisma.OfferCreateNestedManyWithoutServiceRequestInput
+  user: Prisma.UserCreateNestedOneWithoutServiceRequestsInput
 }
 
 export type ServiceRequestUncheckedCreateWithoutCategoryInput = {
@@ -1010,8 +1010,8 @@ export type ServiceRequestCreateWithoutOffersInput = {
   expiresAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutServiceRequestsInput
   category: Prisma.CategoryCreateNestedOneWithoutServiceRequestsInput
+  user: Prisma.UserCreateNestedOneWithoutServiceRequestsInput
 }
 
 export type ServiceRequestUncheckedCreateWithoutOffersInput = {
@@ -1069,8 +1069,8 @@ export type ServiceRequestUpdateWithoutOffersInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutServiceRequestsNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutServiceRequestsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutServiceRequestsNestedInput
 }
 
 export type ServiceRequestUncheckedUpdateWithoutOffersInput = {
@@ -1133,8 +1133,8 @@ export type ServiceRequestUpdateWithoutUserInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  category?: Prisma.CategoryUpdateOneRequiredWithoutServiceRequestsNestedInput
   offers?: Prisma.OfferUpdateManyWithoutServiceRequestNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutServiceRequestsNestedInput
 }
 
 export type ServiceRequestUncheckedUpdateWithoutUserInput = {
@@ -1218,8 +1218,8 @@ export type ServiceRequestUpdateWithoutCategoryInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutServiceRequestsNestedInput
   offers?: Prisma.OfferUpdateManyWithoutServiceRequestNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutServiceRequestsNestedInput
 }
 
 export type ServiceRequestUncheckedUpdateWithoutCategoryInput = {
@@ -1316,9 +1316,9 @@ export type ServiceRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   offers?: boolean | Prisma.ServiceRequest$offersArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ServiceRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["serviceRequest"]>
 
@@ -1342,8 +1342,8 @@ export type ServiceRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["serviceRequest"]>
 
 export type ServiceRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1366,8 +1366,8 @@ export type ServiceRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["serviceRequest"]>
 
 export type ServiceRequestSelectScalar = {
@@ -1394,26 +1394,26 @@ export type ServiceRequestSelectScalar = {
 
 export type ServiceRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "categoryId" | "description" | "photoUrl" | "budgetMin" | "budgetMax" | "desiredDate" | "latitude" | "longitude" | "department" | "province" | "district" | "status" | "maxOffers" | "notifyRadiusKm" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["serviceRequest"]>
 export type ServiceRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   offers?: boolean | Prisma.ServiceRequest$offersArgs<ExtArgs>
+  category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ServiceRequestCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ServiceRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ServiceRequestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $ServiceRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ServiceRequest"
   objects: {
-    user: Prisma.$UserPayload<ExtArgs>
-    category: Prisma.$CategoryPayload<ExtArgs>
     offers: Prisma.$OfferPayload<ExtArgs>[]
+    category: Prisma.$CategoryPayload<ExtArgs>
+    user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1829,9 +1829,9 @@ readonly fields: ServiceRequestFieldRefs;
  */
 export interface Prisma__ServiceRequestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   offers<T extends Prisma.ServiceRequest$offersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceRequest$offersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

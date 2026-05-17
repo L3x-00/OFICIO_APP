@@ -208,16 +208,16 @@ export type OfferPostCategoryWhereInput = {
   id?: Prisma.IntFilter<"OfferPostCategory"> | number
   offerPostId?: Prisma.IntFilter<"OfferPostCategory"> | number
   categoryId?: Prisma.IntFilter<"OfferPostCategory"> | number
-  offerPost?: Prisma.XOR<Prisma.OfferPostScalarRelationFilter, Prisma.OfferPostWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
+  offerPost?: Prisma.XOR<Prisma.OfferPostScalarRelationFilter, Prisma.OfferPostWhereInput>
 }
 
 export type OfferPostCategoryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   offerPostId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
-  offerPost?: Prisma.OfferPostOrderByWithRelationInput
   category?: Prisma.CategoryOrderByWithRelationInput
+  offerPost?: Prisma.OfferPostOrderByWithRelationInput
 }
 
 export type OfferPostCategoryWhereUniqueInput = Prisma.AtLeast<{
@@ -228,8 +228,8 @@ export type OfferPostCategoryWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OfferPostCategoryWhereInput | Prisma.OfferPostCategoryWhereInput[]
   offerPostId?: Prisma.IntFilter<"OfferPostCategory"> | number
   categoryId?: Prisma.IntFilter<"OfferPostCategory"> | number
-  offerPost?: Prisma.XOR<Prisma.OfferPostScalarRelationFilter, Prisma.OfferPostWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
+  offerPost?: Prisma.XOR<Prisma.OfferPostScalarRelationFilter, Prisma.OfferPostWhereInput>
 }, "id" | "offerPostId_categoryId">
 
 export type OfferPostCategoryOrderByWithAggregationInput = {
@@ -253,8 +253,8 @@ export type OfferPostCategoryScalarWhereWithAggregatesInput = {
 }
 
 export type OfferPostCategoryCreateInput = {
-  offerPost: Prisma.OfferPostCreateNestedOneWithoutCategoriesInput
   category: Prisma.CategoryCreateNestedOneWithoutOfferPostCategoriesInput
+  offerPost: Prisma.OfferPostCreateNestedOneWithoutCategoriesInput
 }
 
 export type OfferPostCategoryUncheckedCreateInput = {
@@ -264,8 +264,8 @@ export type OfferPostCategoryUncheckedCreateInput = {
 }
 
 export type OfferPostCategoryUpdateInput = {
-  offerPost?: Prisma.OfferPostUpdateOneRequiredWithoutCategoriesNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutOfferPostCategoriesNestedInput
+  offerPost?: Prisma.OfferPostUpdateOneRequiredWithoutCategoriesNestedInput
 }
 
 export type OfferPostCategoryUncheckedUpdateInput = {
@@ -542,24 +542,24 @@ export type OfferPostCategorySelect<ExtArgs extends runtime.Types.Extensions.Int
   id?: boolean
   offerPostId?: boolean
   categoryId?: boolean
-  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offerPostCategory"]>
 
 export type OfferPostCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   offerPostId?: boolean
   categoryId?: boolean
-  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offerPostCategory"]>
 
 export type OfferPostCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   offerPostId?: boolean
   categoryId?: boolean
-  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offerPostCategory"]>
 
 export type OfferPostCategorySelectScalar = {
@@ -570,23 +570,23 @@ export type OfferPostCategorySelectScalar = {
 
 export type OfferPostCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "offerPostId" | "categoryId", ExtArgs["result"]["offerPostCategory"]>
 export type OfferPostCategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
 }
 export type OfferPostCategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
 }
 export type OfferPostCategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  offerPost?: boolean | Prisma.OfferPostDefaultArgs<ExtArgs>
 }
 
 export type $OfferPostCategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "OfferPostCategory"
   objects: {
-    offerPost: Prisma.$OfferPostPayload<ExtArgs>
     category: Prisma.$CategoryPayload<ExtArgs>
+    offerPost: Prisma.$OfferPostPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -986,8 +986,8 @@ readonly fields: OfferPostCategoryFieldRefs;
  */
 export interface Prisma__OfferPostCategoryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  offerPost<T extends Prisma.OfferPostDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OfferPostDefaultArgs<ExtArgs>>): Prisma.Prisma__OfferPostClient<runtime.Types.Result.GetResult<Prisma.$OfferPostPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  offerPost<T extends Prisma.OfferPostDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OfferPostDefaultArgs<ExtArgs>>): Prisma.Prisma__OfferPostClient<runtime.Types.Result.GetResult<Prisma.$OfferPostPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

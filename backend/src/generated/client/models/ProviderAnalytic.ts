@@ -41,7 +41,7 @@ export type ProviderAnalyticSumAggregateOutputType = {
 export type ProviderAnalyticMinAggregateOutputType = {
   id: number | null
   providerId: number | null
-  eventType: string | null
+  eventType: $Enums.AnalyticEvent | null
   userId: number | null
   createdAt: Date | null
 }
@@ -49,7 +49,7 @@ export type ProviderAnalyticMinAggregateOutputType = {
 export type ProviderAnalyticMaxAggregateOutputType = {
   id: number | null
   providerId: number | null
-  eventType: string | null
+  eventType: $Enums.AnalyticEvent | null
   userId: number | null
   createdAt: Date | null
 }
@@ -190,7 +190,7 @@ export type ProviderAnalyticGroupByArgs<ExtArgs extends runtime.Types.Extensions
 export type ProviderAnalyticGroupByOutputType = {
   id: number
   providerId: number
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId: number | null
   createdAt: Date
   _count: ProviderAnalyticCountAggregateOutputType | null
@@ -221,7 +221,7 @@ export type ProviderAnalyticWhereInput = {
   NOT?: Prisma.ProviderAnalyticWhereInput | Prisma.ProviderAnalyticWhereInput[]
   id?: Prisma.IntFilter<"ProviderAnalytic"> | number
   providerId?: Prisma.IntFilter<"ProviderAnalytic"> | number
-  eventType?: Prisma.StringFilter<"ProviderAnalytic"> | string
+  eventType?: Prisma.EnumAnalyticEventFilter<"ProviderAnalytic"> | $Enums.AnalyticEvent
   userId?: Prisma.IntNullableFilter<"ProviderAnalytic"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ProviderAnalytic"> | Date | string
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
@@ -242,7 +242,7 @@ export type ProviderAnalyticWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ProviderAnalyticWhereInput[]
   NOT?: Prisma.ProviderAnalyticWhereInput | Prisma.ProviderAnalyticWhereInput[]
   providerId?: Prisma.IntFilter<"ProviderAnalytic"> | number
-  eventType?: Prisma.StringFilter<"ProviderAnalytic"> | string
+  eventType?: Prisma.EnumAnalyticEventFilter<"ProviderAnalytic"> | $Enums.AnalyticEvent
   userId?: Prisma.IntNullableFilter<"ProviderAnalytic"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ProviderAnalytic"> | Date | string
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
@@ -267,13 +267,13 @@ export type ProviderAnalyticScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProviderAnalyticScalarWhereWithAggregatesInput | Prisma.ProviderAnalyticScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"ProviderAnalytic"> | number
   providerId?: Prisma.IntWithAggregatesFilter<"ProviderAnalytic"> | number
-  eventType?: Prisma.StringWithAggregatesFilter<"ProviderAnalytic"> | string
+  eventType?: Prisma.EnumAnalyticEventWithAggregatesFilter<"ProviderAnalytic"> | $Enums.AnalyticEvent
   userId?: Prisma.IntNullableWithAggregatesFilter<"ProviderAnalytic"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProviderAnalytic"> | Date | string
 }
 
 export type ProviderAnalyticCreateInput = {
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId?: number | null
   createdAt?: Date | string
   provider: Prisma.ProviderCreateNestedOneWithoutAnalyticsInput
@@ -282,13 +282,13 @@ export type ProviderAnalyticCreateInput = {
 export type ProviderAnalyticUncheckedCreateInput = {
   id?: number
   providerId: number
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId?: number | null
   createdAt?: Date | string
 }
 
 export type ProviderAnalyticUpdateInput = {
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   provider?: Prisma.ProviderUpdateOneRequiredWithoutAnalyticsNestedInput
@@ -297,7 +297,7 @@ export type ProviderAnalyticUpdateInput = {
 export type ProviderAnalyticUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -305,13 +305,13 @@ export type ProviderAnalyticUncheckedUpdateInput = {
 export type ProviderAnalyticCreateManyInput = {
   id?: number
   providerId: number
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId?: number | null
   createdAt?: Date | string
 }
 
 export type ProviderAnalyticUpdateManyMutationInput = {
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -319,7 +319,7 @@ export type ProviderAnalyticUpdateManyMutationInput = {
 export type ProviderAnalyticUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -412,15 +412,19 @@ export type ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput = {
   deleteMany?: Prisma.ProviderAnalyticScalarWhereInput | Prisma.ProviderAnalyticScalarWhereInput[]
 }
 
+export type EnumAnalyticEventFieldUpdateOperationsInput = {
+  set?: $Enums.AnalyticEvent
+}
+
 export type ProviderAnalyticCreateWithoutProviderInput = {
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId?: number | null
   createdAt?: Date | string
 }
 
 export type ProviderAnalyticUncheckedCreateWithoutProviderInput = {
   id?: number
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId?: number | null
   createdAt?: Date | string
 }
@@ -457,34 +461,34 @@ export type ProviderAnalyticScalarWhereInput = {
   NOT?: Prisma.ProviderAnalyticScalarWhereInput | Prisma.ProviderAnalyticScalarWhereInput[]
   id?: Prisma.IntFilter<"ProviderAnalytic"> | number
   providerId?: Prisma.IntFilter<"ProviderAnalytic"> | number
-  eventType?: Prisma.StringFilter<"ProviderAnalytic"> | string
+  eventType?: Prisma.EnumAnalyticEventFilter<"ProviderAnalytic"> | $Enums.AnalyticEvent
   userId?: Prisma.IntNullableFilter<"ProviderAnalytic"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ProviderAnalytic"> | Date | string
 }
 
 export type ProviderAnalyticCreateManyProviderInput = {
   id?: number
-  eventType: string
+  eventType: $Enums.AnalyticEvent
   userId?: number | null
   createdAt?: Date | string
 }
 
 export type ProviderAnalyticUpdateWithoutProviderInput = {
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProviderAnalyticUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProviderAnalyticUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.EnumAnalyticEventFieldUpdateOperationsInput | $Enums.AnalyticEvent
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -545,7 +549,7 @@ export type $ProviderAnalyticPayload<ExtArgs extends runtime.Types.Extensions.In
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     providerId: number
-    eventType: string
+    eventType: $Enums.AnalyticEvent
     userId: number | null
     createdAt: Date
   }, ExtArgs["result"]["providerAnalytic"]>
@@ -974,7 +978,7 @@ export interface Prisma__ProviderAnalyticClient<T, Null = never, ExtArgs extends
 export interface ProviderAnalyticFieldRefs {
   readonly id: Prisma.FieldRef<"ProviderAnalytic", 'Int'>
   readonly providerId: Prisma.FieldRef<"ProviderAnalytic", 'Int'>
-  readonly eventType: Prisma.FieldRef<"ProviderAnalytic", 'String'>
+  readonly eventType: Prisma.FieldRef<"ProviderAnalytic", 'AnalyticEvent'>
   readonly userId: Prisma.FieldRef<"ProviderAnalytic", 'Int'>
   readonly createdAt: Prisma.FieldRef<"ProviderAnalytic", 'DateTime'>
 }

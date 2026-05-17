@@ -66,9 +66,9 @@ export type VerificationStatus = (typeof VerificationStatus)[keyof typeof Verifi
 export const ServiceRequestStatus = {
   OPEN: 'OPEN',
   CLOSED: 'CLOSED',
-  AWARDED: 'AWARDED',
   EXPIRED: 'EXPIRED',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  AWARDED: 'AWARDED'
 } as const
 
 export type ServiceRequestStatus = (typeof ServiceRequestStatus)[keyof typeof ServiceRequestStatus]
@@ -110,6 +110,66 @@ export const LocalitySource = {
 } as const
 
 export type LocalitySource = (typeof LocalitySource)[keyof typeof LocalitySource]
+
+
+export const PlanRequestStatus = {
+  PENDIENTE: 'PENDIENTE',
+  APROBADO: 'APROBADO',
+  RECHAZADO: 'RECHAZADO'
+} as const
+
+export type PlanRequestStatus = (typeof PlanRequestStatus)[keyof typeof PlanRequestStatus]
+
+
+export const ReportReason = {
+  INFORMACION_FALSA: 'INFORMACION_FALSA',
+  COMPORTAMIENTO: 'COMPORTAMIENTO',
+  FRAUDE: 'FRAUDE',
+  FOTO_INAPROPIADA: 'FOTO_INAPROPIADA',
+  NO_PRESTO: 'NO_PRESTO',
+  OTRO: 'OTRO'
+} as const
+
+export type ReportReason = (typeof ReportReason)[keyof typeof ReportReason]
+
+
+export const AnalyticEvent = {
+  whatsapp_click: 'whatsapp_click',
+  call_click: 'call_click',
+  view: 'view',
+  profile_view: 'profile_view',
+  favorite_add: 'favorite_add'
+} as const
+
+export type AnalyticEvent = (typeof AnalyticEvent)[keyof typeof AnalyticEvent]
+
+
+export const VerificationDocType = {
+  dni: 'dni',
+  antecedentes: 'antecedentes',
+  certificado: 'certificado'
+} as const
+
+export type VerificationDocType = (typeof VerificationDocType)[keyof typeof VerificationDocType]
+
+
+export const PaymentMethod = {
+  yape: 'yape',
+  bcp_deposito: 'bcp_deposito',
+  mercadopago: 'mercadopago'
+} as const
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+
+
+export const OfferReportReason = {
+  SPAM: 'SPAM',
+  PRECIO_FALSO: 'PRECIO_FALSO',
+  CONTENIDO_INAPROPIADO: 'CONTENIDO_INAPROPIADO',
+  OTRO: 'OTRO'
+} as const
+
+export type OfferReportReason = (typeof OfferReportReason)[keyof typeof OfferReportReason]
 
 
 export const NotificationType = {

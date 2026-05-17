@@ -42,7 +42,7 @@ export type ProviderReportMinAggregateOutputType = {
   id: number | null
   providerId: number | null
   userId: number | null
-  reason: string | null
+  reason: $Enums.ReportReason | null
   description: string | null
   isReviewed: boolean | null
   createdAt: Date | null
@@ -52,7 +52,7 @@ export type ProviderReportMaxAggregateOutputType = {
   id: number | null
   providerId: number | null
   userId: number | null
-  reason: string | null
+  reason: $Enums.ReportReason | null
   description: string | null
   isReviewed: boolean | null
   createdAt: Date | null
@@ -203,7 +203,7 @@ export type ProviderReportGroupByOutputType = {
   id: number
   providerId: number
   userId: number
-  reason: string
+  reason: $Enums.ReportReason
   description: string | null
   isReviewed: boolean
   createdAt: Date
@@ -236,7 +236,7 @@ export type ProviderReportWhereInput = {
   id?: Prisma.IntFilter<"ProviderReport"> | number
   providerId?: Prisma.IntFilter<"ProviderReport"> | number
   userId?: Prisma.IntFilter<"ProviderReport"> | number
-  reason?: Prisma.StringFilter<"ProviderReport"> | string
+  reason?: Prisma.EnumReportReasonFilter<"ProviderReport"> | $Enums.ReportReason
   description?: Prisma.StringNullableFilter<"ProviderReport"> | string | null
   isReviewed?: Prisma.BoolFilter<"ProviderReport"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ProviderReport"> | Date | string
@@ -264,7 +264,7 @@ export type ProviderReportWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProviderReportWhereInput | Prisma.ProviderReportWhereInput[]
   providerId?: Prisma.IntFilter<"ProviderReport"> | number
   userId?: Prisma.IntFilter<"ProviderReport"> | number
-  reason?: Prisma.StringFilter<"ProviderReport"> | string
+  reason?: Prisma.EnumReportReasonFilter<"ProviderReport"> | $Enums.ReportReason
   description?: Prisma.StringNullableFilter<"ProviderReport"> | string | null
   isReviewed?: Prisma.BoolFilter<"ProviderReport"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ProviderReport"> | Date | string
@@ -294,14 +294,14 @@ export type ProviderReportScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"ProviderReport"> | number
   providerId?: Prisma.IntWithAggregatesFilter<"ProviderReport"> | number
   userId?: Prisma.IntWithAggregatesFilter<"ProviderReport"> | number
-  reason?: Prisma.StringWithAggregatesFilter<"ProviderReport"> | string
+  reason?: Prisma.EnumReportReasonWithAggregatesFilter<"ProviderReport"> | $Enums.ReportReason
   description?: Prisma.StringNullableWithAggregatesFilter<"ProviderReport"> | string | null
   isReviewed?: Prisma.BoolWithAggregatesFilter<"ProviderReport"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProviderReport"> | Date | string
 }
 
 export type ProviderReportCreateInput = {
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
@@ -313,14 +313,14 @@ export type ProviderReportUncheckedCreateInput = {
   id?: number
   providerId: number
   userId: number
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
 }
 
 export type ProviderReportUpdateInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -332,7 +332,7 @@ export type ProviderReportUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -342,14 +342,14 @@ export type ProviderReportCreateManyInput = {
   id?: number
   providerId: number
   userId: number
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
 }
 
 export type ProviderReportUpdateManyMutationInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -359,7 +359,7 @@ export type ProviderReportUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -506,8 +506,12 @@ export type ProviderReportUncheckedUpdateManyWithoutProviderNestedInput = {
   deleteMany?: Prisma.ProviderReportScalarWhereInput | Prisma.ProviderReportScalarWhereInput[]
 }
 
+export type EnumReportReasonFieldUpdateOperationsInput = {
+  set?: $Enums.ReportReason
+}
+
 export type ProviderReportCreateWithoutUserInput = {
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
@@ -517,7 +521,7 @@ export type ProviderReportCreateWithoutUserInput = {
 export type ProviderReportUncheckedCreateWithoutUserInput = {
   id?: number
   providerId: number
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
@@ -556,14 +560,14 @@ export type ProviderReportScalarWhereInput = {
   id?: Prisma.IntFilter<"ProviderReport"> | number
   providerId?: Prisma.IntFilter<"ProviderReport"> | number
   userId?: Prisma.IntFilter<"ProviderReport"> | number
-  reason?: Prisma.StringFilter<"ProviderReport"> | string
+  reason?: Prisma.EnumReportReasonFilter<"ProviderReport"> | $Enums.ReportReason
   description?: Prisma.StringNullableFilter<"ProviderReport"> | string | null
   isReviewed?: Prisma.BoolFilter<"ProviderReport"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ProviderReport"> | Date | string
 }
 
 export type ProviderReportCreateWithoutProviderInput = {
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
@@ -573,7 +577,7 @@ export type ProviderReportCreateWithoutProviderInput = {
 export type ProviderReportUncheckedCreateWithoutProviderInput = {
   id?: number
   userId: number
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
@@ -608,14 +612,14 @@ export type ProviderReportUpdateManyWithWhereWithoutProviderInput = {
 export type ProviderReportCreateManyUserInput = {
   id?: number
   providerId: number
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
 }
 
 export type ProviderReportUpdateWithoutUserInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -625,7 +629,7 @@ export type ProviderReportUpdateWithoutUserInput = {
 export type ProviderReportUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -634,7 +638,7 @@ export type ProviderReportUncheckedUpdateWithoutUserInput = {
 export type ProviderReportUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -643,14 +647,14 @@ export type ProviderReportUncheckedUpdateManyWithoutUserInput = {
 export type ProviderReportCreateManyProviderInput = {
   id?: number
   userId: number
-  reason: string
+  reason: $Enums.ReportReason
   description?: string | null
   isReviewed?: boolean
   createdAt?: Date | string
 }
 
 export type ProviderReportUpdateWithoutProviderInput = {
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -660,7 +664,7 @@ export type ProviderReportUpdateWithoutProviderInput = {
 export type ProviderReportUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -669,7 +673,7 @@ export type ProviderReportUncheckedUpdateWithoutProviderInput = {
 export type ProviderReportUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.EnumReportReasonFieldUpdateOperationsInput | $Enums.ReportReason
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isReviewed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -747,7 +751,7 @@ export type $ProviderReportPayload<ExtArgs extends runtime.Types.Extensions.Inte
     id: number
     providerId: number
     userId: number
-    reason: string
+    reason: $Enums.ReportReason
     description: string | null
     isReviewed: boolean
     createdAt: Date
@@ -1179,7 +1183,7 @@ export interface ProviderReportFieldRefs {
   readonly id: Prisma.FieldRef<"ProviderReport", 'Int'>
   readonly providerId: Prisma.FieldRef<"ProviderReport", 'Int'>
   readonly userId: Prisma.FieldRef<"ProviderReport", 'Int'>
-  readonly reason: Prisma.FieldRef<"ProviderReport", 'String'>
+  readonly reason: Prisma.FieldRef<"ProviderReport", 'ReportReason'>
   readonly description: Prisma.FieldRef<"ProviderReport", 'String'>
   readonly isReviewed: Prisma.FieldRef<"ProviderReport", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ProviderReport", 'DateTime'>

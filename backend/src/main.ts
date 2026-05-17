@@ -72,6 +72,8 @@ async function bootstrap() {
 
   // 5. ARRANQUE
   const port = process.env.PORT ?? 3000;
+  // Confiar en el proxy de Render para obtener la IP real del cliente
+  app.set('trust proxy', 1);
   await app.listen(port, '0.0.0.0'); 
   
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);

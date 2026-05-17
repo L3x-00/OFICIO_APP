@@ -52,13 +52,13 @@ export type TrustValidationRequestMinAggregateOutputType = {
   rucNumber: string | null
   businessAddress: string | null
   businessPhotoUrl: string | null
-  businessPhoto2Url: string | null
   ownerDniPhotoUrl: string | null
   rejectionReason: string | null
   reviewedByAdminId: number | null
   reviewedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
+  businessPhoto2Url: string | null
 }
 
 export type TrustValidationRequestMaxAggregateOutputType = {
@@ -75,13 +75,13 @@ export type TrustValidationRequestMaxAggregateOutputType = {
   rucNumber: string | null
   businessAddress: string | null
   businessPhotoUrl: string | null
-  businessPhoto2Url: string | null
   ownerDniPhotoUrl: string | null
   rejectionReason: string | null
   reviewedByAdminId: number | null
   reviewedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
+  businessPhoto2Url: string | null
 }
 
 export type TrustValidationRequestCountAggregateOutputType = {
@@ -98,13 +98,13 @@ export type TrustValidationRequestCountAggregateOutputType = {
   rucNumber: number
   businessAddress: number
   businessPhotoUrl: number
-  businessPhoto2Url: number
   ownerDniPhotoUrl: number
   rejectionReason: number
   reviewedByAdminId: number
   reviewedAt: number
   createdAt: number
   updatedAt: number
+  businessPhoto2Url: number
   _all: number
 }
 
@@ -135,13 +135,13 @@ export type TrustValidationRequestMinAggregateInputType = {
   rucNumber?: true
   businessAddress?: true
   businessPhotoUrl?: true
-  businessPhoto2Url?: true
   ownerDniPhotoUrl?: true
   rejectionReason?: true
   reviewedByAdminId?: true
   reviewedAt?: true
   createdAt?: true
   updatedAt?: true
+  businessPhoto2Url?: true
 }
 
 export type TrustValidationRequestMaxAggregateInputType = {
@@ -158,13 +158,13 @@ export type TrustValidationRequestMaxAggregateInputType = {
   rucNumber?: true
   businessAddress?: true
   businessPhotoUrl?: true
-  businessPhoto2Url?: true
   ownerDniPhotoUrl?: true
   rejectionReason?: true
   reviewedByAdminId?: true
   reviewedAt?: true
   createdAt?: true
   updatedAt?: true
+  businessPhoto2Url?: true
 }
 
 export type TrustValidationRequestCountAggregateInputType = {
@@ -181,13 +181,13 @@ export type TrustValidationRequestCountAggregateInputType = {
   rucNumber?: true
   businessAddress?: true
   businessPhotoUrl?: true
-  businessPhoto2Url?: true
   ownerDniPhotoUrl?: true
   rejectionReason?: true
   reviewedByAdminId?: true
   reviewedAt?: true
   createdAt?: true
   updatedAt?: true
+  businessPhoto2Url?: true
   _all?: true
 }
 
@@ -291,13 +291,13 @@ export type TrustValidationRequestGroupByOutputType = {
   rucNumber: string | null
   businessAddress: string | null
   businessPhotoUrl: string | null
-  businessPhoto2Url: string | null
   ownerDniPhotoUrl: string | null
   rejectionReason: string | null
   reviewedByAdminId: number | null
   reviewedAt: Date | null
   createdAt: Date
   updatedAt: Date
+  businessPhoto2Url: string | null
   _count: TrustValidationRequestCountAggregateOutputType | null
   _avg: TrustValidationRequestAvgAggregateOutputType | null
   _sum: TrustValidationRequestSumAggregateOutputType | null
@@ -337,13 +337,13 @@ export type TrustValidationRequestWhereInput = {
   rucNumber?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
-  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableFilter<"TrustValidationRequest"> | number | null
   reviewedAt?: Prisma.DateTimeNullableFilter<"TrustValidationRequest"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TrustValidationRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TrustValidationRequest"> | Date | string
+  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }
 
@@ -361,13 +361,13 @@ export type TrustValidationRequestOrderByWithRelationInput = {
   rucNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   businessAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  businessPhoto2Url?: Prisma.SortOrderInput | Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrderInput | Prisma.SortOrder
   provider?: Prisma.ProviderOrderByWithRelationInput
 }
 
@@ -388,13 +388,13 @@ export type TrustValidationRequestWhereUniqueInput = Prisma.AtLeast<{
   rucNumber?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
-  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableFilter<"TrustValidationRequest"> | number | null
   reviewedAt?: Prisma.DateTimeNullableFilter<"TrustValidationRequest"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TrustValidationRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TrustValidationRequest"> | Date | string
+  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }, "id">
 
@@ -412,13 +412,13 @@ export type TrustValidationRequestOrderByWithAggregationInput = {
   rucNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   businessAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  businessPhoto2Url?: Prisma.SortOrderInput | Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TrustValidationRequestCountOrderByAggregateInput
   _avg?: Prisma.TrustValidationRequestAvgOrderByAggregateInput
   _max?: Prisma.TrustValidationRequestMaxOrderByAggregateInput
@@ -443,13 +443,13 @@ export type TrustValidationRequestScalarWhereWithAggregatesInput = {
   rucNumber?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
-  businessPhoto2Url?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableWithAggregatesFilter<"TrustValidationRequest"> | number | null
   reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TrustValidationRequest"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TrustValidationRequest"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TrustValidationRequest"> | Date | string
+  businessPhoto2Url?: Prisma.StringNullableWithAggregatesFilter<"TrustValidationRequest"> | string | null
 }
 
 export type TrustValidationRequestCreateInput = {
@@ -464,13 +464,13 @@ export type TrustValidationRequestCreateInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
-  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessPhoto2Url?: string | null
   provider: Prisma.ProviderCreateNestedOneWithoutTrustValidationsInput
 }
 
@@ -488,13 +488,13 @@ export type TrustValidationRequestUncheckedCreateInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
-  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessPhoto2Url?: string | null
 }
 
 export type TrustValidationRequestUpdateInput = {
@@ -509,13 +509,13 @@ export type TrustValidationRequestUpdateInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   provider?: Prisma.ProviderUpdateOneRequiredWithoutTrustValidationsNestedInput
 }
 
@@ -533,13 +533,13 @@ export type TrustValidationRequestUncheckedUpdateInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TrustValidationRequestCreateManyInput = {
@@ -556,13 +556,13 @@ export type TrustValidationRequestCreateManyInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
-  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessPhoto2Url?: string | null
 }
 
 export type TrustValidationRequestUpdateManyMutationInput = {
@@ -577,13 +577,13 @@ export type TrustValidationRequestUpdateManyMutationInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TrustValidationRequestUncheckedUpdateManyInput = {
@@ -600,13 +600,13 @@ export type TrustValidationRequestUncheckedUpdateManyInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TrustValidationRequestListRelationFilter = {
@@ -633,13 +633,13 @@ export type TrustValidationRequestCountOrderByAggregateInput = {
   rucNumber?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrder
-  businessPhoto2Url?: Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
   reviewedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrder
 }
 
 export type TrustValidationRequestAvgOrderByAggregateInput = {
@@ -662,13 +662,13 @@ export type TrustValidationRequestMaxOrderByAggregateInput = {
   rucNumber?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrder
-  businessPhoto2Url?: Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
   reviewedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrder
 }
 
 export type TrustValidationRequestMinOrderByAggregateInput = {
@@ -685,13 +685,13 @@ export type TrustValidationRequestMinOrderByAggregateInput = {
   rucNumber?: Prisma.SortOrder
   businessAddress?: Prisma.SortOrder
   businessPhotoUrl?: Prisma.SortOrder
-  businessPhoto2Url?: Prisma.SortOrder
   ownerDniPhotoUrl?: Prisma.SortOrder
   rejectionReason?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
   reviewedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  businessPhoto2Url?: Prisma.SortOrder
 }
 
 export type TrustValidationRequestSumOrderByAggregateInput = {
@@ -754,13 +754,13 @@ export type TrustValidationRequestCreateWithoutProviderInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
-  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessPhoto2Url?: string | null
 }
 
 export type TrustValidationRequestUncheckedCreateWithoutProviderInput = {
@@ -776,13 +776,13 @@ export type TrustValidationRequestUncheckedCreateWithoutProviderInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
-  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessPhoto2Url?: string | null
 }
 
 export type TrustValidationRequestCreateOrConnectWithoutProviderInput = {
@@ -828,13 +828,13 @@ export type TrustValidationRequestScalarWhereInput = {
   rucNumber?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessAddress?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   businessPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
-  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   ownerDniPhotoUrl?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
   reviewedByAdminId?: Prisma.IntNullableFilter<"TrustValidationRequest"> | number | null
   reviewedAt?: Prisma.DateTimeNullableFilter<"TrustValidationRequest"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TrustValidationRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TrustValidationRequest"> | Date | string
+  businessPhoto2Url?: Prisma.StringNullableFilter<"TrustValidationRequest"> | string | null
 }
 
 export type TrustValidationRequestCreateManyProviderInput = {
@@ -850,13 +850,13 @@ export type TrustValidationRequestCreateManyProviderInput = {
   rucNumber?: string | null
   businessAddress?: string | null
   businessPhotoUrl?: string | null
-  businessPhoto2Url?: string | null
   ownerDniPhotoUrl?: string | null
   rejectionReason?: string | null
   reviewedByAdminId?: number | null
   reviewedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  businessPhoto2Url?: string | null
 }
 
 export type TrustValidationRequestUpdateWithoutProviderInput = {
@@ -871,13 +871,13 @@ export type TrustValidationRequestUpdateWithoutProviderInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TrustValidationRequestUncheckedUpdateWithoutProviderInput = {
@@ -893,13 +893,13 @@ export type TrustValidationRequestUncheckedUpdateWithoutProviderInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TrustValidationRequestUncheckedUpdateManyWithoutProviderInput = {
@@ -915,13 +915,13 @@ export type TrustValidationRequestUncheckedUpdateManyWithoutProviderInput = {
   rucNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ownerDniPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedByAdminId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  businessPhoto2Url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -940,13 +940,13 @@ export type TrustValidationRequestSelect<ExtArgs extends runtime.Types.Extension
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
-  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
   reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  businessPhoto2Url?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["trustValidationRequest"]>
 
@@ -964,13 +964,13 @@ export type TrustValidationRequestSelectCreateManyAndReturn<ExtArgs extends runt
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
-  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
   reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  businessPhoto2Url?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["trustValidationRequest"]>
 
@@ -988,13 +988,13 @@ export type TrustValidationRequestSelectUpdateManyAndReturn<ExtArgs extends runt
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
-  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
   reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  businessPhoto2Url?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["trustValidationRequest"]>
 
@@ -1012,16 +1012,16 @@ export type TrustValidationRequestSelectScalar = {
   rucNumber?: boolean
   businessAddress?: boolean
   businessPhotoUrl?: boolean
-  businessPhoto2Url?: boolean
   ownerDniPhotoUrl?: boolean
   rejectionReason?: boolean
   reviewedByAdminId?: boolean
   reviewedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  businessPhoto2Url?: boolean
 }
 
-export type TrustValidationRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "status" | "dniNumber" | "dniFirstName" | "dniLastName" | "dniAddress" | "dniPhotoFrontUrl" | "dniPhotoBackUrl" | "selfieWithDniUrl" | "rucNumber" | "businessAddress" | "businessPhotoUrl" | "businessPhoto2Url" | "ownerDniPhotoUrl" | "rejectionReason" | "reviewedByAdminId" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["trustValidationRequest"]>
+export type TrustValidationRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "status" | "dniNumber" | "dniFirstName" | "dniLastName" | "dniAddress" | "dniPhotoFrontUrl" | "dniPhotoBackUrl" | "selfieWithDniUrl" | "rucNumber" | "businessAddress" | "businessPhotoUrl" | "ownerDniPhotoUrl" | "rejectionReason" | "reviewedByAdminId" | "reviewedAt" | "createdAt" | "updatedAt" | "businessPhoto2Url", ExtArgs["result"]["trustValidationRequest"]>
 export type TrustValidationRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
@@ -1051,13 +1051,13 @@ export type $TrustValidationRequestPayload<ExtArgs extends runtime.Types.Extensi
     rucNumber: string | null
     businessAddress: string | null
     businessPhotoUrl: string | null
-    businessPhoto2Url: string | null
     ownerDniPhotoUrl: string | null
     rejectionReason: string | null
     reviewedByAdminId: number | null
     reviewedAt: Date | null
     createdAt: Date
     updatedAt: Date
+    businessPhoto2Url: string | null
   }, ExtArgs["result"]["trustValidationRequest"]>
   composites: {}
 }
@@ -1495,13 +1495,13 @@ export interface TrustValidationRequestFieldRefs {
   readonly rucNumber: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly businessAddress: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly businessPhotoUrl: Prisma.FieldRef<"TrustValidationRequest", 'String'>
-  readonly businessPhoto2Url: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly ownerDniPhotoUrl: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly rejectionReason: Prisma.FieldRef<"TrustValidationRequest", 'String'>
   readonly reviewedByAdminId: Prisma.FieldRef<"TrustValidationRequest", 'Int'>
   readonly reviewedAt: Prisma.FieldRef<"TrustValidationRequest", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"TrustValidationRequest", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"TrustValidationRequest", 'DateTime'>
+  readonly businessPhoto2Url: Prisma.FieldRef<"TrustValidationRequest", 'String'>
 }
     
 

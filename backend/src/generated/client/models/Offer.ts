@@ -284,8 +284,8 @@ export type OfferWhereInput = {
   arrivedLng?: Prisma.FloatNullableFilter<"Offer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Offer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Offer"> | Date | string
-  serviceRequest?: Prisma.XOR<Prisma.ServiceRequestScalarRelationFilter, Prisma.ServiceRequestWhereInput>
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
+  serviceRequest?: Prisma.XOR<Prisma.ServiceRequestScalarRelationFilter, Prisma.ServiceRequestWhereInput>
 }
 
 export type OfferOrderByWithRelationInput = {
@@ -300,8 +300,8 @@ export type OfferOrderByWithRelationInput = {
   arrivedLng?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  serviceRequest?: Prisma.ServiceRequestOrderByWithRelationInput
   provider?: Prisma.ProviderOrderByWithRelationInput
+  serviceRequest?: Prisma.ServiceRequestOrderByWithRelationInput
 }
 
 export type OfferWhereUniqueInput = Prisma.AtLeast<{
@@ -320,8 +320,8 @@ export type OfferWhereUniqueInput = Prisma.AtLeast<{
   arrivedLng?: Prisma.FloatNullableFilter<"Offer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Offer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Offer"> | Date | string
-  serviceRequest?: Prisma.XOR<Prisma.ServiceRequestScalarRelationFilter, Prisma.ServiceRequestWhereInput>
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
+  serviceRequest?: Prisma.XOR<Prisma.ServiceRequestScalarRelationFilter, Prisma.ServiceRequestWhereInput>
 }, "id" | "serviceRequestId_providerId">
 
 export type OfferOrderByWithAggregationInput = {
@@ -369,8 +369,8 @@ export type OfferCreateInput = {
   arrivedLng?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  serviceRequest: Prisma.ServiceRequestCreateNestedOneWithoutOffersInput
   provider: Prisma.ProviderCreateNestedOneWithoutOffersInput
+  serviceRequest: Prisma.ServiceRequestCreateNestedOneWithoutOffersInput
 }
 
 export type OfferUncheckedCreateInput = {
@@ -396,8 +396,8 @@ export type OfferUpdateInput = {
   arrivedLng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  serviceRequest?: Prisma.ServiceRequestUpdateOneRequiredWithoutOffersNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutOffersNestedInput
+  serviceRequest?: Prisma.ServiceRequestUpdateOneRequiredWithoutOffersNestedInput
 }
 
 export type OfferUncheckedUpdateInput = {
@@ -851,8 +851,8 @@ export type OfferSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   arrivedLng?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offer"]>
 
 export type OfferSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -867,8 +867,8 @@ export type OfferSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   arrivedLng?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offer"]>
 
 export type OfferSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -883,8 +883,8 @@ export type OfferSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   arrivedLng?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["offer"]>
 
 export type OfferSelectScalar = {
@@ -903,23 +903,23 @@ export type OfferSelectScalar = {
 
 export type OfferOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "serviceRequestId" | "providerId" | "price" | "message" | "status" | "arrivedAt" | "arrivedLat" | "arrivedLng" | "createdAt" | "updatedAt", ExtArgs["result"]["offer"]>
 export type OfferInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
 }
 export type OfferIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
 }
 export type OfferIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  serviceRequest?: boolean | Prisma.ServiceRequestDefaultArgs<ExtArgs>
 }
 
 export type $OfferPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Offer"
   objects: {
-    serviceRequest: Prisma.$ServiceRequestPayload<ExtArgs>
     provider: Prisma.$ProviderPayload<ExtArgs>
+    serviceRequest: Prisma.$ServiceRequestPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1327,8 +1327,8 @@ readonly fields: OfferFieldRefs;
  */
 export interface Prisma__OfferClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  serviceRequest<T extends Prisma.ServiceRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__ServiceRequestClient<runtime.Types.Result.GetResult<Prisma.$ServiceRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  serviceRequest<T extends Prisma.ServiceRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ServiceRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__ServiceRequestClient<runtime.Types.Result.GetResult<Prisma.$ServiceRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

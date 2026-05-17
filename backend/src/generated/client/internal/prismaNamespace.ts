@@ -393,6 +393,7 @@ export const ModelName = {
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
+  SubscriptionAuditLog: 'SubscriptionAuditLog',
   Payment: 'Payment',
   PlanRequest: 'PlanRequest',
   Review: 'Review',
@@ -417,7 +418,8 @@ export const ModelName = {
   ChatMessage: 'ChatMessage',
   OfferPost: 'OfferPost',
   OfferPostCategory: 'OfferPostCategory',
-  OfferReport: 'OfferReport'
+  OfferReport: 'OfferReport',
+  spatial_ref_sys: 'spatial_ref_sys'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -433,7 +435,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "providerCategory" | "provider" | "providerImage" | "subscription" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "providerCategory" | "provider" | "providerImage" | "subscription" | "subscriptionAuditLog" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1100,6 +1102,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SubscriptionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SubscriptionCountAggregateOutputType> | number
+        }
+      }
+    }
+    SubscriptionAuditLog: {
+      payload: Prisma.$SubscriptionAuditLogPayload<ExtArgs>
+      fields: Prisma.SubscriptionAuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SubscriptionAuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SubscriptionAuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.SubscriptionAuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SubscriptionAuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.SubscriptionAuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.SubscriptionAuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.SubscriptionAuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SubscriptionAuditLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>[]
+        }
+        delete: {
+          args: Prisma.SubscriptionAuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>
+        }
+        update: {
+          args: Prisma.SubscriptionAuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.SubscriptionAuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SubscriptionAuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SubscriptionAuditLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.SubscriptionAuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionAuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.SubscriptionAuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSubscriptionAuditLog>
+        }
+        groupBy: {
+          args: Prisma.SubscriptionAuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionAuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SubscriptionAuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionAuditLogCountAggregateOutputType> | number
         }
       }
     }
@@ -2953,6 +3029,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    spatial_ref_sys: {
+      payload: Prisma.$spatial_ref_sysPayload<ExtArgs>
+      fields: Prisma.spatial_ref_sysFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.spatial_ref_sysFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.spatial_ref_sysFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>
+        }
+        findFirst: {
+          args: Prisma.spatial_ref_sysFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.spatial_ref_sysFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>
+        }
+        findMany: {
+          args: Prisma.spatial_ref_sysFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>[]
+        }
+        create: {
+          args: Prisma.spatial_ref_sysCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>
+        }
+        createMany: {
+          args: Prisma.spatial_ref_sysCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.spatial_ref_sysCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>[]
+        }
+        delete: {
+          args: Prisma.spatial_ref_sysDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>
+        }
+        update: {
+          args: Prisma.spatial_ref_sysUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>
+        }
+        deleteMany: {
+          args: Prisma.spatial_ref_sysDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.spatial_ref_sysUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.spatial_ref_sysUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>[]
+        }
+        upsert: {
+          args: Prisma.spatial_ref_sysUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$spatial_ref_sysPayload>
+        }
+        aggregate: {
+          args: Prisma.Spatial_ref_sysAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpatial_ref_sys>
+        }
+        groupBy: {
+          args: Prisma.spatial_ref_sysGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Spatial_ref_sysGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.spatial_ref_sysCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Spatial_ref_sysCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3001,16 +3151,17 @@ export const UserScalarFieldEnum = {
   firstName: 'firstName',
   lastName: 'lastName',
   avatarUrl: 'avatarUrl',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   department: 'department',
   province: 'province',
   district: 'district',
   firebaseUid: 'firebaseUid',
-  fcmToken: 'fcmToken',
-  isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
+  fcmToken: 'fcmToken',
   coins: 'coins',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  lastIp: 'lastIp'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -3042,12 +3193,12 @@ export const LocalityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   department: 'department',
-  province: 'province',
-  district: 'district',
   country: 'country',
   isActive: 'isActive',
-  source: 'source',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  district: 'district',
+  province: 'province',
+  source: 'source'
 } as const
 
 export type LocalityScalarFieldEnum = (typeof LocalityScalarFieldEnum)[keyof typeof LocalityScalarFieldEnum]
@@ -3059,8 +3210,8 @@ export const CategoryScalarFieldEnum = {
   slug: 'slug',
   iconUrl: 'iconUrl',
   parentId: 'parentId',
-  forType: 'forType',
-  isActive: 'isActive'
+  isActive: 'isActive',
+  forType: 'forType'
 } as const
 
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
@@ -3080,27 +3231,10 @@ export const ProviderScalarFieldEnum = {
   userId: 'userId',
   type: 'type',
   businessName: 'businessName',
-  slug: 'slug',
-  slugEditedAt: 'slugEditedAt',
   description: 'description',
-  dni: 'dni',
-  ruc: 'ruc',
-  nombreComercial: 'nombreComercial',
-  razonSocial: 'razonSocial',
-  hasDelivery: 'hasDelivery',
-  plenaCoordinacion: 'plenaCoordinacion',
-  hasHomeService: 'hasHomeService',
   phone: 'phone',
   whatsapp: 'whatsapp',
   address: 'address',
-  website: 'website',
-  instagram: 'instagram',
-  tiktok: 'tiktok',
-  facebook: 'facebook',
-  linkedin: 'linkedin',
-  twitterX: 'twitterX',
-  telegram: 'telegram',
-  whatsappBiz: 'whatsappBiz',
   latitude: 'latitude',
   longitude: 'longitude',
   scheduleJson: 'scheduleJson',
@@ -3109,15 +3243,32 @@ export const ProviderScalarFieldEnum = {
   verificationStatus: 'verificationStatus',
   isVerified: 'isVerified',
   hasCleanRecord: 'hasCleanRecord',
-  trustStatus: 'trustStatus',
-  isTrusted: 'isTrusted',
   averageRating: 'averageRating',
   totalReviews: 'totalReviews',
-  totalRecommendations: 'totalRecommendations',
-  planPriority: 'planPriority',
   localityId: 'localityId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  dni: 'dni',
+  hasDelivery: 'hasDelivery',
+  hasHomeService: 'hasHomeService',
+  isTrusted: 'isTrusted',
+  nombreComercial: 'nombreComercial',
+  planPriority: 'planPriority',
+  plenaCoordinacion: 'plenaCoordinacion',
+  razonSocial: 'razonSocial',
+  ruc: 'ruc',
+  totalRecommendations: 'totalRecommendations',
+  trustStatus: 'trustStatus',
+  facebook: 'facebook',
+  instagram: 'instagram',
+  linkedin: 'linkedin',
+  telegram: 'telegram',
+  tiktok: 'tiktok',
+  twitterX: 'twitterX',
+  website: 'website',
+  whatsappBiz: 'whatsappBiz',
+  slug: 'slug',
+  slugEditedAt: 'slugEditedAt'
 } as const
 
 export type ProviderScalarFieldEnum = (typeof ProviderScalarFieldEnum)[keyof typeof ProviderScalarFieldEnum]
@@ -3143,10 +3294,25 @@ export const SubscriptionScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   graceMonths: 'graceMonths',
-  priceUSD: 'priceUSD'
+  priceUSD: 'priceUSD',
+  updatedAt: 'updatedAt'
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+
+
+export const SubscriptionAuditLogScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  oldStatus: 'oldStatus',
+  newStatus: 'newStatus',
+  oldPlan: 'oldPlan',
+  newPlan: 'newPlan',
+  changedAt: 'changedAt',
+  changedBy: 'changedBy'
+} as const
+
+export type SubscriptionAuditLogScalarFieldEnum = (typeof SubscriptionAuditLogScalarFieldEnum)[keyof typeof SubscriptionAuditLogScalarFieldEnum]
 
 
 export const PaymentScalarFieldEnum = {
@@ -3243,12 +3409,12 @@ export const AdminNotificationScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
   type: 'type',
-  title: 'title',
   message: 'message',
   isRead: 'isRead',
-  targetUserId: 'targetUserId',
+  sentAt: 'sentAt',
   targetProfileType: 'targetProfileType',
-  sentAt: 'sentAt'
+  targetUserId: 'targetUserId',
+  title: 'title'
 } as const
 
 export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]
@@ -3302,13 +3468,13 @@ export const TrustValidationRequestScalarFieldEnum = {
   rucNumber: 'rucNumber',
   businessAddress: 'businessAddress',
   businessPhotoUrl: 'businessPhotoUrl',
-  businessPhoto2Url: 'businessPhoto2Url',
   ownerDniPhotoUrl: 'ownerDniPhotoUrl',
   rejectionReason: 'rejectionReason',
   reviewedByAdminId: 'reviewedByAdminId',
   reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  businessPhoto2Url: 'businessPhoto2Url'
 } as const
 
 export type TrustValidationRequestScalarFieldEnum = (typeof TrustValidationRequestScalarFieldEnum)[keyof typeof TrustValidationRequestScalarFieldEnum]
@@ -3497,6 +3663,17 @@ export const OfferReportScalarFieldEnum = {
 } as const
 
 export type OfferReportScalarFieldEnum = (typeof OfferReportScalarFieldEnum)[keyof typeof OfferReportScalarFieldEnum]
+
+
+export const Spatial_ref_sysScalarFieldEnum = {
+  srid: 'srid',
+  auth_name: 'auth_name',
+  auth_srid: 'auth_srid',
+  srtext: 'srtext',
+  proj4text: 'proj4text'
+} as const
+
+export type Spatial_ref_sysScalarFieldEnum = (typeof Spatial_ref_sysScalarFieldEnum)[keyof typeof Spatial_ref_sysScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3736,6 +3913,62 @@ export type ListEnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'PaymentMethod'
+ */
+export type EnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentMethod[]'
+ */
+export type ListEnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PlanRequestStatus'
+ */
+export type EnumPlanRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PlanRequestStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PlanRequestStatus[]'
+ */
+export type ListEnumPlanRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PlanRequestStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'VerificationDocType'
+ */
+export type EnumVerificationDocTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationDocType'>
+    
+
+
+/**
+ * Reference to a field of type 'VerificationDocType[]'
+ */
+export type ListEnumVerificationDocTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationDocType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AnalyticEvent'
+ */
+export type EnumAnalyticEventFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnalyticEvent'>
+    
+
+
+/**
+ * Reference to a field of type 'AnalyticEvent[]'
+ */
+export type ListEnumAnalyticEventFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnalyticEvent[]'>
+    
+
+
+/**
  * Reference to a field of type 'NotificationType'
  */
 export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
@@ -3746,6 +3979,20 @@ export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'NotificationType[]'
  */
 export type ListEnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReportReason'
+ */
+export type EnumReportReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportReason'>
+    
+
+
+/**
+ * Reference to a field of type 'ReportReason[]'
+ */
+export type ListEnumReportReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportReason[]'>
     
 
 
@@ -3830,6 +4077,20 @@ export type EnumMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'MessageStatus[]'
  */
 export type ListEnumMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OfferReportReason'
+ */
+export type EnumOfferReportReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferReportReason'>
+    
+
+
+/**
+ * Reference to a field of type 'OfferReportReason[]'
+ */
+export type ListEnumOfferReportReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferReportReason[]'>
     
 
 /**
@@ -3951,6 +4212,7 @@ export type GlobalOmitConfig = {
   provider?: Prisma.ProviderOmit
   providerImage?: Prisma.ProviderImageOmit
   subscription?: Prisma.SubscriptionOmit
+  subscriptionAuditLog?: Prisma.SubscriptionAuditLogOmit
   payment?: Prisma.PaymentOmit
   planRequest?: Prisma.PlanRequestOmit
   review?: Prisma.ReviewOmit
@@ -3976,6 +4238,7 @@ export type GlobalOmitConfig = {
   offerPost?: Prisma.OfferPostOmit
   offerPostCategory?: Prisma.OfferPostCategoryOmit
   offerReport?: Prisma.OfferReportOmit
+  spatial_ref_sys?: Prisma.spatial_ref_sysOmit
 }
 
 /* Types for Logging */

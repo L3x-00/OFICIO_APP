@@ -284,9 +284,9 @@ export type ReviewWhereInput = {
   userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
   qrCodeUsed?: Prisma.StringNullableFilter<"Review"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  replies?: Prisma.ReviewReplyListRelationFilter
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  replies?: Prisma.ReviewReplyListRelationFilter
 }
 
 export type ReviewOrderByWithRelationInput = {
@@ -301,9 +301,9 @@ export type ReviewOrderByWithRelationInput = {
   userLngAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
   qrCodeUsed?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  replies?: Prisma.ReviewReplyOrderByRelationAggregateInput
   provider?: Prisma.ProviderOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
-  replies?: Prisma.ReviewReplyOrderByRelationAggregateInput
 }
 
 export type ReviewWhereUniqueInput = Prisma.AtLeast<{
@@ -321,9 +321,9 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
   qrCodeUsed?: Prisma.StringNullableFilter<"Review"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  replies?: Prisma.ReviewReplyListRelationFilter
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  replies?: Prisma.ReviewReplyListRelationFilter
 }, "id">
 
 export type ReviewOrderByWithAggregationInput = {
@@ -371,9 +371,9 @@ export type ReviewCreateInput = {
   userLngAtReview?: number | null
   qrCodeUsed?: string | null
   createdAt?: Date | string
+  replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
   provider: Prisma.ProviderCreateNestedOneWithoutReviewsInput
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
-  replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
 }
 
 export type ReviewUncheckedCreateInput = {
@@ -400,9 +400,9 @@ export type ReviewUpdateInput = {
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutReviewsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
-  replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
 }
 
 export type ReviewUncheckedUpdateInput = {
@@ -641,8 +641,8 @@ export type ReviewCreateWithoutUserInput = {
   userLngAtReview?: number | null
   qrCodeUsed?: string | null
   createdAt?: Date | string
-  provider: Prisma.ProviderCreateNestedOneWithoutReviewsInput
   replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
+  provider: Prisma.ProviderCreateNestedOneWithoutReviewsInput
 }
 
 export type ReviewUncheckedCreateWithoutUserInput = {
@@ -711,8 +711,8 @@ export type ReviewCreateWithoutProviderInput = {
   userLngAtReview?: number | null
   qrCodeUsed?: string | null
   createdAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutReviewsInput
   replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
+  user: Prisma.UserCreateNestedOneWithoutReviewsInput
 }
 
 export type ReviewUncheckedCreateWithoutProviderInput = {
@@ -847,8 +847,8 @@ export type ReviewUpdateWithoutUserInput = {
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  provider?: Prisma.ProviderUpdateOneRequiredWithoutReviewsNestedInput
   replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutReviewsNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutUserInput = {
@@ -900,8 +900,8 @@ export type ReviewUpdateWithoutProviderInput = {
   userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
   replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutProviderInput = {
@@ -974,9 +974,9 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   userLngAtReview?: boolean
   qrCodeUsed?: boolean
   createdAt?: boolean
+  replies?: boolean | Prisma.Review$repliesArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  replies?: boolean | Prisma.Review$repliesArgs<ExtArgs>
   _count?: boolean | Prisma.ReviewCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
@@ -1028,9 +1028,9 @@ export type ReviewSelectScalar = {
 
 export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "userId" | "rating" | "comment" | "photoUrl" | "isVisible" | "userLatAtReview" | "userLngAtReview" | "qrCodeUsed" | "createdAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  replies?: boolean | Prisma.Review$repliesArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  replies?: boolean | Prisma.Review$repliesArgs<ExtArgs>
   _count?: boolean | Prisma.ReviewCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReviewIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1045,9 +1045,9 @@ export type ReviewIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Review"
   objects: {
+    replies: Prisma.$ReviewReplyPayload<ExtArgs>[]
     provider: Prisma.$ProviderPayload<ExtArgs>
     user: Prisma.$UserPayload<ExtArgs>
-    replies: Prisma.$ReviewReplyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1455,9 +1455,9 @@ readonly fields: ReviewFieldRefs;
  */
 export interface Prisma__ReviewClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  replies<T extends Prisma.Review$repliesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewReplyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  replies<T extends Prisma.Review$repliesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewReplyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

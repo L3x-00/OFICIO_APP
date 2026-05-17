@@ -60,6 +60,7 @@ export const ModelName = {
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
+  SubscriptionAuditLog: 'SubscriptionAuditLog',
   Payment: 'Payment',
   PlanRequest: 'PlanRequest',
   Review: 'Review',
@@ -84,7 +85,8 @@ export const ModelName = {
   ChatMessage: 'ChatMessage',
   OfferPost: 'OfferPost',
   OfferPostCategory: 'OfferPostCategory',
-  OfferReport: 'OfferReport'
+  OfferReport: 'OfferReport',
+  spatial_ref_sys: 'spatial_ref_sys'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -112,16 +114,17 @@ export const UserScalarFieldEnum = {
   firstName: 'firstName',
   lastName: 'lastName',
   avatarUrl: 'avatarUrl',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   department: 'department',
   province: 'province',
   district: 'district',
   firebaseUid: 'firebaseUid',
-  fcmToken: 'fcmToken',
-  isActive: 'isActive',
   isEmailVerified: 'isEmailVerified',
+  fcmToken: 'fcmToken',
   coins: 'coins',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  lastIp: 'lastIp'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -153,12 +156,12 @@ export const LocalityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   department: 'department',
-  province: 'province',
-  district: 'district',
   country: 'country',
   isActive: 'isActive',
-  source: 'source',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  district: 'district',
+  province: 'province',
+  source: 'source'
 } as const
 
 export type LocalityScalarFieldEnum = (typeof LocalityScalarFieldEnum)[keyof typeof LocalityScalarFieldEnum]
@@ -170,8 +173,8 @@ export const CategoryScalarFieldEnum = {
   slug: 'slug',
   iconUrl: 'iconUrl',
   parentId: 'parentId',
-  forType: 'forType',
-  isActive: 'isActive'
+  isActive: 'isActive',
+  forType: 'forType'
 } as const
 
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
@@ -191,27 +194,10 @@ export const ProviderScalarFieldEnum = {
   userId: 'userId',
   type: 'type',
   businessName: 'businessName',
-  slug: 'slug',
-  slugEditedAt: 'slugEditedAt',
   description: 'description',
-  dni: 'dni',
-  ruc: 'ruc',
-  nombreComercial: 'nombreComercial',
-  razonSocial: 'razonSocial',
-  hasDelivery: 'hasDelivery',
-  plenaCoordinacion: 'plenaCoordinacion',
-  hasHomeService: 'hasHomeService',
   phone: 'phone',
   whatsapp: 'whatsapp',
   address: 'address',
-  website: 'website',
-  instagram: 'instagram',
-  tiktok: 'tiktok',
-  facebook: 'facebook',
-  linkedin: 'linkedin',
-  twitterX: 'twitterX',
-  telegram: 'telegram',
-  whatsappBiz: 'whatsappBiz',
   latitude: 'latitude',
   longitude: 'longitude',
   scheduleJson: 'scheduleJson',
@@ -220,15 +206,32 @@ export const ProviderScalarFieldEnum = {
   verificationStatus: 'verificationStatus',
   isVerified: 'isVerified',
   hasCleanRecord: 'hasCleanRecord',
-  trustStatus: 'trustStatus',
-  isTrusted: 'isTrusted',
   averageRating: 'averageRating',
   totalReviews: 'totalReviews',
-  totalRecommendations: 'totalRecommendations',
-  planPriority: 'planPriority',
   localityId: 'localityId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  dni: 'dni',
+  hasDelivery: 'hasDelivery',
+  hasHomeService: 'hasHomeService',
+  isTrusted: 'isTrusted',
+  nombreComercial: 'nombreComercial',
+  planPriority: 'planPriority',
+  plenaCoordinacion: 'plenaCoordinacion',
+  razonSocial: 'razonSocial',
+  ruc: 'ruc',
+  totalRecommendations: 'totalRecommendations',
+  trustStatus: 'trustStatus',
+  facebook: 'facebook',
+  instagram: 'instagram',
+  linkedin: 'linkedin',
+  telegram: 'telegram',
+  tiktok: 'tiktok',
+  twitterX: 'twitterX',
+  website: 'website',
+  whatsappBiz: 'whatsappBiz',
+  slug: 'slug',
+  slugEditedAt: 'slugEditedAt'
 } as const
 
 export type ProviderScalarFieldEnum = (typeof ProviderScalarFieldEnum)[keyof typeof ProviderScalarFieldEnum]
@@ -254,10 +257,25 @@ export const SubscriptionScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   graceMonths: 'graceMonths',
-  priceUSD: 'priceUSD'
+  priceUSD: 'priceUSD',
+  updatedAt: 'updatedAt'
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+
+
+export const SubscriptionAuditLogScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  oldStatus: 'oldStatus',
+  newStatus: 'newStatus',
+  oldPlan: 'oldPlan',
+  newPlan: 'newPlan',
+  changedAt: 'changedAt',
+  changedBy: 'changedBy'
+} as const
+
+export type SubscriptionAuditLogScalarFieldEnum = (typeof SubscriptionAuditLogScalarFieldEnum)[keyof typeof SubscriptionAuditLogScalarFieldEnum]
 
 
 export const PaymentScalarFieldEnum = {
@@ -354,12 +372,12 @@ export const AdminNotificationScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
   type: 'type',
-  title: 'title',
   message: 'message',
   isRead: 'isRead',
-  targetUserId: 'targetUserId',
+  sentAt: 'sentAt',
   targetProfileType: 'targetProfileType',
-  sentAt: 'sentAt'
+  targetUserId: 'targetUserId',
+  title: 'title'
 } as const
 
 export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]
@@ -413,13 +431,13 @@ export const TrustValidationRequestScalarFieldEnum = {
   rucNumber: 'rucNumber',
   businessAddress: 'businessAddress',
   businessPhotoUrl: 'businessPhotoUrl',
-  businessPhoto2Url: 'businessPhoto2Url',
   ownerDniPhotoUrl: 'ownerDniPhotoUrl',
   rejectionReason: 'rejectionReason',
   reviewedByAdminId: 'reviewedByAdminId',
   reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  businessPhoto2Url: 'businessPhoto2Url'
 } as const
 
 export type TrustValidationRequestScalarFieldEnum = (typeof TrustValidationRequestScalarFieldEnum)[keyof typeof TrustValidationRequestScalarFieldEnum]
@@ -608,6 +626,17 @@ export const OfferReportScalarFieldEnum = {
 } as const
 
 export type OfferReportScalarFieldEnum = (typeof OfferReportScalarFieldEnum)[keyof typeof OfferReportScalarFieldEnum]
+
+
+export const Spatial_ref_sysScalarFieldEnum = {
+  srid: 'srid',
+  auth_name: 'auth_name',
+  auth_srid: 'auth_srid',
+  srtext: 'srtext',
+  proj4text: 'proj4text'
+} as const
+
+export type Spatial_ref_sysScalarFieldEnum = (typeof Spatial_ref_sysScalarFieldEnum)[keyof typeof Spatial_ref_sysScalarFieldEnum]
 
 
 export const SortOrder = {

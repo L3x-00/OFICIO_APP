@@ -49,6 +49,7 @@ export type SubscriptionMinAggregateOutputType = {
   endDate: Date | null
   graceMonths: number | null
   priceUSD: number | null
+  updatedAt: Date | null
 }
 
 export type SubscriptionMaxAggregateOutputType = {
@@ -60,6 +61,7 @@ export type SubscriptionMaxAggregateOutputType = {
   endDate: Date | null
   graceMonths: number | null
   priceUSD: number | null
+  updatedAt: Date | null
 }
 
 export type SubscriptionCountAggregateOutputType = {
@@ -71,6 +73,7 @@ export type SubscriptionCountAggregateOutputType = {
   endDate: number
   graceMonths: number
   priceUSD: number
+  updatedAt: number
   _all: number
 }
 
@@ -98,6 +101,7 @@ export type SubscriptionMinAggregateInputType = {
   endDate?: true
   graceMonths?: true
   priceUSD?: true
+  updatedAt?: true
 }
 
 export type SubscriptionMaxAggregateInputType = {
@@ -109,6 +113,7 @@ export type SubscriptionMaxAggregateInputType = {
   endDate?: true
   graceMonths?: true
   priceUSD?: true
+  updatedAt?: true
 }
 
 export type SubscriptionCountAggregateInputType = {
@@ -120,6 +125,7 @@ export type SubscriptionCountAggregateInputType = {
   endDate?: true
   graceMonths?: true
   priceUSD?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -218,6 +224,7 @@ export type SubscriptionGroupByOutputType = {
   endDate: Date
   graceMonths: number
   priceUSD: number
+  updatedAt: Date
   _count: SubscriptionCountAggregateOutputType | null
   _avg: SubscriptionAvgAggregateOutputType | null
   _sum: SubscriptionSumAggregateOutputType | null
@@ -252,8 +259,10 @@ export type SubscriptionWhereInput = {
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   graceMonths?: Prisma.IntFilter<"Subscription"> | number
   priceUSD?: Prisma.FloatFilter<"Subscription"> | number
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
+  updatedAt?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   payments?: Prisma.PaymentListRelationFilter
+  auditLog?: Prisma.SubscriptionAuditLogListRelationFilter
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }
 
 export type SubscriptionOrderByWithRelationInput = {
@@ -265,8 +274,10 @@ export type SubscriptionOrderByWithRelationInput = {
   endDate?: Prisma.SortOrder
   graceMonths?: Prisma.SortOrder
   priceUSD?: Prisma.SortOrder
-  provider?: Prisma.ProviderOrderByWithRelationInput
+  updatedAt?: Prisma.SortOrder
   payments?: Prisma.PaymentOrderByRelationAggregateInput
+  auditLog?: Prisma.SubscriptionAuditLogOrderByRelationAggregateInput
+  provider?: Prisma.ProviderOrderByWithRelationInput
 }
 
 export type SubscriptionWhereUniqueInput = Prisma.AtLeast<{
@@ -281,8 +292,10 @@ export type SubscriptionWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   graceMonths?: Prisma.IntFilter<"Subscription"> | number
   priceUSD?: Prisma.FloatFilter<"Subscription"> | number
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
+  updatedAt?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   payments?: Prisma.PaymentListRelationFilter
+  auditLog?: Prisma.SubscriptionAuditLogListRelationFilter
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }, "id" | "providerId">
 
 export type SubscriptionOrderByWithAggregationInput = {
@@ -294,6 +307,7 @@ export type SubscriptionOrderByWithAggregationInput = {
   endDate?: Prisma.SortOrder
   graceMonths?: Prisma.SortOrder
   priceUSD?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.SubscriptionCountOrderByAggregateInput
   _avg?: Prisma.SubscriptionAvgOrderByAggregateInput
   _max?: Prisma.SubscriptionMaxOrderByAggregateInput
@@ -313,6 +327,7 @@ export type SubscriptionScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
   graceMonths?: Prisma.IntWithAggregatesFilter<"Subscription"> | number
   priceUSD?: Prisma.FloatWithAggregatesFilter<"Subscription"> | number
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
 }
 
 export type SubscriptionCreateInput = {
@@ -322,8 +337,10 @@ export type SubscriptionCreateInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
-  provider: Prisma.ProviderCreateNestedOneWithoutSubscriptionInput
+  updatedAt?: Date | string
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  auditLog?: Prisma.SubscriptionAuditLogCreateNestedManyWithoutSubscriptionInput
+  provider: Prisma.ProviderCreateNestedOneWithoutSubscriptionInput
 }
 
 export type SubscriptionUncheckedCreateInput = {
@@ -335,7 +352,9 @@ export type SubscriptionUncheckedCreateInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
+  updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  auditLog?: Prisma.SubscriptionAuditLogUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUpdateInput = {
@@ -345,8 +364,10 @@ export type SubscriptionUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
-  provider?: Prisma.ProviderUpdateOneRequiredWithoutSubscriptionNestedInput
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  auditLog?: Prisma.SubscriptionAuditLogUpdateManyWithoutSubscriptionNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateInput = {
@@ -358,7 +379,9 @@ export type SubscriptionUncheckedUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  auditLog?: Prisma.SubscriptionAuditLogUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionCreateManyInput = {
@@ -370,6 +393,7 @@ export type SubscriptionCreateManyInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
+  updatedAt?: Date | string
 }
 
 export type SubscriptionUpdateManyMutationInput = {
@@ -379,6 +403,7 @@ export type SubscriptionUpdateManyMutationInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SubscriptionUncheckedUpdateManyInput = {
@@ -390,6 +415,7 @@ export type SubscriptionUncheckedUpdateManyInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SubscriptionNullableScalarRelationFilter = {
@@ -406,6 +432,7 @@ export type SubscriptionCountOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   graceMonths?: Prisma.SortOrder
   priceUSD?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type SubscriptionAvgOrderByAggregateInput = {
@@ -424,6 +451,7 @@ export type SubscriptionMaxOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   graceMonths?: Prisma.SortOrder
   priceUSD?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type SubscriptionMinOrderByAggregateInput = {
@@ -435,6 +463,7 @@ export type SubscriptionMinOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   graceMonths?: Prisma.SortOrder
   priceUSD?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type SubscriptionSumOrderByAggregateInput = {
@@ -489,6 +518,20 @@ export type EnumSubscriptionStatusFieldUpdateOperationsInput = {
   set?: $Enums.SubscriptionStatus
 }
 
+export type SubscriptionCreateNestedOneWithoutAuditLogInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutAuditLogInput, Prisma.SubscriptionUncheckedCreateWithoutAuditLogInput>
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutAuditLogInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneRequiredWithoutAuditLogNestedInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutAuditLogInput, Prisma.SubscriptionUncheckedCreateWithoutAuditLogInput>
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutAuditLogInput
+  upsert?: Prisma.SubscriptionUpsertWithoutAuditLogInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SubscriptionUpdateToOneWithWhereWithoutAuditLogInput, Prisma.SubscriptionUpdateWithoutAuditLogInput>, Prisma.SubscriptionUncheckedUpdateWithoutAuditLogInput>
+}
+
 export type SubscriptionCreateNestedOneWithoutPaymentsInput = {
   create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPaymentsInput, Prisma.SubscriptionUncheckedCreateWithoutPaymentsInput>
   connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPaymentsInput
@@ -510,7 +553,9 @@ export type SubscriptionCreateWithoutProviderInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
+  updatedAt?: Date | string
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  auditLog?: Prisma.SubscriptionAuditLogCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUncheckedCreateWithoutProviderInput = {
@@ -521,7 +566,9 @@ export type SubscriptionUncheckedCreateWithoutProviderInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
+  updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  auditLog?: Prisma.SubscriptionAuditLogUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionCreateOrConnectWithoutProviderInput = {
@@ -547,7 +594,9 @@ export type SubscriptionUpdateWithoutProviderInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  auditLog?: Prisma.SubscriptionAuditLogUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateWithoutProviderInput = {
@@ -558,6 +607,74 @@ export type SubscriptionUncheckedUpdateWithoutProviderInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  auditLog?: Prisma.SubscriptionAuditLogUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionCreateWithoutAuditLogInput = {
+  plan?: $Enums.SubscriptionPlan
+  status?: $Enums.SubscriptionStatus
+  startDate?: Date | string
+  endDate: Date | string
+  graceMonths?: number
+  priceUSD?: number
+  updatedAt?: Date | string
+  payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  provider: Prisma.ProviderCreateNestedOneWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutAuditLogInput = {
+  id?: number
+  providerId: number
+  plan?: $Enums.SubscriptionPlan
+  status?: $Enums.SubscriptionStatus
+  startDate?: Date | string
+  endDate: Date | string
+  graceMonths?: number
+  priceUSD?: number
+  updatedAt?: Date | string
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutAuditLogInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutAuditLogInput, Prisma.SubscriptionUncheckedCreateWithoutAuditLogInput>
+}
+
+export type SubscriptionUpsertWithoutAuditLogInput = {
+  update: Prisma.XOR<Prisma.SubscriptionUpdateWithoutAuditLogInput, Prisma.SubscriptionUncheckedUpdateWithoutAuditLogInput>
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutAuditLogInput, Prisma.SubscriptionUncheckedCreateWithoutAuditLogInput>
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutAuditLogInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<Prisma.SubscriptionUpdateWithoutAuditLogInput, Prisma.SubscriptionUncheckedUpdateWithoutAuditLogInput>
+}
+
+export type SubscriptionUpdateWithoutAuditLogInput = {
+  plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
+  priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutAuditLogInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  providerId?: Prisma.IntFieldUpdateOperationsInput | number
+  plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
+  priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
@@ -568,6 +685,8 @@ export type SubscriptionCreateWithoutPaymentsInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
+  updatedAt?: Date | string
+  auditLog?: Prisma.SubscriptionAuditLogCreateNestedManyWithoutSubscriptionInput
   provider: Prisma.ProviderCreateNestedOneWithoutSubscriptionInput
 }
 
@@ -580,6 +699,8 @@ export type SubscriptionUncheckedCreateWithoutPaymentsInput = {
   endDate: Date | string
   graceMonths?: number
   priceUSD?: number
+  updatedAt?: Date | string
+  auditLog?: Prisma.SubscriptionAuditLogUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionCreateOrConnectWithoutPaymentsInput = {
@@ -605,6 +726,8 @@ export type SubscriptionUpdateWithoutPaymentsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  auditLog?: Prisma.SubscriptionAuditLogUpdateManyWithoutSubscriptionNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutSubscriptionNestedInput
 }
 
@@ -617,6 +740,8 @@ export type SubscriptionUncheckedUpdateWithoutPaymentsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   graceMonths?: Prisma.IntFieldUpdateOperationsInput | number
   priceUSD?: Prisma.FloatFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  auditLog?: Prisma.SubscriptionAuditLogUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 
@@ -626,10 +751,12 @@ export type SubscriptionUncheckedUpdateWithoutPaymentsInput = {
 
 export type SubscriptionCountOutputType = {
   payments: number
+  auditLog: number
 }
 
 export type SubscriptionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payments?: boolean | SubscriptionCountOutputTypeCountPaymentsArgs
+  auditLog?: boolean | SubscriptionCountOutputTypeCountAuditLogArgs
 }
 
 /**
@@ -649,6 +776,13 @@ export type SubscriptionCountOutputTypeCountPaymentsArgs<ExtArgs extends runtime
   where?: Prisma.PaymentWhereInput
 }
 
+/**
+ * SubscriptionCountOutputType without action
+ */
+export type SubscriptionCountOutputTypeCountAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubscriptionAuditLogWhereInput
+}
+
 
 export type SubscriptionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -659,8 +793,10 @@ export type SubscriptionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   endDate?: boolean
   graceMonths?: boolean
   priceUSD?: boolean
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  updatedAt?: boolean
   payments?: boolean | Prisma.Subscription$paymentsArgs<ExtArgs>
+  auditLog?: boolean | Prisma.Subscription$auditLogArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.SubscriptionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscription"]>
 
@@ -673,6 +809,7 @@ export type SubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   endDate?: boolean
   graceMonths?: boolean
   priceUSD?: boolean
+  updatedAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscription"]>
 
@@ -685,6 +822,7 @@ export type SubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   endDate?: boolean
   graceMonths?: boolean
   priceUSD?: boolean
+  updatedAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscription"]>
 
@@ -697,12 +835,14 @@ export type SubscriptionSelectScalar = {
   endDate?: boolean
   graceMonths?: boolean
   priceUSD?: boolean
+  updatedAt?: boolean
 }
 
-export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "plan" | "status" | "startDate" | "endDate" | "graceMonths" | "priceUSD", ExtArgs["result"]["subscription"]>
+export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "plan" | "status" | "startDate" | "endDate" | "graceMonths" | "priceUSD" | "updatedAt", ExtArgs["result"]["subscription"]>
 export type SubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   payments?: boolean | Prisma.Subscription$paymentsArgs<ExtArgs>
+  auditLog?: boolean | Prisma.Subscription$auditLogArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.SubscriptionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SubscriptionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -715,8 +855,9 @@ export type SubscriptionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types
 export type $SubscriptionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Subscription"
   objects: {
-    provider: Prisma.$ProviderPayload<ExtArgs>
     payments: Prisma.$PaymentPayload<ExtArgs>[]
+    auditLog: Prisma.$SubscriptionAuditLogPayload<ExtArgs>[]
+    provider: Prisma.$ProviderPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -727,6 +868,7 @@ export type $SubscriptionPayload<ExtArgs extends runtime.Types.Extensions.Intern
     endDate: Date
     graceMonths: number
     priceUSD: number
+    updatedAt: Date
   }, ExtArgs["result"]["subscription"]>
   composites: {}
 }
@@ -1121,8 +1263,9 @@ readonly fields: SubscriptionFieldRefs;
  */
 export interface Prisma__SubscriptionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   payments<T extends Prisma.Subscription$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditLog<T extends Prisma.Subscription$auditLogArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$auditLogArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1160,6 +1303,7 @@ export interface SubscriptionFieldRefs {
   readonly endDate: Prisma.FieldRef<"Subscription", 'DateTime'>
   readonly graceMonths: Prisma.FieldRef<"Subscription", 'Int'>
   readonly priceUSD: Prisma.FieldRef<"Subscription", 'Float'>
+  readonly updatedAt: Prisma.FieldRef<"Subscription", 'DateTime'>
 }
     
 
@@ -1582,6 +1726,30 @@ export type Subscription$paymentsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
+}
+
+/**
+ * Subscription.auditLog
+ */
+export type Subscription$auditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionAuditLog
+   */
+  select?: Prisma.SubscriptionAuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubscriptionAuditLog
+   */
+  omit?: Prisma.SubscriptionAuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionAuditLogInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionAuditLogWhereInput
+  orderBy?: Prisma.SubscriptionAuditLogOrderByWithRelationInput | Prisma.SubscriptionAuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.SubscriptionAuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubscriptionAuditLogScalarFieldEnum | Prisma.SubscriptionAuditLogScalarFieldEnum[]
 }
 
 /**

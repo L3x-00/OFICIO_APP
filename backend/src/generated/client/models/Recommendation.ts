@@ -216,8 +216,8 @@ export type RecommendationWhereInput = {
   userId?: Prisma.IntFilter<"Recommendation"> | number
   providerId?: Prisma.IntFilter<"Recommendation"> | number
   createdAt?: Prisma.DateTimeFilter<"Recommendation"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type RecommendationOrderByWithRelationInput = {
@@ -225,8 +225,8 @@ export type RecommendationOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  user?: Prisma.UserOrderByWithRelationInput
   provider?: Prisma.ProviderOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type RecommendationWhereUniqueInput = Prisma.AtLeast<{
@@ -238,8 +238,8 @@ export type RecommendationWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.IntFilter<"Recommendation"> | number
   providerId?: Prisma.IntFilter<"Recommendation"> | number
   createdAt?: Prisma.DateTimeFilter<"Recommendation"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "userId_providerId">
 
 export type RecommendationOrderByWithAggregationInput = {
@@ -266,8 +266,8 @@ export type RecommendationScalarWhereWithAggregatesInput = {
 
 export type RecommendationCreateInput = {
   createdAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutRecommendationsInput
   provider: Prisma.ProviderCreateNestedOneWithoutRecommendationsInput
+  user: Prisma.UserCreateNestedOneWithoutRecommendationsInput
 }
 
 export type RecommendationUncheckedCreateInput = {
@@ -279,8 +279,8 @@ export type RecommendationUncheckedCreateInput = {
 
 export type RecommendationUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutRecommendationsNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutRecommendationsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutRecommendationsNestedInput
 }
 
 export type RecommendationUncheckedUpdateInput = {
@@ -577,8 +577,8 @@ export type RecommendationSelect<ExtArgs extends runtime.Types.Extensions.Intern
   userId?: boolean
   providerId?: boolean
   createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["recommendation"]>
 
 export type RecommendationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -586,8 +586,8 @@ export type RecommendationSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   userId?: boolean
   providerId?: boolean
   createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["recommendation"]>
 
 export type RecommendationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -595,8 +595,8 @@ export type RecommendationSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   userId?: boolean
   providerId?: boolean
   createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["recommendation"]>
 
 export type RecommendationSelectScalar = {
@@ -608,23 +608,23 @@ export type RecommendationSelectScalar = {
 
 export type RecommendationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "providerId" | "createdAt", ExtArgs["result"]["recommendation"]>
 export type RecommendationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type RecommendationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type RecommendationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $RecommendationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Recommendation"
   objects: {
-    user: Prisma.$UserPayload<ExtArgs>
     provider: Prisma.$ProviderPayload<ExtArgs>
+    user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1025,8 +1025,8 @@ readonly fields: RecommendationFieldRefs;
  */
 export interface Prisma__RecommendationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

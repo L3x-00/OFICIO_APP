@@ -26,7 +26,7 @@ import { ReferralsModule } from './referrals/referrals.module.js';
 import { ChatModule } from './chat/chat.module.js';
 import { LocalitiesModule } from './localities/localities.module.js';
 import { OfferPostsModule } from './offer-posts/offer-posts.module.js';
-
+import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -80,6 +80,7 @@ import { OfferPostsModule } from './offer-posts/offer-posts.module.js';
     ChatModule,
     LocalitiesModule,
     OfferPostsModule,
+    MercadoPagoModule,
   ],
   controllers: [AppController],
   providers: [

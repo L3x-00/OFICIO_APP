@@ -9,5 +9,6 @@ import { FirebaseModule } from '../firebase/firebase.module.js';
   imports: [PrismaModule, EventsModule, FirebaseModule],
   controllers: [PaymentsController],
   providers: [PaymentsService],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}

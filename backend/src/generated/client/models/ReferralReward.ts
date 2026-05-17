@@ -249,8 +249,8 @@ export type ReferralRewardWhereInput = {
   isActive?: Prisma.BoolFilter<"ReferralReward"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ReferralReward"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReferralReward"> | Date | string
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   redemptions?: Prisma.CoinRedemptionListRelationFilter
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }
 
 export type ReferralRewardOrderByWithRelationInput = {
@@ -262,8 +262,8 @@ export type ReferralRewardOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  provider?: Prisma.ProviderOrderByWithRelationInput
   redemptions?: Prisma.CoinRedemptionOrderByRelationAggregateInput
+  provider?: Prisma.ProviderOrderByWithRelationInput
 }
 
 export type ReferralRewardWhereUniqueInput = Prisma.AtLeast<{
@@ -278,8 +278,8 @@ export type ReferralRewardWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"ReferralReward"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ReferralReward"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReferralReward"> | Date | string
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   redemptions?: Prisma.CoinRedemptionListRelationFilter
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }, "id">
 
 export type ReferralRewardOrderByWithAggregationInput = {
@@ -319,8 +319,8 @@ export type ReferralRewardCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  provider: Prisma.ProviderCreateNestedOneWithoutReferralRewardsInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutRewardInput
+  provider: Prisma.ProviderCreateNestedOneWithoutReferralRewardsInput
 }
 
 export type ReferralRewardUncheckedCreateInput = {
@@ -342,8 +342,8 @@ export type ReferralRewardUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  provider?: Prisma.ProviderUpdateOneRequiredWithoutReferralRewardsNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutRewardNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutReferralRewardsNestedInput
 }
 
 export type ReferralRewardUncheckedUpdateInput = {
@@ -707,8 +707,8 @@ export type ReferralRewardSelect<ExtArgs extends runtime.Types.Extensions.Intern
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   redemptions?: boolean | Prisma.ReferralReward$redemptionsArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ReferralRewardCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["referralReward"]>
 
@@ -749,8 +749,8 @@ export type ReferralRewardSelectScalar = {
 
 export type ReferralRewardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "title" | "description" | "coinsCost" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["referralReward"]>
 export type ReferralRewardInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   redemptions?: boolean | Prisma.ReferralReward$redemptionsArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ReferralRewardCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReferralRewardIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -763,8 +763,8 @@ export type ReferralRewardIncludeUpdateManyAndReturn<ExtArgs extends runtime.Typ
 export type $ReferralRewardPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ReferralReward"
   objects: {
-    provider: Prisma.$ProviderPayload<ExtArgs>
     redemptions: Prisma.$CoinRedemptionPayload<ExtArgs>[]
+    provider: Prisma.$ProviderPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1169,8 +1169,8 @@ readonly fields: ReferralRewardFieldRefs;
  */
 export interface Prisma__ReferralRewardClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   redemptions<T extends Prisma.ReferralReward$redemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReferralReward$redemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CoinRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

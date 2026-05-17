@@ -280,7 +280,7 @@ data: {
   }
 
   // ── LOGIN ────────────────────────────────────────────────
-  async login(email: string, password: string) {
+ async login(email: string, password: string, ip?: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -296,9 +296,16 @@ data: {
       throw new UnauthorizedException('Contraseña incorrecta');
     }
 
+    // Log de IP para auditoría (fire-and-forget, no bloquea el login)
+    if (ip) {
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { lastIp: ip },
+      }).catch(() => {});
+    }
+
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
-    // Incluir datos del usuario para que Flutter los guarde localmente
     return {
       ...tokens,
       firstName: user.firstName,

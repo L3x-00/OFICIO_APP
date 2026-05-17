@@ -209,16 +209,16 @@ export type ProviderCategoryWhereInput = {
   id?: Prisma.IntFilter<"ProviderCategory"> | number
   providerId?: Prisma.IntFilter<"ProviderCategory"> | number
   categoryId?: Prisma.IntFilter<"ProviderCategory"> | number
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }
 
 export type ProviderCategoryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
-  provider?: Prisma.ProviderOrderByWithRelationInput
   category?: Prisma.CategoryOrderByWithRelationInput
+  provider?: Prisma.ProviderOrderByWithRelationInput
 }
 
 export type ProviderCategoryWhereUniqueInput = Prisma.AtLeast<{
@@ -229,8 +229,8 @@ export type ProviderCategoryWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProviderCategoryWhereInput | Prisma.ProviderCategoryWhereInput[]
   providerId?: Prisma.IntFilter<"ProviderCategory"> | number
   categoryId?: Prisma.IntFilter<"ProviderCategory"> | number
-  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
+  provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }, "id" | "providerId_categoryId">
 
 export type ProviderCategoryOrderByWithAggregationInput = {
@@ -254,8 +254,8 @@ export type ProviderCategoryScalarWhereWithAggregatesInput = {
 }
 
 export type ProviderCategoryCreateInput = {
-  provider: Prisma.ProviderCreateNestedOneWithoutProviderCategoriesInput
   category: Prisma.CategoryCreateNestedOneWithoutProviderCategoriesInput
+  provider: Prisma.ProviderCreateNestedOneWithoutProviderCategoriesInput
 }
 
 export type ProviderCategoryUncheckedCreateInput = {
@@ -265,8 +265,8 @@ export type ProviderCategoryUncheckedCreateInput = {
 }
 
 export type ProviderCategoryUpdateInput = {
-  provider?: Prisma.ProviderUpdateOneRequiredWithoutProviderCategoriesNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutProviderCategoriesNestedInput
+  provider?: Prisma.ProviderUpdateOneRequiredWithoutProviderCategoriesNestedInput
 }
 
 export type ProviderCategoryUncheckedUpdateInput = {
@@ -543,24 +543,24 @@ export type ProviderCategorySelect<ExtArgs extends runtime.Types.Extensions.Inte
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["providerCategory"]>
 
 export type ProviderCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["providerCategory"]>
 
 export type ProviderCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["providerCategory"]>
 
 export type ProviderCategorySelectScalar = {
@@ -571,23 +571,23 @@ export type ProviderCategorySelectScalar = {
 
 export type ProviderCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "categoryId", ExtArgs["result"]["providerCategory"]>
 export type ProviderCategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
 export type ProviderCategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
 export type ProviderCategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
+  provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
 
 export type $ProviderCategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ProviderCategory"
   objects: {
-    provider: Prisma.$ProviderPayload<ExtArgs>
     category: Prisma.$CategoryPayload<ExtArgs>
+    provider: Prisma.$ProviderPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -987,8 +987,8 @@ readonly fields: ProviderCategoryFieldRefs;
  */
 export interface Prisma__ProviderCategoryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  provider<T extends Prisma.ProviderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProviderDefaultArgs<ExtArgs>>): Prisma.Prisma__ProviderClient<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

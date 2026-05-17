@@ -43,7 +43,7 @@ export type PaymentMinAggregateOutputType = {
   subscriptionId: number | null
   amount: number | null
   currency: string | null
-  method: string | null
+  method: $Enums.PaymentMethod | null
   reference: string | null
   confirmedAt: Date | null
   createdAt: Date | null
@@ -54,7 +54,7 @@ export type PaymentMaxAggregateOutputType = {
   subscriptionId: number | null
   amount: number | null
   currency: string | null
-  method: string | null
+  method: $Enums.PaymentMethod | null
   reference: string | null
   confirmedAt: Date | null
   createdAt: Date | null
@@ -210,7 +210,7 @@ export type PaymentGroupByOutputType = {
   subscriptionId: number
   amount: number
   currency: string
-  method: string
+  method: $Enums.PaymentMethod
   reference: string | null
   confirmedAt: Date | null
   createdAt: Date
@@ -244,7 +244,7 @@ export type PaymentWhereInput = {
   subscriptionId?: Prisma.IntFilter<"Payment"> | number
   amount?: Prisma.FloatFilter<"Payment"> | number
   currency?: Prisma.StringFilter<"Payment"> | string
-  method?: Prisma.StringFilter<"Payment"> | string
+  method?: Prisma.EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
   reference?: Prisma.StringNullableFilter<"Payment"> | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Payment"> | Date | string
@@ -271,7 +271,7 @@ export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   subscriptionId?: Prisma.IntFilter<"Payment"> | number
   amount?: Prisma.FloatFilter<"Payment"> | number
   currency?: Prisma.StringFilter<"Payment"> | string
-  method?: Prisma.StringFilter<"Payment"> | string
+  method?: Prisma.EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
   reference?: Prisma.StringNullableFilter<"Payment"> | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Payment"> | Date | string
@@ -302,7 +302,7 @@ export type PaymentScalarWhereWithAggregatesInput = {
   subscriptionId?: Prisma.IntWithAggregatesFilter<"Payment"> | number
   amount?: Prisma.FloatWithAggregatesFilter<"Payment"> | number
   currency?: Prisma.StringWithAggregatesFilter<"Payment"> | string
-  method?: Prisma.StringWithAggregatesFilter<"Payment"> | string
+  method?: Prisma.EnumPaymentMethodWithAggregatesFilter<"Payment"> | $Enums.PaymentMethod
   reference?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null
   confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Payment"> | Date | string
@@ -311,7 +311,7 @@ export type PaymentScalarWhereWithAggregatesInput = {
 export type PaymentCreateInput = {
   amount: number
   currency?: string
-  method: string
+  method: $Enums.PaymentMethod
   reference?: string | null
   confirmedAt?: Date | string | null
   createdAt?: Date | string
@@ -323,7 +323,7 @@ export type PaymentUncheckedCreateInput = {
   subscriptionId: number
   amount: number
   currency?: string
-  method: string
+  method: $Enums.PaymentMethod
   reference?: string | null
   confirmedAt?: Date | string | null
   createdAt?: Date | string
@@ -332,7 +332,7 @@ export type PaymentUncheckedCreateInput = {
 export type PaymentUpdateInput = {
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -344,7 +344,7 @@ export type PaymentUncheckedUpdateInput = {
   subscriptionId?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -355,7 +355,7 @@ export type PaymentCreateManyInput = {
   subscriptionId: number
   amount: number
   currency?: string
-  method: string
+  method: $Enums.PaymentMethod
   reference?: string | null
   confirmedAt?: Date | string | null
   createdAt?: Date | string
@@ -364,7 +364,7 @@ export type PaymentCreateManyInput = {
 export type PaymentUpdateManyMutationInput = {
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -375,7 +375,7 @@ export type PaymentUncheckedUpdateManyInput = {
   subscriptionId?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -478,10 +478,14 @@ export type PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput = {
   deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[]
 }
 
+export type EnumPaymentMethodFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentMethod
+}
+
 export type PaymentCreateWithoutSubscriptionInput = {
   amount: number
   currency?: string
-  method: string
+  method: $Enums.PaymentMethod
   reference?: string | null
   confirmedAt?: Date | string | null
   createdAt?: Date | string
@@ -491,7 +495,7 @@ export type PaymentUncheckedCreateWithoutSubscriptionInput = {
   id?: number
   amount: number
   currency?: string
-  method: string
+  method: $Enums.PaymentMethod
   reference?: string | null
   confirmedAt?: Date | string | null
   createdAt?: Date | string
@@ -531,7 +535,7 @@ export type PaymentScalarWhereInput = {
   subscriptionId?: Prisma.IntFilter<"Payment"> | number
   amount?: Prisma.FloatFilter<"Payment"> | number
   currency?: Prisma.StringFilter<"Payment"> | string
-  method?: Prisma.StringFilter<"Payment"> | string
+  method?: Prisma.EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
   reference?: Prisma.StringNullableFilter<"Payment"> | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Payment"> | Date | string
@@ -541,7 +545,7 @@ export type PaymentCreateManySubscriptionInput = {
   id?: number
   amount: number
   currency?: string
-  method: string
+  method: $Enums.PaymentMethod
   reference?: string | null
   confirmedAt?: Date | string | null
   createdAt?: Date | string
@@ -550,7 +554,7 @@ export type PaymentCreateManySubscriptionInput = {
 export type PaymentUpdateWithoutSubscriptionInput = {
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -560,7 +564,7 @@ export type PaymentUncheckedUpdateWithoutSubscriptionInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -570,7 +574,7 @@ export type PaymentUncheckedUpdateManyWithoutSubscriptionInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
-  method?: Prisma.StringFieldUpdateOperationsInput | string
+  method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -646,7 +650,7 @@ export type $PaymentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     subscriptionId: number
     amount: number
     currency: string
-    method: string
+    method: $Enums.PaymentMethod
     reference: string | null
     confirmedAt: Date | null
     createdAt: Date
@@ -1078,7 +1082,7 @@ export interface PaymentFieldRefs {
   readonly subscriptionId: Prisma.FieldRef<"Payment", 'Int'>
   readonly amount: Prisma.FieldRef<"Payment", 'Float'>
   readonly currency: Prisma.FieldRef<"Payment", 'String'>
-  readonly method: Prisma.FieldRef<"Payment", 'String'>
+  readonly method: Prisma.FieldRef<"Payment", 'PaymentMethod'>
   readonly reference: Prisma.FieldRef<"Payment", 'String'>
   readonly confirmedAt: Prisma.FieldRef<"Payment", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Payment", 'DateTime'>

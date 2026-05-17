@@ -39,7 +39,7 @@ export type VerificationDocSumAggregateOutputType = {
 export type VerificationDocMinAggregateOutputType = {
   id: number | null
   providerId: number | null
-  docType: string | null
+  docType: $Enums.VerificationDocType | null
   fileUrl: string | null
   status: $Enums.VerificationStatus | null
   reviewedAt: Date | null
@@ -49,7 +49,7 @@ export type VerificationDocMinAggregateOutputType = {
 export type VerificationDocMaxAggregateOutputType = {
   id: number | null
   providerId: number | null
-  docType: string | null
+  docType: $Enums.VerificationDocType | null
   fileUrl: string | null
   status: $Enums.VerificationStatus | null
   reviewedAt: Date | null
@@ -198,7 +198,7 @@ export type VerificationDocGroupByArgs<ExtArgs extends runtime.Types.Extensions.
 export type VerificationDocGroupByOutputType = {
   id: number
   providerId: number
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status: $Enums.VerificationStatus
   reviewedAt: Date | null
@@ -231,7 +231,7 @@ export type VerificationDocWhereInput = {
   NOT?: Prisma.VerificationDocWhereInput | Prisma.VerificationDocWhereInput[]
   id?: Prisma.IntFilter<"VerificationDoc"> | number
   providerId?: Prisma.IntFilter<"VerificationDoc"> | number
-  docType?: Prisma.StringFilter<"VerificationDoc"> | string
+  docType?: Prisma.EnumVerificationDocTypeFilter<"VerificationDoc"> | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFilter<"VerificationDoc"> | string
   status?: Prisma.EnumVerificationStatusFilter<"VerificationDoc"> | $Enums.VerificationStatus
   reviewedAt?: Prisma.DateTimeNullableFilter<"VerificationDoc"> | Date | string | null
@@ -256,7 +256,7 @@ export type VerificationDocWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.VerificationDocWhereInput[]
   NOT?: Prisma.VerificationDocWhereInput | Prisma.VerificationDocWhereInput[]
   providerId?: Prisma.IntFilter<"VerificationDoc"> | number
-  docType?: Prisma.StringFilter<"VerificationDoc"> | string
+  docType?: Prisma.EnumVerificationDocTypeFilter<"VerificationDoc"> | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFilter<"VerificationDoc"> | string
   status?: Prisma.EnumVerificationStatusFilter<"VerificationDoc"> | $Enums.VerificationStatus
   reviewedAt?: Prisma.DateTimeNullableFilter<"VerificationDoc"> | Date | string | null
@@ -285,7 +285,7 @@ export type VerificationDocScalarWhereWithAggregatesInput = {
   NOT?: Prisma.VerificationDocScalarWhereWithAggregatesInput | Prisma.VerificationDocScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"VerificationDoc"> | number
   providerId?: Prisma.IntWithAggregatesFilter<"VerificationDoc"> | number
-  docType?: Prisma.StringWithAggregatesFilter<"VerificationDoc"> | string
+  docType?: Prisma.EnumVerificationDocTypeWithAggregatesFilter<"VerificationDoc"> | $Enums.VerificationDocType
   fileUrl?: Prisma.StringWithAggregatesFilter<"VerificationDoc"> | string
   status?: Prisma.EnumVerificationStatusWithAggregatesFilter<"VerificationDoc"> | $Enums.VerificationStatus
   reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VerificationDoc"> | Date | string | null
@@ -293,7 +293,7 @@ export type VerificationDocScalarWhereWithAggregatesInput = {
 }
 
 export type VerificationDocCreateInput = {
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status?: $Enums.VerificationStatus
   reviewedAt?: Date | string | null
@@ -304,7 +304,7 @@ export type VerificationDocCreateInput = {
 export type VerificationDocUncheckedCreateInput = {
   id?: number
   providerId: number
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status?: $Enums.VerificationStatus
   reviewedAt?: Date | string | null
@@ -312,7 +312,7 @@ export type VerificationDocUncheckedCreateInput = {
 }
 
 export type VerificationDocUpdateInput = {
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -323,7 +323,7 @@ export type VerificationDocUpdateInput = {
 export type VerificationDocUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -333,7 +333,7 @@ export type VerificationDocUncheckedUpdateInput = {
 export type VerificationDocCreateManyInput = {
   id?: number
   providerId: number
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status?: $Enums.VerificationStatus
   reviewedAt?: Date | string | null
@@ -341,7 +341,7 @@ export type VerificationDocCreateManyInput = {
 }
 
 export type VerificationDocUpdateManyMutationInput = {
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -351,7 +351,7 @@ export type VerificationDocUpdateManyMutationInput = {
 export type VerificationDocUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -450,8 +450,12 @@ export type VerificationDocUncheckedUpdateManyWithoutProviderNestedInput = {
   deleteMany?: Prisma.VerificationDocScalarWhereInput | Prisma.VerificationDocScalarWhereInput[]
 }
 
+export type EnumVerificationDocTypeFieldUpdateOperationsInput = {
+  set?: $Enums.VerificationDocType
+}
+
 export type VerificationDocCreateWithoutProviderInput = {
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status?: $Enums.VerificationStatus
   reviewedAt?: Date | string | null
@@ -460,7 +464,7 @@ export type VerificationDocCreateWithoutProviderInput = {
 
 export type VerificationDocUncheckedCreateWithoutProviderInput = {
   id?: number
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status?: $Enums.VerificationStatus
   reviewedAt?: Date | string | null
@@ -499,7 +503,7 @@ export type VerificationDocScalarWhereInput = {
   NOT?: Prisma.VerificationDocScalarWhereInput | Prisma.VerificationDocScalarWhereInput[]
   id?: Prisma.IntFilter<"VerificationDoc"> | number
   providerId?: Prisma.IntFilter<"VerificationDoc"> | number
-  docType?: Prisma.StringFilter<"VerificationDoc"> | string
+  docType?: Prisma.EnumVerificationDocTypeFilter<"VerificationDoc"> | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFilter<"VerificationDoc"> | string
   status?: Prisma.EnumVerificationStatusFilter<"VerificationDoc"> | $Enums.VerificationStatus
   reviewedAt?: Prisma.DateTimeNullableFilter<"VerificationDoc"> | Date | string | null
@@ -508,7 +512,7 @@ export type VerificationDocScalarWhereInput = {
 
 export type VerificationDocCreateManyProviderInput = {
   id?: number
-  docType: string
+  docType: $Enums.VerificationDocType
   fileUrl: string
   status?: $Enums.VerificationStatus
   reviewedAt?: Date | string | null
@@ -516,7 +520,7 @@ export type VerificationDocCreateManyProviderInput = {
 }
 
 export type VerificationDocUpdateWithoutProviderInput = {
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -525,7 +529,7 @@ export type VerificationDocUpdateWithoutProviderInput = {
 
 export type VerificationDocUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -534,7 +538,7 @@ export type VerificationDocUncheckedUpdateWithoutProviderInput = {
 
 export type VerificationDocUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.EnumVerificationDocTypeFieldUpdateOperationsInput | $Enums.VerificationDocType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -605,7 +609,7 @@ export type $VerificationDocPayload<ExtArgs extends runtime.Types.Extensions.Int
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     providerId: number
-    docType: string
+    docType: $Enums.VerificationDocType
     fileUrl: string
     status: $Enums.VerificationStatus
     reviewedAt: Date | null
@@ -1036,7 +1040,7 @@ export interface Prisma__VerificationDocClient<T, Null = never, ExtArgs extends 
 export interface VerificationDocFieldRefs {
   readonly id: Prisma.FieldRef<"VerificationDoc", 'Int'>
   readonly providerId: Prisma.FieldRef<"VerificationDoc", 'Int'>
-  readonly docType: Prisma.FieldRef<"VerificationDoc", 'String'>
+  readonly docType: Prisma.FieldRef<"VerificationDoc", 'VerificationDocType'>
   readonly fileUrl: Prisma.FieldRef<"VerificationDoc", 'String'>
   readonly status: Prisma.FieldRef<"VerificationDoc", 'VerificationStatus'>
   readonly reviewedAt: Prisma.FieldRef<"VerificationDoc", 'DateTime'>

@@ -38,36 +38,36 @@ export type LocalityMinAggregateOutputType = {
   id: number | null
   name: string | null
   department: string | null
-  province: string | null
-  district: string | null
   country: string | null
   isActive: boolean | null
-  source: $Enums.LocalitySource | null
   createdAt: Date | null
+  district: string | null
+  province: string | null
+  source: $Enums.LocalitySource | null
 }
 
 export type LocalityMaxAggregateOutputType = {
   id: number | null
   name: string | null
   department: string | null
-  province: string | null
-  district: string | null
   country: string | null
   isActive: boolean | null
-  source: $Enums.LocalitySource | null
   createdAt: Date | null
+  district: string | null
+  province: string | null
+  source: $Enums.LocalitySource | null
 }
 
 export type LocalityCountAggregateOutputType = {
   id: number
   name: number
   department: number
-  province: number
-  district: number
   country: number
   isActive: number
-  source: number
   createdAt: number
+  district: number
+  province: number
+  source: number
   _all: number
 }
 
@@ -84,36 +84,36 @@ export type LocalityMinAggregateInputType = {
   id?: true
   name?: true
   department?: true
-  province?: true
-  district?: true
   country?: true
   isActive?: true
-  source?: true
   createdAt?: true
+  district?: true
+  province?: true
+  source?: true
 }
 
 export type LocalityMaxAggregateInputType = {
   id?: true
   name?: true
   department?: true
-  province?: true
-  district?: true
   country?: true
   isActive?: true
-  source?: true
   createdAt?: true
+  district?: true
+  province?: true
+  source?: true
 }
 
 export type LocalityCountAggregateInputType = {
   id?: true
   name?: true
   department?: true
-  province?: true
-  district?: true
   country?: true
   isActive?: true
-  source?: true
   createdAt?: true
+  district?: true
+  province?: true
+  source?: true
   _all?: true
 }
 
@@ -207,12 +207,12 @@ export type LocalityGroupByOutputType = {
   id: number
   name: string
   department: string
-  province: string | null
-  district: string | null
   country: string
   isActive: boolean
-  source: $Enums.LocalitySource
   createdAt: Date
+  district: string | null
+  province: string | null
+  source: $Enums.LocalitySource
   _count: LocalityCountAggregateOutputType | null
   _avg: LocalityAvgAggregateOutputType | null
   _sum: LocalitySumAggregateOutputType | null
@@ -242,12 +242,12 @@ export type LocalityWhereInput = {
   id?: Prisma.IntFilter<"Locality"> | number
   name?: Prisma.StringFilter<"Locality"> | string
   department?: Prisma.StringFilter<"Locality"> | string
-  province?: Prisma.StringNullableFilter<"Locality"> | string | null
-  district?: Prisma.StringNullableFilter<"Locality"> | string | null
   country?: Prisma.StringFilter<"Locality"> | string
   isActive?: Prisma.BoolFilter<"Locality"> | boolean
-  source?: Prisma.EnumLocalitySourceFilter<"Locality"> | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFilter<"Locality"> | Date | string
+  district?: Prisma.StringNullableFilter<"Locality"> | string | null
+  province?: Prisma.StringNullableFilter<"Locality"> | string | null
+  source?: Prisma.EnumLocalitySourceFilter<"Locality"> | $Enums.LocalitySource
   providers?: Prisma.ProviderListRelationFilter
 }
 
@@ -255,42 +255,41 @@ export type LocalityOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   department?: Prisma.SortOrder
-  province?: Prisma.SortOrderInput | Prisma.SortOrder
-  district?: Prisma.SortOrderInput | Prisma.SortOrder
   country?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
+  province?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
   providers?: Prisma.ProviderOrderByRelationAggregateInput
 }
 
 export type LocalityWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  department_province_district?: Prisma.LocalityDepartmentProvinceDistrictCompoundUniqueInput
   AND?: Prisma.LocalityWhereInput | Prisma.LocalityWhereInput[]
   OR?: Prisma.LocalityWhereInput[]
   NOT?: Prisma.LocalityWhereInput | Prisma.LocalityWhereInput[]
   name?: Prisma.StringFilter<"Locality"> | string
   department?: Prisma.StringFilter<"Locality"> | string
-  province?: Prisma.StringNullableFilter<"Locality"> | string | null
-  district?: Prisma.StringNullableFilter<"Locality"> | string | null
   country?: Prisma.StringFilter<"Locality"> | string
   isActive?: Prisma.BoolFilter<"Locality"> | boolean
-  source?: Prisma.EnumLocalitySourceFilter<"Locality"> | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFilter<"Locality"> | Date | string
+  district?: Prisma.StringNullableFilter<"Locality"> | string | null
+  province?: Prisma.StringNullableFilter<"Locality"> | string | null
+  source?: Prisma.EnumLocalitySourceFilter<"Locality"> | $Enums.LocalitySource
   providers?: Prisma.ProviderListRelationFilter
-}, "id" | "department_province_district">
+}, "id">
 
 export type LocalityOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   department?: Prisma.SortOrder
-  province?: Prisma.SortOrderInput | Prisma.SortOrder
-  district?: Prisma.SortOrderInput | Prisma.SortOrder
   country?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
+  province?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
   _count?: Prisma.LocalityCountOrderByAggregateInput
   _avg?: Prisma.LocalityAvgOrderByAggregateInput
   _max?: Prisma.LocalityMaxOrderByAggregateInput
@@ -305,23 +304,23 @@ export type LocalityScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Locality"> | number
   name?: Prisma.StringWithAggregatesFilter<"Locality"> | string
   department?: Prisma.StringWithAggregatesFilter<"Locality"> | string
-  province?: Prisma.StringNullableWithAggregatesFilter<"Locality"> | string | null
-  district?: Prisma.StringNullableWithAggregatesFilter<"Locality"> | string | null
   country?: Prisma.StringWithAggregatesFilter<"Locality"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Locality"> | boolean
-  source?: Prisma.EnumLocalitySourceWithAggregatesFilter<"Locality"> | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Locality"> | Date | string
+  district?: Prisma.StringNullableWithAggregatesFilter<"Locality"> | string | null
+  province?: Prisma.StringNullableWithAggregatesFilter<"Locality"> | string | null
+  source?: Prisma.EnumLocalitySourceWithAggregatesFilter<"Locality"> | $Enums.LocalitySource
 }
 
 export type LocalityCreateInput = {
   name: string
   department: string
-  province?: string | null
-  district?: string | null
   country?: string
   isActive?: boolean
-  source?: $Enums.LocalitySource
   createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
   providers?: Prisma.ProviderCreateNestedManyWithoutLocalityInput
 }
 
@@ -329,24 +328,24 @@ export type LocalityUncheckedCreateInput = {
   id?: number
   name: string
   department: string
-  province?: string | null
-  district?: string | null
   country?: string
   isActive?: boolean
-  source?: $Enums.LocalitySource
   createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
   providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutLocalityInput
 }
 
 export type LocalityUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   department?: Prisma.StringFieldUpdateOperationsInput | string
-  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   providers?: Prisma.ProviderUpdateManyWithoutLocalityNestedInput
 }
 
@@ -354,12 +353,12 @@ export type LocalityUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   department?: Prisma.StringFieldUpdateOperationsInput | string
-  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   providers?: Prisma.ProviderUncheckedUpdateManyWithoutLocalityNestedInput
 }
 
@@ -367,53 +366,47 @@ export type LocalityCreateManyInput = {
   id?: number
   name: string
   department: string
-  province?: string | null
-  district?: string | null
   country?: string
   isActive?: boolean
-  source?: $Enums.LocalitySource
   createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
 }
 
 export type LocalityUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   department?: Prisma.StringFieldUpdateOperationsInput | string
-  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
 }
 
 export type LocalityUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   department?: Prisma.StringFieldUpdateOperationsInput | string
-  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type LocalityDepartmentProvinceDistrictCompoundUniqueInput = {
-  department: string
-  province: string
-  district: string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
 }
 
 export type LocalityCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   department?: Prisma.SortOrder
-  province?: Prisma.SortOrder
-  district?: Prisma.SortOrder
   country?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  source?: Prisma.SortOrder
 }
 
 export type LocalityAvgOrderByAggregateInput = {
@@ -424,24 +417,24 @@ export type LocalityMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   department?: Prisma.SortOrder
-  province?: Prisma.SortOrder
-  district?: Prisma.SortOrder
   country?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  source?: Prisma.SortOrder
 }
 
 export type LocalityMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   department?: Prisma.SortOrder
-  province?: Prisma.SortOrder
-  district?: Prisma.SortOrder
   country?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  source?: Prisma.SortOrder
 }
 
 export type LocalitySumOrderByAggregateInput = {
@@ -474,24 +467,24 @@ export type LocalityUpdateOneRequiredWithoutProvidersNestedInput = {
 export type LocalityCreateWithoutProvidersInput = {
   name: string
   department: string
-  province?: string | null
-  district?: string | null
   country?: string
   isActive?: boolean
-  source?: $Enums.LocalitySource
   createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
 }
 
 export type LocalityUncheckedCreateWithoutProvidersInput = {
   id?: number
   name: string
   department: string
-  province?: string | null
-  district?: string | null
   country?: string
   isActive?: boolean
-  source?: $Enums.LocalitySource
   createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
 }
 
 export type LocalityCreateOrConnectWithoutProvidersInput = {
@@ -513,24 +506,24 @@ export type LocalityUpdateToOneWithWhereWithoutProvidersInput = {
 export type LocalityUpdateWithoutProvidersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   department?: Prisma.StringFieldUpdateOperationsInput | string
-  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
 }
 
 export type LocalityUncheckedUpdateWithoutProvidersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   department?: Prisma.StringFieldUpdateOperationsInput | string
-  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
 }
 
 
@@ -568,12 +561,12 @@ export type LocalitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   name?: boolean
   department?: boolean
-  province?: boolean
-  district?: boolean
   country?: boolean
   isActive?: boolean
-  source?: boolean
   createdAt?: boolean
+  district?: boolean
+  province?: boolean
+  source?: boolean
   providers?: boolean | Prisma.Locality$providersArgs<ExtArgs>
   _count?: boolean | Prisma.LocalityCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["locality"]>
@@ -582,39 +575,39 @@ export type LocalitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   name?: boolean
   department?: boolean
-  province?: boolean
-  district?: boolean
   country?: boolean
   isActive?: boolean
-  source?: boolean
   createdAt?: boolean
+  district?: boolean
+  province?: boolean
+  source?: boolean
 }, ExtArgs["result"]["locality"]>
 
 export type LocalitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   department?: boolean
-  province?: boolean
-  district?: boolean
   country?: boolean
   isActive?: boolean
-  source?: boolean
   createdAt?: boolean
+  district?: boolean
+  province?: boolean
+  source?: boolean
 }, ExtArgs["result"]["locality"]>
 
 export type LocalitySelectScalar = {
   id?: boolean
   name?: boolean
   department?: boolean
-  province?: boolean
-  district?: boolean
   country?: boolean
   isActive?: boolean
-  source?: boolean
   createdAt?: boolean
+  district?: boolean
+  province?: boolean
+  source?: boolean
 }
 
-export type LocalityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "department" | "province" | "district" | "country" | "isActive" | "source" | "createdAt", ExtArgs["result"]["locality"]>
+export type LocalityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "department" | "country" | "isActive" | "createdAt" | "district" | "province" | "source", ExtArgs["result"]["locality"]>
 export type LocalityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   providers?: boolean | Prisma.Locality$providersArgs<ExtArgs>
   _count?: boolean | Prisma.LocalityCountOutputTypeDefaultArgs<ExtArgs>
@@ -631,12 +624,12 @@ export type $LocalityPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: number
     name: string
     department: string
-    province: string | null
-    district: string | null
     country: string
     isActive: boolean
-    source: $Enums.LocalitySource
     createdAt: Date
+    district: string | null
+    province: string | null
+    source: $Enums.LocalitySource
   }, ExtArgs["result"]["locality"]>
   composites: {}
 }
@@ -1064,12 +1057,12 @@ export interface LocalityFieldRefs {
   readonly id: Prisma.FieldRef<"Locality", 'Int'>
   readonly name: Prisma.FieldRef<"Locality", 'String'>
   readonly department: Prisma.FieldRef<"Locality", 'String'>
-  readonly province: Prisma.FieldRef<"Locality", 'String'>
-  readonly district: Prisma.FieldRef<"Locality", 'String'>
   readonly country: Prisma.FieldRef<"Locality", 'String'>
   readonly isActive: Prisma.FieldRef<"Locality", 'Boolean'>
-  readonly source: Prisma.FieldRef<"Locality", 'LocalitySource'>
   readonly createdAt: Prisma.FieldRef<"Locality", 'DateTime'>
+  readonly district: Prisma.FieldRef<"Locality", 'String'>
+  readonly province: Prisma.FieldRef<"Locality", 'String'>
+  readonly source: Prisma.FieldRef<"Locality", 'LocalitySource'>
 }
     
 

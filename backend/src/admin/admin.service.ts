@@ -901,7 +901,7 @@ async updateProvider(
         select: {
           id:        true,
           firstName: true,
-          lastName:  true,
+          lastName:  true, 
           email:     true,
           role:      true,
           isActive:  true,
