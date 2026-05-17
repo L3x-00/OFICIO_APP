@@ -42,27 +42,33 @@ class FcmService {
       _sendTokenToBackend(newToken);
     });
 
-    // Foreground: SnackBar + delegar al callback (NotificationsProvider).
+    // Foreground: solo delegamos al callback para que el provider
+    // inyecte la notif en la lista. El SnackBar fue ELIMINADO porque
+    // el WebSocket ya inserta la misma notif en _items (más rápido)
+    // y el badge se actualiza — el SnackBar duplicaba visualmente
+    // lo que el user veía en el tab Alertas (issue B-1 del audit).
     FirebaseMessaging.onMessage.listen((message) {
       debugPrint('[FCM] foreground: ${message.notification?.title}');
-      _showForegroundSnack(message);
       onForegroundMessage?.call(message);
     });
 
-    // Background tap: el usuario abrió desde la bandeja.
+    // Background tap: el usuario abrió desde la bandeja del sistema.
+    // NO llamamos a onForegroundMessage acá — la notif ya está
+    // persistida en el backend y loadHistory() la traerá con su id
+    // real. Inyectarla acá con id sintético causa DUPLICADO en la
+    // lista de Alertas (issue B-7 del audit).
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       debugPrint('[FCM] tap (background): ${message.data}');
-      onForegroundMessage?.call(message); // también va al historial
       onMessageTap?.call(message);
     });
 
-    // Terminated: app abierta desde notificación.
+    // Terminated: app abierta desde notificación. Mismo razonamiento
+    // que en background tap — solo navegamos, NO inyectamos.
     final initial = await messaging.getInitialMessage();
     if (initial != null) {
       debugPrint('[FCM] tap (terminated): ${initial.data}');
       // Esperamos a que el árbol esté montado.
       await Future.delayed(const Duration(milliseconds: 500));
-      onForegroundMessage?.call(initial);
       onMessageTap?.call(initial);
     }
   }
@@ -84,21 +90,6 @@ class FcmService {
 
   // ── Helpers ────────────────────────────────────────────────
 
-  void _showForegroundSnack(RemoteMessage message) {
-    final ctx = _navigatorKey?.currentContext;
-    if (ctx == null || !ctx.mounted) return;
-    final title = message.notification?.title ?? '';
-    final body  = message.notification?.body  ?? '';
-    if (title.isEmpty && body.isEmpty) return;
-    ScaffoldMessenger.of(ctx).showSnackBar(
-      SnackBar(
-        content: Text('$title${body.isEmpty ? '' : ': $body'}'),
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   Future<void> _sendTokenToBackend(String token) async {
     try {
       await _dio.patch('/users/me/device-token', data: {'token': token});
@@ -108,7 +99,10 @@ class FcmService {
     }
   }
 
-  // Clave de navegador global — inyectada desde main.dart
+  // Clave de navegador global — inyectada desde main.dart. Se mantiene
+  // por compat con onMessageTap del router pero ya no la usa FCM
+  // directamente (B-1 quitó el SnackBar foreground).
+  // ignore: unused_field
   static GlobalKey<NavigatorState>? _navigatorKey;
   static void setNavigatorKey(GlobalKey<NavigatorState> key) {
     _navigatorKey = key;

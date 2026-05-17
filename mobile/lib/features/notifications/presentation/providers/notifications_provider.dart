@@ -127,9 +127,20 @@ class NotificationsProvider extends ChangeNotifier {
     }
   }
 
-  /// Inyecta una notificación recibida desde FCM (foreground o tap) en la
-  /// lista para que aparezca en la pantalla de "Alertas".
-  void addLocal(AppNotification notification) {
+  /// Inyecta una notificación recibida desde FCM en la lista para que
+  /// aparezca en la pantalla de "Alertas". Solo se llama en FOREGROUND
+  /// — el tap en background/terminated abre la app via deep link y la
+  /// notif ya está persistida en el backend (loadHistory la trae).
+  ///
+  /// B-4: validamos targetUserId si viene en el data del FCM — defensa
+  /// contra el caso edge de tokens FCM cross-contaminados.
+  void addLocal(AppNotification notification, {Object? targetUserId}) {
+    if (targetUserId != null) {
+      final id = targetUserId is int
+          ? targetUserId
+          : int.tryParse(targetUserId.toString());
+      if (id != _currentUserId) return;
+    }
     if (!_passesFilters(notification)) return;
     if (_isRecentDuplicate(notification)) return;
     _items.insert(0, notification);
@@ -200,16 +211,35 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   void _mergeWithExisting(List<AppNotification> fetched) {
-    // Mantenemos las notificaciones in-memory que aún no están en el server
-    // (ej. recién recibidas por socket entre logins).
+    // Mantenemos las notificaciones in-memory que aún no están en el
+    // server (ej. recién recibidas por socket entre logins).
+    //
+    // B-7: las del socket/FCM tienen id sintético "{millis}_TYPE", las
+    // del server tienen id numérico. Match por id falla → duplicado.
+    // Fix: además de id, descartamos locales que coincidan en
+    // (type + title + body) con alguna del server dentro de ±60s —
+    // ese local es la "versión efímera" del server; preferimos el
+    // server (tiene id real para markRead).
     final existing = List<AppNotification>.from(_items);
     _items
       ..clear()
       ..addAll(fetched);
-    for (final old in existing) {
-      if (!_items.any((n) => n.id == old.id)) {
-        _items.add(old);
+
+    bool dupOfServer(AppNotification local) {
+      for (final s in fetched) {
+        if (s.type != local.type) continue;
+        if (s.title != local.title) continue;
+        if (s.body != local.body) continue;
+        final diff = s.createdAt.difference(local.createdAt).inSeconds.abs();
+        if (diff <= 60) return true;
       }
+      return false;
+    }
+
+    for (final old in existing) {
+      if (_items.any((n) => n.id == old.id)) continue;
+      if (dupOfServer(old)) continue;
+      _items.add(old);
     }
     _items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }

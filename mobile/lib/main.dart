@@ -25,9 +25,32 @@ import 'features/providers_list/presentation/providers/providers_provider.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
+/// B-3: handler que corre en un isolate separado cuando llega un push
+/// con la app en BACKGROUND o TERMINATED. Debe ser top-level y
+/// anotado con `@pragma('vm:entry-point')` para que el compilador AOT
+/// lo conserve. Sin esto, Android puede no procesar correctamente la
+/// notif con `data:` payload.
+///
+/// Mantenemos la lógica al mínimo (solo log) porque la notif del
+/// sistema ya se muestra automáticamente cuando el payload incluye
+/// `notification:` desde el backend (push-notifications.service.ts).
+/// El procesamiento real ocurre cuando el user toca la notif y la app
+/// arranca → `onMessageOpenedApp` / `getInitialMessage` en FcmService.
+@pragma('vm:entry-point')
+Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
+  // Re-inicializar Firebase en este isolate (cada isolate es independiente).
+  await Firebase.initializeApp();
+  // Debug log opcional — el resto del manejo es automático.
+  // ignore: avoid_print
+  print('[FCM bg] ${message.notification?.title} / ${message.data}');
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // B-3: registrar el handler ANTES de runApp y antes de cualquier
+  // listener de foreground. FlutterFire requiere que sea top-level.
+  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   FcmService.setNavigatorKey(_navigatorKey);
 
   // ── Providers raíz inicializados antes de runApp ───────────
@@ -299,8 +322,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects> {
     );
   }
 
-  /// Inserta una notificación push recibida (foreground/tap) en el
+  /// Inserta una notificación push recibida en FOREGROUND en el
   /// `NotificationsProvider` para que aparezca en el tab de Alertas.
+  ///
+  /// Background/terminated NO llama acá (FcmService ya no lo invoca):
+  /// la notif ya está persistida y loadHistory la trae con id real.
   void _handleFcmInbound(RemoteMessage message) {
     if (!mounted) return;
     final notif = AppNotification.fromSocket({
@@ -311,7 +337,14 @@ class _AuthSideEffectsState extends State<_AuthSideEffects> {
       'body':              message.notification?.body  ?? message.data['body']  ?? '',
       'targetProfileType': message.data['targetProfileType'],
     });
-    context.read<NotificationsProvider>().addLocal(notif);
+    // B-4: pasamos targetUserId para que el provider lo valide
+    // contra el user actual — defensa contra cross-contaminación
+    // de tokens FCM (raro pero posible si dos users comparten dispositivo
+    // y el clearToken del logout falló).
+    context.read<NotificationsProvider>().addLocal(
+      notif,
+      targetUserId: message.data['targetUserId'],
+    );
   }
 
   /// Deep-link FCM → ruta GoRouter correspondiente.

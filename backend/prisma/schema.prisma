@@ -1,128 +1,50 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/client" // Ruta recomendada para NestJS
+  provider        = "prisma-client"
+  output          = "../src/generated/client"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// ─────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────
-
-enum UserRole {
-  USUARIO // Cliente final, usa la app gratis
-  PROVEEDOR // Profesional u oficio, paga suscripción
-  ADMIN // Administrador del sistema
-}
-
-enum AvailabilityStatus {
-  DISPONIBLE
-  OCUPADO
-  CON_DEMORA
-}
-
-enum SubscriptionPlan {
-  GRATIS // Periodo de gracia (freemium)
-  ESTANDAR
-  PREMIUM
-}
-
-enum SubscriptionStatus {
-  ACTIVA
-  VENCIDA
-  CANCELADA
-  GRACIA // Meses gratis iniciales
-}
-
-enum ProviderType {
-  OFICIO // Electricista, gasfitero, etc.
-  NEGOCIO // Restaurante, peluquería, etc.
-}
-
-enum VerificationStatus {
-  PENDIENTE
-  APROBADO
-  RECHAZADO
-}
-
-enum ServiceRequestStatus {
-  OPEN      // Recibiendo ofertas
-  CLOSED    // Cupo lleno (5 ofertas) — ya no acepta nuevas, espera elección
-  AWARDED   // Usuario aceptó una oferta y se adjudicó
-  EXPIRED   // No se eligió en 24/48h
-  CANCELLED // Usuario canceló
-}
-
-enum OfferStatus {
-  PENDING // Esperando respuesta
-  ACCEPTED // Proveedor ganó
-  REJECTED // Otro fue elegido o expiró
-  WITHDRAWN // Proveedor retiró su oferta
-}
-
-enum YapePaymentStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum TrustStatus {
-  NONE // Sin solicitud de confianza
-  PENDING // Solicitud enviada, pendiente de revisión
-  APPROVED // Datos validados — badge "Profesional Verificado"
-  REJECTED // Solicitud rechazada por el administrador
-}
-
-// ─────────────────────────────────────────
-// USUARIOS
-// ─────────────────────────────────────────
-
 model User {
-  id              Int      @id @default(autoincrement())
-  email           String   @unique
-  phone           String?  @unique
-  passwordHash    String
-  role            UserRole @default(USUARIO)
-  firstName       String
-  lastName        String
-  avatarUrl       String?
-  // Ubicación del usuario (para filtrar servicios disponibles en su zona)
-  department      String? // Departamento, ej: "Junín"
-  province        String? // Provincia, ej: "Huancayo"
-  district        String? // Distrito, ej: "El Tambo"
-  firebaseUid     String?  @unique // UID de Firebase (login social)
-  fcmToken        String? // Token FCM para notificaciones push
-  isActive        Boolean  @default(true)
-  isEmailVerified Boolean  @default(false)
-  // Sistema de referidos: monedas acumuladas por invitar a otros profesionales
-  coins           Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relaciones
-  providers       Provider[] // Puede tener un perfil OFICIO y/o NEGOCIO
-  favorites       Favorite[] // Proveedores guardados
-  reviews         Review[] // Reseñas que escribió
-  reviewReplies   ReviewReply[] // Respuestas a reseñas
-  providerReports ProviderReport[] // Reportes enviados a proveedores
-  platformIssues  PlatformIssue[] // Problemas reportados desde el panel del proveedor
-  refreshTokens   RefreshToken[] // Sesiones activas
-  otpCodes        OtpCode[] // Códigos OTP de verificación
-  recommendations Recommendation[] // Proveedores recomendados
-  serviceRequests ServiceRequest[] // Solicitudes de servicio publicadas
-  penalty         UserPenalty? // Penalización anti-arrepentimiento
-
-  // Sistema de referidos
-  referralCode     ReferralCode? // Código único personal del usuario (1-1)
-  referralsSent    Referral[]       @relation("ReferralInviter") // Invitaciones que ha hecho
-  referralReceived Referral?        @relation("ReferralInvited") // Referido que aceptó (1-1)
-  redemptions      CoinRedemption[] // Canjes de monedas
-
-  // Chat interno: salas donde el usuario participa como cliente
+  id               Int              @id @default(autoincrement())
+  email            String           @unique
+  phone            String?          @unique
+  passwordHash     String
+  role             UserRole         @default(USUARIO)
+  firstName        String
+  lastName         String
+  avatarUrl        String?
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  department       String?
+  province         String?
+  district         String?
+  firebaseUid      String?          @unique
+  isEmailVerified  Boolean          @default(false)
+  fcmToken         String?          @unique
+  coins            Int              @default(0)
+  lastIp           String?
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
+  redemptions      CoinRedemption[]
+  favorites        Favorite[]
   offerReports     OfferReport[]
+  otpCodes         OtpCode[]
+  platformIssues   PlatformIssue[]
+  providerReports  ProviderReport[]
+  providers        Provider[]
+  recommendations  Recommendation[]
+  referralCode     ReferralCode?
+  referralReceived Referral?        @relation("ReferralInvited")
+  referralsSent    Referral[]       @relation("ReferralInviter")
+  refreshTokens    RefreshToken[]
+  reviewReplies    ReviewReply[]
+  reviews          Review[]
+  serviceRequests  ServiceRequest[]
+  penalty          UserPenalty?
 
   @@map("users")
 }
@@ -133,8 +55,7 @@ model OtpCode {
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("otp_codes")
@@ -146,126 +67,42 @@ model RefreshToken {
   userId    Int
   expiresAt DateTime
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("refresh_tokens")
 }
 
-// ─────────────────────────────────────────
-// LOCALIDADES (para multi-ciudad)
-// ─────────────────────────────────────────
-
 model Locality {
-  id         Int      @id @default(autoincrement())
-  name       String // Nombre de la ciudad/distrito, ej: "Huancayo"
-  department String // Ej: "Junín"
-  province   String? // Ej: "Huancayo"
-  district   String? // Ej: "El Tambo"
-  country    String   @default("Perú")
-  isActive   Boolean  @default(true)
+  id         Int            @id @default(autoincrement())
+  name       String
+  department String
+  country    String         @default("Perú")
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  district   String?
+  province   String?
   source     LocalitySource @default(SEED)
-  createdAt  DateTime @default(now())
+  providers  Provider[]
 
-  providers Provider[]
-
-  // Una sola entrada por combinación (dept, prov, dist). El UNIQUE
-  // INDEX es FUNCIONAL accent-insensitive y vive en la migración
-  // 20260517130000_localities_normalize (Prisma no puede expresar
-  // `lower(unaccent(...))` en su DSL). NO declarar `@@unique` aquí
-  // o el siguiente `migrate dev` intentará crear el viejo de nuevo.
-  //
-  // Tampoco declaramos las columnas generadas `department_norm`,
-  // `province_norm`, `district_norm` — viven en la BD y se consultan
-  // via $queryRaw en providers.service.ts. Prisma client las ignora.
   @@index([department, province, district])
   @@index([source])
   @@map("localities")
 }
 
-enum LocalitySource {
-  SEED  // Datos iniciales del catálogo peru_locations.dart
-  USER  // Sugerida por un usuario móvil vía GPS
-  ADMIN // Añadida desde el panel administrador
-}
-
-// Status del PlanRequest. Antes era String suelto.
-enum PlanRequestStatus {
-  PENDIENTE
-  APROBADO
-  RECHAZADO
-}
-
-// Razones de reporte sobre un Provider. Antes String suelto sin
-// validación a nivel BD.
-enum ReportReason {
-  INFORMACION_FALSA
-  COMPORTAMIENTO
-  FRAUDE
-  FOTO_INAPROPIADA
-  NO_PRESTO
-  OTRO
-}
-
-// Tipos de evento de analytics de Provider. Valores en lowercase para
-// compatibilidad con el FE/services que ya los emiten así.
-//
-// NOTA: hay inconsistencia legacy entre el código (usa 'view') y el
-// comentario original del schema (decía 'profile_view'). Acepto ambos
-// hasta que se unifique. Auditar via:
-//   SELECT DISTINCT "eventType" FROM provider_analytics;
-// y consolidar a uno solo.
-enum AnalyticEvent {
-  whatsapp_click
-  call_click
-  view
-  profile_view
-  favorite_add
-}
-
-// Tipos de documento del flujo de verificación. Lowercase histórico.
-enum VerificationDocType {
-  dni
-  antecedentes
-  certificado
-}
-
-// Métodos de pago aceptados. Antes String — permite inyección de
-// 'paypal', 'crypto', etc. sin que la BD lo detecte.
-enum PaymentMethod {
-  yape
-  bcp_deposito
-  mercadopago
-}
-
-// Razones de reporte sobre un OfferPost. DTO ya valida con @IsIn —
-// esto refuerza a nivel BD.
-enum OfferReportReason {
-  SPAM
-  PRECIO_FALSO
-  CONTENIDO_INAPROPIADO
-  OTRO
-}
-
-// ─────────────────────────────────────────
-// CATEGORÍAS
-// ─────────────────────────────────────────
-
 model Category {
-  id       Int     @id @default(autoincrement())
-  name     String // "Electricistas"
-  slug     String  @unique // "electricistas"
-  iconUrl  String?
-  parentId Int? // Para subcategorías
-  forType  String? // 'OFICIO' | 'NEGOCIO' | null (ambos)
-  isActive Boolean @default(true)
-
-  parent              Category?          @relation("SubCategories", fields: [parentId], references: [id])
-  children            Category[]         @relation("SubCategories")
+  id                  Int                 @id @default(autoincrement())
+  name                String
+  slug                String              @unique
+  iconUrl             String?
+  parentId            Int?
+  isActive            Boolean             @default(true)
+  forType             String?
+  parent              Category?           @relation("SubCategories", fields: [parentId], references: [id])
+  children            Category[]          @relation("SubCategories")
+  offerPostCategories OfferPostCategory[]
   providerCategories  ProviderCategory[]
   serviceRequests     ServiceRequest[]
-  offerPostCategories OfferPostCategory[]
 
   @@map("categories")
 }
@@ -273,12 +110,11 @@ model Category {
 /// Tabla de unión proveedor ↔ categorías (muchos a muchos).
 /// Un proveedor puede tener hasta 7 categorías.
 model ProviderCategory {
-  id         Int @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   providerId Int
   categoryId Int
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, categoryId])
   @@index([providerId])
@@ -286,115 +122,82 @@ model ProviderCategory {
   @@map("provider_categories")
 }
 
-// ─────────────────────────────────────────
-// PROVEEDORES
-// ─────────────────────────────────────────
-
 model Provider {
-  id                Int          @id @default(autoincrement())
-  userId            Int // sin @unique: un usuario puede tener OFICIO y NEGOCIO
-  type              ProviderType @default(OFICIO)
-  businessName      String // Nombre del servicio o negocio
-  // Slug URL-friendly único derivado de businessName. Vanity URL:
-  // oficioapp.org.pe/p/{slug}. Generado automáticamente en creación;
-  // editable una sola vez por el propio proveedor (gate en service).
-  slug              String?      @unique
-  slugEditedAt      DateTime?
-  description       String?
-  dni               String? // DNI del titular — solo OFICIO
-  ruc               String? // RUC del negocio — solo NEGOCIO (11 dígitos)
-  nombreComercial   String? // Nombre Comercial — solo NEGOCIO
-  razonSocial       String? // Razón Social — solo NEGOCIO
-  hasDelivery       Boolean      @default(false) // Servicio de delivery — solo NEGOCIO
-  plenaCoordinacion Boolean      @default(false) // Coordinación full de entrega — solo NEGOCIO
-  hasHomeService    Boolean      @default(false) // Servicio a domicilio — solo OFICIO
-  phone             String
-  whatsapp          String?
-  address           String?
+  id                   Int                       @id @default(autoincrement())
+  userId               Int
+  type                 ProviderType              @default(OFICIO)
+  businessName         String
+  description          String?
+  phone                String
+  whatsapp             String?
+  address              String?
+  latitude             Float?
+  longitude            Float?
+  scheduleJson         Json?
+  availability         AvailabilityStatus        @default(DISPONIBLE)
+  isVisible            Boolean                   @default(true)
+  verificationStatus   VerificationStatus        @default(PENDIENTE)
+  isVerified           Boolean                   @default(false)
+  hasCleanRecord       Boolean                   @default(false)
+  averageRating        Float                     @default(0)
+  totalReviews         Int                       @default(0)
+  localityId           Int
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  dni                  String?
+  hasDelivery          Boolean                   @default(false)
+  hasHomeService       Boolean                   @default(false)
+  isTrusted            Boolean                   @default(false)
+  nombreComercial      String?
+  planPriority         Int                       @default(4)
+  plenaCoordinacion    Boolean                   @default(false)
+  razonSocial          String?
+  ruc                  String?
+  totalRecommendations Int                       @default(0)
+  trustStatus          TrustStatus               @default(NONE)
+  facebook             String?
+  instagram            String?
+  linkedin             String?
+  telegram             String?
+  tiktok               String?
+  twitterX             String?
+  website              String?
+  whatsappBiz          String?
+  slug                 String?                   @unique
+  slugEditedAt         DateTime?
+  location_geog        Unsupported("geography")? @default(dbgenerated("\nCASE\n    WHEN ((latitude IS NOT NULL) AND (longitude IS NOT NULL)) THEN (st_setsrid(st_makepoint(longitude, latitude), 4326))::geography\n    ELSE NULL::geography\nEND"))
+  search_tsv           Unsupported("tsvector")?  @default(dbgenerated("(setweight(to_tsvector('spanish'::regconfig, COALESCE(\"businessName\", ''::text)), 'A'::\"char\") || setweight(to_tsvector('spanish'::regconfig, COALESCE(description, ''::text)), 'B'::\"char\"))"))
+  notifications        AdminNotification[]
+  chatsAsProvider      ChatRoom[]                @relation("ProviderChats")
+  favorites            Favorite[]
+  offerPosts           OfferPost[]
+  offers               Offer[]
+  planRequests         PlanRequest[]
+  analytics            ProviderAnalytic[]
+  providerCategories   ProviderCategory[]
+  images               ProviderImage[]
+  reports              ProviderReport[]
+  locality             Locality                  @relation(fields: [localityId], references: [id])
+  user                 User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations      Recommendation[]
+  referralRewards      ReferralReward[]
+  referralReceived     Referral?                 @relation("ReferralInvitedProvider")
+  reviews              Review[]
+  subscription         Subscription?
+  trustValidations     TrustValidationRequest[]
+  verificationDocs     VerificationDoc[]
+  yapePayments         YapePayment[]
 
-  // Redes sociales (opcionales)
-  website     String?
-  instagram   String?
-  tiktok      String?
-  facebook    String?
-  linkedin    String?
-  twitterX    String?
-  telegram    String?
-  whatsappBiz String?
-
-  // Geolocalización — guardamos lat/lng como decimales
-  // PostGIS se usa para las consultas de cercanía
-  latitude  Float?
-  longitude Float?
-
-  // Horarios (JSON flexible)
-  scheduleJson Json? // {"lun":"8:00-18:00", "mar":"8:00-18:00"...}
-
-  // Estado y disponibilidad
-  availability AvailabilityStatus @default(DISPONIBLE)
-  isVisible    Boolean            @default(true) // false cuando suscripción vence
-
-  // Verificación de identidad (admin aprueba el registro)
-  verificationStatus VerificationStatus @default(PENDIENTE)
-  isVerified         Boolean            @default(false)
-  hasCleanRecord     Boolean            @default(false)
-
-  // Confianza (proceso adicional de validación de documentos)
-  trustStatus TrustStatus @default(NONE)
-  isTrusted   Boolean     @default(false)
-
-  // Calificación y recomendaciones (desnormalizadas para velocidad)
-  averageRating        Float @default(0)
-  totalReviews         Int   @default(0)
-  totalRecommendations Int   @default(0)
-
-  // Prioridad de plan para ordenamiento: 1=PREMIUM, 2=ESTANDAR, 3=GRATIS (BASICO legacy)
-  // Se actualiza cuando el admin aprueba o cambia el plan. Nunca lo toca el proveedor.
-  planPriority Int @default(4)
-
-  localityId Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relaciones
-  user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  locality           Locality                 @relation(fields: [localityId], references: [id])
-  providerCategories ProviderCategory[]
-  images             ProviderImage[]
-  reviews          Review[]
-  favorites        Favorite[]
-  subscription     Subscription?
-  verificationDocs VerificationDoc[]
-  analytics        ProviderAnalytic[]
-  notifications    AdminNotification[]
-  planRequests     PlanRequest[]
-  recommendations  Recommendation[]
-  reports          ProviderReport[]
-  trustValidations TrustValidationRequest[]
-  offers           Offer[]
-  yapePayments     YapePayment[]
-
-  // Sistema de referidos
-  referralReceived Referral?        @relation("ReferralInvitedProvider")
-  referralRewards  ReferralReward[] // Servicios canjeables que ofrece este proveedor
-
-  // Chat interno: salas donde este perfil participa como proveedor
-  chatsAsProvider  ChatRoom[]       @relation("ProviderChats")
-  offerPosts       OfferPost[]
-
-  // Un usuario puede tener 1 perfil OFICIO + 1 NEGOCIO, nunca dos del mismo tipo
   @@unique([userId, type])
-  // Índices para los filtros más frecuentes del listado público.
-  // La migración 20260517170000 agrega además:
-  //   - providers_location_geog_gist (GiST sobre columna generada PostGIS)
-  //   - providers_search_tsv_gin (GIN sobre tsvector spanish)
-  //   - providers_businessname_trgm / description_trgm (trigram para typos)
-  // Esas no se declaran aquí porque Prisma no las puede expresar.
-  @@index([isVisible, verificationStatus]) // filtro base de todos los queries públicos
-  @@index([isVisible, verificationStatus, averageRating]) // + ordenamiento por rating
-  @@index([isVisible, verificationStatus, localityId]) // + filtro de ubicación (caso típico post-Parte 2)
-  @@index([type]) // filtro por tipo (OFICIO / NEGOCIO)
-  @@index([localityId]) // filtro por localidad
+  @@index([isVisible, verificationStatus])
+  @@index([isVisible, verificationStatus, averageRating])
+  @@index([isVisible, verificationStatus, localityId])
+  @@index([type])
+  @@index([localityId])
+  @@index([businessName(ops: raw("gin_trgm_ops"))], map: "providers_businessname_trgm", type: Gin)
+  @@index([description(ops: raw("gin_trgm_ops"))], map: "providers_description_trgm", type: Gin, where: raw("(description IS NOT NULL)"))
+  @@index([location_geog], map: "providers_location_geog_gist", type: Gist, where: raw("(location_geog IS NOT NULL)"))
+  @@index([search_tsv], map: "providers_search_tsv_gin", type: Gin)
   @@map("providers")
 }
 
@@ -402,57 +205,41 @@ model ProviderImage {
   id         Int      @id @default(autoincrement())
   providerId Int
   url        String
-  isCover    Boolean  @default(false) // Foto principal
+  isCover    Boolean  @default(false)
   order      Int      @default(0)
   createdAt  DateTime @default(now())
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("provider_images")
 }
 
-// ─────────────────────────────────────────
-// SUSCRIPCIONES
-// ─────────────────────────────────────────
-
 model Subscription {
-  id          Int                @id @default(autoincrement())
-  providerId  Int                @unique
-  plan        SubscriptionPlan   @default(GRATIS)
-  status      SubscriptionStatus @default(GRACIA)
-  startDate   DateTime           @default(now())
-  endDate     DateTime // Fecha de vencimiento
-  graceMonths Int                @default(2) // Meses gratis otorgados
-  priceUSD    Float              @default(0)
-  // @updatedAt en Prisma actualiza este campo SOLO cuando la mutación
-  // pasa por el cliente Prisma. La migración 20260517160000 agrega un
-  // trigger BEFORE UPDATE que lo asegura incluso para mutaciones por
-  // SQL crudo (cron jobs, otra app que comparta la BD, etc).
-  updatedAt   DateTime           @updatedAt @default(now())
-
-  provider Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  payments Payment[]
-  auditLog SubscriptionAuditLog[]
+  id          Int                    @id @default(autoincrement())
+  providerId  Int                    @unique
+  plan        SubscriptionPlan       @default(GRATIS)
+  status      SubscriptionStatus     @default(GRACIA)
+  startDate   DateTime               @default(now())
+  endDate     DateTime
+  graceMonths Int                    @default(2)
+  priceUSD    Float                  @default(0)
+  updatedAt   DateTime               @default(now()) @updatedAt
+  payments    Payment[]
+  auditLog    SubscriptionAuditLog[]
+  provider    Provider               @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }
 
-// Auditoría de cambios de status en suscripciones. Una fila por cada
-// transición — útil para entender cómo llegó una suscripción a un
-// estado y quién/qué la cambió (admin manual, cron de expiración, etc).
-// `changedBy` es nullable: cambios automáticos del sistema (cron de
-// expireSubscriptions) no tienen userId asociado.
 model SubscriptionAuditLog {
-  id             Int      @id @default(autoincrement())
+  id             Int                @id @default(autoincrement())
   subscriptionId Int
   oldStatus      SubscriptionStatus
   newStatus      SubscriptionStatus
   oldPlan        SubscriptionPlan
   newPlan        SubscriptionPlan
-  changedAt      DateTime @default(now())
-  changedBy      Int?     // userId del admin que disparó el cambio, null = sistema
-
-  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  changedAt      DateTime           @default(now())
+  changedBy      Int?
+  subscription   Subscription       @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([subscriptionId, changedAt])
   @@map("subscription_audit_log")
@@ -464,32 +251,23 @@ model Payment {
   amount         Float
   currency       String        @default("PEN")
   method         PaymentMethod
-  // Reference es el id único del gateway (paymentId de MercadoPago,
-  // verificationCode de Yape). @unique evita duplicar el registro
-  // cuando MP reintenta el webhook — gate de idempotencia.
-  reference      String?       @unique
+  reference      String?
   confirmedAt    DateTime?
   createdAt      DateTime      @default(now())
-
-  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }
 
-// ─────────────────────────────────────────
-// SOLICITUDES DE PLAN
-// ─────────────────────────────────────────
-
 model PlanRequest {
-  id         Int              @id @default(autoincrement())
+  id         Int               @id @default(autoincrement())
   providerId Int
-  plan       SubscriptionPlan  // Plan solicitado
+  plan       SubscriptionPlan
   status     PlanRequestStatus @default(PENDIENTE)
-  reason     String? // Motivo de rechazo (solo si RECHAZADO)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  reason     String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  provider   Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@index([status])
@@ -497,71 +275,51 @@ model PlanRequest {
   @@map("plan_requests")
 }
 
-// ─────────────────────────────────────────
-// RESEÑAS
-// ─────────────────────────────────────────
-
 model Review {
-  id         Int     @id @default(autoincrement())
-  providerId Int
-  userId     Int
-  rating     Int // 1 a 5
-  comment    String?
-  photoUrl   String? // Foto de evidencia (opcional si la subida falla)
-  isVisible  Boolean @default(true) // Admin puede ocultar
-
-  // Validación anti-fraude
-  // Opción A: GPS
+  id              Int           @id @default(autoincrement())
+  providerId      Int
+  userId          Int
+  rating          Int
+  comment         String?
+  photoUrl        String?
+  isVisible       Boolean       @default(true)
   userLatAtReview Float?
   userLngAtReview Float?
-  // Opción B: QR
   qrCodeUsed      String?
+  createdAt       DateTime      @default(now())
+  replies         ReviewReply[]
+  provider        Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-
-  provider Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  replies  ReviewReply[]
-
-  @@index([providerId, isVisible]) // listado de reseñas de un proveedor
+  @@index([providerId, isVisible])
   @@map("reviews")
 }
 
 model ReviewReply {
   id        Int      @id @default(autoincrement())
   reviewId  Int
-  userId    Int // Quien escribió la respuesta
+  userId    Int
   content   String
   photoUrl  String?
   createdAt DateTime @default(now())
-
-  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@map("review_replies")
 }
-
-// ─────────────────────────────────────────
-// FAVORITOS
-// ─────────────────────────────────────────
 
 model Favorite {
   id         Int      @id @default(autoincrement())
   userId     Int
   providerId Int
   createdAt  DateTime @default(now())
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, providerId]) // Un usuario no puede favoritear dos veces el mismo
+  @@unique([userId, providerId])
   @@map("favorites")
 }
-
-// ─────────────────────────────────────────
-// VERIFICACIÓN DOCUMENTAL
-// ─────────────────────────────────────────
 
 model VerificationDoc {
   id         Int                 @id @default(autoincrement())
@@ -570,98 +328,66 @@ model VerificationDoc {
   fileUrl    String
   status     VerificationStatus  @default(PENDIENTE)
   reviewedAt DateTime?
-  notes      String? // Notas del admin al revisar
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  notes      String?
+  provider   Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("verification_docs")
 }
-
-// ─────────────────────────────────────────
-// ANALYTICS (clics en WhatsApp, llamadas)
-// ─────────────────────────────────────────
 
 model ProviderAnalytic {
   id         Int           @id @default(autoincrement())
   providerId Int
   eventType  AnalyticEvent
-  userId     Int? // Puede ser anónimo
+  userId     Int?
   createdAt  DateTime      @default(now())
+  provider   Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-
-  @@index([providerId, eventType]) // conteo de clics por tipo
-  @@index([providerId, eventType, createdAt]) // dashboard: evento × rango de fechas
-  @@index([createdAt]) // filtros por rango de fechas en analytics
+  @@index([providerId, eventType])
+  @@index([providerId, eventType, createdAt])
+  @@index([createdAt])
   @@map("provider_analytics")
-}
-
-// ─────────────────────────────────────────
-// NOTIFICACIONES DEL ADMIN A PROVEEDORES
-// ─────────────────────────────────────────
-
-enum NotificationType {
-  APROBADO
-  RECHAZADO
-  MAS_INFO
-  VERIFICACION_REVOCADA
-  PLAN_SOLICITADO
-  PLAN_APROBADO
-  PLAN_RECHAZADO
 }
 
 model AdminNotification {
   id                Int              @id @default(autoincrement())
   providerId        Int
   type              NotificationType
-  title             String           @default("")
   message           String
   isRead            Boolean          @default(false)
-  targetUserId      Int? // Para filtro en tiempo real
-  targetProfileType String? // OFICIO | NEGOCIO — aísla notif por tipo de perfil
   sentAt            DateTime         @default(now())
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  targetProfileType String?
+  targetUserId      Int?
+  title             String           @default("")
+  provider          Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId, isRead])
   @@map("admin_notifications")
 }
-
-// ─────────────────────────────────────────
-// RECOMENDACIONES
-// ─────────────────────────────────────────
 
 model Recommendation {
   id         Int      @id @default(autoincrement())
   userId     Int
   providerId Int
   createdAt  DateTime @default(now())
-
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, providerId])
   @@index([providerId])
   @@map("recommendations")
 }
 
-// ─────────────────────────────────────────
-// REPORTES DE PROVEEDORES (por clientes)
-// ─────────────────────────────────────────
-
 model ProviderReport {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   providerId  Int
-  userId      Int // Cliente que reporta
+  userId      Int
   reason      ReportReason
-  description String? // Detalle adicional opcional
-  isReviewed  Boolean  @default(false) // Admin lo revisó
-  createdAt   DateTime @default(now())
+  description String?
+  isReviewed  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  provider    Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Un cliente reporta un proveedor como máximo una vez
   @@unique([userId, providerId])
   @@index([providerId])
   @@index([isReviewed])
@@ -674,61 +400,42 @@ model PlatformIssue {
   description String
   isReviewed  Boolean  @default(false)
   createdAt   DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([isReviewed])
   @@map("platform_issues")
 }
 
-// ─────────────────────────────────────────
-// VALIDACIÓN DE CONFIANZA
-// ─────────────────────────────────────────
-
 model TrustValidationRequest {
-  id         Int @id @default(autoincrement())
-  providerId Int
-
-  // Campos comunes
-  status TrustStatus @default(PENDING)
-
-  // Datos del formulario — OFICIO (profesional independiente)
-  dniNumber        String? // Número de DNI (8 dígitos)
-  dniFirstName     String? // Nombre tal como aparece en el DNI
-  dniLastName      String? // Apellido tal como aparece en el DNI
-  dniAddress       String? // Dirección registrada en el DNI
-  dniPhotoFrontUrl String? // Foto frontal del DNI (cámara)
-  dniPhotoBackUrl  String? // Foto posterior del DNI (cámara)
-  selfieWithDniUrl String? // Selfie sosteniendo el DNI (cámara)
-
-  // Campos adicionales — NEGOCIO
-  rucNumber         String? // RUC del negocio (11 dígitos)
-  businessAddress   String? // Dirección física del establecimiento
-  businessPhotoUrl  String? // Foto del frente del local (cámara)
-  businessPhoto2Url String? // Segunda foto del local (interior u otro ángulo)
-  ownerDniPhotoUrl  String? // Foto del DNI del titular del negocio
-
-  // Revisión por el administrador
+  id                Int         @id @default(autoincrement())
+  providerId        Int
+  status            TrustStatus @default(PENDING)
+  dniNumber         String?
+  dniFirstName      String?
+  dniLastName       String?
+  dniAddress        String?
+  dniPhotoFrontUrl  String?
+  dniPhotoBackUrl   String?
+  selfieWithDniUrl  String?
+  rucNumber         String?
+  businessAddress   String?
+  businessPhotoUrl  String?
+  ownerDniPhotoUrl  String?
   rejectionReason   String?
   reviewedByAdminId Int?
   reviewedAt        DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  businessPhoto2Url String?
+  provider          Provider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([providerId])
   @@map("trust_validation_requests")
 }
 
-// ─────────────────────────────────────────
-// SUBASTA OficioApp
-// ─────────────────────────────────────────
-
 model ServiceRequest {
-  id             Int                  @id @default(autoincrement())
+  id             Int                       @id @default(autoincrement())
   userId         Int
   categoryId     Int
   description    String
@@ -741,41 +448,41 @@ model ServiceRequest {
   department     String?
   province       String?
   district       String?
-  status         ServiceRequestStatus @default(OPEN)
-  maxOffers      Int                  @default(5)
-  notifyRadiusKm Float                @default(5)
+  status         ServiceRequestStatus      @default(OPEN)
+  maxOffers      Int                       @default(5)
+  notifyRadiusKm Float                     @default(5)
   expiresAt      DateTime
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category Category @relation(fields: [categoryId], references: [id])
-  offers   Offer[]
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  location_geog  Unsupported("geography")? @default(dbgenerated("\nCASE\n    WHEN ((latitude IS NOT NULL) AND (longitude IS NOT NULL)) THEN (st_setsrid(st_makepoint(longitude, latitude), 4326))::geography\n    ELSE NULL::geography\nEND"))
+  offers         Offer[]
+  category       Category                  @relation(fields: [categoryId], references: [id])
+  user           User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([userId, status]) // "mis solicitudes activas"
+  @@index([userId, status])
   @@index([status])
   @@index([categoryId])
   @@index([status, categoryId, expiresAt])
   @@index([status, expiresAt])
+  @@index([location_geog], map: "service_requests_location_geog_gist", type: Gist, where: raw("(location_geog IS NOT NULL)"))
   @@map("service_requests")
 }
 
 model Offer {
-  id               Int         @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   serviceRequestId Int
   providerId       Int
   price            Float
   message          String
-  status           OfferStatus @default(PENDING)
+  status           OfferStatus    @default(PENDING)
   arrivedAt        DateTime?
   arrivedLat       Float?
   arrivedLng       Float?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-
-  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  provider       Provider       @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  provider         Provider       @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
 
   @@unique([serviceRequestId, providerId])
   @@index([serviceRequestId])
@@ -784,17 +491,13 @@ model Offer {
   @@map("offers")
 }
 
-// ─────────────────────────────────────────
-// PAGOS YAPE (voucher manual)
-// ─────────────────────────────────────────
-
 model YapePayment {
   id                Int               @id @default(autoincrement())
   providerId        Int
   plan              SubscriptionPlan
   amount            Float
   voucherUrl        String
-  verificationCode  String // 3 dígitos
+  verificationCode  String
   note              String?
   status            YapePaymentStatus @default(PENDING)
   rejectionReason   String?
@@ -802,8 +505,7 @@ model YapePayment {
   reviewedAt        DateTime?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-
-  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider          Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@index([status])
@@ -817,15 +519,10 @@ model UserPenalty {
   blockedUntil DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_penalties")
 }
-
-// ─────────────────────────────────────────────────────────────
-// SISTEMA DE REFERIDOS Y MONEDAS
-// ─────────────────────────────────────────────────────────────
 
 /// Código único personal de cada usuario para invitar a otros.
 /// Se genera bajo demanda (8 caracteres alfanuméricos).
@@ -833,11 +530,10 @@ model ReferralCode {
   id                Int      @id @default(autoincrement())
   userId            Int      @unique
   code              String   @unique
-  totalInvites      Int      @default(0) // Veces que su código fue aplicado
-  successfulInvites Int      @default(0) // Referidos que llegaron a APPROVED
+  totalInvites      Int      @default(0)
+  successfulInvites Int      @default(0)
   createdAt         DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([code])
   @@map("referral_codes")
@@ -849,43 +545,35 @@ model ReferralCode {
 model Referral {
   id                  Int            @id @default(autoincrement())
   inviterId           Int
-  invitedUserId       Int            @unique // Cada usuario solo puede ser invitado una vez
+  invitedUserId       Int            @unique
   invitedProviderId   Int?           @unique
   status              ReferralStatus @default(PENDING)
-  coinsAwarded        Int            @default(0) // Monedas dadas al inviter
-  invitedCoinsAwarded Int            @default(0) // Monedas de bienvenida al invitado
+  coinsAwarded        Int            @default(0)
+  invitedCoinsAwarded Int            @default(0)
   createdAt           DateTime       @default(now())
   approvedAt          DateTime?
-
-  inviter         User      @relation("ReferralInviter", fields: [inviterId], references: [id], onDelete: Cascade)
-  invitedUser     User      @relation("ReferralInvited", fields: [invitedUserId], references: [id], onDelete: Cascade)
-  invitedProvider Provider? @relation("ReferralInvitedProvider", fields: [invitedProviderId], references: [id], onDelete: SetNull)
+  invitedProvider     Provider?      @relation("ReferralInvitedProvider", fields: [invitedProviderId], references: [id])
+  invitedUser         User           @relation("ReferralInvited", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  inviter             User           @relation("ReferralInviter", fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@index([inviterId])
   @@index([status])
   @@map("referrals")
 }
 
-enum ReferralStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
 /// Servicios canjeables creados por el admin: un proveedor ofrece un
 /// servicio que los usuarios pueden adquirir gastando monedas.
 model ReferralReward {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   providerId  Int
   title       String
   description String
   coinsCost   Int
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  provider    Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   redemptions CoinRedemption[]
+  provider    Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([isActive])
   @@index([providerId])
@@ -897,46 +585,27 @@ model CoinRedemption {
   id         Int               @id @default(autoincrement())
   userId     Int
   rewardId   Int?
-  plan       SubscriptionPlan? // null = canje por recompensa, no plan
+  plan       SubscriptionPlan?
   coinsSpent Int
   status     RedemptionStatus  @default(PENDING)
   createdAt  DateTime          @default(now())
-
-  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reward ReferralReward? @relation(fields: [rewardId], references: [id], onDelete: SetNull)
+  reward     ReferralReward?   @relation(fields: [rewardId], references: [id])
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@map("coin_redemptions")
 }
 
-enum RedemptionStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
-}
-
-
-// ─────────────────────────────────────────
-// CHAT INTERNO
-// ─────────────────────────────────────────
-
-enum MessageStatus {
-  SENT       // Llegó al servidor
-  DELIVERED  // Llegó al dispositivo del receptor
-  READ       // El receptor lo leyó
-}
-
 model ChatRoom {
   id         Int           @id @default(autoincrement())
   clientId   Int
   providerId Int
+  createdAt  DateTime      @default(now())
+  messages   ChatMessage[]
   client     User          @relation("ClientChats", fields: [clientId], references: [id], onDelete: Cascade)
   provider   Provider      @relation("ProviderChats", fields: [providerId], references: [id], onDelete: Cascade)
-  messages   ChatMessage[]
-  createdAt  DateTime      @default(now())
 
-  // Una sala única por (cliente, proveedor) — idempotencia a nivel BD
   @@unique([clientId, providerId])
   @@index([clientId, providerId])
   @@map("chat_rooms")
@@ -945,50 +614,43 @@ model ChatRoom {
 model ChatMessage {
   id         Int           @id @default(autoincrement())
   chatRoomId Int
-  senderId   Int           // ID del User que envía
+  senderId   Int
   content    String
   status     MessageStatus @default(SENT)
   createdAt  DateTime      @default(now())
-
-  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  chatRoom   ChatRoom      @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
 
   @@index([chatRoomId, createdAt])
   @@map("chat_messages")
 }
 
-// ─────────────────────────────────────────
-// OFERTAS DE PROVEEDORES (publicaciones)
-// ─────────────────────────────────────────
-
 /// Límites por plan: GRATIS=1 activa/12h, ESTANDAR=4/24h, PREMIUM=8/72h
 model OfferPost {
-  id          Int      @id @default(autoincrement())
+  id          Int                 @id @default(autoincrement())
   providerId  Int
-  title       String   // Título corto de la oferta
-  description String   // Descripción detallada
-  price       Float?   // Precio opcional (null = "consultar")
-  photoUrl    String?  // Imagen de la oferta (opcional)
-  expiresAt   DateTime // Calculado según plan al crear
-  isActive    Boolean  @default(true) // false cuando expira o el proveedor la elimina
-  createdAt   DateTime @default(now())
-
-  provider   Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  categories OfferPostCategory[]
-  reports    OfferReport[]
+  title       String
+  description String
+  price       Float?
+  photoUrl    String?
+  expiresAt   DateTime
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  categories  OfferPostCategory[]
+  provider    Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  reports     OfferReport[]
 
   @@index([providerId, isActive])
-  @@index([isActive, expiresAt]) // para el cronjob de expiración
+  @@index([isActive, expiresAt])
   @@map("offer_posts")
 }
 
 /// Categorías asignadas a una oferta (heredadas de las categorías del proveedor)
 model OfferPostCategory {
-  id          Int @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   offerPostId Int
   categoryId  Int
-
-  offerPost OfferPost @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
-  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  offerPost   OfferPost @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
 
   @@unique([offerPostId, categoryId])
   @@index([offerPostId])
@@ -1000,16 +662,164 @@ model OfferPostCategory {
 model OfferReport {
   id          Int               @id @default(autoincrement())
   offerPostId Int
-  reporterId  Int               // userId del cliente que reporta
+  reporterId  Int
   reason      OfferReportReason
   createdAt   DateTime          @default(now())
   isResolved  Boolean           @default(false)
+  offerPost   OfferPost         @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
+  reporter    User              @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
-  offerPost OfferPost @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
-  reporter  User      @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-
-  @@unique([offerPostId, reporterId]) // un cliente reporta una oferta max una vez
+  @@unique([offerPostId, reporterId])
   @@index([offerPostId])
   @@index([isResolved])
   @@map("offer_reports")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+enum UserRole {
+  USUARIO
+  PROVEEDOR
+  ADMIN
+}
+
+enum AvailabilityStatus {
+  DISPONIBLE
+  OCUPADO
+  CON_DEMORA
+}
+
+enum SubscriptionPlan {
+  GRATIS
+  ESTANDAR
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVA
+  VENCIDA
+  CANCELADA
+  GRACIA
+}
+
+enum ProviderType {
+  OFICIO
+  NEGOCIO
+}
+
+enum VerificationStatus {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+enum ServiceRequestStatus {
+  OPEN
+  CLOSED
+  EXPIRED
+  CANCELLED
+  AWARDED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum YapePaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TrustStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum LocalitySource {
+  SEED
+  USER
+  ADMIN
+}
+
+enum PlanRequestStatus {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+enum ReportReason {
+  INFORMACION_FALSA
+  COMPORTAMIENTO
+  FRAUDE
+  FOTO_INAPROPIADA
+  NO_PRESTO
+  OTRO
+}
+
+enum AnalyticEvent {
+  whatsapp_click
+  call_click
+  view
+  profile_view
+  favorite_add
+}
+
+enum VerificationDocType {
+  dni
+  antecedentes
+  certificado
+}
+
+enum PaymentMethod {
+  yape
+  bcp_deposito
+  mercadopago
+}
+
+enum OfferReportReason {
+  SPAM
+  PRECIO_FALSO
+  CONTENIDO_INAPROPIADO
+  OTRO
+}
+
+enum NotificationType {
+  APROBADO
+  RECHAZADO
+  MAS_INFO
+  VERIFICACION_REVOCADA
+  PLAN_SOLICITADO
+  PLAN_APROBADO
+  PLAN_RECHAZADO
+}
+
+enum ReferralStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RedemptionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
 }

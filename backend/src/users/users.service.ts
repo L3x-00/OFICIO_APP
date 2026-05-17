@@ -154,10 +154,24 @@ export class UsersService {
   }
 
   // ── GUARDAR TOKEN FCM ────────────────────────────────────
+  //
+  // El token FCM es UNIQUE en BD (migración 20260518100000). Si otro
+  // user tenía este token (cambio de cuenta en mismo device sin que el
+  // clearToken anterior haya alcanzado a correr), lo "robamos" en
+  // una transacción: NULL en el viejo + SET en el nuevo. Evita el
+  // leak de push notifications cross-user.
   async saveFcmToken(userId: number, token: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { fcmToken: token },
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Liberar el token de cualquier otro user que lo tuviera.
+      await tx.user.updateMany({
+        where: { fcmToken: token, id: { not: userId } },
+        data:  { fcmToken: null },
+      });
+      // 2. Asignarlo al user actual.
+      await tx.user.update({
+        where: { id: userId },
+        data:  { fcmToken: token },
+      });
     });
     return { success: true };
   }

@@ -1,0 +1,23 @@
+-- users.fcmToken UNIQUE — un token FCM solo puede pertenecer a UN user.
+--
+-- BUG cubierto: si user A cierra sesión en un dispositivo y user B
+-- inicia sesión en el mismo, ambos rows quedaban con el mismo token
+-- si el clearToken del logout falló (sin red, etc.). Cualquier push
+-- para A iba al dispositivo del nuevo user B → leak de notificaciones.
+--
+-- PRE-CHECK: si hay duplicados existentes el ALTER falla.
+--   SELECT "fcmToken", count(*) FROM users
+--   WHERE "fcmToken" IS NOT NULL
+--   GROUP BY "fcmToken" HAVING count(*) > 1;
+-- Si retorna filas: limpiar TODOS menos el más reciente:
+--   UPDATE users SET "fcmToken" = NULL
+--   WHERE id NOT IN (
+--     SELECT DISTINCT ON ("fcmToken") id
+--     FROM users WHERE "fcmToken" IS NOT NULL
+--     ORDER BY "fcmToken", "updatedAt" DESC
+--   ) AND "fcmToken" IS NOT NULL;
+--
+-- Nota Postgres: NULLs son distintos en UNIQUE, así que múltiples rows
+-- con fcmToken IS NULL coexisten sin problema.
+
+CREATE UNIQUE INDEX "users_fcmToken_key" ON "users"("fcmToken");
