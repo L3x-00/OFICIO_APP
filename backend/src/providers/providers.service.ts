@@ -251,9 +251,12 @@ export class ProvidersService {
   }
 
   // ── REGISTRAR ANALYTIC (click WhatsApp, llamada) ─────────
+  // `eventType` se valida via DTO con @IsEnum contra los valores
+  // permitidos de AnalyticEvent — el cast a `any` aquí solo
+  // satisface al type checker porque Prisma ahora exige el enum.
   async trackEvent(providerId: number, eventType: string, userId?: number) {
     return this.prisma.providerAnalytic.create({
-      data: { providerId, eventType, userId },
+      data: { providerId, eventType: eventType as any, userId },
     });
   }
 
@@ -306,7 +309,7 @@ export class ProvidersService {
         data: {
           providerId:  data.providerId,
           userId:      data.userId,
-          reason:      data.reason,
+          reason:      data.reason as any,
           description: data.description,
         },
       });

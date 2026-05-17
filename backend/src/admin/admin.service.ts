@@ -1200,7 +1200,7 @@ async updateProvider(
 
   async getPlanRequests(status?: string) {
     return this.prisma.planRequest.findMany({
-      where: status ? { status } : undefined,
+      where: status ? { status: status as any } : undefined,
       orderBy: { createdAt: 'desc' },
       include: {
         provider: {

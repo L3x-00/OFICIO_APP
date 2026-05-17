@@ -346,7 +346,7 @@ export class ReferralsService {
           });
         }
         return tx.coinRedemption.create({
-          data: { userId, plan: upper, coinsSpent: cost, status: 'COMPLETED' },
+          data: { userId, plan: upper as any, coinsSpent: cost, status: 'COMPLETED' },
         });
       });
 

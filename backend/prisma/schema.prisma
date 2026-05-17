@@ -190,6 +190,64 @@ enum LocalitySource {
   ADMIN // Añadida desde el panel administrador
 }
 
+// Status del PlanRequest. Antes era String suelto.
+enum PlanRequestStatus {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+// Razones de reporte sobre un Provider. Antes String suelto sin
+// validación a nivel BD.
+enum ReportReason {
+  INFORMACION_FALSA
+  COMPORTAMIENTO
+  FRAUDE
+  FOTO_INAPROPIADA
+  NO_PRESTO
+  OTRO
+}
+
+// Tipos de evento de analytics de Provider. Valores en lowercase para
+// compatibilidad con el FE/services que ya los emiten así.
+//
+// NOTA: hay inconsistencia legacy entre el código (usa 'view') y el
+// comentario original del schema (decía 'profile_view'). Acepto ambos
+// hasta que se unifique. Auditar via:
+//   SELECT DISTINCT "eventType" FROM provider_analytics;
+// y consolidar a uno solo.
+enum AnalyticEvent {
+  whatsapp_click
+  call_click
+  view
+  profile_view
+  favorite_add
+}
+
+// Tipos de documento del flujo de verificación. Lowercase histórico.
+enum VerificationDocType {
+  dni
+  antecedentes
+  certificado
+}
+
+// Métodos de pago aceptados. Antes String — permite inyección de
+// 'paypal', 'crypto', etc. sin que la BD lo detecte.
+enum PaymentMethod {
+  yape
+  bcp_deposito
+  mercadopago
+}
+
+// Razones de reporte sobre un OfferPost. DTO ya valida con @IsIn —
+// esto refuerza a nivel BD.
+enum OfferReportReason {
+  SPAM
+  PRECIO_FALSO
+  CONTENIDO_INAPROPIADO
+  OTRO
+}
+
 // ─────────────────────────────────────────
 // CATEGORÍAS
 // ─────────────────────────────────────────
@@ -368,14 +426,14 @@ model Subscription {
 }
 
 model Payment {
-  id             Int       @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   subscriptionId Int
   amount         Float
-  currency       String    @default("PEN")
-  method         String // "yape", "bcp_deposito", etc.
+  currency       String        @default("PEN")
+  method         PaymentMethod
   reference      String? // Número de operación
   confirmedAt    DateTime?
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime      @default(now())
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
@@ -389,8 +447,8 @@ model Payment {
 model PlanRequest {
   id         Int              @id @default(autoincrement())
   providerId Int
-  plan       SubscriptionPlan // Plan solicitado
-  status     String           @default("PENDIENTE") // PENDIENTE | APROBADO | RECHAZADO
+  plan       SubscriptionPlan  // Plan solicitado
+  status     PlanRequestStatus @default(PENDIENTE)
   reason     String? // Motivo de rechazo (solo si RECHAZADO)
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
@@ -470,11 +528,11 @@ model Favorite {
 // ─────────────────────────────────────────
 
 model VerificationDoc {
-  id         Int                @id @default(autoincrement())
+  id         Int                 @id @default(autoincrement())
   providerId Int
-  docType    String // "dni", "antecedentes", "certificado"
+  docType    VerificationDocType
   fileUrl    String
-  status     VerificationStatus @default(PENDIENTE)
+  status     VerificationStatus  @default(PENDIENTE)
   reviewedAt DateTime?
   notes      String? // Notas del admin al revisar
 
@@ -488,11 +546,11 @@ model VerificationDoc {
 // ─────────────────────────────────────────
 
 model ProviderAnalytic {
-  id         Int      @id @default(autoincrement())
+  id         Int           @id @default(autoincrement())
   providerId Int
-  eventType  String // "whatsapp_click", "call_click", "profile_view", "favorite_add"
+  eventType  AnalyticEvent
   userId     Int? // Puede ser anónimo
-  createdAt  DateTime @default(now())
+  createdAt  DateTime      @default(now())
 
   provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
@@ -558,7 +616,7 @@ model ProviderReport {
   id          Int      @id @default(autoincrement())
   providerId  Int
   userId      Int // Cliente que reporta
-  reason      String // INFORMACION_FALSA | COMPORTAMIENTO | FRAUDE | FOTO_INAPROPIADA | NO_PRESTO | OTRO
+  reason      ReportReason
   description String? // Detalle adicional opcional
   isReviewed  Boolean  @default(false) // Admin lo revisó
   createdAt   DateTime @default(now())
@@ -798,13 +856,13 @@ model ReferralReward {
 
 /// Canje de monedas: o por un plan (ESTANDAR/PREMIUM) o por una recompensa.
 model CoinRedemption {
-  id         Int              @id @default(autoincrement())
+  id         Int               @id @default(autoincrement())
   userId     Int
   rewardId   Int?
-  plan       String? // 'ESTANDAR' | 'PREMIUM' (string libre por flexibilidad)
+  plan       SubscriptionPlan? // null = canje por recompensa, no plan
   coinsSpent Int
-  status     RedemptionStatus @default(PENDING)
-  createdAt  DateTime         @default(now())
+  status     RedemptionStatus  @default(PENDING)
+  createdAt  DateTime          @default(now())
 
   user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   reward ReferralReward? @relation(fields: [rewardId], references: [id], onDelete: SetNull)
@@ -902,12 +960,12 @@ model OfferPostCategory {
 
 /// Reportes de clientes sobre ofertas inapropiadas
 model OfferReport {
-  id          Int      @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   offerPostId Int
-  reporterId  Int      // userId del cliente que reporta
-  reason      String   // SPAM | PRECIO_FALSO | CONTENIDO_INAPROPIADO | OTRO
-  createdAt   DateTime @default(now())
-  isResolved  Boolean  @default(false)
+  reporterId  Int               // userId del cliente que reporta
+  reason      OfferReportReason
+  createdAt   DateTime          @default(now())
+  isResolved  Boolean           @default(false)
 
   offerPost OfferPost @relation(fields: [offerPostId], references: [id], onDelete: Cascade)
   reporter  User      @relation(fields: [reporterId], references: [id], onDelete: Cascade)

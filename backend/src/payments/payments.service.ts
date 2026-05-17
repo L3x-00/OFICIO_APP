@@ -111,10 +111,6 @@ export class PaymentsService {
   }
 
   // ── PROVEEDOR: historial ─────────────────────────────────────
-  // Antes filtraba `isVisible: true` y solo tomaba el primer provider
-  // del usuario — eso vaciaba el historial para perfiles PENDIENTE o
-  // RECHAZADO y para usuarios con doble perfil OFICIO+NEGOCIO. Ahora se
-  // listan los pagos de TODOS los provider IDs asociados al usuario.
   async getMyPayments(userId: number) {
     const providers = await this.prisma.provider.findMany({
       where: { userId },
@@ -155,7 +151,7 @@ export class PaymentsService {
         provider: {
           select: {
             userId: true,
-            type:   true, // necesario para `targetProfileType` del push
+            type:   true,
             subscription: { select: { id: true } },
           },
         },
@@ -226,9 +222,7 @@ export class PaymentsService {
       }
     });
 
-    // 5. Notificar al proveedor — `PLAN_APROBADO` dispara el modal de
-    // bienvenida con beneficios del plan en la app. El push asegura
-    // que llegue al device aunque la app esté en background/cerrada.
+    // 5. Notificar al proveedor
     const planLabel = payment.plan.charAt(0) + payment.plan.slice(1).toLowerCase();
     const title = '¡Pago aprobado con éxito!';
     const body  = `Tu plan ${planLabel} ha sido activado con éxito.`;
@@ -238,8 +232,6 @@ export class PaymentsService {
       title,
       body,
       targetUserId: payment.provider.userId,
-      // Plan exacto + tipo de perfil. El cliente usa `plan` para elegir
-      // el set de slides del carrousel (ESTANDAR vs PREMIUM).
       targetProfileType: payment.provider.type,
       plan:         payment.plan,
     });
@@ -326,5 +318,111 @@ export class PaymentsService {
     });
 
     return { success: true };
+  }
+
+  /**
+   * Activa una suscripción cuando se recibe un pago aprobado de MercadoPago.
+   * Reemplaza el flujo manual de Yape.
+   * 
+   * Flujo:
+   * 1. Busca el provider por userId.
+   * 2. Crea o actualiza la suscripción con plan y fecha de expiración.
+   * 3. Registra el pago en la tabla payments con el ID real de la suscripción.
+   * 4. Actualiza planPriority del provider para el ranking público.
+   * 5. Notifica al proveedor (WebSocket + Push) y al admin.
+   */
+  async activateSubscriptionFromPayment(params: {
+    userId: number;
+    plan: string; // 'ESTANDAR' | 'PREMIUM'
+    amount: number;
+    paymentMethod: string;
+    paymentId: string;
+    dateApproved: string;
+  }) {
+    const { userId, plan, amount, paymentMethod, paymentId, dateApproved } = params;
+
+    // 1. Buscar el provider por userId
+    const provider = await this.prisma.provider.findFirst({
+      where: { userId },
+      select: { id: true, businessName: true, type: true },
+    });
+
+    if (!provider) {
+      this.logger.error(`No se encontró provider para userId=${userId}`);
+      return;
+    }
+
+    // 2. Crear o actualizar la suscripción (guardamos la referencia)
+    const now = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
+
+    const subscription = await this.prisma.subscription.upsert({
+      where: { providerId: provider.id },
+      update: {
+        plan: plan as any,
+        status: 'ACTIVA',
+        startDate: now,
+        endDate,
+      },
+      create: {
+        providerId: provider.id,
+        plan: plan as any,
+        status: 'ACTIVA',
+        startDate: now,
+        endDate,
+      },
+    });
+
+    // 3. Registrar el pago con el ID real de la suscripción
+    await this.prisma.payment.create({
+      data: {
+        subscriptionId: subscription.id,
+        amount,
+        currency: 'PEN',
+        method: paymentMethod as any,
+        reference: paymentId,
+        confirmedAt: new Date(dateApproved),
+      },
+    });
+
+    // 4. Actualizar planPriority del provider
+    const planPriority = plan === 'PREMIUM' ? 1 : plan === 'ESTANDAR' ? 2 : 4;
+    await this.prisma.provider.update({
+      where: { id: provider.id },
+      data: { planPriority },
+    });
+
+    // 5. Notificar al proveedor (WebSocket + Push)
+    const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
+    const title = '¡Pago aprobado con éxito!';
+    const body = `Tu plan ${planLabel} ha sido activado con éxito.`;
+
+    this.events.emitNotification({
+      type: 'PLAN_APROBADO',
+      title,
+      body,
+      targetUserId: userId,
+      targetProfileType: provider.type,
+      plan: plan,
+    });
+
+    this.push.sendToUser(
+      userId,
+      title,
+      body,
+      { type: 'PLAN_APROBADO', plan: plan },
+    );
+
+    // Notificar al admin
+    this.events.emitAdminEvent('NEW_YAPE_PAYMENT', {
+      paymentId,
+      plan,
+      amount,
+      providerId: provider.id,
+      businessName: provider.businessName,
+    });
+
+    this.logger.log(`✅ Suscripción activada: providerId=${provider.id}, plan=${plan}`);
   }
 }

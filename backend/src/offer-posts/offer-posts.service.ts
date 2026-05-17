@@ -269,7 +269,7 @@ export class OfferPostsService {
   }
 
   // ── REPORTAR OFERTA ──────────────────────────────────────
-  async reportOffer(userId: number, offerId: number, reason: string) {
+  async reportOffer(userId: number, offerId: number, reason: any) {
     const offer = await this.prisma.offerPost.findUnique({ where: { id: offerId } });
     if (!offer || !offer.isActive) throw new NotFoundException('Oferta no encontrada');
 
