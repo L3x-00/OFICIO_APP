@@ -10,6 +10,8 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 import { SubmitYapeDto } from './dto/submit-yape.dto.js';
+import { MercadoPagoService } from './mercadopago/mercadopago.service.js';
+import type { PaidPlan } from './mercadopago/dto/create-preference.dto.js';
 
 const YapePaymentStatus = {
   PENDING:  'PENDING',
@@ -351,7 +353,7 @@ export class PaymentsService {
     plan: string; // 'ESTANDAR' | 'PREMIUM'
     /// Identifica a qué perfil aplicar el plan cuando el user tiene
     /// ambos (OFICIO + NEGOCIO). Undefined = pago legacy sin type en
-    /// el external_reference; cae al findFirst histórico (peor caso).
+    /// el external_reference; cae al findFirst histórico.
     providerType?: 'OFICIO' | 'NEGOCIO';
     amount: number;
     paymentMethod: string;
@@ -360,10 +362,39 @@ export class PaymentsService {
   }) {
     const { userId, plan, providerType, amount, paymentMethod, paymentId, dateApproved } = params;
 
+    // C-05: gate de idempotencia. MP reintenta el mismo webhook si
+    // tarda > 22s o falla. Sin esto, cada reintento renovaba endDate
+    // (robando días al user) y mandaba otra push notification.
+    // Payment.reference @unique también atrapa este caso a nivel BD
+    // — defensa en profundidad.
+    const existing = await this.prisma.payment.findFirst({
+      where: { reference: paymentId },
+      select: { id: true },
+    });
+    if (existing) {
+      this.logger.log(`Pago MP ${paymentId} ya procesado — skip (idempotencia)`);
+      return;
+    }
+
+    // C-03 (refuerzo): validar monto contra catálogo server-side antes
+    // de activar nada. Si el cliente hubiera bypasseado el DTO de
+    // create-preference, el webhook aún rechaza el pago tampered.
+    const validPlans: PaidPlan[] = ['ESTANDAR', 'PREMIUM'];
+    if (validPlans.includes(plan as PaidPlan)) {
+      const expected = MercadoPagoService.expectedPriceFor(plan as PaidPlan);
+      // Tolerancia 1% por redondeo / fees del procesador.
+      if (amount < expected * 0.99) {
+        this.logger.error(
+          `💸 Monto sospechoso: pagado=${amount}, esperado=${expected}, ` +
+          `userId=${userId}, plan=${plan}, paymentId=${paymentId}`,
+        );
+        // No activamos — el admin debe reconciliar manualmente.
+        return;
+      }
+    }
+
     // 1. Buscar el provider. Si vino providerType, lookup exacto via
-    //    @@unique([userId, type]). Si no (legacy), findFirst —
-    //    en users con OFICIO+NEGOCIO esto activa uno al azar (bug
-    //    A-02 de la auditoría; solo aplica a pagos en vuelo).
+    //    @@unique([userId, type]). Si no (legacy), findFirst.
     const provider = providerType
       ? await this.prisma.provider.findUnique({
           where: { userId_type: { userId, type: providerType as any } },
@@ -379,74 +410,93 @@ export class PaymentsService {
       return;
     }
 
-    // 2. Crear o actualizar la suscripción (guardamos la referencia)
+    // 2. Resolver fechas. A-03: 30 días exactos (en vez de setMonth+1
+    //    que pierde días en fin de mes: 31 ene → 28 feb).
     const now = new Date();
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
+    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    const subscription = await this.prisma.subscription.upsert({
-      where: { providerId: provider.id },
-      update: {
-        plan: plan as any,
-        status: 'ACTIVA',
-        startDate: now,
-        endDate,
-      },
-      create: {
-        providerId: provider.id,
-        plan: plan as any,
-        status: 'ACTIVA',
-        startDate: now,
-        endDate,
-      },
-    });
-
-    // 3. Registrar el pago con el ID real de la suscripción
-    await this.prisma.payment.create({
-      data: {
-        subscriptionId: subscription.id,
-        amount,
-        currency: 'PEN',
-        method: paymentMethod as any,
-        reference: paymentId,
-        confirmedAt: new Date(dateApproved),
-      },
-    });
-
-    // 4. Actualizar planPriority del provider
     const planPriority = plan === 'PREMIUM' ? 1 : plan === 'ESTANDAR' ? 2 : 4;
-    await this.prisma.provider.update({
-      where: { id: provider.id },
-      data: { planPriority },
-    });
 
-    // 5. Notificar al proveedor (WebSocket + Push)
+    // C-05 + A-04: TODO en una transacción atómica.
+    //   - Si llegan 2 webhooks simultáneos, el segundo falla con
+    //     P2002 en payment.create (reference @unique) → rollback
+    //     limpio, no se duplica nada.
+    //   - A-04: en UPDATE de subscription NO tocamos startDate
+    //     (preservar fecha original de inicio para analytics).
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.subscription.upsert({
+          where: { providerId: provider.id },
+          update: {
+            plan:   plan as any,
+            status: 'ACTIVA',
+            endDate,
+            // NO actualizar startDate en renovación
+          },
+          create: {
+            providerId: provider.id,
+            plan:       plan as any,
+            status:     'ACTIVA',
+            startDate:  now,
+            endDate,
+          },
+        });
+
+        // El upsert puede crear OR actualizar; necesitamos el id
+        // para Payment.subscriptionId.
+        const sub = await tx.subscription.findUniqueOrThrow({
+          where: { providerId: provider.id },
+          select: { id: true },
+        });
+
+        await tx.payment.create({
+          data: {
+            subscriptionId: sub.id,
+            amount,
+            currency:    'PEN',
+            method:      paymentMethod as any,
+            reference:   paymentId,   // @unique → idempotencia
+            confirmedAt: new Date(dateApproved),
+          },
+        });
+
+        await tx.provider.update({
+          where: { id: provider.id },
+          data:  { planPriority },
+        });
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        // Race condition: otro webhook simultáneo ganó la carrera.
+        this.logger.log(`Pago MP ${paymentId} ya procesado por race condition — skip`);
+        return;
+      }
+      throw e;
+    }
+
+    // 3. Notificaciones (fuera de la tx, no bloquean si fallan).
     const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
     const title = '¡Pago aprobado con éxito!';
-    const body = `Tu plan ${planLabel} ha sido activado con éxito.`;
+    const body  = `Tu plan ${planLabel} ha sido activado con éxito.`;
 
     this.events.emitNotification({
-      type: 'PLAN_APROBADO',
+      type:              'PLAN_APROBADO',
       title,
       body,
-      targetUserId: userId,
+      targetUserId:      userId,
       targetProfileType: provider.type,
-      plan: plan,
+      plan:              plan,
     });
 
-    this.push.sendToUser(
-      userId,
-      title,
-      body,
-      { type: 'PLAN_APROBADO', plan: plan },
-    );
+    this.push.sendToUser(userId, title, body, { type: 'PLAN_APROBADO', plan });
 
-    // Notificar al admin
-    this.events.emitAdminEvent('NEW_YAPE_PAYMENT', {
+    // M-03: admin event correcto (antes usaba NEW_YAPE_PAYMENT — el
+    // panel admin mostraba pagos MP como si fueran Yape).
+    this.events.emitAdminEvent('NEW_MP_PAYMENT', {
       paymentId,
       plan,
       amount,
-      providerId: provider.id,
+      providerId:   provider.id,
       businessName: provider.businessName,
     });
 
