@@ -262,6 +262,18 @@ class _PlanCard extends StatelessWidget {
                                   Uri.parse(url),
                                   mode: LaunchMode.externalApplication,
                                 );
+                                // M-01: tras volver del navegador, polling
+                                // de 1min al dashboard. El WS también
+                                // notifica pero esto cubre desconexiones.
+                                if (context.mounted) {
+                                  // Capturar el read antes del await async
+                                  final dashProv = context.read<DashboardProvider>();
+                                  await payProv.pollMercadoPagoCompletion(
+                                    refresh: () => dashProv.loadDashboard(),
+                                    currentPlan: () =>
+                                        dashProv.profile?.subscription?.plan ?? 'GRATIS',
+                                  );
+                                }
                               } else if (payProv.error != null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(

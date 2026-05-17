@@ -129,4 +129,26 @@ class PaymentsProvider extends ChangeNotifier {
     _mpLoading = false;
     notifyListeners();
   }
+
+  /// Polling temporal después de que el usuario vuelve de MercadoPago.
+  /// Cada 5s × 1min refresca el dashboard hasta que el plan aparezca
+  /// como ESTANDAR/PREMIUM (= webhook llegó y activó la suscripción).
+  ///
+  /// El WS de PLAN_APROBADO también dispara refresh — esto es el
+  /// fallback para usuarios con WS desconectado, app en background
+  /// durante el pago, o webhook con latencia.
+  ///
+  /// La función `refresh` se inyecta para no acoplar este provider
+  /// con DashboardProvider (lo provee el call-site).
+  Future<void> pollMercadoPagoCompletion({
+    required Future<void> Function() refresh,
+    required String Function() currentPlan,
+  }) async {
+    for (int i = 0; i < 12; i++) {
+      await Future<void>.delayed(const Duration(seconds: 5));
+      await refresh();
+      final plan = currentPlan();
+      if (plan == 'ESTANDAR' || plan == 'PREMIUM') return;
+    }
+  }
 }
