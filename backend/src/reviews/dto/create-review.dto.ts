@@ -81,10 +81,10 @@ export class UpdateReviewDto {
 }
 
 export class CreateReviewReplyDto {
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  userId: number;
+  // userId NO se acepta del cliente — el controller lo inyecta desde
+  // el JWT validado. Aceptarlo en el body sería IDOR (responder a
+  // reseñas en nombre de otro usuario).
+  userId?: number;
 
   @IsString()
   @MaxLength(1000)

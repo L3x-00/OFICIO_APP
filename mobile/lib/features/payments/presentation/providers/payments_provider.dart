@@ -87,4 +87,32 @@ class PaymentsProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+  String? _mpInitPoint;
+  String? get mpInitPoint => _mpInitPoint;
+  bool _mpLoading = false;
+  bool get mpLoading => _mpLoading;
+
+  Future<void> payWithMercadoPago({
+    required String plan,
+    required double price,
+    required String description,
+  }) async {
+    _mpLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _mpInitPoint = await _repo.createMercadoPagoPreference(
+        plan: plan,
+        price: price,
+        description: description,
+      );
+    } catch (e) {
+      _error = 'No se pudo iniciar el pago con MercadoPago';
+      _mpInitPoint = null;
+    }
+
+    _mpLoading = false;
+    notifyListeners();
+  }
 }

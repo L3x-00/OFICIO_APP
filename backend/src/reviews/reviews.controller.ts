@@ -77,13 +77,21 @@ export class ReviewsController {
     return this.reviewsService.moderate(id, body.isVisible);
   }
 
-  // POST /reviews/:id/replies — Responder una reseña
+  // POST /reviews/:id/replies — Responder una reseña.
+  // userId del JWT — antes venía del body y permitía responder en
+  // nombre de otro usuario.
   @Post(':id/replies')
+  @UseGuards(JwtAuthGuard)
   createReply(
+    @Request() req: any,
     @Param('id', ParseIntPipe) id: number,
     @Body() body: CreateReviewReplyDto,
   ) {
-    return this.reviewsService.createReply({ reviewId: id, ...body });
+    return this.reviewsService.createReply({
+      reviewId: id,
+      ...body,
+      userId: req.user.userId,
+    });
   }
 
   // GET /reviews/:id/replies — Listar respuestas de una reseña
@@ -98,8 +106,10 @@ export class ReviewsController {
     return this.reviewsService.generateQrCode(providerId);
   }
 
-  // POST /reviews/qr/validate — Validar código QR escaneado
+  // POST /reviews/qr/validate — Validar código QR escaneado.
+  // Sin guard cualquier atacante podía enumerar códigos QR brute-force.
   @Post('qr/validate')
+  @UseGuards(JwtAuthGuard)
   validateQr(@Body() body: ValidateQrDto) {
     return this.reviewsService.validateQrCode(body.providerId, body.code);
   }

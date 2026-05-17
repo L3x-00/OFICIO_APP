@@ -42,7 +42,10 @@ class FavoritesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.get('/favorites/$_userId');
+      // userId va en el JWT (el backend lo extrae del token desde el
+      // fix IDOR). Antes pasaba por path y permitía enumerar favoritos
+      // ajenos.
+      final response = await _dio.get('/favorites');
       final list = response.data as List;
 
       _favorites = list
@@ -78,7 +81,7 @@ class FavoritesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _dio.post('/favorites/$_userId/$providerId');
+      await _dio.post('/favorites/$providerId');
 
       // Si se agregó, recargar para tener los datos completos
       if (!wasAdded) {

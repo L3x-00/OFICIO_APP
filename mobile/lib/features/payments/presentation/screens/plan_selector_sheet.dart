@@ -4,10 +4,13 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
 import 'yape_payment_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../payments/presentation/providers/payments_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 const _kPlanPrices = {
   'ESTANDAR': 19.90,
-  'PREMIUM':  29.90,
+  'PREMIUM':  39.90,
 };
 
 const _kPlanFeatures = {
@@ -226,8 +229,76 @@ class _PlanCard extends StatelessWidget {
                 ],
               )).toList(),
             ),
-            if (!isFree) ...[
+                        if (!isFree) ...[
               const SizedBox(height: 14),
+
+              // ── Botón MercadoPago ───────────────────────
+              Consumer<PaymentsProvider>(
+                builder: (_, payProv, __) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      onPressed: (isCurrent || payProv.mpLoading)
+                          ? null
+                          : () async {
+                              final auth = context.read<AuthProvider>();
+                              if (auth.user == null) return;
+
+                              await payProv.payWithMercadoPago(
+                                plan: planKey,
+                                price: price!,
+                                description: 'Plan $label - Servi',
+                              );
+
+                              if (!context.mounted) return;
+                              final url = payProv.mpInitPoint;
+                              if (url != null) {
+                                await launchUrl(
+                                  Uri.parse(url),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } else if (payProv.error != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(payProv.error!),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      icon: payProv.mpLoading
+                          ? const SizedBox(
+                              width: 16, height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.payment_rounded, size: 18),
+                      label: Text(
+                        payProv.mpLoading
+                            ? 'Conectando...'
+                            : isCurrent
+                                ? 'Plan actual'
+                                : 'Pagar con MercadoPago',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isCurrent
+                            ? null
+                            : const Color(0xFF009EE3),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 8),
+
+              // ── Botón Yape ─────────────────────────────
               SizedBox(
                 width: double.infinity,
                 height: 44,
