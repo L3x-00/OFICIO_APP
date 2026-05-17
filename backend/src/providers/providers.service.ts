@@ -64,17 +64,17 @@ export class ProvidersService {
       where.localityId = localityId;
     }
 
-    // Filtro de ubicación estructurado (jerarquía: departamento → provincia → distrito).
+    // Filtro de ubicación estructurado (jerarquía: dept → prov → dist).
     //
-    // Postgres `mode: 'insensitive'` ignora mayúsculas pero NO acentos, así que
-    // "Junín" != "Junin" aunque ambas vinieran del mismo lugar. El geocoder
-    // Nominatim y los catálogos pueden divergir en tildes, por lo que
-    // resolvemos las localityIds en JS con normalización accent-insensitive.
+    // Las columnas generadas `department_norm`, `province_norm`,
+    // `district_norm` (migración 20260517130000_localities_normalize)
+    // contienen lower(unaccent(...)) y tienen index compuesto parcial
+    // sobre `isActive=true`. El match se hace en Postgres — antes
+    // cargábamos toda la tabla en JS y filtrábamos en memoria.
     //
-    // También aplicamos degradación jerárquica: si filtrar por los 3 niveles
-    // (dept+prov+dist) no encontraría ninguna locality, caemos a 2 (dept+prov)
-    // y finalmente a 1 (dept). Mejor mostrar resultados cercanos que un
-    // listado vacío por una variante ortográfica menor.
+    // Degradación jerárquica: si dept+prov+dist no matchea, caemos
+    // a dept+prov, luego a dept. Mejor mostrar resultados cercanos
+    // que un listado vacío por una variante ortográfica.
     if (department || province || district) {
       const norm = (s: string | null | undefined) =>
         (s ?? '')
@@ -83,30 +83,31 @@ export class ProvidersService {
           .toLowerCase()
           .trim();
 
-      const localities = await this.prisma.locality.findMany({
-        where: { isActive: true },
-        select: { id: true, department: true, province: true, district: true },
-      });
-
       const nDept = norm(department);
       const nProv = norm(province);
       const nDist = norm(district);
 
-      // Helper: lista de localityIds que cumplen los 3 niveles dados
-      const matchAt = (d: string, p: string, di: string) =>
-        localities
-          .filter((l) => (!d  || norm(l.department) === d)
-                     && (!p  || norm(l.province)   === p)
-                     && (!di || norm(l.district)   === di))
-          .map((l) => l.id);
+      // Helper: lista de localityIds que cumplen los 3 niveles dados.
+      // string vacío = nivel "no filtrar". El index parcial cubre los
+      // 3 LIKE/= con `WHERE isActive=true`.
+      const matchAt = async (d: string, p: string, di: string): Promise<number[]> => {
+        const rows = await this.prisma.$queryRaw<{ id: number }[]>`
+          SELECT id FROM localities
+          WHERE "isActive" = true
+            AND (${d}  = '' OR department_norm = ${d})
+            AND (${p}  = '' OR province_norm   = ${p})
+            AND (${di} = '' OR district_norm   = ${di})
+        `;
+        return rows.map((r) => r.id);
+      };
 
-      // Probamos del más específico al más general
-      let matchedIds = matchAt(nDept, nProv, nDist);
+      // Probamos del más específico al más general.
+      let matchedIds = await matchAt(nDept, nProv, nDist);
       if (matchedIds.length === 0 && (nProv || nDist)) {
-        matchedIds = matchAt(nDept, nProv, '');
+        matchedIds = await matchAt(nDept, nProv, '');
       }
       if (matchedIds.length === 0 && nDept) {
-        matchedIds = matchAt(nDept, '', '');
+        matchedIds = await matchAt(nDept, '', '');
       }
 
       if (matchedIds.length > 0) {

@@ -170,10 +170,15 @@ model Locality {
 
   providers Provider[]
 
-  // Una sola entrada por combinación (dept, prov, dist). En PostgreSQL los
-  // NULLs se consideran distintos, así que permite "Lima/null/null" + variantes
-  // — para el caso seed eso es OK; el endpoint de suggest siempre manda los 3.
-  @@unique([department, province, district], map: "localities_dept_prov_dist_unique")
+  // Una sola entrada por combinación (dept, prov, dist). El UNIQUE
+  // INDEX es FUNCIONAL accent-insensitive y vive en la migración
+  // 20260517130000_localities_normalize (Prisma no puede expresar
+  // `lower(unaccent(...))` en su DSL). NO declarar `@@unique` aquí
+  // o el siguiente `migrate dev` intentará crear el viejo de nuevo.
+  //
+  // Tampoco declaramos las columnas generadas `department_norm`,
+  // `province_norm`, `district_norm` — viven en la BD y se consultan
+  // via $queryRaw en providers.service.ts. Prisma client las ignora.
   @@index([department, province, district])
   @@index([source])
   @@map("localities")
