@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Req, Logger, Request, UseGuards } from '@nestjs/common';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { JwtAuthGuard } from '../../auth/jwt.guard.js';
 import { MercadoPagoService } from './mercadopago.service.js';
 import { PaymentsService } from '../payments.service.js';
@@ -27,35 +28,97 @@ export class MercadoPagoController {
   }
 
  @Post('webhook')
-async webhook(@Req() req: { body: any; headers: any }) {
-  const body = req.body;
-  const topic = body?.topic;
-  const id = body?.id;
+async webhook(@Req() req: any) {
+  // C-02: validar firma HMAC antes de procesar nada. Sin esto,
+  // un atacante envía POST falsificado y activa planes "gratis".
+  if (!this.verifySignature(req)) {
+    this.logger.warn(`🛑 Webhook con firma inválida (ip=${req.ip})`);
+    // 200 silencioso — no dar pistas al atacante sobre el motivo.
+    return { status: 'ok' };
+  }
+
+  // C-01: aceptar ambos shapes — el moderno {type, data:{id}} y el
+  // legacy IPN {topic, id}. El código original solo manejaba legacy
+  // y todas las notificaciones modernas de MP se perdían silenciosamente.
+  const body  = req.body ?? {};
+  const topic = body.type ?? body.topic;
+  const id    = body.data?.id ?? body.id;
 
   this.logger.log(`🔔 Webhook recibido: topic=${topic}, id=${id}`);
 
-  // Solo procesar notificaciones de pago
-  if (topic === 'payment' && id) {
-    try {
-      // 1. Obtener detalles del pago desde MercadoPago
-      const payment = await this.mpService.getPaymentDetails(id);
-      this.logger.log(`💳 Pago ${id}: status=${payment.status}, ref=${payment.externalReference}`);
-
-      // 2. Si el pago fue aprobado, activar la suscripción
-      if (payment.status === 'approved') {
-        await this.handleApprovedPayment(payment);
-      } else if (payment.status === 'rejected') {
-        this.logger.log(`❌ Pago ${id} rechazado: ${payment.externalReference}`);
-      } else {
-        this.logger.log(`⏳ Pago ${id} pendiente: ${payment.status}`);
-      }
-    } catch (e) {
-      this.logger.error(`Error procesando webhook: ${e}`);
-    }
+  if (topic !== 'payment' || !id) {
+    // No es notificación de pago (puede ser merchant_order, etc.) — OK.
+    return { status: 'ok' };
   }
 
-  // Siempre responder 200 OK
+  try {
+    const payment = await this.mpService.getPaymentDetails(String(id));
+    this.logger.log(`💳 Pago ${id}: status=${payment.status}, ref=${payment.externalReference}`);
+
+    if (payment.status === 'approved') {
+      await this.handleApprovedPayment(payment);
+    } else if (payment.status === 'rejected') {
+      this.logger.log(`❌ Pago ${id} rechazado: ${payment.externalReference}`);
+    } else {
+      this.logger.log(`⏳ Pago ${id} estado=${payment.status}: ${payment.externalReference}`);
+    }
+  } catch (e) {
+    // A-01: loggeamos con stack pero respondemos 200. Si devolvemos
+    // 500, MP reintenta 5 veces con backoff y satura el endpoint. La
+    // reconciliación de pagos huérfanos se hace via panel admin.
+    this.logger.error(`Error procesando webhook payment=${id}: ${e instanceof Error ? e.stack : e}`);
+  }
+
   return { status: 'ok' };
+}
+
+/**
+ * Verifica firma HMAC-SHA256 del webhook contra MERCADOPAGO_WEBHOOK_SECRET.
+ *
+ * MP envía:
+ *   x-signature:  "ts=1742921000,v1=abc123def..."
+ *   x-request-id: "<uuid>"
+ *
+ * Manifest a firmar:
+ *   `id:${data.id};request-id:${reqId};ts:${ts};`
+ *
+ * Anti-replay: rechaza firmas con > 5min de antigüedad.
+ */
+private verifySignature(req: any): boolean {
+  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+  if (!secret || secret === 'ningun_sistema' || secret.length < 16) {
+    this.logger.error('🛑 MERCADOPAGO_WEBHOOK_SECRET no configurado — rechazando todos los webhooks');
+    return false;
+  }
+
+  const sigHeader = req.headers?.['x-signature'];
+  const reqId     = req.headers?.['x-request-id'];
+  const dataId    = (req.body?.data?.id ?? req.body?.id ?? '').toString();
+  if (!sigHeader || !reqId || !dataId) return false;
+
+  // Parse "ts=...,v1=..."
+  const parts: Record<string, string> = {};
+  for (const p of String(sigHeader).split(',')) {
+    const [k, v] = p.split('=');
+    if (k && v) parts[k.trim()] = v.trim();
+  }
+  const ts = parts['ts'];
+  const v1 = parts['v1'];
+  if (!ts || !v1) return false;
+
+  // Anti-replay: ±5min de tolerancia.
+  const ageSeconds = Math.abs(Date.now() / 1000 - Number(ts));
+  if (!Number.isFinite(ageSeconds) || ageSeconds > 300) return false;
+
+  const manifest = `id:${dataId};request-id:${reqId};ts:${ts};`;
+  const expected = createHmac('sha256', secret).update(manifest).digest('hex');
+
+  // Comparación timing-safe (evita ataques de side-channel).
+  try {
+    return timingSafeEqual(Buffer.from(v1, 'hex'), Buffer.from(expected, 'hex'));
+  } catch {
+    return false;
+  }
 }
 
 /**
