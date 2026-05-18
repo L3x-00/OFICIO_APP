@@ -33,8 +33,11 @@ class ProfileNavigationHelper {
   }
 
   /// Abre el formulario para añadir un perfil del tipo indicado.
+  /// rootNavigator: true saca la pantalla del shell del cliente —
+  /// sin esto, la bottom nav del shell quedaba visible debajo del
+  /// formulario de registro y arruinaba la UX.
   static void openAddProfile(BuildContext context, String type) {
-    Navigator.of(context).push(
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) =>
             ProviderOnboardingForm(providerType: type, isStandalone: true),

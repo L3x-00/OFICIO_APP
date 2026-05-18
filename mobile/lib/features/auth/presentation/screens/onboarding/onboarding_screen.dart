@@ -189,7 +189,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         providerType: type,
         onContinue: (selectedPlan) {
           Navigator.pop(context);
-          Navigator.of(context).push(
+          // rootNavigator: true saca el formulario del shell del
+          // cliente — sin esto, la bottom nav quedaba visible
+          // debajo del formulario y arruinaba la UX.
+          Navigator.of(context, rootNavigator: true).push(
             MaterialPageRoute(
               builder: (_) => ProviderOnboardingForm(
                 providerType: type,

@@ -125,7 +125,10 @@ class _BottomNav extends StatelessWidget {
               targetHeight: 32, targetWidth: 32,
               child: const Icon(Icons.favorite_border_rounded),
             ),
-            activeIcon: const Icon(Icons.favorite_rounded),
+            // Color custom al activarse — color explícito sobrescribe
+            // el `selectedItemColor` global del BottomNavigationBar
+            // solo para el icono. El label sigue siendo primary.
+            activeIcon: const Icon(Icons.favorite_rounded, color: Color(0xFFE53935)),
           ),
           BottomNavigationBarItem(
             label: 'Ofertas',
@@ -135,7 +138,7 @@ class _BottomNav extends StatelessWidget {
               targetHeight: 32, targetWidth: 32,
               child: const Icon(Icons.local_offer_outlined),
             ),
-            activeIcon: const Icon(Icons.local_offer_rounded),
+            activeIcon: const Icon(Icons.local_offer_rounded, color: Color(0xFFFF9800)),
           ),
           BottomNavigationBarItem(
             label: 'Alertas',
@@ -161,7 +164,7 @@ class _BottomNav extends StatelessWidget {
                   notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
                   style: const TextStyle(fontSize: 10),
                 ),
-                child: const Icon(Icons.notifications_rounded),
+                child: const Icon(Icons.notifications_rounded, color: Color(0xFFFBC02D)),
               ),
             ),
           ),
