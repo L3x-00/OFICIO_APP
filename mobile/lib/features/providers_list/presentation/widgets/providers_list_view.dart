@@ -16,6 +16,12 @@ import '../sheets/filter_sheet.dart';
 import 'login_required_dialog.dart';
 import 'service_card.dart';
 
+/// Lock per-provider para evitar que múltiples taps en "enviar mensaje"
+/// abran múltiples ChatScreen apilados antes de que el primero responda.
+/// Vive a nivel de library (no State) porque el widget es StatelessWidget
+/// y se reconstruye en cada tap. Se libera en el finally del openChat.
+final Set<int> _openingChatLock = {};
+
 /// Lista de proveedores filtrada y ordenada por el [ProvidersProvider].
 ///
 /// Adapta el widget renderizado al `viewMode` del provider:
@@ -218,6 +224,10 @@ class ProvidersListView extends StatelessWidget {
       ));
 
       Future<void> openChat() async {
+        // Guard: si ya hay una operación en vuelo para este provider,
+        // ignorar taps adicionales. Antes 3 taps = 3 ChatScreen apilados;
+        // al cerrar el primero quedaban 2 abajo persistiendo.
+        if (_openingChatLock.contains(p.id)) return;
         final auth = context.read<AuthProvider>();
         if (auth.user == null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -225,6 +235,7 @@ class ProvidersListView extends StatelessWidget {
           );
           return;
         }
+        _openingChatLock.add(p.id);
         final chat = context.read<ChatProvider>();
         try {
           final roomId = await chat.openRoom(
@@ -232,7 +243,7 @@ class ProvidersListView extends StatelessWidget {
             providerId: p.id,
           );
           if (!context.mounted) return;
-          Navigator.of(context).push(MaterialPageRoute(
+          await Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => ChatScreen(roomId: roomId),
           ));
         } catch (e) {
@@ -240,6 +251,8 @@ class ProvidersListView extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('No se pudo abrir el chat: $e')),
           );
+        } finally {
+          _openingChatLock.remove(p.id);
         }
       }
 
