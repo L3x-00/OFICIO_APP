@@ -1,6 +1,7 @@
 node_modules
 dist
 .env
+/src/generated/client
 *.log
 AUDITORÍA_TÉCNICA.md
 CLAUDE.md

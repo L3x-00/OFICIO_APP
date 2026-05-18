@@ -3161,7 +3161,8 @@ export const UserScalarFieldEnum = {
   isEmailVerified: 'isEmailVerified',
   fcmToken: 'fcmToken',
   coins: 'coins',
-  lastIp: 'lastIp'
+  lastIp: 'lastIp',
+  lastLoginAt: 'lastLoginAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -3198,7 +3199,10 @@ export const LocalityScalarFieldEnum = {
   createdAt: 'createdAt',
   district: 'district',
   province: 'province',
-  source: 'source'
+  source: 'source',
+  department_norm: 'department_norm',
+  province_norm: 'province_norm',
+  district_norm: 'district_norm'
 } as const
 
 export type LocalityScalarFieldEnum = (typeof LocalityScalarFieldEnum)[keyof typeof LocalityScalarFieldEnum]

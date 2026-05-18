@@ -56,6 +56,7 @@ export type UserMinAggregateOutputType = {
   fcmToken: string | null
   coins: number | null
   lastIp: string | null
+  lastLoginAt: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -78,6 +79,7 @@ export type UserMaxAggregateOutputType = {
   fcmToken: string | null
   coins: number | null
   lastIp: string | null
+  lastLoginAt: Date | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -100,6 +102,7 @@ export type UserCountAggregateOutputType = {
   fcmToken: number
   coins: number
   lastIp: number
+  lastLoginAt: number
   _all: number
 }
 
@@ -134,6 +137,7 @@ export type UserMinAggregateInputType = {
   fcmToken?: true
   coins?: true
   lastIp?: true
+  lastLoginAt?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -156,6 +160,7 @@ export type UserMaxAggregateInputType = {
   fcmToken?: true
   coins?: true
   lastIp?: true
+  lastLoginAt?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -178,6 +183,7 @@ export type UserCountAggregateInputType = {
   fcmToken?: true
   coins?: true
   lastIp?: true
+  lastLoginAt?: true
   _all?: true
 }
 
@@ -287,6 +293,7 @@ export type UserGroupByOutputType = {
   fcmToken: string | null
   coins: number
   lastIp: string | null
+  lastLoginAt: Date | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -332,6 +339,7 @@ export type UserWhereInput = {
   fcmToken?: Prisma.StringNullableFilter<"User"> | string | null
   coins?: Prisma.IntFilter<"User"> | number
   lastIp?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   chatsAsClient?: Prisma.ChatRoomListRelationFilter
   redemptions?: Prisma.CoinRedemptionListRelationFilter
   favorites?: Prisma.FavoriteListRelationFilter
@@ -371,6 +379,7 @@ export type UserOrderByWithRelationInput = {
   fcmToken?: Prisma.SortOrderInput | Prisma.SortOrder
   coins?: Prisma.SortOrder
   lastIp?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   chatsAsClient?: Prisma.ChatRoomOrderByRelationAggregateInput
   redemptions?: Prisma.CoinRedemptionOrderByRelationAggregateInput
   favorites?: Prisma.FavoriteOrderByRelationAggregateInput
@@ -395,7 +404,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   email?: string
   phone?: string
   firebaseUid?: string
-  fcmToken?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -411,8 +419,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   province?: Prisma.StringNullableFilter<"User"> | string | null
   district?: Prisma.StringNullableFilter<"User"> | string | null
   isEmailVerified?: Prisma.BoolFilter<"User"> | boolean
+  fcmToken?: Prisma.StringNullableFilter<"User"> | string | null
   coins?: Prisma.IntFilter<"User"> | number
   lastIp?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   chatsAsClient?: Prisma.ChatRoomListRelationFilter
   redemptions?: Prisma.CoinRedemptionListRelationFilter
   favorites?: Prisma.FavoriteListRelationFilter
@@ -430,7 +440,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   reviews?: Prisma.ReviewListRelationFilter
   serviceRequests?: Prisma.ServiceRequestListRelationFilter
   penalty?: Prisma.XOR<Prisma.UserPenaltyNullableScalarRelationFilter, Prisma.UserPenaltyWhereInput> | null
-}, "id" | "email" | "phone" | "firebaseUid" | "fcmToken">
+}, "id" | "email" | "phone" | "firebaseUid">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -452,6 +462,7 @@ export type UserOrderByWithAggregationInput = {
   fcmToken?: Prisma.SortOrderInput | Prisma.SortOrder
   coins?: Prisma.SortOrder
   lastIp?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -482,6 +493,7 @@ export type UserScalarWhereWithAggregatesInput = {
   fcmToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   coins?: Prisma.IntWithAggregatesFilter<"User"> | number
   lastIp?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
 
 export type UserCreateInput = {
@@ -503,6 +515,7 @@ export type UserCreateInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -542,6 +555,7 @@ export type UserUncheckedCreateInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -580,6 +594,7 @@ export type UserUpdateInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -619,6 +634,7 @@ export type UserUncheckedUpdateInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -658,6 +674,7 @@ export type UserCreateManyInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -679,6 +696,7 @@ export type UserUpdateManyMutationInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -701,6 +719,7 @@ export type UserUncheckedUpdateManyInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -723,6 +742,7 @@ export type UserCountOrderByAggregateInput = {
   fcmToken?: Prisma.SortOrder
   coins?: Prisma.SortOrder
   lastIp?: Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -750,6 +770,7 @@ export type UserMaxOrderByAggregateInput = {
   fcmToken?: Prisma.SortOrder
   coins?: Prisma.SortOrder
   lastIp?: Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -772,6 +793,7 @@ export type UserMinOrderByAggregateInput = {
   fcmToken?: Prisma.SortOrder
   coins?: Prisma.SortOrder
   lastIp?: Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
@@ -810,6 +832,10 @@ export type IntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type UserCreateNestedOneWithoutOtpCodesInput = {
@@ -1069,6 +1095,7 @@ export type UserCreateWithoutOtpCodesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -1107,6 +1134,7 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -1160,6 +1188,7 @@ export type UserUpdateWithoutOtpCodesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -1198,6 +1227,7 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -1235,6 +1265,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -1273,6 +1304,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -1326,6 +1358,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -1364,6 +1397,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -1401,6 +1435,7 @@ export type UserCreateWithoutProvidersInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -1439,6 +1474,7 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -1492,6 +1528,7 @@ export type UserUpdateWithoutProvidersInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -1530,6 +1567,7 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -1567,6 +1605,7 @@ export type UserCreateWithoutReviewsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -1605,6 +1644,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -1658,6 +1698,7 @@ export type UserUpdateWithoutReviewsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -1696,6 +1737,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -1733,6 +1775,7 @@ export type UserCreateWithoutReviewRepliesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -1771,6 +1814,7 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -1824,6 +1868,7 @@ export type UserUpdateWithoutReviewRepliesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -1862,6 +1907,7 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -1899,6 +1945,7 @@ export type UserCreateWithoutFavoritesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
@@ -1937,6 +1984,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
@@ -1990,6 +2038,7 @@ export type UserUpdateWithoutFavoritesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
@@ -2028,6 +2077,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
@@ -2065,6 +2115,7 @@ export type UserCreateWithoutRecommendationsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2103,6 +2154,7 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2156,6 +2208,7 @@ export type UserUpdateWithoutRecommendationsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2194,6 +2247,7 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2231,6 +2285,7 @@ export type UserCreateWithoutProviderReportsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2269,6 +2324,7 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2322,6 +2378,7 @@ export type UserUpdateWithoutProviderReportsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2360,6 +2417,7 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2397,6 +2455,7 @@ export type UserCreateWithoutPlatformIssuesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2435,6 +2494,7 @@ export type UserUncheckedCreateWithoutPlatformIssuesInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2488,6 +2548,7 @@ export type UserUpdateWithoutPlatformIssuesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2526,6 +2587,7 @@ export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2563,6 +2625,7 @@ export type UserCreateWithoutServiceRequestsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2601,6 +2664,7 @@ export type UserUncheckedCreateWithoutServiceRequestsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2654,6 +2718,7 @@ export type UserUpdateWithoutServiceRequestsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2692,6 +2757,7 @@ export type UserUncheckedUpdateWithoutServiceRequestsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2729,6 +2795,7 @@ export type UserCreateWithoutPenaltyInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2767,6 +2834,7 @@ export type UserUncheckedCreateWithoutPenaltyInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2820,6 +2888,7 @@ export type UserUpdateWithoutPenaltyInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2858,6 +2927,7 @@ export type UserUncheckedUpdateWithoutPenaltyInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2895,6 +2965,7 @@ export type UserCreateWithoutReferralCodeInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2933,6 +3004,7 @@ export type UserUncheckedCreateWithoutReferralCodeInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2986,6 +3058,7 @@ export type UserUpdateWithoutReferralCodeInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -3024,6 +3097,7 @@ export type UserUncheckedUpdateWithoutReferralCodeInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -3061,6 +3135,7 @@ export type UserCreateWithoutReferralReceivedInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -3099,6 +3174,7 @@ export type UserUncheckedCreateWithoutReferralReceivedInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -3141,6 +3217,7 @@ export type UserCreateWithoutReferralsSentInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -3179,6 +3256,7 @@ export type UserUncheckedCreateWithoutReferralsSentInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -3232,6 +3310,7 @@ export type UserUpdateWithoutReferralReceivedInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -3270,6 +3349,7 @@ export type UserUncheckedUpdateWithoutReferralReceivedInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -3318,6 +3398,7 @@ export type UserUpdateWithoutReferralsSentInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -3356,6 +3437,7 @@ export type UserUncheckedUpdateWithoutReferralsSentInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -3393,6 +3475,7 @@ export type UserCreateWithoutRedemptionsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
   offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
@@ -3431,6 +3514,7 @@ export type UserUncheckedCreateWithoutRedemptionsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
   offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
@@ -3484,6 +3568,7 @@ export type UserUpdateWithoutRedemptionsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
   offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
@@ -3522,6 +3607,7 @@ export type UserUncheckedUpdateWithoutRedemptionsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
   offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
@@ -3559,6 +3645,7 @@ export type UserCreateWithoutChatsAsClientInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
   offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
@@ -3597,6 +3684,7 @@ export type UserUncheckedCreateWithoutChatsAsClientInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
   offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
@@ -3650,6 +3738,7 @@ export type UserUpdateWithoutChatsAsClientInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
   offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
@@ -3688,6 +3777,7 @@ export type UserUncheckedUpdateWithoutChatsAsClientInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
   offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
@@ -3725,6 +3815,7 @@ export type UserCreateWithoutOfferReportsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -3763,6 +3854,7 @@ export type UserUncheckedCreateWithoutOfferReportsInput = {
   fcmToken?: string | null
   coins?: number
   lastIp?: string | null
+  lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -3816,6 +3908,7 @@ export type UserUpdateWithoutOfferReportsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -3854,6 +3947,7 @@ export type UserUncheckedUpdateWithoutOfferReportsInput = {
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -4040,6 +4134,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   fcmToken?: boolean
   coins?: boolean
   lastIp?: boolean
+  lastLoginAt?: boolean
   chatsAsClient?: boolean | Prisma.User$chatsAsClientArgs<ExtArgs>
   redemptions?: boolean | Prisma.User$redemptionsArgs<ExtArgs>
   favorites?: boolean | Prisma.User$favoritesArgs<ExtArgs>
@@ -4080,6 +4175,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   fcmToken?: boolean
   coins?: boolean
   lastIp?: boolean
+  lastLoginAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -4102,6 +4198,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   fcmToken?: boolean
   coins?: boolean
   lastIp?: boolean
+  lastLoginAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -4124,9 +4221,10 @@ export type UserSelectScalar = {
   fcmToken?: boolean
   coins?: boolean
   lastIp?: boolean
+  lastLoginAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "isActive" | "createdAt" | "updatedAt" | "department" | "province" | "district" | "firebaseUid" | "isEmailVerified" | "fcmToken" | "coins" | "lastIp", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "isActive" | "createdAt" | "updatedAt" | "department" | "province" | "district" | "firebaseUid" | "isEmailVerified" | "fcmToken" | "coins" | "lastIp" | "lastLoginAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   chatsAsClient?: boolean | Prisma.User$chatsAsClientArgs<ExtArgs>
   redemptions?: boolean | Prisma.User$redemptionsArgs<ExtArgs>
@@ -4191,6 +4289,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     fcmToken: string | null
     coins: number
     lastIp: string | null
+    lastLoginAt: Date | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -4650,6 +4749,7 @@ export interface UserFieldRefs {
   readonly fcmToken: Prisma.FieldRef<"User", 'String'>
   readonly coins: Prisma.FieldRef<"User", 'Int'>
   readonly lastIp: Prisma.FieldRef<"User", 'String'>
+  readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 

@@ -1488,10 +1488,6 @@ export type EnumTrustStatusFieldUpdateOperationsInput = {
   set?: $Enums.TrustStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type ProviderCreateNestedOneWithoutImagesInput = {
   create?: Prisma.XOR<Prisma.ProviderCreateWithoutImagesInput, Prisma.ProviderUncheckedCreateWithoutImagesInput>
   connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutImagesInput
