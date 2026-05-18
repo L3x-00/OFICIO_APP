@@ -13,15 +13,15 @@ export class RegisterProviderDto {
   @IsString()
   @MinLength(2, { message: 'El nombre del negocio debe tener al menos 2 caracteres' })
   @MaxLength(100)
-  businessName: string;
+  businessName!: string;
 
   @IsString()
   @MinLength(6, { message: 'El teléfono debe tener al menos 6 caracteres' })
   @MaxLength(20)
-  phone: string;
+  phone!: string;
 
   @IsEnum(['OFICIO', 'NEGOCIO'], { message: 'El tipo debe ser OFICIO o NEGOCIO' })
-  type: 'OFICIO' | 'NEGOCIO';
+  type!: 'OFICIO' | 'NEGOCIO';
 
   // ── Campos OFICIO ─────────────────────────────────────────
   @NullIfEmpty()
@@ -79,7 +79,7 @@ export class RegisterProviderDto {
   @IsString({ message: 'La descripción es obligatoria' })
   @MinLength(10, { message: 'La descripción debe tener al menos 10 caracteres' })
   @MaxLength(1000)
-  description: string;
+  description!: string;
 
   @IsOptional()
   @IsString()
@@ -99,7 +99,7 @@ export class RegisterProviderDto {
     if (Array.isArray(value)) return value;
     return [value];
   })
-  categoryIds: number[];
+  categoryIds!: number[];
 
   @IsOptional()
   @Type(() => Number)
