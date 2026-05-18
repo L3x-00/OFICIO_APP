@@ -263,7 +263,12 @@ export class PaymentsService {
       },
     });
     if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
-    if (!provider.subscription || provider.subscription.status !== 'ACTIVA') {
+    // GRACIA y ACTIVA son ambos planes vigentes desde la perspectiva
+    // del usuario — el primero es el trial inicial de 1 mes, el segundo
+    // un plan pagado. Antes solo ACTIVA pasaba y los nuevos providers
+    // (siempre arrancan en GRACIA) veían "no tienes plan activo".
+    if (!provider.subscription
+        || !['ACTIVA', 'GRACIA'].includes(provider.subscription.status)) {
       throw new BadRequestException('No tienes un plan activo que cancelar');
     }
 
