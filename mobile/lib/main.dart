@@ -261,21 +261,19 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     // ── Aprobación de perfil de proveedor (modal en home) ─────
     // Se dispara cuando el admin aprueba el perfil — el carrusel de
     // bienvenida + plan ESTANDAR de cortesía aparece en la pantalla
-    // principal en tiempo real, sin esperar a que el usuario entre al
-    // panel del proveedor. La gate "ya visto" la administra el propio
-    // modal vía SharedPreferences por providerId.
+    // principal en tiempo real, sin esperar a que el usuario entre
+    // al panel del proveedor. La gate "ya visto" la administra el
+    // propio modal vía SharedPreferences por providerId.
+    //
+    // BUG previo: clearPendingProviderApproval() corría SÍNCRONO
+    // antes del addPostFrameCallback. Si en ese frame
+    // _navigatorKey.currentContext era null (router en transición),
+    // el modal nunca se mostraba y el flag ya estaba limpiado → sin
+    // segundo intento. Ahora _tryShowProviderApproval reintenta y
+    // solo limpia el flag cuando el modal se mostró con éxito.
     final approval = auth.pendingProviderApproval;
     if (approval != null && mounted) {
-      auth.clearPendingProviderApproval();
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final navCtx = _navigatorKey.currentContext;
-        if (navCtx == null || !navCtx.mounted) return;
-        await WelcomeProviderPlanModal.showIfFirstTime(
-          navCtx,
-          displayName: approval.displayName,
-          providerId:  approval.providerId,
-        );
-      });
+      _tryShowProviderApproval(approval);
     }
 
     // ── Promoción de plan ─────────────────────────────────────
@@ -324,6 +322,42 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         _showProviderDeletionDialog(deletion);
       });
     }
+  }
+
+  /// Intenta mostrar el modal de bienvenida tras aprobación del admin.
+  /// Reintenta cada frame hasta que `_navigatorKey.currentContext` esté
+  /// listo (máx ~500ms). Solo limpia `pendingProviderApproval` tras
+  /// éxito — si todos los retries fallan, el flag queda y el próximo
+  /// `notifyListeners()` lo reintenta.
+  ///
+  /// Sin esto: cuando el socket PROVIDER_APPROVED llegaba mientras el
+  /// router estaba en transición, navCtx era null por 1-2 frames, el
+  /// modal nunca aparecía y el flag se había limpiado SÍNCRONO antes.
+  /// El user solo lo veía al entrar manualmente al panel home.
+  Future<void> _tryShowProviderApproval(ProviderApprovalPayload approval) async {
+    BuildContext? navCtx;
+    // Hasta 30 frames (~500ms en 60fps) esperando al navigator.
+    for (var i = 0; i < 30; i++) {
+      navCtx = _navigatorKey.currentContext;
+      if (navCtx != null && navCtx.mounted) break;
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      if (!mounted) return;
+    }
+    if (navCtx == null || !navCtx.mounted) {
+      debugPrint('⚠️ Welcome modal: navCtx aún null tras 500ms — '
+                 'flag queda puesto para próximo retry');
+      return;
+    }
+    if (!mounted) return;
+    // Limpiamos ANTES del await del modal — evita doble apertura si
+    // el listener se dispara durante el showDialog. La gate del propio
+    // modal (SharedPreferences por providerId) cubre el resto.
+    context.read<AuthProvider>().clearPendingProviderApproval();
+    await WelcomeProviderPlanModal.showIfFirstTime(
+      navCtx,
+      displayName: approval.displayName,
+      providerId:  approval.providerId,
+    );
   }
 
   /// Dialog informativo cuando el admin elimina el perfil del user.
