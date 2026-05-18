@@ -29,11 +29,18 @@ class PlanSelectorSheet extends StatelessWidget {
   const PlanSelectorSheet._();
 
   static Future<bool?> show(BuildContext context) {
+    // PaymentsProvider debe envolver al sheet — el Consumer interno
+    // crashea (ProviderNotFoundException → pantalla blanca) si no
+    // está en el árbol. Antes solo se proveía al navegar a Yape o
+    // a PaymentHistoryScreen, no aquí.
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const PlanSelectorSheet._(),
+      builder: (_) => ChangeNotifierProvider(
+        create: (_) => PaymentsProvider(),
+        child: const PlanSelectorSheet._(),
+      ),
     );
   }
 
@@ -295,7 +302,7 @@ class _PlanCard extends StatelessWidget {
                             ? 'Conectando...'
                             : isCurrent
                                 ? 'Plan actual'
-                                : 'Pagar con MercadoPago',
+                                : 'Pagar con tarjeta o PagoEfectivo',
                         style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700),
@@ -311,6 +318,19 @@ class _PlanCard extends StatelessWidget {
                   );
                 },
               ),
+
+              // Subtítulo aclaratorio: MercadoPago Checkout Pro incluye
+              // PagoEfectivo, Yape, tarjetas y transferencia. Antes el
+              // user pensaba que el botón era solo tarjeta.
+              if (!isCurrent)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Incluye PagoEfectivo, Yape, tarjeta y transferencia',
+                    style: TextStyle(color: c.textMuted, fontSize: 10.5),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
 
               const SizedBox(height: 8),
 
