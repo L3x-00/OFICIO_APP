@@ -32,14 +32,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   void initState() {
     super.initState();
-    // setScope no-op si nada cambió; si scope/type difieren del último
-    // (p. ej. el usuario alterna entre la tab del cliente y la del
-    // panel), limpia el cache local y refetchea.
+    // setScope cambia scope/type SI difieren del último. Después
+    // forzamos un loadRooms — antes la idempotencia de setScope hacía
+    // que al volver al panel quedaran los rooms cacheados del intento
+    // previo (p. ej. de otra sesión o antes de un nuevo chat). User
+    // reportaba "me muestra chats anteriores".
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChatProvider>().setScope(
+      if (!mounted) return;
+      final chat = context.read<ChatProvider>();
+      chat.setScope(
         scope:        widget.scope,
         providerType: widget.providerType,
       );
+      chat.loadRooms();
     });
   }
 
