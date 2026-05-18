@@ -149,13 +149,15 @@ class _AuthSideEffects extends StatefulWidget {
   State<_AuthSideEffects> createState() => _AuthSideEffectsState();
 }
 
-class _AuthSideEffectsState extends State<_AuthSideEffects> {
+class _AuthSideEffectsState extends State<_AuthSideEffects>
+    with WidgetsBindingObserver {
   AppNavigationState? _prevNavState;
   bool _fcmInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final auth = context.read<AuthProvider>();
     auth.addListener(_onAuthChanged);
     // Sync inicial — auth ya está inicializado cuando llegamos aquí.
@@ -166,8 +168,24 @@ class _AuthSideEffectsState extends State<_AuthSideEffects> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     context.read<AuthProvider>().removeListener(_onAuthChanged);
     super.dispose();
+  }
+
+  /// Cuando la app vuelve a foreground (resumed), forzamos un
+  /// `refreshProviderStatus` para que el sync detecte cualquier
+  /// aprobación de perfil que haya ocurrido mientras el WS estaba
+  /// desconectado (background). El sync encola el welcome modal y
+  /// `_onAuthChanged` lo muestra al instante — sin que el user
+  /// tenga que entrar al panel manualmente.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    if (auth.user == null) return;
+    auth.refreshProviderStatus();
   }
 
   void _onAuthChanged() {

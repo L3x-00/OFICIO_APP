@@ -377,6 +377,15 @@ class _AutoStartState extends State<_AutoStart> {
         return;
       }
       _started = true;
+      // Marcar como visto INMEDIATAMENTE al disparar — no esperar al
+      // onFinish. Antes el tour se repetía si el user cerraba la app
+      // antes de tocar "Empezar"/"Omitir" (markSeen solo corría en
+      // onFinish, que requiere acción explícita del user).
+      await ShowcaseManager.markSeen(
+        userId: widget.userId,
+        isGuest: widget.isGuest,
+      );
+      if (!mounted) return;
       ShowCaseWidget.of(context).startShowCase(liveKeys);
     });
   }
@@ -631,6 +640,15 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
         providerType: widget.providerType,
       );
       _started = true;
+      // Marcar como visto INMEDIATAMENTE — no esperar al onFinish.
+      // Antes el tour se repetía al reabrir el panel si el user
+      // cerraba el panel (pop) o cambiaba de tab antes de completar.
+      await ShowcaseManager.markSeenAdminTab(
+        tab:          widget.tab,
+        userId:       widget.userId!,
+        providerType: widget.providerType,
+      );
+      if (!mounted) return;
       ShowCaseWidget.of(context).startShowCase(liveKeys);
     });
   }
