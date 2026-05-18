@@ -157,6 +157,20 @@ class ShowcaseTarget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // CRÍTICO: capturar el ShowCaseWidget desde el `context` EXTERNO.
+    //
+    // El `Builder` que tenía esto adentro (con `ctx`) FALLABA porque el
+    // `container` se monta en un Overlay separado y `ShowCaseWidget.of(ctx)`
+    // ya no encuentra al ancestro — los callbacks no hacían nada y el tour
+    // quedaba congelado en el primer paso.
+    //
+    // El `context` de este build SÍ es descendiente de ShowCaseWidget
+    // (ShowcaseTarget vive bajo ShowcaseRoot / AdminShowcaseWrapper), así
+    // que el lookup funciona. Capturamos la referencia y los callbacks
+    // del tooltip la usan directamente — sin volver a buscar el ancestro
+    // desde el árbol del overlay.
+    final showcase = ShowCaseWidget.of(context);
+
     return Showcase.withWidget(
       key: step.key,
       // Dimensiones del tooltip — fijas, NO del target. El tooltip
@@ -173,22 +187,23 @@ class ShowcaseTarget extends StatelessWidget {
       // Tap sobre el target NO avanza — todo se controla por botones
       // del tooltip para que el usuario decida cuándo seguir.
       onTargetClick: () {},
-      container: Builder(builder: (ctx) {
-        return ShowcaseTooltipCard(
-          title: step.title,
-          description: step.description,
-          isLast: isLast,
-          onNext: () {
-            final state = ShowCaseWidget.of(ctx);
-            if (isLast) {
-              state.dismiss();
-            } else {
-              state.next();
-            }
-          },
-          onSkip: () => ShowCaseWidget.of(ctx).dismiss(),
-        );
-      }),
+      container: ShowcaseTooltipCard(
+        title: step.title,
+        description: step.description,
+        isLast: isLast,
+        onNext: () {
+          debugPrint('🔍 Showcase: Siguiente (isLast=$isLast, key=${step.key.toString()})');
+          if (isLast) {
+            showcase.dismiss();
+          } else {
+            showcase.next();
+          }
+        },
+        onSkip: () {
+          debugPrint('🔍 Showcase: Omitir (key=${step.key.toString()})');
+          showcase.dismiss();
+        },
+      ),
       child: child,
     );
   }
@@ -320,6 +335,7 @@ class _AutoStartState extends State<_AutoStart> {
   }
 
   Future<void> _maybeStart() async {
+    debugPrint('🔍 _AutoStart._maybeStart: _started=$_started, userId=${widget.userId}, isGuest=${widget.isGuest}');
     if (_started) return;
     // Esperamos a que el primer frame se pinte para que todos los
     // GlobalKey estén montados — startShowCase falla silenciosamente
@@ -332,6 +348,7 @@ class _AutoStartState extends State<_AutoStart> {
       );
       if (!mounted) return;
       if (seen) {
+        debugPrint('🔍 _AutoStart: ya visto — skip');
         // C-5: solo marcamos _started cuando ya tenemos respuesta —
         // si hasSeen fallara, didChangeDependencies puede reintentar.
         _started = true;
@@ -353,8 +370,12 @@ class _AutoStartState extends State<_AutoStart> {
       // queda vacío, NO marcamos seen para que la próxima build
       // (cuando carguen los providers) reintente.
       final liveKeys = await _waitForKeys(steps.map((s) => s.key).toList());
+      debugPrint('🔍 _AutoStart: keys vivas ${liveKeys.length}/${steps.length}');
       if (!mounted) return;
-      if (liveKeys.isEmpty) return;
+      if (liveKeys.isEmpty) {
+        debugPrint('⚠️ _AutoStart abortado: sin keys vivas — reintentando en próximo build');
+        return;
+      }
       _started = true;
       ShowCaseWidget.of(context).startShowCase(liveKeys);
     });
@@ -560,6 +581,7 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
   }
 
   void _maybeStart() {
+    debugPrint('🔍 _AdminTabShowcase._maybeStart: tab=${widget.tab}, _started=$_started, isApproved=${widget.isApproved}, userId=${widget.userId}, steps=${widget.steps.length}');
     if (_started) return;
     if (!widget.isApproved)      return;
     if (widget.userId == null)   return;
@@ -574,6 +596,7 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
       );
       if (!mounted) return;
       if (seen) {
+        debugPrint('🔍 _AdminTabShowcase ${widget.tab}: ya visto — skip');
         // C-5: marcar _started solo tras conocer el flag — si
         // hasSeen fallara, didUpdateWidget puede reintentar.
         _started = true;
@@ -595,8 +618,12 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
         widget.steps.map((s) => s.key).toList(),
         maxMs: 1000,
       );
+      debugPrint('🔍 _AdminTabShowcase ${widget.tab}: keys vivas ${liveKeys.length}/${widget.steps.length}');
       if (!mounted) return;
-      if (liveKeys.isEmpty) return;
+      if (liveKeys.isEmpty) {
+        debugPrint('⚠️ _AdminTabShowcase ${widget.tab} abortado: sin keys vivas — reintentando en próximo build');
+        return;
+      }
 
       AdminShowcaseWrapper._of(context)?._registerActive(
         tab:          widget.tab,
