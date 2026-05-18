@@ -103,11 +103,13 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
   // ─── Permisos + picker ──────────────────────────────────
 
   Future<void> _pickImage(ImageSource source) async {
+    // Solo CÁMARA requiere permiso explícito (CAMERA runtime perm).
+    // GALERÍA: en Android 13+ image_picker usa Photo Picker (sin permiso);
+    // en iOS image_picker pide PHPhotoLibraryUsageDescription internamente.
+    // El requestGallery anterior usaba Permission.photos que en Android
+    // <13 SIEMPRE retorna denied → el picker nunca abría.
     if (source == ImageSource.camera) {
       final ok = await PermissionService.requestCamera(context);
-      if (!ok) return;
-    } else {
-      final ok = await PermissionService.requestGallery(context);
       if (!ok) return;
     }
     if (!context.mounted) return;

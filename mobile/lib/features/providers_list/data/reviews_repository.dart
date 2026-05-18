@@ -27,6 +27,10 @@ class ReviewsRepository {
   }
 
   // ── CREAR RESEÑA ─────────────────────────────────────────
+  // userId NO se envía: el backend lo inyecta desde el JWT validado.
+  // Antes mandábamos userId y la DTO sin decoradores hacía que el
+  // ValidationPipe (whitelist) rechazara con "property userId should
+  // not exist" cuando estaba con forbidNonWhitelisted.
   Future<ReviewModel> createReview({
     required int providerId,
     required int userId,
@@ -41,7 +45,6 @@ class ReviewsRepository {
       '/reviews',
       data: {
         'providerId': providerId,
-        'userId': userId,
         'rating': rating,
         'photoUrl': photoUrl,
         if (comment != null && comment.isNotEmpty) 'comment': comment,
@@ -77,6 +80,7 @@ class ReviewsRepository {
   }
 
   // ── EDITAR RESEÑA ────────────────────────────────────────
+  // userId NO se envía: el backend lo deriva del JWT.
   Future<ReviewModel> updateReview({
     required int reviewId,
     required int userId,
@@ -87,7 +91,6 @@ class ReviewsRepository {
     final response = await _dio.patch(
       '/reviews/$reviewId',
       data: {
-        'userId':   userId,
         'rating':   rating,
         'photoUrl': photoUrl,
         'comment':  comment,
@@ -104,6 +107,7 @@ class ReviewsRepository {
         .toList();
   }
 
+  // userId NO se envía: el backend lo inyecta desde el JWT validado.
   Future<ReviewReplyModel> createReply({
     required int reviewId,
     required int userId,
@@ -113,7 +117,6 @@ class ReviewsRepository {
     final response = await _dio.post(
       '/reviews/$reviewId/replies',
       data: {
-        'userId': userId,
         'content': content,
         if (photoUrl != null && photoUrl.isNotEmpty) 'photoUrl': photoUrl,
       },
