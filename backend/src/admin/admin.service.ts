@@ -1316,8 +1316,17 @@ async updateProvider(
   }
 
   // ── ELIMINAR PROVEEDOR ────────────────────────────────────
-  async deleteProvider(id: number) {
-    const provider = await this.prisma.provider.findUnique({ where: { id } });
+  //
+  // `reason` es el motivo que el admin escribió — viaja en el
+  // push/socket al user para que sepa por qué le borraron el panel.
+  // El cascade del schema elimina TODAS las dependencias (incluyendo
+  // adminNotification — el cliente al re-registrar ya no verá la
+  // notif vieja de "felicidades, panel aprobado").
+  async deleteProvider(id: number, reason?: string) {
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+      select: { id: true, userId: true, type: true, businessName: true },
+    });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
     // Cascade en schema.prisma elimina: providerImage, providerAnalytic,
@@ -1325,6 +1334,39 @@ async updateProvider(
     // review, favorite, verificationDoc, recommendation, serviceItem,
     // planRequest, trustValidationRequest, offer.
     await this.prisma.provider.delete({ where: { id } });
+
+    // Notificar al admin panel para que actualice listado.
+    this.eventsGateway.emitAdminEvent('PROVIDER_DELETED', {
+      providerId: id,
+      businessName: provider.businessName,
+      type: provider.type,
+    });
+
+    // Notificar al user en TIEMPO REAL via socket. El cliente Flutter
+    // dispara _syncProviderStatus, cierra el panel si estaba abierto,
+    // muestra un dialog con el motivo y refresca el botón "Ir a mi
+    // panel" → "Quiero ser parte" en home.
+    const reasonText = reason?.trim() || 'Decisión del administrador.';
+    const title = 'Tu perfil ha sido eliminado';
+    const body  =
+      `Tu perfil ${provider.type === 'NEGOCIO' ? 'de negocio' : 'profesional'} ` +
+      `"${provider.businessName}" fue eliminado. Motivo: ${reasonText}`;
+
+    this.eventsGateway.emitNotification({
+      type:              'PROVIDER_DELETED',
+      title,
+      body,
+      targetUserId:      provider.userId,
+      targetProfileType: provider.type,
+    });
+
+    // Push notif (cubre app en background/terminated).
+    this.push.sendToUser(
+      provider.userId,
+      title,
+      body,
+      { type: 'PROVIDER_DELETED', providerType: provider.type, reason: reasonText },
+    );
 
     return { success: true, message: 'Proveedor eliminado correctamente' };
   }

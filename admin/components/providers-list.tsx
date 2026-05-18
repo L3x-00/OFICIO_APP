@@ -83,11 +83,21 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro? Se borrará el usuario, fotos y reseñas en cascada.')) return;
-    
+    if (!confirm('¿Estás seguro? Se borrará el perfil, fotos y reseñas en cascada.')) return;
+
+    // El motivo llega al user via socket+push en tiempo real
+    // (PROVIDER_DELETED). prompt en lugar de un modal porque el flujo
+    // es admin-only y no justifica más UI por ahora.
+    const reason = prompt(
+      'Motivo del borrado (lo verá el usuario en su app):',
+      'Tu perfil no cumple con nuestras políticas.',
+    );
+    // prompt() devuelve null si el admin cancela — abortamos el delete.
+    if (reason === null) return;
+
     setActionLoading(id);
     try {
-      await deleteProvider(id);
+      await deleteProvider(id, reason.trim() || undefined);
       await load();
     } catch (e: any) {
       alert(e.message || 'Error al eliminar');

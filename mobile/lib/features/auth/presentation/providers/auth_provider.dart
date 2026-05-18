@@ -230,6 +230,23 @@ class AuthProvider extends ChangeNotifier
     notifyListeners();
   }
 
+  // ── Provider deletion overlay ─────────────────────────────
+  // Set por el handler PROVIDER_DELETED del socket. _AuthSideEffects
+  // lo consume para mostrar el dialog con el motivo del admin.
+  ProviderDeletionPayload? _pendingProviderDeletion;
+  ProviderDeletionPayload? get pendingProviderDeletion => _pendingProviderDeletion;
+
+  /// Llamado por el socket mixin cuando llega PROVIDER_DELETED.
+  void setPendingProviderDeletion(ProviderDeletionPayload payload) {
+    _pendingProviderDeletion = payload;
+    notifyListeners();
+  }
+
+  void clearProviderDeletion() {
+    _pendingProviderDeletion = null;
+    notifyListeners();
+  }
+
   // ── Plan promotion overlay ────────────────────────────────
   @override
   PlanActivationPayload? _pendingPlanPromotion;

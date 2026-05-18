@@ -149,8 +149,14 @@ export const createProvider = (data: any) =>
 export const updateProvider = (id: number, data: any) =>
   fetchApi(`/admin/providers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
-export const deleteProvider = (id: number) =>
-  fetchApi(`/admin/providers/${id}`, { method: 'DELETE' });
+export const deleteProvider = (id: number, reason?: string) =>
+  fetchApi(`/admin/providers/${id}`, {
+    method: 'DELETE',
+    // El motivo viaja al user via socket+push (PROVIDER_DELETED).
+    // Si no se envía, el backend usa fallback "Decisión del admin".
+    body: reason ? JSON.stringify({ reason }) : undefined,
+    headers: reason ? { 'Content-Type': 'application/json' } : undefined,
+  });
 
 export const toggleVisibility = (id: number) =>
   fetchApi(`/admin/providers/${id}/toggle-visibility`, { method: 'PATCH' });

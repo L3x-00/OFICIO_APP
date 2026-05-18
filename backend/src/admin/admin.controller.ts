@@ -118,8 +118,11 @@ export class AdminController {
 
   @Delete('providers/:id')
   @HttpCode(HttpStatus.OK)
-  deleteProvider(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.deleteProvider(id);
+  deleteProvider(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body?: { reason?: string },
+  ) {
+    return this.adminService.deleteProvider(id, body?.reason);
   }
 
   // ── VERIFICACIÓN ──────────────────────────────────────────

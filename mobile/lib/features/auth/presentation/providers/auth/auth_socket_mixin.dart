@@ -112,6 +112,30 @@ mixin AuthSocketMixin on ChangeNotifier {
       return;
     }
 
+    if (type == 'PROVIDER_DELETED') {
+      // Admin eliminó este perfil del user en tiempo real:
+      // 1. Re-sync — saca el providerType de _providerProfiles, el
+      //    botón "Ir a mi panel" en home se vuelve "Quiero ser parte"
+      //    al instante.
+      // 2. Encolar el payload con motivo para que _AuthSideEffects
+      //    muestre el dialog explicativo encima de cualquier pantalla.
+      _syncProviderStatus().then((_) {
+        final profileType  = (payload['targetProfileType'] as String?) ?? 'OFICIO';
+        final reason       = (payload['reason'] as String?)
+                          ?? (payload['body'] as String?)
+                          ?? 'Decisión del administrador.';
+        final businessName = (payload['businessName'] as String?) ?? '';
+        (this as dynamic).setPendingProviderDeletion(
+          ProviderDeletionPayload(
+            profileType:  profileType,
+            businessName: businessName,
+            reason:       reason,
+          ),
+        );
+      });
+      return;
+    }
+
     if (type == 'TRUST_APPROVED' || type == 'TRUST_REJECTED') {
       _syncProviderStatus().then((_) {
         if (type == 'TRUST_REJECTED') {

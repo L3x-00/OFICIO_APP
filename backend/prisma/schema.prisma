@@ -25,7 +25,7 @@ model User {
   district         String?
   firebaseUid      String?          @unique
   isEmailVerified  Boolean          @default(false)
-  fcmToken         String?          @unique
+  fcmToken         String?
   coins            Int              @default(0)
   lastIp           String?
   lastLoginAt      DateTime?
@@ -75,19 +75,23 @@ model RefreshToken {
 }
 
 model Locality {
-  id         Int            @id @default(autoincrement())
-  name       String
-  department String
-  country    String         @default("Perú")
-  isActive   Boolean        @default(true)
-  createdAt  DateTime       @default(now())
-  district   String?
-  province   String?
-  source     LocalitySource @default(SEED)
-  providers  Provider[]
+  id              Int            @id @default(autoincrement())
+  name            String
+  department      String
+  country         String         @default("Perú")
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  district        String?
+  province        String?
+  source          LocalitySource @default(SEED)
+  department_norm String?
+  province_norm   String?
+  district_norm   String?
+  providers       Provider[]
 
   @@index([department, province, district])
   @@index([source])
+  @@index([department_norm, province_norm, district_norm], map: "localities_norm_active_idx", where: raw("(\"isActive\" = true)"))
   @@map("localities")
 }
 

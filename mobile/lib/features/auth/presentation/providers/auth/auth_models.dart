@@ -38,6 +38,24 @@ class PlanActivationPayload {
   });
 }
 
+/// Payload del evento "perfil eliminado" cuando el admin borra el
+/// proveedor del user. La pantalla principal lo consume para mostrar
+/// un dialog con el motivo y refrescar la UI (botón "Ir a mi panel"
+/// → "Quiero ser parte").
+class ProviderDeletionPayload {
+  /// 'OFICIO' o 'NEGOCIO' — qué perfil del user fue eliminado.
+  final String profileType;
+  /// Nombre que tenía el perfil para mostrarlo en el dialog.
+  final String businessName;
+  /// Motivo del admin (puede ser fallback genérico).
+  final String reason;
+  const ProviderDeletionPayload({
+    required this.profileType,
+    required this.businessName,
+    required this.reason,
+  });
+}
+
 /// Payload del evento "perfil aprobado" cuando el admin acepta la
 /// validación. La pantalla principal lo consume para abrir el modal
 /// de bienvenida + plan ESTANDAR de cortesía sin esperar a que el

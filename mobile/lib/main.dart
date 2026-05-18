@@ -296,6 +296,88 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         _showPlanActivationCarousel(payload);
       });
     }
+
+    // ── Provider eliminado por el admin ──────────────────────
+    // Admin borró el perfil OFICIO/NEGOCIO del user. _syncProviderStatus
+    // ya removió el tipo de _providerProfiles (botón "Ir a mi panel"
+    // → "Quiero ser parte" automático). Aquí mostramos el dialog con
+    // el motivo + limpiamos las notifs locales viejas del provider
+    // eliminado (cascade del backend ya borró las de BD; el provider
+    // local en memoria sigue cacheándolas hasta el siguiente loadHistory).
+    final deletion = auth.pendingProviderDeletion;
+    if (deletion != null && mounted) {
+      auth.clearProviderDeletion();
+      // Re-carga historial de notifs: el cascade del backend ya borró
+      // las viejas del provider eliminado (incluyendo la de "panel
+      // aprobado"), pero el _items in-memory aún las tiene. Sin este
+      // refresh, el user al entrar al tab Alertas seguiría viéndolas.
+      notifs.loadHistory();
+      // Si todavía tiene OTRO perfil activo, recargá el dashboard de
+      // ese para no quedar con cache stale. Si no quedó ninguno, el
+      // user volverá a "Quiero ser parte" en home.
+      final remaining = auth.activeProfileType;
+      if (remaining != null) {
+        context.read<DashboardProvider>().loadDashboard(providerType: remaining);
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showProviderDeletionDialog(deletion);
+      });
+    }
+  }
+
+  /// Dialog informativo cuando el admin elimina el perfil del user.
+  /// Se monta sobre cualquier pantalla via _navigatorKey. El user
+  /// solo tiene "Entendido" como acción — el backend ya hizo el delete
+  /// y el sync local ya actualizó la UI (botón "Ir a mi panel" se
+  /// volvió "Quiero ser parte" en tiempo real).
+  void _showProviderDeletionDialog(ProviderDeletionPayload deletion) {
+    final navCtx = _navigatorKey.currentContext;
+    if (navCtx == null || !navCtx.mounted) return;
+    final isNegocio = deletion.profileType == 'NEGOCIO';
+    showDialog<void>(
+      context: navCtx,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 40),
+        title: Text(
+          'Tu perfil ${isNegocio ? "de negocio" : "profesional"} fue eliminado',
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (deletion.businessName.isNotEmpty) ...[
+              Text(
+                '"${deletion.businessName}"',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+            ],
+            const Text('Motivo del administrador:'),
+            const SizedBox(height: 4),
+            Text(
+              deletion.reason,
+              style: const TextStyle(fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Si crees que es un error, contacta a soporte. Puedes '
+              'volver a registrarte como profesional o negocio desde la '
+              'pantalla principal.',
+              style: TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Mapea el plan del payload a la variante del carrousel y lo lanza
