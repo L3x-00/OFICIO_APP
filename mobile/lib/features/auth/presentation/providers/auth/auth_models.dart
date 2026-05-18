@@ -56,6 +56,15 @@ class ProviderDeletionPayload {
   });
 }
 
+/// Payload del evento "cuenta eliminada por admin" — la pantalla
+/// principal lo consume para mostrar un dialog con el motivo,
+/// luego logout. El user debe re-registrarse.
+class UserDeletionPayload {
+  /// Motivo escrito por el admin en el panel.
+  final String reason;
+  const UserDeletionPayload({ required this.reason });
+}
+
 /// Payload del evento "perfil aprobado" cuando el admin acepta la
 /// validación. La pantalla principal lo consume para abrir el modal
 /// de bienvenida + plan ESTANDAR de cortesía sin esperar a que el

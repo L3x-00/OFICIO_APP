@@ -225,8 +225,12 @@ export const getUsers = (params: {
   return fetchApi<UsersResponse>(`/admin/users?${q}`);
 };
 
-export const deleteUser = (id: number) =>
-  fetchApi(`/admin/users/${id}`, { method: 'DELETE' });
+export const deleteUser = (id: number, reason?: string) =>
+  fetchApi(`/admin/users/${id}`, {
+    method: 'DELETE',
+    body: JSON.stringify({ reason: reason ?? '' }),
+    headers: { 'Content-Type': 'application/json' },
+  });
 
 export const updateUserStatus = (id: number, isActive: boolean) =>
   fetchApi(`/admin/users/${id}/status`, {

@@ -31,6 +31,7 @@ export function UsersList() {
   const [isLoading, setIsLoading]   = useState(true);
   const [actionId, setActionId]     = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<UserItem | null>(null);
+  const [deleteReason, setDeleteReason]   = useState('');
   const [viewingUser, setViewingUser] = useState<UserItem | null>(null);
 
   const load = useCallback(async () => {
@@ -60,8 +61,10 @@ export function UsersList() {
   const handleDelete = async (user: UserItem) => {
     setActionId(user.id);
     try {
-      await deleteUser(user.id);
+      await deleteUser(user.id, deleteReason.trim() || undefined);
       setConfirmDelete(null);
+      setDeleteReason('');
+      toast.success(`Cuenta de ${user.firstName} eliminada`);
       load();
     } catch (e: any) {
       toast.error(e?.message || 'Error al eliminar usuario');
@@ -270,36 +273,63 @@ export function UsersList() {
         onUpdated={() => { setViewingUser(null); load(); }}
       />
 
-      {/* Modal de confirmación de borrado */}
+      {/* Modal de confirmación de borrado con motivo */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-bg-card border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2">Eliminar usuario</h3>
-            <p className="text-gray-400 text-sm mb-1">
-              ¿Eliminar a <strong className="text-white">{confirmDelete.firstName} {confirmDelete.lastName}</strong>?
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0E0E10] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center">
+                <Trash2 size={18} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Eliminar cuenta</h3>
+                <p className="text-gray-500 text-xs">
+                  {confirmDelete.firstName} {confirmDelete.lastName}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4">
+              <p className="text-red-300 text-xs leading-relaxed">
+                Esta acción borra la cuenta, sus reseñas, favoritos y chats en cascada.
+                {confirmDelete.provider && (
+                  <span className="block mt-1 text-orange-300">
+                    Incluye el perfil de proveedor: <strong>{confirmDelete.provider.businessName}</strong>.
+                  </span>
+                )}
+                <span className="block mt-1 font-semibold">No se puede deshacer.</span>
+              </p>
+            </div>
+
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Motivo (se envía al usuario)
+            </label>
+            <textarea
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value.slice(0, 300))}
+              placeholder="Ej. Violación reiterada de las normas de la comunidad."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-red-500/40 transition-all resize-none mb-1"
+            />
+            <p className="text-gray-600 text-[10px] mb-4 text-right">
+              {deleteReason.length}/300 · opcional
             </p>
-            <p className="text-gray-600 text-xs mb-6">
-              Esta acción borrará el usuario, sus reseñas y favoritos en cascada. No se puede deshacer.
-              {confirmDelete.provider && (
-                <span className="block mt-1 text-orange-400">
-                  También se eliminará el perfil de proveedor: {confirmDelete.provider.businessName}
-                </span>
-              )}
-            </p>
+
             <div className="flex gap-3">
               <button
-                onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 text-sm hover:border-white/20 transition-all"
+                onClick={() => { setConfirmDelete(null); setDeleteReason(''); }}
+                disabled={actionId === confirmDelete.id}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-gray-400 text-sm hover:border-white/20 transition-all disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={() => handleDelete(confirmDelete)}
                 disabled={actionId === confirmDelete.id}
-                className="flex-1 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 text-sm font-bold hover:bg-red-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {actionId === confirmDelete.id && <Loader2 size={14} className="animate-spin" />}
-                Eliminar
+                Eliminar cuenta
               </button>
             </div>
           </div>

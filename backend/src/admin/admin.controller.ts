@@ -182,8 +182,11 @@ export class AdminController {
 
   @Delete('users/:id')
   @HttpCode(HttpStatus.OK)
-  deleteUser(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.deleteUser(id);
+  deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body?: { reason?: string },
+  ) {
+    return this.adminService.deleteUser(id, body?.reason);
   }
 
   @Patch('users/:id/status')

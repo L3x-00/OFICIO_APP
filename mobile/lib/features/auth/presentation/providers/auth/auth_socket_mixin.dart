@@ -136,6 +136,20 @@ mixin AuthSocketMixin on ChangeNotifier {
       return;
     }
 
+    if (type == 'USER_DELETED') {
+      // Admin eliminó la cuenta entera. Mostrar dialog con motivo +
+      // logout — el user tendrá que re-registrarse desde cero (cliente
+      // y proveedor por igual). main.dart escucha pendingUserDeletion
+      // y muestra el dialog antes del logout.
+      final reason = (payload['reason'] as String?)
+                  ?? (payload['body'] as String?)
+                  ?? 'Decisión del administrador.';
+      (this as dynamic).setPendingUserDeletion(
+        UserDeletionPayload(reason: reason),
+      );
+      return;
+    }
+
     if (type == 'TRUST_APPROVED' || type == 'TRUST_REJECTED') {
       _syncProviderStatus().then((_) {
         if (type == 'TRUST_REJECTED') {

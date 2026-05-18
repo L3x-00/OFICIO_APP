@@ -247,6 +247,22 @@ class AuthProvider extends ChangeNotifier
     notifyListeners();
   }
 
+  // ── User deletion overlay (admin borró la cuenta) ─────────
+  // Set por el handler USER_DELETED del socket. _AuthSideEffects lo
+  // consume para mostrar el dialog con el motivo y disparar logout.
+  UserDeletionPayload? _pendingUserDeletion;
+  UserDeletionPayload? get pendingUserDeletion => _pendingUserDeletion;
+
+  void setPendingUserDeletion(UserDeletionPayload payload) {
+    _pendingUserDeletion = payload;
+    notifyListeners();
+  }
+
+  void clearUserDeletion() {
+    _pendingUserDeletion = null;
+    notifyListeners();
+  }
+
   // ── Plan promotion overlay ────────────────────────────────
   @override
   PlanActivationPayload? _pendingPlanPromotion;

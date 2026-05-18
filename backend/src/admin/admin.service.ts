@@ -1036,10 +1036,30 @@ async updateProvider(
     return { data: mapped, total, page, lastPage: Math.ceil(total / limit) };
   }
 
-  async deleteUser(id: number) {
+  async deleteUser(id: number, reason?: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
     if (user.role === 'ADMIN') throw new BadRequestException('No se puede eliminar un administrador');
+
+    // Notificación ANTES del delete — después la sala WS user_{id} ya
+    // no existe y el mobile no recibe nada. El listener del cliente
+    // captura USER_DELETED y dispara logout + dialog explicativo.
+    const reasonText = reason?.trim() || 'Decisión del administrador.';
+    const title = 'Tu cuenta ha sido eliminada';
+    const body  = `Tu cuenta fue eliminada por el administrador. Motivo: ${reasonText}`;
+
+    this.eventsGateway.emitNotification({
+      type:         'USER_DELETED',
+      title,
+      body,
+      targetUserId: id,
+    });
+    void this.push.sendToUser(
+      id,
+      title,
+      body,
+      { type: 'USER_DELETED', reason: reasonText },
+    ).catch(() => {});
 
     // Cascade en schema.prisma elimina: providers (con todas sus dependencias),
     // reviews, reviewReplies, providerReports, platformIssues, refreshTokens,
