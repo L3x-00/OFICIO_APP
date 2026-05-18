@@ -280,19 +280,31 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: widget.offersProvider.isSubmitting ? null : _publish,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: widget.offersProvider.isSubmitting
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                      : const Text('Publicar oferta', style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)),
-                ),
+              // ListenableBuilder fuerza rebuild del botón cuando
+              // isSubmitting cambia. Antes el widget no se suscribía al
+              // provider → tap → isSubmitting=true en estado interno pero
+              // botón nunca mostraba spinner → user veía como si "no
+              // funcionara". Si createOffer fallaba silenciosamente, el
+              // snack tampoco aparecía claro.
+              ListenableBuilder(
+                listenable: widget.offersProvider,
+                builder: (_, _) {
+                  final busy = widget.offersProvider.isSubmitting;
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: busy ? null : _publish,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.amber,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: busy
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                          : const Text('Publicar oferta', style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)),
+                    ),
+                  );
+                },
               ),
             ],
           ),
