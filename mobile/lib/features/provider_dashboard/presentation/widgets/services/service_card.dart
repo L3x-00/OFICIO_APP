@@ -32,18 +32,18 @@ class ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: c.warmDeep,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
-              color: AppColors.amber,
-              size: 22,
-            ),
+          // Imagen del servicio si existe; si no, icono por defecto.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: (service.imageUrl != null && service.imageUrl!.isNotEmpty)
+                ? Image.network(
+                    service.imageUrl!,
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _fallbackIcon(c),
+                  )
+                : _fallbackIcon(c),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -117,4 +117,18 @@ class ServiceCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fallbackIcon(AppThemeColors c) => Container(
+    width: 56,
+    height: 56,
+    decoration: BoxDecoration(
+      color: c.warmDeep,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Icon(
+      isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
+      color: AppColors.amber,
+      size: 24,
+    ),
+  );
 }

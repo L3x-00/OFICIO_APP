@@ -1,6 +1,10 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/network/dio_client.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../auth/presentation/providers/auth_provider.dart';
 import '../../../domain/models/service_item_model.dart';
@@ -70,12 +74,101 @@ class ServiceFormSheet extends StatefulWidget {
   State<ServiceFormSheet> createState() => _ServiceFormSheetState();
 }
 
+class _ImagePickerTile extends StatelessWidget {
+  final File?    pickedFile;
+  final String?  existingUrl;
+  final VoidCallback onPick;
+  final VoidCallback onRemove;
+  final AppThemeColors colors;
+
+  const _ImagePickerTile({
+    required this.pickedFile,
+    required this.existingUrl,
+    required this.onPick,
+    required this.onRemove,
+    required this.colors,
+  });
+
+  bool get _hasImage => pickedFile != null || (existingUrl != null && existingUrl!.isNotEmpty);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return GestureDetector(
+      onTap: onPick,
+      child: Container(
+        height: 110,
+        decoration: BoxDecoration(
+          color: c.bgInput,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _hasImage
+                ? AppColors.amber.withValues(alpha: 0.55)
+                : Colors.white.withValues(alpha: 0.08),
+            width: _hasImage ? 1.5 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: _hasImage
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (pickedFile != null)
+                    Image.file(pickedFile!, fit: BoxFit.cover)
+                  else
+                    Image.network(
+                      existingUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _placeholder(c),
+                    ),
+                  Positioned(
+                    top: 8, right: 8,
+                    child: GestureDetector(
+                      onTap: onRemove,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close, color: Colors.white, size: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : _placeholder(c),
+      ),
+    );
+  }
+
+  Widget _placeholder(AppThemeColors c) => Center(
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.add_photo_alternate_rounded, color: c.textMuted, size: 22),
+        const SizedBox(width: 8),
+        Text(
+          'Añadir imagen del servicio (opcional)',
+          style: TextStyle(color: c.textMuted, fontSize: 13),
+        ),
+      ],
+    ),
+  );
+}
+
 class _ServiceFormSheetState extends State<ServiceFormSheet> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _descCtrl;
   late final TextEditingController _priceCtrl;
   late final TextEditingController _phoneCtrl;
   late final TextEditingController _unitCtrl;
+
+  /// URL ya persistida (si veníamos editando) o subida durante este sheet.
+  String? _imageUrl;
+  /// File local seleccionado pendiente de subir al confirmar.
+  File?   _pickedFile;
+  bool    _uploading = false;
 
   bool get _isEdit => widget.existing != null;
 
@@ -98,6 +191,45 @@ class _ServiceFormSheetState extends State<ServiceFormSheet> {
     );
     _phoneCtrl = TextEditingController(text: initialPhone);
     _unitCtrl  = TextEditingController(text: existing?.unit ?? '');
+    _imageUrl  = existing?.imageUrl;
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 80,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _pickedFile = File(picked.path);
+      _imageUrl   = null;
+    });
+  }
+
+  /// Sube el archivo seleccionado al backend antes de guardar el item.
+  /// Devuelve la URL pública o null si falló (snack mostrado al user).
+  Future<String?> _uploadIfNeeded() async {
+    if (_pickedFile == null) return _imageUrl;
+    setState(() => _uploading = true);
+    try {
+      final fileName = _pickedFile!.path.split(Platform.pathSeparator).last;
+      final form = FormData.fromMap({
+        'file': await MultipartFile.fromFile(_pickedFile!.path, filename: fileName),
+      });
+      final res = await DioClient.instance.dio.post('/upload/provider-photo', data: form);
+      return (res.data is Map ? res.data['url'] as String? : null);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo subir la imagen: $e')),
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   @override
@@ -110,8 +242,13 @@ class _ServiceFormSheetState extends State<ServiceFormSheet> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) return;
+    // Subir foto pendiente antes de pop — el padre persiste via
+    // dash.saveServices y necesita la URL ya en el item.
+    final finalImageUrl = await _uploadIfNeeded();
+    if (!mounted) return;
+    if (_pickedFile != null && finalImageUrl == null) return;
 
     final newItem = ServiceItem(
       id: widget.existing?.id ??
@@ -127,6 +264,7 @@ class _ServiceFormSheetState extends State<ServiceFormSheet> {
       phone: _phoneCtrl.text.trim().isEmpty
           ? null
           : _phoneCtrl.text.trim(),
+      imageUrl: finalImageUrl,
     );
 
     Navigator.pop(context, newItem);
@@ -212,11 +350,23 @@ class _ServiceFormSheetState extends State<ServiceFormSheet> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              // ── Imagen del servicio (opcional) ─────────
+              _ImagePickerTile(
+                pickedFile:  _pickedFile,
+                existingUrl: _imageUrl,
+                onPick:      _pickImage,
+                onRemove:    () => setState(() {
+                  _pickedFile = null;
+                  _imageUrl   = null;
+                }),
+                colors:      c,
+              ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _save,
+                  onPressed: _uploading ? null : _save,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.amber,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -224,14 +374,16 @@ class _ServiceFormSheetState extends State<ServiceFormSheet> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: Text(
-                    _isEdit ? 'Actualizar' : 'Guardar',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _uploading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                      : Text(
+                          _isEdit ? 'Actualizar' : 'Guardar',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

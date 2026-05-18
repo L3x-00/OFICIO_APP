@@ -7,6 +7,11 @@ class ServiceItem {
   final double? price;
   final String? unit; // 'por hora', 'por trabajo', 'por m²', etc.
   final String? phone;
+  /// URL pública de la imagen subida vía /upload/provider-photo.
+  /// Persistida en el scheduleJson del backend junto a los otros
+  /// campos — backend trata el JSON como opaco así que no requiere
+  /// migración.
+  final String? imageUrl;
 
   const ServiceItem({
     required this.id,
@@ -15,6 +20,7 @@ class ServiceItem {
     this.price,
     this.unit,
     this.phone,
+    this.imageUrl,
   });
 
   String get priceLabel {
@@ -33,6 +39,7 @@ class ServiceItem {
       price: (json['price'] as num?)?.toDouble(),
       unit: json['unit'] as String?,
       phone: json['phone'],
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 
@@ -43,6 +50,7 @@ class ServiceItem {
     if (description != null) 'description': description,
     if (price != null) 'price': price,
     if (unit != null) 'unit': unit,
+    if (imageUrl != null) 'imageUrl': imageUrl,
   };
 
   ServiceItem copyWith({
@@ -51,6 +59,7 @@ class ServiceItem {
     double? price,
     String? unit,
     String? phone,
+    String? imageUrl,
   }) {
     return ServiceItem(
       id: id,
@@ -59,6 +68,7 @@ class ServiceItem {
       price: price ?? this.price,
       unit: unit ?? this.unit,
       phone: phone ?? this.phone,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
