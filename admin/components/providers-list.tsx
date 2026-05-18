@@ -43,6 +43,13 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   const [promotePlanLoading, setPromotePlanLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
+  // Modal de borrado: state local para el flujo motivo → confirmación.
+  // Reemplaza al prompt() nativo (sin diseño, sin diseño oscuro,
+  // sin validación visual del motivo).
+  const [deletingProvider, setDeletingProvider] = useState<Provider | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const lastPage = Math.ceil(total / 15);
 
   // Carga de datos usando la API unificada
@@ -82,27 +89,30 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro? Se borrará el perfil, fotos y reseñas en cascada.')) return;
+  /// Abre el modal de borrado. La confirmación + envío al backend
+  /// pasan por `confirmDelete` cuando el admin escribe el motivo.
+  const handleDelete = (provider: Provider) => {
+    setDeletingProvider(provider);
+    setDeleteReason('Tu perfil no cumple con nuestras políticas.');
+  };
 
-    // El motivo llega al user via socket+push en tiempo real
-    // (PROVIDER_DELETED). prompt en lugar de un modal porque el flujo
-    // es admin-only y no justifica más UI por ahora.
-    const reason = prompt(
-      'Motivo del borrado (lo verá el usuario en su app):',
-      'Tu perfil no cumple con nuestras políticas.',
-    );
-    // prompt() devuelve null si el admin cancela — abortamos el delete.
-    if (reason === null) return;
-
-    setActionLoading(id);
+  const confirmDelete = async () => {
+    if (!deletingProvider) return;
+    const reason = deleteReason.trim();
+    setDeleteLoading(true);
     try {
-      await deleteProvider(id, reason.trim() || undefined);
+      await deleteProvider(deletingProvider.id, reason || undefined);
+      toast.success(
+        `Perfil "${deletingProvider.businessName}" eliminado · ` +
+        'el usuario fue notificado en tiempo real',
+      );
+      setDeletingProvider(null);
+      setDeleteReason('');
       await load();
     } catch (e: any) {
-      alert(e.message || 'Error al eliminar');
+      toast.error(e?.message ?? 'No se pudo eliminar el perfil');
     } finally {
-      setActionLoading(null);
+      setDeleteLoading(false);
     }
   };
 
@@ -267,8 +277,8 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                         {p.isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
                       <button
-                        onClick={() => handleDelete(p.id)}
-                        disabled={actionLoading === p.id}
+                        onClick={() => handleDelete(p)}
+                        disabled={actionLoading === p.id || deletingProvider?.id === p.id}
                         className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
                         title="Eliminar"
                       >
@@ -387,6 +397,113 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
               <p className="text-gray-600 text-[10px] text-center mt-4">
                 El cambio es inmediato · Se notifica al proveedor por app
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de borrado con motivo — diseño coherente con los demás
+          (oscuro, blur, border sutil). El motivo viaja en tiempo real
+          al user via socket+push (PROVIDER_DELETED). */}
+      {deletingProvider && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => deleteLoading ? null : setDeletingProvider(null)}
+        >
+          <div
+            className="bg-[#0E0E10] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center">
+                  <Trash2 size={18} className="text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">Eliminar perfil</h3>
+                  <p className="text-gray-500 text-[11px]">Acción irreversible</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDeletingProvider(null)}
+                disabled={deleteLoading}
+                className="p-1.5 rounded-lg hover:bg-white/5 text-gray-500 transition-all disabled:opacity-30"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 space-y-4">
+              <div>
+                <p className="text-gray-400 text-[13px] mb-2">
+                  Vas a eliminar el perfil de:
+                </p>
+                <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+                  <p className="text-white font-medium text-sm">
+                    {deletingProvider.businessName}
+                  </p>
+                  <p className="text-gray-500 text-[11px] mt-0.5">
+                    {deletingProvider.type === 'NEGOCIO' ? 'Negocio' : 'Profesional'} ·
+                    ID {deletingProvider.id}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-gray-400 text-[12px] font-medium block mb-1.5">
+                  Motivo (lo verá el usuario en su app)
+                </label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  disabled={deleteLoading}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Ej: Datos falsos en el DNI, contenido inapropiado, etc."
+                  className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-[13px] placeholder:text-gray-600 focus:outline-none focus:border-red-500/50 resize-none"
+                />
+                <p className="text-gray-600 text-[10px] mt-1">
+                  {deleteReason.length}/500 · Si lo dejas vacío, se envía un mensaje genérico.
+                </p>
+              </div>
+
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                <p className="text-amber-400 text-[11px] leading-relaxed">
+                  Esta acción borra fotos, reseñas, favoritos y suscripción
+                  del proveedor en cascada. Al usuario le aparecerá un
+                  mensaje en tiempo real con el motivo escrito arriba.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-2 p-5 border-t border-white/5">
+              <button
+                onClick={() => setDeletingProvider(null)}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[13px] font-medium transition-all disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-[13px] font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleteLoading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Eliminando…
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} />
+                    Eliminar perfil
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
