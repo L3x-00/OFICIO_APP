@@ -159,18 +159,37 @@ export class ChatService {
     const receiverUserId =
       senderUserId === room.clientId ? providerOwnerUserId : room.clientId;
 
-    const message = await this.prisma.chatMessage.create({
-      data: {
-        chatRoomId: dto.chatRoomId,
-        senderId: senderUserId,
-        content: dto.content,
-      },
-    });
+    // Necesitamos el nombre del sender para titular la notificación
+    // ("Mensaje de Juan Pérez" en vez del genérico "Nuevo mensaje").
+    const [message, sender] = await Promise.all([
+      this.prisma.chatMessage.create({
+        data: {
+          chatRoomId: dto.chatRoomId,
+          senderId: senderUserId,
+          content: dto.content,
+        },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: senderUserId },
+        select: { firstName: true, lastName: true },
+      }),
+    ]);
+
+    const senderName =
+      `${sender?.firstName ?? ''} ${sender?.lastName ?? ''}`.trim()
+      || 'Alguien';
+    const notifTitle = `Mensaje de ${senderName}`;
 
     // Push + WebSocket en paralelo. Errores se loguean pero no rompen la API.
+    // Tres canales:
+    //   1. Push FCM → notif del sistema con nombre del remitente
+    //   2. newChatMessage WS → chat_provider actualiza la sala en vivo
+    //   3. notification WS → notifications_provider lo agrega al inbox
+    //      (in-memory durante la sesión; persistencia en BD requiere
+    //      añadir CHAT_MESSAGE al enum NotificationType + migración)
     void Promise.allSettled([
       this.push
-        .sendToUser(receiverUserId, 'Nuevo mensaje', message.content, {
+        .sendToUser(receiverUserId, notifTitle, message.content, {
           type: 'CHAT_MESSAGE',
           chatRoomId: String(message.chatRoomId),
           messageId: String(message.id),
@@ -182,6 +201,14 @@ export class ChatService {
           this.events.server
             .to(`user_${receiverUserId}`)
             .emit('newChatMessage', message);
+          // Disparamos también el evento genérico de notificación para
+          // que el inbox in-app lo recoja con el nombre del remitente.
+          this.events.emitNotification({
+            type: 'CHAT_MESSAGE',
+            title: notifTitle,
+            body: message.content,
+            targetUserId: receiverUserId,
+          });
         } catch (e) {
           this.logger.warn(`ws emit falló: ${(e as Error)?.message}`);
         }
