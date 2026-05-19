@@ -7,6 +7,7 @@ import '../theme/app_theme_colors.dart';
 import '../../features/notifications/presentation/providers/notifications_provider.dart';
 import '../../features/showcase/showcase_data.dart';
 import '../../features/showcase/showcase_overlay.dart';
+import 'app_router.dart' show kProfileBranchNavKey;
 
 /// Shell del [StatefulShellRoute] — Scaffold con bottom navigation que
 /// preserva el stack y estado de cada uno de los 5 tabs principales.
@@ -27,9 +28,17 @@ class _AppShellState extends State<AppShell> {
   DateTime? _lastBackPress;
 
   void _onTabTapped(int index) {
+    // Si saliendo del tab Perfil (idx 4) hacia otro tab, popUntil root
+    // del branch para que las sub-páginas (Mis mensajes, Mis solicitudes,
+    // etc.) NO queden abiertas al volver. UX solicitada por el user.
+    final current = widget.navigationShell.currentIndex;
+    const profileIdx = 4;
+    if (current == profileIdx && index != profileIdx) {
+      kProfileBranchNavKey.currentState?.popUntil((r) => r.isFirst);
+    }
     widget.navigationShell.goBranch(
       index,
-      initialLocation: index == widget.navigationShell.currentIndex,
+      initialLocation: index == current,
     );
   }
 

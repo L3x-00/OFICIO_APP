@@ -29,6 +29,13 @@ import '../../features/trust_validation/presentation/screens/trust_validation_fo
 import 'app_shell.dart';
 import 'router_notifier.dart';
 
+/// Key del navigator del branch de Perfil — usada por AppShell para
+/// resetear su stack (popUntil root) cuando el user cambia de tab.
+/// Sin esto, las sub-páginas "Mis mensajes", "Mis solicitudes", etc.
+/// quedaban abiertas y se mostraban de nuevo al volver al tab perfil.
+final GlobalKey<NavigatorState> kProfileBranchNavKey =
+    GlobalKey<NavigatorState>();
+
 
 // ── Rutas públicas (no requieren autenticación) ─────────────
 const _publicPaths = <String>{
@@ -204,9 +211,17 @@ GoRouter createRouter({
             GoRoute(path: '/alerts', builder: (_, _) => const NotificationsScreen()),
           ]),
           // Tab 4 — Perfil
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
-          ]),
+          // navigatorKey expone el NavigatorState del branch — AppShell
+          // lo usa para pop sub-pages (Mis mensajes, Mis solicitudes,
+          // etc.) al cambiar a otro tab. Sin esto el branch persistía
+          // su stack y volver al perfil mostraba la sub-página, no
+          // el root del perfil.
+          StatefulShellBranch(
+            navigatorKey: kProfileBranchNavKey,
+            routes: [
+              GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
+            ],
+          ),
         ],
       ),
     ],
