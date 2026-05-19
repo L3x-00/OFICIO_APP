@@ -48,9 +48,16 @@ class SocialAuthService {
   static final _googleSignIn = GoogleSignIn();
 
   /// Inicia sesión con Google.
+  ///
+  /// Antes hacía un `_googleSignIn.signOut()` previo "para forzar el
+  /// account picker", lo cual añadía 2-3 segundos al flujo en cada
+  /// intento (el round-trip a Google para invalidar la sesión es lento)
+  /// y al user ya autenticado lo obligaba a pasar por el picker
+  /// innecesariamente. Quitamos ese paso — el picker nativo igual
+  /// aparece cuando no hay sesión Google activa, y cuando la hay el
+  /// login es virtualmente instantáneo.
   static Future<SocialSignInOutcome> signInWithGoogle() async {
     try {
-      await _googleSignIn.signOut();
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return SocialSignInOutcome.cancelled();
       final googleAuth = await googleUser.authentication;
