@@ -41,11 +41,21 @@ export class ProviderProfileService {
         user: {
           select: { email: true, firstName: true, lastName: true, phone: true, avatarUrl: true },
         },
+        // Conteo de favoritos — el mobile lo lee como `totalFavorites`
+        // para mostrarlo en la card "Favoritos" del panel INICIO. Antes
+        // ese campo no se calculaba y la card mostraba siempre 0.
+        _count: { select: { favorites: true } },
       },
     });
 
     if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
-    return provider;
+    // Aplanamos _count.favorites → totalFavorites para que el JSON
+    // tenga la misma forma que el modelo DashboardProfileModel del
+    // mobile (`json['totalFavorites']`).
+    return {
+      ...provider,
+      totalFavorites: provider._count?.favorites ?? 0,
+    };
   }
 
   // ── ACTUALIZAR MI PERFIL ─────────────────────────────────
