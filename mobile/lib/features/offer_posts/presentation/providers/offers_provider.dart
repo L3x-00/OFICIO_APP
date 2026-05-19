@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/offers_repository.dart';
 import '../../domain/models/public_offer_model.dart';
 
@@ -25,6 +26,51 @@ class PublicOffersProvider extends ChangeNotifier {
   String?       _department;
   String?       _province;
   String?       _district;
+
+  /// Offer ids del propio user que él decidió ocultar del listado público
+  /// (para evitar verse confundido al encontrar su propia oferta).
+  /// Persistido en SharedPreferences (`hidden_offer_ids`).
+  final Set<int> _hiddenOwnOfferIds = <int>{};
+  bool _hiddenLoaded = false;
+  static const _hiddenKey = 'hidden_offer_ids';
+
+  Set<int> get hiddenOwnOfferIds => Set.unmodifiable(_hiddenOwnOfferIds);
+
+  Future<void> _loadHiddenIds() async {
+    if (_hiddenLoaded) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_hiddenKey) ?? const [];
+    _hiddenOwnOfferIds
+      ..clear()
+      ..addAll(raw.map(int.tryParse).whereType<int>());
+    _hiddenLoaded = true;
+  }
+
+  Future<void> _persistHiddenIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _hiddenKey,
+      _hiddenOwnOfferIds.map((e) => e.toString()).toList(),
+    );
+  }
+
+  Future<void> hideOwnOffer(int offerId) async {
+    await _loadHiddenIds();
+    _hiddenOwnOfferIds.add(offerId);
+    await _persistHiddenIds();
+    notifyListeners();
+  }
+
+  Future<void> unhideOwnOffer(int offerId) async {
+    await _loadHiddenIds();
+    _hiddenOwnOfferIds.remove(offerId);
+    await _persistHiddenIds();
+    notifyListeners();
+  }
+
+  /// Devuelve las ofertas filtrando las que el user marcó como ocultas.
+  List<PublicOfferModel> get visibleOffers =>
+      List.unmodifiable(_offers.where((o) => !_hiddenOwnOfferIds.contains(o.id)));
 
   List<PublicOfferModel> get offers       => List.unmodifiable(_offers);
   bool                   get isLoading    => _isLoading;
@@ -97,6 +143,9 @@ class PublicOffersProvider extends ChangeNotifier {
       _page    = 1;
       _hasMore = true;
     }
+    // Cargamos el set de ocultos en paralelo al primer fetch — usado
+    // por `visibleOffers` para filtrar el listado en la UI.
+    if (!_hiddenLoaded) await _loadHiddenIds();
 
     _isLoading = true;
     notifyListeners();

@@ -118,11 +118,15 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
             ),
 
             // ── Lista de ofertas ─────────────────────────────
-            if (prov.isLoading && prov.offers.isEmpty)
+            // Usamos `visibleOffers` para excluir las propias que el
+            // user marcó como ocultas (toggle desde offer_detail_sheet).
+            // El conteo de `offers` se mantiene para detectar empty-state
+            // real vs filtrado por hide-own.
+            if (prov.isLoading && prov.visibleOffers.isEmpty)
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
               )
-            else if (prov.offers.isEmpty)
+            else if (prov.visibleOffers.isEmpty)
               SliverFillRemaining(
                 child: Center(
                   child: Column(
@@ -152,7 +156,8 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (ctx, i) {
-                      if (i == prov.offers.length) {
+                      final visible = prov.visibleOffers;
+                      if (i == visible.length) {
                         return prov.hasMore
                             ? const Padding(
                                 padding: EdgeInsets.all(16),
@@ -161,9 +166,9 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                                         color: AppColors.amber, strokeWidth: 2)))
                             : const SizedBox(height: 16);
                       }
-                      return _OfferCard(offer: prov.offers[i]);
+                      return _OfferCard(offer: visible[i]);
                     },
-                    childCount: prov.offers.length + 1,
+                    childCount: prov.visibleOffers.length + 1,
                   ),
                 ),
               ),
