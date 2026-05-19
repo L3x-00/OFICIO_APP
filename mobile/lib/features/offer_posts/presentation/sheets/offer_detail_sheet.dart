@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 import '../../../providers_list/data/providers_repository.dart';
 import '../../../providers_list/presentation/screens/provider_detail_screen.dart';
 import '../../domain/models/public_offer_model.dart';
+import '../providers/offers_provider.dart';
 
 /// Detalle completo de una oferta pública.
 ///
@@ -32,6 +36,14 @@ class OfferDetailSheet extends StatelessWidget {
     final c = context.colors;
     final screenH = MediaQuery.of(context).size.height;
     final p = offer.provider;
+    // Detectar si esta oferta es del propio user comparando provider.id
+    // con los providerIds del auth (OFICIO + NEGOCIO). En ese caso
+    // mostramos opciones de gestión en vez del CTA público.
+    final auth = context.watch<AuthProvider>();
+    final ownOficioId  = auth.providerDataFor('OFICIO')?['id']  as int?;
+    final ownNegocioId = auth.providerDataFor('NEGOCIO')?['id'] as int?;
+    final isOwn = p.id == ownOficioId || p.id == ownNegocioId;
+    final ownProfileType = p.id == ownNegocioId ? 'NEGOCIO' : 'OFICIO';
 
     return Container(
       height: screenH * 0.85,
@@ -218,62 +230,71 @@ class OfferDetailSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
 
-                        // CTA — Ver perfil profesional / Ver negocio
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _openProviderCard(context),
-                            icon: Icon(
-                              p.isBusiness
-                                  ? Icons.storefront_rounded
-                                  : Icons.person_rounded,
-                              size: 18,
-                            ),
-                            label: Text(
-                              p.isBusiness
-                                  ? 'Ver negocio'
-                                  : 'Ver perfil profesional',
-                              style: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
-                              elevation: 0,
+                        // Si la oferta es del propio user, mostramos
+                        // opciones de gestión en vez del CTA público.
+                        if (isOwn) ...[
+                          _OwnOfferActions(
+                            offer: offer,
+                            ownProfileType: ownProfileType,
+                          ),
+                        ] else ...[
+                          // CTA — Ver perfil profesional / Ver negocio
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _openProviderCard(context),
+                              icon: Icon(
+                                p.isBusiness
+                                    ? Icons.storefront_rounded
+                                    : Icons.person_rounded,
+                                size: 18,
+                              ),
+                              label: Text(
+                                p.isBusiness
+                                    ? 'Ver negocio'
+                                    : 'Ver perfil profesional',
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                                elevation: 0,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
+                          const SizedBox(height: 10),
 
-                        // Botones de contacto rápido (mantienen utilidad)
-                        Row(
-                          children: [
-                            if (p.whatsapp != null)
-                              Expanded(
-                                child: _ContactBtn(
-                                  icon: Icons.chat_rounded,
-                                  label: 'WhatsApp',
-                                  color: const Color(0xFF25D366),
-                                  onTap: () => launchUrl(Uri.parse(
-                                      'https://wa.me/${p.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en OficioApp')),
+                          // Botones de contacto rápido (mantienen utilidad)
+                          Row(
+                            children: [
+                              if (p.whatsapp != null)
+                                Expanded(
+                                  child: _ContactBtn(
+                                    icon: Icons.chat_rounded,
+                                    label: 'WhatsApp',
+                                    color: const Color(0xFF25D366),
+                                    onTap: () => launchUrl(Uri.parse(
+                                        'https://wa.me/${p.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en OficioApp')),
+                                  ),
                                 ),
-                              ),
-                            if (p.whatsapp != null && p.phone != null)
-                              const SizedBox(width: 8),
-                            if (p.phone != null)
-                              Expanded(
-                                child: _ContactBtn(
-                                  icon: Icons.phone_rounded,
-                                  label: 'Llamar',
-                                  color: AppColors.primary,
-                                  onTap: () => launchUrl(Uri.parse('tel:${p.phone}')),
+                              if (p.whatsapp != null && p.phone != null)
+                                const SizedBox(width: 8),
+                              if (p.phone != null)
+                                Expanded(
+                                  child: _ContactBtn(
+                                    icon: Icons.phone_rounded,
+                                    label: 'Llamar',
+                                    color: AppColors.primary,
+                                    onTap: () => launchUrl(Uri.parse('tel:${p.phone}')),
+                                  ),
                                 ),
-                              ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -305,6 +326,100 @@ class OfferDetailSheet extends StatelessWidget {
         const SnackBar(content: Text('No se pudo abrir el perfil del proveedor')),
       );
     }
+  }
+}
+
+/// Acciones que el provider ve cuando entra al detalle de su propia
+/// oferta — reemplaza el CTA público de "Ver negocio/perfil" por
+/// gestión: ir al panel, editar (redirige al panel→servicios donde
+/// está el botón de editar), ocultar de mi vista pública.
+class _OwnOfferActions extends StatelessWidget {
+  final PublicOfferModel offer;
+  final String ownProfileType;
+  const _OwnOfferActions({required this.offer, required this.ownProfileType});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final offersProv = context.watch<PublicOffersProvider>();
+    final isHidden = offersProv.hiddenOwnOfferIds.contains(offer.id);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline_rounded, size: 14, color: c.textSecondary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Esta es tu oferta. Gestiónala desde aquí.',
+                  style: TextStyle(color: c.textSecondary, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton.icon(
+          onPressed: () {
+            Navigator.of(context).pop();
+            // Panel del provider — el tab Servicios contiene el edit/delete
+            // de ofertas. Push con rootNavigator para apilar sobre el shell.
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(
+                builder: (_) => ProviderPanel(providerType: ownProfileType),
+              ),
+            );
+          },
+          icon: const Icon(Icons.dashboard_rounded, size: 18),
+          label: const Text('Ir a mi panel',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+            elevation: 0,
+          ),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () {
+            if (isHidden) {
+              offersProv.unhideOwnOffer(offer.id);
+            } else {
+              offersProv.hideOwnOffer(offer.id);
+            }
+          },
+          icon: Icon(
+            isHidden ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+            size: 18,
+            color: c.textSecondary,
+          ),
+          label: Text(
+            isHidden
+                ? 'Ver mi oferta en la sección Ofertas'
+                : 'Ocultar mi oferta para mí',
+            style: TextStyle(
+                color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: c.border),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+      ],
+    );
   }
 }
 
