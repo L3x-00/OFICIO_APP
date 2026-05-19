@@ -24,9 +24,14 @@ export class CreateReviewDto {
   @MaxLength(500, { message: 'El comentario no puede exceder 500 caracteres' })
   comment?: string;
 
+  // MaxLength(500) era demasiado bajo — las URLs presigned de R2/S3
+  // incluyen query params (X-Amz-Signature, X-Amz-Date, X-Amz-Expires,
+  // etc.) y pasan los 700 chars fácilmente. ValidationPipe rechazaba
+  // con "Bad Request" sin mensaje claro y el user veía "property userId
+  // should not exist" como mensaje crónico. 2000 cubre con margen.
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(2000)
   photoUrl?: string;
 
   @IsOptional()
@@ -74,7 +79,7 @@ export class UpdateReviewDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(2000)
   photoUrl?: string;
 
   // userId NO se acepta del cliente — viene del JWT en el controller.
@@ -92,6 +97,6 @@ export class CreateReviewReplyDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(2000)
   photoUrl?: string;
 }
