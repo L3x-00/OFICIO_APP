@@ -105,7 +105,40 @@ class ProviderHeader extends StatelessWidget {
               ],
             ),
           ),
+        // Chips de delivery / coordinación para NEGOCIO — independientes
+        // entre sí, se muestran según lo que el user marcó en el onboarding.
+        if (provider.type == ProviderType.negocio && provider.hasDelivery)
+          _deliveryChip(
+            icon: Icons.delivery_dining_rounded,
+            label: 'Delivery',
+            color: const Color(0xFFE07B39),
+          ),
+        if (provider.type == ProviderType.negocio && provider.plenaCoordinacion)
+          _deliveryChip(
+            icon: Icons.handshake_rounded,
+            label: 'Coordinamos entrega',
+            color: const Color(0xFF60A5FA),
+          ),
       ],
+    );
+  }
+
+  Widget _deliveryChip({required IconData icon, required String label, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: color, fontSize: 11)),
+        ],
+      ),
     );
   }
 }

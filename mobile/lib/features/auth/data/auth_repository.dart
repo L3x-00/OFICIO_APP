@@ -196,7 +196,9 @@ class AuthRepository {
         if (nombreComercial != null && nombreComercial.isNotEmpty) 'nombreComercial': nombreComercial,
         if (razonSocial != null && razonSocial.isNotEmpty) 'razonSocial': razonSocial,
         if (type == 'NEGOCIO') 'hasDelivery': hasDelivery,
-        if (type == 'NEGOCIO' && hasDelivery) 'plenaCoordinacion': plenaCoordinacion,
+        // plenaCoordinacion ya NO está condicionado a hasDelivery —
+        // son features independientes que el user marca por separado.
+        if (type == 'NEGOCIO') 'plenaCoordinacion': plenaCoordinacion,
         if (type == 'OFICIO') 'hasHomeService': hasHomeService,
         if (description != null && description.isNotEmpty) 'description': description,
         if (address != null && address.isNotEmpty) 'address': address,

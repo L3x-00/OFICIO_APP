@@ -332,7 +332,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       dni:               _isOficio && dni.isNotEmpty ? dni : null,
       ruc:               !_isOficio && ruc.isNotEmpty ? ruc : null,
       hasDelivery:       !_isOficio ? _hasDelivery : false,
-      plenaCoordinacion: !_isOficio && _hasDelivery ? _plenaCoordinacion : false,
+      // Independiente de hasDelivery — antes solo se enviaba si el otro
+      // toggle estaba activo. Ahora ambos viajan por separado y la
+      // tarjeta los muestra individualmente.
+      plenaCoordinacion: !_isOficio ? _plenaCoordinacion : false,
       hasHomeService:    _isOficio ? _hasDelivery : false,
       description:       _descriptionController.text.trim(),
       address:           _addressController.text.trim(),

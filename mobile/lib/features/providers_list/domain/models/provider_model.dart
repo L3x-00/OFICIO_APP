@@ -40,6 +40,10 @@ class ProviderModel {
   final int totalRecommendations;
   /// Solo OFICIO: indica que el profesional atiende a domicilio
   final bool hasHomeService;
+  /// Solo NEGOCIO: ofrece servicio de delivery propio
+  final bool hasDelivery;
+  /// Solo NEGOCIO: entrega pedidos coordinando con el cliente
+  final bool plenaCoordinacion;
   /// Servicios/productos del proveedor (parseados de scheduleJson['services'])
   final List<ServiceItem> services;
   /// true cuando el admin validó los documentos de identidad del proveedor
@@ -83,6 +87,8 @@ class ProviderModel {
     this.userId,
     this.totalRecommendations = 0,
     this.hasHomeService = false,
+    this.hasDelivery = false,
+    this.plenaCoordinacion = false,
     this.services = const [],
     this.isTrusted = false,
     this.website,
@@ -130,6 +136,8 @@ class ProviderModel {
       userId:                 json['userId'] as int?,
       totalRecommendations:   json['totalRecommendations'] as int? ?? 0,
       hasHomeService:         json['hasHomeService'] as bool? ?? false,
+      hasDelivery:            json['hasDelivery'] as bool? ?? false,
+      plenaCoordinacion:      json['plenaCoordinacion'] as bool? ?? false,
       services:               _parseServices(json['scheduleJson']),
       isTrusted:              json['isTrusted'] as bool? ?? false,
       website:                json['website']     as String?,
@@ -255,6 +263,8 @@ class ProviderModel {
       userId:                 userId,
       totalRecommendations:   totalRecommendations,
       hasHomeService:         hasHomeService,
+      hasDelivery:            hasDelivery,
+      plenaCoordinacion:      plenaCoordinacion,
       services:               services ?? this.services,
       isTrusted:              isTrusted,
       website:                website,

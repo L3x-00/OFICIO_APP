@@ -39,30 +39,29 @@ class OnboardingDeliverySection extends StatelessWidget {
 
   Widget _buildDeliverySection(BuildContext context) {
     final c = context.colors;
+    // Ambos toggles SON INDEPENDIENTES — antes el segundo se desplegaba
+    // solo si el primero estaba activo, y desactivar el primero forzaba
+    // el segundo a false. Ahora cada uno se guarda y se muestra en la
+    // tarjeta del negocio según lo que el user marcó.
     return Column(
       children: [
         _buildToggleRow(
           c: c,
           value: hasDelivery,
-          onChanged: (v) {
-            onDeliveryChanged(v);
-            if (!v) onPlenaChanged(false);
-          },
+          onChanged: onDeliveryChanged,
           icon: Icons.delivery_dining_rounded,
           label: 'Ofrezco servicio de delivery',
-          subtitle: 'Entrego pedidos a domicilio',
+          subtitle: 'Llevo los pedidos con mi propio repartidor',
         ),
-        if (hasDelivery) ...[
-          const SizedBox(height: 10),
-          _buildToggleRow(
-            c: c,
-            value: plenaCoordinacion,
-            onChanged: onPlenaChanged,
-            icon: Icons.handshake_rounded,
-            label: 'Plena coordinación',
-            subtitle: 'Coordino detalles con el cliente antes del envío',
-          ),
-        ],
+        const SizedBox(height: 10),
+        _buildToggleRow(
+          c: c,
+          value: plenaCoordinacion,
+          onChanged: onPlenaChanged,
+          icon: Icons.handshake_rounded,
+          label: 'Entrego pedidos a domicilio',
+          subtitle: 'Coordino detalles con el cliente antes del envío',
+        ),
       ],
     );
   }
