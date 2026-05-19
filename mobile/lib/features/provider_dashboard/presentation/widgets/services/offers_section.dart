@@ -107,10 +107,18 @@ class OfferCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 20),
+          // Foto de la oferta si existe; si no, icono por defecto.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: (offer.photoUrl != null && offer.photoUrl!.isNotEmpty)
+                ? Image.network(
+                    offer.photoUrl!,
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _fallbackOfferIcon(),
+                  )
+                : _fallbackOfferIcon(),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -144,4 +152,14 @@ class OfferCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fallbackOfferIcon() => Container(
+    width: 52,
+    height: 52,
+    decoration: BoxDecoration(
+      color: AppColors.amber.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 22),
+  );
 }
