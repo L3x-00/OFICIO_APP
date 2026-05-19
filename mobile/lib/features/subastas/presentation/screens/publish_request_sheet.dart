@@ -47,6 +47,11 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
 
   List<CategoryModel> _categories = [];
   bool _loadingCats = true;
+  /// Lock local — el state del provider (submitting) tarda en
+  /// propagarse al botón (async + await upload + Consumer rebuild).
+  /// Sin este guard, 3 taps consecutivos disparaban 3 createRequest
+  /// simultáneos antes de que submitting=true llegara al onPressed.
+  bool _inFlight = false;
 
   @override
   void initState() {
@@ -125,53 +130,61 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
   }
 
   Future<void> _submit() async {
-    if (_selectedCategoryId == null) {
-      context.showWarningSnack('Selecciona una categoría');
-      return;
-    }
-    if (!_formKey.currentState!.validate()) {
-      context.showWarningSnack('Completa la descripción (mínimo 10 caracteres).');
-      return;
-    }
-
-    // Leer ubicación del usuario para enriquecer la solicitud
-    final authUser = context.read<AuthProvider>().user;
-
-    // Si hay foto, primero la subimos a MinIO/R2 y obtenemos la URL pública.
-    // Reutilizamos el flujo del perfil del proveedor (DashboardRepository).
-    String? photoUrl;
-    if (_photo != null) {
-      try {
-        photoUrl = await DashboardRepository()
-            .uploadProviderPhotoFile(XFile(_photo!.path));
-      } catch (e) {
-        if (!mounted) return;
-        context.showErrorSnack('No pudimos subir la foto. Inténtalo otra vez.');
+    // Guard re-entrante: la primera pulsación bloquea las siguientes
+    // hasta que termine. Antes 3 taps rápidos disparaban 3 requests.
+    if (_inFlight) return;
+    _inFlight = true;
+    try {
+      if (_selectedCategoryId == null) {
+        context.showWarningSnack('Selecciona una categoría');
         return;
       }
-    }
+      if (!_formKey.currentState!.validate()) {
+        context.showWarningSnack('Completa la descripción (mínimo 10 caracteres).');
+        return;
+      }
 
-    if (!mounted) return;
-    final prov = context.read<SubastasProvider>();
-    final ok = await prov.createRequest(
-      categoryId: _selectedCategoryId!,
-      description: _descCtrl.text.trim(),
-      photoUrl: photoUrl,
-      budgetMin: double.tryParse(_budgetMinCtrl.text),
-      budgetMax: double.tryParse(_budgetMaxCtrl.text),
-      desiredDate: _desiredDate,
-      latitude: _lat,
-      longitude: _lng,
-      department: authUser?.department,
-      province: authUser?.province,
-      district: authUser?.district,
-    );
+      // Leer ubicación del usuario para enriquecer la solicitud
+      final authUser = context.read<AuthProvider>().user;
 
-    if (!mounted) return;
-    if (ok) {
-      Navigator.of(context).pop(true);
-    } else {
-      context.showErrorSnack(prov.error ?? 'No se pudo publicar');
+      // Si hay foto, primero la subimos a MinIO/R2 y obtenemos la URL pública.
+      // Reutilizamos el flujo del perfil del proveedor (DashboardRepository).
+      String? photoUrl;
+      if (_photo != null) {
+        try {
+          photoUrl = await DashboardRepository()
+              .uploadProviderPhotoFile(XFile(_photo!.path));
+        } catch (e) {
+          if (!mounted) return;
+          context.showErrorSnack('No pudimos subir la foto. Inténtalo otra vez.');
+          return;
+        }
+      }
+
+      if (!mounted) return;
+      final prov = context.read<SubastasProvider>();
+      final ok = await prov.createRequest(
+        categoryId: _selectedCategoryId!,
+        description: _descCtrl.text.trim(),
+        photoUrl: photoUrl,
+        budgetMin: double.tryParse(_budgetMinCtrl.text),
+        budgetMax: double.tryParse(_budgetMaxCtrl.text),
+        desiredDate: _desiredDate,
+        latitude: _lat,
+        longitude: _lng,
+        department: authUser?.department,
+        province: authUser?.province,
+        district: authUser?.district,
+      );
+
+      if (!mounted) return;
+      if (ok) {
+        Navigator.of(context).pop(true);
+      } else {
+        context.showErrorSnack(prov.error ?? 'No se pudo publicar');
+      }
+    } finally {
+      if (mounted) _inFlight = false;
     }
   }
 
