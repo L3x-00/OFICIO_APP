@@ -136,6 +136,15 @@ mixin AuthSocketMixin on ChangeNotifier {
       return;
     }
 
+    // Eventos que modifican el balance de monedas del user — refresh
+    // del perfil para que el contador del header se actualice en vivo.
+    if (type == 'REFERRAL_APPROVED'
+        || type == 'REFERRAL_WELCOME'
+        || type == 'COINS_AWARDED') {
+      (this as dynamic).refreshCurrentUser();
+      return;
+    }
+
     if (type == 'USER_DELETED') {
       // Admin eliminó la cuenta entera. Mostrar dialog con motivo +
       // logout — el user tendrá que re-registrarse desde cero (cliente

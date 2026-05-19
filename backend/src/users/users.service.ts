@@ -103,6 +103,9 @@ export class UsersService {
         id: true, email: true, firstName: true, lastName: true,
         phone: true, avatarUrl: true, role: true,
         department: true, province: true, district: true,
+        // coins se incluye para que el contador de monedas del header
+        // de la pantalla principal se actualice tras un referral.
+        coins: true,
       },
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');

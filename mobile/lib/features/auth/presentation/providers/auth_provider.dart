@@ -220,6 +220,30 @@ class AuthProvider extends ChangeNotifier
     );
   }
 
+  /// Refresca el user completo desde /users/me — usado para actualizar
+  /// `coins` tras un referido aprobado u otros eventos que modifican el
+  /// balance. Silencioso si falla; notifica al final para que el header
+  /// del home reactive el contador.
+  Future<void> refreshCurrentUser() async {
+    final result = await _repo.getCurrentUser();
+    result.when(
+      success: (fresh) {
+        if (_user != null) {
+          _user = _user!.copyWith(
+            coins:     fresh.coins,
+            avatarUrl: fresh.avatarUrl,
+            phone:     fresh.phone,
+            department: fresh.department,
+            province:   fresh.province,
+            district:   fresh.district,
+          );
+          notifyListeners();
+        }
+      },
+      failure: (_) {},
+    );
+  }
+
   // ── Trust rejection overlay ───────────────────────────────
   @override
   TrustRejectionPayload? _pendingTrustRejection;

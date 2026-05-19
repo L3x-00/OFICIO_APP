@@ -76,6 +76,10 @@ class AuthRepository {
         department: data['department'] as String?,
         province:   data['province']   as String?,
         district:   data['district']   as String?,
+        // coins viene del backend y se usa en el header. Antes no se
+        // parseaba → quedaba en 0 incluso tras recibir monedas por
+        // referido, hasta que el user volvía a loguearse.
+        coins:      (data['coins'] as num?)?.toInt() ?? 0,
       );
       return Success(user);
     } on DioException catch (e) {
