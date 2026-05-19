@@ -300,13 +300,13 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     // y disparamos logout — todo lo del user (providers, reviews, favs,
     // chats) ya fue cascadeado por el backend. El user tendrá que
     // re-registrarse desde cero.
+    //
+    // NO limpiamos el flag síncrono — si el dialog falla en montar (navCtx
+    // null en transición), el próximo notifyListeners reintenta. La
+    // limpieza ocurre dentro de _tryShowUserDeletion tras éxito.
     final userDeletion = auth.pendingUserDeletion;
     if (userDeletion != null && mounted) {
-      auth.clearUserDeletion();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _showUserDeletionDialog(userDeletion);
-      });
+      _tryShowUserDeletion(userDeletion);
       return; // no procesar otros side-effects mientras se muestra el dialog
     }
 
@@ -429,56 +429,69 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     );
   }
 
-  /// Dialog informativo cuando el admin elimina la cuenta entera del
-  /// user. Tras "Entendido" hace logout — todos los datos del user ya
-  /// fueron borrados en cascada por el backend. El user debe re-
-  /// registrarse desde cero (cliente y/o proveedor) usando el mismo
-  /// email (queda libre porque el delete fue duro).
-  void _showUserDeletionDialog(UserDeletionPayload payload) {
-    final navCtx = _navigatorKey.currentContext;
+  /// Intenta mostrar dialog bloqueante de cuenta eliminada. Reintenta
+  /// frame por frame hasta que `_navigatorKey.currentContext` esté
+  /// listo (máx ~500ms). Solo limpia `pendingUserDeletion` tras éxito;
+  /// si falla, el flag persiste y el próximo notifyListeners reintenta.
+  ///
+  /// PopScope(canPop:false) bloquea back de Android.
+  /// barrierDismissible:false bloquea tap fuera.
+  /// La única salida es "Entendido" → logout → login. Mientras tanto
+  /// el dialog cubre todo y el user no puede tocar nada de su perfil
+  /// "fantasma" que sigue en pantalla.
+  Future<void> _tryShowUserDeletion(UserDeletionPayload payload) async {
+    BuildContext? navCtx;
+    for (var i = 0; i < 30; i++) {
+      navCtx = _navigatorKey.currentContext;
+      if (navCtx != null && navCtx.mounted) break;
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      if (!mounted) return;
+    }
     if (navCtx == null || !navCtx.mounted) return;
-    showDialog<void>(
+    if (!mounted) return;
+    context.read<AuthProvider>().clearUserDeletion();
+    await showDialog<void>(
       context: navCtx,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.no_accounts_rounded, color: Colors.red, size: 40),
-        title: const Text(
-          'Tu cuenta ha sido eliminada',
-          textAlign: TextAlign.center,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Motivo del administrador:'),
-            const SizedBox(height: 4),
-            Text(
-              payload.reason,
-              style: const TextStyle(fontStyle: FontStyle.italic),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Tu cuenta y todos tus datos (perfiles de proveedor, '
-              'reseñas, mensajes, favoritos) fueron eliminados. '
-              'Puedes registrarte nuevamente como cliente o proveedor '
-              'con el mismo correo.',
-              style: TextStyle(fontSize: 13),
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          icon: const Icon(Icons.no_accounts_rounded, color: Colors.red, size: 40),
+          title: const Text(
+            'Tu cuenta ha sido eliminada',
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Motivo del administrador:'),
+              const SizedBox(height: 4),
+              Text(
+                payload.reason,
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Tu cuenta y todos tus datos (perfiles de proveedor, '
+                'reseñas, mensajes, favoritos) fueron eliminados. '
+                'Puedes registrarte nuevamente como cliente o proveedor '
+                'con el mismo correo.',
+                style: TextStyle(fontSize: 13),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                if (!mounted) return;
+                context.read<AuthProvider>().logout();
+              },
+              child: const Text('Entendido'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              // Logout fuerza pantalla de login. El user al volver a
-              // registrarse pasa por todo el flujo (verificación email,
-              // onboarding, etc.) como cualquier cuenta nueva.
-              if (!mounted) return;
-              context.read<AuthProvider>().logout();
-            },
-            child: const Text('Entendido'),
-          ),
-        ],
       ),
     );
   }
