@@ -145,6 +145,40 @@ class ServiceCardContent extends StatelessWidget {
                         ),
                       ],
                     ),
+                    // Ubicación: OFICIO sólo distrito; NEGOCIO provincia,
+                    // distrito + dirección en línea adicional si existe.
+                    if (provider.locationLabel != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.location_on_outlined, color: c.textMuted, size: 12),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  provider.locationLabel!,
+                                  style: TextStyle(color: c.textSecondary, fontSize: 11),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (provider.type == ProviderType.negocio &&
+                                    provider.address != null &&
+                                    provider.address!.isNotEmpty)
+                                  Text(
+                                    provider.address!,
+                                    style: TextStyle(color: c.textMuted, fontSize: 10.5),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     // Chips de servicios (máx 2)
                     if (provider.services.isNotEmpty) ...[
                       const SizedBox(height: 5),

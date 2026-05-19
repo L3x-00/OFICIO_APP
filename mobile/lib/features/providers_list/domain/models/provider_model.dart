@@ -44,6 +44,11 @@ class ProviderModel {
   final bool hasDelivery;
   /// Solo NEGOCIO: entrega pedidos coordinando con el cliente
   final bool plenaCoordinacion;
+  /// Locality info (name, department, province, district) — usada por
+  /// `locationLabel` para formatear la ubicación en la tarjeta.
+  final String? localityDepartment;
+  final String? localityProvince;
+  final String? localityDistrict;
   /// Servicios/productos del proveedor (parseados de scheduleJson['services'])
   final List<ServiceItem> services;
   /// true cuando el admin validó los documentos de identidad del proveedor
@@ -89,6 +94,9 @@ class ProviderModel {
     this.hasHomeService = false,
     this.hasDelivery = false,
     this.plenaCoordinacion = false,
+    this.localityDepartment,
+    this.localityProvince,
+    this.localityDistrict,
     this.services = const [],
     this.isTrusted = false,
     this.website,
@@ -138,6 +146,9 @@ class ProviderModel {
       hasHomeService:         json['hasHomeService'] as bool? ?? false,
       hasDelivery:            json['hasDelivery'] as bool? ?? false,
       plenaCoordinacion:      json['plenaCoordinacion'] as bool? ?? false,
+      localityDepartment:     json['locality']?['department'] as String?,
+      localityProvince:       json['locality']?['province']   as String?,
+      localityDistrict:       json['locality']?['district']   as String?,
       services:               _parseServices(json['scheduleJson']),
       isTrusted:              json['isTrusted'] as bool? ?? false,
       website:                json['website']     as String?,
@@ -149,6 +160,25 @@ class ProviderModel {
       telegram:               json['telegram']    as String?,
       whatsappBiz:            json['whatsappBiz'] as String?,
     );
+  }
+
+  /// Formato de ubicación para la tarjeta según el tipo de proveedor.
+  ///   - OFICIO  → "El Tambo" (solo distrito).
+  ///   - NEGOCIO → "HUANCAYO, El Tambo" (provincia + distrito) y, en
+  ///     una segunda línea, la dirección si existe.
+  /// Retorna null si no hay datos suficientes (locality vacío).
+  String? get locationLabel {
+    if (type == ProviderType.oficio) {
+      final d = localityDistrict?.trim();
+      return (d == null || d.isEmpty) ? null : d;
+    }
+    // NEGOCIO: combinar provincia + distrito.
+    final prov = localityProvince?.trim();
+    final dist = localityDistrict?.trim();
+    final parts = <String>[];
+    if (prov != null && prov.isNotEmpty) parts.add(prov.toUpperCase());
+    if (dist != null && dist.isNotEmpty) parts.add(dist);
+    return parts.isEmpty ? null : parts.join(', ');
   }
 
   /// Cover image robusto: prefiere la que tenga `isCover==true`; si ningún
@@ -265,6 +295,9 @@ class ProviderModel {
       hasHomeService:         hasHomeService,
       hasDelivery:            hasDelivery,
       plenaCoordinacion:      plenaCoordinacion,
+      localityDepartment:     localityDepartment,
+      localityProvince:       localityProvince,
+      localityDistrict:       localityDistrict,
       services:               services ?? this.services,
       isTrusted:              isTrusted,
       website:                website,
