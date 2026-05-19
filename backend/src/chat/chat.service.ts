@@ -171,14 +171,16 @@ export class ChatService {
       }),
       this.prisma.user.findUnique({
         where: { id: senderUserId },
-        select: { firstName: true, lastName: true },
+        select: { firstName: true, lastName: true, avatarUrl: true },
       }),
     ]);
 
     const senderName =
       `${sender?.firstName ?? ''} ${sender?.lastName ?? ''}`.trim()
       || 'Alguien';
-    const notifTitle = `Mensaje de ${senderName}`;
+    // Texto solicitado por el user: "Tienes un nuevo mensaje de: X"
+    const notifTitle = `Tienes un nuevo mensaje de: ${senderName}`;
+    const senderAvatar = sender?.avatarUrl ?? null;
 
     // Push + WebSocket en paralelo. Errores se loguean pero no rompen la API.
     // Tres canales:
@@ -194,6 +196,11 @@ export class ChatService {
           chatRoomId: String(message.chatRoomId),
           messageId: String(message.id),
           senderId: String(message.senderId),
+          // senderAvatarUrl viaja en `data` — el FCM service del mobile
+          // lo lee y lo pasa como large icon al sistema (Android) o lo
+          // adjunta al notif body cuando se renderiza en foreground.
+          senderAvatarUrl: senderAvatar ?? '',
+          senderName,
         })
         .catch((e) => this.logger.warn(`push falló: ${e?.message ?? e}`)),
       Promise.resolve().then(() => {
@@ -208,6 +215,7 @@ export class ChatService {
             title: notifTitle,
             body: message.content,
             targetUserId: receiverUserId,
+            avatarUrl: senderAvatar ?? undefined,
           });
         } catch (e) {
           this.logger.warn(`ws emit falló: ${(e as Error)?.message}`);

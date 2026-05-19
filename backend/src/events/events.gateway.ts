@@ -33,6 +33,9 @@ export interface NotificationPayload {
   /** Plan asociado al evento (`ESTANDAR`/`PREMIUM`). Lo usa la app para
    * elegir el set de slides del carrousel de bienvenida. */
   plan?: string;
+  /** Avatar del remitente — usado por CHAT_MESSAGE para reemplazar el
+   * icono genérico del inbox con la foto del usuario que envía. */
+  avatarUrl?: string;
 }
 
 interface SocketUser {

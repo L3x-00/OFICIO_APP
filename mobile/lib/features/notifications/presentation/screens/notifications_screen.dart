@@ -219,19 +219,41 @@ class _NotificationTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: notification.iconColor.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+              // Si la notif trae avatarUrl (caso CHAT_MESSAGE con foto
+              // del remitente), mostramos la foto en vez del icono
+              // genérico — UX solicitada por el user.
+              if (notification.avatarUrl != null && notification.avatarUrl!.isNotEmpty)
+                Container(
+                  width: 42, height: 42,
+                  decoration: BoxDecoration(
+                    color: notification.iconColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.network(
+                    notification.avatarUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Icon(
+                      notification.icon,
+                      color: notification.iconColor,
+                      size: 20,
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: notification.iconColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    notification.icon,
+                    color: notification.iconColor,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(
-                  notification.icon,
-                  color: notification.iconColor,
-                  size: 20,
-                ),
-              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

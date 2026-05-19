@@ -244,7 +244,14 @@ class ProvidersListView extends StatelessWidget {
           );
           if (!context.mounted) return;
           await Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => ChatScreen(roomId: roomId),
+            // Pasamos seeds para que el header del ChatScreen muestre
+            // nombre + foto del provider de INMEDIATO, sin esperar a
+            // que loadRooms termine de poblar el cache.
+            builder: (_) => ChatScreen(
+              roomId:        roomId,
+              seedTitle:     p.businessName,
+              seedAvatarUrl: p.coverImageUrl,
+            ),
           ));
         } catch (e) {
           if (!context.mounted) return;

@@ -13,7 +13,20 @@ import '../providers/chat_provider.dart';
 /// como leídos en lugar de incrementar el badge).
 class ChatScreen extends StatefulWidget {
   final int roomId;
-  const ChatScreen({super.key, required this.roomId});
+  /// Nombre del otro participante a mostrar mientras `chat.rooms` no
+  /// tiene aún la sala cacheada (chat recién creado desde la pantalla
+  /// principal). Antes el AppBar mostraba "Conversación" / "..." sin
+  /// info, viéndose roto hasta que el inbox se cargaba.
+  final String? seedTitle;
+  /// URL del avatar a mostrar en el header mientras la sala no está
+  /// cacheada. Opcional — si null, cae al fallback de iniciales.
+  final String? seedAvatarUrl;
+  const ChatScreen({
+    super.key,
+    required this.roomId,
+    this.seedTitle,
+    this.seedAvatarUrl,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -146,8 +159,15 @@ class _ChatScreenState extends State<ChatScreen> {
       (r) => r.id == widget.roomId,
       orElse: () => _placeholderRoom(),
     );
+    // Si la sala todavía no está cacheada (chat recién creado desde la
+    // pantalla principal), usamos los seeds que el caller pasó para
+    // no mostrar un header vacío al user.
     final other = room.id == 0
-        ? const PartyDisplay(title: '...', isProvider: false)
+        ? PartyDisplay(
+            title: widget.seedTitle ?? '...',
+            avatarUrl: widget.seedAvatarUrl,
+            isProvider: true,
+          )
         : room.otherParty(myId);
 
     // Mensajes nuevos llegaron y el usuario sigue al final → autoscroll

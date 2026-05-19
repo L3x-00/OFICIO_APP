@@ -13,6 +13,9 @@ class AppNotification {
   /// Si está presente, indica que la notificación es solo para perfiles de
   /// este tipo (OFICIO|NEGOCIO). Si es null, no filtra.
   final String? targetProfileType;
+  /// Avatar para el render del item — usado por CHAT_MESSAGE para
+  /// mostrar la foto del remitente en lugar del icono genérico.
+  final String? avatarUrl;
   bool isRead;
 
   AppNotification({
@@ -22,6 +25,7 @@ class AppNotification {
     required this.body,
     required this.createdAt,
     this.targetProfileType,
+    this.avatarUrl,
     this.isRead = false,
   });
 
@@ -34,6 +38,8 @@ class AppNotification {
       body:      data['body']  as String? ?? '',
       createdAt: DateTime.now(),
       targetProfileType: data['targetProfileType'] as String?,
+      avatarUrl: data['avatarUrl'] as String?
+              ?? data['senderAvatarUrl'] as String?,
       isRead: false,
     );
   }

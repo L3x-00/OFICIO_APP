@@ -233,6 +233,10 @@ class ChatProvider extends ChangeNotifier {
   // ── Crear / abrir sala ─────────────────────────────────────
 
   /// Idempotente: si ya hay una sala con ese cliente y proveedor, la devuelve.
+  /// SIEMPRE refresca la bandeja después — antes solo lo hacía si la sala
+  /// no estaba cacheada, pero el dato expandido (client/provider con
+  /// avatar+nombre) podía estar desactualizado en cache → header del
+  /// ChatScreen sin foto/nombre hasta el siguiente refresh.
   Future<int> openRoom({
     required int clientId,
     required int providerId,
@@ -241,11 +245,7 @@ class ChatProvider extends ChangeNotifier {
       clientId: clientId,
       providerId: providerId,
     );
-    // Si la sala todavía no está en la lista, recargamos para traer los datos
-    // expandidos (cliente/proveedor).
-    if (!_rooms.any((r) => r.id == basic.id)) {
-      await loadRooms();
-    }
+    await loadRooms();
     return basic.id;
   }
 
