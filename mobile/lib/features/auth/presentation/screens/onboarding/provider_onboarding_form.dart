@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
+import 'package:mobile/core/services/geocoding_service.dart';
 import 'package:mobile/core/utils/permission_service.dart';
 import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
 import 'package:mobile/features/referrals/data/referrals_repository.dart';
@@ -111,12 +112,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     super.initState();
     _loadCategories();
 
-    final auth = context.read<AuthProvider>();
-    if (auth.user?.department != null) {
-      _department = auth.user!.department;
-      _province   = auth.user!.province;
-      _district   = auth.user!.district;
-    }
+    // UX solicitada: los campos de ubicación arrancan VACÍOS en el
+    // formulario de registro para que el user provider los rellene
+    // explícitamente. Antes se pre-completaban con auth.user.* lo cual
+    // forzaba al user a borrar antes de cambiar.
 
     if (widget.initialData != null) {
       final d = widget.initialData!;
@@ -173,6 +172,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     if (pos != null && _addressController.text.trim().isEmpty) {
       _addressController.text =
           '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}';
+    }
+    // Reverse geocoding: rellena departamento/provincia/distrito a
+    // partir de las coordenadas. Solo escribe sobre campos vacíos
+    // para no pisar lo que el user ya rellenó manualmente.
+    if (pos != null) {
+      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      if (!mounted || geo == null) return;
+      setState(() {
+        _department = (_department == null || _department!.isEmpty) ? geo.department : _department;
+        _province   = (_province   == null || _province!.isEmpty)   ? geo.province   : _province;
+        _district   = (_district   == null || _district!.isEmpty)   ? geo.district   : _district;
+      });
     }
   }
 
