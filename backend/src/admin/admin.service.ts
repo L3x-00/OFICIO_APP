@@ -815,12 +815,23 @@ async updateProvider(
         });
       }
 
-      // 4. Notificación en BD
+      // 4. Notificación en BD — un solo texto unificado. Antes había
+      // DOS notifs distintas (una de "¡Felicidades verificado!" y otra
+      // de "Perfil aprobado + Plan Estándar..."). El user veía duplicado
+      // en su inbox: la persistida por BD + la in-memory por WS.
+      // Ahora ambas comparten el MISMO título/cuerpo y el dedup por
+      // (type+title+body+timestamp) del notifications_provider las
+      // colapsa a una sola entrada.
+      const approveTitle = '¡Perfil aprobado! ✅';
+      const approveBody  =
+        `Tu perfil "${updated.businessName}" fue aprobado. ` +
+        'Plan Estándar activado gratis por 1 mes de bienvenida.';
       await tx.adminNotification.create({
         data: {
           providerId: id,
           type: 'APROBADO',
-          message: '¡Felicidades! Tu perfil ha sido verificado y aprobado. Tu insignia de verificación ya está activa.',
+          title: approveTitle,
+          message: approveBody,
         },
       });
 
@@ -839,11 +850,9 @@ async updateProvider(
     });
     this.eventsGateway.emitAdminEvent('PROVIDER_APPROVED', { providerId: id, businessName: updated.businessName });
 
-    // Notificar al proveedor específico en la app móvil. Texto explícito
-    // del plan de bienvenida (ESTANDAR gratis por 1 mes) para que el
-    // push tenga el contexto completo en background — antes solo decía
-    // "ya apareces en la plataforma" y el usuario no sabía que recibía
-    // un trial.
+    // Notificar al proveedor específico en la app móvil. Mismo texto que
+    // se persistió en BD para que el dedup del cliente (type+title+body
+    // dentro de ±60s) las trate como la misma entrada.
     const approveTitle = '¡Perfil aprobado! ✅';
     const approveBody  =
       `Tu perfil "${updated.businessName}" fue aprobado. ` +
