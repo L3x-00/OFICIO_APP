@@ -158,6 +158,18 @@ mixin AuthSocketMixin on ChangeNotifier {
             profileType: payload['targetProfileType'] as String? ?? 'OFICIO',
             rejectedAt: payload['rejectedAt'] as String?,
           );
+        } else if (type == 'TRUST_APPROVED') {
+          // Dialog de éxito sobre cualquier pantalla, en tiempo real.
+          // El body del backend trae el businessName entre comillas;
+          // si no, usamos un fallback genérico para no romper la UI.
+          final body = payload['body'] as String? ?? '';
+          final nameMatch = RegExp(r'"([^"]+)"').firstMatch(body);
+          (this as dynamic).setPendingTrustApproval(
+            TrustApprovalPayload(
+              profileType: payload['targetProfileType'] as String? ?? 'OFICIO',
+              businessName: nameMatch?.group(1) ?? '',
+            ),
+          );
         }
         notifyListeners();
       });

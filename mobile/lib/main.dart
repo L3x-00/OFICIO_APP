@@ -295,6 +295,15 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       });
     }
 
+    // ── Validación de identidad aprobada (TRUST_APPROVED) ────
+    // Dialog de éxito sobre cualquier pantalla en tiempo real. El
+    // _tryShowTrustApproval reintenta hasta que navCtx esté listo y
+    // solo limpia el flag tras éxito.
+    final trustApproval = auth.pendingTrustApproval;
+    if (trustApproval != null && mounted) {
+      _tryShowTrustApproval(trustApproval);
+    }
+
     // ── Cuenta eliminada por el admin ────────────────────────
     // Admin borró la cuenta entera del user. Mostramos dialog con motivo
     // y disparamos logout — todo lo del user (providers, reviews, favs,
@@ -418,6 +427,50 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
               style: TextStyle(fontSize: 13),
             ),
           ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Dialog de éxito tras validación de identidad aprobada. Retry
+  /// pattern hasta que el navigator esté listo (cubre el caso de la
+  /// app abriendo desde push en background). Solo limpia el flag tras
+  /// mostrar — si falla, el próximo notifyListeners reintenta.
+  Future<void> _tryShowTrustApproval(TrustApprovalPayload payload) async {
+    BuildContext? navCtx;
+    for (var i = 0; i < 30; i++) {
+      navCtx = _navigatorKey.currentContext;
+      if (navCtx != null && navCtx.mounted) break;
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      if (!mounted) return;
+    }
+    if (navCtx == null || !navCtx.mounted) return;
+    if (!mounted) return;
+    context.read<AuthProvider>().clearTrustApproval();
+    final isNegocio = payload.profileType == 'NEGOCIO';
+    final namePart = payload.businessName.isEmpty
+        ? ''
+        : ' "${payload.businessName}"';
+    await showDialog<void>(
+      context: navCtx,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.verified_user_rounded, color: Colors.green, size: 44),
+        title: const Text(
+          '¡Validación aprobada!',
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Los datos de tu perfil${isNegocio ? " de negocio" : " profesional"}$namePart '
+          'han sido validados. Ya apareces como "Confiable" para tus clientes.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -575,6 +628,17 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       case 'PLAN_APROBADO':
       case 'PLAN_RECHAZADO':
         widget.router.go('/profile');
+      case 'TRUST_APPROVED':
+        // Al abrir desde push, encolamos el payload para que
+        // _AuthSideEffects dispare el dialog de éxito sobre la
+        // pantalla actual (no fuerza navegación).
+        final auth = context.read<AuthProvider>();
+        auth.setPendingTrustApproval(
+          TrustApprovalPayload(
+            profileType:  message.data['profileType'] as String? ?? 'OFICIO',
+            businessName: '',
+          ),
+        );
       case 'NEW_OFFER':
         widget.router.push('/my-requests');
       case 'OFFER_ACCEPTED':

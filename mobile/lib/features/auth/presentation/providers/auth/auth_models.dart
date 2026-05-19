@@ -56,6 +56,20 @@ class ProviderDeletionPayload {
   });
 }
 
+/// Payload del evento "validación de identidad aprobada" — la
+/// pantalla principal lo consume para mostrar un dialog de éxito
+/// SOBRE cualquier ruta cuando el admin aprueba al proveedor.
+class TrustApprovalPayload {
+  /// 'OFICIO' o 'NEGOCIO' — qué perfil fue validado.
+  final String profileType;
+  /// Nombre del perfil para personalizar el mensaje.
+  final String businessName;
+  const TrustApprovalPayload({
+    required this.profileType,
+    required this.businessName,
+  });
+}
+
 /// Payload del evento "cuenta eliminada por admin" — la pantalla
 /// principal lo consume para mostrar un dialog con el motivo,
 /// luego logout. El user debe re-registrarse.

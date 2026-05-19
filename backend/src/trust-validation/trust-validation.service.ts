@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
+import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 
 @Injectable()
 export class TrustValidationService {
@@ -9,6 +10,7 @@ export class TrustValidationService {
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
     private minio: MinioService,
+    private push: PushNotificationsService,
   ) {}
 
   // ── PROVEEDOR: Enviar solicitud ──────────────────────────
@@ -229,14 +231,26 @@ export class TrustValidationService {
       }),
     ]);
 
-    // Notificar al proveedor
+    // Notificar al proveedor en TIEMPO REAL (WS) + PUSH para background.
+    // El cliente Flutter al recibirlo en foreground muestra un dialog
+    // bloqueante de éxito; en background recibe la notif del sistema y
+    // al abrir la app muestra el mismo dialog vía pendingTrustApproval.
+    const title = '¡Validación aprobada!';
+    const body  = `Los datos de tu perfil "${request.provider.businessName}" han sido validados. Ya apareces como Confiable.`;
+
     this.eventsGateway.emitNotification({
       type:         'TRUST_APPROVED',
-      title:        '¡Validación aprobada!',
-      body:         `Tu perfil "${request.provider.businessName}" ha sido validado como confiable.`,
+      title,
+      body,
       targetUserId: request.provider.userId,
       targetProfileType: request.provider.type,
     });
+    void this.push.sendToUser(
+      request.provider.userId,
+      title,
+      body,
+      { type: 'TRUST_APPROVED', profileType: request.provider.type },
+    ).catch(() => {});
 
     return { success: true };
   }

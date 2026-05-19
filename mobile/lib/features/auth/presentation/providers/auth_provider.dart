@@ -263,6 +263,24 @@ class AuthProvider extends ChangeNotifier
     notifyListeners();
   }
 
+  // ── Trust approval overlay (admin validó identidad) ───────
+  // Set por el handler TRUST_APPROVED del socket. _AuthSideEffects lo
+  // consume para mostrar un dialog de éxito en tiempo real, sobre
+  // cualquier pantalla. Si la app está en background, FCM dispara la
+  // notif y al volver el handler vuelve a setear este flag.
+  TrustApprovalPayload? _pendingTrustApproval;
+  TrustApprovalPayload? get pendingTrustApproval => _pendingTrustApproval;
+
+  void setPendingTrustApproval(TrustApprovalPayload payload) {
+    _pendingTrustApproval = payload;
+    notifyListeners();
+  }
+
+  void clearTrustApproval() {
+    _pendingTrustApproval = null;
+    notifyListeners();
+  }
+
   // ── Plan promotion overlay ────────────────────────────────
   @override
   PlanActivationPayload? _pendingPlanPromotion;
