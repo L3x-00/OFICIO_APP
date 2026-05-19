@@ -123,6 +123,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                   isLoading: offers.status == OfferPostsStatus.loading,
                   onPublish: () => OfferFormSheet.show(context, offers, plan, widget.isNegocio),
                   onDelete:  (id) => offers.deleteOffer(id),
+                  onEdit:    (o) => OfferFormSheet.show(
+                    context, offers, plan, widget.isNegocio,
+                    existing: o,
+                  ),
                 ),
               ),
 

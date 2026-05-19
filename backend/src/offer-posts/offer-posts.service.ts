@@ -52,6 +52,71 @@ export class OfferPostsService {
     return { success: true };
   }
 
+  // ── EDITAR OFERTA ────────────────────────────────────────
+  // El user puede modificar título, descripción, precio, foto y
+  // OPCIONALMENTE resetear la duración a su tope del plan vigente
+  // (resetDuration:true) — antes la oferta se actualizaba pero el
+  // tiempo restante quedaba congelado, sin manera de extenderlo.
+  async updateOfferByUser(
+    userId: number,
+    offerId: number,
+    dto: {
+      title?: string;
+      description?: string;
+      price?: number;
+      resetDuration?: boolean;
+    },
+    photoFile?: Express.Multer.File,
+  ) {
+    const offer = await this.prisma.offerPost.findUnique({
+      where: { id: offerId },
+      include: {
+        provider: {
+          select: {
+            id: true, userId: true,
+            subscription: { select: { plan: true, status: true } },
+          },
+        },
+      },
+    });
+    if (!offer) throw new NotFoundException('Oferta no encontrada');
+    if (offer.provider.userId !== userId) {
+      throw new ForbiddenException('No es tu oferta');
+    }
+
+    let newPhotoUrl: string | undefined;
+    if (photoFile) {
+      newPhotoUrl = await this.minio.uploadFile(
+        photoFile.buffer,
+        photoFile.originalname,
+        'offer-posts',
+      );
+    }
+
+    let newExpiresAt: Date | undefined;
+    if (dto.resetDuration === true) {
+      const plan   = offer.provider.subscription?.plan ?? 'GRATIS';
+      const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS['GRATIS'];
+      const next   = new Date();
+      next.setHours(next.getHours() + limits.durationHours);
+      newExpiresAt = next;
+    }
+
+    return this.prisma.offerPost.update({
+      where: { id: offerId },
+      data: {
+        title:       dto.title       ?? undefined,
+        description: dto.description ?? undefined,
+        price:       dto.price       ?? undefined,
+        photoUrl:    newPhotoUrl     ?? undefined,
+        expiresAt:   newExpiresAt    ?? undefined,
+      },
+      include: {
+        categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+      },
+    });
+  }
+
   // ── CREAR OFERTA ─────────────────────────────────────────
   async createOffer(
     providerId: number,

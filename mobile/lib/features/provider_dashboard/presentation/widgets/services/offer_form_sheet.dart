@@ -7,6 +7,7 @@ import '../../../../../core/utils/plan_limits.dart';
 import '../../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../payments/presentation/screens/plan_selector_sheet.dart';
 import '../../../../trust_validation/presentation/screens/trust_validation_form_screen.dart';
+import '../../../domain/models/offer_post_model.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/offer_posts_provider.dart';
 import 'service_components.dart';
@@ -25,20 +26,25 @@ class OfferFormSheet extends StatefulWidget {
   final OfferPostsProvider offersProvider;
   final String plan;
   final bool isNegocio;
+  /// Si viene, el sheet abre en modo EDICIÓN — pre-llena campos y
+  /// muestra un switch para resetear la duración de la oferta.
+  final OfferPostModel? existing;
 
   const OfferFormSheet({
     super.key,
     required this.offersProvider,
     required this.plan,
     required this.isNegocio,
+    this.existing,
   });
 
   static Future<void> show(
     BuildContext context,
     OfferPostsProvider offersProvider,
     String plan,
-    bool isNegocio,
-  ) {
+    bool isNegocio, {
+    OfferPostModel? existing,
+  }) {
     final c = context.colors;
     final type = isNegocio ? 'NEGOCIO' : 'OFICIO';
 
@@ -120,6 +126,7 @@ class OfferFormSheet extends StatefulWidget {
         offersProvider: offersProvider,
         plan: plan,
         isNegocio: isNegocio,
+        existing: existing,
       ),
     );
   }
@@ -133,6 +140,23 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
   final _descCtrl  = TextEditingController();
   final _priceCtrl = TextEditingController();
   String? _pickedPath;
+  /// Switch del modo edición: si está marcado al guardar, backend
+  /// resetea expiresAt al tope del plan (no se puede modificar el
+  /// tiempo de otra manera).
+  bool _resetDuration = false;
+
+  bool get _isEdit => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final ex = widget.existing;
+    if (ex != null) {
+      _titleCtrl.text = ex.title;
+      _descCtrl.text  = ex.description;
+      _priceCtrl.text = ex.price != null ? ex.price!.toStringAsFixed(0) : '';
+    }
+  }
 
   @override
   void dispose() {
@@ -149,8 +173,6 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
   }
 
   Future<void> _publish() async {
-    // Antes silenciaba violaciones de validación devolviendo sin feedback,
-    // por eso el botón parecía "no hacer nada". Ahora mostramos snack.
     if (_titleCtrl.text.trim().length < 5) {
       context.showErrorSnack('El título debe tener al menos 5 caracteres.');
       return;
@@ -160,11 +182,33 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
       return;
     }
 
-    final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
-    // Capturamos messenger ANTES del pop: el context del sheet deja de ser
-    // válido tras cerrarlo y el snack no se vería.
     final messenger = ScaffoldMessenger.of(context);
     final nav = Navigator.of(context);
+
+    // ── EDIT MODE ──
+    if (_isEdit) {
+      final ok = await widget.offersProvider.updateOffer(
+        offerId: widget.existing!.id,
+        title: _titleCtrl.text.trim(),
+        description: _descCtrl.text.trim(),
+        price: double.tryParse(_priceCtrl.text.trim()),
+        photoPath: _pickedPath,
+        resetDuration: _resetDuration,
+      );
+      if (!mounted) return;
+      if (ok) {
+        nav.pop();
+        messenger.showSnackBar(const SnackBar(content: Text('Oferta actualizada')));
+      } else {
+        messenger.showSnackBar(SnackBar(
+          content: Text(widget.offersProvider.error ?? 'No se pudo actualizar la oferta'),
+        ));
+      }
+      return;
+    }
+
+    // ── CREATE MODE ──
+    final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
     final ok = await widget.offersProvider.createOffer(
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),
@@ -175,13 +219,11 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     if (!mounted) return;
     if (ok) {
       nav.pop();
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Oferta publicada')),
-      );
+      messenger.showSnackBar(const SnackBar(content: Text('Oferta publicada')));
     } else {
-      messenger.showSnackBar(
-        SnackBar(content: Text(widget.offersProvider.error ?? 'No se pudo publicar la oferta')),
-      );
+      messenger.showSnackBar(SnackBar(
+        content: Text(widget.offersProvider.error ?? 'No se pudo publicar la oferta'),
+      ));
     }
   }
 
@@ -210,7 +252,8 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                 children: [
                   Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 20),
                   const SizedBox(width: 8),
-                  Text('Publicar Oferta', style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(_isEdit ? 'Editar oferta' : 'Publicar Oferta',
+                      style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -220,7 +263,12 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                 ],
               ),
               const SizedBox(height: 6),
-              Text('La oferta expirará automáticamente en $hours horas.', style: TextStyle(color: c.textMuted, fontSize: 12)),
+              Text(
+                _isEdit
+                    ? 'Tu oferta expira: ${widget.existing!.timeLeftLabel}'
+                    : 'La oferta expirará automáticamente en $hours horas.',
+                style: TextStyle(color: c.textMuted, fontSize: 12),
+              ),
               const SizedBox(height: 20),
               ServiceFormField(controller: _titleCtrl, label: 'Título de la oferta *', hint: 'Ej: 20% off en instalaciones eléctricas'),
               const SizedBox(height: 12),
@@ -279,13 +327,28 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                   ),
                 ),
               ),
+              if (_isEdit) ...[
+                const SizedBox(height: 12),
+                // Switch para reiniciar la duración: backend cambia
+                // expiresAt = now + planHours. Sin esto el "tiempo
+                // restante" se mantenía aunque se editaran los datos.
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: Text(
+                    'Reiniciar tiempo de vigencia',
+                    style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    'Vuelve a contar las $hours horas desde ahora.',
+                    style: TextStyle(color: c.textMuted, fontSize: 11.5),
+                  ),
+                  value: _resetDuration,
+                  activeThumbColor: AppColors.amber,
+                  onChanged: (v) => setState(() => _resetDuration = v),
+                ),
+              ],
               const SizedBox(height: 20),
-              // ListenableBuilder fuerza rebuild del botón cuando
-              // isSubmitting cambia. Antes el widget no se suscribía al
-              // provider → tap → isSubmitting=true en estado interno pero
-              // botón nunca mostraba spinner → user veía como si "no
-              // funcionara". Si createOffer fallaba silenciosamente, el
-              // snack tampoco aparecía claro.
               ListenableBuilder(
                 listenable: widget.offersProvider,
                 builder: (_, _) {
@@ -301,7 +364,10 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                       ),
                       child: busy
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                          : const Text('Publicar oferta', style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)),
+                          : Text(
+                              _isEdit ? 'Guardar cambios' : 'Publicar oferta',
+                              style: const TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
                     ),
                   );
                 },

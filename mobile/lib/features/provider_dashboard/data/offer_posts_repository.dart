@@ -40,4 +40,27 @@ class OfferPostsRepository {
   Future<void> deleteOffer(int offerId) async {
     await _dio.delete('/providers/me/offers/$offerId');
   }
+
+  /// Edita una oferta existente. Si [photoPath] viene, reemplaza la foto;
+  /// si [resetDuration] es true, el backend reinicia expiresAt al tope
+  /// del plan vigente.
+  Future<OfferPostModel> updateOffer({
+    required int offerId,
+    String? title,
+    String? description,
+    double? price,
+    String? photoPath,
+    bool? resetDuration,
+  }) async {
+    final data = FormData.fromMap({
+      if (title       != null) 'title':       title,
+      if (description != null) 'description': description,
+      if (price       != null) 'price':       price.toString(),
+      if (resetDuration != null) 'resetDuration': resetDuration.toString(),
+      if (photoPath != null)
+        'photo': await MultipartFile.fromFile(photoPath, filename: 'offer.jpg'),
+    });
+    final response = await _dio.patch('/providers/me/offers/$offerId', data: data);
+    return OfferPostModel.fromJson(response.data as Map<String, dynamic>);
+  }
 }

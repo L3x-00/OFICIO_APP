@@ -12,6 +12,7 @@ class OfferPostsSection extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onPublish;
   final void Function(int id) onDelete;
+  final void Function(OfferPostModel offer)? onEdit;
 
   const OfferPostsSection({
     super.key,
@@ -20,6 +21,7 @@ class OfferPostsSection extends StatelessWidget {
     required this.isLoading,
     required this.onPublish,
     required this.onDelete,
+    this.onEdit,
   });
 
   @override
@@ -77,7 +79,11 @@ class OfferPostsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Column(
-              children: offers.map((o) => OfferCard(offer: o, onDelete: () => onDelete(o.id))).toList(),
+              children: offers.map((o) => OfferCard(
+                offer: o,
+                onDelete: () => onDelete(o.id),
+                onEdit: onEdit == null ? null : () => onEdit!(o),
+              )).toList(),
             ),
           ),
         const SizedBox(height: 8),
@@ -86,13 +92,19 @@ class OfferPostsSection extends StatelessWidget {
   }
 }
 
-/// Tarjeta compacta de una oferta activa con precio, tiempo restante y
-/// botón de eliminar.
+/// Tarjeta compacta de una oferta activa con precio, tiempo restante,
+/// botón de editar y eliminar.
 class OfferCard extends StatelessWidget {
   final OfferPostModel offer;
   final VoidCallback onDelete;
+  final VoidCallback? onEdit;
 
-  const OfferCard({super.key, required this.offer, required this.onDelete});
+  const OfferCard({
+    super.key,
+    required this.offer,
+    required this.onDelete,
+    this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +153,15 @@ class OfferCard extends StatelessWidget {
               ],
             ),
           ),
+          if (onEdit != null)
+            IconButton(
+              onPressed: onEdit,
+              icon: Icon(Icons.edit_rounded, size: 18, color: AppColors.amber),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 18,
+            ),
+          if (onEdit != null) const SizedBox(width: 4),
           IconButton(
             onPressed: onDelete,
             icon: Icon(Icons.delete_rounded, size: 18, color: AppColors.busy),

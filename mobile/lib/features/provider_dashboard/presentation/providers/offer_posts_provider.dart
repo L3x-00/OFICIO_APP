@@ -62,6 +62,38 @@ class OfferPostsProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateOffer({
+    required int offerId,
+    String? title,
+    String? description,
+    double? price,
+    String? photoPath,
+    bool? resetDuration,
+  }) async {
+    _isSubmitting = true;
+    notifyListeners();
+    try {
+      final updated = await _repo.updateOffer(
+        offerId: offerId,
+        title: title,
+        description: description,
+        price: price,
+        photoPath: photoPath,
+        resetDuration: resetDuration,
+      );
+      final idx = _offers.indexWhere((o) => o.id == offerId);
+      if (idx != -1) _offers[idx] = updated;
+      _isSubmitting = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isSubmitting = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> deleteOffer(int offerId) async {
     try {
       await _repo.deleteOffer(offerId);

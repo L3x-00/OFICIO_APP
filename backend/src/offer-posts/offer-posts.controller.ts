@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Delete, Body, Param, Query,
+  Controller, Get, Post, Patch, Delete, Body, Param, Query,
   ParseIntPipe, UseGuards, Request, UseInterceptors, UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
 import { OfferPostsService } from './offer-posts.service.js';
-import { CreateOfferPostDto } from './dto/create-offer-post.dto.js';
+import { CreateOfferPostDto, UpdateOfferPostDto } from './dto/create-offer-post.dto.js';
 import { ReportOfferDto } from './dto/report-offer.dto.js';
 import { memOpts as multerImageConfig } from '../common/multer-image.config.js';
 
@@ -79,6 +79,20 @@ export class ProviderOffersController {
     @Request() req: any,
   ) {
     return this.service.deleteOfferByUser(req.user.userId, offerId);
+  }
+
+  // PATCH /providers/me/offers/:id — editar oferta. Acepta multipart si
+  // se reemplaza la foto, o JSON sin foto. resetDuration:true reinicia
+  // expiresAt al tope del plan vigente.
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('photo', multerImageConfig))
+  update(
+    @Param('id', ParseIntPipe) offerId: number,
+    @Body() dto: UpdateOfferPostDto,
+    @Request() req: any,
+    @UploadedFile() photo?: Express.Multer.File,
+  ) {
+    return this.service.updateOfferByUser(req.user.userId, offerId, dto, photo);
   }
 }
 
