@@ -8,6 +8,7 @@ import '../../features/notifications/presentation/providers/notifications_provid
 import '../../features/showcase/showcase_data.dart';
 import '../../features/showcase/showcase_overlay.dart';
 import 'app_router.dart' show kProfileBranchNavKey;
+import '../../features/providers_list/presentation/widgets/service_cards/service_detail_dialog.dart';
 
 /// Shell del [StatefulShellRoute] — Scaffold con bottom navigation que
 /// preserva el stack y estado de cada uno de los 5 tabs principales.
@@ -36,6 +37,10 @@ class _AppShellState extends State<AppShell> {
     if (current == profileIdx && index != profileIdx) {
       kProfileBranchNavKey.currentState?.popUntil((r) => r.isFirst);
     }
+    // Cierra el dialog flotante del detalle de servicio si está abierto
+    // — UX solicitada: al cambiar de tab no debe quedar visible sobre
+    // el nuevo contenido.
+    ServiceDetailDialog.dismissActive();
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == current,

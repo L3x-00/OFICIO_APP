@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../../../provider_dashboard/domain/models/service_item_model.dart';
+import 'service_detail_dialog.dart';
 
 /// Fila de chips de servicios (OFICIO) o productos (NEGOCIO). Muestra hasta
 /// 3 y un chip "+N más" si hay extras.
@@ -44,9 +45,9 @@ class ServicesRow extends StatelessWidget {
           spacing: 6,
           runSpacing: 5,
           children: [
-            ...visible.map((s) => ServiceChip(item: s)),
+            ...visible.map((s) => ServiceChip(item: s, isNegocio: isNegocio)),
             if (extra > 0)
-              ServiceChip(label: '+$extra más', isExtra: true),
+              ServiceChip(label: '+$extra más', isExtra: true, isNegocio: isNegocio),
           ],
         ),
       ],
@@ -54,40 +55,66 @@ class ServicesRow extends StatelessWidget {
   }
 }
 
-/// Chip individual de un servicio/producto, con precio opcional.
+/// Chip individual de un servicio/producto. Si el item tiene imageUrl
+/// se muestra como avatar leading. Tap abre el ServiceDetailDialog.
 class ServiceChip extends StatelessWidget {
   final ServiceItem? item;
   final String? label;
   final bool isExtra;
+  final bool isNegocio;
 
-  const ServiceChip({super.key, this.item, this.label, this.isExtra = false});
+  const ServiceChip({
+    super.key,
+    this.item,
+    this.label,
+    this.isExtra = false,
+    this.isNegocio = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final c    = context.colors;
     final text = label ?? item!.name;
     final price = (!isExtra && item?.price != null) ? item!.priceLabel : null;
+    final hasImage = !isExtra && item?.imageUrl != null && item!.imageUrl!.isNotEmpty;
+    final accent = isNegocio ? AppColors.amber : AppColors.primary;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    final chip = Container(
+      padding: EdgeInsets.fromLTRB(hasImage ? 4 : 9, 4, 9, 4),
       decoration: BoxDecoration(
         color: isExtra
             ? c.bgInput
-            : AppColors.primary.withValues(alpha: 0.08),
+            : accent.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isExtra
               ? c.border
-              : AppColors.primary.withValues(alpha: 0.25),
+              : accent.withValues(alpha: 0.25),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (hasImage) ...[
+            ClipOval(
+              child: Image.network(
+                item!.imageUrl!,
+                width: 20,
+                height: 20,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Icon(
+                  isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
+                  size: 14,
+                  color: accent,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
           Text(
             text,
             style: TextStyle(
-              color: isExtra ? c.textMuted : AppColors.primary,
+              color: isExtra ? c.textMuted : accent,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -101,6 +128,15 @@ class ServiceChip extends StatelessWidget {
           ],
         ],
       ),
+    );
+
+    // Sólo chips reales (no el "+N más") abren el dialog.
+    if (isExtra || item == null) return chip;
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => ServiceDetailDialog.show(context,
+          service: item!, isNegocio: isNegocio),
+      child: chip,
     );
   }
 }
