@@ -107,7 +107,11 @@ class _RequestCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor(r.status)),
+        border: Border.all(color: _borderColor(
+          (r.status == ServiceRequestStatus.open && r.isExpired)
+              ? ServiceRequestStatus.expired
+              : r.status,
+        )),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,9 +121,13 @@ class _RequestCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
             child: Row(
               children: [
-                _StatusBadge(status: r.status),
+                // Pasamos el request completo: el badge decide si mostrar
+                // "Solicitud vencida" cuando el backend aún la reporta
+                // OPEN pero ya pasó su expiresAt (cron no corrió todavía).
+                _StatusBadge(request: r),
                 const Spacer(),
-                if (r.isOpen)
+                // Countdown solo si sigue genuinamente abierta (no vencida).
+                if (r.isOpen && !r.isExpired)
                   _CountdownChip(expiresAt: r.expiresAt),
               ],
             ),
@@ -243,15 +251,20 @@ class _RequestCard extends StatelessWidget {
 // ── Status badge ──────────────────────────────────────────────
 
 class _StatusBadge extends StatelessWidget {
-  final ServiceRequestStatus status;
-  const _StatusBadge({required this.status});
+  final ServiceRequestModel request;
+  const _StatusBadge({required this.request});
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = switch (status) {
+    // Estado efectivo: si el backend la reporta OPEN pero ya pasó su
+    // expiresAt, la tratamos como vencida en la UI sin esperar al cron.
+    final effective = (request.status == ServiceRequestStatus.open && request.isExpired)
+        ? ServiceRequestStatus.expired
+        : request.status;
+    final (label, color) = switch (effective) {
       ServiceRequestStatus.open      => ('Activa', AppColors.primary),
       ServiceRequestStatus.closed    => ('Cerrada', AppColors.available),
-      ServiceRequestStatus.expired   => ('Expirada', AppColors.busy),
+      ServiceRequestStatus.expired   => ('Solicitud vencida', AppColors.busy),
       ServiceRequestStatus.cancelled => ('Cancelada', Colors.grey),
     };
     return Container(

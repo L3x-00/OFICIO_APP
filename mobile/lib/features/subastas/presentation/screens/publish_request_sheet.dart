@@ -47,11 +47,13 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
 
   List<CategoryModel> _categories = [];
   bool _loadingCats = true;
-  /// Lock local — el state del provider (submitting) tarda en
-  /// propagarse al botón (async + await upload + Consumer rebuild).
-  /// Sin este guard, 3 taps consecutivos disparaban 3 createRequest
-  /// simultáneos antes de que submitting=true llegara al onPressed.
-  bool _inFlight = false;
+  /// Lock local con setState — al primer toque pone `_submitting = true`
+  /// SÍNCRONO, deshabilitando el botón y mostrando el spinner en el
+  /// mismo frame. Los toques 2 y 3 ven `_submitting == true` y el guard
+  /// los descarta antes de cualquier await. Sin esto, el `submitting`
+  /// del provider tardaba en propagarse y 3 taps rápidos disparaban
+  /// 3 createRequest → solicitudes duplicadas/triplicadas en Supabase.
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -130,10 +132,11 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
   }
 
   Future<void> _submit() async {
-    // Guard re-entrante: la primera pulsación bloquea las siguientes
-    // hasta que termine. Antes 3 taps rápidos disparaban 3 requests.
-    if (_inFlight) return;
-    _inFlight = true;
+    // Guard re-entrante + bloqueo visual inmediato: la primera pulsación
+    // pone _submitting=true (setState síncrono) y deshabilita el botón;
+    // las siguientes pulsaciones retornan de inmediato.
+    if (_submitting) return;
+    setState(() => _submitting = true);
     try {
       if (_selectedCategoryId == null) {
         context.showWarningSnack('Selecciona una categoría');
@@ -184,14 +187,17 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
         context.showErrorSnack(prov.error ?? 'No se pudo publicar');
       }
     } finally {
-      if (mounted) _inFlight = false;
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final submitting = context.watch<SubastasProvider>().submitting;
+    // Usamos el flag LOCAL _submitting (no el del provider) — se activa
+    // síncrono al primer toque, garantizando que el botón se deshabilite
+    // en el mismo frame.
+    final submitting = _submitting;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
