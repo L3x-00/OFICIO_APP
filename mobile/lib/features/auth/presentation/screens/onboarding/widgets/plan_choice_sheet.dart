@@ -2,28 +2,30 @@ import 'package:flutter/material.dart';
 import '../../../../../../core/constants/app_colors.dart';
 import '../../../../../../core/theme/app_theme_colors.dart';
 
-/// Sheet de confirmación final cuando el usuario eligió un plan pagado:
-///   - "Adquirir plan X"               → returns 'paid'
-///   - "Registrarme con plan gratis"   → returns 'free'
-///   - "Cambiar de plan"               → returns null (cancel)
+/// Selector de método de pago para el Plan Premium en el onboarding.
+///
+/// Lógica consolidada: el plan Estándar es siempre gratis de bienvenida
+/// (no pasa por aquí). Solo Premium llega a este sheet, donde el usuario
+/// elige cómo pagar:
+///   - "Tarjeta o billetera (MercadoPago)" → returns 'mercadopago'
+///   - "Yape (subir comprobante)"          → returns 'yape'
+///   - cierra sin elegir                    → returns null
 class PlanChoiceSheet extends StatelessWidget {
-  final String planChoice;
-  const PlanChoiceSheet({super.key, required this.planChoice});
+  const PlanChoiceSheet({super.key});
 
-  /// Abre el sheet y resuelve con la opción elegida.
-  static Future<String?> show(BuildContext context, {required String planChoice}) {
+  /// Abre el sheet y resuelve con el método de pago elegido.
+  static Future<String?> show(BuildContext context) {
     return showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => PlanChoiceSheet(planChoice: planChoice),
+      builder: (_) => const PlanChoiceSheet(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final paidPlan = planChoice;
     return Container(
       decoration: BoxDecoration(
         color: c.bgCard,
@@ -47,27 +49,35 @@ class PlanChoiceSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Elige cómo registrarte',
-            style: TextStyle(
-                color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.workspace_premium_rounded,
+                  color: AppColors.premium, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Pagar Plan Premium',
+                style: TextStyle(
+                    color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Seleccionaste el plan $paidPlan. Puedes adquirirlo ahora o '
-            'empezar gratis y suscribirte luego desde tu panel.',
+            'Elige cómo quieres pagar tu suscripción Premium. Tu perfil '
+            'quedará en revisión mientras validamos el pago.',
             style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 22),
+          // ── MercadoPago (tarjeta / billetera) ──
           ElevatedButton.icon(
-            onPressed: () => Navigator.of(context).pop('paid'),
-            icon: const Icon(Icons.workspace_premium_rounded, size: 18),
-            label: Text('Adquirir plan $paidPlan',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            onPressed: () => Navigator.of(context).pop('mercadopago'),
+            icon: const Icon(Icons.credit_card_rounded, size: 18),
+            label: const Text('Pagar con tarjeta o billetera',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: const Color(0xFF009EE3), // azul MercadoPago
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
@@ -75,14 +85,15 @@ class PlanChoiceSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () => Navigator.of(context).pop('free'),
-            icon: const Icon(Icons.handshake_rounded, size: 18),
-            label: const Text('Registrarme con plan gratis',
+          // ── Yape (comprobante) ──
+          ElevatedButton.icon(
+            onPressed: () => Navigator.of(context).pop('yape'),
+            icon: const Icon(Icons.qr_code_rounded, size: 18),
+            label: const Text('Pagar con Yape',
                 style: TextStyle(fontWeight: FontWeight.bold)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: c.textPrimary,
-              side: BorderSide(color: c.border),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6D1B7B), // morado Yape
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
@@ -90,14 +101,8 @@ class PlanChoiceSheet extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Cierra el sheet y deja que el usuario vuelva atrás para
-              // reabrir el onboarding de planes — no perdemos los datos
-              // del form porque seguimos en la misma pantalla.
-            },
-            child: Text('Cambiar de plan',
-                style: TextStyle(color: c.textMuted)),
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Ahora no', style: TextStyle(color: c.textMuted)),
           ),
         ],
       ),

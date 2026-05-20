@@ -5,14 +5,17 @@ import 'package:mobile/core/utils/plan_limits.dart';
 
 /// Sheet de selección de plan en el onboarding del proveedor.
 ///
-/// Antes solo confirmaba con un "Continuar" (todos arrancaban GRATIS).
-/// Ahora cada tarjeta es seleccionable; el plan elegido se devuelve al
-/// caller vía [onContinue] para que el formulario de registro sepa qué
-/// flujo mostrar al final (pago vs. plan gratis).
+/// Lógica consolidada (2026-05):
+///   - GRATIS  → tarjeta BLOQUEADA, informativa, no seleccionable.
+///   - ESTÁNDAR → mensaje de bienvenida estático. Es el plan por
+///     defecto: todo proveedor nuevo lo recibe gratis por 1 mes. Al
+///     continuar con él, el formulario se envía para aprobación.
+///   - PREMIUM → ÚNICO plan interactivo/seleccionable. Al elegirlo, el
+///     flujo de pago (MercadoPago / Yape) se dispara tras el registro.
+///
+/// `onContinue` devuelve 'ESTANDAR' (bienvenida) o 'PREMIUM' (pago).
 class OnboardingPlansSheet extends StatefulWidget {
   final String providerType;
-  /// Recibe el id del plan elegido ('GRATIS' | 'ESTANDAR' | 'PREMIUM').
-  /// Default: 'GRATIS' si el usuario presiona continuar sin marcar nada.
   final ValueChanged<String> onContinue;
 
   const OnboardingPlansSheet({
@@ -26,7 +29,8 @@ class OnboardingPlansSheet extends StatefulWidget {
 }
 
 class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
-  String _selected = 'GRATIS';
+  /// false = Estándar de bienvenida (default). true = Premium de pago.
+  bool _wantsPremium = false;
 
   bool get _isNegocio => widget.providerType == 'NEGOCIO';
 
@@ -77,11 +81,11 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Elige tu plan',
+                          'Tu plan de bienvenida',
                           style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          'Empieza gratis — puedes subir después',
+                          'Empieza con el Estándar gratis o sube a Premium',
                           style: TextStyle(color: c.textSecondary, fontSize: 12),
                         ),
                       ],
@@ -101,51 +105,28 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Column(
                   children: [
-                    _SelectablePlanCard(
-                      planId:    'GRATIS',
-                      title:     'Gratis',
-                      price:     'S/ 0',
-                      priceNote: 'Para siempre',
-                      color:     const Color(0xFF6B7280),
-                      icon:      Icons.storefront_rounded,
+                    // ── ESTÁNDAR — bienvenida estática (default) ──
+                    _WelcomeStandardCard(
                       isNegocio: _isNegocio,
-                      isSelected: _selected == 'GRATIS',
-                      onTap:      () => setState(() => _selected = 'GRATIS'),
+                      // Al destacarse cuando NO se quiere Premium se ve
+                      // como "el plan elegido por defecto".
+                      highlighted: !_wantsPremium,
+                      onTap: () => setState(() => _wantsPremium = false),
                       features: [
-                        _feat(Icons.photo_library_rounded, '${PlanLimits.photos('GRATIS')} fotos de perfil'),
-                        _feat(
-                          _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
-                          PlanLimits.itemsLabel('GRATIS', isNegocio: _isNegocio),
-                        ),
-                        _feat(Icons.bar_chart_rounded, 'Sin gestión de visitas', locked: true),
-                        _feat(Icons.verified_rounded, 'Sin badge verificado', locked: true),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _SelectablePlanCard(
-                      planId:    'ESTANDAR',
-                      title:     'Estándar',
-                      price:     'S/ 19.90',
-                      priceNote: 'por mes',
-                      color:     AppColors.standard,
-                      icon:      Icons.verified_rounded,
-                      isNegocio: _isNegocio,
-                      isPopular: true,
-                      isSelected: _selected == 'ESTANDAR',
-                      onTap:      () => setState(() => _selected = 'ESTANDAR'),
-                      features: [
-                        _feat(Icons.photo_library_rounded, '${PlanLimits.photos('ESTANDAR')} fotos de perfil'),
+                        _feat(Icons.photo_library_rounded,
+                            '${PlanLimits.photos('ESTANDAR')} fotos de perfil'),
                         _feat(
                           _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
                           PlanLimits.itemsLabel('ESTANDAR', isNegocio: _isNegocio),
                         ),
-                        if (_isNegocio) _feat(Icons.image_rounded, 'Foto por producto incluida'),
+                        if (_isNegocio)
+                          _feat(Icons.image_rounded, 'Foto por producto incluida'),
                         _feat(Icons.bar_chart_rounded, 'Gestión de visitas y estadísticas'),
                         _feat(Icons.verified_rounded, 'Badge verificado azul'),
-                        _feat(Icons.search_rounded, 'Mayor visibilidad en búsqueda'),
                       ],
                     ),
                     const SizedBox(height: 12),
+                    // ── PREMIUM — único plan seleccionable de pago ──
                     _SelectablePlanCard(
                       planId:    'PREMIUM',
                       title:     'Premium',
@@ -153,43 +134,27 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
                       priceNote: 'por mes',
                       color:     AppColors.premium,
                       icon:      Icons.workspace_premium_rounded,
-                      isNegocio: _isNegocio,
-                      isSelected: _selected == 'PREMIUM',
-                      onTap:      () => setState(() => _selected = 'PREMIUM'),
+                      isSelected: _wantsPremium,
+                      onTap:      () => setState(() => _wantsPremium = true),
                       features: [
-                        _feat(Icons.photo_library_rounded, '${PlanLimits.photos('PREMIUM')} fotos de perfil'),
+                        _feat(Icons.photo_library_rounded,
+                            '${PlanLimits.photos('PREMIUM')} fotos de perfil'),
                         _feat(
                           _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
                           PlanLimits.itemsLabel('PREMIUM', isNegocio: _isNegocio),
                         ),
-                        if (_isNegocio) _feat(Icons.image_rounded, 'Fotos ilimitadas por producto'),
+                        if (_isNegocio)
+                          _feat(Icons.image_rounded, 'Fotos ilimitadas por producto'),
                         _feat(Icons.bar_chart_rounded, 'Estadísticas avanzadas'),
                         _feat(Icons.workspace_premium_rounded, 'Badge dorado Premium'),
                         _feat(Icons.star_rounded, 'Posición #1 en búsqueda garantizada'),
                         _feat(Icons.support_agent_rounded, 'Soporte prioritario 24/7'),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    // ── GRATIS — bloqueado, solo informativo ──
+                    _LockedGratisCard(isNegocio: _isNegocio),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: accent.withValues(alpha: 0.2)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline_rounded, color: accent, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Comenzarás con el plan Gratis. Puedes subir de plan en cualquier momento desde tu panel → Ajustes → Subir de rango.',
-                              style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.45),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -199,18 +164,20 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => widget.onContinue(_selected),
+                  onPressed: () => widget.onContinue(_wantsPremium ? 'PREMIUM' : 'ESTANDAR'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: accent,
-                    foregroundColor: _isNegocio ? const Color(0xFF3D2B00) : Colors.white,
+                    backgroundColor: _wantsPremium ? AppColors.premium : accent,
+                    foregroundColor: _wantsPremium
+                        ? Colors.white
+                        : (_isNegocio ? const Color(0xFF3D2B00) : Colors.white),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
                   child: Text(
-                    _selected == 'GRATIS'
-                        ? 'Continuar con plan gratis'
-                        : 'Continuar con plan $_selected',
+                    _wantsPremium
+                        ? 'Adquirir Plan Premium'
+                        : 'Continuar con mi Plan Estándar gratis',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
@@ -233,119 +200,6 @@ class PlanFeatureItem {
   const PlanFeatureItem({required this.icon, required this.text, this.locked = false});
 }
 
-class OnboardingPlanCard extends StatelessWidget {
-  final String planId;
-  final String title;
-  final String price;
-  final String priceNote;
-  final Color color;
-  final IconData icon;
-  final bool isNegocio;
-  final bool isCurrent;
-  final bool isPopular;
-  final List<PlanFeatureItem> features;
-
-  const OnboardingPlanCard({
-    super.key,
-    required this.planId,
-    required this.title,
-    required this.price,
-    required this.priceNote,
-    required this.color,
-    required this.icon,
-    required this.isNegocio,
-    required this.features,
-    this.isCurrent = false,
-    this.isPopular = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isCurrent
-            ? color.withValues(alpha: c.isDark ? 0.1 : 0.05)
-            : c.bg,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isCurrent ? color.withValues(alpha: 0.5) : c.border,
-          width: isCurrent ? 1.8 : 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40, height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(title, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold)),
-                        if (isCurrent) ...[
-                          const SizedBox(width: 6),
-                          PlanBadge(label: 'Incluido gratis', color: color),
-                        ],
-                        if (isPopular && !isCurrent) ...[
-                          const SizedBox(width: 6),
-                          PlanBadge(label: '⭐ Popular', color: AppColors.standard),
-                        ],
-                      ],
-                    ),
-                    Text(
-                      '$price $priceNote',
-                      style: TextStyle(color: c.textMuted, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...features.map((f) => Padding(
-            padding: const EdgeInsets.only(bottom: 7),
-            child: Row(
-              children: [
-                Icon(
-                  f.locked ? Icons.lock_outline_rounded : f.icon,
-                  color: f.locked ? c.textMuted : color,
-                  size: 15,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    f.text,
-                    style: TextStyle(
-                      color: f.locked ? c.textMuted : c.textSecondary,
-                      fontSize: 13,
-                      decoration: f.locked ? TextDecoration.lineThrough : null,
-                      decorationColor: c.textMuted,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-}
-
 class PlanBadge extends StatelessWidget {
   final String label;
   final Color color;
@@ -364,10 +218,207 @@ class PlanBadge extends StatelessWidget {
   }
 }
 
-/// Variante seleccionable de [OnboardingPlanCard]: el borde y el badge
-/// reflejan el estado `isSelected`; todo el card es tappable. El widget
-/// original sigue existiendo para callsites que solo muestran el plan
-/// vigente sin permitir cambiarlo.
+/// Tarjeta de bienvenida del plan Estándar. NO es un radio común: muestra
+/// el mensaje atractivo de cortesía y al tocarse "elige" el plan
+/// Estándar (deseleccionando Premium).
+class _WelcomeStandardCard extends StatelessWidget {
+  final bool isNegocio;
+  final bool highlighted;
+  final VoidCallback onTap;
+  final List<PlanFeatureItem> features;
+
+  const _WelcomeStandardCard({
+    required this.isNegocio,
+    required this.highlighted,
+    required this.onTap,
+    required this.features,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    const color = AppColors.standard;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: highlighted
+              ? color.withValues(alpha: c.isDark ? 0.14 : 0.08)
+              : c.bg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: highlighted ? color : c.border,
+            width: highlighted ? 2.0 : 1.0,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Banner de bienvenida — mensaje estático atractivo.
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    color.withValues(alpha: 0.22),
+                    color.withValues(alpha: 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Text('🎉', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '¡Bienvenido a SERVI! Por ser nuevo, obtienes el '
+                      'Plan Estándar por 1 mes gratis.',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.verified_rounded, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('Estándar',
+                              style: TextStyle(
+                                  color: color,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 6),
+                          const PlanBadge(label: 'GRATIS 1 MES', color: color),
+                        ],
+                      ),
+                      Text('Incluido al registrarte',
+                          style: TextStyle(color: c.textMuted, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  width: 22, height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: highlighted ? color : Colors.transparent,
+                    border: Border.all(
+                        color: highlighted ? color : c.border, width: 2),
+                  ),
+                  child: highlighted
+                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...features.map((f) => Padding(
+              padding: const EdgeInsets.only(bottom: 7),
+              child: Row(
+                children: [
+                  Icon(f.icon, color: color, size: 15),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(f.text,
+                        style: TextStyle(color: c.textSecondary, fontSize: 13)),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tarjeta del plan GRATIS — bloqueada (no seleccionable). Solo informa
+/// que es el plan al que se cae tras vencer el trial Estándar.
+class _LockedGratisCard extends StatelessWidget {
+  final bool isNegocio;
+  const _LockedGratisCard({required this.isNegocio});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    const muted = Color(0xFF6B7280);
+
+    return Opacity(
+      opacity: 0.7,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.bg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0x1A6B7280),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.lock_rounded, color: muted, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('Gratis',
+                          style: TextStyle(
+                              color: muted,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 6),
+                      const PlanBadge(label: 'No disponible', color: muted),
+                    ],
+                  ),
+                  Text(
+                    'Tu cuenta pasa a este plan automáticamente cuando '
+                    'vence el mes de bienvenida.',
+                    style: TextStyle(color: c.textMuted, fontSize: 11.5, height: 1.35),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tarjeta seleccionable de un plan de pago (Premium). El borde y el
+/// radio reflejan `isSelected`; todo el card es tappable.
 class _SelectablePlanCard extends StatelessWidget {
   final String planId;
   final String title;
@@ -375,8 +426,6 @@ class _SelectablePlanCard extends StatelessWidget {
   final String priceNote;
   final Color color;
   final IconData icon;
-  final bool isNegocio;
-  final bool isPopular;
   final bool isSelected;
   final VoidCallback onTap;
   final List<PlanFeatureItem> features;
@@ -388,11 +437,9 @@ class _SelectablePlanCard extends StatelessWidget {
     required this.priceNote,
     required this.color,
     required this.icon,
-    required this.isNegocio,
     required this.features,
     required this.isSelected,
     required this.onTap,
-    this.isPopular = false,
   });
 
   @override
@@ -439,14 +486,8 @@ class _SelectablePlanCard extends StatelessWidget {
                                   color: color,
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold)),
-                          if (isPopular) ...[
-                            const SizedBox(width: 6),
-                            PlanBadge(label: '⭐ Popular', color: AppColors.standard),
-                          ],
-                          if (planId == 'GRATIS') ...[
-                            const SizedBox(width: 6),
-                            PlanBadge(label: 'Empieza aquí', color: color),
-                          ],
+                          const SizedBox(width: 6),
+                          const PlanBadge(label: '⭐ Recomendado', color: AppColors.premium),
                         ],
                       ),
                       Text('$price $priceNote',
@@ -456,8 +497,7 @@ class _SelectablePlanCard extends StatelessWidget {
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
-                  width: 22,
-                  height: 22,
+                  width: 22, height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected ? color : Colors.transparent,
@@ -474,22 +514,11 @@ class _SelectablePlanCard extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 7),
               child: Row(
                 children: [
-                  Icon(
-                    f.locked ? Icons.lock_outline_rounded : f.icon,
-                    color: f.locked ? c.textMuted : color,
-                    size: 15,
-                  ),
+                  Icon(f.icon, color: color, size: 15),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      f.text,
-                      style: TextStyle(
-                        color: f.locked ? c.textMuted : c.textSecondary,
-                        fontSize: 13,
-                        decoration: f.locked ? TextDecoration.lineThrough : null,
-                        decorationColor: c.textMuted,
-                      ),
-                    ),
+                    child: Text(f.text,
+                        style: TextStyle(color: c.textSecondary, fontSize: 13)),
                   ),
                 ],
               ),

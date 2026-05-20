@@ -7,6 +7,8 @@ import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/services/geocoding_service.dart';
 import 'package:mobile/core/utils/permission_service.dart';
 import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
+import 'package:mobile/features/payments/presentation/providers/payments_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/features/referrals/data/referrals_repository.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -234,25 +236,22 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
   // ── Submit Logic ─────────────────────────────────────────
 
-  /// Plan elegido en la sheet previa al formulario. `null` o vacío equivale
-  /// a GRATIS (registro directo sin pasarela de pago).
-  String get _planChoice => widget.selectedPlan ?? 'GRATIS';
+  /// Plan elegido en la sheet previa al formulario. La sheet de planes
+  /// solo devuelve 'ESTANDAR' (bienvenida gratis) o 'PREMIUM' (pago).
+  /// `null` equivale a ESTANDAR — el plan de cortesía por defecto.
+  String get _planChoice => widget.selectedPlan ?? 'ESTANDAR';
 
   /// Entry point del botón "Registrarme como profesional/negocio".
   ///
-  /// Si el plan elegido es pagado (ESTANDAR/PREMIUM), abre primero un sheet
-  /// con dos opciones — "Adquirir plan X" (registro + pago Yape) o
-  /// "Registrarme con plan gratis" (registro directo). Para GRATIS va al
-  /// flujo de submit normal sin diálogos extra.
+  /// Lógica consolidada:
+  ///   - ESTÁNDAR (bienvenida gratis) → registro directo para
+  ///     aprobación. El admin lo revisa; no hay pasarela de pago.
+  ///   - PREMIUM → registro y luego flujo de pago (MercadoPago / Yape).
+  /// El selector de método de pago se muestra en `_processFinalSteps`,
+  /// después de que el perfil ya existe en el backend.
   Future<void> _onSubmitPressed() async {
     if (!_validateRequired()) return;
-    if (_planChoice == 'GRATIS') {
-      await _submit(goToPayment: false);
-      return;
-    }
-    final chosen = await PlanChoiceSheet.show(context, planChoice: _planChoice);
-    if (chosen == null) return; // canceló
-    await _submit(goToPayment: chosen == 'paid');
+    await _submit(goToPayment: _planChoice == 'PREMIUM');
   }
 
   /// Valida los campos obligatorios. Devuelve `true` si todo OK.
@@ -442,26 +441,62 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
     setState(() => _isLoading = false);
 
-    // Si el usuario eligió un plan pagado: en lugar del diálogo de
-    // éxito, saltamos al flujo de pago Yape pre-llenado con el plan
-    // elegido. La suscripción se activa cuando el admin aprueba el
-    // comprobante.
-    if (goToPayment && _planChoice != 'GRATIS') {
-      await _goToPaymentFlow(_planChoice);
+    // PREMIUM: el perfil ya está creado en el backend. Preguntamos el
+    // método de pago (MercadoPago tarjeta/billetera o Yape comprobante)
+    // y lanzamos el flujo correspondiente. La suscripción Premium se
+    // activa cuando se confirma el pago; el perfil queda "en revisión".
+    if (goToPayment && _planChoice == 'PREMIUM') {
+      final method = await PlanChoiceSheet.show(context);
+      if (!mounted) return;
+      if (method == 'yape') {
+        await _goToYapeFlow('PREMIUM');
+        return;
+      }
+      if (method == 'mercadopago') {
+        await _goToMercadoPagoFlow('PREMIUM');
+        return;
+      }
+      // El usuario cerró el selector sin elegir: el perfil igual quedó
+      // creado, así que cerramos con el diálogo de "en revisión".
+      _showSuccessDialog();
       return;
     }
 
+    // ESTÁNDAR de bienvenida → diálogo "tu perfil está siendo revisado".
     _showSuccessDialog();
   }
 
-  /// Lanza la pantalla de Yape con el plan elegido pre-cargado. Al volver
-  /// (sin importar si pagó o canceló) finalizamos el onboarding para que
-  /// el router lleve al usuario al home.
-  Future<void> _goToPaymentFlow(String plan) async {
+  /// Flujo de pago con Yape — pantalla de comprobante ya estructurada.
+  /// Al volver (pagó o canceló) finalizamos el onboarding.
+  Future<void> _goToYapeFlow(String plan) async {
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
-    // Importación tardía para evitar ciclo: payments depende de auth, no al revés.
     await YapePaymentScreen.show(context, plan: plan);
+    if (!mounted) return;
+    auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
+    if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  /// Flujo de pago con MercadoPago — crea la preferencia y abre el
+  /// checkout en el navegador externo. El webhook del backend activa la
+  /// suscripción cuando el pago se aprueba.
+  Future<void> _goToMercadoPagoFlow(String plan) async {
+    final auth = context.read<AuthProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final pay = PaymentsProvider();
+    await pay.payWithMercadoPago(
+      plan:         plan,
+      providerType: widget.providerType ?? 'OFICIO',
+    );
+    if (!mounted) return;
+    final url = pay.mpInitPoint;
+    if (url != null) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } else {
+      messenger.showSnackBar(SnackBar(
+        content: Text(pay.error ?? 'No se pudo iniciar el pago con MercadoPago'),
+      ));
+    }
     if (!mounted) return;
     auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
     if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
