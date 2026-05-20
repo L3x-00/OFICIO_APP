@@ -270,14 +270,16 @@ class _FilterSheetState extends State<FilterSheet> {
                     onDistrictChanged: (v) => setState(() => _dist = v),
                     onExpandToDepartment: () {
                       // "Ampliar búsqueda" debe limpiar TODO el filtro de
-                      // ubicación para mostrar servicios del Perú entero —
-                      // antes solo limpiaba prov/dist y dejaba el depto
-                      // activo, así que el listado seguía acotado a ese
-                      // depto y no se ampliaba realmente nada.
+                      // ubicación para mostrar servicios del Perú entero.
+                      // Antes solo limpiaba dept/prov/dist pero NO el
+                      // campo de texto `_locationCtrl` — y `_apply()`
+                      // sigue enviando ese texto como filtro `location`,
+                      // así que el listado quedaba acotado igual.
                       setState(() {
                         _dept = null;
                         _prov = null;
                         _dist = null;
+                        _locationCtrl.clear();
                       });
                       _apply();
                     },
