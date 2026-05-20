@@ -6,6 +6,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../provider_dashboard/data/offer_posts_repository.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 import '../../../providers_list/data/providers_repository.dart';
 import '../../../providers_list/presentation/screens/provider_detail_screen.dart';
@@ -367,11 +368,10 @@ class _OwnOfferActions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
+        // ── Ir a mi panel ──
         ElevatedButton.icon(
           onPressed: () {
             Navigator.of(context).pop();
-            // Panel del provider — el tab Servicios contiene el edit/delete
-            // de ofertas. Push con rootNavigator para apilar sobre el shell.
             Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(
                 builder: (_) => ProviderPanel(providerType: ownProfileType),
@@ -391,6 +391,47 @@ class _OwnOfferActions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
+        // ── Editar oferta → Panel en el tab Servicios/Productos (3) ──
+        OutlinedButton.icon(
+          onPressed: () {
+            Navigator.of(context).pop();
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(
+                builder: (_) => ProviderPanel(
+                  providerType: ownProfileType,
+                  initialTabIndex: 3,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.edit_rounded, size: 18, color: AppColors.amber),
+          label: Text('Editar oferta',
+              style: TextStyle(
+                  color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: c.border),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // ── Eliminar oferta ──
+        OutlinedButton.icon(
+          onPressed: () => _confirmDelete(context, offersProv),
+          icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.busy),
+          label: const Text('Eliminar oferta',
+              style: TextStyle(
+                  color: AppColors.busy, fontSize: 13, fontWeight: FontWeight.w600)),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: AppColors.busy.withValues(alpha: 0.4)),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // ── Ocultar/mostrar mi oferta del listado público ──
         OutlinedButton.icon(
           onPressed: () {
             if (isHidden) {
@@ -420,6 +461,45 @@ class _OwnOfferActions extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Confirma y elimina la oferta vía DELETE /providers/me/offers/:id.
+  /// Al borrarla la quitamos del listado en memoria y cerramos el sheet.
+  Future<void> _confirmDelete(
+      BuildContext context, PublicOffersProvider offersProv) async {
+    final c = context.colors;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.bgCard,
+        title: const Text('Eliminar oferta'),
+        content: const Text(
+            '¿Seguro que quieres eliminar esta oferta? No se puede deshacer.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.busy),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+    try {
+      await OfferPostsRepository().deleteOffer(offer.id);
+      offersProv.removeOffer(offer.id);
+      if (nav.canPop()) nav.pop();
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Oferta eliminada')));
+    } catch (e) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('No se pudo eliminar la oferta')));
+    }
   }
 }
 

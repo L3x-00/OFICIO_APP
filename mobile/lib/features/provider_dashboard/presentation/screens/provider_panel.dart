@@ -19,14 +19,17 @@ import '../../../chat/presentation/providers/chat_provider.dart';
 class ProviderPanel extends StatefulWidget {
   /// Tipo de perfil que abre el panel: 'OFICIO' | 'NEGOCIO' | null (usa activeProfileType)
   final String? providerType;
-  const ProviderPanel({super.key, this.providerType});
+  /// Tab inicial al abrir el panel. Por defecto 0 (Inicio). Se usa, por
+  /// ejemplo, al pulsar "Editar oferta" para aterrizar en Servicios (3).
+  final int initialTabIndex;
+  const ProviderPanel({super.key, this.providerType, this.initialTabIndex = 0});
 
   @override
   State<ProviderPanel> createState() => _ProviderPanelState();
 }
 
 class _ProviderPanelState extends State<ProviderPanel> {
-  int _currentIndex = 0;
+  late int _currentIndex = widget.initialTabIndex;
 
   // Shared mutable state — paused flag visible to all tabs
   bool _isPaused = false;

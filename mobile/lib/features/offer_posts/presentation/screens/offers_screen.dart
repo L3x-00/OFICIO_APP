@@ -25,6 +25,9 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 
   final _scroll = ScrollController();
+  /// true → la pantalla muestra la sección "Mis Ofertas" (solo las del
+  /// propio provider). Exclusivo para usuarios con perfil de proveedor.
+  bool _showMine = false;
 
   @override
   void initState() {
@@ -57,6 +60,22 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
     super.build(context);
     final c = context.colors;
     final prov = context.watch<PublicOffersProvider>();
+    final auth = context.watch<AuthProvider>();
+
+    // IDs de los perfiles de proveedor del user — para la sección
+    // "Mis Ofertas" (exclusiva para proveedores).
+    final myProviderIds = <int>{
+      if (auth.providerDataFor('OFICIO')?['id'] is int)
+        auth.providerDataFor('OFICIO')!['id'] as int,
+      if (auth.providerDataFor('NEGOCIO')?['id'] is int)
+        auth.providerDataFor('NEGOCIO')!['id'] as int,
+    };
+    final isProvider = myProviderIds.isNotEmpty;
+    // Si dejó de ser provider, forzar la vista pública.
+    final showMine = _showMine && isProvider;
+    final listOffers = showMine
+        ? prov.ownOffers(myProviderIds)
+        : prov.visibleOffers;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -80,6 +99,16 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                 ],
               ),
               actions: [
+                // Toggle "Mis Ofertas" — solo para proveedores.
+                if (isProvider)
+                  IconButton(
+                    tooltip: showMine ? 'Ver todas las ofertas' : 'Ver mis ofertas',
+                    onPressed: () => setState(() => _showMine = !_showMine),
+                    icon: Icon(
+                      showMine ? Icons.storefront_rounded : Icons.sell_outlined,
+                      color: showMine ? AppColors.amber : c.textPrimary,
+                    ),
+                  ),
                 // Botón de filtros avanzados (esquina superior derecha).
                 IconButton(
                   tooltip: 'Filtros avanzados',
@@ -91,17 +120,20 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                   ),
                 ),
               ],
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(58),
-                child: _TypePillBar(
-                  selected: prov.providerType,
-                  onSelect: (type) => prov.setProviderType(type),
-                ),
-              ),
+              // Las pastillas de tipo no aplican en modo "Mis Ofertas".
+              bottom: showMine
+                  ? null
+                  : PreferredSize(
+                      preferredSize: const Size.fromHeight(58),
+                      child: _TypePillBar(
+                        selected: prov.providerType,
+                        onSelect: (type) => prov.setProviderType(type),
+                      ),
+                    ),
             ),
 
             // ── Resumen de filtros activos ───────────────────
-            if (prov.hasAdvancedFilters)
+            if (prov.hasAdvancedFilters && !showMine)
               SliverToBoxAdapter(
                 child: _ActiveFiltersStrip(prov: prov),
               ),
@@ -111,22 +143,22 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
                 child: Text(
-                  'Promociones y precios especiales de proveedores cercanos',
+                  showMine
+                      ? 'Tus ofertas publicadas. Tócalas para editar, eliminar u ocultar.'
+                      : 'Promociones y precios especiales de proveedores cercanos',
                   style: TextStyle(color: c.textMuted, fontSize: 12),
                 ),
               ),
             ),
 
             // ── Lista de ofertas ─────────────────────────────
-            // Usamos `visibleOffers` para excluir las propias que el
-            // user marcó como ocultas (toggle desde offer_detail_sheet).
-            // El conteo de `offers` se mantiene para detectar empty-state
-            // real vs filtrado por hide-own.
-            if (prov.isLoading && prov.visibleOffers.isEmpty)
+            // `listOffers` = visibleOffers (público, sin las ocultas) o
+            // ownOffers (sección "Mis Ofertas") según el toggle.
+            if (prov.isLoading && listOffers.isEmpty)
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
               )
-            else if (prov.visibleOffers.isEmpty)
+            else if (listOffers.isEmpty)
               SliverFillRemaining(
                 child: Center(
                   child: Column(
@@ -134,16 +166,21 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                     children: [
                       Icon(Icons.local_offer_outlined, size: 64, color: c.textMuted),
                       const SizedBox(height: 16),
-                      Text('Sin ofertas disponibles',
+                      Text(
+                          showMine
+                              ? 'Aún no has publicado ofertas'
+                              : 'Sin ofertas disponibles',
                           style: TextStyle(
                               color: c.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       Text(
-                        prov.hasAdvancedFilters || prov.providerType != null
-                            ? 'Prueba con menos filtros.'
-                            : 'Vuelve más tarde para ver promociones.',
+                        showMine
+                            ? 'Publica ofertas desde tu Panel → Servicios.'
+                            : (prov.hasAdvancedFilters || prov.providerType != null
+                                ? 'Prueba con menos filtros.'
+                                : 'Vuelve más tarde para ver promociones.'),
                         style: TextStyle(color: c.textMuted, fontSize: 13),
                       ),
                     ],
@@ -156,9 +193,10 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (ctx, i) {
-                      final visible = prov.visibleOffers;
-                      if (i == visible.length) {
-                        return prov.hasMore
+                      if (i == listOffers.length) {
+                        // El paginado (loadMore) solo aplica al listado
+                        // público — "Mis Ofertas" se filtra en cliente.
+                        return (!showMine && prov.hasMore)
                             ? const Padding(
                                 padding: EdgeInsets.all(16),
                                 child: Center(
@@ -166,9 +204,9 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                                         color: AppColors.amber, strokeWidth: 2)))
                             : const SizedBox(height: 16);
                       }
-                      return _OfferCard(offer: visible[i]);
+                      return _OfferCard(offer: listOffers[i]);
                     },
-                    childCount: prov.visibleOffers.length + 1,
+                    childCount: listOffers.length + 1,
                   ),
                 ),
               ),

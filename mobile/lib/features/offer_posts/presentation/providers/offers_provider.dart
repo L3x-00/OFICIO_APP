@@ -72,6 +72,18 @@ class PublicOffersProvider extends ChangeNotifier {
   List<PublicOfferModel> get visibleOffers =>
       List.unmodifiable(_offers.where((o) => !_hiddenOwnOfferIds.contains(o.id)));
 
+  /// Las ofertas del propio usuario (provider) — para la sección
+  /// "Mis Ofertas". El call-site pasa los providerIds del auth.
+  List<PublicOfferModel> ownOffers(Set<int> myProviderIds) =>
+      List.unmodifiable(_offers.where((o) => myProviderIds.contains(o.provider.id)));
+
+  /// Quita una oferta de la lista en memoria — usado tras eliminarla
+  /// desde el detalle para que desaparezca del listado al instante.
+  void removeOffer(int offerId) {
+    _offers.removeWhere((o) => o.id == offerId);
+    notifyListeners();
+  }
+
   List<PublicOfferModel> get offers       => List.unmodifiable(_offers);
   bool                   get isLoading    => _isLoading;
   bool                   get hasMore      => _hasMore;
