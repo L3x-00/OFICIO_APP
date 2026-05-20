@@ -822,15 +822,19 @@ async updateProvider(
       // Ahora ambas comparten el MISMO título/cuerpo y el dedup por
       // (type+title+body+timestamp) del notifications_provider las
       // colapsa a una sola entrada.
-      const approveTitle = '¡Perfil aprobado! ✅';
+      //
+      // IMPORTANTE: usar `updatedProvider` (variable local de la tx), NO
+      // `updated` — esa última es el resultado de la transacción y aún
+      // no está inicializada acá dentro (TDZ → ReferenceError
+      // "Cannot access 'updated' before initialization").
       const approveBody  =
-        `Tu perfil "${updated.businessName}" fue aprobado. ` +
+        `Tu perfil "${updatedProvider.businessName}" fue aprobado. ` +
         'Plan Estándar activado gratis por 1 mes de bienvenida.';
       await tx.adminNotification.create({
         data: {
           providerId: id,
           type: 'APROBADO',
-          title: approveTitle,
+          title: '¡Perfil aprobado! ✅',
           message: approveBody,
         },
       });

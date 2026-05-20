@@ -9,8 +9,14 @@ export class CreateReviewDto {
   @IsPositive()
   providerId: number;
 
-  // userId NO se acepta del cliente — el controller lo inyecta desde el
-  // JWT validado. Aceptarlo aquí sería un IDOR (suplantar reseñas).
+  // userId: el controller SIEMPRE lo sobrescribe con el del JWT
+  // (`{ ...body, userId: req.user.userId }`), así que aceptarlo del
+  // cliente NO es IDOR — se descarta. Lo decoramos @IsOptional para
+  // que un build del móvil que todavía lo envíe NO rebote con 400
+  // "property userId should not exist" por forbidNonWhitelisted.
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   userId?: number;
 
   @Type(() => Number)
@@ -86,9 +92,12 @@ export class UpdateReviewDto {
 }
 
 export class CreateReviewReplyDto {
-  // userId NO se acepta del cliente — el controller lo inyecta desde
-  // el JWT validado. Aceptarlo en el body sería IDOR (responder a
-  // reseñas en nombre de otro usuario).
+  // userId: el controller lo sobrescribe con el del JWT. @IsOptional
+  // para tolerar builds del móvil que todavía lo envíen sin romper
+  // la validación (forbidNonWhitelisted).
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   userId?: number;
 
   @IsString()
