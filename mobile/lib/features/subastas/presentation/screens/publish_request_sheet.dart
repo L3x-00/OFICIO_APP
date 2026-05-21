@@ -182,6 +182,11 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
 
       if (!mounted) return;
       if (ok) {
+        // Mensaje emergente de éxito ANTES de cerrar el sheet. Se usa
+        // el context del sheet (todavía válido). Tras "Entendido" se
+        // cierra el sheet devolviendo true al caller.
+        await _showPublishedDialog();
+        if (!mounted) return;
         Navigator.of(context).pop(true);
       } else {
         context.showErrorSnack(prov.error ?? 'No se pudo publicar');
@@ -189,6 +194,44 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Diálogo emergente "solicitud publicada con éxito".
+  Future<void> _showPublishedDialog() {
+    final c = context.colors;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: const Icon(Icons.check_circle_rounded,
+            color: AppColors.available, size: 48),
+        title: Text('¡Solicitud publicada con éxito!',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
+        content: Text(
+          'Los profesionales de tu zona ya pueden ver tu necesidad y '
+          'enviarte sus ofertas. Te avisaremos cuando recibas propuestas.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Entendido'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

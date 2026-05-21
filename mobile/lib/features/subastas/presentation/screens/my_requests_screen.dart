@@ -15,6 +15,10 @@ class MyRequestsScreen extends StatefulWidget {
 }
 
 class _MyRequestsScreenState extends State<MyRequestsScreen> {
+  /// Guard para que un doble-tap del FAB no abra dos sheets de
+  /// publicación a la vez.
+  bool _openingSheet = false;
+
   @override
   void initState() {
     super.initState();
@@ -82,9 +86,15 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
   }
 
   Future<void> _openPublishSheet(BuildContext context) async {
-    final subProv = context.read<SubastasProvider>();
-    final ok = await PublishRequestSheet.show(context);
-    if (ok == true) subProv.loadMyRequests();
+    if (_openingSheet) return;
+    _openingSheet = true;
+    try {
+      final subProv = context.read<SubastasProvider>();
+      final ok = await PublishRequestSheet.show(context);
+      if (ok == true) subProv.loadMyRequests();
+    } finally {
+      _openingSheet = false;
+    }
   }
 }
 
