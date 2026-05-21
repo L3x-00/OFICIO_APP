@@ -574,7 +574,7 @@ class _OfferCard extends StatelessWidget {
                             label: 'WhatsApp',
                             color: const Color(0xFF25D366),
                             onTap: () => launchUrl(Uri.parse(
-                                'https://wa.me/${prov.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en OficioApp')),
+                                'https://wa.me/${prov.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en Servi')),
                           ),
                         ),
                       if (prov.whatsapp != null && prov.phone != null)

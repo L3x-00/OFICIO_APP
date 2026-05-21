@@ -24,9 +24,9 @@ import { useRouter } from 'next/navigation';
 import { useProfileType } from '@/lib/profile-type-context';
 import type { Provider } from '@/lib/types';
 
-const TERMS_TEXT = `TÉRMINOS Y CONDICIONES DE USO — OficioApp
+const TERMS_TEXT = `TÉRMINOS Y CONDICIONES DE USO — Servi
 
-Bienvenido a OficioApp. Antes de utilizar nuestra plataforma, lea detenidamente estos Términos y Condiciones...
+Bienvenido a Servi. Antes de utilizar nuestra plataforma, lea detenidamente estos Términos y Condiciones...
 
 (El texto completo es el mismo que está en login_screen.dart de la app Flutter)`;
 
@@ -409,13 +409,13 @@ export default function PanelAjustesPage() {
         isOpen={showPrivacy}
         onClose={() => setShowPrivacy(false)}
         title="Política de Privacidad"
-        content="Política de Privacidad de OficioApp. (Texto pendiente de completar)"
+        content="Política de Privacidad de Servi. (Texto pendiente de completar)"
       />
       <LegalModal
         isOpen={showHelp}
         onClose={() => setShowHelp(false)}
         title="Ayuda"
-        content="Centro de ayuda de OficioApp. Si tienes dudas, contáctanos en soporteofiapp@gmail.com
+        content="Centro de ayuda de Servi. Si tienes dudas, contáctanos en soporteofiapp@gmail.com
                   o visita nuestras redes sociales. (Texto pendiente de completar)"
       />
 

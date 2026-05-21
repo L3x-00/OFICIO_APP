@@ -28,7 +28,7 @@ class GeocodingResult {
 /// para evitar llamadas repetidas a Nominatim en cada tick del stream GPS.
 class GeocodingService {
   static const _baseUrl   = 'https://nominatim.openstreetmap.org/reverse';
-  static const _userAgent = 'OficioApp/1.0';
+  static const _userAgent = 'Servi/1.0';
   static const _timeout   = Duration(seconds: 10);
 
   // Clave: "lat3,lng3" (redondeado a 3 decimales ≈ 111m de celda)

@@ -11,7 +11,7 @@ Pattern: [thing] [action] [reason]. [next step].
 - **Goal-Driven**: Loop until success criteria are met. Test-first when possible.
 
 ---
-# OficioApp — Guía de Desarrollo Optimizado
+# Servi — Guía de Desarrollo Optimizado
 
 **Última actualización**: 2026-04-09
 **RTK Habilitado**: Sí (ahorrador de tokens 60-90%)
@@ -21,7 +21,7 @@ Pattern: [thing] [action] [reason]. [next step].
 
 ## 🎯 Contexto Rápido
 
-**OficioApp** = Marketplace de servicios locales para ciudades intermedias del Perú.
+**Servi** = Marketplace de servicios locales para ciudades intermedias del Perú.
 - **3 apps**: Flutter (cliente+proveedor), NestJS backend, Next.js admin
 - **Modelo**: Clientes gratis, proveedores pagan suscripción
 - **Mercado**: Electricistas, gasfiteros, peluquerías, restaurantes, etc.
@@ -191,7 +191,7 @@ Frontend: mobile/lib/features/auth/.../profile_screen.dart
 
 RTK **automáticamente** filtra output innecesario sin que hagas nada especial. Ahorras 60-90% de tokens en comandos comunes.
 
-**Comandos OficioApp prioritarios**:
+**Comandos Servi prioritarios**:
 ```bash
 rtk npm run start:dev              # Backend (80% ahorro)
 rtk npm run dev                    # Admin (80% ahorro)

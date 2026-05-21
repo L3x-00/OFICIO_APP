@@ -21,21 +21,21 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: 'OficioApp – Marketplace de servicios locales en Perú',
+  title: 'Servi – Marketplace de servicios locales en Perú',
   description:
     'Conecta con profesionales y negocios verificados de tu ciudad. Reseñas con GPS, pagos con Yape y soporte local en todo el Perú.',
-  keywords: ['servicios', 'profesionales', 'Perú', 'marketplace', 'Yape', 'OficioApp'],
+  keywords: ['servicios', 'profesionales', 'Perú', 'marketplace', 'Yape', 'Servi'],
   openGraph: {
-    title: 'OficioApp – Marketplace de servicios locales',
+    title: 'Servi – Marketplace de servicios locales',
     description:
       'Encuentra profesionales verificados en tu ciudad. Reseñas reales con GPS, pagos seguros con Yape.',
     type: 'website',
     locale: 'es_PE',
-    siteName: 'OficioApp',
+    siteName: 'Servi',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'OficioApp',
+    title: 'Servi',
     description: 'Marketplace de servicios locales en el Perú.',
   },
   icons: {

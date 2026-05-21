@@ -279,7 +279,7 @@ class OfferDetailSheet extends StatelessWidget {
                                     label: 'WhatsApp',
                                     color: const Color(0xFF25D366),
                                     onTap: () => launchUrl(Uri.parse(
-                                        'https://wa.me/${p.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en OficioApp')),
+                                        'https://wa.me/${p.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en Servi')),
                                   ),
                                 ),
                               if (p.whatsapp != null && p.phone != null)

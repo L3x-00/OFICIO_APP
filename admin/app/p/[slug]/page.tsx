@@ -61,12 +61,12 @@ export async function generateMetadata(
   const { slug } = await params;
   const profile  = await fetchProfile(slug);
   if (!profile) {
-    return { title: 'Perfil no encontrado — OficioApp' };
+    return { title: 'Perfil no encontrado — Servi' };
   }
   const label = profile.type === 'NEGOCIO' ? 'Negocio' : 'Profesional';
-  const title = `${profile.businessName} · ${label} en OficioApp`;
+  const title = `${profile.businessName} · ${label} en Servi`;
   const description = (profile.description?.slice(0, 160) ?? '')
-    || `${profile.businessName} ofrece servicios en OficioApp. Mira reseñas, contacta y descubre más.`;
+    || `${profile.businessName} ofrece servicios en Servi. Mira reseñas, contacta y descubre más.`;
   const image = profile.coverUrl || `${API_URL}/og/placeholder.png`;
   const url   = `https://oficioapp.org.pe/p/${profile.slug}`;
 
@@ -79,7 +79,7 @@ export async function generateMetadata(
       url,
       title,
       description,
-      siteName:    'OficioApp',
+      siteName:    'Servi',
       images:      [{ url: image, alt: profile.businessName }],
     },
     twitter: {
@@ -130,7 +130,7 @@ export default async function PublicProfilePage(
         <Link href="https://oficioapp.org.pe" style={{
           color: '#F97316', textDecoration: 'none', fontWeight: 600, fontSize: 16,
         }}>
-          OficioApp
+          Servi
         </Link>
       </header>
 
@@ -262,7 +262,7 @@ export default async function PublicProfilePage(
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#6B7280' }}>
           ¿Quieres aparecer aquí? <Link href="https://oficioapp.org.pe"
-            style={{ color: '#F97316' }}>Regístrate gratis en OficioApp</Link>
+            style={{ color: '#F97316' }}>Regístrate gratis en Servi</Link>
         </p>
       </main>
     </div>

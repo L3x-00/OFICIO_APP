@@ -9,7 +9,7 @@ const testimonials = [
     city: 'Huancayo',
     role: 'Cliente',
     rating: 5,
-    text: 'Encontré un electricista en 10 minutos. La reseña con GPS me dio mucha confianza. Ahora siempre uso OficioApp para todo.',
+    text: 'Encontré un electricista en 10 minutos. La reseña con GPS me dio mucha confianza. Ahora siempre uso Servi para todo.',
     avatar: 'avatar-orange',
   },
   {
@@ -68,7 +68,7 @@ export default function TestimonialsSection() {
           <span className="eyebrow">Testimonios</span>
           <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
             Historias reales de personas
-            <br className="hidden sm:block" /> que ya confían en OficioApp.
+            <br className="hidden sm:block" /> que ya confían en Servi.
           </h2>
         </motion.div>
 

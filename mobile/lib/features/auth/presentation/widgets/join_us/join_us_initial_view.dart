@@ -101,7 +101,7 @@ class JoinUsInitialView extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Miles de personas en tu zona buscan exactamente lo que tú ofreces. '
-                  'Únete a OficioApp gratis los primeros 2 meses.',
+                  'Únete a Servi gratis los primeros 2 meses.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textSecondary,

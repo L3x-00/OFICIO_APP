@@ -164,8 +164,8 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     final pathSegment = (p.slug != null && p.slug!.isNotEmpty) ? p.slug! : '${p.id}';
     final url = '${DioClient.publicWebUrl}/p/$pathSegment';
     final text = p.type == ProviderType.negocio
-        ? 'Mira el negocio ${p.businessName} en OficioApp'
-        : 'Mira el perfil de ${p.businessName} en OficioApp';
+        ? 'Mira el negocio ${p.businessName} en Servi'
+        : 'Mira el perfil de ${p.businessName} en Servi';
     await Share.share('$text\n$url', subject: p.businessName);
   }
 

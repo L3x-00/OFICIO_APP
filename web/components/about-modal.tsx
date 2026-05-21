@@ -180,7 +180,7 @@ export default function AboutModal({ isOpen, onClose }: Props) {
               {/* Pie de página dentro del modal */}
               <div className="mt-8 pt-6 border-t border-white/5 text-center">
                 <p className="text-white/60 text-[13px] leading-relaxed max-w-lg mx-auto">
-                  <strong className="text-white">OficioApp</strong> nació de la necesidad
+                  <strong className="text-white">Servi</strong> nació de la necesidad
                   de formalizar el mercado de servicios locales en ciudades donde no
                   existía una alternativa digital confiable. Creemos en el talento
                   peruano y trabajamos cada día para que encontrar un profesional

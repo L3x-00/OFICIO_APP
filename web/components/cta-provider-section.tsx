@@ -51,7 +51,7 @@ export default function CtaProviderSection() {
 
             <h2 className="font-display font-bold tracking-tightest text-white text-[36px] sm:text-[48px] leading-[1.05]">
               Haz crecer tu negocio
-              <br className="hidden sm:block" /> con <span className="text-gradient">OficioApp</span>.
+              <br className="hidden sm:block" /> con <span className="text-gradient">Servi</span>.
             </h2>
 
             <p className="mt-6 text-white/60 text-[17px] leading-relaxed max-w-2xl">

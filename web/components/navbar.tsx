@@ -138,7 +138,7 @@ export default function Navbar() {
               <div className="relative w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-transform duration-300 group-hover:scale-[1.04] border border-white/10">
                 <Image
                   src="/images/logo/logo_light.png"
-                  alt="OficioApp logo"
+                  alt="Servi logo"
                   width={22}
                   height={22}
                   className="object-contain"
@@ -146,7 +146,7 @@ export default function Navbar() {
                 />
               </div>
               <span className="hidden sm:inline-block font-display font-bold text-[17px] tracking-tightest text-white group-hover:text-primary-light transition-colors">
-                OficioApp
+                Servi
               </span>
             </Link>
 

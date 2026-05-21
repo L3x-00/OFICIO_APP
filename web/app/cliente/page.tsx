@@ -247,7 +247,7 @@ function ClienteContent() {
             </div>
             <h2 className="font-display font-bold tracking-tightest text-white text-[24px] sm:text-[28px] leading-snug mb-3">
               ¿Quieres ofrecer tus servicios en{' '}
-              <span className="text-gradient">OficioApp</span>?
+              <span className="text-gradient">Servi</span>?
             </h2>
             <p className="text-white/50 text-[14.5px] mb-7 max-w-md mx-auto leading-relaxed">
               Regístrate como profesional o negocio y empieza a recibir clientes desde hoy.

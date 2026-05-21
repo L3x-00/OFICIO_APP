@@ -230,7 +230,7 @@ class MyCodeCard extends StatelessWidget {
       {required bool plain}) {
     final text = plain
         ? code
-        : 'Descarga OficioApp y usa mi código $code al registrarte como '
+        : 'Descarga Servi y usa mi código $code al registrarte como '
             'profesional o negocio: $kAppDownloadUrl';
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(

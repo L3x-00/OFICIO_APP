@@ -24,7 +24,7 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
     _Step(
       icon: Icons.waving_hand_rounded,
       gradient: [Color(0xFF00C6FF), Color(0xFF0072FF)],
-      title: '¡Bienvenido a OficioApp!',
+      title: '¡Bienvenido a Servi!',
       body:
           'Conectamos personas con los mejores profesionales '
           'y negocios de tu ciudad. Rápido, seguro y confiable.',

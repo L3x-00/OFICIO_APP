@@ -95,15 +95,15 @@ void main() async {
           ChangeNotifierProvider(create: (_) => ProvidersProvider()),
           ChangeNotifierProvider(create: (_) => ChatProvider()),
         ],
-        child: OficioApp(router: router),
+        child: Servi(router: router),
       ),
     ),
   );
 }
 
-class OficioApp extends StatelessWidget {
+class Servi extends StatelessWidget {
   final GoRouter router;
-  const OficioApp({super.key, required this.router});
+  const Servi({super.key, required this.router});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class OficioApp extends StatelessWidget {
     return _AuthSideEffects(
       router: router,
       child: MaterialApp.router(
-        title: 'OficioApp',
+        title: 'Servi',
         debugShowCheckedModeBanner: false,
         locale: const Locale('es', '419'),
         supportedLocales: const [Locale('es', '419'), Locale('es'), Locale('en')],

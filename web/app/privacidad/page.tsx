@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidad | OficioApp',
-  description: 'Política de Privacidad de OficioApp - Marketplace de servicios locales en Perú',
+  title: 'Política de Privacidad | Servi',
+  description: 'Política de Privacidad de Servi - Marketplace de servicios locales en Perú',
 };
 
 export default function PrivacyPolicyPage() {
@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
 
           <Section title="1. Identidad del Responsable">
             <p>
-              <strong className="text-ink">OficioApp</strong> (en adelante, &ldquo;La Plataforma&rdquo; o &ldquo;Nosotros&rdquo;),
+              <strong className="text-ink">Servi</strong> (en adelante, &ldquo;La Plataforma&rdquo; o &ldquo;Nosotros&rdquo;),
               operada y desarrollada de manera independiente, con domicilio en Huancayo, Perú, es el responsable
               del tratamiento, almacenamiento y protección de sus datos personales, conforme a lo establecido en la
               Ley N° 29733, Ley de Protección de Datos Personales, y su Reglamento.
@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
             <p>
               Usted tiene derecho a ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO)
               sobre sus datos personales. Para ejercerlos, puede enviar una solicitud a través del Centro de Ayuda
-              dentro de la aplicación o contactando al soporte oficial de OficioApp.
+              dentro de la aplicación o contactando al soporte oficial de Servi.
             </p>
           </Section>
 
@@ -128,7 +128,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-line text-center text-ink-4 text-[13px]">
-          <p>© 2026 OficioApp. Todos los derechos reservados.</p>
+          <p>© 2026 Servi. Todos los derechos reservados.</p>
           <p className="mt-1 inline-flex items-center gap-2">
             <span className="peru-stripe">
               <i /><i /><i />

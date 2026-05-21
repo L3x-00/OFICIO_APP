@@ -134,7 +134,7 @@ export default function LoginPage() {
           <div className="w-14 h-14 rounded-2xl glass border-primary/20 flex items-center justify-center shadow-glow-sm mb-5">
             <Image
               src="/images/logo/logo_light.png" // Logo claro para fondo oscuro
-              alt="OficioApp"
+              alt="Servi"
               width={28}
               height={28}
               className="object-contain"

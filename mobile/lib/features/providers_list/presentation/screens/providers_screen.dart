@@ -142,7 +142,7 @@ class _ProvidersViewState extends State<_ProvidersView>
         title: Row(
           children: [
             Text(
-              'OficioApp',
+              'Servi',
               style: TextStyle(
                 color: c.textPrimary,
                 fontWeight: FontWeight.bold,

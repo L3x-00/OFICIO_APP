@@ -221,7 +221,7 @@ function CodeTab({ stats }: { stats: ReferralStats | null }) {
     toast.success('Código copiado al portapapeles');
   };
   const copyLink = () => {
-    const text = `Descarga OficioApp y usa mi código ${stats.code} al registrarte como profesional o negocio. ¡Gana 5 monedas de bienvenida! ${APP_DOWNLOAD_URL}`;
+    const text = `Descarga Servi y usa mi código ${stats.code} al registrarte como profesional o negocio. ¡Gana 5 monedas de bienvenida! ${APP_DOWNLOAD_URL}`;
     navigator.clipboard.writeText(text);
     toast.success('Enlace de invitación copiado');
   };

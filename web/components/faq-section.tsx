@@ -56,7 +56,7 @@ const faqData: { category: string; items: FaqItem[] }[] = [
     category: 'General',
     items: [
       {
-        question: '¿En qué ciudades está disponible OficioApp?',
+        question: '¿En qué ciudades está disponible Servi?',
         answer: 'Actualmente nos enfocamos en conectar ciudades intermedias del Perú, brindando una plataforma tecnológica donde antes no existía una solución formal y segura.',
       },
       {

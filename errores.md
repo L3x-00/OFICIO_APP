@@ -1,4 +1,4 @@
-# Registro de Errores — OficioApp
+# Registro de Errores — Servi
 
 Documentación de bugs graves ya resueltos para evitar regresiones.
 

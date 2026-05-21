@@ -206,7 +206,7 @@ import {
       content: [
         {
           title: 'Planes disponibles',
-          desc: 'OficioApp ofrece 3 planes: Gratis, Estándar y Premium.',
+          desc: 'Servi ofrece 3 planes: Gratis, Estándar y Premium.',
           icon: Crown,
           accent: 'orange',
           screenshot: 'Comparativa de planes Gratis, Estándar y Premium',

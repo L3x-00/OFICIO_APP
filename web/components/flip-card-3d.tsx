@@ -26,7 +26,7 @@ const PLACEHOLDER: CardData = {
   rating: 0,
   reviews: 0,
   description:
-    'Únete a OficioApp y conecta con clientes verificados de tu ciudad. Tu marca puede aparecer aquí.',
+    'Únete a Servi y conecta con clientes verificados de tu ciudad. Tu marca puede aparecer aquí.',
   location: 'Perú',
   phone: undefined,
   isWhats: false,
@@ -150,14 +150,14 @@ export default function FlipCard3D() {
               <div className="relative w-4 h-4">
                 <Image
                   src="/images/logo/logo_light.png"
-                  alt="OficioApp"
+                  alt="Servi"
                   fill
                   className="object-contain"
                   sizes="16px"
                 />
               </div>
               <span className="font-display font-semibold uppercase tracking-[0.16em]">
-                Disponible en OficioApp
+                Disponible en Servi
               </span>
               <ShieldCheck size={11} className="text-accent" />
             </div>
@@ -190,7 +190,7 @@ function toCardData(p: PublicProvider): CardData {
     reviews: p.totalReviews ?? 0,
     description:
       p.description ||
-      'Profesional verificado disponible en OficioApp. Conecta con clientes reales de tu zona.',
+      'Profesional verificado disponible en Servi. Conecta con clientes reales de tu zona.',
     location:
       [p.locality?.department, p.locality?.province].filter(Boolean).join(' · ') || 'Perú',
     phone,

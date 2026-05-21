@@ -224,7 +224,7 @@ export class ReferralsService {
     });
     this.push.sendToUser(
       referral.invitedUserId,
-      'Bienvenido a OficioApp 🪙',
+      'Bienvenido a Servi 🪙',
       `Tu perfil fue aprobado y recibiste ${INVITED_WELCOME_COINS} monedas de bienvenida.`,
       { type: 'REFERRAL_WELCOME' },
     );

@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────
-# OficioApp · ProGuard / R8 rules
+# Servi · ProGuard / R8 rules
 # Activado por isMinifyEnabled + isShrinkResources en build.gradle.kts.
 # Mantén estas reglas pequeñas y específicas — cada `-keep` extra es
 # tamaño que NO se elimina del APK.
@@ -46,7 +46,7 @@
 -keep class com.google.gson.** { *; }
 -dontwarn com.google.gson.**
 
-# ── Plugins comunes en OficioApp ─────────────────────────────────────
+# ── Plugins comunes en Servi ─────────────────────────────────────
 # Dio (Flutter package) — usa reflection en algunos backends.
 -dontwarn okhttp3.**
 -dontwarn okio.**

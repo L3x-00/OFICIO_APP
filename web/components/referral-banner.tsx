@@ -95,7 +95,7 @@ export default function ReferralBanner() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/coins-banner.png"
-                  alt="Monedas de OficioApp"
+                  alt="Monedas de Servi"
                   className="w-[440px] h-[440px] max-w-none object-contain"
                   style={{
                     filter: 'drop-shadow(0 18px 38px rgba(245,158,11,0.30))',

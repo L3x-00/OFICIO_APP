@@ -105,11 +105,11 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     _Slide(
       icon: Icons.celebration_rounded,
       gradient: [Color(0xFFFFB300), Color(0xFFFF8F00)],
-      title: '¡Bienvenido a OficioApp!',
+      title: '¡Bienvenido a Servi!',
       bodyTemplate:
           'Como regalo de bienvenida, tu cuenta tiene el plan '
           'Estándar activado por 1 mes completamente gratis. '
-          'Aprovéchalo para probar todo lo que OficioApp puede '
+          'Aprovéchalo para probar todo lo que Servi puede '
           'hacer por tu negocio.',
       pill: 'PLAN ESTÁNDAR · 1 MES GRATIS',
     ),

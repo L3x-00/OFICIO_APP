@@ -153,7 +153,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                         // ── Nombre de marca ───────────────
                         Text(
-                          'OficioApp',
+                          'Servi',
                           style: TextStyle(
                             color: c.textPrimary,
                             fontSize: 36,

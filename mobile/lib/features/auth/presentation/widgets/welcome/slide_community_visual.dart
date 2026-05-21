@@ -38,7 +38,7 @@ class SlideCommunityVisual extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '"Gracias a OficioApp, mi panadería duplicó sus clientes. La gente confía porque ve las reseñas reales."',
+                  '"Gracias a Servi, mi panadería duplicó sus clientes. La gente confía porque ve las reseñas reales."',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textPrimary,

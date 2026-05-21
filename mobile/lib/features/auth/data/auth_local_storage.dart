@@ -11,7 +11,7 @@ class AuthLocalStorage {
     aOptions: AndroidOptions(),
     // CONFIGURACIÓN PARA WEB (Soluciona el error de consola)
     webOptions: WebOptions(
-      dbName: 'OficioApp_SecureStore',
+      dbName: 'Servi_SecureStore',
       publicKey: 'oficioapp_auth_key_2026',
     ),
   );

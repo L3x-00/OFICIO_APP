@@ -18,12 +18,12 @@ const slides = [
   },
   {
     src: '/images/provedor.png',
-    alt: 'OficioApp – marketplace de servicios',
+    alt: 'Servi – marketplace de servicios',
     caption: 'El marketplace de servicios locales más confiable del Perú',
   },
   {
     src: '/images/portada2.png',
-    alt: 'Proveedor en OficioApp',
+    alt: 'Proveedor en Servi',
     caption: 'Crea tu perfil profesional y empieza a recibir clientes',
   },
   {
@@ -74,7 +74,7 @@ export default function ImageCarousel() {
         >
           <span className="eyebrow">Galería</span>
           <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
-            Conoce <span className="text-gradient">OficioApp</span>
+            Conoce <span className="text-gradient">Servi</span>
           </h2>
           <p className="text-white/60 mt-3 text-[16px] max-w-lg mx-auto leading-relaxed">
             La plataforma que transforma cómo se contratan servicios en el Perú.

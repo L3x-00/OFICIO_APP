@@ -1,4 +1,4 @@
-# Auditoría Técnica de OficioApp
+# Auditoría Técnica de Servi
 
 **Fecha**: 2026-04-27
 **Versión del sistema**: Hito 8.1+ (post FCM + Geocodificación Nominatim)
@@ -250,7 +250,7 @@
 ### Geocodificación (Nominatim)
 
 **`geocoding_service.dart`** ✅ Cumple los requisitos:
-- `User-Agent: OficioApp/1.0` enviado (cumple política de Nominatim).
+- `User-Agent: Servi/1.0` enviado (cumple política de Nominatim).
 - `timeout` de 10 segundos configurado.
 - Manejo de `null` en errores y campos faltantes.
 - `accept-language=es` para nombres en español.
@@ -260,7 +260,7 @@
 **Hallazgos en Geocoding**:
 - 🟡 **No hay rate limiting cliente** — Nominatim limita a 1 req/sec por IP. Si el usuario toca rápido el botón GPS, se pueden hacer requests paralelos. Añadir un `_inFlight` flag.
 - ⚪ **No hay caché** — si el usuario re-detecta GPS desde la misma ubicación, se hace request repetido. Cache simple en memoria con clave `lat~,lng~` redondeado a 3 decimales (~110m).
-- ⚪ **Política de uso de Nominatim** — la política pública pide no usar para servicios masivos. Si OficioApp escala >1000 usuarios activos/día, considerar Photon, Geoapify (free tier 3k/día) o LocationIQ.
+- ⚪ **Política de uso de Nominatim** — la política pública pide no usar para servicios masivos. Si Servi escala >1000 usuarios activos/día, considerar Photon, Geoapify (free tier 3k/día) o LocationIQ.
 
 ---
 
@@ -311,7 +311,7 @@ Basado en `ESTADO_ACTUAL.md` y consumos típicos:
 
 ## ✅ Conclusiones y recomendaciones
 
-OficioApp está en un estado **funcional y avanzado** (Hito 8.1 con 23 observaciones resueltas, FCM y geocoding integrados), pero la auditoría revela una brecha significativa entre la **completitud funcional** y la **postura de seguridad/operacional para producción**. El equipo demuestra buenas prácticas en algunas áreas (refresh token rotation, ValidationPipe global con whitelist, índices Prisma en tablas de alto tráfico, manejo correcto de FCM tokens inválidos, fallback robusto en geocoding) pero hay defectos de configuración que pueden comprometer todo el sistema.
+Servi está en un estado **funcional y avanzado** (Hito 8.1 con 23 observaciones resueltas, FCM y geocoding integrados), pero la auditoría revela una brecha significativa entre la **completitud funcional** y la **postura de seguridad/operacional para producción**. El equipo demuestra buenas prácticas en algunas áreas (refresh token rotation, ValidationPipe global con whitelist, índices Prisma en tablas de alto tráfico, manejo correcto de FCM tokens inválidos, fallback robusto en geocoding) pero hay defectos de configuración que pueden comprometer todo el sistema.
 
 **Acciones inmediatas (esta semana)**:
 1. **Rotar credenciales R2** y purgar `.env.example` del historial (Crítico #1).

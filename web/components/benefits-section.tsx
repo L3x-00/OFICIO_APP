@@ -84,7 +84,7 @@ export default function BenefitsSection() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
         >
-          <span className="eyebrow">Por qué OficioApp</span>
+          <span className="eyebrow">Por qué Servi</span>
           <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
             La plataforma que entiende cómo se contratan
             <br className="hidden sm:block" /> servicios en el Perú.

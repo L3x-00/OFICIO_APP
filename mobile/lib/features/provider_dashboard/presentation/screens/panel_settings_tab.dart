@@ -221,8 +221,8 @@ class PanelSettingsTab extends StatelessWidget {
                   Center(
                     child: Text(
                       profile?.type == 'NEGOCIO'
-                          ? 'OficioApp v1.0.0 — Panel de Negocios'
-                          : 'OficioApp v1.0.0 — Panel Profesional',
+                          ? 'Servi v1.0.0 — Panel de Negocios'
+                          : 'Servi v1.0.0 — Panel Profesional',
                       style: TextStyle(color: c.textMuted, fontSize: 11),
                     ),
                   ),

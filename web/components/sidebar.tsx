@@ -66,7 +66,7 @@ export default function Sidebar() {
           <div className="relative w-8 h-8 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
             <Image
               src="/images/logo/logo_light.png" // Cambiado a logo claro
-              alt="OficioApp"
+              alt="Servi"
               fill
               className="object-contain"
               sizes="32px"
@@ -74,7 +74,7 @@ export default function Sidebar() {
           </div>
           {!collapsed && (
             <span className="text-white font-display font-bold text-sm whitespace-nowrap animate-fade-in">
-              OficioApp
+              Servi
             </span>
           )}
         </Link>

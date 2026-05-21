@@ -97,7 +97,7 @@ function LoginForm() {
               <Zap size={22} color="#fff" />
             </div>
             <div>
-              <p style={{ fontWeight: 800, fontSize: '18px', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>OficioApp</p>
+              <p style={{ fontWeight: 800, fontSize: '18px', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Servi</p>
               <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Admin Panel</p>
             </div>
           </div>

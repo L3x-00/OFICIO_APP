@@ -246,7 +246,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>
-            Resumen operacional de OficioApp
+            Resumen operacional de Servi
             {lastUpdated && (
               <span style={{ marginLeft: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Clock size={11} />

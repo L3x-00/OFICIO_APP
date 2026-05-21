@@ -6,23 +6,23 @@
 		<true/>
 		<!-- ── Permisos de ubicación ──────────────────────────── -->
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>OficioApp necesita tu ubicación para verificar que estuviste en el lugar del servicio al dejar una reseña.</string>
+		<string>Servi necesita tu ubicación para verificar que estuviste en el lugar del servicio al dejar una reseña.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>OficioApp usa tu ubicación para validar reseñas y mostrar servicios cercanos.</string>
+		<string>Servi usa tu ubicación para validar reseñas y mostrar servicios cercanos.</string>
 		<!-- ── Permisos de cámara y galería ───────────────────── -->
 		<key>NSCameraUsageDescription</key>
-		<string>OficioApp necesita acceso a la cámara para tomar fotos de evidencia al dejar una reseña o registrar tu negocio.</string>
+		<string>Servi necesita acceso a la cámara para tomar fotos de evidencia al dejar una reseña o registrar tu negocio.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>OficioApp necesita acceso a tu galería para seleccionar fotos de evidencia o imágenes de tu perfil.</string>
+		<string>Servi necesita acceso a tu galería para seleccionar fotos de evidencia o imágenes de tu perfil.</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>OficioApp puede guardar fotos en tu galería.</string>
+		<string>Servi puede guardar fotos en tu galería.</string>
 		<!-- ── Permiso de micrófono (para video en futuras versiones) -->
 		<key>NSMicrophoneUsageDescription</key>
-		<string>OficioApp puede necesitar el micrófono para grabar videos de evidencia.</string>
+		<string>Servi puede necesitar el micrófono para grabar videos de evidencia.</string>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Mobile</string>
+		<string>Servi</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -30,7 +30,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>mobile</string>
+		<string>Servi</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>

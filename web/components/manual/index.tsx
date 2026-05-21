@@ -48,7 +48,7 @@ export default function UserManual() {
         >
           <span className="eyebrow">Manual de usuario</span>
           <h2 className="mt-3 font-display font-bold tracking-tightest text-white text-[34px] sm:text-[44px] leading-[1.1]">
-            Aprende a usar <span className="text-gradient">OficioApp</span>.
+            Aprende a usar <span className="text-gradient">Servi</span>.
           </h2>
           <p className="mt-4 text-white/60 text-[16px] leading-relaxed max-w-xl">
             Todo lo que necesitas saber para aprovechar al máximo la plataforma,

@@ -30,7 +30,7 @@ class WelcomeTopBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            'OficioApp',
+            'Servi',
             style: TextStyle(
               color: c.textPrimary,
               fontWeight: FontWeight.bold,

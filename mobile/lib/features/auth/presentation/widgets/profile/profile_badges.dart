@@ -282,7 +282,7 @@ class PendingApprovalBanner extends StatelessWidget {
               ApprovalStep(
                 number: '1',
                 title: 'Revisión de datos',
-                description: 'El equipo de OficioApp verifica que la información de tu perfil sea correcta y completa.',
+                description: 'El equipo de Servi verifica que la información de tu perfil sea correcta y completa.',
               ),
               const SizedBox(height: 14),
               ApprovalStep(

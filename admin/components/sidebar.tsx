@@ -110,7 +110,7 @@ export function Sidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileClos
           {!collapsed && (
             <div style={{ overflow: 'hidden' }}>
               <p style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                OficioApp
+                Servi
               </p>
               <p style={{ fontSize: '10px', color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '1px' }}>
                 Panel Admin

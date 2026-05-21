@@ -1,4 +1,4 @@
-# OficioApp — Arquitectura Técnica y Estrategia de Despliegue
+# Servi — Arquitectura Técnica y Estrategia de Despliegue
 
 **Fecha**: 2026-04-24  
 **Versión del sistema**: Hito 6.0+  
@@ -684,7 +684,7 @@ app.enableCors({
 
 ## 8. Decisión Recomendada — Stack de Lanzamiento
 
-Para validar OficioApp con costo mínimo, stack recomendado:
+Para validar Servi con costo mínimo, stack recomendado:
 
 | Componente | Herramienta | Motivo |
 |-----------|------------|--------|

@@ -6,7 +6,7 @@ import 'join_us_components.dart';
 import 'join_us_initial_view.dart';
 import 'join_us_type_detail.dart';
 
-/// Modal informativo "¡Quiero ser parte de OficioApp!".
+/// Modal informativo "¡Quiero ser parte de Servi!".
 ///
 /// Orquesta dos vistas (inicial / detalle por tipo) con una transición
 /// slide + fade. La lógica densa (banners de estado, planes, mock de

@@ -36,38 +36,38 @@ const itemVariants = {
 };
 
 // ========== CONTENIDO LEGAL ==========
-const TERMS_CONTENT = `TÉRMINOS Y CONDICIONES DE USO — OficioApp
+const TERMS_CONTENT = `TÉRMINOS Y CONDICIONES DE USO — Servi
 
 Última actualización: Mayo 2026
 
 1. ACEPTACIÓN DE LOS TÉRMINOS
-Al acceder y utilizar la plataforma OficioApp, usted acepta estar sujeto a estos Términos y Condiciones de Uso. Si no está de acuerdo con alguno de estos términos, no utilice la plataforma.
+Al acceder y utilizar la plataforma Servi, usted acepta estar sujeto a estos Términos y Condiciones de Uso. Si no está de acuerdo con alguno de estos términos, no utilice la plataforma.
 
 2. DESCRIPCIÓN DEL SERVICIO
-OficioApp es un marketplace de servicios locales que conecta a clientes con profesionales y negocios verificados en ciudades intermedias del Perú. La plataforma actúa exclusivamente como intermediario y no se hace responsable por la calidad de los servicios prestados por los profesionales registrados.
+Servi es un marketplace de servicios locales que conecta a clientes con profesionales y negocios verificados en ciudades intermedias del Perú. La plataforma actúa exclusivamente como intermediario y no se hace responsable por la calidad de los servicios prestados por los profesionales registrados.
 
 3. REGISTRO DE USUARIO
 Para utilizar la plataforma, el usuario debe registrarse proporcionando información veraz y actualizada. El usuario es responsable de mantener la confidencialidad de su contraseña y de todas las actividades que ocurran bajo su cuenta.
 
 4. VERIFICACIÓN DE PROFESIONALES
-OficioApp realiza un proceso de verificación documental de los profesionales y negocios registrados. Sin embargo, esta verificación no constituye una garantía absoluta de la calidad o idoneidad de los servicios ofrecidos.
+Servi realiza un proceso de verificación documental de los profesionales y negocios registrados. Sin embargo, esta verificación no constituye una garantía absoluta de la calidad o idoneidad de los servicios ofrecidos.
 
 5. RESEÑAS Y CALIFICACIONES
-Las reseñas deben ser honestas y basadas en experiencias reales. OficioApp se reserva el derecho de eliminar reseñas que contengan contenido falso, ofensivo o inapropiado.
+Las reseñas deben ser honestas y basadas en experiencias reales. Servi se reserva el derecho de eliminar reseñas que contengan contenido falso, ofensivo o inapropiado.
 
 6. PLANES DE SUSCRIPCIÓN
-Los profesionales pueden acceder a planes gratuitos o de pago. Los precios, duración y beneficios de cada plan están detallados en la plataforma. OficioApp se reserva el derecho de modificar los precios con previo aviso.
+Los profesionales pueden acceder a planes gratuitos o de pago. Los precios, duración y beneficios de cada plan están detallados en la plataforma. Servi se reserva el derecho de modificar los precios con previo aviso.
 
 7. SISTEMA DE REFERIDOS Y MONEDAS
 Los usuarios pueden participar en el programa de referidos acumulando monedas virtuales. Estas monedas no tienen valor monetario real fuera de la plataforma y solo pueden canjearse por los beneficios especificados.
 
 8. LIMITACIÓN DE RESPONSABILIDAD
-OficioApp no será responsable por daños directos, indirectos, incidentales o consecuentes que resulten del uso o la imposibilidad de uso de la plataforma.
+Servi no será responsable por daños directos, indirectos, incidentales o consecuentes que resulten del uso o la imposibilidad de uso de la plataforma.
 
 9. CONTACTO
 Para cualquier consulta sobre estos términos, contáctenos a: soporteofiapp@gmail.com`;
 
-const PRIVACY_CONTENT = `POLÍTICA DE PRIVACIDAD — OficioApp
+const PRIVACY_CONTENT = `POLÍTICA DE PRIVACIDAD — Servi
 
 Última actualización: Mayo 2026
 
@@ -150,14 +150,14 @@ export default function Footer() {
               <div className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105 border border-white/10">
                 <Image
                   src="/images/logo/logo_light.png"
-                  alt="OficioApp"
+                  alt="Servi"
                   width={24}
                   height={24}
                   className="object-contain"
                 />
               </div>
               <span className="font-display font-bold text-white text-xl tracking-tightest bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                OficioApp
+                Servi
               </span>
             </Link>
             <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-xs">
@@ -342,7 +342,7 @@ export default function Footer() {
           className="pt-7 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4"
         >
           <span className="text-white/30 text-xs">
-            © {year} OficioApp. Todos los derechos reservados.
+            © {year} Servi. Todos los derechos reservados.
           </span>
           <div className="flex items-center gap-4">
             <span className="text-white/30 text-xs inline-flex items-center gap-1.5">

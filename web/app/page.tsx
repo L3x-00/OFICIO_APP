@@ -26,7 +26,7 @@ export default function HomePage() {
 
       {/* ============================================
           SECCIÓN 3: BENEFITS - ¿Por qué elegirnos?
-          Valor diferencial de OficioApp
+          Valor diferencial de Servi
       ============================================ */}
       <BenefitsSection />
 
