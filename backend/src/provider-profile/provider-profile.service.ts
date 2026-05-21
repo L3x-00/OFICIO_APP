@@ -1,11 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AvailabilityStatus, SubscriptionPlan, NotificationType } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 
+// Retención de notificaciones: 5 días. Pasado ese plazo se purgan
+// automáticamente (cron diario).
+const NOTIFICATION_RETENTION_DAYS = 5;
+
 @Injectable()
 export class ProviderProfileService {
+  private readonly logger = new Logger(ProviderProfileService.name);
+
   constructor(
     private prisma: PrismaService,
     private events: EventsGateway,
@@ -158,6 +165,27 @@ export class ProviderProfileService {
       data: { isRead: true },
     });
     return { ok: true };
+  }
+
+  /**
+   * Una vez al día (04:00 UTC) elimina las notificaciones con más de
+   * 5 días — leídas o no. Mantiene la bandeja liviana y evita acumular
+   * histórico viejo. Afecta tanto el inbox del proveedor como el panel
+   * de notificaciones del admin (ambos leen `adminNotification`).
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  async pruneOldNotifications() {
+    const threshold = new Date(
+      Date.now() - NOTIFICATION_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+    );
+    const result = await this.prisma.adminNotification.deleteMany({
+      where: { sentAt: { lt: threshold } },
+    });
+    if (result.count > 0) {
+      this.logger.log(
+        `[notif-cleanup] eliminadas ${result.count} notificaciones > ${NOTIFICATION_RETENTION_DAYS} días`,
+      );
+    }
   }
 
   // ── IMÁGENES DEL PROVEEDOR ───────────────────────────────

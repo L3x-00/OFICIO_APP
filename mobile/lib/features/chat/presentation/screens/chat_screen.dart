@@ -330,7 +330,7 @@ class _RetentionBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Por privacidad, el historial se limpia automáticamente cada 15 días.',
+              'Por privacidad, el historial se limpia automáticamente cada 7 días.',
               style: TextStyle(
                 color: c.textSecondary,
                 fontSize: 11.5,

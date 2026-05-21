@@ -9,7 +9,8 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 
-const MESSAGE_RETENTION_DAYS = 15;
+// Retención de mensajes de chat: 7 días (antes 15 — reducido a la mitad).
+const MESSAGE_RETENTION_DAYS = 7;
 const MESSAGE_RETENTION_MS = MESSAGE_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 @Injectable()
@@ -27,7 +28,7 @@ export class ChatService {
   /**
    * Idempotente: si ya existe la sala entre `clientId` y `providerId`,
    * la devuelve. Si no, la crea. La sala es permanente (no caduca);
-   * lo que se purga periódicamente son los mensajes con más de 15 días.
+   * lo que se purga periódicamente son los mensajes con más de 7 días.
    */
   async getOrCreateRoom(clientId: number, providerId: number) {
     const [client, provider] = await Promise.all([
@@ -402,7 +403,7 @@ export class ChatService {
   }
 
   /**
-   * Una vez al día (03:00 UTC) borra los mensajes con más de 15 días.
+   * Una vez al día (03:00 UTC) borra los mensajes con más de 7 días.
    * Las salas permanecen — la conversación se limpia, no la relación.
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
