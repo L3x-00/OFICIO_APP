@@ -29,11 +29,17 @@ export class UpdateProviderDto {
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(7)
+  @ArrayMaxSize(3)
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @Type(() => Number)
   categoryIds?: number[];
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @IsPositive()
+  primaryCategoryId?: number;
 
   @IsOptional()
   @Type(() => Number)

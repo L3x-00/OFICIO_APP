@@ -177,6 +177,8 @@ class AuthRepository {
     /// nombre plural `categoryIds` (la versión singular `categoryId` se
     /// rechaza por `forbidNonWhitelisted`).
     List<int>? categoryIds,
+    /// Especialidad principal (isPrimary) — debe estar dentro de categoryIds.
+    int? primaryCategoryId,
     int? localityId,
     Map<String, dynamic>? scheduleJson,
     // redes sociales
@@ -207,6 +209,7 @@ class AuthRepository {
         if (description != null && description.isNotEmpty) 'description': description,
         if (address != null && address.isNotEmpty) 'address': address,
         if (categoryIds != null && categoryIds.isNotEmpty) 'categoryIds': categoryIds,
+        'primaryCategoryId': ?primaryCategoryId,
         'localityId': ?localityId,
         if (scheduleJson != null && scheduleJson.isNotEmpty) 'scheduleJson': scheduleJson,
         'website':     ?website,

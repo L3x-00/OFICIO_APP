@@ -153,11 +153,13 @@ class ServiceCardMosaic extends StatelessWidget {
                             onTap: () => CardContactActions.makeCall(context, provider),
                           ),
                         ] else
-                          Text(
-                            provider.categoryName,
-                            style: TextStyle(color: c.textMuted, fontSize: 9),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Flexible(
+                            child: Text(
+                              provider.categoryLabel,
+                              style: TextStyle(color: c.textMuted, fontSize: 9),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                       ],
                     ),

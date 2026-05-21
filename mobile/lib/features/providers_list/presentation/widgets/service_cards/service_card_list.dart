@@ -98,7 +98,7 @@ class ServiceCardList extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    provider.categoryName,
+                    provider.categoryLabel,
                     style: TextStyle(color: c.textMuted, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

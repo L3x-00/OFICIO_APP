@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import {
   X, Copy, CheckCircle2, User, Store,
   ImagePlus, Trash2, ChevronRight, ChevronDown,
-  Clock, Truck,
+  Clock, Truck, Star,
 } from 'lucide-react';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 const MAX_PHOTOS = 3; // GRATIS plan limit
+const MAX_SPECIALTIES = 3; // Especialidades (categorías hijas) por proveedor
 
 const DAYS = [
   { key: 'lun', label: 'Lunes'     },
@@ -55,10 +56,11 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [province,   setProvince]   = useState('');
   const [district,   setDistrict]   = useState('');
 
-  // Category
-  const [allCategories, setAllCategories]       = useState<Category[]>([]);
-  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
-  const [categoryId, setCategoryId]             = useState('');
+  // Especialidades (multi-select, máx 3) + Sector expandido en el acordeón
+  const [allCategories, setAllCategories]             = useState<Category[]>([]);
+  const [selectedParentId, setSelectedParentId]       = useState<number | null>(null);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [primaryCategoryId, setPrimaryCategoryId]     = useState<number | null>(null);
 
   // Schedule (NEGOCIO)
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -93,12 +95,25 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   }, []);
 
   const handleTypeChange = (t: 'OFICIO' | 'NEGOCIO') => {
-    setType(t); setSelectedParentId(null); setCategoryId('');
+    setType(t); setSelectedParentId(null);
+    setSelectedCategoryIds([]); setPrimaryCategoryId(null);
   };
 
   const filteredParents = allCategories.filter((c) => c.forType === type);
-  const selectedParent  = filteredParents.find((c) => c.id === selectedParentId);
-  const subcategories   = selectedParent?.children ?? [];
+
+  // Multi-especialidad: alterna selección, respeta el tope (MAX_SPECIALTIES)
+  // y mantiene siempre una especialidad marcada como principal.
+  const toggleCategory = (id: number) => {
+    if (selectedCategoryIds.includes(id)) {
+      const next = selectedCategoryIds.filter((x) => x !== id);
+      setSelectedCategoryIds(next);
+      if (primaryCategoryId === id) setPrimaryCategoryId(next[0] ?? null);
+    } else {
+      if (selectedCategoryIds.length >= MAX_SPECIALTIES) return;
+      setSelectedCategoryIds([...selectedCategoryIds, id]);
+      if (primaryCategoryId == null) setPrimaryCategoryId(id);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = [...selectedFiles, ...Array.from(e.target.files || [])].slice(0, MAX_PHOTOS);
@@ -113,7 +128,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
 
   const handleSubmit = async () => {
     if (!email || !firstName || !businessName || !phone) { setError('Completa los campos obligatorios (*)'); return; }
-    if (!categoryId) { setError('Selecciona una categoría'); return; }
+    if (selectedCategoryIds.length === 0) { setError('Selecciona al menos una especialidad'); return; }
     setIsLoading(true); setError('');
     try {
       const token    = localStorage.getItem('adminToken');
@@ -123,7 +138,8 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       formData.append('lastName',     lastName);
       formData.append('businessName', businessName);
       formData.append('phone',        phone);
-      formData.append('categoryId',   categoryId);
+      selectedCategoryIds.forEach((id) => formData.append('categoryIds', String(id)));
+      if (primaryCategoryId != null) formData.append('primaryCategoryId', String(primaryCategoryId));
       formData.append('localityId',   localityId);
       formData.append('type',         type);
       if (whatsapp)    formData.append('whatsapp',    whatsapp);
@@ -271,56 +287,67 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
         </div>
       </Section>
 
-      {/* Categoría */}
-      <Section label={type === 'NEGOCIO' ? 'Tipo de Negocio *' : 'Categoría del Servicio *'}>
-        {type === 'OFICIO' ? (
-          <div className="grid grid-cols-2 gap-4">
-            <select value={selectedParentId?.toString() ?? ''} onChange={(e) => { setSelectedParentId(parseInt(e.target.value)); setCategoryId(''); }}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none appearance-none"
-            >
-              <option value="" className="bg-[#1a1c1e]">-- Rubro --</option>
-              {filteredParents.map((p) => <option key={p.id} value={p.id} className="bg-[#1a1c1e]">{p.name}</option>)}
-            </select>
-            <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={!selectedParentId}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none appearance-none disabled:opacity-40"
-            >
-              <option value="" className="bg-[#1a1c1e]">-- Especialidad --</option>
-              {subcategories.map((s) => <option key={s.id} value={s.id} className="bg-[#1a1c1e]">{s.name}</option>)}
-            </select>
+      {/* Especialidades — multi-select (máx 3) con marcado de principal */}
+      <Section label={`${type === 'NEGOCIO' ? 'Tipo de Negocio' : 'Especialidades'} * — selecciona hasta ${MAX_SPECIALTIES}`}>
+        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+          {filteredParents.map((parent) => {
+            const isOpen = selectedParentId === parent.id;
+            const selInParent = parent.children.filter((c) => selectedCategoryIds.includes(c.id)).length;
+            return (
+              <div key={parent.id} className="rounded-2xl border border-white/10 overflow-hidden">
+                <button type="button" onClick={() => setSelectedParentId(isOpen ? null : parent.id)}
+                  className={`w-full flex items-center justify-between px-4 py-3 transition-colors text-left ${isOpen ? (type === 'NEGOCIO' ? 'bg-purple-500/10 border-b border-purple-500/20' : 'bg-blue-500/10 border-b border-blue-500/20') : 'bg-white/5 hover:bg-white/10'}`}
+                >
+                  <span className={`font-semibold text-sm flex items-center gap-2 ${isOpen ? (type === 'NEGOCIO' ? 'text-purple-300' : 'text-blue-300') : 'text-white'}`}>
+                    {parent.name}
+                    {selInParent > 0 && <span className="text-[10px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded-full">{selInParent}</span>}
+                  </span>
+                  {isOpen ? <ChevronDown size={15} className={type === 'NEGOCIO' ? 'text-purple-400' : 'text-blue-400'} /> : <ChevronRight size={15} className="text-gray-500" />}
+                </button>
+                {isOpen && (
+                  <div className="grid grid-cols-2 gap-2 p-3 bg-white/[0.02]">
+                    {parent.children.map((child) => {
+                      const sel = selectedCategoryIds.includes(child.id);
+                      const capped = !sel && selectedCategoryIds.length >= MAX_SPECIALTIES;
+                      return (
+                        <button key={child.id} type="button" disabled={capped} onClick={() => toggleCategory(child.id)}
+                          className={`px-3 py-2 rounded-xl text-xs font-medium text-left transition-all border ${
+                            sel ? (type === 'NEGOCIO' ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'bg-blue-500/20 border-blue-500/40 text-blue-300')
+                                : capped ? 'bg-white/[0.02] border-white/5 text-gray-600 cursor-not-allowed'
+                                : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >{child.name}</button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Especialidades seleccionadas — la estrella marca la principal */}
+        {selectedCategoryIds.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <p className="text-[11px] text-gray-500">Toca la estrella para definir la especialidad principal:</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedCategoryIds.map((id) => {
+                const cat = allCategories.flatMap((p) => p.children).find((c) => c.id === id);
+                const isPrimary = primaryCategoryId === id;
+                return (
+                  <div key={id} className={`flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-xl text-xs border ${isPrimary ? 'bg-amber-500/15 border-amber-500/40 text-amber-200' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                    <button type="button" onClick={() => setPrimaryCategoryId(id)} title="Marcar como principal">
+                      <Star size={13} className={isPrimary ? 'fill-amber-400 text-amber-400' : 'text-gray-500 hover:text-amber-400'} />
+                    </button>
+                    <span>{cat?.name ?? `#${id}`}</span>
+                    <button type="button" onClick={() => toggleCategory(id)} title="Quitar">
+                      <X size={12} className="text-gray-500 hover:text-red-400" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        ) : (
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-            {filteredParents.map((parent) => {
-              const isOpen = selectedParentId === parent.id;
-              return (
-                <div key={parent.id} className="rounded-2xl border border-white/10 overflow-hidden">
-                  <button type="button" onClick={() => { setSelectedParentId(isOpen ? null : parent.id); setCategoryId(''); }}
-                    className={`w-full flex items-center justify-between px-4 py-3 transition-colors text-left ${isOpen ? 'bg-purple-500/10 border-b border-purple-500/20' : 'bg-white/5 hover:bg-white/10'}`}
-                  >
-                    <span className={`font-semibold text-sm ${isOpen ? 'text-purple-300' : 'text-white'}`}>{parent.name}</span>
-                    {isOpen ? <ChevronDown size={15} className="text-purple-400" /> : <ChevronRight size={15} className="text-gray-500" />}
-                  </button>
-                  {isOpen && (
-                    <div className="grid grid-cols-2 gap-2 p-3 bg-white/[0.02]">
-                      {parent.children.map((child) => {
-                        const sel = categoryId === child.id.toString();
-                        return (
-                          <button key={child.id} type="button" onClick={() => setCategoryId(child.id.toString())}
-                            className={`px-3 py-2 rounded-xl text-xs font-medium text-left transition-all border ${sel ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}`}
-                          >{child.name}</button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {categoryId && (
-          <p className="text-xs text-green-400 mt-2">
-            ✓ {allCategories.flatMap((p) => p.children).find((c) => c.id.toString() === categoryId)?.name}
-          </p>
         )}
       </Section>
 

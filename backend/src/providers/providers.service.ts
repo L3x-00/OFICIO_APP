@@ -180,7 +180,8 @@ export class ProvidersService {
         take: limit,
         include: {
           providerCategories: {
-            select: { category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
+            select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
+            orderBy: { isPrimary: 'desc' },
           },
           // Cover primero para que las tarjetas siempre tengan foto incluso
           // si se filtra por `isCover==true` en el cliente — y si por algún
@@ -210,7 +211,8 @@ export class ProvidersService {
       where: { id },
       include: {
         providerCategories: {
-          select: { category: { select: { id: true, name: true, slug: true } } },
+          select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
+          orderBy: { isPrimary: 'desc' },
         },
         images: { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         user: { select: { firstName: true, lastName: true, avatarUrl: true } },

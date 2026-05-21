@@ -9,7 +9,10 @@ class ProviderModel {
   /// que existiera el campo; en ese caso la app cae al deep-link por id.
   final String? slug;
   final String businessName;
+  /// Especialidad principal del proveedor (la marcada con isPrimary).
   final String categoryName;
+  /// Todas las Especialidades (la primera es la principal `categoryName`).
+  final List<String> categoryNames;
   final String phone;
   final String? whatsapp;
   final double averageRating;
@@ -68,6 +71,7 @@ class ProviderModel {
     this.slug,
     required this.businessName,
     required this.categoryName,
+    this.categoryNames = const [],
     required this.phone,
     this.whatsapp,
     required this.averageRating,
@@ -115,6 +119,7 @@ class ProviderModel {
       slug:          json['slug'] as String?,
       businessName:  json['businessName'] as String,
       categoryName:  _firstCategoryName(json),
+      categoryNames: _allCategoryNames(json),
       phone:         json['phone'] as String,
       whatsapp:      json['whatsapp'] as String?,
       averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
@@ -241,6 +246,33 @@ class ProviderModel {
     return (json['category']?['name'] as String?) ?? '';
   }
 
+  /// Todas las Especialidades del proveedor — soporta la relación M:N
+  /// (`providerCategories: [{ category: {name} }]`). El backend las ordena
+  /// con isPrimary primero, así que el índice 0 es la Especialidad principal.
+  static List<String> _allCategoryNames(Map<String, dynamic> json) {
+    final pcList = json['providerCategories'];
+    if (pcList is List && pcList.isNotEmpty) {
+      final names = pcList
+          .whereType<Map<String, dynamic>>()
+          .map((pc) => (pc['category'] as Map<String, dynamic>?)?['name'] as String?)
+          .whereType<String>()
+          .where((n) => n.isNotEmpty)
+          .toList();
+      if (names.isNotEmpty) return names;
+    }
+    final legacy = json['category']?['name'] as String?;
+    return (legacy != null && legacy.isNotEmpty) ? [legacy] : const [];
+  }
+
+  /// Especialidades secundarias — todas menos la principal.
+  List<String> get secondaryCategoryNames =>
+      categoryNames.length > 1 ? categoryNames.sublist(1) : const [];
+
+  /// Etiqueta compacta para tarjetas pequeñas: "Electricista  +2".
+  String get categoryLabel => secondaryCategoryNames.isEmpty
+      ? categoryName
+      : '$categoryName  +${secondaryCategoryNames.length}';
+
   static List<ServiceItem> _parseServices(dynamic scheduleJson) {
     if (scheduleJson == null) return const [];
     final raw = (scheduleJson as Map<String, dynamic>)['services'];
@@ -269,6 +301,7 @@ class ProviderModel {
       slug:             slug,
       businessName:     businessName,
       categoryName:     categoryName,
+      categoryNames:    categoryNames,
       phone:            phone,
       whatsapp:         whatsapp,
       averageRating:    averageRating,

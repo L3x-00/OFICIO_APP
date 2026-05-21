@@ -167,7 +167,10 @@ async function main() {
   console.log(`  ✓ ${localitiesData.length} localidades creadas`);
 
   // ── 3. CATEGORÍAS — OFICIO ────────────────────────────────
-  console.log('🔨 Creando categorías OFICIO...');
+  // Modelo "Multi-Especialidad con Sectores":
+  //   · Sector       = categoría SIN parentId (sólo para filtrar en la app cliente)
+  //   · Especialidad = categoría CON parentId (el oficio real que elige el proveedor)
+  console.log('🔨 Creando Sectores y Especialidades OFICIO...');
 
   const oficioParents: Record<string, number> = {};
   const oficioParentDefs = [
@@ -178,6 +181,8 @@ async function main() {
     { name: 'Transporte y Mudanzas',  slug: 'of-transporte' },
     { name: 'Servicios Personales',   slug: 'of-servicios' },
     { name: 'Ingeniería y Diseño',    slug: 'of-ingenieria' },
+    { name: 'Mecánica y Automotriz',  slug: 'of-automotriz' },
+    { name: 'Legal y Financiero',     slug: 'of-legal' },
   ];
 
   for (const p of oficioParentDefs) {
@@ -218,9 +223,21 @@ async function main() {
     { name: 'Fotógrafo / Videógrafo',    slug: 'fotografo',            parent: 'of-servicios' },
     { name: 'Chef a Domicilio',          slug: 'chef-domicilio',       parent: 'of-servicios' },
     { name: 'Ing. Civil / Arquitecto',   slug: 'ing-civil',            parent: 'of-ingenieria' },
-    { name: 'Ing. de Sistemas / Software', slug: 'ing-sistemas',       parent: 'of-ingenieria' },
+    { name: 'Ingeniero de Sistemas',     slug: 'ing-sistemas',         parent: 'of-ingenieria' },
     { name: 'Diseñador Gráfico',         slug: 'disenador-grafico',    parent: 'of-ingenieria' },
+    { name: 'Diseñador UX/UI',           slug: 'disenador-ux-ui',      parent: 'of-ingenieria' },
     { name: 'Ing. Eléctrica / Mecánica', slug: 'ing-electrica',        parent: 'of-ingenieria' },
+    // ── Profesiones modernas / digitales ──
+    { name: 'Desarrollador de Software',  slug: 'desarrollador-software', parent: 'of-tecnologia' },
+    { name: 'Soporte Técnico IT',         slug: 'soporte-it',             parent: 'of-tecnologia' },
+    { name: 'Community Manager',          slug: 'community-manager',      parent: 'of-tecnologia' },
+    { name: 'Instalador de Cámaras y Alarmas', slug: 'instalador-camaras', parent: 'of-hogar' },
+    // ── Mecánica y Automotriz ──
+    { name: 'Mecánico Automotriz',        slug: 'mecanico-automotriz',  parent: 'of-automotriz' },
+    { name: 'Electromecánico',            slug: 'electromecanico',      parent: 'of-automotriz' },
+    // ── Legal y Financiero ──
+    { name: 'Contador / Asesor Tributario', slug: 'contador',          parent: 'of-legal' },
+    { name: 'Abogado',                    slug: 'abogado',              parent: 'of-legal' },
   ];
 
   for (const s of oficioSubs) {
@@ -233,7 +250,7 @@ async function main() {
   console.log(`  ✓ ${oficioSubs.length} subcategorías OFICIO`);
 
   // ── 4. CATEGORÍAS — NEGOCIO ───────────────────────────────
-  console.log('🏪 Creando categorías NEGOCIO...');
+  console.log('🏪 Creando Sectores y Especialidades NEGOCIO...');
 
   const negocioParents: Record<string, number> = {};
   const negocioParentDefs = [
@@ -252,10 +269,12 @@ async function main() {
   }
 
   const negocioSubs = [
-    { name: 'Restaurantes y Picanterías',      slug: 'restaurantes',         parent: 'neg-alimentacion' },
+    { name: 'Restaurantes',                    slug: 'restaurantes',         parent: 'neg-alimentacion' },
+    { name: 'Picanterías y Comida Regional',   slug: 'picanterias',          parent: 'neg-alimentacion' },
     { name: 'Pollerías y Parrillas',           slug: 'pollerias',            parent: 'neg-alimentacion' },
     { name: 'Cevicherías y Mariscos',          slug: 'cevicherias',          parent: 'neg-alimentacion' },
     { name: 'Chifas y Comida Oriental',        slug: 'chifas',               parent: 'neg-alimentacion' },
+    { name: 'Sangucherías y Snacks',           slug: 'sangucherias',         parent: 'neg-alimentacion' },
     { name: 'Pizzerías y Pastas',              slug: 'pizzerias',            parent: 'neg-alimentacion' },
     { name: 'Hamburgueserías y Fast Food',     slug: 'fast-food',            parent: 'neg-alimentacion' },
     { name: 'Panaderías y Pastelerías',        slug: 'panaderias',           parent: 'neg-alimentacion' },

@@ -74,7 +74,8 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     if (!mounted) return;
     result.when(
       success: (cats) {
-        // Aplanar: padres + hijos directos
+        // Subastas SOLO sobre Especialidades (categorías hijas): un Sector
+        // tiene hijos → aplanamos a sus Especialidades; nunca el Sector.
         final flat = <CategoryModel>[];
         for (final c in cats) {
           if (c.children.isEmpty) {
@@ -84,7 +85,7 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
           }
         }
         setState(() {
-          _categories = flat.take(16).toList();
+          _categories = flat;
           _loadingCats = false;
         });
       },

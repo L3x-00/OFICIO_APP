@@ -112,12 +112,17 @@ model Category {
   @@map("categories")
 }
 
-/// Tabla de unión proveedor ↔ categorías (muchos a muchos).
-/// Un proveedor puede tener hasta 7 categorías.
+/// Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
+/// Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias
+/// Especialidades (categorías hijas) — máximo según su plan — y marca
+/// una como `isPrimary` (su oficio/negocio principal).
 model ProviderCategory {
   id         Int      @id @default(autoincrement())
   providerId Int
   categoryId Int
+  /// Especialidad principal del proveedor. Exactamente una por proveedor
+  /// debería tener true; se muestra en grande en la tarjeta.
+  isPrimary  Boolean  @default(false)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 

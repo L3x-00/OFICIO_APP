@@ -85,9 +85,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   String?                _department;
   String?                _province;
   String?                _district;
-  int?                   _selectedCategoryId;
-  String                 _selectedCategoryName = '';
-  String                 _selectedParentName   = '';
+  // Especialidades elegidas (multi-select, máx 3) + la principal.
+  List<CategorySelectionResult> _selectedCategories = [];
+  int?                   _primaryCategoryId;
   Map<String, dynamic>   _scheduleJson         = {};
   List<CategoryModel> _categories = [];
 
@@ -276,8 +276,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       _showSnack('La descripción es obligatoria (mínimo 10 caracteres).', isError: true);
       return false;
     }
-    if (_selectedCategoryId == null) {
-      _showSnack('Selecciona una categoría.', isError: true);
+    if (_selectedCategories.isEmpty) {
+      _showSnack('Selecciona al menos una especialidad.', isError: true);
       return false;
     }
     if (_photos.isEmpty) {
@@ -349,7 +349,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       hasHomeService:    _isOficio ? _hasDelivery : false,
       description:       _descriptionController.text.trim(),
       address:           _addressController.text.trim(),
-      categoryIds:       _selectedCategoryId == null ? null : [_selectedCategoryId!],
+      categoryIds:       _selectedCategories.isEmpty
+                             ? null
+                             : _selectedCategories.map((e) => e.id).toList(),
+      primaryCategoryId: _primaryCategoryId,
       scheduleJson:      !_isOficio && _scheduleJson.isNotEmpty ? _scheduleJson : null,
       website:           _websiteCtrl.text.trim().isEmpty    ? null : _websiteCtrl.text.trim(),
       instagram:         _instagramCtrl.text.trim().isEmpty  ? null : _instagramCtrl.text.trim(),
@@ -621,14 +624,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             const SizedBox(height: 12),
             OnboardingCategorySection(
               providerType: widget.providerType,
-              selectedCategoryId: _selectedCategoryId,
-              selectedCategoryName: _selectedCategoryName,
-              selectedParentName: _selectedParentName,
               categories: _categories,
-              onSelected: (result) => setState(() {
-                _selectedCategoryId   = result.id;
-                _selectedCategoryName = result.name;
-                _selectedParentName   = result.parentName;
+              selected: _selectedCategories,
+              primaryCategoryId: _primaryCategoryId,
+              onChanged: (sel, primary) => setState(() {
+                _selectedCategories = sel;
+                _primaryCategoryId  = primary;
               }),
             ),
             const SizedBox(height: 24),

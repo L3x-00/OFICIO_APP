@@ -3224,7 +3224,8 @@ export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typ
 export const ProviderCategoryScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
-  categoryId: 'categoryId'
+  categoryId: 'categoryId',
+  isPrimary: 'isPrimary'
 } as const
 
 export type ProviderCategoryScalarFieldEnum = (typeof ProviderCategoryScalarFieldEnum)[keyof typeof ProviderCategoryScalarFieldEnum]

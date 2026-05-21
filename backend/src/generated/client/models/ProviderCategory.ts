@@ -14,8 +14,10 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model ProviderCategory
- * Tabla de unión proveedor ↔ categorías (muchos a muchos).
- * Un proveedor puede tener hasta 7 categorías.
+ * Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
+ * Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias
+ * Especialidades (categorías hijas) — máximo según su plan — y marca
+ * una como `isPrimary` (su oficio/negocio principal).
  */
 export type ProviderCategoryModel = runtime.Types.Result.DefaultSelection<Prisma.$ProviderCategoryPayload>
 
@@ -43,18 +45,21 @@ export type ProviderCategoryMinAggregateOutputType = {
   id: number | null
   providerId: number | null
   categoryId: number | null
+  isPrimary: boolean | null
 }
 
 export type ProviderCategoryMaxAggregateOutputType = {
   id: number | null
   providerId: number | null
   categoryId: number | null
+  isPrimary: boolean | null
 }
 
 export type ProviderCategoryCountAggregateOutputType = {
   id: number
   providerId: number
   categoryId: number
+  isPrimary: number
   _all: number
 }
 
@@ -75,18 +80,21 @@ export type ProviderCategoryMinAggregateInputType = {
   id?: true
   providerId?: true
   categoryId?: true
+  isPrimary?: true
 }
 
 export type ProviderCategoryMaxAggregateInputType = {
   id?: true
   providerId?: true
   categoryId?: true
+  isPrimary?: true
 }
 
 export type ProviderCategoryCountAggregateInputType = {
   id?: true
   providerId?: true
   categoryId?: true
+  isPrimary?: true
   _all?: true
 }
 
@@ -180,6 +188,7 @@ export type ProviderCategoryGroupByOutputType = {
   id: number
   providerId: number
   categoryId: number
+  isPrimary: boolean
   _count: ProviderCategoryCountAggregateOutputType | null
   _avg: ProviderCategoryAvgAggregateOutputType | null
   _sum: ProviderCategorySumAggregateOutputType | null
@@ -209,6 +218,7 @@ export type ProviderCategoryWhereInput = {
   id?: Prisma.IntFilter<"ProviderCategory"> | number
   providerId?: Prisma.IntFilter<"ProviderCategory"> | number
   categoryId?: Prisma.IntFilter<"ProviderCategory"> | number
+  isPrimary?: Prisma.BoolFilter<"ProviderCategory"> | boolean
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }
@@ -217,6 +227,7 @@ export type ProviderCategoryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  isPrimary?: Prisma.SortOrder
   category?: Prisma.CategoryOrderByWithRelationInput
   provider?: Prisma.ProviderOrderByWithRelationInput
 }
@@ -229,6 +240,7 @@ export type ProviderCategoryWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProviderCategoryWhereInput | Prisma.ProviderCategoryWhereInput[]
   providerId?: Prisma.IntFilter<"ProviderCategory"> | number
   categoryId?: Prisma.IntFilter<"ProviderCategory"> | number
+  isPrimary?: Prisma.BoolFilter<"ProviderCategory"> | boolean
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
 }, "id" | "providerId_categoryId">
@@ -237,6 +249,7 @@ export type ProviderCategoryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  isPrimary?: Prisma.SortOrder
   _count?: Prisma.ProviderCategoryCountOrderByAggregateInput
   _avg?: Prisma.ProviderCategoryAvgOrderByAggregateInput
   _max?: Prisma.ProviderCategoryMaxOrderByAggregateInput
@@ -251,9 +264,11 @@ export type ProviderCategoryScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"ProviderCategory"> | number
   providerId?: Prisma.IntWithAggregatesFilter<"ProviderCategory"> | number
   categoryId?: Prisma.IntWithAggregatesFilter<"ProviderCategory"> | number
+  isPrimary?: Prisma.BoolWithAggregatesFilter<"ProviderCategory"> | boolean
 }
 
 export type ProviderCategoryCreateInput = {
+  isPrimary?: boolean
   category: Prisma.CategoryCreateNestedOneWithoutProviderCategoriesInput
   provider: Prisma.ProviderCreateNestedOneWithoutProviderCategoriesInput
 }
@@ -262,9 +277,11 @@ export type ProviderCategoryUncheckedCreateInput = {
   id?: number
   providerId: number
   categoryId: number
+  isPrimary?: boolean
 }
 
 export type ProviderCategoryUpdateInput = {
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   category?: Prisma.CategoryUpdateOneRequiredWithoutProviderCategoriesNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutProviderCategoriesNestedInput
 }
@@ -273,22 +290,25 @@ export type ProviderCategoryUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProviderCategoryCreateManyInput = {
   id?: number
   providerId: number
   categoryId: number
+  isPrimary?: boolean
 }
 
 export type ProviderCategoryUpdateManyMutationInput = {
-
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProviderCategoryUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProviderCategoryListRelationFilter = {
@@ -310,6 +330,7 @@ export type ProviderCategoryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  isPrimary?: Prisma.SortOrder
 }
 
 export type ProviderCategoryAvgOrderByAggregateInput = {
@@ -322,12 +343,14 @@ export type ProviderCategoryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  isPrimary?: Prisma.SortOrder
 }
 
 export type ProviderCategoryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  isPrimary?: Prisma.SortOrder
 }
 
 export type ProviderCategorySumOrderByAggregateInput = {
@@ -421,12 +444,14 @@ export type ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput = {
 }
 
 export type ProviderCategoryCreateWithoutCategoryInput = {
+  isPrimary?: boolean
   provider: Prisma.ProviderCreateNestedOneWithoutProviderCategoriesInput
 }
 
 export type ProviderCategoryUncheckedCreateWithoutCategoryInput = {
   id?: number
   providerId: number
+  isPrimary?: boolean
 }
 
 export type ProviderCategoryCreateOrConnectWithoutCategoryInput = {
@@ -462,15 +487,18 @@ export type ProviderCategoryScalarWhereInput = {
   id?: Prisma.IntFilter<"ProviderCategory"> | number
   providerId?: Prisma.IntFilter<"ProviderCategory"> | number
   categoryId?: Prisma.IntFilter<"ProviderCategory"> | number
+  isPrimary?: Prisma.BoolFilter<"ProviderCategory"> | boolean
 }
 
 export type ProviderCategoryCreateWithoutProviderInput = {
+  isPrimary?: boolean
   category: Prisma.CategoryCreateNestedOneWithoutProviderCategoriesInput
 }
 
 export type ProviderCategoryUncheckedCreateWithoutProviderInput = {
   id?: number
   categoryId: number
+  isPrimary?: boolean
 }
 
 export type ProviderCategoryCreateOrConnectWithoutProviderInput = {
@@ -502,39 +530,47 @@ export type ProviderCategoryUpdateManyWithWhereWithoutProviderInput = {
 export type ProviderCategoryCreateManyCategoryInput = {
   id?: number
   providerId: number
+  isPrimary?: boolean
 }
 
 export type ProviderCategoryUpdateWithoutCategoryInput = {
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   provider?: Prisma.ProviderUpdateOneRequiredWithoutProviderCategoriesNestedInput
 }
 
 export type ProviderCategoryUncheckedUpdateWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProviderCategoryUncheckedUpdateManyWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProviderCategoryCreateManyProviderInput = {
   id?: number
   categoryId: number
+  isPrimary?: boolean
 }
 
 export type ProviderCategoryUpdateWithoutProviderInput = {
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   category?: Prisma.CategoryUpdateOneRequiredWithoutProviderCategoriesNestedInput
 }
 
 export type ProviderCategoryUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProviderCategoryUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -543,6 +579,7 @@ export type ProviderCategorySelect<ExtArgs extends runtime.Types.Extensions.Inte
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
+  isPrimary?: boolean
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["providerCategory"]>
@@ -551,6 +588,7 @@ export type ProviderCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
+  isPrimary?: boolean
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["providerCategory"]>
@@ -559,6 +597,7 @@ export type ProviderCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
+  isPrimary?: boolean
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["providerCategory"]>
@@ -567,9 +606,10 @@ export type ProviderCategorySelectScalar = {
   id?: boolean
   providerId?: boolean
   categoryId?: boolean
+  isPrimary?: boolean
 }
 
-export type ProviderCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "categoryId", ExtArgs["result"]["providerCategory"]>
+export type ProviderCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "categoryId" | "isPrimary", ExtArgs["result"]["providerCategory"]>
 export type ProviderCategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
@@ -593,6 +633,11 @@ export type $ProviderCategoryPayload<ExtArgs extends runtime.Types.Extensions.In
     id: number
     providerId: number
     categoryId: number
+    /**
+     * Especialidad principal del proveedor. Exactamente una por proveedor
+     * debería tener true; se muestra en grande en la tarjeta.
+     */
+    isPrimary: boolean
   }, ExtArgs["result"]["providerCategory"]>
   composites: {}
 }
@@ -1021,6 +1066,7 @@ export interface ProviderCategoryFieldRefs {
   readonly id: Prisma.FieldRef<"ProviderCategory", 'Int'>
   readonly providerId: Prisma.FieldRef<"ProviderCategory", 'Int'>
   readonly categoryId: Prisma.FieldRef<"ProviderCategory", 'Int'>
+  readonly isPrimary: Prisma.FieldRef<"ProviderCategory", 'Boolean'>
 }
     
 

@@ -23,7 +23,33 @@ class ProviderInfo extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
-        Text(provider.categoryName, style: TextStyle(color: c.textSecondary, fontSize: 13)),
+        // Especialidad principal (isPrimary) destacada.
+        Text(
+          provider.categoryName,
+          style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        // Especialidades secundarias como chips pequeños.
+        if (provider.secondaryCategoryNames.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: provider.secondaryCategoryNames.map((name) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+              ),
+              child: Text(
+                name,
+                style: const TextStyle(
+                  color: AppColors.primary, fontSize: 10.5, fontWeight: FontWeight.w500,
+                ),
+              ),
+            )).toList(),
+          ),
+        ],
       ],
     );
   }

@@ -29,7 +29,10 @@ export class FavoritesService {
       include: {
         provider: {
           include: {
-            providerCategories: { select: { category: { select: { name: true } } } },
+            providerCategories: {
+              select: { isPrimary: true, category: { select: { id: true, name: true, slug: true } } },
+              orderBy: { isPrimary: 'desc' },
+            },
             // Devolvemos varias imágenes ordenadas por isCover→order para
             // que el cliente pueda elegir la cover (con `isCover=true`) y
             // las miniaturas. Antes solo enviábamos 1 imagen sin importar

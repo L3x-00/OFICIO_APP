@@ -423,7 +423,10 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          providerCategories: { select: { category: { select: { name: true } } } },
+          providerCategories: {
+            select: { isPrimary: true, category: { select: { id: true, name: true, slug: true } } },
+            orderBy: { isPrimary: 'desc' },
+          },
           locality:         { select: { name: true } },
           subscription:     { select: { plan: true, status: true, endDate: true } },
           user:             { select: { email: true, firstName: true, lastName: true, createdAt: true } },
@@ -466,7 +469,8 @@ async createProvider(data: {
   whatsapp?: string;
   description?: string;
   address?: string;
-  categoryIds: (number | string)[]; // hasta 7 categorías
+  categoryIds: (number | string)[]; // hasta 3 Especialidades (categorías hijas)
+  primaryCategoryId?: number | string; // Especialidad principal (isPrimary)
   localityId: number | string;
   type: string;
   dni?: string;
@@ -500,6 +504,13 @@ async createProvider(data: {
   const imageUrls: string[] = files && files.length > 0
     ? await Promise.all(files.map(f => this.minio.uploadFile(f.buffer, f.originalname, 'providers/gallery')))
     : [];
+
+  // Especialidades: máx 3, una marcada como primaria (isPrimary).
+  const catIds = data.categoryIds.slice(0, 3).map(Number);
+  const primaryCatId =
+    data.primaryCategoryId != null && catIds.includes(Number(data.primaryCategoryId))
+      ? Number(data.primaryCategoryId)
+      : catIds[0];
 
   const result = await this.prisma.$transaction(async (tx) => {
     // 1. Crear Usuario
@@ -545,7 +556,7 @@ async createProvider(data: {
         hasDelivery:     data.hasDelivery === true || data.hasDelivery === 'true',
         scheduleJson:    parsedSchedule as any,
         providerCategories: {
-          create: data.categoryIds.slice(0, 7).map(cid => ({ categoryId: Number(cid) })),
+          create: catIds.map(cid => ({ categoryId: cid, isPrimary: cid === primaryCatId })),
         },
       },
       include: { providerCategories: { select: { category: true } }, locality: true },
@@ -588,28 +599,50 @@ async updateProvider(
   data: {
     businessName?: string;
     phone?: string;
+    whatsapp?: string;
     description?: string;
     address?: string;
     isVisible?: boolean;
     isVerified?: boolean;
     availability?: any; // Usa tu enum AvailabilityStatus
+    localityId?: number;
+    categoryIds?: (number | string)[];     // Especialidades — reemplaza el set
+    primaryCategoryId?: number | string;   // Especialidad principal (isPrimary)
   },
 ) {
-  const exists = await this.prisma.provider.findUnique({ 
-    where: { id },
-    include: { images: true } // Incluimos imágenes por si quieres verlas
-  });
-  
+  const exists = await this.prisma.provider.findUnique({ where: { id } });
   if (!exists) throw new NotFoundException('Proveedor no encontrado');
 
-  return this.prisma.provider.update({
-    where: { id },
-    data,
-    include: {
-      providerCategories: { select: { category: true } },
-      locality: true,
-      images: true,
-    },
+  // categoryIds/primaryCategoryId NO son columnas de Provider — se gestionan
+  // aparte sobre la tabla de unión providerCategories.
+  const { categoryIds, primaryCategoryId, ...providerData } = data;
+
+  return this.prisma.$transaction(async (tx) => {
+    // Si llegan Especialidades, reemplazamos el set completo (máx 3, una primaria).
+    if (categoryIds && categoryIds.length > 0) {
+      const catIds = categoryIds.slice(0, 3).map(Number);
+      const primaryCatId =
+        primaryCategoryId != null && catIds.includes(Number(primaryCategoryId))
+          ? Number(primaryCategoryId)
+          : catIds[0];
+      await tx.providerCategory.deleteMany({ where: { providerId: id } });
+      await tx.providerCategory.createMany({
+        data: catIds.map(cid => ({ providerId: id, categoryId: cid, isPrimary: cid === primaryCatId })),
+      });
+    }
+
+    return tx.provider.update({
+      where: { id },
+      data: providerData,
+      include: {
+        providerCategories: {
+          select: { isPrimary: true, category: true },
+          orderBy: { isPrimary: 'desc' },
+        },
+        locality: true,
+        images: true,
+      },
+    });
   });
 }
 

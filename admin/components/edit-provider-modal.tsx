@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { updateProvider, updateProviderSubscription } from '@/lib/api';
+import { X, ChevronRight, ChevronDown, Star } from 'lucide-react';
+import { updateProvider, updateProviderSubscription, getFormOptions } from '@/lib/api';
+
+const MAX_SPECIALTIES = 3; // Especialidades (categorías hijas) por proveedor
 
 interface Props {
   provider: any;
@@ -31,6 +33,19 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Especialidades (multi-select, máx 3) + catálogo de Sectores
+  const [allCategories, setAllCategories]             = useState<any[]>([]);
+  const [selectedParentId, setSelectedParentId]       = useState<number | null>(null);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [primaryCategoryId, setPrimaryCategoryId]     = useState<number | null>(null);
+
+  // Catálogo de categorías (Sectores + Especialidades) para el selector.
+  useEffect(() => {
+    getFormOptions()
+      .then((d) => setAllCategories(d?.categories ?? []))
+      .catch(() => {});
+  }, []);
+
   // Sincronizar el formulario cuando el proveedor cambia o el modal se abre
   useEffect(() => {
     if (provider) {
@@ -43,17 +58,45 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
         isVisible: provider.isVisible ?? true,
       });
       setSelectedPlan(provider.subscription?.plan ?? 'GRATIS');
+
+      // Prefill de Especialidades desde providerCategories.
+      const pcs: any[] = provider.providerCategories ?? [];
+      setSelectedCategoryIds(pcs.map((pc) => pc.category?.id).filter(Boolean));
+      const primary = pcs.find((pc) => pc.isPrimary);
+      setPrimaryCategoryId(primary?.category?.id ?? pcs[0]?.category?.id ?? null);
+      setSelectedParentId(null);
     }
   }, [provider, isOpen]);
 
   if (!isOpen || !provider) return null;
 
+  const filteredParents = allCategories.filter((c: any) => c.forType === provider.type);
+
+  // Multi-especialidad: alterna selección, respeta el tope y mantiene
+  // siempre una especialidad marcada como principal.
+  const toggleCategory = (id: number) => {
+    if (selectedCategoryIds.includes(id)) {
+      const next = selectedCategoryIds.filter((x) => x !== id);
+      setSelectedCategoryIds(next);
+      if (primaryCategoryId === id) setPrimaryCategoryId(next[0] ?? null);
+    } else {
+      if (selectedCategoryIds.length >= MAX_SPECIALTIES) return;
+      setSelectedCategoryIds([...selectedCategoryIds, id]);
+      if (primaryCategoryId == null) setPrimaryCategoryId(id);
+    }
+  };
+
   const handleSubmit = async () => {
     setIsLoading(true);
     setError('');
     try {
-      // Actualizar datos básicos del proveedor
-      await updateProvider(provider.id, form);
+      // Actualizar datos básicos + Especialidades del proveedor
+      await updateProvider(provider.id, {
+        ...form,
+        ...(selectedCategoryIds.length > 0
+          ? { categoryIds: selectedCategoryIds, primaryCategoryId: primaryCategoryId ?? selectedCategoryIds[0] }
+          : {}),
+      });
 
       // Actualizar plan si cambió
       const currentPlan = provider.subscription?.plan ?? 'GRATIS';
@@ -154,6 +197,71 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
                 <option value="false">🚫 Oculto</option>
               </select>
             </div>
+          </div>
+
+          {/* Especialidades — multi-select (máx 3) con marcado de principal */}
+          <div>
+            <label className="text-xs font-semibold text-gray-400 mb-2 block uppercase tracking-wider">
+              Especialidades — hasta {MAX_SPECIALTIES}
+            </label>
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {filteredParents.map((parent: any) => {
+                const isOpen = selectedParentId === parent.id;
+                const selInParent = (parent.children ?? []).filter((c: any) => selectedCategoryIds.includes(c.id)).length;
+                return (
+                  <div key={parent.id} className="rounded-xl border border-white/10 overflow-hidden">
+                    <button type="button" onClick={() => setSelectedParentId(isOpen ? null : parent.id)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${isOpen ? 'bg-white/10' : 'bg-black/30 hover:bg-white/5'}`}
+                    >
+                      <span className="font-semibold text-sm text-white flex items-center gap-2">
+                        {parent.name}
+                        {selInParent > 0 && <span className="text-[10px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded-full">{selInParent}</span>}
+                      </span>
+                      {isOpen ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-500" />}
+                    </button>
+                    {isOpen && (
+                      <div className="grid grid-cols-2 gap-2 p-2.5 bg-black/20">
+                        {(parent.children ?? []).map((child: any) => {
+                          const sel = selectedCategoryIds.includes(child.id);
+                          const capped = !sel && selectedCategoryIds.length >= MAX_SPECIALTIES;
+                          return (
+                            <button key={child.id} type="button" disabled={capped} onClick={() => toggleCategory(child.id)}
+                              className={`px-2.5 py-2 rounded-lg text-xs font-medium text-left transition-all border ${
+                                sel ? 'bg-blue-500/20 border-blue-500/40 text-blue-300'
+                                    : capped ? 'bg-white/[0.02] border-white/5 text-gray-600 cursor-not-allowed'
+                                    : 'bg-black/30 border-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                              }`}
+                            >{child.name}</button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {selectedCategoryIds.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                <p className="text-[11px] text-gray-500">La estrella marca la especialidad principal:</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedCategoryIds.map((id) => {
+                    const cat = allCategories.flatMap((p: any) => p.children ?? []).find((c: any) => c.id === id);
+                    const isPrimary = primaryCategoryId === id;
+                    return (
+                      <div key={id} className={`flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-lg text-xs border ${isPrimary ? 'bg-amber-500/15 border-amber-500/40 text-amber-200' : 'bg-black/30 border-white/10 text-gray-300'}`}>
+                        <button type="button" onClick={() => setPrimaryCategoryId(id)} title="Marcar como principal">
+                          <Star size={12} className={isPrimary ? 'fill-amber-400 text-amber-400' : 'text-gray-500 hover:text-amber-400'} />
+                        </button>
+                        <span>{cat?.name ?? `#${id}`}</span>
+                        <button type="button" onClick={() => toggleCategory(id)} title="Quitar">
+                          <X size={11} className="text-gray-500 hover:text-red-400" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Plan de suscripción */}

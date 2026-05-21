@@ -68,8 +68,10 @@ export type Locality = Prisma.LocalityModel
 export type Category = Prisma.CategoryModel
 /**
  * Model ProviderCategory
- * Tabla de unión proveedor ↔ categorías (muchos a muchos).
- * Un proveedor puede tener hasta 7 categorías.
+ * Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
+ * Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias
+ * Especialidades (categorías hijas) — máximo según su plan — y marca
+ * una como `isPrimary` (su oficio/negocio principal).
  */
 export type ProviderCategory = Prisma.ProviderCategoryModel
 /**

@@ -86,7 +86,7 @@ function MovePopover({
       </div>
 
       <div className="max-h-52 overflow-y-auto">
-        {/* Opción: promover a raíz */}
+        {/* Opción: convertir en Sector */}
         {!isRoot && (
           <button
             onClick={() => move(null)}
@@ -94,7 +94,7 @@ function MovePopover({
             className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-white/5 transition-colors text-amber-400"
           >
             <FolderOpen size={13} className="shrink-0" />
-            <span>Promover a categoría raíz</span>
+            <span>Convertir en Sector</span>
           </button>
         )}
 
@@ -115,13 +115,13 @@ function MovePopover({
 
         {available.length === 0 && isRoot && (
           <p className="px-3 py-3 text-xs text-gray-600">
-            Las categorías raíz no se pueden mover a otra raíz.
+            Los Sectores no se mueven desde aquí.
           </p>
         )}
 
         {available.length === 0 && !isRoot && parentOptions.length <= 1 && (
           <p className="px-3 py-3 text-xs text-gray-600">
-            No hay otras categorías padre disponibles.
+            No hay otros Sectores disponibles.
           </p>
         )}
       </div>
@@ -276,7 +276,7 @@ export default function CategoriesPage() {
       await load();
       const target = newParentId
         ? categories.find((c) => c.id === newParentId)?.name
-        : 'categorías raíz';
+        : 'Sectores';
       showToast(`"${cat?.name}" movida a ${target}`);
     } catch (e: any) {
       alert(e.message || 'Error al mover categoría');
@@ -335,13 +335,13 @@ export default function CategoriesPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Categoría Padre</label>
+                <label className="text-xs text-gray-500 block mb-1">Sector</label>
                 <select
                   value={form.parentId}
                   onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))}
                   className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none"
                 >
-                  <option value="">— Sin padre (raíz) —</option>
+                  <option value="">— Es un Sector (sin padre) —</option>
                   {parentOptions
                     .filter((p) => p.id !== cat.id)
                     .map((p) => (
@@ -535,7 +535,7 @@ export default function CategoriesPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Categorías</h1>
           <p className="text-gray-400 text-sm mt-1">
-            {parentCount} padres · {childCount} subcategorías
+            {parentCount} Sectores · {childCount} Especialidades
           </p>
         </div>
         <button
@@ -587,7 +587,7 @@ export default function CategoriesPage() {
             </div>
             <div>
               <label className="text-xs text-gray-400 mb-1 block">
-                Categoría Padre
+                Sector
                 <span className="ml-1 text-gray-600">(opcional)</span>
               </label>
               <select
@@ -595,7 +595,7 @@ export default function CategoriesPage() {
                 onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))}
                 className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none"
               >
-                <option value="">— Categoría raíz —</option>
+                <option value="">— Es un Sector (nivel superior) —</option>
                 {parentOptions.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
@@ -618,8 +618,8 @@ export default function CategoriesPage() {
           {/* Preview nivel */}
           <p className={`text-xs flex items-center gap-1.5 ${form.parentId ? 'text-blue-400' : 'text-gray-500'}`}>
             {form.parentId
-              ? <><FolderOpen size={12} /> Subcategoría de <strong>{parentOptions.find((p) => String(p.id) === form.parentId)?.name}</strong></>
-              : <><Folder size={12} /> Se creará como categoría raíz (nivel superior)</>}
+              ? <><FolderOpen size={12} /> Especialidad del Sector <strong>{parentOptions.find((p) => String(p.id) === form.parentId)?.name}</strong></>
+              : <><Folder size={12} /> Se creará como Sector (nivel superior)</>}
           </p>
 
           {formError && <p className="text-red-400 text-xs">{formError}</p>}
@@ -668,11 +668,11 @@ export default function CategoriesPage() {
           <div className="flex items-center gap-4 text-xs text-gray-600">
             <span className="flex items-center gap-1.5">
               <FolderOpen size={12} className="text-blue-400" />
-              Padre — clic para expandir
+              Sector — clic para expandir
             </span>
             <span className="flex items-center gap-1.5">
               <ArrowRightLeft size={12} className="text-amber-400" />
-              Mover subcategoría
+              Mover Especialidad
             </span>
           </div>
         )}
@@ -713,7 +713,7 @@ export default function CategoriesPage() {
 
         <div className="p-4 border-t border-white/5">
           <span className="text-xs text-gray-600">
-            {categories.length} en total — {parentCount} padres · {childCount} hijas
+            {categories.length} en total — {parentCount} Sectores · {childCount} Especialidades
           </span>
         </div>
       </div>

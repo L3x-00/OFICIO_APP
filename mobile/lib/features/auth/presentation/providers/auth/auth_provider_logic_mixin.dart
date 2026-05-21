@@ -50,6 +50,8 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     /// desde el provider para evitar transforms espurios en el
     /// repositorio.
     List<int>? categoryIds,
+    /// Especialidad principal (isPrimary) — debe estar dentro de categoryIds.
+    int? primaryCategoryId,
     Map<String, dynamic>? scheduleJson,
     // redes sociales
     String? website,
@@ -80,6 +82,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
       description:      description,
       address:          address,
       categoryIds:      categoryIds,
+      primaryCategoryId: primaryCategoryId,
       scheduleJson:     scheduleJson,
       website:          website,
       instagram:        instagram,

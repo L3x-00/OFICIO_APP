@@ -113,7 +113,8 @@ data: {
   whatsapp?: string | null;
   description?: string;
   address?: string;
-  categoryIds?: number[]; // hasta 7 categorías (subcategorías hoja)
+  categoryIds?: number[]; // hasta 3 Especialidades (categorías hijas)
+  primaryCategoryId?: number; // Especialidad principal (isPrimary)
   localityId?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scheduleJson?: any;
@@ -171,11 +172,11 @@ data: {
       localityId = firstLocality?.id ?? 1;
     }
 
-    // Validar categoryIds: filtrar solo las que existen, máx 7.
-    // Si ninguna es válida, asignar la primera subcategoría disponible como fallback.
+    // Validar categoryIds (Especialidades): filtrar solo las que existen, máx 3.
+    // Si ninguna es válida, asignar la primera Especialidad disponible como fallback.
     let validCategoryIds: number[] = [];
     if (data.categoryIds && data.categoryIds.length > 0) {
-      const ids = data.categoryIds.slice(0, 7);
+      const ids = data.categoryIds.slice(0, 3);
       const found = await this.prisma.category.findMany({
         where: { id: { in: ids }, isActive: true },
         select: { id: true },
@@ -188,6 +189,13 @@ data: {
       });
       if (firstCategory) validCategoryIds = [firstCategory.id];
     }
+
+    // Especialidad principal: la indicada por el cliente si está entre las
+    // válidas; de lo contrario la primera. Garantiza exactamente un isPrimary.
+    const primaryCategoryId =
+      data.primaryCategoryId != null && validCategoryIds.includes(Number(data.primaryCategoryId))
+        ? Number(data.primaryCategoryId)
+        : validCategoryIds[0];
 
     // Upload images to R2 before transaction
     const imageUrls: string[] = files && files.length > 0
@@ -239,7 +247,7 @@ data: {
           type:             data.type,
           localityId,
           providerCategories: {
-            create: validCategoryIds.map(cid => ({ categoryId: cid })),
+            create: validCategoryIds.map(cid => ({ categoryId: cid, isPrimary: cid === primaryCategoryId })),
           },
           verificationStatus: 'PENDIENTE',
           isVisible: false, // no aparece en la app hasta ser aprobado

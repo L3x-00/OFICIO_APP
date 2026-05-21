@@ -38,7 +38,7 @@ export class ProviderProfileService {
     const provider = await this.prisma.provider.findFirst({
       where,
       include: {
-        providerCategories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+        providerCategories: { select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } }, orderBy: { isPrimary: 'desc' } },
         locality:     { select: { id: true, name: true, department: true } },
         images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         subscription: { select: { plan: true, status: true, endDate: true } },
@@ -93,7 +93,7 @@ export class ProviderProfileService {
       where: { id: provider.id },
       data,
       include: {
-        providerCategories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+        providerCategories: { select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } }, orderBy: { isPrimary: 'desc' } },
         locality:     { select: { id: true, name: true, department: true } },
         images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
         subscription: { select: { plan: true, status: true, endDate: true } },

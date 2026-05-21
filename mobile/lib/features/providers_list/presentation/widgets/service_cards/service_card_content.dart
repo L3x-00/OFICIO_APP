@@ -115,11 +115,13 @@ class ServiceCardContent extends StatelessWidget {
                     // Categoría + disponibilidad
                     Row(
                       children: [
-                        Text(
-                          provider.categoryName,
-                          style: TextStyle(color: c.textMuted, fontSize: 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Flexible(
+                          child: Text(
+                            provider.categoryLabel,
+                            style: TextStyle(color: c.textMuted, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Container(

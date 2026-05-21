@@ -89,7 +89,7 @@ export class RegisterProviderDto {
   // Al menos una categoría es obligatoria — si llega vacío, el catálogo no
   // sabría en qué bucket mostrar al proveedor.
   @IsArray({ message: 'Selecciona al menos una categoría' })
-  @ArrayMaxSize(7)
+  @ArrayMaxSize(3)
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @Type(() => Number)
@@ -100,6 +100,13 @@ export class RegisterProviderDto {
     return [value];
   })
   categoryIds!: number[];
+
+  // Especialidad principal del proveedor — debe estar incluida en categoryIds.
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @IsPositive()
+  primaryCategoryId?: number;
 
   @IsOptional()
   @Type(() => Number)
