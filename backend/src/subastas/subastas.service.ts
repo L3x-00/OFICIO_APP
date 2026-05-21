@@ -358,6 +358,61 @@ export class SubastasService {
     return { success: true, offerId: dto.offerId };
   }
 
+  // ── CLIENTE: Eliminar solicitud ──────────────────────────────
+  // Si la solicitud tiene ofertas pendientes y el cliente la elimina sin
+  // aceptar a nadie, cuenta como "no-pick" → penaliza su reputación
+  // (mismo sistema que el expirado sin elección). Notifica a todos los
+  // proveedores que ofertaron.
+  async deleteRequest(userId: number, requestId: number) {
+    const request = await this.prisma.serviceRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        offers: {
+          where: { status: OfferStatus.PENDING },
+          include: { provider: { select: { userId: true } } },
+        },
+      },
+    });
+    if (!request) throw new NotFoundException('Solicitud no encontrada');
+    if (request.userId !== userId) {
+      throw new ForbiddenException('No puedes eliminar una solicitud que no es tuya');
+    }
+
+    // userIds de los proveedores con oferta pendiente (a notificar).
+    const offerUserIds = [
+      ...new Set(request.offers.map((o) => o.provider.userId)),
+    ];
+    const hadOffers = offerUserIds.length > 0;
+
+    // Penalización de reputación: eliminar con ofertas sin aceptar = no-pick.
+    if (hadOffers) {
+      await this._incrementNoPick(userId);
+    }
+
+    // Borrar la solicitud — el cascade del schema elimina sus ofertas.
+    await this.prisma.serviceRequest.delete({ where: { id: requestId } });
+
+    // Avisar a los proveedores que ofertaron.
+    for (const uid of offerUserIds) {
+      this.events.emitNotification({
+        type: 'REQUEST_CANCELLED',
+        title: 'Necesidad ya no disponible',
+        body: 'La necesidad del cliente ya no está disponible. ¡Gracias por ofertar!',
+        targetUserId: uid,
+      });
+      void this.push
+        .sendToUser(
+          uid,
+          'Necesidad ya no disponible',
+          'La necesidad del cliente ya no está disponible. ¡Gracias por ofertar!',
+          { type: 'REQUEST_CANCELLED' },
+        )
+        .catch(() => {});
+    }
+
+    return { success: true, hadOffers };
+  }
+
   // ── MARCAR LLEGADA GPS ───────────────────────────────────────
   async markArrived(providerId: number, dto: ArrivedDto) {
     const offer = await this.prisma.offer.findUnique({

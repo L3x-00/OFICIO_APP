@@ -41,6 +41,12 @@ export class SubastasController {
     return this.service.acceptOffer(req.user.userId, dto);
   }
 
+  // ── CLIENTE: Eliminar solicitud ──────────────────────────────
+  @Delete('requests/:id')
+  deleteRequest(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.service.deleteRequest(req.user.userId, id);
+  }
+
   // ── PROVEEDOR: Ver oportunidades disponibles ─────────────────
   // El providerId NUNCA se acepta desde la URL (era IDOR). Se resuelve
   // desde el JWT inyectado por JwtAuthGuard.

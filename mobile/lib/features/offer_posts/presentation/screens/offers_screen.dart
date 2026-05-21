@@ -5,10 +5,19 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../shared/widgets/app_network_image.dart';
+import '../../../subastas/domain/models/service_request_model.dart';
+import '../../../subastas/presentation/providers/subastas_provider.dart';
 import '../../domain/models/public_offer_model.dart';
 import '../providers/offers_provider.dart';
 import '../sheets/offer_detail_sheet.dart';
 import '../sheets/offers_filter_sheet.dart';
+
+/// Vista activa de la pantalla de Ofertas.
+///   - ofertas     → listado público de ofertas (todos los usuarios).
+///   - mias        → ofertas del propio provider (solo proveedores).
+///   - necesidades → necesidades publicadas por los clientes
+///                   (solo proveedores).
+enum _OffersView { ofertas, mias, necesidades }
 
 /// Pantalla de ofertas públicas — listado paginado con dos pastillas de
 /// tipo (Profesionales / Negocios) y un sheet de filtros avanzados
@@ -25,9 +34,8 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 
   final _scroll = ScrollController();
-  /// true → la pantalla muestra la sección "Mis Ofertas" (solo las del
-  /// propio provider). Exclusivo para usuarios con perfil de proveedor.
-  bool _showMine = false;
+  /// Vista activa. Por defecto el listado público de ofertas.
+  _OffersView _view = _OffersView.ofertas;
 
   @override
   void initState() {
@@ -58,12 +66,21 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    // SubastasProvider local — alimenta la sub-sección "Necesidades de
+    // clientes". El Builder coloca el context POR DEBAJO del provider.
+    return ChangeNotifierProvider<SubastasProvider>(
+      create: (_) => SubastasProvider(),
+      child: Builder(builder: _buildScaffold),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     final c = context.colors;
     final prov = context.watch<PublicOffersProvider>();
     final auth = context.watch<AuthProvider>();
 
-    // IDs de los perfiles de proveedor del user — para la sección
-    // "Mis Ofertas" (exclusiva para proveedores).
+    // IDs de los perfiles de proveedor del user — para "Mis Ofertas"
+    // y "Necesidades de clientes" (exclusivas para proveedores).
     final myProviderIds = <int>{
       if (auth.providerDataFor('OFICIO')?['id'] is int)
         auth.providerDataFor('OFICIO')!['id'] as int,
@@ -72,10 +89,7 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
     };
     final isProvider = myProviderIds.isNotEmpty;
     // Si dejó de ser provider, forzar la vista pública.
-    final showMine = _showMine && isProvider;
-    final listOffers = showMine
-        ? prov.ownOffers(myProviderIds)
-        : prov.visibleOffers;
+    final view = isProvider ? _view : _OffersView.ofertas;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -99,121 +113,216 @@ class _OffersScreenState extends State<OffersScreen> with AutomaticKeepAliveClie
                 ],
               ),
               actions: [
-                // Toggle "Mis Ofertas" — solo para proveedores.
-                if (isProvider)
+                if (isProvider) ...[
+                  // Toggle "Mis Ofertas".
                   IconButton(
-                    tooltip: showMine ? 'Ver todas las ofertas' : 'Ver mis ofertas',
-                    onPressed: () => setState(() => _showMine = !_showMine),
+                    tooltip: 'Mis ofertas',
+                    onPressed: () => setState(() => _view =
+                        view == _OffersView.mias ? _OffersView.ofertas : _OffersView.mias),
                     icon: Icon(
-                      showMine ? Icons.storefront_rounded : Icons.sell_outlined,
-                      color: showMine ? AppColors.amber : c.textPrimary,
+                      Icons.sell_outlined,
+                      color: view == _OffersView.mias ? AppColors.amber : c.textPrimary,
                     ),
                   ),
-                // Botón de filtros avanzados (esquina superior derecha).
-                IconButton(
-                  tooltip: 'Filtros avanzados',
-                  onPressed: () => OffersFilterSheet.show(context),
-                  icon: Badge(
-                    isLabelVisible: prov.hasAdvancedFilters,
-                    backgroundColor: AppColors.amber,
-                    child: Icon(Icons.tune_rounded, color: c.textPrimary),
+                  // Toggle "Necesidades de clientes".
+                  IconButton(
+                    tooltip: 'Necesidades de clientes',
+                    onPressed: () {
+                      setState(() => _view = view == _OffersView.necesidades
+                          ? _OffersView.ofertas
+                          : _OffersView.necesidades);
+                      if (_view == _OffersView.necesidades) {
+                        context.read<SubastasProvider>().loadOpportunities();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.assignment_outlined,
+                      color: view == _OffersView.necesidades
+                          ? AppColors.amber
+                          : c.textPrimary,
+                    ),
                   ),
-                ),
+                ],
+                // Filtros avanzados — solo aplican al listado público.
+                if (view == _OffersView.ofertas)
+                  IconButton(
+                    tooltip: 'Filtros avanzados',
+                    onPressed: () => OffersFilterSheet.show(context),
+                    icon: Badge(
+                      isLabelVisible: prov.hasAdvancedFilters,
+                      backgroundColor: AppColors.amber,
+                      child: Icon(Icons.tune_rounded, color: c.textPrimary),
+                    ),
+                  ),
               ],
-              // Las pastillas de tipo no aplican en modo "Mis Ofertas".
-              bottom: showMine
-                  ? null
-                  : PreferredSize(
+              // Las pastillas de tipo solo en el listado público.
+              bottom: view == _OffersView.ofertas
+                  ? PreferredSize(
                       preferredSize: const Size.fromHeight(58),
                       child: _TypePillBar(
                         selected: prov.providerType,
                         onSelect: (type) => prov.setProviderType(type),
                       ),
-                    ),
+                    )
+                  : null,
             ),
 
-            // ── Resumen de filtros activos ───────────────────
-            if (prov.hasAdvancedFilters && !showMine)
-              SliverToBoxAdapter(
-                child: _ActiveFiltersStrip(prov: prov),
-              ),
-
-            // ── Header info ──────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                child: Text(
-                  showMine
-                      ? 'Tus ofertas publicadas. Tócalas para editar, eliminar u ocultar.'
-                      : 'Promociones y precios especiales de proveedores cercanos',
-                  style: TextStyle(color: c.textMuted, fontSize: 12),
-                ),
-              ),
-            ),
-
-            // ── Lista de ofertas ─────────────────────────────
-            // `listOffers` = visibleOffers (público, sin las ocultas) o
-            // ownOffers (sección "Mis Ofertas") según el toggle.
-            if (prov.isLoading && listOffers.isEmpty)
-              const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
-              )
-            else if (listOffers.isEmpty)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.local_offer_outlined, size: 64, color: c.textMuted),
-                      const SizedBox(height: 16),
-                      Text(
-                          showMine
-                              ? 'Aún no has publicado ofertas'
-                              : 'Sin ofertas disponibles',
-                          style: TextStyle(
-                              color: c.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 6),
-                      Text(
-                        showMine
-                            ? 'Publica ofertas desde tu Panel → Servicios.'
-                            : (prov.hasAdvancedFilters || prov.providerType != null
-                                ? 'Prueba con menos filtros.'
-                                : 'Vuelve más tarde para ver promociones.'),
-                        style: TextStyle(color: c.textMuted, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+            // ── Contenido según la vista activa ──────────────
+            if (view == _OffersView.necesidades)
+              ..._buildNeedsSlivers(context)
             else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (ctx, i) {
-                      if (i == listOffers.length) {
-                        // El paginado (loadMore) solo aplica al listado
-                        // público — "Mis Ofertas" se filtra en cliente.
-                        return (!showMine && prov.hasMore)
-                            ? const Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Center(
-                                    child: CircularProgressIndicator(
-                                        color: AppColors.amber, strokeWidth: 2)))
-                            : const SizedBox(height: 16);
-                      }
-                      return _OfferCard(offer: listOffers[i]);
-                    },
-                    childCount: listOffers.length + 1,
-                  ),
-                ),
-              ),
+              ..._buildOffersSlivers(context, prov, view, myProviderIds),
           ],
         ),
       ),
     );
+  }
+
+  // ── Slivers del listado de ofertas (público / mis ofertas) ──
+  List<Widget> _buildOffersSlivers(
+    BuildContext context,
+    PublicOffersProvider prov,
+    _OffersView view,
+    Set<int> myProviderIds,
+  ) {
+    final c = context.colors;
+    final showMine = view == _OffersView.mias;
+    final listOffers = showMine
+        ? prov.ownOffers(myProviderIds)
+        : prov.visibleOffers;
+
+    return [
+      if (prov.hasAdvancedFilters && !showMine)
+        SliverToBoxAdapter(child: _ActiveFiltersStrip(prov: prov)),
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+          child: Text(
+            showMine
+                ? 'Tus ofertas publicadas. Tócalas para editar, eliminar u ocultar.'
+                : 'Promociones y precios especiales de proveedores cercanos',
+            style: TextStyle(color: c.textMuted, fontSize: 12),
+          ),
+        ),
+      ),
+      if (prov.isLoading && listOffers.isEmpty)
+        const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
+        )
+      else if (listOffers.isEmpty)
+        SliverFillRemaining(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.local_offer_outlined, size: 64, color: c.textMuted),
+                const SizedBox(height: 16),
+                Text(
+                    showMine
+                        ? 'Aún no has publicado ofertas'
+                        : 'Sin ofertas disponibles',
+                    style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Text(
+                  showMine
+                      ? 'Publica ofertas desde tu Panel → Servicios.'
+                      : (prov.hasAdvancedFilters || prov.providerType != null
+                          ? 'Prueba con menos filtros.'
+                          : 'Vuelve más tarde para ver promociones.'),
+                  style: TextStyle(color: c.textMuted, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        )
+      else
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (ctx, i) {
+                if (i == listOffers.length) {
+                  return (!showMine && prov.hasMore)
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                              child: CircularProgressIndicator(
+                                  color: AppColors.amber, strokeWidth: 2)))
+                      : const SizedBox(height: 16);
+                }
+                return _OfferCard(offer: listOffers[i]);
+              },
+              childCount: listOffers.length + 1,
+            ),
+          ),
+        ),
+    ];
+  }
+
+  // ── Slivers de "Necesidades de clientes" ────────────────────
+  List<Widget> _buildNeedsSlivers(BuildContext context) {
+    final c = context.colors;
+    final sub = context.watch<SubastasProvider>();
+    final auth = context.watch<AuthProvider>();
+    final myUserId = auth.user?.id;
+    final needs = sub.opportunities;
+
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+          child: Text(
+            'Necesidades publicadas por clientes en tu zona y categoría. '
+            'Ofértales desde tu Panel → Oportunidades.',
+            style: TextStyle(color: c.textMuted, fontSize: 12),
+          ),
+        ),
+      ),
+      if (sub.state == SubastasState.loading && needs.isEmpty)
+        const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
+        )
+      else if (needs.isEmpty)
+        SliverFillRemaining(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.assignment_outlined, size: 64, color: c.textMuted),
+                const SizedBox(height: 16),
+                Text('Sin necesidades por ahora',
+                    style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Text(
+                  'Cuando un cliente publique una necesidad en tu categoría '
+                  'aparecerá aquí.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: c.textMuted, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        )
+      else
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (ctx, i) => _NeedCard(
+                need: needs[i],
+                isOwn: myUserId != null && needs[i].userId == myUserId,
+              ),
+              childCount: needs.length,
+            ),
+          ),
+        ),
+    ];
   }
 }
 
@@ -653,6 +762,253 @@ class _OfferCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// ── Tarjeta de necesidad de cliente ───────────────────────────
+
+class _NeedCard extends StatelessWidget {
+  final OpportunityModel need;
+  /// true cuando la necesidad la publicó el usuario actual → puede
+  /// eliminarla.
+  final bool isOwn;
+
+  const _NeedCard({required this.need, required this.isOwn});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final left = need.timeLeft;
+    final hours = left.inHours;
+    final mins = left.inMinutes.remainder(60);
+    final expired = left.isNegative;
+    final timeLabel = expired
+        ? 'Expirada'
+        : (hours > 0 ? 'Expira en ${hours}h ${mins}m' : 'Expira en ${mins}m');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.amber.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Categoría + countdown
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.amber.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(need.categoryName,
+                      style: const TextStyle(
+                          color: AppColors.amber,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700)),
+                ),
+                const Spacer(),
+                Icon(Icons.timer_outlined,
+                    size: 13,
+                    color: expired ? AppColors.busy : c.textMuted),
+                const SizedBox(width: 3),
+                Text(timeLabel,
+                    style: TextStyle(
+                        color: expired ? AppColors.busy : c.textMuted,
+                        fontSize: 11)),
+              ],
+            ),
+          ),
+          // Foto + descripción
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: need.photoUrl != null
+                      ? Image.network(need.photoUrl!,
+                          width: 64, height: 64, fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => _photoFallback())
+                      : _photoFallback(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(need.description,
+                          style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          if (need.district != null)
+                            _needMeta(Icons.location_city_rounded,
+                                need.district!, c.textMuted),
+                          if (need.distanceKm != null)
+                            _needMeta(Icons.place_rounded,
+                                'A ${need.distanceKm!.toStringAsFixed(1)} km',
+                                AppColors.primary),
+                          if (need.budgetMin != null || need.budgetMax != null)
+                            _needMeta(Icons.payments_rounded,
+                                _budget(need.budgetMin, need.budgetMax),
+                                AppColors.available),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Footer: progreso de ofertas + (si es propia) eliminar
+          Container(
+            decoration: BoxDecoration(
+              color: c.bg.withValues(alpha: 0.4),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
+            ),
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${need.offersCount}/${need.maxOffers} profesionales ofertaron',
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
+                ),
+                if (isOwn) ...[
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _confirmDelete(context),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 15),
+                    label: const Text('Eliminar necesidad'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.busy,
+                      side: BorderSide(color: AppColors.busy.withValues(alpha: 0.45)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _photoFallback() => Container(
+        width: 64, height: 64,
+        decoration: BoxDecoration(
+          color: AppColors.amber.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.handyman_rounded, color: AppColors.amber, size: 28),
+      );
+
+  Widget _needMeta(IconData icon, String label, Color color) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 3),
+          Text(label, style: TextStyle(color: color, fontSize: 11)),
+        ],
+      );
+
+  String _budget(double? min, double? max) {
+    if (min != null && max != null) {
+      return 'S/ ${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)}';
+    }
+    if (min != null) return 'S/ ${min.toStringAsFixed(0)}+';
+    if (max != null) return 'Hasta S/ ${max.toStringAsFixed(0)}';
+    return '';
+  }
+
+  /// Flujo de eliminación con la regla de reputación: si hay
+  /// profesionales que ya ofertaron, se advierte que la reputación
+  /// bajará antes de confirmar.
+  Future<void> _confirmDelete(BuildContext context) async {
+    final c = context.colors;
+    final hasOffers = need.offersCount > 0;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: Icon(
+          hasOffers ? Icons.warning_amber_rounded : Icons.delete_outline_rounded,
+          color: AppColors.busy,
+          size: 40,
+        ),
+        title: Text(
+          hasOffers ? 'Tu reputación bajará' : 'Eliminar necesidad',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          hasOffers
+              ? 'Eliminar sin aceptar a un profesional hará que tu '
+                'reputación baje. ${need.offersCount} profesional(es) ya '
+                'enviaron su propuesta. ¿Eliminar de todas formas?'
+              : '¿Seguro que quieres eliminar esta necesidad? '
+                'No se puede deshacer.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.busy,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await context.read<SubastasProvider>().deleteRequest(need.id);
+    if (!context.mounted) return;
+    if (result != null) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(result['hadOffers'] == true
+            ? 'Necesidad eliminada. Se avisó a los profesionales que ofertaron.'
+            : 'Necesidad eliminada.'),
+        behavior: SnackBarBehavior.floating,
+      ));
+    } else {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('No se pudo eliminar la necesidad'),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
   }
 }
 

@@ -80,6 +80,18 @@ class SubastasRepository {
     }
   }
 
+  /// Elimina una solicitud propia. El backend responde
+  /// `{ success, hadOffers }` — `hadOffers` indica si había ofertas
+  /// pendientes (la reputación del cliente bajó al eliminar sin elegir).
+  Future<ApiResult<Map<String, dynamic>>> deleteRequest(int requestId) async {
+    try {
+      final res = await _dio.delete('/subastas/requests/$requestId');
+      return Success(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      return Failure(_handleDio(e, 'Error al eliminar la solicitud'));
+    }
+  }
+
   // ── PROVEEDOR ─────────────────────────────────────────────────
 
   /// El backend resuelve el provider desde el JWT — ya no aceptamos

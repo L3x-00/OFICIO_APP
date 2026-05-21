@@ -116,6 +116,27 @@ class SubastasProvider extends ChangeNotifier {
     return result.isSuccess;
   }
 
+  // ── CLIENTE: Eliminar solicitud ───────────────────────────────
+  /// Elimina una solicitud propia. Devuelve el Map del backend
+  /// (`{ success, hadOffers }`) o null si falló. Al tener éxito la
+  /// quita de `_opportunities` y `_myRequests` sin recargar.
+  Future<Map<String, dynamic>?> deleteRequest(int requestId) async {
+    final result = await _repo.deleteRequest(requestId);
+    return result.when(
+      success: (data) {
+        _opportunities = _opportunities.where((o) => o.id != requestId).toList();
+        _myRequests = _myRequests.where((r) => r.id != requestId).toList();
+        notifyListeners();
+        return data;
+      },
+      failure: (e) {
+        _error = e.message;
+        notifyListeners();
+        return null;
+      },
+    );
+  }
+
   // ── PROVEEDOR: Cargar oportunidades ──────────────────────────
   // El backend identifica al provider desde el JWT, así que ya no
   // recibimos providerId aquí.

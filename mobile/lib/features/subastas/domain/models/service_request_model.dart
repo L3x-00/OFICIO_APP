@@ -155,6 +155,9 @@ class OfferModel {
 // Modelo ligero para la vista del proveedor en "Oportunidades"
 class OpportunityModel {
   final int id;
+  /// userId del cliente que publicó la necesidad — para detectar si la
+  /// necesidad le pertenece al usuario actual (puede eliminarla).
+  final int? userId;
   final String categoryName;
   final String? categoryIconUrl;
   final String description;
@@ -171,6 +174,7 @@ class OpportunityModel {
 
   const OpportunityModel({
     required this.id,
+    this.userId,
     required this.categoryName,
     this.categoryIconUrl,
     required this.description,
@@ -193,6 +197,7 @@ class OpportunityModel {
     final user = json['user'] as Map<String, dynamic>?;
     return OpportunityModel(
       id: json['id'] as int,
+      userId: json['userId'] as int?,
       categoryName: json['category']?['name'] as String? ?? '',
       categoryIconUrl: json['category']?['iconUrl'] as String?,
       description: json['description'] as String,
