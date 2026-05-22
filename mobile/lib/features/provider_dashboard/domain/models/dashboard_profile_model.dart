@@ -25,6 +25,9 @@ class DashboardProfileModel {
   final String availability; // DISPONIBLE | OCUPADO | CON_DEMORA
   final bool isVerified;
   final bool hasCleanRecord;
+  /// Validación de confianza aprobada por el admin — junto con
+  /// averageRating >= 3 habilita postular en subastas.
+  final bool isTrusted;
   final String type; // OFICIO | NEGOCIO
   final bool hasHomeService; // solo OFICIO: atiende a domicilio
   /// ID de la categoría del proveedor — necesario para `joinCategoryRooms`
@@ -64,6 +67,7 @@ class DashboardProfileModel {
     required this.availability,
     required this.isVerified,
     required this.hasCleanRecord,
+    this.isTrusted = false,
     required this.type,
     this.hasHomeService = false,
     this.categoryId,
@@ -99,6 +103,7 @@ class DashboardProfileModel {
       availability:  json['availability'] as String? ?? 'DISPONIBLE',
       isVerified:    json['isVerified'] as bool? ?? false,
       hasCleanRecord: json['hasCleanRecord'] as bool? ?? false,
+      isTrusted:     json['isTrusted'] as bool? ?? false,
       type:           json['type'] as String? ?? 'OFICIO',
       hasHomeService: json['hasHomeService'] as bool? ?? false,
       // El backend (`provider-profile/me`) anida la categoría como
@@ -162,6 +167,7 @@ class DashboardProfileModel {
       availability:   availability    ?? this.availability,
       isVerified:     isVerified,
       hasCleanRecord: hasCleanRecord,
+      isTrusted:      isTrusted,
       type:           type,
       hasHomeService: hasHomeService  ?? this.hasHomeService,
       categoryId:     categoryId,

@@ -52,6 +52,10 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     List<int>? categoryIds,
     /// Especialidad principal (isPrimary) — debe estar dentro de categoryIds.
     int? primaryCategoryId,
+    /// Ubicación administrativa — el backend resuelve la localidad real.
+    String? department,
+    String? province,
+    String? district,
     Map<String, dynamic>? scheduleJson,
     // redes sociales
     String? website,
@@ -83,6 +87,9 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
       address:          address,
       categoryIds:      categoryIds,
       primaryCategoryId: primaryCategoryId,
+      department:       department,
+      province:         province,
+      district:         district,
       scheduleJson:     scheduleJson,
       website:          website,
       instagram:        instagram,

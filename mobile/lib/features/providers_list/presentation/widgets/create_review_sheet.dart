@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/errors/app_exception.dart';
@@ -12,7 +11,6 @@ import '../../data/reviews_repository.dart';
 import '../../domain/models/review_model.dart';
 import 'photo_evidence_picker.dart';
 import 'photo_source_sheet.dart';
-import 'verification_selector.dart';
 
 /// Bottom sheet para crear o editar una reseña.
 /// - [existingReview] null → modo creación; no null → modo edición.
@@ -62,18 +60,12 @@ class CreateReviewSheet extends StatefulWidget {
 class _CreateReviewSheetState extends State<CreateReviewSheet> {
   final _repo              = ReviewsRepository();
   final _commentController = TextEditingController();
-  final _qrController      = TextEditingController();
 
   int      _rating           = 0;
   File?    _selectedImage;       // nueva foto elegida (local)
   bool     _keepExistingPhoto = true; // solo aplica en edit mode
   bool     _isLoading        = false;
   String?  _errorMessage;
-  int      _validationMethod = 0; // 0=ninguno, 1=GPS, 2=QR
-
-  // GPS
-  Position? _gpsPosition;
-  bool      _gpsLoading = false;
 
   // Recomendación (solo edit mode)
   late bool _isRecommended;
@@ -96,7 +88,6 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
   @override
   void dispose() {
     _commentController.dispose();
-    _qrController.dispose();
     super.dispose();
   }
 
@@ -125,17 +116,6 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
     }
   }
 
-  Future<void> _fetchGpsLocation() async {
-    setState(() { _gpsLoading = true; _errorMessage = null; });
-    final position = await PermissionService.getCurrentLocation(context);
-    if (!mounted) return;
-    setState(() {
-      _gpsPosition     = position;
-      _validationMethod = position != null ? 1 : _validationMethod;
-      _gpsLoading      = false;
-    });
-  }
-
   Future<void> _onShowSourcePicker() async {
     final source = await PhotoSourceSheet.show(context);
     if (source != null && mounted) await _pickImage(source);
@@ -150,18 +130,10 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
       return 'Por favor selecciona una calificación';
     }
     if (!_isEditMode) {
-      // En create mode: foto y verificación son obligatorias.
+      // En create mode la foto de evidencia es obligatoria. La validación
+      // de interacción (subasta/contacto/chat) la hace el backend.
       if (_selectedImage == null) {
         return 'La foto es obligatoria como evidencia';
-      }
-      if (_validationMethod == 0) {
-        return 'Elige un método de verificación (GPS o QR)';
-      }
-      if (_validationMethod == 1 && _gpsPosition == null) {
-        return 'Primero obtén tu ubicación GPS';
-      }
-      if (_validationMethod == 2 && _qrController.text.trim().isEmpty) {
-        return 'Ingresa el código QR del proveedor';
       }
     } else {
       // En edit mode: si no hay foto nueva ni existente, error.
@@ -210,9 +182,6 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
           comment:    _commentController.text.trim().isNotEmpty
               ? _commentController.text.trim()
               : null,
-          qrCode:  _validationMethod == 2 ? _qrController.text.trim() : null,
-          userLat: _gpsPosition?.latitude,
-          userLng: _gpsPosition?.longitude,
         );
       }
 
@@ -362,43 +331,6 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // ── Verificación (solo create mode) ───────────
-            if (!_isEditMode) ...[
-              VerificationSelector(
-                validationMethod: _validationMethod,
-                gpsPosition:      _gpsPosition,
-                gpsLoading:       _gpsLoading,
-                qrController:     _qrController,
-                onSelectMethod:   (v) => setState(() => _validationMethod = v),
-                onFetchGps:       _fetchGpsLocation,
-                colors:           c,
-              ),
-              const SizedBox(height: 16),
-            ] else ...[
-              // En edit mode, mostrar aviso de verificación ya hecha
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.available.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.available.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.verified_rounded, color: AppColors.available, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Tu reseña original ya fue verificada.',
-                        style: TextStyle(color: AppColors.available, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
 
             // ── Toggle recomendación (solo edit mode) ─────
             if (_isEditMode) ...[

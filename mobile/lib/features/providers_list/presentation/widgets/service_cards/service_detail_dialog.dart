@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../../../provider_dashboard/domain/models/service_item_model.dart';
+import '../../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../chat/presentation/providers/chat_provider.dart';
+import '../../../../chat/presentation/screens/chat_screen.dart';
+import '../../../domain/models/provider_model.dart';
 
 /// Dialog flotante con el detalle de un servicio/producto del provider.
-/// Se invoca via [ServiceDetailDialog.show] desde un chip de la tarjeta.
+/// Se invoca via [ServiceDetailDialog.show] desde un chip de la tarjeta
+/// o desde la lista de servicios del detalle del proveedor.
 ///
 /// Se cierra automáticamente al cambiar de tab — AppShell mantiene una
 /// referencia al pop callback en `_activeDismiss` y la dispara antes de
@@ -27,6 +33,7 @@ class ServiceDetailDialog {
   static Future<void> show(BuildContext context, {
     required ServiceItem service,
     required bool isNegocio,
+    required ProviderModel provider,
   }) async {
     final c = context.colors;
     BuildContext? dialogCtx;
@@ -46,7 +53,12 @@ class ServiceDetailDialog {
             backgroundColor: c.bgCard,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
             insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-            child: _DialogBody(service: service, isNegocio: isNegocio, c: c),
+            child: _DialogBody(
+              service: service,
+              isNegocio: isNegocio,
+              provider: provider,
+              c: c,
+            ),
           );
         },
       );
@@ -56,18 +68,73 @@ class ServiceDetailDialog {
   }
 }
 
-class _DialogBody extends StatelessWidget {
+class _DialogBody extends StatefulWidget {
   final ServiceItem service;
   final bool isNegocio;
+  final ProviderModel provider;
   final AppThemeColors c;
   const _DialogBody({
     required this.service,
     required this.isNegocio,
+    required this.provider,
     required this.c,
   });
 
   @override
+  State<_DialogBody> createState() => _DialogBodyState();
+}
+
+class _DialogBodyState extends State<_DialogBody> {
+  bool _opening = false;
+
+  ServiceItem get service => widget.service;
+  bool get isNegocio => widget.isNegocio;
+  ProviderModel get provider => widget.provider;
+
+  /// Abre el chat con el proveedor y precarga un mensaje predeterminado
+  /// preguntando por este servicio/producto. Funciona para OFICIO y NEGOCIO.
+  Future<void> _consultarPrecio() async {
+    if (_opening) return;
+    final auth = context.read<AuthProvider>();
+    if (auth.user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inicia sesión para consultar al proveedor')),
+      );
+      return;
+    }
+    setState(() => _opening = true);
+    final chat      = context.read<ChatProvider>();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final roomId = await chat.openRoom(
+        clientId:   auth.user!.id,
+        providerId: provider.id,
+      );
+      final tipo = isNegocio ? 'producto' : 'servicio';
+      final draft =
+          'Hola, ${provider.businessName}, quisiera saber más sobre el '
+          '$tipo "${service.name}".';
+      navigator.pop(); // cierra el dialog
+      navigator.push(MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          roomId:        roomId,
+          seedTitle:     provider.businessName,
+          seedAvatarUrl: provider.coverImageUrl,
+          initialDraft:  draft,
+        ),
+      ));
+    } catch (e) {
+      if (mounted) setState(() => _opening = false);
+      messenger.showSnackBar(
+        SnackBar(content: Text('No se pudo abrir el chat: $e')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final c = widget.c;
     final accent = isNegocio ? AppColors.amber : AppColors.primary;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 380),
@@ -148,12 +215,39 @@ class _DialogBody extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 18),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cerrar'),
-                  ),
+                // ── Acciones: Cerrar + Consultar precio (→ chat) ──
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: _opening ? null : () => Navigator.of(context).pop(),
+                        child: Text('Cerrar', style: TextStyle(color: c.textMuted)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: _opening ? null : _consultarPrecio,
+                        icon: _opening
+                            ? const SizedBox(
+                                width: 16, height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.forum_rounded, size: 16),
+                        label: const Text('Consultar precio'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

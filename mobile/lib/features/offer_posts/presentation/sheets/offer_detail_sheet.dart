@@ -313,15 +313,23 @@ class OfferDetailSheet extends StatelessWidget {
   /// solo trae un subset; `ProviderDetailSheet` necesita el ProviderModel
   /// completo (servicios, redes, horarios, etc.).
   Future<void> _openProviderCard(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final nav = Navigator.of(context);
-    nav.pop(); // cierra este sheet primero
+    final messenger   = ScaffoldMessenger.of(context);
+    final navigator   = Navigator.of(context);
+    // Context del Navigator raíz — sobrevive al cierre del sheet.
+    // El bug anterior: se hacía pop() y luego `context.mounted` (ya false)
+    // cortaba la función antes de abrir el detalle.
+    final rootContext = Navigator.of(context, rootNavigator: true).context;
 
+    // Cargamos ANTES de cerrar el sheet: así el `context.mounted` chequea
+    // un widget que sigue montado durante el await.
     final result = await ProvidersRepository().getProviderDetail(offer.provider.id);
     if (!context.mounted) return;
 
+    navigator.pop(); // ahora sí cerramos el sheet
     if (result.isSuccess) {
-      ProviderDetailSheet.show(context, result.data);
+      // ignore: use_build_context_synchronously — rootContext es el del
+      // Navigator raíz: siempre montado mientras la app viva.
+      ProviderDetailSheet.show(rootContext, result.data);
     } else {
       messenger.showSnackBar(
         const SnackBar(content: Text('No se pudo abrir el perfil del proveedor')),

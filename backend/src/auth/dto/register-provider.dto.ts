@@ -89,7 +89,7 @@ export class RegisterProviderDto {
   // Al menos una categoría es obligatoria — si llega vacío, el catálogo no
   // sabría en qué bucket mostrar al proveedor.
   @IsArray({ message: 'Selecciona al menos una categoría' })
-  @ArrayMaxSize(3)
+  @ArrayMaxSize(6)
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @Type(() => Number)
@@ -113,6 +113,27 @@ export class RegisterProviderDto {
   @IsNumber()
   @IsPositive()
   localityId?: number;
+
+  // ── Ubicación administrativa (dept/prov/dist) ─────────────
+  // El backend la usa para resolver/crear la localidad real del
+  // proveedor — sin esto los filtros de ubicación no lo encuentran.
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  department?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  province?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  district?: string | null;
 
   @IsOptional()
   @IsObject()

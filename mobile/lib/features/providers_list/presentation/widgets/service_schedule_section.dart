@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../provider_dashboard/domain/models/service_item_model.dart';
 import '../../domain/models/provider_model.dart';
+import 'service_cards/service_detail_dialog.dart';
 
 /// ─── Lista de productos (NEGOCIO) o servicios (OFICIO) ─────
 ///
-/// Lee la lista "services" del `scheduleJson` del proveedor.
+/// Cada fila muestra la foto del servicio (si la tiene) y al tocarla
+/// abre el [ServiceDetailDialog] con el detalle completo y el botón
+/// "Consultar precio" que lleva al chat con el proveedor.
 class ServicesList extends StatelessWidget {
   final ProviderModel provider;
   final Color accent;
@@ -14,35 +18,25 @@ class ServicesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final schedule = provider.scheduleJson;
-    final rawServices = schedule?['services'];
-    if (rawServices is! List || rawServices.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final services = provider.services;
+    if (services.isEmpty) return const SizedBox.shrink();
 
     final isNegocio = provider.type == ProviderType.negocio;
     final c = context.colors;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...rawServices.map((raw) {
-          if (raw is! Map<String, dynamic>) return const SizedBox.shrink();
-          final name  = raw['name']  as String? ?? '';
-          final desc  = raw['description'] as String?;
-          final price = (raw['price'] as num?)?.toDouble();
-          final unit  = raw['unit']  as String?;
-          final phone = raw['phone'] as String?;
-
-          String priceLabel = 'Consultar precio';
-          if (price != null) {
-            final formatted = price % 1 == 0
-                ? 'S/ ${price.toInt()}'
-                : 'S/ ${price.toStringAsFixed(2)}';
-            priceLabel = unit != null ? '$formatted $unit' : formatted;
-          }
-
-          return Container(
+      children: services.map((item) {
+        final hasImage = item.imageUrl != null && item.imageUrl!.isNotEmpty;
+        return InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => ServiceDetailDialog.show(
+            context,
+            service: item,
+            isNegocio: isNegocio,
+            provider: provider,
+          ),
+          child: Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
@@ -52,31 +46,33 @@ class ServicesList extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                      isNegocio ? Icons.inventory_2_rounded : Icons.build_circle_outlined,
-                      color: accent, size: 20),
+                // Foto del servicio/producto — si no hay, icono genérico.
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: hasImage
+                      ? Image.network(
+                          item.imageUrl!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => _iconBox(isNegocio),
+                        )
+                      : _iconBox(isNegocio),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name,
+                      Text(item.name,
                           style: TextStyle(
                             color: c.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           )),
-                      if (desc != null && desc.isNotEmpty) ...[
+                      if (item.description != null && item.description!.isNotEmpty) ...[
                         const SizedBox(height: 2),
-                        Text(desc,
+                        Text(item.description!,
                             style: TextStyle(
                               color: c.textMuted,
                               fontSize: 12,
@@ -84,14 +80,14 @@ class ServicesList extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis),
                       ],
-                      if (phone != null && phone.isNotEmpty) ...[
+                      if (item.phone != null && item.phone!.isNotEmpty) ...[
                         const SizedBox(height: 3),
                         Row(
                           children: [
                             Icon(Icons.phone_outlined,
                                 color: c.textMuted, size: 12),
                             const SizedBox(width: 4),
-                            Text(phone,
+                            Text(item.phone!,
                                 style: TextStyle(
                                   color: c.textMuted,
                                   fontSize: 11,
@@ -102,29 +98,48 @@ class ServicesList extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    priceLabel,
-                    style: TextStyle(
-                      color: accent,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        item.priceLabel,
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 16),
+                  ],
                 ),
               ],
             ),
-          );
-        }),
-      ],
+          ),
+        );
+      }).toList(),
     );
   }
+
+  Widget _iconBox(bool isNegocio) => Container(
+        width: 48,
+        height: 48,
+        color: accent.withValues(alpha: 0.10),
+        child: Icon(
+          isNegocio ? Icons.inventory_2_rounded : Icons.build_circle_outlined,
+          color: accent,
+          size: 22,
+        ),
+      );
 }
 
 /// ─── Tabla de horarios semanales ────────────────────────────

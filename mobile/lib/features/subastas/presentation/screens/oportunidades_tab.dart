@@ -36,6 +36,11 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
     final c = context.colors;
     final prov = context.watch<SubastasProvider>();
     final dash = context.watch<DashboardProvider>();
+    // El banner "sube tu rating" depende del rating REAL del perfil
+    // (observado vía DashboardProvider). Así desaparece en tiempo real
+    // cuando el rating sube a >= 3 — sin necesidad de recargar.
+    final myRating = dash.profile?.averageRating ?? 0;
+    final canParticipate = myRating >= 3 || (dash.profile?.isTrusted ?? false);
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -86,8 +91,8 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
                     ],
                   ),
 
-                  if (!prov.opportunities.any((o) => o.canParticipate))
-                    _QualityBanner(rating: dash.profile?.averageRating ?? 0),
+                  if (!canParticipate)
+                    _QualityBanner(rating: myRating),
                 ],
               ),
             ),
@@ -111,7 +116,8 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _OpportunityCard(
                         opportunity: opp,
-                        onBid: opp.canParticipate && !opp.isFull
+                        canParticipate: canParticipate,
+                        onBid: canParticipate && !opp.isFull
                             ? () => SubmitOfferSheet.show(context, opp)
                             : null,
                       ),
@@ -133,9 +139,16 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
 
 class _OpportunityCard extends StatelessWidget {
   final OpportunityModel opportunity;
+  /// Rating real del proveedor permite postular — calculado desde el
+  /// perfil observado, no del snapshot de la oportunidad.
+  final bool canParticipate;
   final VoidCallback? onBid;
 
-  const _OpportunityCard({required this.opportunity, this.onBid});
+  const _OpportunityCard({
+    required this.opportunity,
+    required this.canParticipate,
+    this.onBid,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -298,7 +311,7 @@ class _OpportunityCard extends StatelessWidget {
                     child: Text('Completa',
                         style: TextStyle(color: c.textMuted, fontSize: 12)),
                   )
-                else if (!opp.canParticipate)
+                else if (!canParticipate)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(

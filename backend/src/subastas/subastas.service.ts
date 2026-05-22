@@ -86,6 +86,53 @@ export class SubastasService {
       expiresAt: request.expiresAt.toISOString(),
     });
 
+    // Notificar a TODOS los proveedores aprobados que ofrecen la
+    // Especialidad elegida — para que vean la oportunidad y postulen.
+    // Se persiste en adminNotification (sobrevive cambios de cuenta) +
+    // WebSocket en vivo + push.
+    const matchingProviders = await this.prisma.provider.findMany({
+      where: {
+        isVisible: true,
+        verificationStatus: 'APROBADO',
+        providerCategories: { some: { categoryId: dto.categoryId } },
+      },
+      select: { id: true, userId: true, type: true },
+    });
+
+    if (matchingProviders.length > 0) {
+      const notifTitle = 'Nueva oportunidad en tu categoría';
+      const notifBody =
+        `Un cliente publicó una necesidad de "${request.category.name}". ` +
+        'Entra a Oportunidades y postula.';
+
+      await this.prisma.adminNotification.createMany({
+        data: matchingProviders.map((p) => ({
+          providerId:        p.id,
+          type:              'NUEVA_OPORTUNIDAD' as const,
+          title:             notifTitle,
+          message:           notifBody,
+          targetUserId:      p.userId,
+          targetProfileType: p.type,
+        })),
+      });
+
+      for (const p of matchingProviders) {
+        this.events.emitNotification({
+          type:              'NUEVA_OPORTUNIDAD',
+          title:             notifTitle,
+          body:              notifBody,
+          targetUserId:      p.userId,
+          targetProfileType: p.type,
+        });
+        void this.push
+          .sendToUser(p.userId, notifTitle, notifBody, {
+            type: 'NUEVA_OPORTUNIDAD',
+            requestId: String(request.id),
+          })
+          .catch(() => {});
+      }
+    }
+
     return request;
   }
 
@@ -340,17 +387,31 @@ export class SubastasService {
     });
 
     if (winningProvider) {
+      const accTitle = '¡Felicidades! Tu oferta fue aceptada';
+      const accBody  = 'El cliente eligió tu propuesta. ¡Contáctalo ahora!';
+
+      // Persistir — así sobrevive cambios de cuenta en el dispositivo.
+      await this.prisma.adminNotification.create({
+        data: {
+          providerId:   winnerProviderId,
+          type:         'OFERTA_ACEPTADA',
+          title:        accTitle,
+          message:      accBody,
+          targetUserId: winningProvider.userId,
+        },
+      });
+
       this.events.emitNotification({
         type: 'OFFER_ACCEPTED',
-        title: '¡Felicidades! Tu oferta fue aceptada',
-        body: 'El cliente eligió tu propuesta. ¡Contáctalo ahora!',
+        title: accTitle,
+        body: accBody,
         targetUserId: winningProvider.userId,
       });
 
       this.push.sendToUser(
         winningProvider.userId,
-        '¡Felicidades! Tu oferta fue aceptada',
-        'El cliente eligió tu propuesta. ¡Contáctalo ahora!',
+        accTitle,
+        accBody,
         { type: 'OFFER_ACCEPTED', requestId: String(dto.offerId) },
       );
     }

@@ -18,112 +18,55 @@ class ProviderHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Row(
+
+    // Insignias del proveedor. Van en un Wrap (no en un Row plano) para
+    // que floten a la siguiente línea cuando hay varias — antes con
+    // Verificado + Confiable + domicilio la fila se desbordaba.
+    final badges = <Widget>[
+      if (provider.isVerified &&
+          (provider.subscriptionPlan == 'PREMIUM' ||
+           provider.subscriptionPlan == 'ESTANDAR' ||
+           provider.subscriptionPlan == 'GRATIS'))
+        _badge(icon: Icons.verified_rounded, label: 'Verificado', color: AppColors.verified),
+      if (provider.isTrusted)
+        _badge(icon: Icons.shield_rounded, label: 'Confiable', color: const Color(0xFF10B981)),
+      if (provider.type == ProviderType.oficio && provider.hasHomeService)
+        _badge(icon: Icons.home_repair_service_rounded, label: 'Va a domicilio', color: AppColors.available),
+      if (provider.type == ProviderType.negocio && provider.hasDelivery)
+        _badge(icon: Icons.delivery_dining_rounded, label: 'Delivery', color: const Color(0xFFE07B39)),
+      if (provider.type == ProviderType.negocio && provider.plenaCoordinacion)
+        _badge(icon: Icons.handshake_rounded, label: 'Coordinamos entrega', color: const Color(0xFF60A5FA)),
+    ];
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                provider.businessName,
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                provider.categoryName,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+        Text(
+          provider.businessName,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        if (provider.isVerified &&
-            (provider.subscriptionPlan == 'PREMIUM' ||
-             provider.subscriptionPlan == 'ESTANDAR' ||
-             provider.subscriptionPlan == 'GRATIS'))
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.verified.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.verified.withValues(alpha: 0.4)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.verified_rounded, color: AppColors.verified, size: 14),
-                SizedBox(width: 4),
-                Text(
-                  'Verificado',
-                  style: TextStyle(color: AppColors.verified, fontSize: 11),
-                ),
-              ],
-            ),
+        const SizedBox(height: 4),
+        Text(
+          provider.categoryName,
+          style: TextStyle(
+            color: accent,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
-        if (provider.isTrusted)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.13),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 14),
-                SizedBox(width: 4),
-                Text('Confiable', style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        if (provider.type == ProviderType.oficio && provider.hasHomeService)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.available.withValues(alpha: 0.13),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.available.withValues(alpha: 0.4)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.home_repair_service_rounded, color: AppColors.available, size: 14),
-                SizedBox(width: 4),
-                Text(
-                  'Va a domicilio',
-                  style: TextStyle(color: AppColors.available, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-        // Chips de delivery / coordinación para NEGOCIO — independientes
-        // entre sí, se muestran según lo que el user marcó en el onboarding.
-        if (provider.type == ProviderType.negocio && provider.hasDelivery)
-          _deliveryChip(
-            icon: Icons.delivery_dining_rounded,
-            label: 'Delivery',
-            color: const Color(0xFFE07B39),
-          ),
-        if (provider.type == ProviderType.negocio && provider.plenaCoordinacion)
-          _deliveryChip(
-            icon: Icons.handshake_rounded,
-            label: 'Coordinamos entrega',
-            color: const Color(0xFF60A5FA),
-          ),
+        ),
+        if (badges.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Wrap(spacing: 8, runSpacing: 8, children: badges),
+        ],
       ],
     );
   }
 
-  Widget _deliveryChip({required IconData icon, required String label, required Color color}) {
+  Widget _badge({required IconData icon, required String label, required Color color}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -136,7 +79,7 @@ class ProviderHeader extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 14),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11)),
+          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -268,13 +211,16 @@ class ProviderContactInfo extends StatelessWidget {
       ));
     }
 
-    // Teléfono de contacto
-    rows.add(InfoChip(
-      icon: Icons.phone_outlined,
-      label: p.phone,
-      sublabel: 'Teléfono',
-      onTap: onCall,
-    ));
+    // Teléfono de contacto — el backend lo envía vacío para proveedores
+    // de plan gratis (anti-burla); en ese caso ocultamos la fila.
+    if (p.phone.isNotEmpty) {
+      rows.add(InfoChip(
+        icon: Icons.phone_outlined,
+        label: p.phone,
+        sublabel: 'Teléfono',
+        onTap: onCall,
+      ));
+    }
 
     // Dirección (negocios o quienes la tengan)
     if (p.address != null && p.address!.isNotEmpty) {

@@ -41,6 +41,17 @@ export class ReviewsController {
     );
   }
 
+  // GET /reviews/can-review/:providerId — ¿el usuario puede reseñar?
+  // El front lo usa para habilitar/deshabilitar el botón de reseña.
+  @Get('can-review/:providerId')
+  @UseGuards(JwtAuthGuard)
+  canReview(
+    @Request() req: any,
+    @Param('providerId', ParseIntPipe) providerId: number,
+  ) {
+    return this.reviewsService.canReview(req.user.userId, providerId);
+  }
+
   // GET /reviews — Todas las reseñas (admin)
   @Get()
   findAll(

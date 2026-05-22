@@ -6,6 +6,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/services/geocoding_service.dart';
 import 'package:mobile/core/utils/permission_service.dart';
+import 'package:mobile/core/utils/plan_limits.dart';
 import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
 import 'package:mobile/features/payments/presentation/providers/payments_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -353,6 +354,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                              ? null
                              : _selectedCategories.map((e) => e.id).toList(),
       primaryCategoryId: _primaryCategoryId,
+      department:        _department,
+      province:          _province,
+      district:          _district,
       scheduleJson:      !_isOficio && _scheduleJson.isNotEmpty ? _scheduleJson : null,
       website:           _websiteCtrl.text.trim().isEmpty    ? null : _websiteCtrl.text.trim(),
       instagram:         _instagramCtrl.text.trim().isEmpty  ? null : _instagramCtrl.text.trim(),
@@ -627,6 +631,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               categories: _categories,
               selected: _selectedCategories,
               primaryCategoryId: _primaryCategoryId,
+              // Premium puede elegir hasta 6 especialidades; el resto, 3.
+              maxCategories: PlanLimits.specialties(_planChoice),
               onChanged: (sel, primary) => setState(() {
                 _selectedCategories = sel;
                 _primaryCategoryId  = primary;

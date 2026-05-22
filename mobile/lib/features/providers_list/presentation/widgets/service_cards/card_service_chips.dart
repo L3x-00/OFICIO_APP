@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../../../provider_dashboard/domain/models/service_item_model.dart';
+import '../../../domain/models/provider_model.dart';
 import 'service_detail_dialog.dart';
 
 /// Fila de chips de servicios (OFICIO) o productos (NEGOCIO). Muestra hasta
@@ -9,7 +10,13 @@ import 'service_detail_dialog.dart';
 class ServicesRow extends StatelessWidget {
   final List<ServiceItem> services;
   final bool isNegocio;
-  const ServicesRow({super.key, required this.services, this.isNegocio = false});
+  final ProviderModel provider;
+  const ServicesRow({
+    super.key,
+    required this.services,
+    required this.provider,
+    this.isNegocio = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +52,11 @@ class ServicesRow extends StatelessWidget {
           spacing: 6,
           runSpacing: 5,
           children: [
-            ...visible.map((s) => ServiceChip(item: s, isNegocio: isNegocio)),
+            ...visible.map((s) => ServiceChip(
+                  item: s,
+                  isNegocio: isNegocio,
+                  provider: provider,
+                )),
             if (extra > 0)
               ServiceChip(label: '+$extra más', isExtra: true, isNegocio: isNegocio),
           ],
@@ -62,6 +73,9 @@ class ServiceChip extends StatelessWidget {
   final String? label;
   final bool isExtra;
   final bool isNegocio;
+  /// Proveedor dueño del servicio — necesario para el botón "Consultar
+  /// precio" del [ServiceDetailDialog]. Null sólo en el chip "+N más".
+  final ProviderModel? provider;
 
   const ServiceChip({
     super.key,
@@ -69,6 +83,7 @@ class ServiceChip extends StatelessWidget {
     this.label,
     this.isExtra = false,
     this.isNegocio = false,
+    this.provider,
   });
 
   @override
@@ -131,11 +146,11 @@ class ServiceChip extends StatelessWidget {
     );
 
     // Sólo chips reales (no el "+N más") abren el dialog.
-    if (isExtra || item == null) return chip;
+    if (isExtra || item == null || provider == null) return chip;
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () => ServiceDetailDialog.show(context,
-          service: item!, isNegocio: isNegocio),
+          service: item!, isNegocio: isNegocio, provider: provider!),
       child: chip,
     );
   }

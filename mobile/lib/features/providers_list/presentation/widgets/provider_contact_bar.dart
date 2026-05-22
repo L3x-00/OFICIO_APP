@@ -29,6 +29,9 @@ class ProviderContactBar extends StatelessWidget {
   final ReviewModel? myReview;
   final bool isRecommended;
   final ProvidersRepository repo;
+  /// true si el usuario ya interactuó con el proveedor (chat, llamada o
+  /// subasta) y por tanto puede dejar una reseña.
+  final bool canReview;
 
   /// Callback para recargar las reseñas del padre después de crear/editar.
   final Future<void> Function() onReloadReviews;
@@ -40,6 +43,7 @@ class ProviderContactBar extends StatelessWidget {
     required this.myReview,
     required this.isRecommended,
     required this.repo,
+    required this.canReview,
     required this.onReloadReviews,
   });
 
@@ -269,10 +273,15 @@ class ProviderContactBar extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            // El botón de reseña se habilita si el usuario ya reseñó
+            // (puede editar) o si interactuó con el proveedor (canReview).
+            // Prueba de interacción: reemplaza la validación GPS/QR.
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => _onReviewButton(context),
+                onPressed: (myReview != null || canReview)
+                    ? () => _onReviewButton(context)
+                    : null,
                 icon: Icon(
                   myReview != null ? Icons.edit_rounded : Icons.star_rounded,
                   size: 18,
@@ -288,6 +297,15 @@ class ProviderContactBar extends StatelessWidget {
                 ),
               ),
             ),
+            if (myReview == null && !canReview) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Solo puedes reseñar a proveedores con los que hayas '
+                'interactuado (chat, llamada o subasta).',
+                style: TextStyle(color: c.textMuted, fontSize: 11, height: 1.3),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ],
       ),

@@ -56,8 +56,8 @@ export class CreateProviderDto {
   @IsOptional() @IsString() @MaxLength(200)
   address?: string;
 
-  // ── Especialidades (categorías hijas) y localidad — máx 3, una primaria
-  @IsArray() @ArrayMaxSize(3) @IsNumber({}, { each: true }) @IsPositive({ each: true }) @Type(() => Number)
+  // ── Especialidades (categorías hijas) y localidad — máx 6 (Premium), una primaria
+  @IsArray() @ArrayMaxSize(6) @IsNumber({}, { each: true }) @IsPositive({ each: true }) @Type(() => Number)
   @Transform(({ value }) => {
     // FormData envía cada item como campo repetido; con 1 sola especialidad
     // llega un escalar — lo normalizamos a array para que @IsArray pase.

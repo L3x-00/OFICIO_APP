@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronDown, Star } from 'lucide-react';
 import { updateProvider, updateProviderSubscription, getFormOptions } from '@/lib/api';
 
-const MAX_SPECIALTIES = 3; // Especialidades (categorías hijas) por proveedor
+// Límite de especialidades por plan — Premium 6, resto 3.
+const specialtyLimit = (plan?: string) => (plan === 'PREMIUM' ? 6 : 3);
 
 interface Props {
   provider: any;
@@ -70,6 +71,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
 
   if (!isOpen || !provider) return null;
 
+  const maxSpecialties = specialtyLimit(provider.subscription?.plan);
   const filteredParents = allCategories.filter((c: any) => c.forType === provider.type);
 
   // Multi-especialidad: alterna selección, respeta el tope y mantiene
@@ -80,7 +82,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
       setSelectedCategoryIds(next);
       if (primaryCategoryId === id) setPrimaryCategoryId(next[0] ?? null);
     } else {
-      if (selectedCategoryIds.length >= MAX_SPECIALTIES) return;
+      if (selectedCategoryIds.length >= maxSpecialties) return;
       setSelectedCategoryIds([...selectedCategoryIds, id]);
       if (primaryCategoryId == null) setPrimaryCategoryId(id);
     }
@@ -202,7 +204,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
           {/* Especialidades — multi-select (máx 3) con marcado de principal */}
           <div>
             <label className="text-xs font-semibold text-gray-400 mb-2 block uppercase tracking-wider">
-              Especialidades — hasta {MAX_SPECIALTIES}
+              Especialidades — hasta {maxSpecialties}
             </label>
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {filteredParents.map((parent: any) => {
@@ -223,7 +225,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
                       <div className="grid grid-cols-2 gap-2 p-2.5 bg-black/20">
                         {(parent.children ?? []).map((child: any) => {
                           const sel = selectedCategoryIds.includes(child.id);
-                          const capped = !sel && selectedCategoryIds.length >= MAX_SPECIALTIES;
+                          const capped = !sel && selectedCategoryIds.length >= maxSpecialties;
                           return (
                             <button key={child.id} type="button" disabled={capped} onClick={() => toggleCategory(child.id)}
                               className={`px-2.5 py-2 rounded-lg text-xs font-medium text-left transition-all border ${

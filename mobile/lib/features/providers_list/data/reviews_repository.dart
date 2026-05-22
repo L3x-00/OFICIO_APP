@@ -37,9 +37,6 @@ class ReviewsRepository {
     required int rating,
     required String photoUrl,
     String? comment,
-    double? userLat,
-    double? userLng,
-    String? qrCode,
   }) async {
     final response = await _dio.post(
       '/reviews',
@@ -48,13 +45,23 @@ class ReviewsRepository {
         'rating': rating,
         'photoUrl': photoUrl,
         if (comment != null && comment.isNotEmpty) 'comment': comment,
-        'userLatAtReview': ?userLat,
-        'userLngAtReview': ?userLng,
-        'qrCodeUsed': ?qrCode,
       },
     );
 
     return ReviewModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  // ── ¿PUEDE RESEÑAR? (prueba de interacción) ──────────────
+  /// true si el usuario interactuó con el proveedor (subasta adjudicada,
+  /// contacto previo o chat) y por tanto puede dejar una reseña.
+  Future<bool> canReview(int providerId) async {
+    try {
+      final response = await _dio.get('/reviews/can-review/$providerId');
+      final data = response.data as Map<String, dynamic>;
+      return data['canReview'] as bool? ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ── LISTAR RESEÑAS DE UN PROVEEDOR ───────────────────────
@@ -64,19 +71,6 @@ class ReviewsRepository {
     return (data['data'] as List)
         .map((r) => ReviewModel.fromJson(r as Map<String, dynamic>))
         .toList();
-  }
-
-  // ── VALIDAR QR ────────────────────────────────────────────
-  Future<bool> validateQrCode(int providerId, String code) async {
-    try {
-      final response = await _dio.post(
-        '/reviews/qr/validate',
-        data: {'providerId': providerId, 'code': code},
-      );
-      return response.data as bool? ?? false;
-    } catch (_) {
-      return false;
-    }
   }
 
   // ── EDITAR RESEÑA ────────────────────────────────────────

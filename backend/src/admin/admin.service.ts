@@ -505,8 +505,8 @@ async createProvider(data: {
     ? await Promise.all(files.map(f => this.minio.uploadFile(f.buffer, f.originalname, 'providers/gallery')))
     : [];
 
-  // Especialidades: máx 3, una marcada como primaria (isPrimary).
-  const catIds = data.categoryIds.slice(0, 3).map(Number);
+  // Especialidades: máx 6, una marcada como primaria (isPrimary).
+  const catIds = data.categoryIds.slice(0, 6).map(Number);
   const primaryCatId =
     data.primaryCategoryId != null && catIds.includes(Number(data.primaryCategoryId))
       ? Number(data.primaryCategoryId)
@@ -610,7 +610,10 @@ async updateProvider(
     primaryCategoryId?: number | string;   // Especialidad principal (isPrimary)
   },
 ) {
-  const exists = await this.prisma.provider.findUnique({ where: { id } });
+  const exists = await this.prisma.provider.findUnique({
+    where: { id },
+    include: { subscription: { select: { plan: true } } },
+  });
   if (!exists) throw new NotFoundException('Proveedor no encontrado');
 
   // categoryIds/primaryCategoryId NO son columnas de Provider — se gestionan
@@ -618,9 +621,11 @@ async updateProvider(
   const { categoryIds, primaryCategoryId, ...providerData } = data;
 
   return this.prisma.$transaction(async (tx) => {
-    // Si llegan Especialidades, reemplazamos el set completo (máx 3, una primaria).
+    // Si llegan Especialidades, reemplazamos el set completo.
+    // Premium puede hasta 6; el resto, 3.
     if (categoryIds && categoryIds.length > 0) {
-      const catIds = categoryIds.slice(0, 3).map(Number);
+      const limit = exists.subscription?.plan === 'PREMIUM' ? 6 : 3;
+      const catIds = categoryIds.slice(0, limit).map(Number);
       const primaryCatId =
         primaryCategoryId != null && catIds.includes(Number(primaryCategoryId))
           ? Number(primaryCategoryId)
@@ -805,13 +810,18 @@ async updateProvider(
   async approveVerification(id: number) {
     const provider = await this.prisma.provider.findUnique({
       where: { id },
-      include: { subscription: true },
+      include: { subscription: true, user: { select: { hasUsedTrial: true } } },
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
-    // Bienvenida: ESTANDAR de cortesía por 1 mes para que el proveedor pruebe
-    // toda la app sin fricción. Al expirar, el cron de suscripciones lo
-    // degrada a GRATIS automáticamente.
+    // Anti freemium abuse: si el dueño ya consumió su mes de cortesía en
+    // una cuenta previa (hasUsedTrial), el perfil arranca en GRATIS sin
+    // gracia. Si es su primera vez, recibe ESTANDAR de cortesía por 1 mes
+    // (al expirar, el cron de suscripciones lo degrada a GRATIS).
+    const usedTrial   = provider.user?.hasUsedTrial ?? false;
+    const trialPlan   = usedTrial ? 'GRATIS' : 'ESTANDAR';
+    const trialStatus = usedTrial ? 'ACTIVA' : 'GRACIA';
+
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1);
 
@@ -823,8 +833,8 @@ async updateProvider(
           isVerified: true,
           verificationStatus: 'APROBADO',
           isVisible: true,
-          // Prioridad de listado equivalente a ESTANDAR mientras dure la cortesía
-          planPriority: this.planToPriority('ESTANDAR', 'ACTIVA'),
+          // Prioridad de listado según el plan inicial real del proveedor.
+          planPriority: this.planToPriority(usedTrial ? 'GRATIS' : 'ESTANDAR', 'ACTIVA'),
         },
       });
 
@@ -841,8 +851,8 @@ async updateProvider(
         await tx.subscription.create({
           data: {
             providerId: id,
-            plan:       'ESTANDAR',
-            status:     'GRACIA',
+            plan:       trialPlan,
+            status:     trialStatus,
             endDate,
           },
         });
@@ -862,7 +872,9 @@ async updateProvider(
       // "Cannot access 'updated' before initialization").
       const approveBody  =
         `Tu perfil "${updatedProvider.businessName}" fue aprobado. ` +
-        'Plan Estándar activado gratis por 1 mes de bienvenida.';
+        (usedTrial
+          ? 'Ya estás activo en el plan Gratis.'
+          : 'Plan Estándar activado gratis por 1 mes de bienvenida.');
       await tx.adminNotification.create({
         data: {
           providerId: id,
@@ -893,7 +905,9 @@ async updateProvider(
     const approveTitle = '¡Perfil aprobado! ✅';
     const approveBody  =
       `Tu perfil "${updated.businessName}" fue aprobado. ` +
-      'Plan Estándar activado gratis por 1 mes de bienvenida.';
+      (usedTrial
+        ? 'Ya estás activo en el plan Gratis.'
+        : 'Plan Estándar activado gratis por 1 mes de bienvenida.');
 
     this.eventsGateway.emitNotification({
       type: 'PROVIDER_APPROVED',
@@ -907,7 +921,7 @@ async updateProvider(
       provider.userId,
       approveTitle,
       approveBody,
-      { type: 'PROVIDER_APPROVED', plan: 'ESTANDAR', trial: 'true' },
+      { type: 'PROVIDER_APPROVED', plan: trialPlan, trial: String(!usedTrial) },
     );
 
     // Sistema de referidos: si este provider tiene un referral pendiente,

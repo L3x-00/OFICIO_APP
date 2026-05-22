@@ -27,6 +27,15 @@ model User {
   isEmailVerified  Boolean          @default(false)
   fcmToken         String?
   coins            Int              @default(0)
+  /// true cuando el usuario ya consumió el mes de cortesía (ESTANDAR).
+  /// Se marca al reactivar una cuenta soft-deleted — un re-registro NO
+  /// vuelve a recibir el mes de gracia (anti freemium abuse).
+  hasUsedTrial     Boolean          @default(false)
+  /// Fecha de auto-eliminación (soft delete por el propio usuario).
+  /// null = cuenta no eliminada. Distingue el soft-delete del usuario
+  /// de un baneo del admin (que solo pone isActive=false sin deletedAt),
+  /// para que un re-registro NO reactive una cuenta suspendida.
+  deletedAt        DateTime?
   lastIp           String?
   lastLoginAt      DateTime?
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
@@ -292,11 +301,11 @@ model Review {
   rating          Int
   comment         String?
   photoUrl        String?
-  isVisible       Boolean       @default(true)
-  userLatAtReview Float?
-  userLngAtReview Float?
-  qrCodeUsed      String?
-  createdAt       DateTime      @default(now())
+  isVisible          Boolean    @default(true)
+  /// Cómo se validó la interacción cliente-proveedor antes de la reseña:
+  /// 'AUCTION' | 'CONTACT' | 'CHAT'. null en reseñas previas al sistema.
+  verificationMethod String?
+  createdAt          DateTime   @default(now())
   replies         ReviewReply[]
   provider        Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -814,6 +823,9 @@ enum NotificationType {
   PLAN_SOLICITADO
   PLAN_APROBADO
   PLAN_RECHAZADO
+  NEW_REVIEW
+  NUEVA_OPORTUNIDAD
+  OFERTA_ACEPTADA
 }
 
 enum ReferralStatus {

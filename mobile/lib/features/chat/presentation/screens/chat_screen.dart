@@ -21,11 +21,15 @@ class ChatScreen extends StatefulWidget {
   /// URL del avatar a mostrar en el header mientras la sala no está
   /// cacheada. Opcional — si null, cae al fallback de iniciales.
   final String? seedAvatarUrl;
+  /// Mensaje predeterminado que precarga el input al abrir el chat —
+  /// usado por "Consultar precio" desde el detalle de un servicio.
+  final String? initialDraft;
   const ChatScreen({
     super.key,
     required this.roomId,
     this.seedTitle,
     this.seedAvatarUrl,
+    this.initialDraft,
   });
 
   @override
@@ -45,6 +49,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    // Precarga el mensaje predeterminado (p. ej. "Consultar precio").
+    if (widget.initialDraft != null && widget.initialDraft!.isNotEmpty) {
+      _controller.text = widget.initialDraft!;
+    }
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;

@@ -26,8 +26,8 @@ class ServiceItem {
   String get priceLabel {
     if (price == null) return 'Consultar precio';
     final formatted = price! % 1 == 0
-        ? '\$${price!.toInt()}'
-        : '\$${price!.toStringAsFixed(2)}';
+        ? 'S/ ${price!.toInt()}'
+        : 'S/ ${price!.toStringAsFixed(2)}';
     return unit != null ? '$formatted $unit' : formatted;
   }
 

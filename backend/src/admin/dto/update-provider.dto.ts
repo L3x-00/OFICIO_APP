@@ -29,7 +29,7 @@ export class UpdateProviderDto {
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(3)
+  @ArrayMaxSize(6)
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @Type(() => Number)

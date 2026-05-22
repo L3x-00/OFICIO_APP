@@ -60,8 +60,8 @@ class ExpandSearchBanner extends StatelessWidget {
                 ),
                 Text(
                   isExpanded
-                      ? 'Mostrando todos los servicios del Perú'
-                      : 'Ver servicios de todo el Perú (puede demorar)',
+                      ? 'Negocios de $department · Profesionales de todo el Perú'
+                      : 'Negocios de tu departamento · Profesionales de todo el Perú',
                   style: TextStyle(color: c.textMuted, fontSize: 11, height: 1.3),
                 ),
               ],
@@ -105,11 +105,11 @@ class ExpandSearchBanner extends StatelessWidget {
             ),
           ],
         ),
-        content: const Text(
-          'Se mostrarán todos los servicios del Perú.\n\n'
-          'Este proceso puede demorar unos segundos porque necesita '
-          'consultar más datos.',
-          style: TextStyle(fontSize: 13, height: 1.5),
+        content: Text(
+          'Verás los negocios de $department y los profesionales de '
+          'todo el Perú.\n\nUn negocio lejano no te es útil, pero un '
+          'profesional sí puede atenderte a distancia.',
+          style: const TextStyle(fontSize: 13, height: 1.5),
         ),
         actions: [
           TextButton(

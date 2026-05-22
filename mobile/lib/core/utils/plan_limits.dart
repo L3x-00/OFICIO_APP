@@ -28,6 +28,13 @@ class PlanLimits {
   static int items(String plan, {required bool isNegocio}) =>
       isNegocio ? products(plan) : services(plan);
 
+  // ── Especialidades / categorías del proveedor ────────────
+  /// Premium puede ofrecer hasta 6 especialidades; el resto, 3.
+  static int specialties(String plan) => switch (plan.toUpperCase()) {
+        'PREMIUM' => 6,
+        _         => 3, // GRATIS / ESTANDAR
+      };
+
   // ── Ofertas activas (OfferPost) ──────────────────────────
   static int offers(String plan) => switch (plan.toUpperCase()) {
         'PREMIUM'  => 8,

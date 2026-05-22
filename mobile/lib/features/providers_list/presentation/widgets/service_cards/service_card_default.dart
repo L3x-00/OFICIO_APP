@@ -104,6 +104,7 @@ class ServiceCardDefault extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: ServicesRow(
                   services: provider.services,
+                  provider: provider,
                   isNegocio: provider.type == ProviderType.negocio,
                 ),
               ),

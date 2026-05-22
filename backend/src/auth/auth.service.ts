@@ -42,9 +42,21 @@ export class AuthService {
     lastName: string;
     phone?: string;
   }) {
-    // Guardia: email ya en BD
+    // Guardia: email ya en BD.
+    // - Cuenta ACTIVA → conflicto real (debe iniciar sesión).
+    // - Cuenta INACTIVA (soft-deleted) → permitimos el re-registro;
+    //   `verifyOtp` lo tratará como reactivación SIN beneficios.
     const exists = await this.prisma.user.findUnique({ where: { email: data.email } });
-    if (exists) throw new ConflictException('Ya tienes una cuenta con este correo. Inicia sesión o usa otro correo.');
+    if (exists) {
+      if (exists.isActive) {
+        throw new ConflictException('Ya tienes una cuenta con este correo. Inicia sesión o usa otro correo.');
+      }
+      if (exists.deletedAt == null) {
+        // Inactiva pero NO auto-eliminada = suspendida por el admin.
+        throw new ConflictException('Esta cuenta está suspendida. Contacta con soporte.');
+      }
+      // Inactiva + deletedAt != null → soft-deleted → re-registro permitido.
+    }
 
     // Guardia: ya hay un registro pendiente para ese email
     const emailKey = `pending_email:${data.email}`;
@@ -116,6 +128,11 @@ data: {
   categoryIds?: number[]; // hasta 3 Especialidades (categorías hijas)
   primaryCategoryId?: number; // Especialidad principal (isPrimary)
   localityId?: number;
+  // Ubicación administrativa elegida en el onboarding — usada para
+  // resolver (o crear) la localidad real del proveedor.
+  department?: string | null;
+  province?: string | null;
+  district?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scheduleJson?: any;
   // redes sociales (opcionales)
@@ -161,22 +178,65 @@ data: {
       }
     }
 
-    // Validar localityId: si no viene o no existe, usar la primera disponible
+    // Resolver la localidad del proveedor.
     let localityId = data.localityId;
     if (localityId) {
       const locExists = await this.prisma.locality.findUnique({ where: { id: localityId } });
       if (!locExists) localityId = undefined;
     }
+    // Si no llegó un localityId válido, lo resolvemos desde la ubicación
+    // administrativa (dept/prov/dist) que eligió el proveedor en el
+    // onboarding. Match accent/case-insensitive; si la localidad no
+    // existe en el catálogo, se crea (source USER). Así el proveedor
+    // queda EXACTAMENTE en la zona elegida y los filtros lo encuentran.
+    if (!localityId && data.department && data.department.trim().length >= 2) {
+      const norm = (s?: string | null) =>
+        (s ?? '')
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .toLowerCase()
+          .replace(/\s+/g, ' ')
+          .trim();
+      const nDept = norm(data.department);
+      const nProv = norm(data.province);
+      const nDist = norm(data.district);
+      const all = await this.prisma.locality.findMany({
+        select: { id: true, department: true, province: true, district: true },
+      });
+      const found = all.find(
+        (l) =>
+          norm(l.department) === nDept &&
+          norm(l.province) === nProv &&
+          norm(l.district) === nDist,
+      );
+      if (found) {
+        localityId = found.id;
+      } else {
+        const created = await this.prisma.locality.create({
+          data: {
+            name: (data.district || data.province || data.department).trim(),
+            department: data.department.trim(),
+            province: data.province?.trim() || null,
+            district: data.district?.trim() || null,
+            isActive: true,
+            source: 'USER',
+          },
+        });
+        localityId = created.id;
+      }
+    }
+    // Último recurso: primera localidad del catálogo (no debería ocurrir
+    // si el onboarding envía la ubicación).
     if (!localityId) {
       const firstLocality = await this.prisma.locality.findFirst({ where: { isActive: true } });
       localityId = firstLocality?.id ?? 1;
     }
 
-    // Validar categoryIds (Especialidades): filtrar solo las que existen, máx 3.
+    // Validar categoryIds (Especialidades): filtrar solo las que existen, máx 6.
     // Si ninguna es válida, asignar la primera Especialidad disponible como fallback.
     let validCategoryIds: number[] = [];
     if (data.categoryIds && data.categoryIds.length > 0) {
-      const ids = data.categoryIds.slice(0, 3);
+      const ids = data.categoryIds.slice(0, 6);
       const found = await this.prisma.category.findMany({
         where: { id: { in: ids }, isActive: true },
         select: { id: true },
@@ -497,22 +557,34 @@ data: {
 
     const reg = JSON.parse(rawData) as { email: string; passwordHash: string; firstName: string; lastName: string; phone: string | null };
 
-    // Guardia de carrera: email ya registrado por otro flujo concurrente
-    const raceCheck = await this.prisma.user.findUnique({ where: { email: reg.email } });
-    if (raceCheck) throw new ConflictException('El email ya está registrado');
+    // Guardia de carrera + detección de reactivación:
+    // - email de cuenta ACTIVA → conflicto real (registro concurrente).
+    // - email de cuenta INACTIVA (soft-deleted) → reactivación sin
+    //   beneficios (anti freemium abuse).
+    const existingUser = await this.prisma.user.findUnique({ where: { email: reg.email } });
+    if (existingUser) {
+      if (existingUser.isActive) {
+        throw new ConflictException('El email ya está registrado');
+      }
+      if (existingUser.deletedAt == null) {
+        throw new ConflictException('Esta cuenta está suspendida. Contacta con soporte.');
+      }
+    }
 
-    // Crear usuario en BD con email ya verificado
-    const user = await this.prisma.user.create({
-      data: {
-        email:           reg.email,
-        passwordHash:    reg.passwordHash,
-        firstName:       reg.firstName,
-        lastName:        reg.lastName,
-        phone:           reg.phone,
-        role:            'USUARIO',
-        isEmailVerified: true,
-      },
-    });
+    // Crear usuario nuevo, o reactivar la cuenta soft-deleted existente.
+    const user = existingUser
+      ? await this._reactivateUser(existingUser.id, reg)
+      : await this.prisma.user.create({
+          data: {
+            email:           reg.email,
+            passwordHash:    reg.passwordHash,
+            firstName:       reg.firstName,
+            lastName:        reg.lastName,
+            phone:           reg.phone,
+            role:            'USUARIO',
+            isEmailVerified: true,
+          },
+        });
 
     // Limpiar Redis
     await Promise.all([
@@ -617,13 +689,32 @@ data: {
         body: `${firstName} ${lastName} (${email}) se registró mediante login social.`,
         targetRole: 'ADMIN',
       });
+    } else if (!user.isActive) {
+      if (user.deletedAt == null) {
+        // Inactiva sin deletedAt = suspendida por el admin → bloquear.
+        throw new UnauthorizedException('Esta cuenta está suspendida. Contacta con soporte.');
+      }
+      // Cuenta soft-deleted que vuelve por login social → reactivación
+      // SIN beneficios (anti freemium abuse): monedas a 0, hasUsedTrial,
+      // y se borran sus perfiles de Provider (re-aprobación del admin).
+      const dummyHash = await bcrypt.hash(`FIREBASE_SOCIAL_${uid}`, 10);
+      await this.prisma.provider.deleteMany({ where: { userId: user.id } });
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          isActive:        true,
+          deletedAt:       null,
+          passwordHash:    dummyHash,
+          firebaseUid:     uid,
+          avatarUrl:       (picture as string | undefined) ?? user.avatarUrl,
+          coins:           0,
+          hasUsedTrial:    true,
+          isEmailVerified: true,
+        },
+      });
     } else if (!user.firebaseUid) {
       // Email ya registrado con contraseña — no vincular, bloquear
       throw new ConflictException('Ya tienes una cuenta con este correo. Inicia sesión con tu correo y contraseña, o regístrate con otro correo.');
-    }
-
-    if (!user.isActive) {
-      throw new UnauthorizedException('Tu cuenta está desactivada. Contacta al soporte.');
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
@@ -662,17 +753,60 @@ data: {
     return { accessToken, refreshToken, userId, role };
   }
 
-  // ── DELETE ACCOUNT (cascade) ─────────────────────────────
+  // ── DELETE ACCOUNT (soft delete — anti freemium abuse) ───
   async deleteAccount(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('Usuario no encontrado');
 
-    // Cascade en schema.prisma elimina toda la cadena: providers (con su
-    // subscription, payments, images, analytics, reviews, etc.), reviews,
-    // reviewReplies, providerReports, platformIssues, refreshTokens,
-    // otpCodes, recommendations, serviceRequests, userPenalty, favorites.
-    await this.prisma.user.delete({ where: { id: userId } });
+    // Soft delete: NO borramos el usuario — así su email/teléfono quedan
+    // "reservados" y un re-registro con el mismo email se detecta como
+    // reactivación SIN renovar el mes de prueba (anti freemium abuse).
+    //
+    // Sí borramos sus perfiles de Provider — el cascade del schema
+    // limpia subscription, payments, images, analytics, reviews del
+    // proveedor, etc. — para que no sigan visibles en el catálogo.
+    // También invalidamos sus sesiones (refreshTokens).
+    await this.prisma.$transaction([
+      this.prisma.provider.deleteMany({ where: { userId } }),
+      this.prisma.refreshToken.deleteMany({ where: { userId } }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isActive:    false,
+          deletedAt:   new Date(),
+          fcmToken:    null,
+          firebaseUid: null,
+        },
+      }),
+    ]);
 
     return { success: true };
+  }
+
+  /// Reactiva una cuenta soft-deleted SIN renovar beneficios: borra sus
+  /// perfiles de Provider (debe pasar la aprobación del admin otra vez),
+  /// pone monedas a 0 y marca `hasUsedTrial` para que el próximo
+  /// proveedor que registre NO reciba el mes de cortesía ESTANDAR.
+  private async _reactivateUser(
+    userId: number,
+    reg: { passwordHash: string; firstName: string; lastName: string; phone: string | null },
+  ) {
+    await this.prisma.provider.deleteMany({ where: { userId } });
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isActive:        true,
+        deletedAt:       null,
+        passwordHash:    reg.passwordHash,
+        firstName:       reg.firstName,
+        lastName:        reg.lastName,
+        phone:           reg.phone,
+        role:            'USUARIO',
+        isEmailVerified: true,
+        coins:           0,
+        hasUsedTrial:    true,
+        firebaseUid:     null,
+      },
+    });
   }
 }

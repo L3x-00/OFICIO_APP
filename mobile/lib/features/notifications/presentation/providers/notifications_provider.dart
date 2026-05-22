@@ -167,14 +167,15 @@ class NotificationsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Dedup robusto socket↔FCM. Los IDs incluyen timestamp y nunca matchearán
-  /// entre canales, así que comparamos por (type + title + body) dentro de
-  /// una ventana de 5 segundos. Si el approval llega por socket y FCM en
-  /// foreground, solo se inserta una vez.
+  /// Dedup robusto socket↔FCM↔BD. Los IDs incluyen timestamp y nunca
+  /// matchearán entre canales, así que comparamos por (title + body)
+  /// dentro de una ventana de 5 segundos. NO comparamos `type`: la misma
+  /// notificación llega con type distinto según el canal (la persistida
+  /// en BD usa 'APROBADO', la de socket/FCM 'PROVIDER_APPROVED'), y
+  /// compararlo dejaba pasar duplicados.
   bool _isRecentDuplicate(AppNotification incoming) {
     final cutoff = DateTime.now().subtract(const Duration(seconds: 5));
     return _items.any((n) =>
-      n.type == incoming.type &&
       n.title == incoming.title &&
       n.body == incoming.body &&
       n.createdAt.isAfter(cutoff));
@@ -217,9 +218,11 @@ class NotificationsProvider extends ChangeNotifier {
     // B-7: las del socket/FCM tienen id sintético "{millis}_TYPE", las
     // del server tienen id numérico. Match por id falla → duplicado.
     // Fix: además de id, descartamos locales que coincidan en
-    // (type + title + body) con alguna del server dentro de ±60s —
-    // ese local es la "versión efímera" del server; preferimos el
-    // server (tiene id real para markRead).
+    // (title + body) con alguna del server dentro de ±60s — ese local
+    // es la "versión efímera" del server; preferimos el server (tiene
+    // id real para markRead). NO comparamos `type`: el mismo aviso
+    // llega con type distinto según el canal (BD 'APROBADO' vs
+    // socket 'PROVIDER_APPROVED') y eso dejaba pasar duplicados.
     final existing = List<AppNotification>.from(_items);
     _items
       ..clear()
@@ -227,7 +230,6 @@ class NotificationsProvider extends ChangeNotifier {
 
     bool dupOfServer(AppNotification local) {
       for (final s in fetched) {
-        if (s.type != local.type) continue;
         if (s.title != local.title) continue;
         if (s.body != local.body) continue;
         final diff = s.createdAt.difference(local.createdAt).inSeconds.abs();

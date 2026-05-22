@@ -19,9 +19,6 @@ export class ReviewsService {
     rating: number;
     comment?: string;
     photoUrl?: string;
-    userLatAtReview?: number;
-    userLngAtReview?: number;
-    qrCodeUsed?: string;
   }) {
     // Validar que rating sea entre 1 y 5
     if (data.rating < 1 || data.rating > 5) {
@@ -47,30 +44,14 @@ export class ReviewsService {
       throw new BadRequestException('Ya dejaste una reseña para este proveedor');
     }
 
-    // Validación anti-fraude opción A: GPS
-    // Si el proveedor tiene coordenadas y el usuario envía las suyas,
-    // verificamos que estuvo a menos de 500m
-    if (
-      data.userLatAtReview &&
-      data.userLngAtReview &&
-      provider.latitude &&
-      provider.longitude
-    ) {
-      const distanceMeters = this.calculateDistance(
-        data.userLatAtReview,
-        data.userLngAtReview,
-        provider.latitude,
-        provider.longitude,
+    // Prueba de interacción: el usuario debe haber interactuado con el
+    // proveedor (subasta adjudicada, contacto previo o chat) antes de
+    // poder reseñarlo. Reemplaza la antigua validación GPS 500m + QR.
+    const interaction = await this.canUserReview(data.userId, data.providerId);
+    if (!interaction.allowed) {
+      throw new ForbiddenException(
+        'Debes interactuar con este proveedor antes de reseñarlo',
       );
-
-      // Para oficios a domicilio la validación GPS no aplica estrictamente
-      // Solo la aplicamos a negocios físicos (restaurantes, peluquerías)
-      if (provider.type === 'NEGOCIO' && distanceMeters > 500) {
-        throw new BadRequestException(
-          'Tu ubicación no coincide con la del negocio. ' +
-          'Debes estar cerca del local para dejar una reseña.',
-        );
-      }
     }
 
     // Crear reseña y actualizar rating en una transacción atómica.
@@ -78,15 +59,13 @@ export class ReviewsService {
     const review = await this.prisma.$transaction(async (tx) => {
       const newReview = await tx.review.create({
         data: {
-          providerId:      data.providerId,
-          userId:          data.userId,
-          rating:          data.rating,
-          comment:         data.comment,
-          photoUrl:        data.photoUrl,
-          userLatAtReview: data.userLatAtReview,
-          userLngAtReview: data.userLngAtReview,
-          qrCodeUsed:      data.qrCodeUsed,
-          isVisible:       true,
+          providerId:         data.providerId,
+          userId:             data.userId,
+          rating:             data.rating,
+          comment:            data.comment,
+          photoUrl:           data.photoUrl,
+          verificationMethod: interaction.method,
+          isVisible:          true,
         },
         include: {
           user: { select: { firstName: true, lastName: true, avatarUrl: true } },
@@ -113,17 +92,36 @@ export class ReviewsService {
     // Notificar al proveedor que recibió una nueva reseña
     const reviewWithUser = review as typeof review & { user?: { firstName: string; lastName: string; avatarUrl: string | null } };
     const reviewerName = `${reviewWithUser.user?.firstName ?? ''} ${reviewWithUser.user?.lastName ?? ''}`.trim() || 'Un usuario';
+    const reviewTitle = 'Nueva reseña recibida ⭐';
+    const reviewBody =
+      `${reviewerName} te dejó una reseña de ${data.rating} ` +
+      `estrella${data.rating === 1 ? '' : 's'}.`;
+
+    // Persistir en adminNotification — antes la notificación de reseña
+    // solo se emitía por WebSocket/FCM (efímero), así que al cambiar de
+    // cuenta y volver desaparecía. Persistida, loadHistory la recupera.
+    await this.prisma.adminNotification.create({
+      data: {
+        providerId:        data.providerId,
+        type:              'NEW_REVIEW',
+        title:             reviewTitle,
+        message:           reviewBody,
+        targetUserId:      provider.userId,
+        targetProfileType: provider.type,
+      },
+    });
+
     this.eventsGateway.emitNotification({
       type: 'NEW_REVIEW',
-      title: 'Nueva reseña recibida ⭐',
-      body: `${reviewerName} te dejó una reseña de ${data.rating} estrella${data.rating === 1 ? '' : 's'}.`,
+      title: reviewTitle,
+      body: reviewBody,
       targetUserId: provider.userId,
     });
 
     this.push.sendToUser(
       provider.userId,
-      'Nueva reseña recibida ⭐',
-      `${reviewerName} te dejó una reseña de ${data.rating} estrella${data.rating === 1 ? '' : 's'}.`,
+      reviewTitle,
+      reviewBody,
       { type: 'NEW_REVIEW', providerId: String(data.providerId) },
     );
 
@@ -362,24 +360,53 @@ export class ReviewsService {
     });
   }
 
-  // Fórmula Haversine para distancia entre dos coordenadas GPS
-  private calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number {
-    const R = 6371000; // Radio de la Tierra en metros
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  /// Prueba de interacción: el usuario solo puede reseñar a un proveedor
+  /// con el que YA interactuó. Verifica, en orden:
+  ///   a) AUCTION  — adjudicó una oferta de este proveedor en una subasta.
+  ///   b) CONTACT  — hizo click de WhatsApp/llamada hace más de 24h.
+  ///   c) CHAT     — tiene una sala de chat con el proveedor.
+  private async canUserReview(
+    userId: number,
+    providerId: number,
+  ): Promise<{ allowed: boolean; method?: string }> {
+    // a) Subasta adjudicada a este proveedor.
+    const awarded = await this.prisma.serviceRequest.findFirst({
+      where: {
+        userId,
+        status: 'AWARDED',
+        offers: { some: { providerId, status: 'ACCEPTED' } },
+      },
+      select: { id: true },
+    });
+    if (awarded) return { allowed: true, method: 'AUCTION' };
 
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    // b) Contacto (WhatsApp o llamada) con más de 24h de antigüedad.
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const contact = await this.prisma.providerAnalytic.findFirst({
+      where: {
+        providerId,
+        userId,
+        eventType: { in: ['whatsapp_click', 'call_click'] },
+        createdAt: { lt: dayAgo },
+      },
+      select: { id: true },
+    });
+    if (contact) return { allowed: true, method: 'CONTACT' };
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distancia en metros
+    // c) Sala de chat existente entre ambos.
+    const chat = await this.prisma.chatRoom.findFirst({
+      where: { clientId: userId, providerId },
+      select: { id: true },
+    });
+    if (chat) return { allowed: true, method: 'CHAT' };
+
+    return { allowed: false };
+  }
+
+  /// Versión pública para GET /reviews/can-review/:providerId — el front
+  /// la usa para habilitar/deshabilitar el botón de dejar reseña.
+  async canReview(userId: number, providerId: number) {
+    const result = await this.canUserReview(userId, providerId);
+    return { canReview: result.allowed, method: result.method ?? null };
   }
 }

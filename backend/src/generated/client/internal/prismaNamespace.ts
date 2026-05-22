@@ -3161,6 +3161,8 @@ export const UserScalarFieldEnum = {
   isEmailVerified: 'isEmailVerified',
   fcmToken: 'fcmToken',
   coins: 'coins',
+  hasUsedTrial: 'hasUsedTrial',
+  deletedAt: 'deletedAt',
   lastIp: 'lastIp',
   lastLoginAt: 'lastLoginAt'
 } as const
@@ -3355,9 +3357,7 @@ export const ReviewScalarFieldEnum = {
   comment: 'comment',
   photoUrl: 'photoUrl',
   isVisible: 'isVisible',
-  userLatAtReview: 'userLatAtReview',
-  userLngAtReview: 'userLngAtReview',
-  qrCodeUsed: 'qrCodeUsed',
+  verificationMethod: 'verificationMethod',
   createdAt: 'createdAt'
 } as const
 

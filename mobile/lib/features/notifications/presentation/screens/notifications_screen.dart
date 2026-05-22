@@ -48,16 +48,23 @@ class NotificationsScreen extends StatelessWidget {
             )
           : notifs.items.isEmpty
               ? _buildEmpty(c)
-              : RefreshIndicator(
-                  color: const Color.fromARGB(176, 246, 255, 0),
-                  onRefresh: () async => {}, // Aquí podrías llamar a un fetch si existiera
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: notifs.items.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 2),
-                    itemBuilder: (_, i) =>
-                        _NotificationTile(notification: notifs.items[i]),
-                  ),
+              : Column(
+                  children: [
+                    _retentionBanner(c),
+                    Expanded(
+                      child: RefreshIndicator(
+                        color: const Color.fromARGB(176, 246, 255, 0),
+                        onRefresh: () async => {},
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: notifs.items.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 2),
+                          itemBuilder: (_, i) =>
+                              _NotificationTile(notification: notifs.items[i]),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
     );
   }
@@ -103,6 +110,33 @@ class NotificationsScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Aviso de retención — las notificaciones se purgan a los 5 días
+  /// (cron `pruneOldNotifications` del backend, NOTIFICATION_RETENTION_DAYS).
+  Widget _retentionBanner(AppThemeColors c) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.amber.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.amber.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule_rounded, color: AppColors.amber, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Las notificaciones se eliminan automáticamente después de 5 días.',
+              style: TextStyle(color: c.textSecondary, fontSize: 12),
+            ),
+          ),
+        ],
       ),
     );
   }

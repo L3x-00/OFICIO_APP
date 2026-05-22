@@ -64,13 +64,9 @@ export class ProvidersService {
       where.localityId = localityId;
     }
 
-    // Filtro de ubicación estructurado (jerarquía: dept → prov → dist).
+    // Filtro de ubicación estructurado (jerarquía: dept -> prov -> dist).
     //
-    // Las columnas generadas `department_norm`, `province_norm`,
-    // `district_norm` (migración 20260517130000_localities_normalize)
-    // contienen lower(unaccent(...)) y tienen index compuesto parcial
-    // sobre `isActive=true`. El match se hace en Postgres — antes
-    // cargábamos toda la tabla en JS y filtrábamos en memoria.
+    // Match accent/case-insensitive en JS contra el catálogo `localities`.
     //
     // Degradación jerárquica: si dept+prov+dist no matchea, caemos
     // a dept+prov, luego a dept. Mejor mostrar resultados cercanos
@@ -87,35 +83,72 @@ export class ProvidersService {
       const nProv = norm(province);
       const nDist = norm(district);
 
-      // Helper: lista de localityIds que cumplen los 3 niveles dados.
-      // string vacío = nivel "no filtrar". El index parcial cubre los
-      // 3 LIKE/= con `WHERE isActive=true`.
-      const matchAt = async (d: string, p: string, di: string): Promise<number[]> => {
-        const rows = await this.prisma.$queryRaw<{ id: number }[]>`
-          SELECT id FROM localities
-          WHERE "isActive" = true
-            AND (${d}  = '' OR department_norm = ${d})
-            AND (${p}  = '' OR province_norm   = ${p})
-            AND (${di} = '' OR district_norm   = ${di})
-        `;
-        return rows.map((r) => r.id);
-      };
+      // Match accent/case-insensitive en JS sobre el catálogo de
+      // localidades. No depende de columnas generadas (`*_norm`) ni de
+      // extensiones SQL — el catálogo peruano es pequeño y esto es
+      // 100% determinista sin importar cómo se aplicó la migración.
+      const localities = await this.prisma.locality.findMany({
+        where: { isActive: true },
+        select: { id: true, department: true, province: true, district: true },
+      });
 
-      // Probamos del más específico al más general.
-      let matchedIds = await matchAt(nDept, nProv, nDist);
-      if (matchedIds.length === 0 && (nProv || nDist)) {
-        matchedIds = await matchAt(nDept, nProv, '');
-      }
-      if (matchedIds.length === 0 && nDept) {
-        matchedIds = await matchAt(nDept, '', '');
-      }
+      // Helper: localityIds que cumplen los 3 niveles dados.
+      // string vacío = nivel "no filtrar".
+      const matchAt = (d: string, p: string, di: string): number[] =>
+        localities
+          .filter(
+            (l) =>
+              (d === ''  || norm(l.department) === d) &&
+              (p === ''  || norm(l.province)   === p) &&
+              (di === '' || norm(l.district)   === di),
+          )
+          .map((l) => l.id);
 
-      if (matchedIds.length > 0) {
-        where.localityId = { in: matchedIds };
+      // "Solo departamento" (sin provincia ni distrito) = búsqueda
+      // ampliada: los NEGOCIO se acotan al departamento (un negocio
+      // lejano no le sirve al cliente), pero los OFICIO se muestran de
+      // todo el Perú (un profesional sí puede desplazarse / atender a
+      // distancia, o el cliente lo busca por nombre).
+      const onlyDepartment = !!nDept && !nProv && !nDist;
+      const wantsOficio  = type === 'OFICIO'  || type === 'PROFESSIONAL';
+      const wantsNegocio = type === 'NEGOCIO' || type === 'BUSINESS';
+
+      if (onlyDepartment) {
+        const deptIds = matchAt(nDept, '', '');
+        const inDept  = deptIds.length > 0 ? deptIds : [-1];
+        if (wantsOficio) {
+          // Solo profesionales — sin filtro de ubicación (todo el Perú).
+        } else if (wantsNegocio) {
+          where.localityId = { in: inDept };
+        } else {
+          // Todos: OFICIO de cualquier zona + NEGOCIO del departamento.
+          where.AND = [
+            {
+              OR: [
+                { type: 'OFICIO' },
+                { type: 'NEGOCIO', localityId: { in: inDept } },
+              ],
+            },
+          ];
+        }
       } else {
-        // No matchea ningún nivel — forzamos "sin resultados" para no
-        // mostrar al usuario proveedores fuera de su zona.
-        where.id = { in: [-1] };
+        // Filtro normal con degradación jerárquica:
+        // dept+prov+dist → dept+prov → dept.
+        let matchedIds = matchAt(nDept, nProv, nDist);
+        if (matchedIds.length === 0 && (nProv || nDist)) {
+          matchedIds = matchAt(nDept, nProv, '');
+        }
+        if (matchedIds.length === 0 && nDept) {
+          matchedIds = matchAt(nDept, '', '');
+        }
+
+        if (matchedIds.length > 0) {
+          where.localityId = { in: matchedIds };
+        } else {
+          // No matchea ningún nivel — forzamos "sin resultados" para no
+          // mostrar al usuario proveedores fuera de su zona.
+          where.id = { in: [-1] };
+        }
       }
     }
 
@@ -198,16 +231,43 @@ export class ProvidersService {
     ]);
 
     return {
-      data: providers,
+      data: providers.map((p) => this.maskContactIfFree(p)),
       total,
       page,
       lastPage: Math.ceil(total / limit),
     };
   }
 
+  /**
+   * Oculta los datos de contacto directo (teléfono, whatsapp, redes
+   * sociales) de los proveedores cuyo plan NO es de pago. Así un cliente
+   * no puede contactarlos sin que el proveedor pague — anti-burla del
+   * plan gratis. El proveedor SÍ ve sus propios datos en su panel
+   * (endpoint /provider-profile/me, que no pasa por aquí).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private maskContactIfFree(p: any): any {
+    if (!p) return p;
+    const plan = p.subscription?.plan;
+    if (plan === 'ESTANDAR' || plan === 'PREMIUM') return p;
+    return {
+      ...p,
+      phone:       '',
+      whatsapp:    null,
+      website:     null,
+      instagram:   null,
+      tiktok:      null,
+      facebook:    null,
+      linkedin:    null,
+      twitterX:    null,
+      telegram:    null,
+      whatsappBiz: null,
+    };
+  }
+
   // ── OBTENER un proveedor por ID ──────────────────────────
   async findOne(id: number) {
-    return this.prisma.provider.findUnique({
+    const provider = await this.prisma.provider.findUnique({
       where: { id },
       include: {
         providerCategories: {
@@ -232,6 +292,7 @@ export class ProvidersService {
         },
       },
     });
+    return this.maskContactIfFree(provider);
   }
 
   // ── LISTAR CATEGORÍAS ────────────────────────────────────

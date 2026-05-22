@@ -180,6 +180,10 @@ class AuthRepository {
     /// Especialidad principal (isPrimary) — debe estar dentro de categoryIds.
     int? primaryCategoryId,
     int? localityId,
+    /// Ubicación administrativa — el backend resuelve la localidad real.
+    String? department,
+    String? province,
+    String? district,
     Map<String, dynamic>? scheduleJson,
     // redes sociales
     String? website,
@@ -211,6 +215,9 @@ class AuthRepository {
         if (categoryIds != null && categoryIds.isNotEmpty) 'categoryIds': categoryIds,
         'primaryCategoryId': ?primaryCategoryId,
         'localityId': ?localityId,
+        if (department != null && department.isNotEmpty) 'department': department,
+        if (province != null && province.isNotEmpty) 'province': province,
+        if (district != null && district.isNotEmpty) 'district': district,
         if (scheduleJson != null && scheduleJson.isNotEmpty) 'scheduleJson': scheduleJson,
         'website':     ?website,
         'instagram':   ?instagram,

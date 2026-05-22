@@ -65,6 +65,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   bool _reviewsLoading  = false;
   bool _reviewsError    = false;
   bool _isRecommended   = false;
+  /// true si el usuario interactuó con el proveedor (chat/llamada/subasta)
+  /// y por tanto puede dejar una reseña — prueba de interacción.
+  bool _canReview       = false;
 
   bool get _isOwnCard {
     final auth = context.read<AuthProvider>();
@@ -120,7 +123,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       if (uid != 0) {
         final recommended = await _providersRepo.checkRecommendation(
             _provider.id, uid);
-        if (mounted) setState(() => _isRecommended = recommended);
+        final canRev = await _reviewsRepo.canReview(_provider.id);
+        if (mounted) {
+          setState(() {
+            _isRecommended = recommended;
+            _canReview     = canRev;
+          });
+        }
       }
     } catch (_) {
       if (mounted) setState(() => _reviewsError = true);
@@ -368,6 +377,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             myReview: _myReview,
             isRecommended: _isRecommended,
             repo: _providersRepo,
+            canReview: _canReview,
             onReloadReviews: _onReviewActionDone,
           ),
         ],

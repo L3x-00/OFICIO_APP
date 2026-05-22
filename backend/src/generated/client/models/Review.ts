@@ -31,8 +31,6 @@ export type ReviewAvgAggregateOutputType = {
   providerId: number | null
   userId: number | null
   rating: number | null
-  userLatAtReview: number | null
-  userLngAtReview: number | null
 }
 
 export type ReviewSumAggregateOutputType = {
@@ -40,8 +38,6 @@ export type ReviewSumAggregateOutputType = {
   providerId: number | null
   userId: number | null
   rating: number | null
-  userLatAtReview: number | null
-  userLngAtReview: number | null
 }
 
 export type ReviewMinAggregateOutputType = {
@@ -52,9 +48,7 @@ export type ReviewMinAggregateOutputType = {
   comment: string | null
   photoUrl: string | null
   isVisible: boolean | null
-  userLatAtReview: number | null
-  userLngAtReview: number | null
-  qrCodeUsed: string | null
+  verificationMethod: string | null
   createdAt: Date | null
 }
 
@@ -66,9 +60,7 @@ export type ReviewMaxAggregateOutputType = {
   comment: string | null
   photoUrl: string | null
   isVisible: boolean | null
-  userLatAtReview: number | null
-  userLngAtReview: number | null
-  qrCodeUsed: string | null
+  verificationMethod: string | null
   createdAt: Date | null
 }
 
@@ -80,9 +72,7 @@ export type ReviewCountAggregateOutputType = {
   comment: number
   photoUrl: number
   isVisible: number
-  userLatAtReview: number
-  userLngAtReview: number
-  qrCodeUsed: number
+  verificationMethod: number
   createdAt: number
   _all: number
 }
@@ -93,8 +83,6 @@ export type ReviewAvgAggregateInputType = {
   providerId?: true
   userId?: true
   rating?: true
-  userLatAtReview?: true
-  userLngAtReview?: true
 }
 
 export type ReviewSumAggregateInputType = {
@@ -102,8 +90,6 @@ export type ReviewSumAggregateInputType = {
   providerId?: true
   userId?: true
   rating?: true
-  userLatAtReview?: true
-  userLngAtReview?: true
 }
 
 export type ReviewMinAggregateInputType = {
@@ -114,9 +100,7 @@ export type ReviewMinAggregateInputType = {
   comment?: true
   photoUrl?: true
   isVisible?: true
-  userLatAtReview?: true
-  userLngAtReview?: true
-  qrCodeUsed?: true
+  verificationMethod?: true
   createdAt?: true
 }
 
@@ -128,9 +112,7 @@ export type ReviewMaxAggregateInputType = {
   comment?: true
   photoUrl?: true
   isVisible?: true
-  userLatAtReview?: true
-  userLngAtReview?: true
-  qrCodeUsed?: true
+  verificationMethod?: true
   createdAt?: true
 }
 
@@ -142,9 +124,7 @@ export type ReviewCountAggregateInputType = {
   comment?: true
   photoUrl?: true
   isVisible?: true
-  userLatAtReview?: true
-  userLngAtReview?: true
-  qrCodeUsed?: true
+  verificationMethod?: true
   createdAt?: true
   _all?: true
 }
@@ -243,9 +223,7 @@ export type ReviewGroupByOutputType = {
   comment: string | null
   photoUrl: string | null
   isVisible: boolean
-  userLatAtReview: number | null
-  userLngAtReview: number | null
-  qrCodeUsed: string | null
+  verificationMethod: string | null
   createdAt: Date
   _count: ReviewCountAggregateOutputType | null
   _avg: ReviewAvgAggregateOutputType | null
@@ -280,9 +258,7 @@ export type ReviewWhereInput = {
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
   photoUrl?: Prisma.StringNullableFilter<"Review"> | string | null
   isVisible?: Prisma.BoolFilter<"Review"> | boolean
-  userLatAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
-  userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
-  qrCodeUsed?: Prisma.StringNullableFilter<"Review"> | string | null
+  verificationMethod?: Prisma.StringNullableFilter<"Review"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   replies?: Prisma.ReviewReplyListRelationFilter
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
@@ -297,9 +273,7 @@ export type ReviewOrderByWithRelationInput = {
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isVisible?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
-  qrCodeUsed?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   replies?: Prisma.ReviewReplyOrderByRelationAggregateInput
   provider?: Prisma.ProviderOrderByWithRelationInput
@@ -317,9 +291,7 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
   photoUrl?: Prisma.StringNullableFilter<"Review"> | string | null
   isVisible?: Prisma.BoolFilter<"Review"> | boolean
-  userLatAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
-  userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
-  qrCodeUsed?: Prisma.StringNullableFilter<"Review"> | string | null
+  verificationMethod?: Prisma.StringNullableFilter<"Review"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   replies?: Prisma.ReviewReplyListRelationFilter
   provider?: Prisma.XOR<Prisma.ProviderScalarRelationFilter, Prisma.ProviderWhereInput>
@@ -334,9 +306,7 @@ export type ReviewOrderByWithAggregationInput = {
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   photoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isVisible?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrderInput | Prisma.SortOrder
-  qrCodeUsed?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ReviewCountOrderByAggregateInput
   _avg?: Prisma.ReviewAvgOrderByAggregateInput
@@ -356,9 +326,7 @@ export type ReviewScalarWhereWithAggregatesInput = {
   comment?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
   photoUrl?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
   isVisible?: Prisma.BoolWithAggregatesFilter<"Review"> | boolean
-  userLatAtReview?: Prisma.FloatNullableWithAggregatesFilter<"Review"> | number | null
-  userLngAtReview?: Prisma.FloatNullableWithAggregatesFilter<"Review"> | number | null
-  qrCodeUsed?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
+  verificationMethod?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
 }
 
@@ -367,9 +335,7 @@ export type ReviewCreateInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
   provider: Prisma.ProviderCreateNestedOneWithoutReviewsInput
@@ -384,9 +350,7 @@ export type ReviewUncheckedCreateInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   replies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutReviewInput
 }
@@ -396,9 +360,7 @@ export type ReviewUpdateInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutReviewsNestedInput
@@ -413,9 +375,7 @@ export type ReviewUncheckedUpdateInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutReviewNestedInput
 }
@@ -428,9 +388,7 @@ export type ReviewCreateManyInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
 }
 
@@ -439,9 +397,7 @@ export type ReviewUpdateManyMutationInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -453,9 +409,7 @@ export type ReviewUncheckedUpdateManyInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -477,9 +431,7 @@ export type ReviewCountOrderByAggregateInput = {
   comment?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
   isVisible?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrder
-  qrCodeUsed?: Prisma.SortOrder
+  verificationMethod?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -488,8 +440,6 @@ export type ReviewAvgOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrder
 }
 
 export type ReviewMaxOrderByAggregateInput = {
@@ -500,9 +450,7 @@ export type ReviewMaxOrderByAggregateInput = {
   comment?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
   isVisible?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrder
-  qrCodeUsed?: Prisma.SortOrder
+  verificationMethod?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -514,9 +462,7 @@ export type ReviewMinOrderByAggregateInput = {
   comment?: Prisma.SortOrder
   photoUrl?: Prisma.SortOrder
   isVisible?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrder
-  qrCodeUsed?: Prisma.SortOrder
+  verificationMethod?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -525,8 +471,6 @@ export type ReviewSumOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
-  userLatAtReview?: Prisma.SortOrder
-  userLngAtReview?: Prisma.SortOrder
 }
 
 export type ReviewScalarRelationFilter = {
@@ -637,9 +581,7 @@ export type ReviewCreateWithoutUserInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
   provider: Prisma.ProviderCreateNestedOneWithoutReviewsInput
@@ -652,9 +594,7 @@ export type ReviewUncheckedCreateWithoutUserInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   replies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutReviewInput
 }
@@ -696,9 +636,7 @@ export type ReviewScalarWhereInput = {
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
   photoUrl?: Prisma.StringNullableFilter<"Review"> | string | null
   isVisible?: Prisma.BoolFilter<"Review"> | boolean
-  userLatAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
-  userLngAtReview?: Prisma.FloatNullableFilter<"Review"> | number | null
-  qrCodeUsed?: Prisma.StringNullableFilter<"Review"> | string | null
+  verificationMethod?: Prisma.StringNullableFilter<"Review"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
 }
 
@@ -707,9 +645,7 @@ export type ReviewCreateWithoutProviderInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   replies?: Prisma.ReviewReplyCreateNestedManyWithoutReviewInput
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
@@ -722,9 +658,7 @@ export type ReviewUncheckedCreateWithoutProviderInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   replies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutReviewInput
 }
@@ -760,9 +694,7 @@ export type ReviewCreateWithoutRepliesInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
   provider: Prisma.ProviderCreateNestedOneWithoutReviewsInput
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
@@ -776,9 +708,7 @@ export type ReviewUncheckedCreateWithoutRepliesInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
 }
 
@@ -803,9 +733,7 @@ export type ReviewUpdateWithoutRepliesInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   provider?: Prisma.ProviderUpdateOneRequiredWithoutReviewsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
@@ -819,9 +747,7 @@ export type ReviewUncheckedUpdateWithoutRepliesInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -832,9 +758,7 @@ export type ReviewCreateManyUserInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
 }
 
@@ -843,9 +767,7 @@ export type ReviewUpdateWithoutUserInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
   provider?: Prisma.ProviderUpdateOneRequiredWithoutReviewsNestedInput
@@ -858,9 +780,7 @@ export type ReviewUncheckedUpdateWithoutUserInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutReviewNestedInput
 }
@@ -872,9 +792,7 @@ export type ReviewUncheckedUpdateManyWithoutUserInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -885,9 +803,7 @@ export type ReviewCreateManyProviderInput = {
   comment?: string | null
   photoUrl?: string | null
   isVisible?: boolean
-  userLatAtReview?: number | null
-  userLngAtReview?: number | null
-  qrCodeUsed?: string | null
+  verificationMethod?: string | null
   createdAt?: Date | string
 }
 
@@ -896,9 +812,7 @@ export type ReviewUpdateWithoutProviderInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replies?: Prisma.ReviewReplyUpdateManyWithoutReviewNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
@@ -911,9 +825,7 @@ export type ReviewUncheckedUpdateWithoutProviderInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutReviewNestedInput
 }
@@ -925,9 +837,7 @@ export type ReviewUncheckedUpdateManyWithoutProviderInput = {
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  userLatAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  userLngAtReview?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  qrCodeUsed?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -970,9 +880,7 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   comment?: boolean
   photoUrl?: boolean
   isVisible?: boolean
-  userLatAtReview?: boolean
-  userLngAtReview?: boolean
-  qrCodeUsed?: boolean
+  verificationMethod?: boolean
   createdAt?: boolean
   replies?: boolean | Prisma.Review$repliesArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
@@ -988,9 +896,7 @@ export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   comment?: boolean
   photoUrl?: boolean
   isVisible?: boolean
-  userLatAtReview?: boolean
-  userLngAtReview?: boolean
-  qrCodeUsed?: boolean
+  verificationMethod?: boolean
   createdAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1004,9 +910,7 @@ export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   comment?: boolean
   photoUrl?: boolean
   isVisible?: boolean
-  userLatAtReview?: boolean
-  userLngAtReview?: boolean
-  qrCodeUsed?: boolean
+  verificationMethod?: boolean
   createdAt?: boolean
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1020,13 +924,11 @@ export type ReviewSelectScalar = {
   comment?: boolean
   photoUrl?: boolean
   isVisible?: boolean
-  userLatAtReview?: boolean
-  userLngAtReview?: boolean
-  qrCodeUsed?: boolean
+  verificationMethod?: boolean
   createdAt?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "userId" | "rating" | "comment" | "photoUrl" | "isVisible" | "userLatAtReview" | "userLngAtReview" | "qrCodeUsed" | "createdAt", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "userId" | "rating" | "comment" | "photoUrl" | "isVisible" | "verificationMethod" | "createdAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   replies?: boolean | Prisma.Review$repliesArgs<ExtArgs>
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
@@ -1057,9 +959,11 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     comment: string | null
     photoUrl: string | null
     isVisible: boolean
-    userLatAtReview: number | null
-    userLngAtReview: number | null
-    qrCodeUsed: string | null
+    /**
+     * Cómo se validó la interacción cliente-proveedor antes de la reseña:
+     * 'AUCTION' | 'CONTACT' | 'CHAT'. null en reseñas previas al sistema.
+     */
+    verificationMethod: string | null
     createdAt: Date
   }, ExtArgs["result"]["review"]>
   composites: {}
@@ -1494,9 +1398,7 @@ export interface ReviewFieldRefs {
   readonly comment: Prisma.FieldRef<"Review", 'String'>
   readonly photoUrl: Prisma.FieldRef<"Review", 'String'>
   readonly isVisible: Prisma.FieldRef<"Review", 'Boolean'>
-  readonly userLatAtReview: Prisma.FieldRef<"Review", 'Float'>
-  readonly userLngAtReview: Prisma.FieldRef<"Review", 'Float'>
-  readonly qrCodeUsed: Prisma.FieldRef<"Review", 'String'>
+  readonly verificationMethod: Prisma.FieldRef<"Review", 'String'>
   readonly createdAt: Prisma.FieldRef<"Review", 'DateTime'>
 }
     

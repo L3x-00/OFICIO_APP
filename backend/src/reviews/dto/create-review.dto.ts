@@ -39,20 +39,6 @@ export class CreateReviewDto {
   @IsString()
   @MaxLength(2000)
   photoUrl?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  userLatAtReview?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  userLngAtReview?: number;
-
-  @IsOptional()
-  @IsString()
-  qrCodeUsed?: string;
 }
 
 export class ModerateReviewDto {

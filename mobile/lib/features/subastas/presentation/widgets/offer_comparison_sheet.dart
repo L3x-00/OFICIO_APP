@@ -104,16 +104,26 @@ class OfferComparisonSheet extends StatelessWidget {
                     onAccept: () async {
                       final confirm = await _confirmDialog(context, pendingOffers[i]);
                       if (confirm != true || !context.mounted) return;
-                      final ok = await context
-                          .read<SubastasProvider>()
-                          .acceptOffer(pendingOffers[i].id, request.id);
-                      if (ok && context.mounted) {
+                      final subastas = context.read<SubastasProvider>();
+                      final ok = await subastas.acceptOffer(
+                          pendingOffers[i].id, request.id);
+                      if (!context.mounted) return;
+                      if (ok) {
                         Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
                                 '¡Oferta aceptada! ${pendingOffers[i].providerName} fue notificado.'),
                             backgroundColor: AppColors.available,
+                          ),
+                        );
+                      } else {
+                        // Antes un fallo era silencioso ("no sucede nada").
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(subastas.error ??
+                                'No se pudo aceptar la oferta. Intenta de nuevo.'),
+                            backgroundColor: AppColors.busy,
                           ),
                         );
                       }
@@ -131,7 +141,11 @@ class OfferComparisonSheet extends StatelessWidget {
     final c = context.colors;
     return showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      // El dialog vive en el root navigator; los botones DEBEN usar el
+      // context del dialog (`dialogCtx`). Antes usaban el context del
+      // sheet → el pop cerraba el SHEET en vez del dialog y el `await`
+      // del flujo de aceptar quedaba colgado → "el botón no hace nada".
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         title: Text('¿Confirmar elección?',
             style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w700)),
@@ -142,11 +156,11 @@ class OfferComparisonSheet extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: Text('Cancelar', style: TextStyle(color: c.textMuted)),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.available,
               foregroundColor: Colors.white,

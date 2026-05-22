@@ -159,14 +159,10 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Future<void> _handleSocialLogin(SocialProvider provider) async {
+  Future<void> _handleGoogleLogin() async {
     final auth = context.read<AuthProvider>();
 
-    final outcome = provider == SocialProvider.google
-    ? await SocialAuthService.signInWithGoogle()
-    : provider == SocialProvider.facebook
-        ? await SocialAuthService.signInWithFacebook()
-        : await SocialAuthService.signInWithTikTok();
+    final outcome = await SocialAuthService.signInWithGoogle();
 
     if (!mounted) return;
 
@@ -323,23 +319,11 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 const SizedBox(height: 28),
 
-                // ── Botones de login social ──────────────────
+                // ── Botón de inicio de sesión con Google ─────
                 SocialLoginButton(
                   provider: SocialProvider.google,
-                  onTap: () => _handleSocialLogin(SocialProvider.google),
+                  onTap: () => _handleGoogleLogin(),
                 ),
-                if (isRegister) ...[
-                  const SizedBox(height: 10),
-                  SocialLoginButton(
-                    provider: SocialProvider.facebook,
-                    onTap: () => _handleSocialLogin(SocialProvider.facebook),
-                  ),
-                  const SizedBox(height: 10),
-                  SocialLoginButton(
-                    provider: SocialProvider.tiktok,
-                    onTap: () => _handleSocialLogin(SocialProvider.tiktok),
-                  ),
-                ],
                 const SizedBox(height: 20),
                 // Divisor
                 Row(

@@ -55,6 +55,8 @@ export type UserMinAggregateOutputType = {
   isEmailVerified: boolean | null
   fcmToken: string | null
   coins: number | null
+  hasUsedTrial: boolean | null
+  deletedAt: Date | null
   lastIp: string | null
   lastLoginAt: Date | null
 }
@@ -78,6 +80,8 @@ export type UserMaxAggregateOutputType = {
   isEmailVerified: boolean | null
   fcmToken: string | null
   coins: number | null
+  hasUsedTrial: boolean | null
+  deletedAt: Date | null
   lastIp: string | null
   lastLoginAt: Date | null
 }
@@ -101,6 +105,8 @@ export type UserCountAggregateOutputType = {
   isEmailVerified: number
   fcmToken: number
   coins: number
+  hasUsedTrial: number
+  deletedAt: number
   lastIp: number
   lastLoginAt: number
   _all: number
@@ -136,6 +142,8 @@ export type UserMinAggregateInputType = {
   isEmailVerified?: true
   fcmToken?: true
   coins?: true
+  hasUsedTrial?: true
+  deletedAt?: true
   lastIp?: true
   lastLoginAt?: true
 }
@@ -159,6 +167,8 @@ export type UserMaxAggregateInputType = {
   isEmailVerified?: true
   fcmToken?: true
   coins?: true
+  hasUsedTrial?: true
+  deletedAt?: true
   lastIp?: true
   lastLoginAt?: true
 }
@@ -182,6 +192,8 @@ export type UserCountAggregateInputType = {
   isEmailVerified?: true
   fcmToken?: true
   coins?: true
+  hasUsedTrial?: true
+  deletedAt?: true
   lastIp?: true
   lastLoginAt?: true
   _all?: true
@@ -292,6 +304,8 @@ export type UserGroupByOutputType = {
   isEmailVerified: boolean
   fcmToken: string | null
   coins: number
+  hasUsedTrial: boolean
+  deletedAt: Date | null
   lastIp: string | null
   lastLoginAt: Date | null
   _count: UserCountAggregateOutputType | null
@@ -338,6 +352,8 @@ export type UserWhereInput = {
   isEmailVerified?: Prisma.BoolFilter<"User"> | boolean
   fcmToken?: Prisma.StringNullableFilter<"User"> | string | null
   coins?: Prisma.IntFilter<"User"> | number
+  hasUsedTrial?: Prisma.BoolFilter<"User"> | boolean
+  deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastIp?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   chatsAsClient?: Prisma.ChatRoomListRelationFilter
@@ -378,6 +394,8 @@ export type UserOrderByWithRelationInput = {
   isEmailVerified?: Prisma.SortOrder
   fcmToken?: Prisma.SortOrderInput | Prisma.SortOrder
   coins?: Prisma.SortOrder
+  hasUsedTrial?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastIp?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   chatsAsClient?: Prisma.ChatRoomOrderByRelationAggregateInput
@@ -421,6 +439,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   isEmailVerified?: Prisma.BoolFilter<"User"> | boolean
   fcmToken?: Prisma.StringNullableFilter<"User"> | string | null
   coins?: Prisma.IntFilter<"User"> | number
+  hasUsedTrial?: Prisma.BoolFilter<"User"> | boolean
+  deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastIp?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   chatsAsClient?: Prisma.ChatRoomListRelationFilter
@@ -461,6 +481,8 @@ export type UserOrderByWithAggregationInput = {
   isEmailVerified?: Prisma.SortOrder
   fcmToken?: Prisma.SortOrderInput | Prisma.SortOrder
   coins?: Prisma.SortOrder
+  hasUsedTrial?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastIp?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -492,6 +514,8 @@ export type UserScalarWhereWithAggregatesInput = {
   isEmailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   fcmToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   coins?: Prisma.IntWithAggregatesFilter<"User"> | number
+  hasUsedTrial?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   lastIp?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
@@ -514,6 +538,8 @@ export type UserCreateInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -554,6 +580,8 @@ export type UserUncheckedCreateInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -593,6 +621,8 @@ export type UserUpdateInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -633,6 +663,8 @@ export type UserUncheckedUpdateInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -673,6 +705,8 @@ export type UserCreateManyInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
 }
@@ -695,6 +729,8 @@ export type UserUpdateManyMutationInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -718,6 +754,8 @@ export type UserUncheckedUpdateManyInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -741,6 +779,8 @@ export type UserCountOrderByAggregateInput = {
   isEmailVerified?: Prisma.SortOrder
   fcmToken?: Prisma.SortOrder
   coins?: Prisma.SortOrder
+  hasUsedTrial?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   lastIp?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
 }
@@ -769,6 +809,8 @@ export type UserMaxOrderByAggregateInput = {
   isEmailVerified?: Prisma.SortOrder
   fcmToken?: Prisma.SortOrder
   coins?: Prisma.SortOrder
+  hasUsedTrial?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   lastIp?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
 }
@@ -792,6 +834,8 @@ export type UserMinOrderByAggregateInput = {
   isEmailVerified?: Prisma.SortOrder
   fcmToken?: Prisma.SortOrder
   coins?: Prisma.SortOrder
+  hasUsedTrial?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
   lastIp?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
 }
@@ -1094,6 +1138,8 @@ export type UserCreateWithoutOtpCodesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -1133,6 +1179,8 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -1187,6 +1235,8 @@ export type UserUpdateWithoutOtpCodesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -1226,6 +1276,8 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -1264,6 +1316,8 @@ export type UserCreateWithoutRefreshTokensInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -1303,6 +1357,8 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -1357,6 +1413,8 @@ export type UserUpdateWithoutRefreshTokensInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -1396,6 +1454,8 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -1434,6 +1494,8 @@ export type UserCreateWithoutProvidersInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -1473,6 +1535,8 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -1527,6 +1591,8 @@ export type UserUpdateWithoutProvidersInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -1566,6 +1632,8 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -1604,6 +1672,8 @@ export type UserCreateWithoutReviewsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -1643,6 +1713,8 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -1697,6 +1769,8 @@ export type UserUpdateWithoutReviewsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -1736,6 +1810,8 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -1774,6 +1850,8 @@ export type UserCreateWithoutReviewRepliesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -1813,6 +1891,8 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -1867,6 +1947,8 @@ export type UserUpdateWithoutReviewRepliesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -1906,6 +1988,8 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -1944,6 +2028,8 @@ export type UserCreateWithoutFavoritesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -1983,6 +2069,8 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -2037,6 +2125,8 @@ export type UserUpdateWithoutFavoritesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -2076,6 +2166,8 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -2114,6 +2206,8 @@ export type UserCreateWithoutRecommendationsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -2153,6 +2247,8 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -2207,6 +2303,8 @@ export type UserUpdateWithoutRecommendationsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -2246,6 +2344,8 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -2284,6 +2384,8 @@ export type UserCreateWithoutProviderReportsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -2323,6 +2425,8 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -2377,6 +2481,8 @@ export type UserUpdateWithoutProviderReportsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -2416,6 +2522,8 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -2454,6 +2562,8 @@ export type UserCreateWithoutPlatformIssuesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -2493,6 +2603,8 @@ export type UserUncheckedCreateWithoutPlatformIssuesInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -2547,6 +2659,8 @@ export type UserUpdateWithoutPlatformIssuesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -2586,6 +2700,8 @@ export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -2624,6 +2740,8 @@ export type UserCreateWithoutServiceRequestsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -2663,6 +2781,8 @@ export type UserUncheckedCreateWithoutServiceRequestsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -2717,6 +2837,8 @@ export type UserUpdateWithoutServiceRequestsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -2756,6 +2878,8 @@ export type UserUncheckedUpdateWithoutServiceRequestsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -2794,6 +2918,8 @@ export type UserCreateWithoutPenaltyInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -2833,6 +2959,8 @@ export type UserUncheckedCreateWithoutPenaltyInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -2887,6 +3015,8 @@ export type UserUpdateWithoutPenaltyInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -2926,6 +3056,8 @@ export type UserUncheckedUpdateWithoutPenaltyInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -2964,6 +3096,8 @@ export type UserCreateWithoutReferralCodeInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -3003,6 +3137,8 @@ export type UserUncheckedCreateWithoutReferralCodeInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -3057,6 +3193,8 @@ export type UserUpdateWithoutReferralCodeInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -3096,6 +3234,8 @@ export type UserUncheckedUpdateWithoutReferralCodeInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -3134,6 +3274,8 @@ export type UserCreateWithoutReferralReceivedInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -3173,6 +3315,8 @@ export type UserUncheckedCreateWithoutReferralReceivedInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -3216,6 +3360,8 @@ export type UserCreateWithoutReferralsSentInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -3255,6 +3401,8 @@ export type UserUncheckedCreateWithoutReferralsSentInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -3309,6 +3457,8 @@ export type UserUpdateWithoutReferralReceivedInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -3348,6 +3498,8 @@ export type UserUncheckedUpdateWithoutReferralReceivedInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -3397,6 +3549,8 @@ export type UserUpdateWithoutReferralsSentInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -3436,6 +3590,8 @@ export type UserUncheckedUpdateWithoutReferralsSentInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -3474,6 +3630,8 @@ export type UserCreateWithoutRedemptionsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -3513,6 +3671,8 @@ export type UserUncheckedCreateWithoutRedemptionsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -3567,6 +3727,8 @@ export type UserUpdateWithoutRedemptionsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -3606,6 +3768,8 @@ export type UserUncheckedUpdateWithoutRedemptionsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -3644,6 +3808,8 @@ export type UserCreateWithoutChatsAsClientInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
@@ -3683,6 +3849,8 @@ export type UserUncheckedCreateWithoutChatsAsClientInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
@@ -3737,6 +3905,8 @@ export type UserUpdateWithoutChatsAsClientInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
@@ -3776,6 +3946,8 @@ export type UserUncheckedUpdateWithoutChatsAsClientInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
@@ -3814,6 +3986,8 @@ export type UserCreateWithoutOfferReportsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
@@ -3853,6 +4027,8 @@ export type UserUncheckedCreateWithoutOfferReportsInput = {
   isEmailVerified?: boolean
   fcmToken?: string | null
   coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
   lastIp?: string | null
   lastLoginAt?: Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
@@ -3907,6 +4083,8 @@ export type UserUpdateWithoutOfferReportsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
@@ -3946,6 +4124,8 @@ export type UserUncheckedUpdateWithoutOfferReportsInput = {
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
@@ -4133,6 +4313,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   isEmailVerified?: boolean
   fcmToken?: boolean
   coins?: boolean
+  hasUsedTrial?: boolean
+  deletedAt?: boolean
   lastIp?: boolean
   lastLoginAt?: boolean
   chatsAsClient?: boolean | Prisma.User$chatsAsClientArgs<ExtArgs>
@@ -4174,6 +4356,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isEmailVerified?: boolean
   fcmToken?: boolean
   coins?: boolean
+  hasUsedTrial?: boolean
+  deletedAt?: boolean
   lastIp?: boolean
   lastLoginAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -4197,6 +4381,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isEmailVerified?: boolean
   fcmToken?: boolean
   coins?: boolean
+  hasUsedTrial?: boolean
+  deletedAt?: boolean
   lastIp?: boolean
   lastLoginAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -4220,11 +4406,13 @@ export type UserSelectScalar = {
   isEmailVerified?: boolean
   fcmToken?: boolean
   coins?: boolean
+  hasUsedTrial?: boolean
+  deletedAt?: boolean
   lastIp?: boolean
   lastLoginAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "isActive" | "createdAt" | "updatedAt" | "department" | "province" | "district" | "firebaseUid" | "isEmailVerified" | "fcmToken" | "coins" | "lastIp" | "lastLoginAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "phone" | "passwordHash" | "role" | "firstName" | "lastName" | "avatarUrl" | "isActive" | "createdAt" | "updatedAt" | "department" | "province" | "district" | "firebaseUid" | "isEmailVerified" | "fcmToken" | "coins" | "hasUsedTrial" | "deletedAt" | "lastIp" | "lastLoginAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   chatsAsClient?: boolean | Prisma.User$chatsAsClientArgs<ExtArgs>
   redemptions?: boolean | Prisma.User$redemptionsArgs<ExtArgs>
@@ -4288,6 +4476,19 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     isEmailVerified: boolean
     fcmToken: string | null
     coins: number
+    /**
+     * true cuando el usuario ya consumió el mes de cortesía (ESTANDAR).
+     * Se marca al reactivar una cuenta soft-deleted — un re-registro NO
+     * vuelve a recibir el mes de gracia (anti freemium abuse).
+     */
+    hasUsedTrial: boolean
+    /**
+     * Fecha de auto-eliminación (soft delete por el propio usuario).
+     * null = cuenta no eliminada. Distingue el soft-delete del usuario
+     * de un baneo del admin (que solo pone isActive=false sin deletedAt),
+     * para que un re-registro NO reactive una cuenta suspendida.
+     */
+    deletedAt: Date | null
     lastIp: string | null
     lastLoginAt: Date | null
   }, ExtArgs["result"]["user"]>
@@ -4748,6 +4949,8 @@ export interface UserFieldRefs {
   readonly isEmailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly fcmToken: Prisma.FieldRef<"User", 'String'>
   readonly coins: Prisma.FieldRef<"User", 'Int'>
+  readonly hasUsedTrial: Prisma.FieldRef<"User", 'Boolean'>
+  readonly deletedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly lastIp: Prisma.FieldRef<"User", 'String'>
   readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
 }
