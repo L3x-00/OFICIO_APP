@@ -3,7 +3,7 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../providers_list/presentation/widgets/upsell_sheet.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 /// Preview de cómo los clientes ven los botones de contacto en la tarjeta
 /// del proveedor.
 ///
@@ -80,11 +80,13 @@ class HomeContactPreview extends StatelessWidget {
               children: [
                 Expanded(
                   child: ContactPreviewIcon(
-                    icon: Icons.forum_rounded,
-                    color: AppColors.amber,
-                    locked: false,
-                    onTap: null, // chat siempre disponible — sin acción aquí
-                  ),
+                          svgAsset: 'assets/icons/whatsapp.svg',
+                          color: AppColors.whatsapp,
+                          locked: !isPaid,
+                          onTap: isPaid
+                              ? null
+                              : () => UpsellContactSheet.show(context, channel: 'WhatsApp'),
+                        ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -122,17 +124,20 @@ class HomeContactPreview extends StatelessWidget {
 /// se invoca `onTap` (típicamente abre el upsell sheet). Cuando no está
 /// bloqueado, se muestra activo en su color de marca.
 class ContactPreviewIcon extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;   // ← nuevo: ruta del SVG
   final Color color;
   final bool locked;
   final VoidCallback? onTap;
+
   const ContactPreviewIcon({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.color,
     required this.locked,
     required this.onTap,
-  });
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +155,21 @@ class ContactPreviewIcon extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(icon, color: dimmed, size: 22),
+            // ── Render condicional: SVG con colores originales o ícono ──
+            if (svgAsset != null)
+              SvgPicture.asset(
+                svgAsset!,
+                width: 22,
+                height: 22,
+                // Si está bloqueado, aplica un tinte gris; si no, usa
+                // los colores originales del SVG (null = sin filtro).
+                colorFilter: locked
+                    ? ColorFilter.mode(dimmed, BlendMode.srcIn)
+                    : null,
+              )
+            else
+              Icon(icon, color: dimmed, size: 22),
+
             if (locked)
               Positioned(
                 right: -2,

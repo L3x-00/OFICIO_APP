@@ -281,11 +281,44 @@ class ChatProvider extends ChangeNotifier {
       );
       _replaceTempMessage(roomId, tempId, saved);
     } catch (e) {
-      // Marca el optimista como fallido (lo dejamos en sending para reintento futuro)
+      // El envío falló: NO borramos el mensaje — lo dejamos visible en
+      // estado `failed` para que el usuario pueda tocarlo y reintentar.
+      // Antes se eliminaba con _removeTempMessage → el user veía sus
+      // mensajes "desaparecer" al enviarlos.
       debugPrint('[Chat] sendMessage error: $e');
-      // Por simplicidad MVP, removemos el mensaje fallido y mostramos error
-      _removeTempMessage(roomId, tempId);
-      _error = 'No se pudo enviar el mensaje.';
+      _markTempFailed(roomId, tempId);
+      _error = 'No se pudo enviar el mensaje. Tócalo para reintentar.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Reintenta un mensaje que quedó en estado `failed`. Idempotente: si
+  /// el mensaje ya no existe o no está fallido, no hace nada.
+  Future<void> retryMessage(int roomId, String clientTempId) async {
+    final list = _messagesByRoom[roomId];
+    if (list == null) return;
+    final idx = list.indexWhere((m) => m.clientTempId == clientTempId);
+    if (idx == -1 || list[idx].status != MessageStatus.failed) return;
+
+    final senderId = _currentUserId;
+    if (senderId == null) return;
+
+    final msg = list[idx];
+    list[idx] = msg.copyWith(status: MessageStatus.sending);
+    notifyListeners();
+
+    try {
+      final saved = await _repo.sendMessage(
+        chatRoomId: roomId,
+        senderId:   senderId,
+        content:    msg.content,
+      );
+      _replaceTempMessage(roomId, clientTempId, saved);
+    } catch (e) {
+      debugPrint('[Chat] retryMessage error: $e');
+      _markTempFailed(roomId, clientTempId);
+      _error = 'No se pudo enviar el mensaje. Tócalo para reintentar.';
     } finally {
       notifyListeners();
     }
@@ -410,10 +443,15 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  void _removeTempMessage(int roomId, String tempId) {
+  /// Marca el mensaje optimista como `failed` (no lo borra) para que la
+  /// UI lo muestre con opción de reintento.
+  void _markTempFailed(int roomId, String tempId) {
     final list = _messagesByRoom[roomId];
     if (list == null) return;
-    list.removeWhere((m) => m.clientTempId == tempId);
+    final idx = list.indexWhere((m) => m.clientTempId == tempId);
+    if (idx != -1) {
+      list[idx] = list[idx].copyWith(status: MessageStatus.failed);
+    }
   }
 
   void clearError() {

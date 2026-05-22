@@ -128,7 +128,8 @@ class JoinUsInitialView extends StatelessWidget {
 
           ...kJoinUsBenefits.map(
             (b) => BenefitRow(
-              icon: b['icon'] as IconData,
+              icon: b['icon'] as IconData?,       // ← Cambiar a opcional (añadir ?)
+              svgAsset: b['svgAsset'] as String?, // ← Añadir esta línea
               title: b['title'] as String,
               subtitle: b['subtitle'] as String,
               color: b['color'] as Color,

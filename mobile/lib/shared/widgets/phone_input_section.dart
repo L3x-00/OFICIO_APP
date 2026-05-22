@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_theme_colors.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 // Países comunes para Latinoamérica / España
 const _kCountries = [
   ('+58', 'Venezuela 🇻🇪'),
@@ -144,15 +144,53 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
               )
             : _PeruField(ctrl: _phoneCtrl, hint: '987 654 321', c: c),
         const SizedBox(height: 6),
-        _ForeignToggle(
-          value: _phoneForeign,
-          label: 'Número de otro país',
-          c: c,
-          onChanged: (v) => setState(() {
-            _phoneForeign = v;
+                // Reemplaza tu _ForeignToggle por esto:
+        GestureDetector(
+          onTap: () => setState(() {
+            _phoneForeign = !_phoneForeign;
             _phoneCtrl.clear();
             _notify();
           }),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: _phoneForeign 
+                  ? AppColors.primary.withValues(alpha: 0.08) 
+                  : c.bgInput,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _phoneForeign 
+                    ? AppColors.primary.withValues(alpha: 0.4) 
+                    : c.border,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.public_rounded,
+                  size: 16,
+                  color: _phoneForeign ? AppColors.primary : c.textMuted,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Número de otro país',
+                  style: TextStyle(
+                    color: _phoneForeign ? AppColors.primary : c.textSecondary,
+                    fontSize: 12.5,
+                    fontWeight: _phoneForeign ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  _phoneForeign ? Icons.check_circle_rounded : Icons.circle_outlined,
+                  size: 16,
+                  color: _phoneForeign ? AppColors.primary : c.textMuted,
+                ),
+              ],
+            ),
+          ),
         ),
 
         const SizedBox(height: 16),
@@ -170,7 +208,7 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
         // ── Campo WhatsApp (si diferente) ─────────────────
         if (!_sameNumber) ...[
           const SizedBox(height: 12),
-          _FieldLabel(icon: Icons.chat_rounded, label: 'Número de WhatsApp', c: c),
+          _FieldLabel(svgAsset: 'assets/icons/whatsapp.svg', label: 'Número de WhatsApp', c: c),
           const SizedBox(height: 6),
           _wapForeign
               ? _ForeignField(
@@ -200,15 +238,25 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
 // ─────────────────────────────────────────────────────────
 
 class _FieldLabel extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;       // ← Ahora es opcional
+  final String? svgAsset;     // ← Nuevo: ruta del SVG
   final String label;
   final AppThemeColors c;
-  const _FieldLabel({required this.icon, required this.label, required this.c});
+  const _FieldLabel({this.icon, this.svgAsset, required this.label, required this.c});
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Icon(icon, size: 14, color: AppColors.amber),
+      if (svgAsset != null)
+        SvgPicture.asset(
+          svgAsset!, 
+          width: 14, 
+          height: 14,
+          // Mantenemos el color ámbar para que haga juego con el ícono de teléfono
+          colorFilter: const ColorFilter.mode(AppColors.amber, BlendMode.srcIn),
+        )
+      else
+        Icon(icon, size: 14, color: AppColors.amber),
       const SizedBox(width: 6),
       Text(label, style: TextStyle(color: c.textMuted, fontSize: 12, fontWeight: FontWeight.w500)),
     ],
@@ -435,10 +483,15 @@ class _SameNumberToggle extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.chat_rounded,
-              size: 16,
-              color: value ? AppColors.amber : c.textMuted,
+              SvgPicture.asset(
+              'assets/icons/whatsapp.svg',
+              width: 16,
+              height: 16,
+              // Si está activo (value = true) usa los colores originales del SVG.
+              // Si está inactivo (value = false) lo tiñe de gris (textMuted).
+              colorFilter: value
+                  ? null
+                  : ColorFilter.mode(c.textMuted, BlendMode.srcIn),
             ),
             const SizedBox(width: 10),
             Expanded(

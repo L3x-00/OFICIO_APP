@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus, NotificationType } from '../generated/client/enums.js';
+import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
@@ -716,7 +716,7 @@ async updateProvider(
       await this.prisma.adminNotification.create({
         data: {
           providerId:        id,
-          type:              NotificationType.PLAN_APROBADO,
+          type:              'PLAN_APROBADO',
           title,
           message:           body,
           isRead:            false,
@@ -1153,8 +1153,15 @@ async updateProvider(
   async getNotifications(page = 1, limit = 20) {
     const skip  = (page - 1) * limit;
 
+    // El panel admin solo lista las notificaciones de proveedores
+    // (las que tienen providerId). Las dirigidas a usuarios-cliente
+    // (referidos, ofertas, etc., con providerId null) NO se muestran
+    // aquí — son del inbox personal de cada usuario, no del admin.
+    const where = { providerId: { not: null } };
+
     const [notifications, total, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
+        where,
         skip,
         take: limit,
         include: {
@@ -1164,8 +1171,8 @@ async updateProvider(
         },
         orderBy: { sentAt: 'desc' },
       }),
-      this.prisma.adminNotification.count(),
-      this.prisma.adminNotification.count({ where: { isRead: false } }),
+      this.prisma.adminNotification.count({ where }),
+      this.prisma.adminNotification.count({ where: { ...where, isRead: false } }),
     ]);
 
     return { data: notifications, total, page, lastPage: Math.ceil(total / limit), unreadCount };
@@ -1515,7 +1522,7 @@ async updateProvider(
     await this.prisma.adminNotification.create({
       data: {
         providerId:        req.providerId,
-        type:              NotificationType.PLAN_APROBADO,
+        type:              'PLAN_APROBADO',
         title:             `¡Plan ${req.plan} aprobado!`,
         message:           `¡Felicidades! Tu solicitud para el plan ${req.plan} ha sido aprobada. Ya puedes disfrutar de todos los beneficios.`,
         isRead:            false,
@@ -1564,7 +1571,7 @@ async updateProvider(
     await this.prisma.adminNotification.create({
       data: {
         providerId:        req.providerId,
-        type:              NotificationType.PLAN_RECHAZADO,
+        type:              'PLAN_RECHAZADO',
         title:             `Solicitud de plan ${req.plan} rechazada`,
         message:           msg,
         isRead:            false,

@@ -184,8 +184,8 @@ model Provider {
   whatsappBiz          String?
   slug                 String?                   @unique
   slugEditedAt         DateTime?
-  location_geog        Unsupported("geography")? @default(dbgenerated("\nCASE\n    WHEN ((latitude IS NOT NULL) AND (longitude IS NOT NULL)) THEN (st_setsrid(st_makepoint(longitude, latitude), 4326))::geography\n    ELSE NULL::geography\nEND"))
-  search_tsv           Unsupported("tsvector")?  @default(dbgenerated("(setweight(to_tsvector('spanish'::regconfig, COALESCE(\"businessName\", ''::text)), 'A'::\"char\") || setweight(to_tsvector('spanish'::regconfig, COALESCE(description, ''::text)), 'B'::\"char\"))"))
+  location_geog        Unsupported("geography")?
+  search_tsv           Unsupported("tsvector")?
   notifications        AdminNotification[]
   chatsAsProvider      ChatRoom[]                @relation("ProviderChats")
   favorites            Favorite[]
@@ -369,17 +369,22 @@ model ProviderAnalytic {
 
 model AdminNotification {
   id                Int              @id @default(autoincrement())
-  providerId        Int
-  type              NotificationType
+  /// Nullable: las notificaciones dirigidas a un usuario-cliente (sin
+  /// perfil de proveedor) no tienen providerId — se ubican por targetUserId.
+  providerId        Int?
+  /// String libre (antes enum NotificationType): permite persistir
+  /// cualquier tipo de notificación (chat, referidos, ofertas, etc.).
+  type              String
   message           String
   isRead            Boolean          @default(false)
   sentAt            DateTime         @default(now())
   targetProfileType String?
   targetUserId      Int?
   title             String           @default("")
-  provider          Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider          Provider?        @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId, isRead])
+  @@index([targetUserId])
   @@map("admin_notifications")
 }
 
@@ -473,7 +478,7 @@ model ServiceRequest {
   expiresAt      DateTime
   createdAt      DateTime                  @default(now())
   updatedAt      DateTime                  @updatedAt
-  location_geog  Unsupported("geography")? @default(dbgenerated("\nCASE\n    WHEN ((latitude IS NOT NULL) AND (longitude IS NOT NULL)) THEN (st_setsrid(st_makepoint(longitude, latitude), 4326))::geography\n    ELSE NULL::geography\nEND"))
+    location_geog  Unsupported("geography")?
   offers         Offer[]
   category       Category                  @relation(fields: [categoryId], references: [id])
   user           User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -813,19 +818,6 @@ enum OfferReportReason {
   PRECIO_FALSO
   CONTENIDO_INAPROPIADO
   OTRO
-}
-
-enum NotificationType {
-  APROBADO
-  RECHAZADO
-  MAS_INFO
-  VERIFICACION_REVOCADA
-  PLAN_SOLICITADO
-  PLAN_APROBADO
-  PLAN_RECHAZADO
-  NEW_REVIEW
-  NUEVA_OPORTUNIDAD
-  OFERTA_ACEPTADA
 }
 
 enum ReferralStatus {

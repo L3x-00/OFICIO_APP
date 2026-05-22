@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 /// Lista de beneficios mostrada en la vista inicial del modal de unirse.
 const kJoinUsBenefits = [
   {
@@ -11,8 +11,8 @@ const kJoinUsBenefits = [
         'Tu servicio aparece en el mapa de tu localidad desde el día 1.',
     'color': AppColors.primary,
   },
-  {
-    'icon': Icons.chat_rounded,
+    {
+    'svgAsset': 'assets/icons/whatsapp.svg', // ← SVG de WhatsApp
     'title': 'Contacto directo',
     'subtitle':
         'Los clientes te escriben por WhatsApp o te llaman sin pasar por nadie.',
@@ -35,14 +35,16 @@ const kJoinUsBenefits = [
 
 /// Fila de beneficio (ícono circular + título + subtítulo).
 class BenefitRow extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;       // ← Ahora es opcional
+  final String? svgAsset;     // ← Nuevo: ruta del SVG
   final String title;
   final String subtitle;
   final Color color;
 
   const BenefitRow({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.title,
     required this.subtitle,
     required this.color,
@@ -63,7 +65,19 @@ class BenefitRow extends StatelessWidget {
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            // ── Render condicional ──
+            child: Center(
+              child: svgAsset != null
+                  ? SvgPicture.asset(
+                      svgAsset!,
+                      width: 20,
+                      height: 20,
+                      // Tu SVG ya tiene el verde de WhatsApp, 
+                      // así que null respeta sus colores originales.
+                      colorFilter: null, 
+                    )
+                  : Icon(icon, color: color, size: 20),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(

@@ -27,6 +27,21 @@ Future<List<GlobalKey>> _waitForKeys(
   }
 }
 
+/// Espera a que `ShowcaseManager.blockingModalActive` baje a `false`
+/// (modal de bienvenida cerrado) o hasta `maxMs`. El tutorial no debe
+/// arrancar mientras un modal cubre la pantalla — el spotlight quedaría
+/// detrás y el usuario lo marcaría como visto sin verlo.
+Future<void> _waitForBlockingModal({
+  int maxMs = 60000,
+  int pollMs = 150,
+}) async {
+  final start = DateTime.now();
+  while (ShowcaseManager.blockingModalActive) {
+    if (DateTime.now().difference(start).inMilliseconds >= maxMs) return;
+    await Future<void>.delayed(Duration(milliseconds: pollMs));
+  }
+}
+
 /// Tooltip custom reusable: title + description + botones "Omitir" /
 /// "Siguiente" o "Empezar" en el último paso. Cada widget target lo
 /// declara como `Showcase.withWidget(container: ShowcaseTooltipCard(...))`.
@@ -376,6 +391,10 @@ class _AutoStartState extends State<_AutoStart> {
         debugPrint('⚠️ _AutoStart abortado: sin keys vivas — reintentando en próximo build');
         return;
       }
+      // Esperar a que el modal de bienvenida (si lo hay) se cierre —
+      // el tutorial va DESPUÉS del welcome, no detrás de él.
+      await _waitForBlockingModal();
+      if (!mounted) return;
       _started = true;
       // Marcar como visto INMEDIATAMENTE al disparar — no esperar al
       // onFinish. Antes el tour se repetía si el user cerraba la app
@@ -633,6 +652,11 @@ class _AdminTabShowcaseState extends State<AdminTabShowcase> {
         debugPrint('⚠️ _AdminTabShowcase ${widget.tab} abortado: sin keys vivas — reintentando en próximo build');
         return;
       }
+
+      // Esperar a que cualquier modal de bienvenida del panel se cierre
+      // antes de lanzar el spotlight.
+      await _waitForBlockingModal();
+      if (!mounted) return;
 
       AdminShowcaseWrapper._of(context)?._registerActive(
         tab:          widget.tab,

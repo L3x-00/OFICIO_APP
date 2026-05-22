@@ -6,7 +6,6 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../showcase/showcase_data.dart';
 import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
-import '../widgets/welcome_provider_plan_modal.dart';
 import '../widgets/home/home_header.dart';
 import '../widgets/home/home_stat_cards.dart';
 import '../widgets/home/home_contact_preview.dart';
@@ -40,42 +39,18 @@ class PanelHomeTab extends StatefulWidget {
 class _PanelHomeTabState extends State<PanelHomeTab> {
   String get _providerType => widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
 
-  /// Flag local para no encolar múltiples diálogos si el provider cambia
-  /// varias veces tras el primer load (cambio de tab, switch de perfil).
-  bool _welcomeChecked = false;
-
   @override
   void initState() {
     super.initState();
+    // El modal de bienvenida del proveedor YA NO se dispara aquí.
+    // Antes aparecía recién al entrar al panel (2da vez) — ahora se
+    // muestra como mensaje emergente en la pantalla principal vía
+    // `_tryShowProviderApproval` en main.dart, igual que el aviso de
+    // eliminación de cuenta.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       await context.read<DashboardProvider>().loadDashboard(providerType: _providerType);
-      if (!mounted) return;
-      _maybeShowWelcome();
     });
-  }
-
-  /// Si el provider tiene el plan ESTANDAR de cortesía (GRACIA), abrimos
-  /// el modal de bienvenida una sola vez (persistido en SharedPreferences
-  /// por providerId).
-  Future<void> _maybeShowWelcome() async {
-    if (_welcomeChecked) return;
-    final dash = context.read<DashboardProvider>();
-    final p = dash.profile;
-    if (p == null) return;
-    final sub = p.subscription;
-    if (sub == null) return;
-    if (sub.plan != 'ESTANDAR' || sub.status != 'GRACIA') return;
-
-    _welcomeChecked = true;
-    final displayName = p.businessName.isNotEmpty
-        ? p.businessName
-        : (context.read<AuthProvider>().user?.firstName ?? '');
-    await WelcomeProviderPlanModal.showIfFirstTime(
-      context,
-      displayName: displayName,
-      providerId:  p.id,
-    );
   }
 
   @override

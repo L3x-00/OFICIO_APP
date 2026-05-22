@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus, SubscriptionPlan, NotificationType } from '../generated/client/enums.js';
+import { AvailabilityStatus, SubscriptionPlan } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 
@@ -124,18 +124,32 @@ export class ProviderProfileService {
     return this.prisma.provider.findFirst({ where: { userId } });
   }
 
+  /// Notificaciones del usuario: las dirigidas directamente a él
+  /// (targetUserId) + las de cualquiera de sus perfiles de proveedor.
+  /// Antes solo cargaba por providerId → un cliente puro nunca veía
+  /// historial y las notifs no sobrevivían al cierre de la app.
+  private async _myNotificationsWhere(userId: number): Promise<Prisma.AdminNotificationWhereInput> {
+    const providers = await this.prisma.provider.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    const providerIds = providers.map((p) => p.id);
+    const or: Prisma.AdminNotificationWhereInput[] = [{ targetUserId: userId }];
+    if (providerIds.length > 0) or.push({ providerId: { in: providerIds } });
+    return { OR: or };
+  }
+
   async getMyNotifications(userId: number) {
-    const provider = await this.findProviderByUserOrNull(userId);
-    if (!provider) return { data: [], unreadCount: 0 };
+    const where = await this._myNotificationsWhere(userId);
 
     const [notifications, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
-        where: { providerId: provider.id },
+        where,
         orderBy: { sentAt: 'desc' },
-        take: 30,
+        take: 50,
       }),
       this.prisma.adminNotification.count({
-        where: { providerId: provider.id, isRead: false },
+        where: { ...where, isRead: false },
       }),
     ]);
 
@@ -143,11 +157,11 @@ export class ProviderProfileService {
   }
 
   async markNotificationRead(userId: number, notifId: number) {
-    const provider = await this.findProviderByUserOrNull(userId);
-    if (!provider) return { ok: true };
+    const where = await this._myNotificationsWhere(userId);
 
+    // Solo el dueño puede marcarla — la notif es suya o de su proveedor.
     const notif = await this.prisma.adminNotification.findFirst({
-      where: { id: notifId, providerId: provider.id },
+      where: { ...where, id: notifId },
     });
     if (!notif) throw new BadRequestException('Notificación no encontrada');
 
@@ -158,10 +172,9 @@ export class ProviderProfileService {
   }
 
   async markAllNotificationsRead(userId: number) {
-    const provider = await this.findProviderByUserOrNull(userId);
-    if (!provider) return { ok: true };
+    const where = await this._myNotificationsWhere(userId);
     await this.prisma.adminNotification.updateMany({
-      where: { providerId: provider.id, isRead: false },
+      where: { ...where, isRead: false },
       data: { isRead: true },
     });
     return { ok: true };
@@ -347,7 +360,7 @@ export class ProviderProfileService {
     await this.prisma.adminNotification.create({
       data: {
         providerId:       provider.id,
-        type:             NotificationType.PLAN_SOLICITADO,
+        type:             'PLAN_SOLICITADO',
         title:            `Solicitud de plan ${plan} enviada`,
         message:          `Tu solicitud para el plan ${plan} está siendo evaluada por el administrador.`,
         isRead:           false,

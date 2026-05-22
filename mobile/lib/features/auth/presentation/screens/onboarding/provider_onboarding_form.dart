@@ -81,6 +81,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   bool    _isLoading         = false;
   bool    _showAddressSection = false;
   bool    _gpsLoading         = false;
+  /// `true` cuando el usuario opta por el plan Premium (de pago). Se
+  /// inicializa desde `widget.selectedPlan` y el usuario puede activarlo
+  /// dentro del formulario con la opción bajo el código de referido.
+  bool    _acquirePremium    = false;
 
   Position?              _gpsPosition;
   String?                _department;
@@ -114,6 +118,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   void initState() {
     super.initState();
     _loadCategories();
+    // Plan preseleccionado en la pantalla "Únete" (tarjeta Premium).
+    _acquirePremium = widget.selectedPlan == 'PREMIUM';
 
     // UX solicitada: los campos de ubicación arrancan VACÍOS en el
     // formulario de registro para que el user provider los rellene
@@ -237,10 +243,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
   // ── Submit Logic ─────────────────────────────────────────
 
-  /// Plan elegido en la sheet previa al formulario. La sheet de planes
-  /// solo devuelve 'ESTANDAR' (bienvenida gratis) o 'PREMIUM' (pago).
-  /// `null` equivale a ESTANDAR — el plan de cortesía por defecto.
-  String get _planChoice => widget.selectedPlan ?? 'ESTANDAR';
+  /// Plan efectivo del registro. ESTANDAR es el plan de cortesía por
+  /// defecto (gratis 1 mes); PREMIUM activa el flujo de pago. Se
+  /// controla con la opción "Adquirir plan Premium" del formulario,
+  /// preinicializada desde `widget.selectedPlan`.
+  String get _planChoice => _acquirePremium ? 'PREMIUM' : 'ESTANDAR';
 
   /// Entry point del botón "Registrarme como profesional/negocio".
   ///
@@ -431,7 +438,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         _showSnack('Código de referido aplicado.');
       } catch (e) {
         if (!mounted) return;
-        _showSnack('No pudimos aplicar el código de referido.', isError: true);
+        _showSnack('No pudimos aplicar el código de referido porque ya lo has utilizado anteriormente desde este usuario.', isError: true);
       }
     }
 
@@ -518,6 +525,115 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
         if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
       },
+    );
+  }
+
+  // ── Sección de plan (bajo el código de referido) ─────────
+
+  /// Bloque de selección de plan: informa la cortesía del plan Estándar
+  /// gratis y ofrece la opción interactiva de adquirir el plan Premium.
+  /// Al activar Premium, el submit dispara el flujo de pago.
+  Widget _buildPlanSection(AppThemeColors c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Cortesía: Estándar gratis 1 mes.
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.available.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: AppColors.available.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.card_giftcard_rounded,
+                  color: AppColors.available, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Tu registro incluye el plan Estándar GRATIS durante '
+                  '1 mes de bienvenida.',
+                  style: TextStyle(
+                      color: c.textSecondary, fontSize: 11.5, height: 1.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        // Opción interactiva: adquirir Premium.
+        GestureDetector(
+          onTap: () => setState(() => _acquirePremium = !_acquirePremium),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: _acquirePremium
+                  ? AppColors.premium.withValues(alpha: 0.10)
+                  : c.bgInput,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _acquirePremium ? AppColors.premium : c.border,
+                width: _acquirePremium ? 1.5 : 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _acquirePremium
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: _acquirePremium
+                          ? AppColors.premium
+                          : c.textMuted,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(Icons.workspace_premium_rounded,
+                        color: AppColors.premium, size: 18),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Adquirir plan Premium',
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'S/ 39.90/mes',
+                      style: TextStyle(
+                        color: AppColors.premium,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _acquirePremium
+                      ? 'Al finalizar el registro elegirás cómo pagar '
+                        '(Yape o MercadoPago). Tu perfil quedará en '
+                        'revisión mientras validamos el pago.'
+                      : 'Posición #1 garantizada, soporte prioritario, '
+                        'análisis de clientes y panel avanzado. Actívalo '
+                        'para pasar al pago al finalizar el registro.',
+                  style: TextStyle(
+                      color: c.textMuted, fontSize: 11.5, height: 1.45),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -770,6 +886,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 style: TextStyle(color: c.textMuted, fontSize: 11),
               ),
             ),
+            const SizedBox(height: 28),
+
+            // ── PLAN DE SUSCRIPCIÓN ─────────────────
+            const FormSectionHeader(label: 'PLAN DE SUSCRIPCIÓN'),
+            const SizedBox(height: 8),
+            _buildPlanSection(c),
             const SizedBox(height: 32),
 
             // ── BOTONES DE ACCIÓN ───────────────────
@@ -796,9 +918,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                         ),
                       )
                     : Text(
-                        _isOficio
-                            ? 'Registrarme como profesional'
-                            : 'Registrarme como negocio',
+                        _acquirePremium
+                            ? 'Continuar al pago Premium'
+                            : (_isOficio
+                                ? 'Registrarme como profesional'
+                                : 'Registrarme como negocio'),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

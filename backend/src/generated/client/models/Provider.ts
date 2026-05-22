@@ -1592,10 +1592,12 @@ export type ProviderCreateNestedOneWithoutNotificationsInput = {
   connect?: Prisma.ProviderWhereUniqueInput
 }
 
-export type ProviderUpdateOneRequiredWithoutNotificationsNestedInput = {
+export type ProviderUpdateOneWithoutNotificationsNestedInput = {
   create?: Prisma.XOR<Prisma.ProviderCreateWithoutNotificationsInput, Prisma.ProviderUncheckedCreateWithoutNotificationsInput>
   connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutNotificationsInput
   upsert?: Prisma.ProviderUpsertWithoutNotificationsInput
+  disconnect?: Prisma.ProviderWhereInput | boolean
+  delete?: Prisma.ProviderWhereInput | boolean
   connect?: Prisma.ProviderWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutNotificationsInput, Prisma.ProviderUpdateWithoutNotificationsInput>, Prisma.ProviderUncheckedUpdateWithoutNotificationsInput>
 }

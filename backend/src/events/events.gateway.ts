@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 // Misma lógica de orígenes que main.ts: lista en prod, abierto en dev.
 const isProd = process.env.NODE_ENV === 'production';
@@ -60,7 +61,22 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
   ) {}
+
+  /// Tipos de notificación que algún servicio YA persiste en
+  /// adminNotification por su cuenta — el gateway no debe re-persistirlos
+  /// (evita filas duplicadas). CHAT_MESSAGE se omite a propósito: el chat
+  /// tiene su propia persistencia de mensajes y su badge de no-leídos.
+  private static readonly _skipPersist = new Set<string>([
+    'PROVIDER_APPROVED', 'APROBADO',
+    'PROVIDER_REJECTED', 'RECHAZADO',
+    'PLAN_APROBADO', 'PLAN_RECHAZADO', 'PLAN_SOLICITADO',
+    'MAS_INFO', 'VERIFICACION_REVOCADA',
+    'NEW_REVIEW', 'NUEVA_OPORTUNIDAD',
+    'OFERTA_ACEPTADA', 'OFFER_ACCEPTED',
+    'CHAT_MESSAGE',
+  ]);
 
   // ── HANDSHAKE: validar JWT antes de aceptar el socket ─────
   async handleConnection(client: AuthSocket) {
@@ -175,6 +191,30 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * - sin target → broadcast (filtrado posterior por el cliente).
    */
   emitNotification(payload: NotificationPayload) {
+    // Persistir las notificaciones dirigidas a un usuario concreto para
+    // que sobrevivan al cierre de la app — funciona igual para clientes
+    // (sin perfil de proveedor) que para proveedores. Se omiten los tipos
+    // que algún servicio ya persiste, para no duplicar la fila.
+    if (
+      payload.targetUserId &&
+      !EventsGateway._skipPersist.has(payload.type)
+    ) {
+      void this.prisma.adminNotification
+        .create({
+          data: {
+            providerId:        null,
+            targetUserId:      payload.targetUserId,
+            type:              payload.type,
+            title:             payload.title,
+            message:           payload.body,
+            targetProfileType: payload.targetProfileType ?? null,
+          },
+        })
+        .catch(() => {
+          /* si falla la persistencia, la notif en vivo igual se emite */
+        });
+    }
+
     if (payload.targetUserId) {
       this.server.to(`user_${payload.targetUserId}`).emit('notification', payload);
       return;

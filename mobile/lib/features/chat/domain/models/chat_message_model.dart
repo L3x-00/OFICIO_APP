@@ -1,5 +1,7 @@
 /// Estado de entrega del mensaje (espejo del enum del backend).
-enum MessageStatus { sending, sent, delivered, read }
+/// `failed` es solo cliente: el envío al server falló y el mensaje
+/// queda visible para reintentar (antes se borraba silenciosamente).
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 extension MessageStatusX on MessageStatus {
   String get apiName => switch (this) {
@@ -7,6 +9,7 @@ extension MessageStatusX on MessageStatus {
         MessageStatus.sent      => 'SENT',
         MessageStatus.delivered => 'DELIVERED',
         MessageStatus.read      => 'READ',
+        MessageStatus.failed    => 'SENT', // nunca llegó al server
       };
 
   static MessageStatus fromApi(String value) => switch (value.toUpperCase()) {

@@ -16,7 +16,7 @@ import '../../domain/models/provider_model.dart';
 import '../../domain/models/review_model.dart';
 import '../sheets/recommend_modal.dart';
 import 'create_review_sheet.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';  
 /// Barra fija inferior con los botones de contacto (chat / WhatsApp / llamada)
 /// + botón de reseña. Si es la tarjeta del propio dueño muestra "Ir a mi panel".
 ///
@@ -256,10 +256,10 @@ class ProviderContactBar extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _BigIconButton(
-                      icon: Icons.chat_rounded,
-                      color: AppColors.whatsapp,
-                      onTap: _openWhatsApp,
-                    ),
+                          svgAsset: 'assets/icons/whatsapp.svg',
+                          color: AppColors.whatsapp,
+                          onTap: _openWhatsApp,
+                        ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -314,15 +314,17 @@ class ProviderContactBar extends StatelessWidget {
 }
 
 class _BigIconButton extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;   // ← nuevo: ruta del SVG
   final Color color;
   final VoidCallback onTap;
 
   const _BigIconButton({
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.color,
     required this.onTap,
-  });
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -336,7 +338,9 @@ class _BigIconButton extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Center(
-          child: Icon(icon, color: color, size: 22),
+          child: svgAsset != null
+              ? SvgPicture.asset(svgAsset!, width: 22, height: 22)
+              : Icon(icon, color: color, size: 22),
         ),
       ),
     );

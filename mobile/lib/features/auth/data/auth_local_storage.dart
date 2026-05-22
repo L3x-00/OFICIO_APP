@@ -37,6 +37,23 @@ class AuthLocalStorage {
     }
   }
 
+  // ── Actualizar solo los tokens (tras un refresh en caliente) ──
+  /// No toca `user_data` — se usa desde el interceptor cuando renueva
+  /// el par de tokens ante un 401, sin tener el UserModel a mano.
+  static Future<void> updateTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    try {
+      await Future.wait([
+        _storage.write(key: _keyAccessToken,  value: accessToken),
+        _storage.write(key: _keyRefreshToken, value: refreshToken),
+      ]);
+    } catch (e) {
+      debugPrint('Error al actualizar tokens: $e');
+    }
+  }
+
   // ── Leer token de acceso ───────────────────────────────────
   static Future<String?> getAccessToken() async {
     try {

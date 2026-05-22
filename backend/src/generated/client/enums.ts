@@ -172,22 +172,6 @@ export const OfferReportReason = {
 export type OfferReportReason = (typeof OfferReportReason)[keyof typeof OfferReportReason]
 
 
-export const NotificationType = {
-  APROBADO: 'APROBADO',
-  RECHAZADO: 'RECHAZADO',
-  MAS_INFO: 'MAS_INFO',
-  VERIFICACION_REVOCADA: 'VERIFICACION_REVOCADA',
-  PLAN_SOLICITADO: 'PLAN_SOLICITADO',
-  PLAN_APROBADO: 'PLAN_APROBADO',
-  PLAN_RECHAZADO: 'PLAN_RECHAZADO',
-  NEW_REVIEW: 'NEW_REVIEW',
-  NUEVA_OPORTUNIDAD: 'NUEVA_OPORTUNIDAD',
-  OFERTA_ACEPTADA: 'OFERTA_ACEPTADA'
-} as const
-
-export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
-
-
 export const ReferralStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',

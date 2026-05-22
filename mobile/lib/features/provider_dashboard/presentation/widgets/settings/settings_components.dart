@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 /// Sección colapsable con icono + título + lista de tiles.
 ///
 /// La flecha rota 180° animada cuando se expande/colapsa.
@@ -223,7 +223,8 @@ class DangerTile extends StatelessWidget {
 
 /// Tile con un toggle interno (tema, notificaciones, etc.).
 class SettingsSwitch extends StatefulWidget {
-  final IconData icon;
+  final IconData? icon;       // ← Opcional
+  final String? svgAsset;     // ← Nuevo
   final String label;
   final String subtitle;
   final bool value;
@@ -231,7 +232,8 @@ class SettingsSwitch extends StatefulWidget {
 
   const SettingsSwitch({
     super.key,
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.label,
     required this.subtitle,
     required this.value,
@@ -264,7 +266,9 @@ class _SettingsSwitchState extends State<SettingsSwitch> {
       ),
       child: Row(
         children: [
-          Icon(widget.icon, color: c.textSecondary, size: 20),
+            widget.svgAsset != null
+              ? SvgPicture.asset(widget.svgAsset!, width: 20, height: 20)
+              : Icon(widget.icon, color: c.textSecondary, size: 20),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

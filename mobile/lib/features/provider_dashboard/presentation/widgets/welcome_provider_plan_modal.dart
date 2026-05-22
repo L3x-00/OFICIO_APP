@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../showcase/showcase_manager.dart';
 
 /// Modal de bienvenida con carrousel por plan. Tres variantes:
 ///   - `WelcomePlan.estandarTrial` — primer registro aprobado (ESTANDAR
@@ -64,6 +65,8 @@ class WelcomeProviderPlanModal extends StatefulWidget {
   }) async {
     if (!await shouldShow(providerId, plan: plan)) return;
     if (!context.mounted) return;
+    // Gate: el tutorial del panel espera a que este modal se cierre.
+    ShowcaseManager.blockingModalActive = true;
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -74,6 +77,7 @@ class WelcomeProviderPlanModal extends StatefulWidget {
         plan: plan,
       ),
     );
+    ShowcaseManager.blockingModalActive = false;
     await markShown(providerId, plan: plan);
   }
 

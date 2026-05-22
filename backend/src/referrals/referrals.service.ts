@@ -111,7 +111,7 @@ export class ReferralsService {
       where: { invitedUserId: userId },
     });
     if (existing) {
-      throw new ConflictException('Ya aplicaste un código de referido anteriormente');
+      throw new ConflictException('Ya aplicaste un código de referido anteriormente desde este usuario');
     }
 
     const referral = await this.prisma.$transaction(async (tx) => {

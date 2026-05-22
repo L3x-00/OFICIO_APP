@@ -45,6 +45,7 @@ class JoinUsTypeDetail extends StatelessWidget {
       name: 'Estándar',
       price: 'S/ 19.90',
       period: 'al mes',
+      badge: '1 MES GRATIS DE BIENVENIDA',
       features: [
         'Todo lo del plan Gratis',
         'Hasta 6 fotos del servicio',
@@ -66,6 +67,7 @@ class JoinUsTypeDetail extends StatelessWidget {
         'Panel administradivo avanzado',
       ],
       isHighlighted: false,
+      ctaLabel: 'Quiero el plan Premium',
     ),
   ];
 
@@ -164,7 +166,14 @@ class JoinUsTypeDetail extends StatelessWidget {
           ..._plans.map(
             (plan) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: PlanCard(plan: plan),
+              child: PlanCard(
+                plan: plan,
+                // Solo el plan Premium es interactivo: lleva al registro
+                // con el plan PREMIUM preseleccionado → flujo de pago.
+                onCta: plan.ctaLabel != null
+                    ? () => _goToRegistration(context, plan: 'PREMIUM')
+                    : null,
+              ),
             ),
           ),
 
@@ -182,35 +191,10 @@ class JoinUsTypeDetail extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Cerrar modal
-
-                        if (alreadyLoggedIn) {
-                          // Usuario ya tiene sesión → ir directo al
-                          // formulario. rootNavigator saca la pantalla
-                          // del shell del cliente para no dejar visible
-                          // la bottom nav debajo.
-                          Navigator.of(context, rootNavigator: true).push(
-                            MaterialPageRoute(
-                              builder: (_) => ProviderOnboardingForm(
-                                providerType: type,
-                                isStandalone: true,
-                              ),
-                            ),
-                          );
-                        } else {
-                          // Sin sesión → flujo de registro habitual.
-                          // rootNavigator: el login debe salir del shell
-                          // para no dejar visible la bottom nav.
-                          Navigator.of(context, rootNavigator: true).push(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(
-                                initialMode: AuthMode.register,
-                              ),
-                            ),
-                          );
-                        }
-                      },
+                      // CTA principal — registro con plan por defecto
+                      // (Estándar de bienvenida). El plan Premium tiene
+                      // su propio botón dentro de la tarjeta Premium.
+                      onPressed: () => _goToRegistration(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -252,5 +236,37 @@ class JoinUsTypeDetail extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Cierra el modal de "Únete" y abre el flujo de registro de
+  /// proveedor. Si el usuario ya tiene sesión, va directo al
+  /// formulario; si no, al login en modo registro. `plan` preselecciona
+  /// el plan en el formulario ('PREMIUM' activa el flujo de pago).
+  void _goToRegistration(BuildContext context, {String? plan}) {
+    final alreadyLoggedIn = context.read<AuthProvider>().isAuthenticated;
+    Navigator.pop(context); // Cerrar modal "Únete"
+
+    if (alreadyLoggedIn) {
+      // rootNavigator saca la pantalla del shell del cliente para no
+      // dejar visible la bottom nav debajo.
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => ProviderOnboardingForm(
+            providerType: type,
+            isStandalone: true,
+            selectedPlan: plan,
+          ),
+        ),
+      );
+    } else {
+      // Sin sesión → flujo de registro habitual. El plan elegido se
+      // re-selecciona dentro del formulario (opción "Adquirir plan
+      // Premium" bajo el código de referido).
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(initialMode: AuthMode.register),
+        ),
+      );
+    }
   }
 }

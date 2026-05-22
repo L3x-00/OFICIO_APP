@@ -9,7 +9,7 @@ import '../../../showcase/showcase_data.dart';
 import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 class PanelStatsTab extends StatefulWidget {
   /// C-13: providerType del panel actual — pasado desde provider_panel
   /// para alinear con sus hermanos (PanelHomeTab, PanelServicesTab).
@@ -242,7 +242,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
             ),
             const SizedBox(height: 16),
             _ContactBar(
-              icon: Icons.chat_rounded,
+              svgAsset: 'assets/icons/whatsapp.svg',
               color: AppColors.whatsapp,
               label: 'WhatsApp',
               count: wa,
@@ -581,14 +581,16 @@ class _BigStatCard extends StatelessWidget {
 }
 
 class _ContactBar extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;       // ← Opcional
+  final String? svgAsset;     // ← Nuevo
   final Color color;
   final String label;
   final int count;
   final double percent;
 
   const _ContactBar({
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.color,
     required this.label,
     required this.count,
@@ -600,7 +602,9 @@ class _ContactBar extends StatelessWidget {
     final c = context.colors;
     return Row(
       children: [
-        Icon(icon, color: color, size: 18),
+        svgAsset != null
+            ? SvgPicture.asset(svgAsset!, width: 18, height: 18)
+            : Icon(icon, color: color, size: 18),
         const SizedBox(width: 8),
         SizedBox(
           width: 60,
@@ -726,7 +730,7 @@ class _StatsUpsellScreen extends StatelessWidget {
               const SizedBox(height: 28),
               // Beneficios de upgrade
               _UpsellBenefit(icon: Icons.touch_app_rounded,  color: AppColors.primary,  text: 'Cuántas personas contactaron tu perfil'),
-              _UpsellBenefit(icon: Icons.chat_rounded,       color: AppColors.whatsapp, text: 'Contactos por WhatsApp vs llamadas'),
+              _UpsellBenefit(svgAsset: 'assets/icons/whatsapp.svg', color: AppColors.whatsapp, text: 'Contactos por WhatsApp vs llamadas'),
               _UpsellBenefit(icon: Icons.show_chart_rounded, color: AppColors.amber,    text: 'Gráfico diario de actividad'),
               _UpsellBenefit(icon: Icons.star_rounded,       color: AppColors.star,     text: 'Evolución de calificaciones'),
               const SizedBox(height: 28),
@@ -773,10 +777,11 @@ class _StatsUpsellScreen extends StatelessWidget {
 }
 
 class _UpsellBenefit extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;       // ← Opcional
+  final String? svgAsset;     // ← Nuevo
   final Color color;
   final String text;
-  const _UpsellBenefit({required this.icon, required this.color, required this.text});
+  const _UpsellBenefit({this.icon, this.svgAsset, required this.color, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -788,7 +793,11 @@ class _UpsellBenefit extends StatelessWidget {
           Container(
             width: 32, height: 32,
             decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 16),
+            child: Center(
+              child: svgAsset != null
+                  ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
+                  : Icon(icon, color: color, size: 16),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(text, style: TextStyle(color: c.textSecondary, fontSize: 13))),

@@ -227,6 +227,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         c: c,
                         message: m,
                         mine: mine,
+                        roomId: widget.roomId,
                       );
                     },
                   ),
@@ -358,20 +359,26 @@ class _MessageBubble extends StatelessWidget {
   final AppThemeColors c;
   final ChatMessageModel message;
   final bool mine;
+  final int roomId;
 
   const _MessageBubble({
     required this.c,
     required this.message,
     required this.mine,
+    required this.roomId,
   });
 
   @override
   Widget build(BuildContext context) {
     final radius = const Radius.circular(16);
     final smallRadius = const Radius.circular(4);
-    
+
+    final failed = message.status == MessageStatus.failed;
+
     // Cambio: Burbuja del emisor (mine) ahora es blanca con borde
-    final bg = mine ? Colors.white : c.bgCard;
+    final bg = failed
+        ? Colors.red.withValues(alpha: 0.06)
+        : (mine ? Colors.white : c.bgCard);
     // Cambio: Texto del emisor oscuro para contraste
     final fg = mine ? Colors.black87 : c.textPrimary;
     // Cambio: Hora del emisor en gris oscuro
@@ -379,7 +386,7 @@ class _MessageBubble extends StatelessWidget {
         ? Colors.grey.shade600
         : c.textMuted;
 
-    return Padding(
+    final bubble = Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -394,7 +401,11 @@ class _MessageBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: bg,
                   // Ambas burbujas tienen borde ligero para distinguir del fondo
-                  border: Border.all(color: mine ? Colors.grey.shade300 : c.border),
+                  border: Border.all(
+                    color: failed
+                        ? Colors.red.shade300
+                        : (mine ? Colors.grey.shade300 : c.border),
+                  ),
                   borderRadius: BorderRadius.only(
                     topLeft:     radius,
                     topRight:    radius,
@@ -414,9 +425,10 @@ class _MessageBubble extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _hhmm(message.createdAt),
+                          failed ? 'No enviado · toca para reintentar'
+                                 : _hhmm(message.createdAt),
                           style: TextStyle(
-                            color: timeColor,
+                            color: failed ? Colors.red.shade400 : timeColor,
                             fontSize: 10.5,
                             fontWeight: FontWeight.w500,
                           ),
@@ -435,6 +447,17 @@ class _MessageBubble extends StatelessWidget {
         ],
       ),
     );
+
+    // Mensaje fallido → tocar para reintentar el envío.
+    if (failed && message.clientTempId != null) {
+      return GestureDetector(
+        onTap: () => context
+            .read<ChatProvider>()
+            .retryMessage(roomId, message.clientTempId!),
+        child: bubble,
+      );
+    }
+    return bubble;
   }
 
   String _hhmm(DateTime t) =>
@@ -469,7 +492,13 @@ class _StatusIcon extends StatelessWidget {
           Icons.done_all_rounded,
           size: 14,
           // Cambio: Azul brillante para que resalte sobre el blanco
-          color: Colors.blue, 
+          color: Colors.blue,
+        );
+      case MessageStatus.failed:
+        return Icon(
+          Icons.error_outline_rounded,
+          size: 14,
+          color: Colors.red.shade400,
         );
     }
   }

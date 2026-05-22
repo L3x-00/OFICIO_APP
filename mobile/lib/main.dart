@@ -22,6 +22,7 @@ import 'features/offer_posts/presentation/providers/offers_provider.dart';
 import 'features/provider_dashboard/presentation/providers/dashboard_provider.dart';
 import 'features/provider_dashboard/presentation/providers/offer_posts_provider.dart';
 import 'features/providers_list/presentation/providers/providers_provider.dart';
+import 'features/showcase/showcase_manager.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -226,15 +227,20 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         if (!mounted) return;
         final navCtx = _navigatorKey.currentContext;
         if (navCtx == null || !navCtx.mounted) return;
+        // Gate: bloquea el auto-start del tutorial mientras el welcome
+        // está abierto — primero el welcome, luego el tour.
+        ShowcaseManager.blockingModalActive = true;
         showDialog(
           context: navCtx,
           barrierDismissible: false,
           barrierColor: Colors.black.withValues(alpha: 0.65),
           builder: (dialogCtx) => WelcomeOnboardingModal(
-            onDismiss: () =>
-                Navigator.of(dialogCtx, rootNavigator: true).pop(),
+            onDismiss: () {
+              ShowcaseManager.blockingModalActive = false;
+              Navigator.of(dialogCtx, rootNavigator: true).pop();
+            },
           ),
-        );
+        ).then((_) => ShowcaseManager.blockingModalActive = false);
       });
     }
     _prevNavState = current;

@@ -200,6 +200,13 @@ class AuthProvider extends ChangeNotifier
       // evita re-mostrarlo si el usuario ya lo vio.
       _enqueueProviderWelcomeIfNeeded();
       _connectSocketForUser(_user!.id);
+      // Sincroniza el balance de monedas al abrir la app. `restoreSession`
+      // trae los `coins` guardados (viejos); si el usuario recibió monedas
+      // de un referido mientras la app estaba cerrada, el contador del
+      // header marcaría un valor desfasado (típicamente 0) hasta que se
+      // recibiera una notificación por socket en vivo. unawaited: no
+      // bloquea el arranque — al resolverse hace notifyListeners().
+      unawaited(refreshCurrentUser());
     }
     _isInitialized = true;
     notifyListeners();

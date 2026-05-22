@@ -12,7 +12,7 @@ import '../widgets/settings/profile_header.dart';
 import '../widgets/settings/settings_components.dart';
 import '../widgets/settings/settings_dialogs.dart';
 import '../widgets/settings/subscription_section.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 /// Tab "Configuración" del panel del proveedor.
 ///
 /// Orquesta el [CustomScrollView] con todas las secciones (Cuenta,
@@ -24,6 +24,7 @@ class PanelSettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final c = context.colors;
     final auth    = context.watch<AuthProvider>();
     final dash    = context.watch<DashboardProvider>();
@@ -158,7 +159,7 @@ class PanelSettingsTab extends StatelessWidget {
                         onChanged: (_) {},
                       ),
                       SettingsSwitch(
-                        icon: Icons.chat_bubble_rounded,
+                        svgAsset: 'assets/icons/whatsapp.svg',
                         label: 'Mensajes de WhatsApp',
                         subtitle: 'Notificación cuando alguien te contacta',
                         value: true,

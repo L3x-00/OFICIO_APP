@@ -12,6 +12,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ShowcaseManager {
   ShowcaseManager._();
 
+  /// Gate de coordinación: `true` mientras un modal de bienvenida está
+  /// visible (WelcomeOnboardingModal del cliente o WelcomeProviderPlanModal
+  /// del proveedor). El auto-start del tutorial espera a que vuelva a
+  /// `false` antes de disparar — si no, el spotlight quedaba DETRÁS del
+  /// modal y el usuario nunca veía el tour (lo marcaba como visto a
+  /// ciegas). Primero el welcome, luego el tutorial.
+  static bool blockingModalActive = false;
+
   static String _keyForUser(int? userId, {required bool isGuest}) {
     if (isGuest || userId == null) return 'has_seen_onboarding_guest';
     return 'has_seen_onboarding_$userId';

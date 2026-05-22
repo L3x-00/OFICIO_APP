@@ -100,6 +100,35 @@ class SavedAccountsStorage {
     }
   }
 
+  // ── Actualizar tokens de una cuenta por userId ────────────
+  /// Llamado tras un refresh en caliente: el refresh token rota
+  /// (single-use), así que la cuenta guardada debe quedar con el par
+  /// nuevo o, al volver a ella, su sesión estaría muerta. No-op si la
+  /// cuenta no está guardada.
+  static Future<void> updateTokensForUser({
+    required int userId,
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    try {
+      final accounts = await getAll();
+      final idx = accounts.indexWhere((a) => a.userId == userId);
+      if (idx == -1) return;
+      final a = accounts[idx];
+      accounts[idx] = SavedAccount(
+        userId:       a.userId,
+        email:        a.email,
+        firstName:    a.firstName,
+        lastName:     a.lastName,
+        accessToken:  accessToken,
+        refreshToken: refreshToken,
+      );
+      await _persist(accounts);
+    } catch (e) {
+      debugPrint('SavedAccountsStorage.updateTokensForUser error: $e');
+    }
+  }
+
   // ── Eliminar por email ────────────────────────────────────
   static Future<void> remove(String email) async {
     try {
