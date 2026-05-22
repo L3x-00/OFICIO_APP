@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:provider/provider.dart';
 import '../../../../provider_dashboard/presentation/screens/provider_panel.dart';
+import '../../providers/auth_provider.dart';
 import 'join_us_components.dart';
 import 'join_us_initial_view.dart';
 import 'join_us_type_detail.dart';
@@ -54,6 +56,16 @@ class _JoinUsModalState extends State<JoinUsModal>
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     _controller.forward();
+
+    // Refrescar el estado del proveedor al abrir el modal — cubre el
+    // caso en que el socket perdió un evento APROBADO/RECHAZADO mientras
+    // la app estaba en foreground (sin trigger de resumed) y el user
+    // toca el FAB esperando ver el estado actualizado.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final auth = context.read<AuthProvider>();
+      if (auth.isAuthenticated) auth.refreshProviderStatus();
+    });
   }
 
   @override

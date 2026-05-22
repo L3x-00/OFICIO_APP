@@ -753,6 +753,38 @@ data: {
     return { accessToken, refreshToken, userId, role };
   }
 
+  // ── SETUP PASSWORD (usuarios sociales sin contraseña propia) ──
+  /// Permite que un usuario que se registró por login social
+  /// (Google/Facebook) establezca una contraseña real por primera vez.
+  /// Solo válido si:
+  ///   - el user tiene `firebaseUid` (es decir, vino de social login), y
+  ///   - su `passwordHash` actual es el dummy (`FIREBASE_SOCIAL_<uid>`).
+  /// Tras setear, el user puede hacer login manual o usar el endpoint
+  /// `change-password` normal con la nueva contraseña.
+  async setupPassword(userId: number, newPassword: string) {
+    if (!newPassword || newPassword.length < 6) {
+      throw new BadRequestException('La contraseña debe tener al menos 6 caracteres');
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user.firebaseUid) {
+      // Usuario manual — debe usar change-password con la contraseña actual.
+      throw new BadRequestException('Esta cuenta ya tiene contraseña. Usa "cambiar contraseña" para modificarla.');
+    }
+    const isDummy = await bcrypt.compare(`FIREBASE_SOCIAL_${user.firebaseUid}`, user.passwordHash);
+    if (!isDummy) {
+      // Ya estableció su contraseña antes — debe usar change-password.
+      throw new BadRequestException('Ya estableciste tu contraseña. Usa "cambiar contraseña" para modificarla.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    return { message: 'Contraseña establecida correctamente' };
+  }
+
   // ── DELETE ACCOUNT (soft delete — anti freemium abuse) ───
   async deleteAccount(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });

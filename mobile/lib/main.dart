@@ -13,6 +13,7 @@ import 'core/theme/theme_provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/providers/registration_provider.dart';
 import 'features/auth/presentation/screens/welcome_onboarding_modal.dart';
+import 'features/auth/presentation/screens/setup_password_screen.dart';
 import 'features/provider_dashboard/presentation/widgets/welcome_provider_plan_modal.dart';
 import 'features/chat/presentation/providers/chat_provider.dart';
 import 'features/favorites/presentation/providers/favorites_provider.dart';
@@ -214,6 +215,25 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     }
 
     final current = auth.navigationState;
+
+    // ── Setup de contraseña tras social-login de un user NUEVO ──
+    // Se muestra ANTES del welcome modal: el usuario debe (o puede
+    // omitir) establecer su contraseña antes de continuar. La pantalla
+    // hace clearSocialPasswordPrompt al cerrarse, así el próximo
+    // notifyListeners deja seguir el flujo normal.
+    if (auth.socialAccountNeedsPassword &&
+        current == AppNavigationState.authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final navCtx = _navigatorKey.currentContext;
+        if (navCtx == null || !navCtx.mounted) return;
+        Navigator.of(navCtx, rootNavigator: true).push(
+          MaterialPageRoute(builder: (_) => const SetupPasswordScreen()),
+        );
+      });
+      _prevNavState = current;
+      return;
+    }
 
     // ── Modal de bienvenida tras completar onboarding ─────────
     // Usamos el navigatorKey de la app (root del MaterialApp.router) en vez

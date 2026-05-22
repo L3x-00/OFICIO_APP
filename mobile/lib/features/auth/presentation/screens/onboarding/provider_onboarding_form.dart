@@ -481,11 +481,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   }
 
   /// Flujo de pago con Yape — pantalla de comprobante ya estructurada.
-  /// Al volver (pagó o canceló) finalizamos el onboarding.
+  /// Al volver (pagó o canceló) finalizamos el onboarding. Si el user
+  /// canceló sin enviar comprobante, el perfil ya quedó creado en
+  /// PENDIENTE y al ser aprobado recibe automáticamente el plan
+  /// Estándar de bienvenida — no hace falta nada extra.
   Future<void> _goToYapeFlow(String plan) async {
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
-    await YapePaymentScreen.show(context, plan: plan);
+    await YapePaymentScreen.show(
+      context,
+      plan: plan,
+      providerType: widget.providerType ?? 'OFICIO',
+    );
     if (!mounted) return;
     auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
     if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);

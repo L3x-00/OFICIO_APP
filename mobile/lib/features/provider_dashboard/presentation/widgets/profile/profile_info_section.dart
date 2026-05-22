@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
@@ -413,7 +414,8 @@ class ContactCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Icon(Icons.chat_rounded, size: 12, color: AppColors.whatsapp),
+                        SvgPicture.asset('assets/icons/whatsapp.svg',
+                            width: 12, height: 12),
                         const SizedBox(width: 4),
                         Text(whatsapp!, style: TextStyle(color: AppColors.whatsapp, fontSize: 12)),
                       ],

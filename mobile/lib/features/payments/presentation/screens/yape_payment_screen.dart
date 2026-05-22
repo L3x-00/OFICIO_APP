@@ -20,16 +20,23 @@ const _kPrices = {
 
 class YapePaymentScreen extends StatefulWidget {
   final String plan;
+  /// `OFICIO`|`NEGOCIO` — necesario cuando el user tiene ambos perfiles
+  /// para aplicar el pago al correcto. Opcional para flujos legacy.
+  final String? providerType;
 
-  const YapePaymentScreen({super.key, required this.plan});
+  const YapePaymentScreen({super.key, required this.plan, this.providerType});
 
-  static Future<bool?> show(BuildContext context, {required String plan}) =>
+  static Future<bool?> show(
+    BuildContext context, {
+    required String plan,
+    String? providerType,
+  }) =>
       Navigator.push<bool>(
         context,
         MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
             create: (_) => PaymentsProvider(),
-            child: YapePaymentScreen(plan: plan),
+            child: YapePaymentScreen(plan: plan, providerType: providerType),
           ),
         ),
       );
@@ -120,6 +127,7 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
       voucherUrl:       url,
       verificationCode: _codeCtrl.text,
       note:             _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+      providerType:     widget.providerType,
     );
 
     if (!mounted) return;

@@ -234,7 +234,7 @@ class ServiceCardContent extends StatelessWidget {
                           if (isPaidPlan(plan)) ...[
                             const SizedBox(width: 6),
                             CompactActionBtn(
-                              icon: Icons.chat_rounded,
+                              svgAsset: 'assets/icons/whatsapp.svg',
                               color: AppColors.whatsapp,
                               onTap: () => CardContactActions.openWhatsApp(context, provider),
                             ),

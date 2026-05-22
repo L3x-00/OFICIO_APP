@@ -66,8 +66,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /// Tipos de notificación que algún servicio YA persiste en
   /// adminNotification por su cuenta — el gateway no debe re-persistirlos
-  /// (evita filas duplicadas). CHAT_MESSAGE se omite a propósito: el chat
-  /// tiene su propia persistencia de mensajes y su badge de no-leídos.
+  /// (evita filas duplicadas). CHAT_MESSAGE SÍ se persiste aquí: cuando
+  /// un dispositivo aloja varias cuentas y la cuenta receptora no está
+  /// activa en el momento, el chat message en sí queda guardado en
+  /// chat_messages pero el inbox de Alertas no muestra nada al cambiar
+  /// de cuenta. Persistir aquí asegura que la receptora vea la alerta
+  /// "Tienes un nuevo mensaje" en su bandeja al ingresar.
   private static readonly _skipPersist = new Set<string>([
     'PROVIDER_APPROVED', 'APROBADO',
     'PROVIDER_REJECTED', 'RECHAZADO',
@@ -75,7 +79,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     'MAS_INFO', 'VERIFICACION_REVOCADA',
     'NEW_REVIEW', 'NUEVA_OPORTUNIDAD',
     'OFERTA_ACEPTADA', 'OFFER_ACCEPTED',
-    'CHAT_MESSAGE',
   ]);
 
   // ── HANDSHAKE: validar JWT antes de aceptar el socket ─────

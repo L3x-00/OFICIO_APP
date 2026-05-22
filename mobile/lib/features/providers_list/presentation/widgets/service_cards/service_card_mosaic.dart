@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
@@ -142,7 +143,7 @@ class ServiceCardMosaic extends StatelessWidget {
                         // se mantiene la etiqueta de categoría sin saturar.
                         if (!isOwnCard && isPaidPlan(plan)) ...[
                           _GridContactBtn(
-                            icon: Icons.chat_rounded,
+                            svgAsset: 'assets/icons/whatsapp.svg',
                             color: AppColors.whatsapp,
                             onTap: () => CardContactActions.openWhatsApp(context, provider),
                           ),
@@ -186,14 +187,16 @@ class ServiceCardMosaic extends StatelessWidget {
 /// Botón cuadrado mini (22×22) para WhatsApp / llamada dentro de la
 /// grilla 2-col. Espacio muy reducido — íconos sin etiquetas.
 class _GridContactBtn extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final Color color;
   final VoidCallback onTap;
   const _GridContactBtn({
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.color,
     required this.onTap,
-  });
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +210,11 @@ class _GridContactBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
           border: Border.all(color: color.withValues(alpha: 0.35)),
         ),
-        child: Icon(icon, color: color, size: 12),
+        child: Center(
+          child: svgAsset != null
+              ? SvgPicture.asset(svgAsset!, width: 12, height: 12)
+              : Icon(icon, color: color, size: 12),
+        ),
       ),
     );
   }

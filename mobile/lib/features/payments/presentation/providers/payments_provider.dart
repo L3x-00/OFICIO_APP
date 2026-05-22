@@ -54,6 +54,7 @@ class PaymentsProvider extends ChangeNotifier {
     required String voucherUrl,
     required String verificationCode,
     String? note,
+    String? providerType,
   }) async {
     _state = PaymentsState.submitting;
     _error = null;
@@ -65,6 +66,7 @@ class PaymentsProvider extends ChangeNotifier {
       voucherUrl:       voucherUrl,
       verificationCode: verificationCode,
       note:             note,
+      providerType:     providerType,
     );
 
     return result.when(

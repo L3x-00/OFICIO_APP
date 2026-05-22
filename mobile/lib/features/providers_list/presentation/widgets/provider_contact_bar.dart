@@ -313,11 +313,15 @@ class ProviderContactBar extends StatelessWidget {
   }
 }
 
-class _BigIconButton extends StatelessWidget {
+class _BigIconButton extends StatefulWidget {
   final IconData? icon;
   final String? svgAsset;   // ← nuevo: ruta del SVG
   final Color color;
-  final VoidCallback onTap;
+  /// `FutureOr<void>` para soportar tanto handlers sync (`_makeCall`) como
+  /// async (`_openInternalChat`). El widget bloquea taps adicionales
+  /// hasta que el handler complete + un debounce de 600ms — sin esto,
+  /// un doble-tap rápido lanza 2 chats o 2 llamadas simultáneas.
+  final FutureOr<void> Function() onTap;
 
   const _BigIconButton({
     this.icon,
@@ -327,20 +331,48 @@ class _BigIconButton extends StatelessWidget {
   }) : assert(icon != null || svgAsset != null);
 
   @override
+  State<_BigIconButton> createState() => _BigIconButtonState();
+}
+
+class _BigIconButtonState extends State<_BigIconButton> {
+  bool _busy = false;
+
+  Future<void> _handleTap() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await widget.onTap();
+    } catch (_) {
+      // Errores los maneja el handler — aquí solo queremos garantizar
+      // que liberamos el lock pase lo que pase.
+    } finally {
+      // Pequeño debounce extra: tras navegar la pantalla nueva aún
+      // queda 1-2 frames antes de cubrir el botón, donde un tap
+      // residual podría volver a disparar.
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
-        ),
-        child: Center(
-          child: svgAsset != null
-              ? SvgPicture.asset(svgAsset!, width: 22, height: 22)
-              : Icon(icon, color: color, size: 22),
+      onTap: _busy ? null : _handleTap,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 120),
+        opacity: _busy ? 0.5 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: widget.color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: widget.color.withValues(alpha: 0.4)),
+          ),
+          child: Center(
+            child: widget.svgAsset != null
+                ? SvgPicture.asset(widget.svgAsset!, width: 22, height: 22)
+                : Icon(widget.icon, color: widget.color, size: 22),
+          ),
         ),
       ),
     );

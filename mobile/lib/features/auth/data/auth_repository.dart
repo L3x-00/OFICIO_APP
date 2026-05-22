@@ -379,6 +379,23 @@ class AuthRepository {
     }
   }
 
+  // ── SETUP PASSWORD (usuarios sociales sin password propia) ──
+  Future<ApiResult<String>> setupPassword(String newPassword) async {
+    try {
+      final response = await _dio.post('/auth/setup-password', data: {
+        'newPassword': newPassword,
+      });
+      final msg = (response.data as Map<String, dynamic>)['message'] as String? ?? 'OK';
+      return Success(msg);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al establecer la contraseña'),
+      );
+    }
+  }
+
   // ── CAMBIAR CONTRASEÑA ─────────────────────────────────────
   Future<ApiResult<String>> changePassword({
     required String currentPassword,

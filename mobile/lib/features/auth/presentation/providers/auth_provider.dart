@@ -379,6 +379,13 @@ class AuthProvider extends ChangeNotifier
     _isGuest = false;
     _isLoading = true;
     _error = null;
+    // Limpia flags transitorios de un intento previo (p. ej. una
+    // registración manual que quedó pendiente de OTP). Sin esto, el
+    // flag `_needsEmailVerification` sobrevivía al cambio de método y
+    // la app mandaba al OTP screen aunque el social-login fuera nuevo.
+    _needsEmailVerification = false;
+    _needsOnboarding = false;
+    _registration?.clearPendingRegistration();
     notifyListeners();
 
     final result = await _repo.socialLogin(idToken);
@@ -388,6 +395,10 @@ class AuthProvider extends ChangeNotifier
         _user = data.user;
         // Nuevo usuario → ir a OnboardingScreen para elegir rol/tipo de cuenta.
         _needsOnboarding = data.isNewUser || (data.user.role.isEmpty);
+        // Solo los usuarios sociales recién creados llevan el dummy hash —
+        // ofrecérles setear su contraseña propia. Si el user ya existía
+        // (login social vinculado a cuenta vieja), no muestra el prompt.
+        _socialAccountNeedsPassword = data.isNewUser;
       },
       failure: (e) => _error = e.message,
     );
@@ -420,6 +431,33 @@ class AuthProvider extends ChangeNotifier
   /// true cuando el último intento de guardar cuenta falló por límite (máx. 3).
   bool _savedAccountLimitReached = false;
   bool get savedAccountLimitReached => _savedAccountLimitReached;
+
+  /// true cuando el último social-login creó una cuenta nueva — la app
+  /// debe ofrecerle al usuario establecer una contraseña propia para
+  /// que después pueda hacer login manual o cambiarla. main.dart escucha
+  /// este flag y empuja la pantalla `SetupPasswordScreen`. La limpieza
+  /// es responsabilidad del consumidor con [clearSocialPasswordPrompt].
+  bool _socialAccountNeedsPassword = false;
+  bool get socialAccountNeedsPassword => _socialAccountNeedsPassword;
+
+  void clearSocialPasswordPrompt() {
+    _socialAccountNeedsPassword = false;
+    notifyListeners();
+  }
+
+  /// Establece la contraseña por primera vez para una cuenta creada via
+  /// social-login. Falla silenciosa: el error queda en `_error`.
+  Future<bool> setupPassword(String newPassword) async {
+    final result = await _repo.setupPassword(newPassword);
+    return result.when(
+      success: (_) => true,
+      failure: (e) {
+        _error = e.message;
+        notifyListeners();
+        return false;
+      },
+    );
+  }
 
   String? get userRole => _user?.role;
 

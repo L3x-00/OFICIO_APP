@@ -61,6 +61,8 @@ class JoinUsTypeDetail extends StatelessWidget {
       period: 'al mes',
       features: [
         'Todo lo de Estándar',
+        'Soporte prioritario 24/7',
+        'Hasta 10 fotos del servicio',
         'Posición #1 garantizada',
         'Soporte prioritario',
         'Análisis de clientes',

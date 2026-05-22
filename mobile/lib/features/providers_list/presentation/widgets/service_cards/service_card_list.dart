@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
@@ -128,7 +129,7 @@ class ServiceCardList extends StatelessWidget {
             // CTA visible.
             if (!isOwnCard && isPaidPlan(plan)) ...[
               _MiniContactBtn(
-                icon: Icons.chat_rounded,
+                svgAsset: 'assets/icons/whatsapp.svg',
                 color: AppColors.whatsapp,
                 onTap: () => CardContactActions.openWhatsApp(context, provider),
               ),
@@ -193,14 +194,16 @@ class ServiceCardList extends StatelessWidget {
 /// default card porque comparte espacio con el dot de disponibilidad y
 /// el corazón de favorito.
 class _MiniContactBtn extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final Color color;
   final VoidCallback onTap;
   const _MiniContactBtn({
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.color,
     required this.onTap,
-  });
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +217,11 @@ class _MiniContactBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withValues(alpha: 0.35)),
         ),
-        child: Icon(icon, color: color, size: 16),
+        child: Center(
+          child: svgAsset != null
+              ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
+              : Icon(icon, color: color, size: 16),
+        ),
       ),
     );
   }

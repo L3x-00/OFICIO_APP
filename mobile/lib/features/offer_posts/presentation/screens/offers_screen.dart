@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -679,7 +680,7 @@ class _OfferCard extends StatelessWidget {
                       if (prov.whatsapp != null)
                         Expanded(
                           child: _ContactButton(
-                            icon: Icons.chat_rounded,
+                            svgAsset: 'assets/icons/whatsapp.svg',
                             label: 'WhatsApp',
                             color: const Color(0xFF25D366),
                             onTap: () => launchUrl(Uri.parse(
@@ -1013,17 +1014,19 @@ class _NeedCard extends StatelessWidget {
 }
 
 class _ContactButton extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final String label;
   final Color color;
   final VoidCallback onTap;
 
   const _ContactButton({
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.label,
     required this.color,
     required this.onTap,
-  });
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -1038,7 +1041,9 @@ class _ContactButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 15, color: color),
+            svgAsset != null
+                ? SvgPicture.asset(svgAsset!, width: 15, height: 15)
+                : Icon(icon, size: 15, color: color),
             const SizedBox(width: 5),
             Text(label,
                 style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),

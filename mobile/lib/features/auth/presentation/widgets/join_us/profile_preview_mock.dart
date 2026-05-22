@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 
@@ -194,13 +195,13 @@ class ProfilePreviewMock extends StatelessWidget {
                           border: Border.all(
                               color: AppColors.whatsapp.withValues(alpha: 0.25)),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.chat_rounded,
-                                color: AppColors.whatsapp, size: 14),
-                            SizedBox(width: 4),
-                            Text(
+                            SvgPicture.asset('assets/icons/whatsapp.svg',
+                                width: 14, height: 14),
+                            const SizedBox(width: 4),
+                            const Text(
                               'WhatsApp',
                               style: TextStyle(
                                   color: AppColors.whatsapp,

@@ -977,12 +977,15 @@ async updateProvider(
     });
     this.eventsGateway.emitAdminEvent('PROVIDER_REJECTED', { providerId: id, businessName: updated.businessName });
 
-    // Notificar al proveedor específico en la app móvil
+    // Notificar al proveedor específico en la app móvil. Incluimos
+    // `targetProfileType` para que el cliente sepa cuál perfil
+    // (OFICIO/NEGOCIO) actualizar en su estado local.
     this.eventsGateway.emitNotification({
       type: 'PROVIDER_REJECTED',
       title: 'Perfil rechazado',
       body: `Tu perfil "${updated.businessName}" no fue aprobado. Motivo: ${reason}`,
       targetUserId: provider.userId,
+      targetProfileType: updated.type,
     });
 
     this.push.sendToUser(

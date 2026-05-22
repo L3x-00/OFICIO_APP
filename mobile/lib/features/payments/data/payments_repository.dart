@@ -24,12 +24,16 @@ class PaymentsRepository {
   }
 
   // ── Enviar pago Yape ──────────────────────────────────────────
+  /// `providerType` (OFICIO|NEGOCIO) es opcional pero necesario cuando
+  /// el user tiene ambos perfiles: el backend lo usa para aplicar el
+  /// pago al perfil correcto. Sin él toma el primero del user.
   Future<ApiResult<YapePaymentModel>> submitYapePayment({
     required String plan,
     required double amount,
     required String voucherUrl,
     required String verificationCode,
     String? note,
+    String? providerType,
   }) async {
     try {
       final res = await _dio.post('/payments/yape', data: {
@@ -38,6 +42,7 @@ class PaymentsRepository {
         'voucherUrl':       voucherUrl,
         'verificationCode': verificationCode,
         'note': note,
+        if (providerType != null) 'providerType': providerType,
       });
       return Success(YapePaymentModel.fromJson(res.data));
     } on DioException catch (e) {

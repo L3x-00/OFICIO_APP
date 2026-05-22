@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 
@@ -143,12 +144,13 @@ class SlideProviderCard extends StatelessWidget {
                     border: Border.all(
                         color: AppColors.whatsapp.withValues(alpha: 0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.chat_rounded, color: AppColors.whatsapp, size: 15),
-                      SizedBox(width: 5),
-                      Text(
+                      SvgPicture.asset('assets/icons/whatsapp.svg',
+                          width: 15, height: 15),
+                      const SizedBox(width: 5),
+                      const Text(
                         'WhatsApp',
                         style: TextStyle(
                           color: AppColors.whatsapp,

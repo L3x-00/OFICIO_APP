@@ -91,7 +91,7 @@ class HomeContactPreview extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: ContactPreviewIcon(
-                    icon: Icons.chat_rounded,
+                    svgAsset: 'assets/icons/whatsapp.svg',
                     color: AppColors.whatsapp,
                     locked: !isPaid,
                     onTap: isPaid

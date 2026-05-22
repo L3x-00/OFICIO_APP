@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../../domain/models/provider_model.dart';
@@ -64,7 +65,7 @@ class ActionButtons extends StatelessWidget {
         if (paid) ...[
           const SizedBox(width: 8),
           Expanded(child: IconActionButton(
-            icon: Icons.chat_rounded,
+            svgAsset: 'assets/icons/whatsapp.svg',
             color: AppColors.whatsapp,
             onTap: () => CardContactActions.openWhatsApp(context, provider),
           )),
@@ -84,10 +85,17 @@ class ActionButtons extends StatelessWidget {
 
 /// Acción de contacto sólo-icono, ocupa el ancho de su padre.
 class IconActionButton extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final Color color;
   final VoidCallback? onTap;
-  const IconActionButton({super.key, required this.icon, required this.color, this.onTap});
+  const IconActionButton({
+    super.key,
+    this.icon,
+    this.svgAsset,
+    required this.color,
+    this.onTap,
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +109,9 @@ class IconActionButton extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Center(
-          child: Icon(icon, color: color, size: 20),
+          child: svgAsset != null
+              ? SvgPicture.asset(svgAsset!, width: 20, height: 20)
+              : Icon(icon, color: color, size: 20),
         ),
       ),
     );
@@ -139,10 +149,17 @@ class FavoriteButton extends StatelessWidget {
 
 /// Botón de acción compacto (30×30) usado por la variante "Contenido".
 class CompactActionBtn extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final Color color;
   final VoidCallback? onTap;
-  const CompactActionBtn({super.key, required this.icon, required this.color, this.onTap});
+  const CompactActionBtn({
+    super.key,
+    this.icon,
+    this.svgAsset,
+    required this.color,
+    this.onTap,
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +172,11 @@ class CompactActionBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
-        child: Icon(icon, color: color, size: 15),
+        child: Center(
+          child: svgAsset != null
+              ? SvgPicture.asset(svgAsset!, width: 15, height: 15)
+              : Icon(icon, color: color, size: 15),
+        ),
       ),
     );
   }

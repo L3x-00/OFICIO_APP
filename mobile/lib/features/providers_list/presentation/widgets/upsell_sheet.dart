@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../../../payments/presentation/screens/plan_selector_sheet.dart';
@@ -93,7 +94,7 @@ class UpsellContactSheet extends StatelessWidget {
               const SizedBox(height: 22),
 
               // Lista de beneficios
-              _Benefit(icon: Icons.chat_rounded,        color: AppColors.whatsapp, text: 'Botón de WhatsApp activo en tu tarjeta', c: c),
+              _Benefit(svgAsset: 'assets/icons/whatsapp.svg', color: AppColors.whatsapp, text: 'Botón de WhatsApp activo en tu tarjeta', c: c),
               _Benefit(icon: Icons.call_rounded,        color: AppColors.call,     text: 'Botón de llamada directa a tu número',   c: c),
               _Benefit(icon: Icons.trending_up_rounded, color: AppColors.amber,    text: 'Apareces antes en los resultados',        c: c),
               _Benefit(icon: Icons.verified_rounded,    color: AppColors.verified, text: 'Insignia de plan visible al cliente',     c: c),
@@ -143,11 +144,18 @@ class UpsellContactSheet extends StatelessWidget {
 }
 
 class _Benefit extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final Color color;
   final String text;
   final AppThemeColors c;
-  const _Benefit({required this.icon, required this.color, required this.text, required this.c});
+  const _Benefit({
+    this.icon,
+    this.svgAsset,
+    required this.color,
+    required this.text,
+    required this.c,
+  }) : assert(icon != null || svgAsset != null);
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +169,11 @@ class _Benefit extends StatelessWidget {
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 16),
+            child: Center(
+              child: svgAsset != null
+                  ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
+                  : Icon(icon, color: color, size: 16),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

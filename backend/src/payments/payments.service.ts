@@ -73,11 +73,24 @@ export class PaymentsService {
 
   // ── PROVEEDOR: enviar comprobante ───────────────────────────
   async submitYapePayment(userId: number, dto: SubmitYapeDto) {
-    const provider = await this.prisma.provider.findFirst({
-      where: { userId, isVisible: true },
-      select: { id: true },
-    });
-    if (!provider) throw new ForbiddenException('No tienes un perfil de proveedor activo');
+    // Aceptamos cualquier perfil del user — un PENDIENTE recién
+    // registrado (isVisible=false hasta ser aprobado) debe poder pagar
+    // Premium para activar su plan al momento de la aprobación. Antes
+    // se filtraba por `isVisible:true` y el flujo Premium del onboarding
+    // moría con "No tienes un perfil de proveedor activo". Si llegan
+    // múltiples perfiles (OFICIO+NEGOCIO) y el DTO trae `providerType`,
+    // tomamos el del tipo solicitado; si no, el primero del user.
+    const providerType = (dto as { providerType?: string }).providerType;
+    const provider = providerType === 'OFICIO' || providerType === 'NEGOCIO'
+      ? await this.prisma.provider.findUnique({
+          where: { userId_type: { userId, type: providerType as any } },
+          select: { id: true },
+        })
+      : await this.prisma.provider.findFirst({
+          where: { userId },
+          select: { id: true },
+        });
+    if (!provider) throw new ForbiddenException('No tienes un perfil de proveedor');
 
     // Limitar a 1 pago PENDING por proveedor a la vez
     const pending = await this.prisma.yapePayment.findFirst({

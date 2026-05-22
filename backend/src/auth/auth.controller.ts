@@ -105,4 +105,18 @@ export class AuthController {
   async deleteAccount(@Request() req: any) {
     return this.authService.deleteAccount(req.user.userId);
   }
+
+  // POST /auth/setup-password — usuarios sociales (Google/Facebook) que
+  // aún no tienen contraseña propia (su passwordHash es el dummy del
+  // login social) pueden setearla por primera vez. No requiere
+  // contraseña actual — es un setup, no un cambio.
+  @Post('setup-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async setupPassword(
+    @Request() req: any,
+    @Body() body: { newPassword: string },
+  ) {
+    return this.authService.setupPassword(req.user.userId, body.newPassword);
+  }
 }
