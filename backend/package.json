@@ -16,11 +16,12 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "jest --forceExit",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --coverage --forceExit",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:integration": "npx --yes cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-integration.json --runInBand --forceExit",
+    "test:e2e": "npx --yes cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand --forceExit"
   },
   "dependencies": {
     "@getbrevo/brevo": "^5.0.4",
@@ -104,13 +105,50 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/test/unit"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "useESM": false,
+          "tsconfig": {
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "esModuleInterop": true,
+            "experimentalDecorators": true,
+            "emitDecoratorMetadata": true,
+            "target": "ES2023",
+            "skipLibCheck": true,
+            "strict": false,
+            "strictNullChecks": true,
+            "isolatedModules": false,
+            "allowSyntheticDefaultImports": true
+          }
+        }
+      ]
+    },
+    "moduleNameMapper": {
+      "generated/client/client\\.js$": "<rootDir>/test/mocks/prisma-client.stub.ts",
+      "generated/client/client$":      "<rootDir>/test/mocks/prisma-client.stub.ts",
+      "^(\\.{1,2}/.*)\\.js$":          "$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s",
+      "!src/main.ts",
+      "!src/generated/**",
+      "!**/*.module.ts",
+      "!**/*.dto.ts",
+      "!**/dto/**"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/",
+      "/generated/"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

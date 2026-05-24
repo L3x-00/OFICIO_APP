@@ -156,7 +156,12 @@ data: {
     });
     if (existing) {
       if (existing.verificationStatus === 'RECHAZADO') {
-        // Permitir re-registro: eliminar perfil rechazado e imágenes asociadas
+        // Permitir re-registro: eliminar perfil rechazado e imágenes
+        // asociadas. El `Referral` PENDING del user (si lo había) NO se
+        // borra — al aprobarse el nuevo provider,
+        // `referrals.onProviderApproved` entrega las monedas. Si el user
+        // vuelve a ingresar el MISMO código en el form de re-registro,
+        // `applyCode` lo detecta como idempotente y no rechaza.
         await this.prisma.providerImage.deleteMany({ where: { providerId: existing.id } });
         await this.prisma.provider.delete({ where: { id: existing.id } });
       } else {

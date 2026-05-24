@@ -1,7 +1,7 @@
 name: mobile
 description: "Marketplace de Servicios Locales"
 publish_to: 'none'
-version: 2.0.0+110
+version: 2.0.0+111
 
 environment:
   sdk: ^3.11.4
@@ -78,7 +78,14 @@ dev_dependencies:
   build_runner: ^2.13.1
   json_serializable: ^6.13.1
   flutter_launcher_icons: ^0.14.3
-  # flutter_native_splash: ^2.4.5 por tema de despliegue en google console 
+  # ── Testing — Fase 3 ─────────────────────────────────────
+  # mockito: mocks para Repositorios concretos (sin tocar lógica
+  #          de producción — el inyector real es DioClient.instance.dio
+  #          y lo interceptamos con un HttpClientAdapter custom).
+  # build_runner ya estaba arriba; mockito necesita @GenerateMocks
+  # + `dart run build_runner build` para generar los .mocks.dart.
+  mockito: ^5.4.4
+  # flutter_native_splash: ^2.4.5 por tema de despliegue en google console
 
 # ── Configuración de ícono de app ───────────────────────────
 flutter_launcher_icons:

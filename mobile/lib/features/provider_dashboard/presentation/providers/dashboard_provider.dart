@@ -145,10 +145,16 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Carga notificaciones sin afectar el estado principal
+  // Carga notificaciones sin afectar el estado principal. Filtra por
+  // `_currentProviderType` (OFICIO|NEGOCIO) cuando está activo, así el
+  // panel home del provider solo muestra notif de su perfil + las
+  // globales (sin `targetProfileType`). Sin filtro mezclaría notif de
+  // ambos paneles en el mismo home — el bug que reportó el user.
   Future<void> _loadNotificationsSilent() async {
     try {
-      final result = await _repo.getMyNotifications();
+      final result = await _repo.getMyNotifications(
+        providerType: _currentProviderType,
+      );
       _notifications       = result.data;
       _unreadNotifications = result.unreadCount;
       notifyListeners();

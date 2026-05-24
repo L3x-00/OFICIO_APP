@@ -1,10 +1,10 @@
 {
   "moduleFileExtensions": ["js", "mjs", "json", "ts"],
   "rootDir": "..",
-  "roots": ["<rootDir>/test/e2e"],
-  "testRegex": ".e2e-spec.ts$",
+  "roots": ["<rootDir>/test/integration"],
+  "testRegex": ".*\\.spec\\.ts$",
   "testEnvironment": "node",
-  "testTimeout": 45000,
+  "testTimeout": 30000,
   "extensionsToTreatAsEsm": [".ts"],
   "setupFiles": ["<rootDir>/test/integration/setup-env.ts"],
   "transform": {

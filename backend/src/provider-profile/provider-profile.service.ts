@@ -139,8 +139,29 @@ export class ProviderProfileService {
     return { OR: or };
   }
 
-  async getMyNotifications(userId: number) {
-    const where = await this._myNotificationsWhere(userId);
+  async getMyNotifications(userId: number, providerType?: string) {
+    const baseWhere = await this._myNotificationsWhere(userId);
+
+    // Filtro opcional por tipo de perfil (OFICIO|NEGOCIO). Cuando el
+    // panel del provider (home tab) consulta, pasa `type=OFICIO` o
+    // `type=NEGOCIO` y queremos mostrar SOLO las notif dirigidas a ese
+    // perfil + las globales (targetProfileType NULL — chat, monedas,
+    // password change, etc.). Sin `type`, devolvemos todo (la pantalla
+    // "Alertas" del cliente las muestra todas).
+    const where: Prisma.AdminNotificationWhereInput =
+      providerType === 'OFICIO' || providerType === 'NEGOCIO'
+        ? {
+            AND: [
+              baseWhere,
+              {
+                OR: [
+                  { targetProfileType: providerType },
+                  { targetProfileType: null },
+                ],
+              },
+            ],
+          }
+        : baseWhere;
 
     const [notifications, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({

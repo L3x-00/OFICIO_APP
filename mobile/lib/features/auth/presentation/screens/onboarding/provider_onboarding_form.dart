@@ -133,8 +133,53 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       _addressController.text         = d['address']         ?? '';
       _dniController.text             = d['dni']             ?? '';
       _rucController.text             = d['ruc']             ?? '';
+      // Teléfono y whatsapp viven en state (no TextEditingController)
+      // porque los maneja `PhoneInputSection` por callback. Pre-llenar
+      // antes del primer build asegura que el widget arranca con esos
+      // valores (defaultPhone se le pasa en build).
+      _phone    = (d['phone']    as String?) ?? '';
+      _whatsapp = (d['whatsapp'] as String?) ?? '';
+
+      // Flags de delivery / domicilio (negocio + oficio).
+      _hasDelivery       = (d['hasDelivery']       as bool?) ?? false;
+      _plenaCoordinacion = (d['plenaCoordinacion'] as bool?) ?? false;
+      // El backend usa `hasHomeService` para el toggle de oficios; en el
+      // form se reusa `_hasDelivery` para ambos perfiles según su tipo.
+      // Si el preview viene de un perfil OFICIO, leemos hasHomeService.
+      if (d['hasHomeService'] == true) _hasDelivery = true;
+
       if (d['scheduleJson'] is Map<String, dynamic>) {
         _scheduleJson = Map<String, dynamic>.from(d['scheduleJson'] as Map);
+      }
+
+      // Redes sociales — todas opcionales; el backend las guarda nulas
+      // si no se completaron antes.
+      _websiteCtrl.text     = (d['website']     as String?) ?? '';
+      _instagramCtrl.text   = (d['instagram']   as String?) ?? '';
+      _tiktokCtrl.text      = (d['tiktok']      as String?) ?? '';
+      _facebookCtrl.text    = (d['facebook']    as String?) ?? '';
+      _linkedinCtrl.text    = (d['linkedin']    as String?) ?? '';
+      _twitterCtrl.text     = (d['twitterX']    as String?) ?? '';
+      _telegramCtrl.text    = (d['telegram']    as String?) ?? '';
+      _whatsappBizCtrl.text = (d['whatsappBiz'] as String?) ?? '';
+
+      // Categorías pre-seleccionadas — el backend devuelve la lista
+      // expandida en `categories: [{id, name, slug, parentId}]`. Sólo
+      // pasamos los `id` al `OnboardingCategorySection` vía
+      // `_selectedCategories`; el resto se hidrata cuando termina
+      // `_loadCategories()` (que carga el catálogo completo). El
+      // `primaryCategoryId` toma la primera del backend si existe.
+      final cats = d['categories'] as List<dynamic>?;
+      if (cats != null && cats.isNotEmpty) {
+        _selectedCategories = cats
+            .whereType<Map<String, dynamic>>()
+            .map((c) => CategorySelectionResult(
+                  id:         (c['id']   as num).toInt(),
+                  name:       (c['name'] as String?) ?? '',
+                  parentName: (c['parentName'] as String?) ?? '',
+                ))
+            .toList();
+        _primaryCategoryId = _selectedCategories.first.id;
       }
     }
   }

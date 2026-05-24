@@ -1,63 +1,336 @@
-name: CI Backend
+# ─────────────────────────────────────────────────────────────────────
+# Enterprise CI/CD — OficioApp / Servi
+# ─────────────────────────────────────────────────────────────────────
+# Objetivo: nunca permitir despliegues rotos a producción.
+# Cada job es independiente y corre en paralelo. El job `deploy-gate`
+# solo se habilita cuando los 3 jobs anteriores (backend, mobile, admin)
+# son success. Fail-fast: cualquier paso fallido detiene su job.
+#
+# Servicios reales (no mocks de red) para backend:
+#   - PostgreSQL 16 con PostGIS 3.4 (extensión postgis + pg_trgm habilitadas
+#     antes de los pushes de schema, igual que en Supabase).
+#   - Redis 7 alpine para cache/cola.
+#
+# Variables de entorno secretas reales (FCM, Brevo, MercadoPago) NO van
+# aquí — para CI usamos credenciales test inocuas y guards de scope que
+# detectan NODE_ENV=test para deshabilitar llamadas externas.
+
+name: CI / OficioApp
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'backend/**'
   pull_request:
     branches: [main]
 
+# Evita que dos pushes consecutivos al mismo branch saturen los runners:
+# cancela la corrida vieja cuando llega una nueva del mismo grupo.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permisos mínimos. Si más adelante el deploy-gate necesita publicar
+# releases o tocar el deployment de Render, los elevamos puntualmente.
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  test-backend:
+  # ───────────────────────────────────────────────────────────────────
+  # BACKEND — NestJS + Prisma + Postgres/PostGIS + Redis
+  # ───────────────────────────────────────────────────────────────────
+  # Las creds + nombres de BD COINCIDEN exactamente con las del
+  # docker-compose local (oficio_user / oficio_pass_2025 /
+  # oficio_test_db). Esto vuelve el CI un mirror del entorno dev:
+  # cualquier test que pase localmente debe pasar en el runner.
+  backend-ci:
+    name: Backend (NestJS + Prisma)
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+
     services:
+      # PostGIS-enabled Postgres — el schema usa `Unsupported("geography")`
+      # + `gin_trgm_ops` (pg_trgm). Las extensiones se habilitan
+      # explícitamente en el primer step del job, ANTES del db push,
+      # porque sin postgis el push falla con "type geography does not
+      # exist".
       postgres:
         image: postgis/postgis:16-3.4
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: oficio_test
+          POSTGRES_USER: oficio_user
+          POSTGRES_PASSWORD: oficio_pass_2025
+          POSTGRES_DB: oficio_test_db
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U oficio_user -d oficio_test_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+          --health-start-period 10s
+
+      # Redis del CI corre SIN requirepass (a diferencia del
+      # docker-compose local que usa --requirepass redis_pass_2025).
+      # REDIS_PASSWORD queda vacío en el env del job — el cliente lo
+      # interpreta como "no auth", consistente con esta config.
       redis:
-        image: redis:7.2-alpine
+        image: redis:7-alpine
         ports:
           - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+          --health-start-period 5s
+
+    env:
+      # ── Postgres ─────────────────────────────────────────────────
+      # NOTA: aunque el `services:` se llama `postgres`, GitHub Actions
+      # expone los puertos al runner via `localhost`. Por eso la URL
+      # usa `localhost:5432`, no `postgres:5432`. Lo mismo aplica al
+      # `redis` service.
+      DATABASE_URL: postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_test_db?schema=public
+      PGPASSWORD:   oficio_pass_2025
+
+      # ── JWT ──────────────────────────────────────────────────────
+      JWT_SECRET:             test-secret-ci
+      JWT_REFRESH_SECRET:     test-refresh-secret-ci
+      JWT_EXPIRES_IN:         8h
+      JWT_REFRESH_EXPIRES_IN: 7d
+
+      # ── Redis ────────────────────────────────────────────────────
+      # GitHub Actions services no-containerizados son alcanzables
+      # SOLO vía localhost (no por nombre del service). Si más adelante
+      # containerizamos el job (con `container:`), cambia este a
+      # `redis` y elimina el mapeo de puertos.
+      REDIS_HOST:     localhost
+      REDIS_PORT:     '6379'
+      REDIS_PASSWORD: ''
+      REDIS_TLS:      'false'
+
+      # ── Entorno ──────────────────────────────────────────────────
+      NODE_ENV: test
+      PORT:     '3000'
+
+      # ── Stubs de servicios externos ──────────────────────────────
+      # Inyectados para que el AppModule no rompa al boot. NODE_ENV=test
+      # debe ser el switch para que ningún servicio realmente llame a
+      # estas APIs externas.
+      BREVO_API_KEY:           ci-disabled
+      EMAIL_FROM:              ci@oficioapp.test
+      MERCADOPAGO_ACCESS_TOKEN: ci-disabled
+      MINIO_ENDPOINT:          localhost
+      MINIO_PORT:              '9000'
+      MINIO_USE_SSL:           'false'
+      MINIO_ACCESS_KEY:        ci-test
+      MINIO_SECRET_KEY:        ci-test-secret
+      MINIO_BUCKET_NAME:       oficio-test
+      ALLOWED_ORIGINS:         'http://localhost:3001'
+
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20 + npm cache
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
-      - name: Install dependencies
-        working-directory: backend
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install deps (npm ci, deterministic)
         run: npm ci
-        
-      - name: Generate Prisma Client
-        working-directory: backend
+
+      # CRÍTICO: las extensiones DEBEN crearse ANTES de `prisma db
+      # push`. El schema usa `Unsupported("geography")` (postgis) +
+      # índices `gin_trgm_ops` (pg_trgm). Sin estas extensiones, el
+      # push falla con "type geography does not exist" o
+      # "gin_trgm_ops does not exist".
+      - name: Enable PostGIS + pg_trgm extensions
+        run: |
+          psql -h localhost -U oficio_user -d oficio_test_db \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis;" \
+            -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+
+      - name: Prisma — generate client
         run: npx prisma generate
-        
-      - name: Run database migrations
-        working-directory: backend
-        run: npx prisma db push
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/oficio_test
-        
-      - name: Run unit tests
-        working-directory: backend
-        run: npm run test -- --passWithNoTests
-        
-      - name: Run E2E tests
-        working-directory: backend
-        run: npm run test:e2e -- --passWithNoTests
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/oficio_test
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          REDIS_TLS: false
-          JWT_SECRET: test-secret-for-ci
+
+      # Aplica el schema a la BD test del runner. NO usa migraciones
+      # SQL (las de prisma/migrations/ se aplican a Supabase aparte).
+      # `--accept-data-loss` es OK aquí porque la BD se crea fresca en
+      # cada run.
+      - name: Prisma — db push (schema sync)
+        run: npx prisma db push --accept-data-loss
+
+      - name: TypeScript — type check (--noEmit)
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Build (nest build)
+        run: npm run build
+
+      # ── Tests por estrato — fail-fast (cada uno detiene el job) ──
+      #
+      # 1. Unit (CJS) — mockean PrismaService, no tocan la BD.
+      #    Cubre validaciones de lógica pura: race conditions
+      #    simuladas con P2002, guards de auth, idempotencia.
+      - name: Unit tests (CJS)
+        run: npm run test
+
+      # 2. Integration + Migrations (ESM con NODE_OPTIONS=
+      #    --experimental-vm-modules, manejado por el script).
+      #    Corre contra el Postgres real del job: truncate antes
+      #    de cada test + validación del schema (FKs, uniques,
+      #    extensions).
+      - name: Integration tests + migrations (ESM)
+        run: npm run test:integration
+
+      # 3. E2E (ESM) — bootea el AppModule completo (incluido el
+      #    CacheModule contra Redis y el ThrottlerGuard).
+      #    Valida endpoints reales: /health, JWT auth, DTOs,
+      #    rate limiting.
+      - name: E2E tests (ESM)
+        run: npm run test:e2e
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage
+          retention-days: 7
+
+  # ───────────────────────────────────────────────────────────────────
+  # MOBILE — Flutter
+  # ───────────────────────────────────────────────────────────────────
+  mobile-ci:
+    name: Mobile (Flutter ${{ vars.FLUTTER_VERSION || '3.41.6' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter 3.41.6
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          channel: stable
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      # Format check no-fatal en Fase 1 para no bloquear sobre formato
+      # legado. En Fase 4 se vuelve `--set-exit-if-changed`.
+      - name: Dart format (info only — no fatal en Fase 1)
+        run: dart format --output=none --set-exit-if-changed lib || echo "::warning::Hay archivos sin formatear; se hará fatal en Fase 4."
+
+      # `--fatal-warnings` mantiene errores+warnings fatales pero deja
+      # pasar los infos pre-existentes. Cuando Fase 4 limpie los infos,
+      # subimos a `--fatal-infos`.
+      - name: Flutter analyze
+        run: flutter analyze --fatal-warnings
+
+      - name: Flutter test + coverage
+        # `--coverage` produce coverage/lcov.info para el artifact.
+        # `--reporter=expanded` da output verboso útil cuando un test
+        # falla en CI sin terminal interactiva.
+        run: flutter test --coverage --reporter=expanded
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-coverage
+          path: mobile/coverage
+          retention-days: 7
+
+  # ───────────────────────────────────────────────────────────────────
+  # ADMIN — Next.js
+  # ───────────────────────────────────────────────────────────────────
+  admin-ci:
+    name: Admin (Next.js)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      # next.config.ts pone `typescript.ignoreBuildErrors: true`, así
+      # que el build no detecta TS errors. El step `type-check` los
+      # captura aparte. Estas vars evitan que Sentry intente subir
+      # source maps a un proyecto sin credenciales en CI.
+      SENTRY_AUTH_TOKEN: ''
+      SENTRY_ORG: ''
+      SENTRY_PROJECT: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+
+    defaults:
+      run:
+        working-directory: admin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20 + npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      # ESLint con flat config (Next 16 dropeó `next lint`). En Fase 1
+      # NO bloquea — el código existente tiene 126 errores legacy que
+      # Fase 4 limpia. El gate real son type-check + build.
+      - name: ESLint (admin) — informativo en Fase 1
+        run: npm run lint
+        continue-on-error: true
+
+      - name: TypeScript — type check
+        run: npm run type-check
+
+      - name: Build (next build)
+        run: npm run build
+
+  # ───────────────────────────────────────────────────────────────────
+  # DEPLOY GATE — solo dispara cuando los 3 jobs anteriores pasan
+  # ───────────────────────────────────────────────────────────────────
+  # Estructura preparada para Fase 4: Render (backend) + Supabase
+  # (prisma migrate deploy) + Google Play (mobile bundle). El job NO
+  # despliega nada en Fase 1 — solo verifica que el merge a main vino
+  # con todos los checks verdes y deja huella en el run.
+  deploy-gate:
+    name: Deploy gate (estructura — no despliega aún)
+    needs: [backend-ci, mobile-ci, admin-ci]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Resumen del gate
+        run: |
+          echo "✅ Todos los jobs CI pasaron."
+          echo ""
+          echo "Próximos pasos cuando habilitemos Fase 4:"
+          echo "  • Backend → Render deploy hook (curl al webhook)."
+          echo "  • Supabase → npx prisma migrate deploy contra la URL del Pooler."
+          echo "  • Mobile  → upload del .aab a Google Play (track internal)."
+          echo "  • Admin   → Vercel/Render deploy de la app Next."
+          echo ""
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor:  ${{ github.actor }}"

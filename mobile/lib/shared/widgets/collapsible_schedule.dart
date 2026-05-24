@@ -17,10 +17,23 @@ class _CollapsibleScheduleState extends State<CollapsibleSchedule> {
 
   String get _summary {
     if (widget.scheduleJson.isEmpty) return 'Sin configurar';
-    final days = widget.scheduleJson.entries
-        .where((e) => e.value is Map && (e.value as Map)['open'] == true)
-        .map((e) => e.key)
-        .toList();
+    // `ScheduleEditor` guarda cada día como String con el rango horario
+    // ("8:00-18:00") o `null` si está cerrado / sin configurar — NO como
+    // un Map `{open: true, ...}`. Antes este getter buscaba la shape
+    // antigua y siempre devolvía "Sin configurar" tras guardar.
+    // También excluimos los días marcados como 'Cerrado' (otro shape
+    // legacy que algunos perfiles antiguos persistían).
+    final days = widget.scheduleJson.entries.where((e) {
+      final v = e.value;
+      if (v == null) return false;
+      if (v is String) {
+        final s = v.trim();
+        return s.isNotEmpty && s.toLowerCase() != 'cerrado';
+      }
+      // Compat con shape legacy `{open: true, ...}`.
+      if (v is Map) return v['open'] == true;
+      return false;
+    }).map((e) => e.key).toList();
     if (days.isEmpty) return 'Sin configurar';
     return '${days.length} día${days.length == 1 ? '' : 's'} configurados';
   }

@@ -217,12 +217,18 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     final current = auth.navigationState;
 
     // ── Setup de contraseña tras social-login de un user NUEVO ──
-    // Se muestra ANTES del welcome modal: el usuario debe (o puede
-    // omitir) establecer su contraseña antes de continuar. La pantalla
-    // hace clearSocialPasswordPrompt al cerrarse, así el próximo
-    // notifyListeners deja seguir el flujo normal.
+    // Se muestra INMEDIATAMENTE después del social-login exitoso —
+    // ANTES de cualquier onboarding (provider o cliente) y antes del
+    // welcome modal. Sin el `== authenticated` gate, atrapamos el
+    // estado intermedio `needsOnboarding` que el social-login deja
+    // tras crear un user nuevo (era el caso roto: el SetupPassword
+    // aparecía recién tras completar el formulario de proveedor).
+    //
+    // SetupPasswordScreen usa `rootNavigator: true`, así queda encima
+    // del router. Al cerrarse, llama `clearSocialPasswordPrompt()`
+    // y el siguiente notifyListeners continúa el flow normal.
     if (auth.socialAccountNeedsPassword &&
-        current == AppNavigationState.authenticated) {
+        current != AppNavigationState.loading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final navCtx = _navigatorKey.currentContext;

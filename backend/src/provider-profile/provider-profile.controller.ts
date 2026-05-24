@@ -49,10 +49,13 @@ export class ProviderProfileController {
     return this.service.getMyAnalytics(req.user.userId, days ? parseInt(days) : 30, type);
   }
 
-  // GET /provider-profile/me/notifications
+  // GET /provider-profile/me/notifications[?type=OFICIO|NEGOCIO]
   @Get('me/notifications')
-  getMyNotifications(@Request() req: any) {
-    return this.service.getMyNotifications(req.user.userId);
+  getMyNotifications(
+    @Request() req: any,
+    @Query('type') type?: string,
+  ) {
+    return this.service.getMyNotifications(req.user.userId, type);
   }
 
   // PATCH /provider-profile/me/notifications/read-all

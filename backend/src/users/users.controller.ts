@@ -53,6 +53,22 @@ export class UsersController {
     return this.usersService.clearFcmToken(req.user.userId);
   }
 
+  // PATCH /users/change-password
+  // El mobile (`auth_repository.changePassword`) llama aquí con
+  // `{ currentPassword, newPassword }`. La ruta faltaba en el
+  // controller (el método del service estaba implementado pero sin
+  // exponer), por lo que el cliente recibía 404 y la UI lo traducía
+  // como "contraseña actual incorrecta".
+  @UseGuards(JwtAuthGuard)
+  @Patch('change-password')
+  changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+    return this.usersService.changePassword(
+      req.user.userId,
+      dto.currentPassword,
+      dto.newPassword,
+    );
+  }
+
   // PATCH /users/profile-picture
   @UseGuards(JwtAuthGuard)
   @Patch('profile-picture')

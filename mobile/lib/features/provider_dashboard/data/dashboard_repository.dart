@@ -216,8 +216,17 @@ class DashboardRepository {
 
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
 
-  Future<ProviderNotificationsResult> getMyNotifications() async {
-    final response = await _dio.get('/provider-profile/me/notifications');
+  /// Notificaciones del usuario. `providerType` (OFICIO|NEGOCIO) filtra
+  /// las notif del panel admin a las del perfil específico (más las
+  /// globales con `targetProfileType=null`). Sin `providerType`,
+  /// devuelve todo — usado por la bandeja "Alertas" del cliente.
+  Future<ProviderNotificationsResult> getMyNotifications({String? providerType}) async {
+    final response = await _dio.get(
+      '/provider-profile/me/notifications',
+      queryParameters: providerType != null && providerType.isNotEmpty
+          ? {'type': providerType}
+          : null,
+    );
     return ProviderNotificationsResult.fromJson(
       response.data as Map<String, dynamic>,
     );

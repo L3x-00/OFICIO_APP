@@ -111,6 +111,14 @@ export class ReferralsService {
       where: { invitedUserId: userId },
     });
     if (existing) {
+      // Idempotencia: si el user re-registra (provider rechazado y
+      // vuelve a postular) y vuelve a ingresar el MISMO código que ya
+      // aplicó, no es un intento de fraude — es la misma intención.
+      // Tratamos como no-op exitoso. Si el código es DISTINTO al
+      // aplicado antes, sí rechazamos (anti farm).
+      if (existing.inviterId === owner.userId) {
+        return { success: true, referralId: existing.id, alreadyApplied: true };
+      }
       throw new ConflictException('Ya aplicaste un código de referido anteriormente desde este usuario');
     }
 

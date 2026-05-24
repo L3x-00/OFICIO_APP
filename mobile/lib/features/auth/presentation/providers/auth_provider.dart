@@ -171,11 +171,19 @@ class AuthProvider extends ChangeNotifier
       canBecomeRole('OFICIO') || canBecomeRole('NEGOCIO');
 
   /// Estado calculado para la navegación.
+  ///
+  /// El orden de las guards importa: `_needsEmailVerification` debe
+  /// evaluarse ANTES de `_user==null`. Tras `register()`, el user
+  /// todavía no existe en BD (se crea en `verifyOtp`), así que `_user`
+  /// es null mientras `_needsEmailVerification=true`. Si la guard de
+  /// `unauthenticated` fuera primero, el router redirigiría al user
+  /// a `/welcome` (perdiendo el flow de OTP) en lugar de mantenerlo
+  /// en `/otp`.
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
+    if (_needsEmailVerification) return AppNavigationState.needsEmailVerification;
     if (_user == null && _isGuest) return AppNavigationState.guest;
     if (_user == null) return AppNavigationState.unauthenticated;
-    if (_needsEmailVerification) return AppNavigationState.needsEmailVerification;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
     return AppNavigationState.authenticated;
   }

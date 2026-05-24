@@ -183,13 +183,33 @@ export class ChatService {
     const notifTitle = `Tienes un nuevo mensaje de: ${senderName}`;
     const senderAvatar = sender?.avatarUrl ?? null;
 
+    // Persistencia de la notificación de chat (multi-cuenta en mismo
+    // dispositivo). Mantener esto AQUÍ y no en el gateway es la
+    // forma correcta: `events.gateway.emitNotification` agregaría una
+    // segunda fila si CHAT_MESSAGE no estuviera en `_skipPersist`,
+    // generando duplicados. Fire-and-forget: si la persistencia falla
+    // no rompemos el envío del mensaje (que ya está en chat_messages).
+    this.prisma.adminNotification
+      .create({
+        data: {
+          providerId:   null,
+          targetUserId: receiverUserId,
+          type:         'CHAT_MESSAGE',
+          title:        notifTitle,
+          message:      message.content,
+        },
+      })
+      .catch((e) =>
+        this.logger.warn(`persist CHAT_MESSAGE falló: ${(e as Error)?.message ?? e}`),
+      );
+
     // Push + WebSocket en paralelo. Errores se loguean pero no rompen la API.
-    // Tres canales:
-    //   1. Push FCM → notif del sistema con nombre del remitente
-    //   2. newChatMessage WS → chat_provider actualiza la sala en vivo
+    // Dos canales (la persistencia ya se hizo arriba):
+    //   1. Push FCM → notif del sistema con nombre del remitente.
+    //   2. newChatMessage WS → chat_provider actualiza la sala en vivo.
     //   3. notification WS → notifications_provider lo agrega al inbox
-    //      (in-memory durante la sesión; persistencia en BD requiere
-    //      añadir CHAT_MESSAGE al enum NotificationType + migración)
+    //      en vivo. Esta vez NO crea fila en BD (CHAT_MESSAGE está en
+    //      `_skipPersist` del gateway) — la persistencia ya está hecha.
     void Promise.allSettled([
       this.push
         .sendToUser(receiverUserId, notifTitle, message.content, {
