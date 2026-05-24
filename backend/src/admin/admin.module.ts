@@ -10,7 +10,14 @@ import { ReferralsModule } from '../referrals/referrals.module.js';
 import { LocalitiesModule } from '../localities/localities.module.js';
 
 @Module({
-  imports: [CacheModule.register(), AuthModule, EventsModule, FirebaseModule, ReferralsModule, LocalitiesModule],
+  imports: [
+    CacheModule.register(),
+    AuthModule,
+    EventsModule,
+    FirebaseModule,
+    ReferralsModule,
+    LocalitiesModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService, RolesGuard],
 })

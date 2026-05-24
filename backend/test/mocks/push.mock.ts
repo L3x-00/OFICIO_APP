@@ -12,7 +12,7 @@ export type PushMock = {
 
 export function createPushMock(): PushMock {
   return {
-    sendToUser:  jest.fn().mockResolvedValue(undefined),
+    sendToUser: jest.fn().mockResolvedValue(undefined),
     sendToTopic: jest.fn().mockResolvedValue(undefined),
   };
 }

@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
@@ -18,14 +23,14 @@ export class ProvidersService {
     search?: string;
     localityId?: number;
     // Nuevos filtros
-    type?: string;       // PROFESSIONAL | BUSINESS (providerType)
-    sortBy?: string;     // 'reviews' | 'availability' | 'rating' (default)
-    verified?: boolean;  // true = solo verificados (por defecto true)
-    location?: string;   // búsqueda por texto en dirección
+    type?: string; // PROFESSIONAL | BUSINESS (providerType)
+    sortBy?: string; // 'reviews' | 'availability' | 'rating' (default)
+    verified?: boolean; // true = solo verificados (por defecto true)
+    location?: string; // búsqueda por texto en dirección
     // Filtros de ubicación estructurados (jerarquía peruana)
     department?: string; // Ej: "Junín"
-    province?: string;   // Ej: "Huancayo"
-    district?: string;   // Ej: "El Tambo"
+    province?: string; // Ej: "Huancayo"
+    district?: string; // Ej: "El Tambo"
     lat?: number;
     lng?: number;
     page?: number;
@@ -49,11 +54,16 @@ export class ProvidersService {
     } = filters;
 
     // Solo proveedores visibles y aprobados por el admin
-    const where: Prisma.ProviderWhereInput = { isVisible: true, verificationStatus: 'APROBADO' };
+    const where: Prisma.ProviderWhereInput = {
+      isVisible: true,
+      verificationStatus: 'APROBADO',
+    };
 
     if (parentCategorySlug) {
       // Muestra proveedores cuya categoría (cualquiera de las suyas) es hija de la macrocategoría dada
-      where.providerCategories = { some: { category: { parent: { slug: parentCategorySlug } } } };
+      where.providerCategories = {
+        some: { category: { parent: { slug: parentCategorySlug } } },
+      };
     } else if (categorySlug) {
       where.providerCategories = { some: { category: { slug: categorySlug } } };
     }
@@ -73,11 +83,7 @@ export class ProvidersService {
     // que un listado vacío por una variante ortográfica.
     if (department || province || district) {
       const norm = (s: string | null | undefined) =>
-        (s ?? '')
-          .normalize('NFD')
-          .replace(/[̀-ͯ]/g, '')
-          .toLowerCase()
-          .trim();
+        (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
       const nDept = norm(department);
       const nProv = norm(province);
@@ -98,9 +104,9 @@ export class ProvidersService {
         localities
           .filter(
             (l) =>
-              (d === ''  || norm(l.department) === d) &&
-              (p === ''  || norm(l.province)   === p) &&
-              (di === '' || norm(l.district)   === di),
+              (d === '' || norm(l.department) === d) &&
+              (p === '' || norm(l.province) === p) &&
+              (di === '' || norm(l.district) === di),
           )
           .map((l) => l.id);
 
@@ -110,12 +116,12 @@ export class ProvidersService {
       // todo el Perú (un profesional sí puede desplazarse / atender a
       // distancia, o el cliente lo busca por nombre).
       const onlyDepartment = !!nDept && !nProv && !nDist;
-      const wantsOficio  = type === 'OFICIO'  || type === 'PROFESSIONAL';
+      const wantsOficio = type === 'OFICIO' || type === 'PROFESSIONAL';
       const wantsNegocio = type === 'NEGOCIO' || type === 'BUSINESS';
 
       if (onlyDepartment) {
         const deptIds = matchAt(nDept, '', '');
-        const inDept  = deptIds.length > 0 ? deptIds : [-1];
+        const inDept = deptIds.length > 0 ? deptIds : [-1];
         if (wantsOficio) {
           // Solo profesionales — sin filtro de ubicación (todo el Perú).
         } else if (wantsNegocio) {
@@ -168,15 +174,20 @@ export class ProvidersService {
       const q = search.trim();
       where.OR = [
         { businessName: { contains: q, mode: 'insensitive' } },
-        { description:  { contains: q, mode: 'insensitive' } },
-        { user: {
+        { description: { contains: q, mode: 'insensitive' } },
+        {
+          user: {
             OR: [
               { firstName: { contains: q, mode: 'insensitive' } },
-              { lastName:  { contains: q, mode: 'insensitive' } },
+              { lastName: { contains: q, mode: 'insensitive' } },
             ],
           },
         },
-        { providerCategories: { some: { category: { name: { contains: q, mode: 'insensitive' } } } } },
+        {
+          providerCategories: {
+            some: { category: { name: { contains: q, mode: 'insensitive' } } },
+          },
+        },
       ];
     }
 
@@ -186,7 +197,9 @@ export class ProvidersService {
     }
 
     // Ordenamiento secundario según filtro del usuario
-    let secondaryOrder: Prisma.ProviderOrderByWithRelationInput = { averageRating: 'desc' };
+    let secondaryOrder: Prisma.ProviderOrderByWithRelationInput = {
+      averageRating: 'desc',
+    };
     if (sortBy === 'reviews') {
       // "Mejores reseñas": solo proveedores con ≥ 3.5 estrellas
       where.averageRating = { gte: 3.5 };
@@ -213,16 +226,30 @@ export class ProvidersService {
         take: limit,
         include: {
           providerCategories: {
-            select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
+            select: {
+              isPrimary: true,
+              category: {
+                select: { id: true, name: true, slug: true, iconUrl: true },
+              },
+            },
             orderBy: { isPrimary: 'desc' },
           },
           // Cover primero para que las tarjetas siempre tengan foto incluso
           // si se filtra por `isCover==true` en el cliente — y si por algún
           // motivo ningún ProviderImage tiene el flag, la primera por
           // `order` queda al frente como fallback.
-          images:       { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
-          user:         { select: { firstName: true, lastName: true, avatarUrl: true } },
-          locality:     { select: { name: true, department: true, province: true, district: true } },
+          images: { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
+          user: {
+            select: { firstName: true, lastName: true, avatarUrl: true },
+          },
+          locality: {
+            select: {
+              name: true,
+              department: true,
+              province: true,
+              district: true,
+            },
+          },
           subscription: { select: { plan: true, status: true } },
         },
         orderBy,
@@ -245,22 +272,22 @@ export class ProvidersService {
    * plan gratis. El proveedor SÍ ve sus propios datos en su panel
    * (endpoint /provider-profile/me, que no pasa por aquí).
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private maskContactIfFree(p: any): any {
     if (!p) return p;
     const plan = p.subscription?.plan;
     if (plan === 'ESTANDAR' || plan === 'PREMIUM') return p;
     return {
       ...p,
-      phone:       '',
-      whatsapp:    null,
-      website:     null,
-      instagram:   null,
-      tiktok:      null,
-      facebook:    null,
-      linkedin:    null,
-      twitterX:    null,
-      telegram:    null,
+      phone: '',
+      whatsapp: null,
+      website: null,
+      instagram: null,
+      tiktok: null,
+      facebook: null,
+      linkedin: null,
+      twitterX: null,
+      telegram: null,
       whatsappBiz: null,
     };
   }
@@ -271,7 +298,12 @@ export class ProvidersService {
       where: { id },
       include: {
         providerCategories: {
-          select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } },
+          select: {
+            isPrimary: true,
+            category: {
+              select: { id: true, name: true, slug: true, iconUrl: true },
+            },
+          },
           orderBy: { isPrimary: 'desc' },
         },
         images: { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
@@ -325,7 +357,9 @@ export class ProvidersService {
 
   // ── RECOMENDAR PROVEEDOR ─────────────────────────────────
   async addRecommendation(userId: number, providerId: number) {
-    const provider = await this.prisma.provider.findUnique({ where: { id: providerId } });
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: providerId },
+    });
     if (!provider) throw new Error('Proveedor no encontrado');
 
     // Si ya recomendó, devolver el total actual sin crear duplicado
@@ -333,7 +367,11 @@ export class ProvidersService {
       where: { userId_providerId: { userId, providerId } },
     });
     if (existing) {
-      return { success: true, totalRecommendations: provider.totalRecommendations, alreadyRecommended: true };
+      return {
+        success: true,
+        totalRecommendations: provider.totalRecommendations,
+        alreadyRecommended: true,
+      };
     }
 
     // Crear recomendación e incrementar contador atómicamente
@@ -346,7 +384,10 @@ export class ProvidersService {
       }),
     ]);
 
-    return { success: true, totalRecommendations: updated.totalRecommendations };
+    return {
+      success: true,
+      totalRecommendations: updated.totalRecommendations,
+    };
   }
 
   // ── REPORTAR PROVEEDOR ───────────────────────────────────
@@ -357,38 +398,46 @@ export class ProvidersService {
     description?: string;
   }) {
     const validReasons = [
-      'INFORMACION_FALSA', 'COMPORTAMIENTO', 'FRAUDE',
-      'FOTO_INAPROPIADA', 'NO_PRESTO', 'OTRO',
+      'INFORMACION_FALSA',
+      'COMPORTAMIENTO',
+      'FRAUDE',
+      'FOTO_INAPROPIADA',
+      'NO_PRESTO',
+      'OTRO',
     ];
     if (!validReasons.includes(data.reason)) {
       throw new BadRequestException('Motivo de reporte inválido');
     }
 
-    const provider = await this.prisma.provider.findUnique({ where: { id: data.providerId } });
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: data.providerId },
+    });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
     try {
       const report = await this.prisma.providerReport.create({
         data: {
-          providerId:  data.providerId,
-          userId:      data.userId,
-          reason:      data.reason as any,
+          providerId: data.providerId,
+          userId: data.userId,
+          reason: data.reason as any,
           description: data.description,
         },
       });
 
       // Notificar al admin en tiempo real
       this.events.emitNotification({
-        type:       'NEW_PROVIDER_REPORT',
-        title:      'Nuevo reporte de proveedor',
-        body:       `Se reportó al proveedor #${data.providerId}. Motivo: ${data.reason}.`,
+        type: 'NEW_PROVIDER_REPORT',
+        title: 'Nuevo reporte de proveedor',
+        body: `Se reportó al proveedor #${data.providerId}. Motivo: ${data.reason}.`,
         targetRole: 'ADMIN',
       });
 
       return report;
     } catch (e: any) {
       if (e?.code === 'P2002') {
-        throw new ConflictException('Ya enviaste un reporte para este proveedor.');
+        throw new ConflictException(
+          'Ya enviaste un reporte para este proveedor.',
+        );
       }
       throw e;
     }
@@ -397,7 +446,9 @@ export class ProvidersService {
   // ── REPORTE DE PROBLEMA DE PLATAFORMA ───────────────────
   async createPlatformIssue(userId: number, description: string) {
     if (!description || description.trim().length < 5) {
-      throw new BadRequestException('La descripción del problema es demasiado corta.');
+      throw new BadRequestException(
+        'La descripción del problema es demasiado corta.',
+      );
     }
     return this.prisma.platformIssue.create({
       data: { userId, description: description.trim() },
@@ -414,7 +465,9 @@ export class ProvidersService {
 
   // ── TOGGLE RECOMENDACIÓN (añadir o quitar) ───────────────
   async toggleRecommendation(userId: number, providerId: number) {
-    const provider = await this.prisma.provider.findUnique({ where: { id: providerId } });
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: providerId },
+    });
     if (!provider) throw new Error('Proveedor no encontrado');
 
     const existing = await this.prisma.recommendation.findUnique({
@@ -433,7 +486,10 @@ export class ProvidersService {
           select: { totalRecommendations: true },
         }),
       ]);
-      return { recommended: false, totalRecommendations: updated.totalRecommendations };
+      return {
+        recommended: false,
+        totalRecommendations: updated.totalRecommendations,
+      };
     }
 
     // Añadir recomendación
@@ -445,7 +501,10 @@ export class ProvidersService {
         select: { totalRecommendations: true },
       }),
     ]);
-    return { recommended: true, totalRecommendations: updated.totalRecommendations };
+    return {
+      recommended: true,
+      totalRecommendations: updated.totalRecommendations,
+    };
   }
 
   async getAdminMetrics() {
@@ -461,7 +520,7 @@ export class ProvidersService {
       totalUsers,
       totalReviews,
       activeServices: totalProviders, // Puedes ajustar la lógica después
-      revenue: 0 // Placeholder por ahora
+      revenue: 0, // Placeholder por ahora
     };
   }
 
@@ -469,7 +528,7 @@ export class ProvidersService {
     // Retorna proveedores que están en periodo de prueba o próximos a vencer
     return this.prisma.provider.findMany({
       take: 5,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

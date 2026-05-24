@@ -39,7 +39,8 @@ export class PushNotificationsService {
     } catch (err: any) {
       // Token inválido o caducado — limpiar para evitar spam
       if (
-        err?.errorInfo?.code === 'messaging/registration-token-not-registered' ||
+        err?.errorInfo?.code ===
+          'messaging/registration-token-not-registered' ||
         err?.errorInfo?.code === 'messaging/invalid-registration-token'
       ) {
         await this.prisma.user.update({
@@ -48,7 +49,9 @@ export class PushNotificationsService {
         });
         this.logger.warn(`FCM token inválido limpiado para userId=${userId}`);
       } else {
-        this.logger.error(`Error enviando push a userId=${userId}: ${err?.message}`);
+        this.logger.error(
+          `Error enviando push a userId=${userId}: ${err?.message}`,
+        );
       }
     }
   }

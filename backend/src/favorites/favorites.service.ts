@@ -30,7 +30,10 @@ export class FavoritesService {
         provider: {
           include: {
             providerCategories: {
-              select: { isPrimary: true, category: { select: { id: true, name: true, slug: true } } },
+              select: {
+                isPrimary: true,
+                category: { select: { id: true, name: true, slug: true } },
+              },
               orderBy: { isPrimary: 'desc' },
             },
             // Devolvemos varias imágenes ordenadas por isCover→order para
@@ -54,7 +57,8 @@ export class FavoritesService {
     return favorites.map((f) => ({
       ...f.provider,
       category: {
-        name: f.provider.providerCategories?.[0]?.category?.name ?? 'Sin categoría',
+        name:
+          f.provider.providerCategories?.[0]?.category?.name ?? 'Sin categoría',
       },
     }));
   }

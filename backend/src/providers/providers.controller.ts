@@ -101,10 +101,11 @@ export class ProvidersController {
 
   // POST /providers/report-issue — Proveedor reporta un problema de plataforma
   @Post('report-issue')
-  createPlatformIssue(
-    @Body() body: { userId: number; description: string },
-  ) {
-    return this.providersService.createPlatformIssue(+body.userId, body.description);
+  createPlatformIssue(@Body() body: { userId: number; description: string }) {
+    return this.providersService.createPlatformIssue(
+      +body.userId,
+      body.description,
+    );
   }
 
   // POST /providers/:id/report — Cliente reporta un proveedor
@@ -114,9 +115,9 @@ export class ProvidersController {
     @Body() body: { userId: number; reason: string; description?: string },
   ) {
     return this.providersService.createReport({
-      providerId:  id,
-      userId:      +body.userId,
-      reason:      body.reason,
+      providerId: id,
+      userId: +body.userId,
+      reason: body.reason,
       description: body.description,
     });
   }

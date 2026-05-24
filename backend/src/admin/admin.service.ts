@@ -7,7 +7,12 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus, ProviderType, SubscriptionPlan, SubscriptionStatus } from '../generated/client/enums.js';
+import {
+  AvailabilityStatus,
+  ProviderType,
+  SubscriptionPlan,
+  SubscriptionStatus,
+} from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
@@ -22,7 +27,7 @@ export class AdminService {
     private minio: MinioService,
     private push: PushNotificationsService,
     private referrals: ReferralsService,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
 
@@ -32,8 +37,10 @@ export class AdminService {
    * admin/web que aún lee `provider.category.name` (modelo singular legado).
    * No altera `providerCategories` — coexisten ambos.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private withCategoryAlias<T extends { providerCategories?: Array<{ category: { name: string } }> }>(p: T): T & { category: { name: string } } {
+
+  private withCategoryAlias<
+    T extends { providerCategories?: Array<{ category: { name: string } }> },
+  >(p: T): T & { category: { name: string } } {
     const name = p?.providerCategories?.[0]?.category?.name ?? 'Sin categoría';
     return { ...p, category: { name } };
   }
@@ -76,9 +83,13 @@ export class AdminService {
 
     // 2. IPs distintas con conteo y última conexión.
     //    Limit 500 para no saturar ip-api (5 batch calls de 100).
-    const rows = await this.prisma.$queryRaw<Array<{
-      ip: string; user_count: number; last_access: Date;
-    }>>`
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        ip: string;
+        user_count: number;
+        last_access: Date;
+      }>
+    >`
       SELECT "lastIp"          AS ip,
              count(*)::int     AS user_count,
              max("lastLoginAt") AS last_access
@@ -93,14 +104,19 @@ export class AdminService {
     if (rows.length === 0) {
       const empty: any[] = [];
       await this.cacheManager.set(
-        AdminService.GEO_CACHE_KEY, empty, AdminService.GEO_CACHE_TTL * 1000,
+        AdminService.GEO_CACHE_KEY,
+        empty,
+        AdminService.GEO_CACHE_TTL * 1000,
       );
       return empty;
     }
 
     // 3. Batch resolve a ip-api.com (chunks de 100).
-    const ipToGeo = new Map<string, { city: string; department: string; country: string }>();
-    const ips = rows.map(r => r.ip);
+    const ipToGeo = new Map<
+      string,
+      { city: string; department: string; country: string }
+    >();
+    const ips = rows.map((r) => r.ip);
     for (let i = 0; i < ips.length; i += 100) {
       const chunk = ips.slice(i, i + 100);
       try {
@@ -117,16 +133,19 @@ export class AdminService {
           // resultados parciales antes que fallar todo.
           continue;
         }
-        const data = await resp.json() as Array<{
-          status: string; query: string; country?: string;
-          regionName?: string; city?: string;
+        const data = (await resp.json()) as Array<{
+          status: string;
+          query: string;
+          country?: string;
+          regionName?: string;
+          city?: string;
         }>;
         for (const item of data) {
           if (item.status !== 'success') continue;
           ipToGeo.set(item.query, {
-            city:       item.city ?? 'Desconocida',
+            city: item.city ?? 'Desconocida',
             department: item.regionName ?? item.country ?? 'Desconocido',
-            country:    item.country ?? 'Desconocido',
+            country: item.country ?? 'Desconocido',
           });
         }
       } catch {
@@ -135,52 +154,68 @@ export class AdminService {
     }
 
     // 4. Agrupar por (city, department).
-    const grouped = new Map<string, {
-      city: string; department: string; country: string;
-      userCount: number; lastAccess: string;
-    }>();
+    const grouped = new Map<
+      string,
+      {
+        city: string;
+        department: string;
+        country: string;
+        userCount: number;
+        lastAccess: string;
+      }
+    >();
     for (const r of rows) {
       const geo = ipToGeo.get(r.ip);
       if (!geo) continue; // IP que no pudimos resolver
       const key = `${geo.city}|${geo.department}`;
       const existing = grouped.get(key);
-      const lastAccess = (r.last_access instanceof Date
-        ? r.last_access
-        : new Date(r.last_access)).toISOString();
+      const lastAccess = (
+        r.last_access instanceof Date ? r.last_access : new Date(r.last_access)
+      ).toISOString();
       if (existing) {
         existing.userCount += Number(r.user_count);
         if (lastAccess > existing.lastAccess) existing.lastAccess = lastAccess;
       } else {
         grouped.set(key, {
-          city:       geo.city,
+          city: geo.city,
           department: geo.department,
-          country:    geo.country,
-          userCount:  Number(r.user_count),
+          country: geo.country,
+          userCount: Number(r.user_count),
           lastAccess,
         });
       }
     }
 
-    const result = Array.from(grouped.values())
-      .sort((a, b) => b.userCount - a.userCount);
+    const result = Array.from(grouped.values()).sort(
+      (a, b) => b.userCount - a.userCount,
+    );
 
     // 5. Cachear 1h.
     await this.cacheManager.set(
-      AdminService.GEO_CACHE_KEY, result, AdminService.GEO_CACHE_TTL * 1000,
+      AdminService.GEO_CACHE_KEY,
+      result,
+      AdminService.GEO_CACHE_TTL * 1000,
     );
     return result;
   }
 
   // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
-    const now          = new Date();
+    const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [
-      totalProviders, activeProviders, providersInGrace,
-      providersExpiringSoon, totalUsers, totalReviews,
-      pendingVerifications, whatsappClicks, callClicks,
-      totalActiveUsers, totalProviderUsers,
+      totalProviders,
+      activeProviders,
+      providersInGrace,
+      providersExpiringSoon,
+      totalUsers,
+      totalReviews,
+      pendingVerifications,
+      whatsappClicks,
+      callClicks,
+      totalActiveUsers,
+      totalProviderUsers,
     ] = await Promise.all([
       this.prisma.provider.count(),
       this.prisma.provider.count({ where: { isVisible: true } }),
@@ -196,9 +231,14 @@ export class AdminService {
       }),
       this.prisma.user.count({ where: { role: 'USUARIO' } }),
       this.prisma.review.count(),
-      this.prisma.provider.count({ where: { verificationStatus: 'PENDIENTE' } }),
+      this.prisma.provider.count({
+        where: { verificationStatus: 'PENDIENTE' },
+      }),
       this.prisma.providerAnalytic.count({
-        where: { eventType: 'whatsapp_click', createdAt: { gte: startOfMonth } },
+        where: {
+          eventType: 'whatsapp_click',
+          createdAt: { gte: startOfMonth },
+        },
       }),
       this.prisma.providerAnalytic.count({
         where: { eventType: 'call_click', createdAt: { gte: startOfMonth } },
@@ -208,10 +248,17 @@ export class AdminService {
     ]);
 
     return {
-      totalProviders, activeProviders, providersInGrace,
-      providersExpiringSoon, totalUsers, totalReviews,
-      pendingVerifications, whatsappClicks, callClicks,
-      totalActiveUsers, totalProviderUsers,
+      totalProviders,
+      activeProviders,
+      providersInGrace,
+      providersExpiringSoon,
+      totalUsers,
+      totalReviews,
+      pendingVerifications,
+      whatsappClicks,
+      callClicks,
+      totalActiveUsers,
+      totalProviderUsers,
     };
   }
 
@@ -223,8 +270,10 @@ export class AdminService {
       include: {
         provider: {
           include: {
-            providerCategories: { select: { category: { select: { name: true } } } },
-            locality:  { select: { name: true } },
+            providerCategories: {
+              select: { category: { select: { name: true } } },
+            },
+            locality: { select: { name: true } },
           },
         },
       },
@@ -237,24 +286,31 @@ export class AdminService {
       daysLeft: Math.ceil(
         (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       ),
-      isUrgent: Math.ceil(
-        (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      ) <= 7,
+      isUrgent:
+        Math.ceil(
+          (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        ) <= 7,
     }));
   }
 
   // ── ANALYTICS ─────────────────────────────────────────────
   async getAnalytics(days = 30) {
-    const since    = new Date();
+    const since = new Date();
     since.setDate(since.getDate() - days);
     const prevSince = new Date(since);
     prevSince.setDate(prevSince.getDate() - days);
 
     const [
       dailyAgg,
-      prevWA, prevCalls, prevViews,
+      prevWA,
+      prevCalls,
+      prevViews,
       planDist,
-      totalProviders, approvedProviders, pendingProviders, rejectedProviders, activeProviders,
+      totalProviders,
+      approvedProviders,
+      pendingProviders,
+      rejectedProviders,
+      activeProviders,
       availDist,
       geoDist,
       topProviderClicks,
@@ -272,9 +328,21 @@ export class AdminService {
          ORDER BY 1 ASC
       `,
       // Período anterior para comparación
-      this.prisma.providerAnalytic.count({ where: { eventType: 'whatsapp_click', createdAt: { gte: prevSince, lt: since } } }),
-      this.prisma.providerAnalytic.count({ where: { eventType: 'call_click',     createdAt: { gte: prevSince, lt: since } } }),
-      this.prisma.providerAnalytic.count({ where: { eventType: 'view',           createdAt: { gte: prevSince, lt: since } } }),
+      this.prisma.providerAnalytic.count({
+        where: {
+          eventType: 'whatsapp_click',
+          createdAt: { gte: prevSince, lt: since },
+        },
+      }),
+      this.prisma.providerAnalytic.count({
+        where: {
+          eventType: 'call_click',
+          createdAt: { gte: prevSince, lt: since },
+        },
+      }),
+      this.prisma.providerAnalytic.count({
+        where: { eventType: 'view', createdAt: { gte: prevSince, lt: since } },
+      }),
       // Distribución de planes
       this.prisma.subscription.groupBy({
         by: ['plan'],
@@ -284,8 +352,12 @@ export class AdminService {
       // Funnel de proveedores
       this.prisma.provider.count(),
       this.prisma.provider.count({ where: { verificationStatus: 'APROBADO' } }),
-      this.prisma.provider.count({ where: { verificationStatus: 'PENDIENTE' } }),
-      this.prisma.provider.count({ where: { verificationStatus: 'RECHAZADO' } }),
+      this.prisma.provider.count({
+        where: { verificationStatus: 'PENDIENTE' },
+      }),
+      this.prisma.provider.count({
+        where: { verificationStatus: 'RECHAZADO' },
+      }),
       this.prisma.provider.count({ where: { isVisible: true } }),
       // Distribución de disponibilidad
       this.prisma.provider.groupBy({
@@ -305,100 +377,137 @@ export class AdminService {
       this.prisma.providerAnalytic.groupBy({
         by: ['providerId'],
         _count: { id: true },
-        where: { createdAt: { gte: since }, eventType: { in: ['whatsapp_click', 'call_click'] } },
+        where: {
+          createdAt: { gte: since },
+          eventType: { in: ['whatsapp_click', 'call_click'] },
+        },
         orderBy: { _count: { id: 'desc' } },
         take: 10,
       }),
     ]);
 
     // Construir dailyClicks a partir del agrupado SQL.
-    const byDay: Record<string, { whatsapp: number; calls: number; views: number }> = {};
-    let totalWA = 0, totalCalls = 0, totalViews = 0;
+    const byDay: Record<
+      string,
+      { whatsapp: number; calls: number; views: number }
+    > = {};
+    let totalWA = 0,
+      totalCalls = 0,
+      totalViews = 0;
     for (const row of dailyAgg) {
-      const day  = row.day;
-      const cnt  = Number(row.count); // bigint → number
+      const day = row.day;
+      const cnt = Number(row.count); // bigint → number
       if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0, views: 0 };
-      if (row.eventType === 'whatsapp_click') { byDay[day].whatsapp += cnt; totalWA    += cnt; }
-      else if (row.eventType === 'call_click')     { byDay[day].calls    += cnt; totalCalls += cnt; }
-      else if (row.eventType === 'view')           { byDay[day].views    += cnt; totalViews += cnt; }
+      if (row.eventType === 'whatsapp_click') {
+        byDay[day].whatsapp += cnt;
+        totalWA += cnt;
+      } else if (row.eventType === 'call_click') {
+        byDay[day].calls += cnt;
+        totalCalls += cnt;
+      } else if (row.eventType === 'view') {
+        byDay[day].views += cnt;
+        totalViews += cnt;
+      }
     }
 
     // Delta % vs período anterior
     const pctDelta = (curr: number, prev: number) =>
-      prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100);
+      prev === 0
+        ? curr > 0
+          ? 100
+          : 0
+        : Math.round(((curr - prev) / prev) * 100);
 
     // Obtener nombres de localidades para geo
-    const localityIds = geoDist.map((g) => g.localityId).filter((id): id is number => id != null);
-    const localityData = localityIds.length > 0
-      ? await this.prisma.locality.findMany({
-          where: { id: { in: localityIds } },
-          select: { id: true, name: true },
-        })
-      : [];
+    const localityIds = geoDist
+      .map((g) => g.localityId)
+      .filter((id): id is number => id != null);
+    const localityData =
+      localityIds.length > 0
+        ? await this.prisma.locality.findMany({
+            where: { id: { in: localityIds } },
+            select: { id: true, name: true },
+          })
+        : [];
     const localityMap = new Map(localityData.map((l) => [l.id, l.name]));
 
     // Obtener nombres de top proveedores
     const topProviderIds = topProviderClicks.map((t) => t.providerId);
-    const topProviderData = topProviderIds.length > 0
-      ? await this.prisma.provider.findMany({
-          where: { id: { in: topProviderIds } },
-          select: { id: true, businessName: true, type: true, providerCategories: { select: { category: { select: { name: true } } } } },
-        })
-      : [];
+    const topProviderData =
+      topProviderIds.length > 0
+        ? await this.prisma.provider.findMany({
+            where: { id: { in: topProviderIds } },
+            select: {
+              id: true,
+              businessName: true,
+              type: true,
+              providerCategories: {
+                select: { category: { select: { name: true } } },
+              },
+            },
+          })
+        : [];
     const topProviderMap = new Map(topProviderData.map((p) => [p.id, p]));
 
     return {
       // Daily engagement con views
-      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({ date, ...counts })),
+      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({
+        date,
+        ...counts,
+      })),
 
       // KPIs del período con comparación
       kpis: {
         whatsappTotal: totalWA,
-        callsTotal:    totalCalls,
-        viewsTotal:    totalViews,
-        whatsappDelta: pctDelta(totalWA,    prevWA),
-        callsDelta:    pctDelta(totalCalls, prevCalls),
-        viewsDelta:    pctDelta(totalViews, prevViews),
+        callsTotal: totalCalls,
+        viewsTotal: totalViews,
+        whatsappDelta: pctDelta(totalWA, prevWA),
+        callsDelta: pctDelta(totalCalls, prevCalls),
+        viewsDelta: pctDelta(totalViews, prevViews),
       },
 
       // Distribución de planes
       planDistribution: planDist.map((p) => ({
-        plan:  p.plan,
+        plan: p.plan,
         count: p._count.id,
       })),
 
       // Funnel de proveedores
       providerFunnel: {
-        total:    totalProviders,
+        total: totalProviders,
         approved: approvedProviders,
-        pending:  pendingProviders,
+        pending: pendingProviders,
         rejected: rejectedProviders,
-        active:   activeProviders,
-        conversionRate: totalProviders > 0
-          ? Math.round((approvedProviders / totalProviders) * 100)
-          : 0,
+        active: activeProviders,
+        conversionRate:
+          totalProviders > 0
+            ? Math.round((approvedProviders / totalProviders) * 100)
+            : 0,
       },
 
       // Distribución de disponibilidad
       availabilityDistribution: availDist.map((a) => ({
         status: a.availability,
-        count:  a._count.id,
+        count: a._count.id,
       })),
 
       // Distribución geográfica
       geoDistribution: geoDist
         .filter((g) => g.localityId != null)
-        .map((g) => ({ department: localityMap.get(g.localityId!) ?? `Loc #${g.localityId}`, count: g._count.id })),
+        .map((g) => ({
+          department: localityMap.get(g.localityId) ?? `Loc #${g.localityId}`,
+          count: g._count.id,
+        })),
 
       // Top proveedores por engagement
       topProviders: topProviderClicks.map((t) => {
         const p = topProviderMap.get(t.providerId);
         return {
-          providerId:   t.providerId,
+          providerId: t.providerId,
           businessName: p?.businessName ?? `Proveedor #${t.providerId}`,
-          type:         p?.type ?? 'OFICIO',
+          type: p?.type ?? 'OFICIO',
           categoryName: p?.providerCategories?.[0]?.category?.name ?? '—',
-          clicks:       t._count.id,
+          clicks: t._count.id,
         };
       }),
     };
@@ -406,7 +515,7 @@ export class AdminService {
 
   // ── LISTAR TODOS LOS PROVEEDORES ──────────────────────────
   async getAllProviders(page = 1, limit = 15, search?: string) {
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
     const where: Prisma.ProviderWhereInput = {};
 
     if (search) {
@@ -424,13 +533,23 @@ export class AdminService {
         take: limit,
         include: {
           providerCategories: {
-            select: { isPrimary: true, category: { select: { id: true, name: true, slug: true } } },
+            select: {
+              isPrimary: true,
+              category: { select: { id: true, name: true, slug: true } },
+            },
             orderBy: { isPrimary: 'desc' },
           },
-          locality:         { select: { name: true } },
-          subscription:     { select: { plan: true, status: true, endDate: true } },
-          user:             { select: { email: true, firstName: true, lastName: true, createdAt: true } },
-          images:           true,
+          locality: { select: { name: true } },
+          subscription: { select: { plan: true, status: true, endDate: true } },
+          user: {
+            select: {
+              email: true,
+              firstName: true,
+              lastName: true,
+              createdAt: true,
+            },
+          },
+          images: true,
           verificationDocs: true,
         },
         orderBy: { createdAt: 'desc' },
@@ -450,8 +569,13 @@ export class AdminService {
   async getFormOptions() {
     const [categories, localities] = await Promise.all([
       this.prisma.category.findMany({
-        where:   { isActive: true, parentId: null },
-        include: { children: { where: { isActive: true }, select: { id: true, name: true, slug: true, forType: true } } },
+        where: { isActive: true, parentId: null },
+        include: {
+          children: {
+            where: { isActive: true },
+            select: { id: true, name: true, slug: true, forType: true },
+          },
+        },
         orderBy: { name: 'asc' },
       }),
       this.prisma.locality.findMany({ where: { isActive: true } }),
@@ -460,205 +584,241 @@ export class AdminService {
   }
 
   // ── CREAR PROVEEDOR ───────────────────────────────────────
-async createProvider(data: {
-  email: string;
-  firstName: string;
-  lastName: string;
-  businessName: string;
-  phone: string;
-  whatsapp?: string;
-  description?: string;
-  address?: string;
-  categoryIds: (number | string)[]; // hasta 3 Especialidades (categorías hijas)
-  primaryCategoryId?: number | string; // Especialidad principal (isPrimary)
-  localityId: number | string;
-  type: string;
-  dni?: string;
-  ruc?: string;
-  nombreComercial?: string;
-  razonSocial?: string;
-  hasDelivery?: boolean | string;
-  plenaCoordinacion?: boolean | string;
-  department?: string;
-  province?: string;
-  district?: string;
-  scheduleJson?: string;
-}, files: Express.Multer.File[]) {
-  
-  const existing = await this.prisma.user.findUnique({
-    where: { email: data.email },
-  });
-  
-  if (existing) {
-    throw new ConflictException('El correo electrónico ya está registrado.');
+  async createProvider(
+    data: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      businessName: string;
+      phone: string;
+      whatsapp?: string;
+      description?: string;
+      address?: string;
+      categoryIds: (number | string)[]; // hasta 3 Especialidades (categorías hijas)
+      primaryCategoryId?: number | string; // Especialidad principal (isPrimary)
+      localityId: number | string;
+      type: string;
+      dni?: string;
+      ruc?: string;
+      nombreComercial?: string;
+      razonSocial?: string;
+      hasDelivery?: boolean | string;
+      plenaCoordinacion?: boolean | string;
+      department?: string;
+      province?: string;
+      district?: string;
+      scheduleJson?: string;
+    },
+    files: Express.Multer.File[],
+  ) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existing) {
+      throw new ConflictException('El correo electrónico ya está registrado.');
+    }
+
+    const bcrypt = await import('bcrypt');
+    const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const tempPassword = Array.from(
+      { length: 8 },
+      () => chars[Math.floor(Math.random() * chars.length)],
+    ).join('');
+
+    // Upload images to R2 before transaction
+    const imageUrls: string[] =
+      files && files.length > 0
+        ? await Promise.all(
+            files.map((f) =>
+              this.minio.uploadFile(
+                f.buffer,
+                f.originalname,
+                'providers/gallery',
+              ),
+            ),
+          )
+        : [];
+
+    // Especialidades: máx 6, una marcada como primaria (isPrimary).
+    const catIds = data.categoryIds.slice(0, 6).map(Number);
+    const primaryCatId =
+      data.primaryCategoryId != null &&
+      catIds.includes(Number(data.primaryCategoryId))
+        ? Number(data.primaryCategoryId)
+        : catIds[0];
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      // 1. Crear Usuario
+      const user = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash: await bcrypt.hash(tempPassword, 10),
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: 'PROVEEDOR',
+          department: data.department ?? null,
+          province: data.province ?? null,
+          district: data.district ?? null,
+        },
+      });
+
+      // 2. Crear Proveedor
+      let parsedSchedule: object | undefined;
+      if (data.scheduleJson) {
+        try {
+          parsedSchedule = JSON.parse(data.scheduleJson);
+        } catch {
+          /* ignore */
+        }
+      }
+      if (!parsedSchedule) {
+        parsedSchedule = {
+          lun: '8:00-18:00',
+          mar: '8:00-18:00',
+          mie: '8:00-18:00',
+          jue: '8:00-18:00',
+          vie: '8:00-18:00',
+          sab: '9:00-13:00',
+          dom: 'Cerrado',
+        };
+      }
+
+      const provider = await tx.provider.create({
+        data: {
+          userId: user.id,
+          businessName: data.businessName,
+          phone: data.phone,
+          whatsapp: data.whatsapp ?? null,
+          description: data.description ?? null,
+          address: data.address ?? null,
+          localityId: Number(data.localityId),
+          type: data.type as any,
+          dni: data.dni ?? null,
+          ruc: data.ruc ?? null,
+          nombreComercial: data.nombreComercial ?? null,
+          razonSocial: data.razonSocial ?? null,
+          hasDelivery: data.hasDelivery === true || data.hasDelivery === 'true',
+          scheduleJson: parsedSchedule as any,
+          providerCategories: {
+            create: catIds.map((cid) => ({
+              categoryId: cid,
+              isPrimary: cid === primaryCatId,
+            })),
+          },
+        },
+        include: {
+          providerCategories: { select: { category: true } },
+          locality: true,
+        },
+      });
+
+      // 3. GUARDAR IMÁGENES EN LA TABLA provider_images
+      if (imageUrls.length > 0) {
+        await tx.providerImage.createMany({
+          data: imageUrls.map((url, index) => ({
+            providerId: provider.id,
+            url,
+            isCover: index === 0,
+            order: index,
+          })),
+        });
+      }
+
+      // 4. Crear Suscripción de cortesía: ESTANDAR por 1 mes (mismo trato
+      // que un proveedor que se registra él mismo y es aprobado luego).
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+      await tx.subscription.create({
+        data: {
+          providerId: provider.id,
+          plan: 'ESTANDAR',
+          status: 'GRACIA',
+          endDate,
+        },
+      });
+
+      return { provider, userId: user.id };
+    });
+
+    return { ...result, tempPassword };
   }
 
-  const bcrypt = await import('bcrypt');
-  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const tempPassword = Array.from(
-    { length: 8 },
-    () => chars[Math.floor(Math.random() * chars.length)],
-  ).join('');
-
-  // Upload images to R2 before transaction
-  const imageUrls: string[] = files && files.length > 0
-    ? await Promise.all(files.map(f => this.minio.uploadFile(f.buffer, f.originalname, 'providers/gallery')))
-    : [];
-
-  // Especialidades: máx 6, una marcada como primaria (isPrimary).
-  const catIds = data.categoryIds.slice(0, 6).map(Number);
-  const primaryCatId =
-    data.primaryCategoryId != null && catIds.includes(Number(data.primaryCategoryId))
-      ? Number(data.primaryCategoryId)
-      : catIds[0];
-
-  const result = await this.prisma.$transaction(async (tx) => {
-    // 1. Crear Usuario
-    const user = await tx.user.create({
-      data: {
-        email:        data.email,
-        passwordHash: await bcrypt.hash(tempPassword, 10),
-        firstName:    data.firstName,
-        lastName:     data.lastName,
-        role:         'PROVEEDOR',
-        department:   data.department ?? null,
-        province:     data.province   ?? null,
-        district:     data.district   ?? null,
-      },
-    });
-
-    // 2. Crear Proveedor
-    let parsedSchedule: object | undefined;
-    if (data.scheduleJson) {
-      try { parsedSchedule = JSON.parse(data.scheduleJson); } catch { /* ignore */ }
-    }
-    if (!parsedSchedule) {
-      parsedSchedule = {
-        lun: '8:00-18:00', mar: '8:00-18:00', mie: '8:00-18:00',
-        jue: '8:00-18:00', vie: '8:00-18:00', sab: '9:00-13:00', dom: 'Cerrado',
-      };
-    }
-
-    const provider = await tx.provider.create({
-      data: {
-        userId:          user.id,
-        businessName:    data.businessName,
-        phone:           data.phone,
-        whatsapp:        data.whatsapp ?? null,
-        description:     data.description ?? null,
-        address:         data.address ?? null,
-        localityId:      Number(data.localityId),
-        type:            data.type as any,
-        dni:             data.dni ?? null,
-        ruc:             data.ruc ?? null,
-        nombreComercial: data.nombreComercial ?? null,
-        razonSocial:     data.razonSocial ?? null,
-        hasDelivery:     data.hasDelivery === true || data.hasDelivery === 'true',
-        scheduleJson:    parsedSchedule as any,
-        providerCategories: {
-          create: catIds.map(cid => ({ categoryId: cid, isPrimary: cid === primaryCatId })),
-        },
-      },
-      include: { providerCategories: { select: { category: true } }, locality: true },
-    });
-
-    // 3. GUARDAR IMÁGENES EN LA TABLA provider_images
-    if (imageUrls.length > 0) {
-      await tx.providerImage.createMany({
-        data: imageUrls.map((url, index) => ({
-          providerId: provider.id,
-          url,
-          isCover: index === 0,
-          order: index,
-        })),
-      });
-    }
-
-    // 4. Crear Suscripción de cortesía: ESTANDAR por 1 mes (mismo trato
-    // que un proveedor que se registra él mismo y es aprobado luego).
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 1);
-    await tx.subscription.create({
-      data: {
-        providerId: provider.id,
-        plan: 'ESTANDAR',
-        status: 'GRACIA',
-        endDate,
-      },
-    });
-
-    return { provider, userId: user.id };
-  });
-
-  return { ...result, tempPassword };
-}
-
   // ── ACTUALIZAR PROVEEDOR ──────────────────────────────────
-async updateProvider(
-  id: number,
-  data: {
-    businessName?: string;
-    phone?: string;
-    whatsapp?: string;
-    description?: string;
-    address?: string;
-    isVisible?: boolean;
-    isVerified?: boolean;
-    availability?: any; // Usa tu enum AvailabilityStatus
-    localityId?: number;
-    categoryIds?: (number | string)[];     // Especialidades — reemplaza el set
-    primaryCategoryId?: number | string;   // Especialidad principal (isPrimary)
-  },
-) {
-  const exists = await this.prisma.provider.findUnique({
-    where: { id },
-    include: { subscription: { select: { plan: true } } },
-  });
-  if (!exists) throw new NotFoundException('Proveedor no encontrado');
-
-  // categoryIds/primaryCategoryId NO son columnas de Provider — se gestionan
-  // aparte sobre la tabla de unión providerCategories.
-  const { categoryIds, primaryCategoryId, ...providerData } = data;
-
-  return this.prisma.$transaction(async (tx) => {
-    // Si llegan Especialidades, reemplazamos el set completo.
-    // Premium puede hasta 6; el resto, 3.
-    if (categoryIds && categoryIds.length > 0) {
-      const limit = exists.subscription?.plan === 'PREMIUM' ? 6 : 3;
-      const catIds = categoryIds.slice(0, limit).map(Number);
-      const primaryCatId =
-        primaryCategoryId != null && catIds.includes(Number(primaryCategoryId))
-          ? Number(primaryCategoryId)
-          : catIds[0];
-      await tx.providerCategory.deleteMany({ where: { providerId: id } });
-      await tx.providerCategory.createMany({
-        data: catIds.map(cid => ({ providerId: id, categoryId: cid, isPrimary: cid === primaryCatId })),
-      });
-    }
-
-    return tx.provider.update({
+  async updateProvider(
+    id: number,
+    data: {
+      businessName?: string;
+      phone?: string;
+      whatsapp?: string;
+      description?: string;
+      address?: string;
+      isVisible?: boolean;
+      isVerified?: boolean;
+      availability?: any; // Usa tu enum AvailabilityStatus
+      localityId?: number;
+      categoryIds?: (number | string)[]; // Especialidades — reemplaza el set
+      primaryCategoryId?: number | string; // Especialidad principal (isPrimary)
+    },
+  ) {
+    const exists = await this.prisma.provider.findUnique({
       where: { id },
-      data: providerData,
-      include: {
-        providerCategories: {
-          select: { isPrimary: true, category: true },
-          orderBy: { isPrimary: 'desc' },
-        },
-        locality: true,
-        images: true,
-      },
+      include: { subscription: { select: { plan: true } } },
     });
-  });
-}
+    if (!exists) throw new NotFoundException('Proveedor no encontrado');
+
+    // categoryIds/primaryCategoryId NO son columnas de Provider — se gestionan
+    // aparte sobre la tabla de unión providerCategories.
+    const { categoryIds, primaryCategoryId, ...providerData } = data;
+
+    return this.prisma.$transaction(async (tx) => {
+      // Si llegan Especialidades, reemplazamos el set completo.
+      // Premium puede hasta 6; el resto, 3.
+      if (categoryIds && categoryIds.length > 0) {
+        const limit = exists.subscription?.plan === 'PREMIUM' ? 6 : 3;
+        const catIds = categoryIds.slice(0, limit).map(Number);
+        const primaryCatId =
+          primaryCategoryId != null &&
+          catIds.includes(Number(primaryCategoryId))
+            ? Number(primaryCategoryId)
+            : catIds[0];
+        await tx.providerCategory.deleteMany({ where: { providerId: id } });
+        await tx.providerCategory.createMany({
+          data: catIds.map((cid) => ({
+            providerId: id,
+            categoryId: cid,
+            isPrimary: cid === primaryCatId,
+          })),
+        });
+      }
+
+      return tx.provider.update({
+        where: { id },
+        data: providerData,
+        include: {
+          providerCategories: {
+            select: { isPrimary: true, category: true },
+            orderBy: { isPrimary: 'desc' },
+          },
+          locality: true,
+          images: true,
+        },
+      });
+    });
+  }
 
   // ── HELPER: plan → prioridad de listado ──────────────────
   private planToPriority(plan: string, status: string): number {
     if (status !== 'ACTIVA') return 4;
     switch (plan) {
-      case 'PREMIUM':  return 1;
-      case 'ESTANDAR': return 2;
-      case 'GRATIS':   return 3;
-      default:         return 4;
+      case 'PREMIUM':
+        return 1;
+      case 'ESTANDAR':
+        return 2;
+      case 'GRATIS':
+        return 3;
+      default:
+        return 4;
     }
   }
 
@@ -666,7 +826,9 @@ async updateProvider(
   async updateProviderSubscription(id: number, plan: string) {
     const validPlans = ['GRATIS', 'ESTANDAR', 'PREMIUM'];
     if (!validPlans.includes(plan)) {
-      throw new BadRequestException(`Plan inválido. Valores permitidos: ${validPlans.join(', ')}`);
+      throw new BadRequestException(
+        `Plan inválido. Valores permitidos: ${validPlans.join(', ')}`,
+      );
     }
 
     const provider = await this.prisma.provider.findUnique({
@@ -691,8 +853,8 @@ async updateProvider(
       await this.prisma.subscription.update({
         where: { providerId: id },
         data: {
-          plan:    plan as SubscriptionPlan,
-          status:  status as SubscriptionStatus,
+          plan: plan as SubscriptionPlan,
+          status: status as SubscriptionStatus,
           endDate: plan !== 'GRATIS' ? endDate : undefined,
         },
       });
@@ -700,8 +862,8 @@ async updateProvider(
       await this.prisma.subscription.create({
         data: {
           providerId: id,
-          plan:       plan as SubscriptionPlan,
-          status:     status as SubscriptionStatus,
+          plan: plan as SubscriptionPlan,
+          status: status as SubscriptionStatus,
           endDate,
         },
       });
@@ -710,26 +872,26 @@ async updateProvider(
     // Solo notificar si es una promoción real (ESTANDAR o PREMIUM)
     if (plan === 'ESTANDAR' || plan === 'PREMIUM') {
       const planLabel = plan === 'PREMIUM' ? 'Premium' : 'Estándar';
-      const title     = `¡Has sido promovido al plan ${planLabel}!`;
-      const body      = `¡Felicidades! El administrador te ha promovido al plan ${planLabel}. Ahora disfrutas de todos sus beneficios.`;
+      const title = `¡Has sido promovido al plan ${planLabel}!`;
+      const body = `¡Felicidades! El administrador te ha promovido al plan ${planLabel}. Ahora disfrutas de todos sus beneficios.`;
 
       await this.prisma.adminNotification.create({
         data: {
-          providerId:        id,
-          type:              'PLAN_APROBADO',
+          providerId: id,
+          type: 'PLAN_APROBADO',
           title,
-          message:           body,
-          isRead:            false,
-          targetUserId:      provider.userId,
+          message: body,
+          isRead: false,
+          targetUserId: provider.userId,
           targetProfileType: provider.type,
         },
       });
 
       this.eventsGateway.emitNotification({
-        type:              'PLAN_APROBADO',
+        type: 'PLAN_APROBADO',
         title,
         body,
-        targetUserId:      provider.userId,
+        targetUserId: provider.userId,
         targetProfileType: provider.type,
       });
     }
@@ -754,14 +916,17 @@ async updateProvider(
   private async clearProvidersCache(): Promise<void> {
     const PATTERN = 'providers_*';
     try {
-      const cm     = this.cacheManager;
+      const cm = this.cacheManager;
       const client =
         cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client ?? null;
 
       // Caso ideal: cliente Redis con SCAN (cache-manager-redis-yet expone uno).
       if (client && typeof client.scanIterator === 'function') {
         const toDelete: string[] = [];
-        for await (const key of client.scanIterator({ MATCH: PATTERN, COUNT: 200 })) {
+        for await (const key of client.scanIterator({
+          MATCH: PATTERN,
+          COUNT: 200,
+        })) {
           toDelete.push(key as string);
         }
         if (toDelete.length > 0 && typeof client.del === 'function') {
@@ -796,9 +961,18 @@ async updateProvider(
     const providers = await this.prisma.provider.findMany({
       where: { verificationStatus: 'PENDIENTE' },
       include: {
-        user:               { select: { email: true, firstName: true, lastName: true, createdAt: true } },
-        providerCategories: { select: { category: { select: { name: true } } } },
-        locality:           { select: { name: true } },
+        user: {
+          select: {
+            email: true,
+            firstName: true,
+            lastName: true,
+            createdAt: true,
+          },
+        },
+        providerCategories: {
+          select: { category: { select: { name: true } } },
+        },
+        locality: { select: { name: true } },
         verificationDocs: true,
         images: true,
       },
@@ -818,8 +992,8 @@ async updateProvider(
     // una cuenta previa (hasUsedTrial), el perfil arranca en GRATIS sin
     // gracia. Si es su primera vez, recibe ESTANDAR de cortesía por 1 mes
     // (al expirar, el cron de suscripciones lo degrada a GRATIS).
-    const usedTrial   = provider.user?.hasUsedTrial ?? false;
-    const trialPlan   = usedTrial ? 'GRATIS' : 'ESTANDAR';
+    const usedTrial = provider.user?.hasUsedTrial ?? false;
+    const trialPlan = usedTrial ? 'GRATIS' : 'ESTANDAR';
     const trialStatus = usedTrial ? 'ACTIVA' : 'GRACIA';
 
     const endDate = new Date();
@@ -834,7 +1008,10 @@ async updateProvider(
           verificationStatus: 'APROBADO',
           isVisible: true,
           // Prioridad de listado según el plan inicial real del proveedor.
-          planPriority: this.planToPriority(usedTrial ? 'GRATIS' : 'ESTANDAR', 'ACTIVA'),
+          planPriority: this.planToPriority(
+            usedTrial ? 'GRATIS' : 'ESTANDAR',
+            'ACTIVA',
+          ),
         },
       });
 
@@ -851,8 +1028,8 @@ async updateProvider(
         await tx.subscription.create({
           data: {
             providerId: id,
-            plan:       trialPlan,
-            status:     trialStatus,
+            plan: trialPlan,
+            status: trialStatus,
             endDate,
           },
         });
@@ -870,7 +1047,7 @@ async updateProvider(
       // `updated` — esa última es el resultado de la transacción y aún
       // no está inicializada acá dentro (TDZ → ReferenceError
       // "Cannot access 'updated' before initialization").
-      const approveBody  =
+      const approveBody =
         `Tu perfil "${updatedProvider.businessName}" fue aprobado. ` +
         (usedTrial
           ? 'Ya estás activo en el plan Gratis.'
@@ -881,6 +1058,11 @@ async updateProvider(
           type: 'APROBADO',
           title: '¡Perfil aprobado! ✅',
           message: approveBody,
+          // Sin esto, la notif aparecía en ambos paneles del usuario
+          // (OFICIO y NEGOCIO) porque el filtro por tipo dejaba pasar
+          // las nulas. Bind explícito al perfil del provider.
+          targetProfileType: updatedProvider.type,
+          targetUserId: provider.userId,
         },
       });
 
@@ -897,13 +1079,16 @@ async updateProvider(
       verificationStatus: updated.verificationStatus,
       isVerified: updated.isVerified,
     });
-    this.eventsGateway.emitAdminEvent('PROVIDER_APPROVED', { providerId: id, businessName: updated.businessName });
+    this.eventsGateway.emitAdminEvent('PROVIDER_APPROVED', {
+      providerId: id,
+      businessName: updated.businessName,
+    });
 
     // Notificar al proveedor específico en la app móvil. Mismo texto que
     // se persistió en BD para que el dedup del cliente (type+title+body
     // dentro de ±60s) las trate como la misma entrada.
     const approveTitle = '¡Perfil aprobado! ✅';
-    const approveBody  =
+    const approveBody =
       `Tu perfil "${updated.businessName}" fue aprobado. ` +
       (usedTrial
         ? 'Ya estás activo en el plan Gratis.'
@@ -912,17 +1097,16 @@ async updateProvider(
     this.eventsGateway.emitNotification({
       type: 'PROVIDER_APPROVED',
       title: approveTitle,
-      body:  approveBody,
+      body: approveBody,
       targetUserId: provider.userId,
       targetProfileType: updated.type,
     });
 
-    this.push.sendToUser(
-      provider.userId,
-      approveTitle,
-      approveBody,
-      { type: 'PROVIDER_APPROVED', plan: trialPlan, trial: String(!usedTrial) },
-    );
+    this.push.sendToUser(provider.userId, approveTitle, approveBody, {
+      type: 'PROVIDER_APPROVED',
+      plan: trialPlan,
+      trial: String(!usedTrial),
+    });
 
     // Sistema de referidos: si este provider tiene un referral pendiente,
     // entrega monedas al inviter y al invitado y emite las notificaciones extra.
@@ -937,7 +1121,8 @@ async updateProvider(
   }
 
   async rejectVerification(id: number, reason: string) {
-    if (!reason?.trim()) throw new BadRequestException('El motivo de rechazo es obligatorio');
+    if (!reason?.trim())
+      throw new BadRequestException('El motivo de rechazo es obligatorio');
 
     const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
@@ -946,7 +1131,11 @@ async updateProvider(
       // 1. Marcar proveedor como rechazado y oculto
       const updatedProvider = await tx.provider.update({
         where: { id },
-        data: { isVerified: false, verificationStatus: 'RECHAZADO', isVisible: false },
+        data: {
+          isVerified: false,
+          verificationStatus: 'RECHAZADO',
+          isVisible: false,
+        },
       });
 
       // 2. Asegurar que el usuario quede como USUARIO (nunca PROVEEDOR si fue rechazado)
@@ -961,6 +1150,9 @@ async updateProvider(
           providerId: id,
           type: 'RECHAZADO',
           message: `Tu solicitud de verificación fue rechazada. Motivo: ${reason}`,
+          // Bind al perfil para que el filtro del panel no la mezcle.
+          targetProfileType: updatedProvider.type,
+          targetUserId: provider.userId,
         },
       });
 
@@ -975,7 +1167,10 @@ async updateProvider(
       verificationStatus: updated.verificationStatus,
       isVerified: updated.isVerified,
     });
-    this.eventsGateway.emitAdminEvent('PROVIDER_REJECTED', { providerId: id, businessName: updated.businessName });
+    this.eventsGateway.emitAdminEvent('PROVIDER_REJECTED', {
+      providerId: id,
+      businessName: updated.businessName,
+    });
 
     // Notificar al proveedor específico en la app móvil. Incluimos
     // `targetProfileType` para que el cliente sepa cuál perfil
@@ -999,7 +1194,10 @@ async updateProvider(
   }
 
   async requestMoreInfo(id: number, reason: string) {
-    if (!reason?.trim()) throw new BadRequestException('El detalle de la solicitud es obligatorio');
+    if (!reason?.trim())
+      throw new BadRequestException(
+        'El detalle de la solicitud es obligatorio',
+      );
 
     const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
@@ -1009,6 +1207,8 @@ async updateProvider(
         providerId: id,
         type: 'MAS_INFO',
         message: `Necesitamos más información para verificar tu perfil: ${reason}`,
+        targetProfileType: provider.type,
+        targetUserId: provider.userId,
       },
     });
 
@@ -1018,7 +1218,8 @@ async updateProvider(
   async revokeVerification(id: number, reason?: string) {
     const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
-    if (!provider.isVerified) throw new BadRequestException('Este proveedor no está verificado');
+    if (!provider.isVerified)
+      throw new BadRequestException('Este proveedor no está verificado');
 
     const [updated] = await Promise.all([
       this.prisma.provider.update({
@@ -1032,6 +1233,8 @@ async updateProvider(
           message: reason
             ? `Tu verificación ha sido revocada. Motivo: ${reason}`
             : 'Tu verificación ha sido revocada por el administrador.',
+          targetProfileType: provider.type,
+          targetUserId: provider.userId,
         },
       }),
     ]);
@@ -1057,18 +1260,18 @@ async updateProvider(
     role?: string,
     isActive?: boolean,
   ) {
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
     const where: Prisma.UserWhereInput = {};
 
     if (search) {
       where.OR = [
         { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName:  { contains: search, mode: 'insensitive' } },
-        { email:     { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    if (role)             where.role     = role as Prisma.EnumUserRoleFilter;
+    if (role) where.role = role as Prisma.EnumUserRoleFilter;
     if (isActive !== undefined) where.isActive = isActive;
 
     const [users, total] = await Promise.all([
@@ -1077,15 +1280,23 @@ async updateProvider(
         skip,
         take: limit,
         select: {
-          id:        true,
+          id: true,
           firstName: true,
-          lastName:  true, 
-          email:     true,
-          role:      true,
-          isActive:  true,
+          lastName: true,
+          email: true,
+          role: true,
+          isActive: true,
           createdAt: true,
-          providers: { select: { id: true, businessName: true, verificationStatus: true, isVerified: true }, take: 1 },
-          _count:    { select: { reviews: true, favorites: true } },
+          providers: {
+            select: {
+              id: true,
+              businessName: true,
+              verificationStatus: true,
+              isVerified: true,
+            },
+            take: 1,
+          },
+          _count: { select: { reviews: true, favorites: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -1102,27 +1313,25 @@ async updateProvider(
   async deleteUser(id: number, reason?: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
-    if (user.role === 'ADMIN') throw new BadRequestException('No se puede eliminar un administrador');
+    if (user.role === 'ADMIN')
+      throw new BadRequestException('No se puede eliminar un administrador');
 
     // Notificación ANTES del delete — después la sala WS user_{id} ya
     // no existe y el mobile no recibe nada. El listener del cliente
     // captura USER_DELETED y dispara logout + dialog explicativo.
     const reasonText = reason?.trim() || 'Decisión del administrador.';
     const title = 'Tu cuenta ha sido eliminada';
-    const body  = `Tu cuenta fue eliminada por el administrador. Motivo: ${reasonText}`;
+    const body = `Tu cuenta fue eliminada por el administrador. Motivo: ${reasonText}`;
 
     this.eventsGateway.emitNotification({
-      type:         'USER_DELETED',
+      type: 'USER_DELETED',
       title,
       body,
       targetUserId: id,
     });
-    void this.push.sendToUser(
-      id,
-      title,
-      body,
-      { type: 'USER_DELETED', reason: reasonText },
-    ).catch(() => {});
+    void this.push
+      .sendToUser(id, title, body, { type: 'USER_DELETED', reason: reasonText })
+      .catch(() => {});
 
     // Cascade en schema.prisma elimina: providers (con todas sus dependencias),
     // reviews, reviewReplies, providerReports, platformIssues, refreshTokens,
@@ -1135,7 +1344,10 @@ async updateProvider(
   async updateUserStatus(id: number, isActive: boolean) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
-    if (user.role === 'ADMIN') throw new BadRequestException('No se puede modificar el estado de un administrador');
+    if (user.role === 'ADMIN')
+      throw new BadRequestException(
+        'No se puede modificar el estado de un administrador',
+      );
 
     const updated = await this.prisma.user.update({
       where: { id },
@@ -1154,7 +1366,7 @@ async updateProvider(
   // ── NOTIFICACIONES ────────────────────────────────────────
 
   async getNotifications(page = 1, limit = 20) {
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     // El panel admin solo lista las notificaciones de proveedores
     // (las que tienen providerId). Las dirigidas a usuarios-cliente
@@ -1169,16 +1381,27 @@ async updateProvider(
         take: limit,
         include: {
           provider: {
-            select: { businessName: true, user: { select: { firstName: true, lastName: true } } },
+            select: {
+              businessName: true,
+              user: { select: { firstName: true, lastName: true } },
+            },
           },
         },
         orderBy: { sentAt: 'desc' },
       }),
       this.prisma.adminNotification.count({ where }),
-      this.prisma.adminNotification.count({ where: { ...where, isRead: false } }),
+      this.prisma.adminNotification.count({
+        where: { ...where, isRead: false },
+      }),
     ]);
 
-    return { data: notifications, total, page, lastPage: Math.ceil(total / limit), unreadCount };
+    return {
+      data: notifications,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+      unreadCount,
+    };
   }
 
   async markNotificationRead(id: number) {
@@ -1211,8 +1434,13 @@ async updateProvider(
       this.prisma.provider.findMany({
         where: { totalReviews: { gt: 0 } },
         select: {
-          id: true, businessName: true, averageRating: true, totalReviews: true,
-          providerCategories: { select: { category: { select: { name: true } } } },
+          id: true,
+          businessName: true,
+          averageRating: true,
+          totalReviews: true,
+          providerCategories: {
+            select: { category: { select: { name: true } } },
+          },
           locality: { select: { name: true } },
           isVerified: true,
         },
@@ -1224,8 +1452,13 @@ async updateProvider(
       this.prisma.provider.findMany({
         where: { totalReviews: { gt: 0 } },
         select: {
-          id: true, businessName: true, totalReviews: true, averageRating: true,
-          providerCategories: { select: { category: { select: { name: true } } } },
+          id: true,
+          businessName: true,
+          totalReviews: true,
+          averageRating: true,
+          providerCategories: {
+            select: { category: { select: { name: true } } },
+          },
         },
         orderBy: { totalReviews: 'desc' },
         take: 10,
@@ -1235,7 +1468,11 @@ async updateProvider(
       this.prisma.user.findMany({
         where: { role: 'USUARIO' },
         select: {
-          id: true, firstName: true, lastName: true, email: true, createdAt: true,
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          createdAt: true,
           _count: { select: { reviews: true, favorites: true } },
         },
         orderBy: { reviews: { _count: 'desc' } },
@@ -1246,7 +1483,9 @@ async updateProvider(
       this.prisma.category.findMany({
         where: { isActive: true, parentId: null },
         select: {
-          id: true, name: true, slug: true,
+          id: true,
+          name: true,
+          slug: true,
           _count: { select: { providerCategories: true } },
         },
         orderBy: { providerCategories: { _count: 'desc' } },
@@ -1254,7 +1493,9 @@ async updateProvider(
       }),
 
       // Registros por mes (últimos 6 meses)
-      this.prisma.$queryRaw<{ month: string; users: number; providers: number }[]>`
+      this.prisma.$queryRaw<
+        { month: string; users: number; providers: number }[]
+      >`
         SELECT
           TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') AS month,
           COUNT(*) FILTER (WHERE role = 'USUARIO')    AS users,
@@ -1273,8 +1514,12 @@ async updateProvider(
     ]);
 
     return {
-      topRatedProviders: topRatedProviders.map((p) => this.withCategoryAlias(p)),
-      mostReviewedProviders: mostReviewedProviders.map((p) => this.withCategoryAlias(p)),
+      topRatedProviders: topRatedProviders.map((p) =>
+        this.withCategoryAlias(p),
+      ),
+      mostReviewedProviders: mostReviewedProviders.map((p) =>
+        this.withCategoryAlias(p),
+      ),
       mostActiveUsers,
       popularCategories,
       recentRegistrations,
@@ -1288,15 +1533,34 @@ async updateProvider(
   async exportUsersCSV(): Promise<string> {
     const users = await this.prisma.user.findMany({
       select: {
-        id: true, firstName: true, lastName: true, email: true,
-        role: true, isActive: true, createdAt: true,
-        providers: { select: { businessName: true, verificationStatus: true }, take: 1 },
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        providers: {
+          select: { businessName: true, verificationStatus: true },
+          take: 1,
+        },
         _count: { select: { reviews: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const header = ['ID', 'Nombre', 'Apellido', 'Email', 'Rol', 'Activo', 'Fecha Registro', 'Negocio', 'Verificación', 'Reseñas'].join(',');
+    const header = [
+      'ID',
+      'Nombre',
+      'Apellido',
+      'Email',
+      'Rol',
+      'Activo',
+      'Fecha Registro',
+      'Negocio',
+      'Verificación',
+      'Reseñas',
+    ].join(',');
     const rows = users.map((u) => {
       const prov = u.providers[0] ?? null;
       return [
@@ -1319,30 +1583,48 @@ async updateProvider(
   async exportProvidersCSV(): Promise<string> {
     const providers = await this.prisma.provider.findMany({
       include: {
-        user:               { select: { email: true, firstName: true, lastName: true } },
-        providerCategories: { select: { category: { select: { name: true } } } },
-        locality:           { select: { name: true } },
-        subscription:       { select: { plan: true, status: true } },
+        user: { select: { email: true, firstName: true, lastName: true } },
+        providerCategories: {
+          select: { category: { select: { name: true } } },
+        },
+        locality: { select: { name: true } },
+        subscription: { select: { plan: true, status: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const header = ['ID', 'Negocio', 'Email', 'Nombre', 'Teléfono', 'Categoría', 'Localidad', 'Calificación', 'Reseñas', 'Verificado', 'Estado', 'Plan', 'Suscripción'].join(',');
-    const rows = providers.map((p) => [
-      p.id,
-      `"${p.businessName}"`,
-      `"${p.user.email}"`,
-      `"${p.user.firstName} ${p.user.lastName}"`,
-      `"${p.phone}"`,
-      `"${p.providerCategories.map(pc => pc.category.name).join('; ')}"`,
-      `"${p.locality.name}"`,
-      p.averageRating.toFixed(2),
-      p.totalReviews,
-      p.isVerified ? 'Sí' : 'No',
-      p.verificationStatus,
-      p.subscription?.plan ?? '',
-      p.subscription?.status ?? '',
-    ].join(','));
+    const header = [
+      'ID',
+      'Negocio',
+      'Email',
+      'Nombre',
+      'Teléfono',
+      'Categoría',
+      'Localidad',
+      'Calificación',
+      'Reseñas',
+      'Verificado',
+      'Estado',
+      'Plan',
+      'Suscripción',
+    ].join(',');
+    const rows = providers.map((p) =>
+      [
+        p.id,
+        `"${p.businessName}"`,
+        `"${p.user.email}"`,
+        `"${p.user.firstName} ${p.user.lastName}"`,
+        `"${p.phone}"`,
+        `"${p.providerCategories.map((pc) => pc.category.name).join('; ')}"`,
+        `"${p.locality.name}"`,
+        p.averageRating.toFixed(2),
+        p.totalReviews,
+        p.isVerified ? 'Sí' : 'No',
+        p.verificationStatus,
+        p.subscription?.plan ?? '',
+        p.subscription?.status ?? '',
+      ].join(','),
+    );
 
     return [header, ...rows].join('\n');
   }
@@ -1352,23 +1634,28 @@ async updateProvider(
   async getCategories() {
     return this.prisma.category.findMany({
       include: {
-        children: { select: { id: true, name: true, slug: true, isActive: true } },
-        parent:   { select: { id: true, name: true } },
-        _count:   { select: { providerCategories: true } },
+        children: {
+          select: { id: true, name: true, slug: true, isActive: true },
+        },
+        parent: { select: { id: true, name: true } },
+        _count: { select: { providerCategories: true } },
       },
       orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
     });
   }
 
   async createCategory(data: {
-    name:      string;
-    slug:      string;
-    iconUrl?:  string;
+    name: string;
+    slug: string;
+    iconUrl?: string;
     parentId?: number;
     isActive?: boolean;
   }) {
-    const existing = await this.prisma.category.findUnique({ where: { slug: data.slug } });
-    if (existing) throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
+    const existing = await this.prisma.category.findUnique({
+      where: { slug: data.slug },
+    });
+    if (existing)
+      throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
 
     return this.prisma.category.create({ data });
   }
@@ -1376,11 +1663,11 @@ async updateProvider(
   async updateCategory(
     id: number,
     data: {
-      name?:     string;
-      slug?:     string;
-      iconUrl?:  string;
+      name?: string;
+      slug?: string;
+      iconUrl?: string;
       parentId?: number | null;
-      forType?:  string | null;
+      forType?: string | null;
       isActive?: boolean;
     },
   ) {
@@ -1388,8 +1675,11 @@ async updateProvider(
     if (!exists) throw new NotFoundException('Categoría no encontrada');
 
     if (data.slug && data.slug !== exists.slug) {
-      const slugTaken = await this.prisma.category.findUnique({ where: { slug: data.slug } });
-      if (slugTaken) throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
+      const slugTaken = await this.prisma.category.findUnique({
+        where: { slug: data.slug },
+      });
+      if (slugTaken)
+        throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
     }
 
     return this.prisma.category.update({ where: { id }, data });
@@ -1438,25 +1728,24 @@ async updateProvider(
     // panel" → "Quiero ser parte" en home.
     const reasonText = reason?.trim() || 'Decisión del administrador.';
     const title = 'Tu perfil ha sido eliminado';
-    const body  =
+    const body =
       `Tu perfil ${provider.type === 'NEGOCIO' ? 'de negocio' : 'profesional'} ` +
       `"${provider.businessName}" fue eliminado. Motivo: ${reasonText}`;
 
     this.eventsGateway.emitNotification({
-      type:              'PROVIDER_DELETED',
+      type: 'PROVIDER_DELETED',
       title,
       body,
-      targetUserId:      provider.userId,
+      targetUserId: provider.userId,
       targetProfileType: provider.type,
     });
 
     // Push notif (cubre app en background/terminated).
-    this.push.sendToUser(
-      provider.userId,
-      title,
-      body,
-      { type: 'PROVIDER_DELETED', providerType: provider.type, reason: reasonText },
-    );
+    this.push.sendToUser(provider.userId, title, body, {
+      type: 'PROVIDER_DELETED',
+      providerType: provider.type,
+      reason: reasonText,
+    });
 
     return { success: true, message: 'Proveedor eliminado correctamente' };
   }
@@ -1475,7 +1764,14 @@ async updateProvider(
             type: true,
             phone: true,
             subscription: { select: { plan: true, status: true } },
-            user: { select: { id: true, firstName: true, lastName: true, email: true } },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -1488,7 +1784,8 @@ async updateProvider(
       include: { provider: { include: { subscription: true, user: true } } },
     });
     if (!req) throw new NotFoundException('Solicitud no encontrada');
-    if (req.status !== 'PENDIENTE') throw new BadRequestException('La solicitud ya fue procesada');
+    if (req.status !== 'PENDIENTE')
+      throw new BadRequestException('La solicitud ya fue procesada');
 
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1);
@@ -1504,7 +1801,12 @@ async updateProvider(
         });
       } else {
         await tx.subscription.create({
-          data: { providerId: req.providerId, plan: req.plan, status: 'ACTIVA', endDate },
+          data: {
+            providerId: req.providerId,
+            plan: req.plan,
+            status: 'ACTIVA',
+            endDate,
+          },
         });
       }
 
@@ -1524,25 +1826,28 @@ async updateProvider(
     // Persist notification for provider
     await this.prisma.adminNotification.create({
       data: {
-        providerId:        req.providerId,
-        type:              'PLAN_APROBADO',
-        title:             `¡Plan ${req.plan} aprobado!`,
-        message:           `¡Felicidades! Tu solicitud para el plan ${req.plan} ha sido aprobada. Ya puedes disfrutar de todos los beneficios.`,
-        isRead:            false,
-        targetUserId:      req.provider.userId,
+        providerId: req.providerId,
+        type: 'PLAN_APROBADO',
+        title: `¡Plan ${req.plan} aprobado!`,
+        message: `¡Felicidades! Tu solicitud para el plan ${req.plan} ha sido aprobada. Ya puedes disfrutar de todos los beneficios.`,
+        isRead: false,
+        targetUserId: req.provider.userId,
         targetProfileType: req.provider.type,
       },
     });
 
     // Real-time notification to provider
     this.eventsGateway.emitNotification({
-      type:              'PLAN_APROBADO',
-      title:             `¡Plan ${req.plan} aprobado!`,
-      body:              `¡Felicidades! Tu plan ${req.plan} ha sido aprobado.`,
-      targetUserId:      req.provider.userId,
+      type: 'PLAN_APROBADO',
+      title: `¡Plan ${req.plan} aprobado!`,
+      body: `¡Felicidades! Tu plan ${req.plan} ha sido aprobado.`,
+      targetUserId: req.provider.userId,
       targetProfileType: req.provider.type,
     });
-    this.eventsGateway.emitAdminEvent('PLAN_APPROVED', { requestId, plan: req.plan });
+    this.eventsGateway.emitAdminEvent('PLAN_APPROVED', {
+      requestId,
+      plan: req.plan,
+    });
 
     this.push.sendToUser(
       req.provider.userId,
@@ -1557,10 +1862,13 @@ async updateProvider(
   async rejectPlanRequest(requestId: number, reason?: string) {
     const req = await this.prisma.planRequest.findUnique({
       where: { id: requestId },
-      include: { provider: { select: { userId: true, businessName: true, type: true } } },
+      include: {
+        provider: { select: { userId: true, businessName: true, type: true } },
+      },
     });
     if (!req) throw new NotFoundException('Solicitud no encontrada');
-    if (req.status !== 'PENDIENTE') throw new BadRequestException('La solicitud ya fue procesada');
+    if (req.status !== 'PENDIENTE')
+      throw new BadRequestException('La solicitud ya fue procesada');
 
     await this.prisma.planRequest.update({
       where: { id: requestId },
@@ -1573,21 +1881,21 @@ async updateProvider(
 
     await this.prisma.adminNotification.create({
       data: {
-        providerId:        req.providerId,
-        type:              'PLAN_RECHAZADO',
-        title:             `Solicitud de plan ${req.plan} rechazada`,
-        message:           msg,
-        isRead:            false,
-        targetUserId:      req.provider.userId,
+        providerId: req.providerId,
+        type: 'PLAN_RECHAZADO',
+        title: `Solicitud de plan ${req.plan} rechazada`,
+        message: msg,
+        isRead: false,
+        targetUserId: req.provider.userId,
         targetProfileType: req.provider.type,
       },
     });
 
     this.eventsGateway.emitNotification({
-      type:              'PLAN_RECHAZADO',
-      title:             'Solicitud rechazada',
-      body:              msg,
-      targetUserId:      req.provider.userId,
+      type: 'PLAN_RECHAZADO',
+      title: 'Solicitud rechazada',
+      body: msg,
+      targetUserId: req.provider.userId,
       targetProfileType: req.provider.type,
     });
 
@@ -1604,7 +1912,7 @@ async updateProvider(
   // ── REPORTES DE USUARIOS A PROVEEDORES ───────────────────
 
   async getProviderReports(page = 1, limit = 20, isReviewed?: boolean) {
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
     const where = isReviewed !== undefined ? { isReviewed } : {};
 
     const [data, total, pendingCount] = await Promise.all([
@@ -1615,7 +1923,9 @@ async updateProvider(
         orderBy: { createdAt: 'desc' },
         include: {
           provider: { select: { id: true, businessName: true, type: true } },
-          user:     { select: { id: true, firstName: true, lastName: true, email: true } },
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
         },
       }),
       this.prisma.providerReport.count({ where }),
@@ -1632,19 +1942,21 @@ async updateProvider(
   }
 
   async markReportReviewed(reportId: number) {
-    const report = await this.prisma.providerReport.findUnique({ where: { id: reportId } });
+    const report = await this.prisma.providerReport.findUnique({
+      where: { id: reportId },
+    });
     if (!report) throw new NotFoundException('Reporte no encontrado');
 
     return this.prisma.providerReport.update({
       where: { id: reportId },
-      data:  { isReviewed: true },
+      data: { isReviewed: true },
     });
   }
 
   // ── PROBLEMAS DE PLATAFORMA ──────────────────────────────
   async getPlatformIssues(page = 1, limit = 20, isReviewed?: boolean) {
     const where = isReviewed !== undefined ? { isReviewed } : {};
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const [data, total, pendingCount] = await Promise.all([
       this.prisma.platformIssue.findMany({
@@ -1653,19 +1965,38 @@ async updateProvider(
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+            },
+          },
         },
       }),
       this.prisma.platformIssue.count({ where }),
       this.prisma.platformIssue.count({ where: { isReviewed: false } }),
     ]);
 
-    return { data, total, page, lastPage: Math.ceil(total / limit), pendingCount };
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+      pendingCount,
+    };
   }
 
   async markPlatformIssueReviewed(issueId: number) {
-    const issue = await this.prisma.platformIssue.findUnique({ where: { id: issueId } });
+    const issue = await this.prisma.platformIssue.findUnique({
+      where: { id: issueId },
+    });
     if (!issue) throw new NotFoundException('Reporte no encontrado');
-    return this.prisma.platformIssue.update({ where: { id: issueId }, data: { isReviewed: true } });
+    return this.prisma.platformIssue.update({
+      where: { id: issueId },
+      data: { isReviewed: true },
+    });
   }
 }

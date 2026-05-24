@@ -4,6 +4,6 @@ import { MinioService } from './minio.service.js';
 @Global()
 @Module({
   providers: [MinioService],
-  exports:   [MinioService],
+  exports: [MinioService],
 })
 export class CommonModule {}

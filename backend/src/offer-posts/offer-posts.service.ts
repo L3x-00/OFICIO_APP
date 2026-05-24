@@ -1,6 +1,9 @@
 import {
-  Injectable, BadRequestException, ForbiddenException,
-  NotFoundException, ConflictException,
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -8,10 +11,13 @@ import { MinioService } from '../common/minio.service.js';
 import { CreateOfferPostDto } from './dto/create-offer-post.dto.js';
 
 // Límites por plan: máx activas y ventana de expiración en horas
-const PLAN_LIMITS: Record<string, { maxActive: number; durationHours: number }> = {
-  PREMIUM:  { maxActive: 8, durationHours: 72 },
+const PLAN_LIMITS: Record<
+  string,
+  { maxActive: number; durationHours: number }
+> = {
+  PREMIUM: { maxActive: 8, durationHours: 72 },
   ESTANDAR: { maxActive: 4, durationHours: 24 },
-  GRATIS:   { maxActive: 1, durationHours: 12 },
+  GRATIS: { maxActive: 1, durationHours: 12 },
 };
 
 @Injectable()
@@ -22,15 +28,27 @@ export class OfferPostsService {
   ) {}
 
   // ── HELPER: resolver providerId desde userId + type ─────
-  private async resolveProviderId(userId: number, type?: string): Promise<number> {
+  private async resolveProviderId(
+    userId: number,
+    type?: string,
+  ): Promise<number> {
     const where: any = { userId };
     if (type === 'OFICIO' || type === 'NEGOCIO') where.type = type;
-    const provider = await this.prisma.provider.findFirst({ where, select: { id: true } });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    const provider = await this.prisma.provider.findFirst({
+      where,
+      select: { id: true },
+    });
+    if (!provider)
+      throw new NotFoundException('Perfil de proveedor no encontrado');
     return provider.id;
   }
 
-  async createOfferByUser(userId: number, type: string, dto: CreateOfferPostDto, photo?: Express.Multer.File) {
+  async createOfferByUser(
+    userId: number,
+    type: string,
+    dto: CreateOfferPostDto,
+    photo?: Express.Multer.File,
+  ) {
     const providerId = await this.resolveProviderId(userId, type);
     return this.createOffer(providerId, dto, photo);
   }
@@ -41,7 +59,9 @@ export class OfferPostsService {
   }
 
   async deleteOfferByUser(userId: number, offerId: number) {
-    const offer = await this.prisma.offerPost.findUnique({ where: { id: offerId } });
+    const offer = await this.prisma.offerPost.findUnique({
+      where: { id: offerId },
+    });
     if (!offer) throw new NotFoundException('Oferta no encontrada');
     const provider = await this.prisma.provider.findFirst({
       where: { userId, id: offer.providerId },
@@ -73,7 +93,8 @@ export class OfferPostsService {
       include: {
         provider: {
           select: {
-            id: true, userId: true,
+            id: true,
+            userId: true,
             subscription: { select: { plan: true, status: true } },
           },
         },
@@ -95,9 +116,9 @@ export class OfferPostsService {
 
     let newExpiresAt: Date | undefined;
     if (dto.resetDuration === true) {
-      const plan   = offer.provider.subscription?.plan ?? 'GRATIS';
+      const plan = offer.provider.subscription?.plan ?? 'GRATIS';
       const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS['GRATIS'];
-      const next   = new Date();
+      const next = new Date();
       next.setHours(next.getHours() + limits.durationHours);
       newExpiresAt = next;
     }
@@ -105,14 +126,18 @@ export class OfferPostsService {
     return this.prisma.offerPost.update({
       where: { id: offerId },
       data: {
-        title:       dto.title       ?? undefined,
+        title: dto.title ?? undefined,
         description: dto.description ?? undefined,
-        price:       dto.price       ?? undefined,
-        photoUrl:    newPhotoUrl     ?? undefined,
-        expiresAt:   newExpiresAt    ?? undefined,
+        price: dto.price ?? undefined,
+        photoUrl: newPhotoUrl ?? undefined,
+        expiresAt: newExpiresAt ?? undefined,
       },
       include: {
-        categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+        categories: {
+          select: {
+            category: { select: { id: true, name: true, slug: true } },
+          },
+        },
       },
     });
   }
@@ -171,17 +196,23 @@ export class OfferPostsService {
     const offer = await this.prisma.offerPost.create({
       data: {
         providerId,
-        title:       dto.title,
+        title: dto.title,
         description: dto.description,
-        price:       dto.price ?? null,
-        photoUrl:    photoUrl ?? null,
+        price: dto.price ?? null,
+        photoUrl: photoUrl ?? null,
         expiresAt,
         categories: {
-          create: provider.providerCategories.map(pc => ({ categoryId: pc.categoryId })),
+          create: provider.providerCategories.map((pc) => ({
+            categoryId: pc.categoryId,
+          })),
         },
       },
       include: {
-        categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+        categories: {
+          select: {
+            category: { select: { id: true, name: true, slug: true } },
+          },
+        },
       },
     });
 
@@ -249,12 +280,13 @@ export class OfferPostsService {
       const nDist = norm(district);
 
       const matchIds = localities
-        .filter(l =>
-          (!nDept || norm(l.department) === nDept) &&
-          (!nProv || norm(l.province ?? '')  === nProv) &&
-          (!nDist || norm(l.district  ?? '')  === nDist),
+        .filter(
+          (l) =>
+            (!nDept || norm(l.department) === nDept) &&
+            (!nProv || norm(l.province ?? '') === nProv) &&
+            (!nDist || norm(l.district ?? '') === nDist),
         )
-        .map(l => l.id);
+        .map((l) => l.id);
 
       if (matchIds.length > 0) {
         where.provider = {
@@ -277,15 +309,29 @@ export class OfferPostsService {
         include: {
           provider: {
             select: {
-              id: true, businessName: true, averageRating: true, isVerified: true,
+              id: true,
+              businessName: true,
+              averageRating: true,
+              isVerified: true,
               type: true,
-              phone: true, whatsapp: true,
-              images: { where: { isCover: true }, select: { url: true }, take: 1 },
-              locality: { select: { name: true, province: true, district: true } },
+              phone: true,
+              whatsapp: true,
+              images: {
+                where: { isCover: true },
+                select: { url: true },
+                take: 1,
+              },
+              locality: {
+                select: { name: true, province: true, district: true },
+              },
               subscription: { select: { plan: true } },
             },
           },
-          categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+          categories: {
+            select: {
+              category: { select: { id: true, name: true, slug: true } },
+            },
+          },
         },
       }),
       this.prisma.offerPost.count({ where }),
@@ -317,7 +363,9 @@ export class OfferPostsService {
       where: { providerId },
       orderBy: { createdAt: 'desc' },
       include: {
-        categories: { select: { category: { select: { id: true, name: true } } } },
+        categories: {
+          select: { category: { select: { id: true, name: true } } },
+        },
         _count: { select: { reports: true } },
       },
     });
@@ -325,9 +373,12 @@ export class OfferPostsService {
 
   // ── ELIMINAR OFERTA ──────────────────────────────────────
   async deleteOffer(providerId: number, offerId: number) {
-    const offer = await this.prisma.offerPost.findUnique({ where: { id: offerId } });
+    const offer = await this.prisma.offerPost.findUnique({
+      where: { id: offerId },
+    });
     if (!offer) throw new NotFoundException('Oferta no encontrada');
-    if (offer.providerId !== providerId) throw new ForbiddenException('No es tu oferta');
+    if (offer.providerId !== providerId)
+      throw new ForbiddenException('No es tu oferta');
 
     await this.prisma.offerPost.delete({ where: { id: offerId } });
     return { success: true };
@@ -335,15 +386,19 @@ export class OfferPostsService {
 
   // ── REPORTAR OFERTA ──────────────────────────────────────
   async reportOffer(userId: number, offerId: number, reason: any) {
-    const offer = await this.prisma.offerPost.findUnique({ where: { id: offerId } });
-    if (!offer || !offer.isActive) throw new NotFoundException('Oferta no encontrada');
+    const offer = await this.prisma.offerPost.findUnique({
+      where: { id: offerId },
+    });
+    if (!offer || !offer.isActive)
+      throw new NotFoundException('Oferta no encontrada');
 
     try {
       return await this.prisma.offerReport.create({
         data: { offerPostId: offerId, reporterId: userId, reason },
       });
     } catch (e: any) {
-      if (e?.code === 'P2002') throw new ConflictException('Ya reportaste esta oferta');
+      if (e?.code === 'P2002')
+        throw new ConflictException('Ya reportaste esta oferta');
       throw e;
     }
   }
@@ -367,14 +422,18 @@ export class OfferPostsService {
       orderBy: { createdAt: 'desc' },
       include: {
         offerPost: { select: { id: true, title: true, providerId: true } },
-        reporter:  { select: { id: true, firstName: true, lastName: true, email: true } },
+        reporter: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }
 
   // ── ADMIN: resolver reporte ──────────────────────────────
   async resolveReport(reportId: number, deactivateOffer: boolean) {
-    const report = await this.prisma.offerReport.findUnique({ where: { id: reportId } });
+    const report = await this.prisma.offerReport.findUnique({
+      where: { id: reportId },
+    });
     if (!report) throw new NotFoundException('Reporte no encontrado');
 
     const [updatedReport] = await this.prisma.$transaction([
@@ -383,10 +442,12 @@ export class OfferPostsService {
         data: { isResolved: true },
       }),
       ...(deactivateOffer
-        ? [this.prisma.offerPost.update({
-            where: { id: report.offerPostId },
-            data: { isActive: false },
-          })]
+        ? [
+            this.prisma.offerPost.update({
+              where: { id: report.offerPostId },
+              data: { isActive: false },
+            }),
+          ]
         : []),
     ]);
 

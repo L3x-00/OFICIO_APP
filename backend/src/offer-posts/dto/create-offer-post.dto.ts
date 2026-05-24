@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsPositive, MinLength, MaxLength, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsPositive,
+  MinLength,
+  MaxLength,
+  IsBoolean,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class CreateOfferPostDto {

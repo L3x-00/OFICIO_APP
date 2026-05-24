@@ -1,4 +1,17 @@
-import { Controller, Get, Param, NotFoundException, Patch, Body, UseGuards, Request, BadRequestException, ConflictException, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  NotFoundException,
+  Patch,
+  Body,
+  UseGuards,
+  Request,
+  BadRequestException,
+  ConflictException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { slugify, uniqueSlug } from '../common/slug.util.js';
@@ -42,14 +55,16 @@ export class PublicProfileController implements OnModuleInit {
     for (const p of pending) {
       try {
         const candidate = await uniqueSlug(p.businessName, async (slug) =>
-          Boolean(await this.prisma.provider.findUnique({
-            where: { slug },
-            select: { id: true },
-          })),
+          Boolean(
+            await this.prisma.provider.findUnique({
+              where: { slug },
+              select: { id: true },
+            }),
+          ),
         );
         await this.prisma.provider.update({
           where: { id: p.id },
-          data:  { slug: candidate },
+          data: { slug: candidate },
         });
       } catch (err) {
         this.logger.warn(`Backfill slug provider#${p.id}: ${err}`);
@@ -70,7 +85,7 @@ export class PublicProfileController implements OnModuleInit {
     // creados antes del backfill de slug) apuntan a `/p/123`. Si el
     // param parsea como entero, buscamos por id; si no, por slug.
     const asInt = parseInt(slug, 10);
-    const byId  = Number.isFinite(asInt) && String(asInt) === slug;
+    const byId = Number.isFinite(asInt) && String(asInt) === slug;
     const lookupWhere = byId
       ? { id: asInt, isVisible: true }
       : { slug, isVisible: true };
@@ -78,34 +93,41 @@ export class PublicProfileController implements OnModuleInit {
     const provider = await this.prisma.provider.findFirst({
       where: lookupWhere,
       select: {
-        id:                   true,
-        slug:                 true,
-        businessName:         true,
-        description:          true,
-        type:                 true,
-        averageRating:        true,
-        totalReviews:         true,
+        id: true,
+        slug: true,
+        businessName: true,
+        description: true,
+        type: true,
+        averageRating: true,
+        totalReviews: true,
         totalRecommendations: true,
-        isVerified:           true,
-        isTrusted:            true,
-        hasHomeService:       true,
-        hasDelivery:          true,
-        plenaCoordinacion:    true,
-        phone:                true,
-        whatsapp:             true,
-        website:              true,
-        instagram:            true,
-        tiktok:               true,
-        facebook:             true,
+        isVerified: true,
+        isTrusted: true,
+        hasHomeService: true,
+        hasDelivery: true,
+        plenaCoordinacion: true,
+        phone: true,
+        whatsapp: true,
+        website: true,
+        instagram: true,
+        tiktok: true,
+        facebook: true,
         images: {
-          where:   { isCover: true },
-          select:  { url: true },
-          take:    1,
+          where: { isCover: true },
+          select: { url: true },
+          take: 1,
         },
         providerCategories: {
           select: { category: { select: { name: true, slug: true } } },
         },
-        locality: { select: { name: true, department: true, province: true, district: true } },
+        locality: {
+          select: {
+            name: true,
+            department: true,
+            province: true,
+            district: true,
+          },
+        },
         subscription: { select: { plan: true, status: true } },
       },
     });
@@ -118,15 +140,19 @@ export class PublicProfileController implements OnModuleInit {
     // un slug ahora y persístelo. La próxima vez resuelve por slug y
     // queda registrado en URLs compartidas.
     if (!provider.slug) {
-      const generated = await uniqueSlug(provider.businessName, async (candidate) =>
-        Boolean(await this.prisma.provider.findUnique({
-          where: { slug: candidate },
-          select: { id: true },
-        })),
+      const generated = await uniqueSlug(
+        provider.businessName,
+        async (candidate) =>
+          Boolean(
+            await this.prisma.provider.findUnique({
+              where: { slug: candidate },
+              select: { id: true },
+            }),
+          ),
       );
       await this.prisma.provider.update({
         where: { id: provider.id },
-        data:  { slug: generated },
+        data: { slug: generated },
       });
       provider.slug = generated;
     }
@@ -136,31 +162,31 @@ export class PublicProfileController implements OnModuleInit {
 
     // Reshape para SSR-friendly. Omite IDs internos del frontend público.
     return {
-      slug:                 provider.slug,
-      businessName:         provider.businessName,
-      description:          provider.description,
-      type:                 provider.type,
-      averageRating:        provider.averageRating,
-      totalReviews:         provider.totalReviews,
+      slug: provider.slug,
+      businessName: provider.businessName,
+      description: provider.description,
+      type: provider.type,
+      averageRating: provider.averageRating,
+      totalReviews: provider.totalReviews,
       totalRecommendations: provider.totalRecommendations,
-      isVerified:           provider.isVerified,
-      isTrusted:            provider.isTrusted,
-      hasHomeService:       provider.hasHomeService,
-      hasDelivery:          provider.hasDelivery,
-      plenaCoordinacion:    provider.plenaCoordinacion,
-      coverUrl:             cover,
+      isVerified: provider.isVerified,
+      isTrusted: provider.isTrusted,
+      hasHomeService: provider.hasHomeService,
+      hasDelivery: provider.hasDelivery,
+      plenaCoordinacion: provider.plenaCoordinacion,
+      coverUrl: cover,
       categories,
-      locality:             provider.locality,
-      plan:                 provider.subscription?.plan ?? 'GRATIS',
+      locality: provider.locality,
+      plan: provider.subscription?.plan ?? 'GRATIS',
       // Datos de contacto solo para abrir WhatsApp / llamada desde la
       // tarjeta web — no exponemos el id numérico ni el email.
       contact: {
-        phone:    provider.phone,
+        phone: provider.phone,
         whatsapp: provider.whatsapp,
-        website:  provider.website,
+        website: provider.website,
         instagram: provider.instagram,
-        tiktok:    provider.tiktok,
-        facebook:  provider.facebook,
+        tiktok: provider.tiktok,
+        facebook: provider.facebook,
       },
     };
   }
@@ -178,7 +204,9 @@ export class PublicProfileController implements OnModuleInit {
   ) {
     const desired = slugify(body.slug ?? '');
     if (!desired || desired.length < 3) {
-      throw new BadRequestException('El slug debe tener al menos 3 caracteres.');
+      throw new BadRequestException(
+        'El slug debe tener al menos 3 caracteres.',
+      );
     }
 
     const provider = await this.prisma.provider.findFirst({
@@ -203,7 +231,7 @@ export class PublicProfileController implements OnModuleInit {
 
     return this.prisma.provider.update({
       where: { id: provider.id },
-      data:  { slug: finalSlug, slugEditedAt: new Date() },
+      data: { slug: finalSlug, slugEditedAt: new Date() },
       select: { id: true, slug: true, slugEditedAt: true },
     });
   }

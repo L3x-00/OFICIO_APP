@@ -17,9 +17,9 @@ export function slugify(input: string): string {
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, '') // descarta puntuación
-    .replace(/\s+/g, '-')         // espacios → guiones
-    .replace(/-+/g, '-')          // colapsa guiones consecutivos
-    .replace(/^-|-$/g, '')        // recorta guiones al inicio/final
+    .replace(/\s+/g, '-') // espacios → guiones
+    .replace(/-+/g, '-') // colapsa guiones consecutivos
+    .replace(/^-|-$/g, '') // recorta guiones al inicio/final
     .slice(0, 60);
 }
 

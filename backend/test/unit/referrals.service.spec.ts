@@ -44,7 +44,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { createPrismaMock, PrismaMock } from '../mocks/prisma.mock';
-import { createEventsGatewayMock, EventsGatewayMock } from '../mocks/events-gateway.mock';
+import {
+  createEventsGatewayMock,
+  EventsGatewayMock,
+} from '../mocks/events-gateway.mock';
 import { createPushMock, PushMock } from '../mocks/push.mock';
 import { providerFixture } from '../fixtures/providers.fixture';
 
@@ -58,7 +61,7 @@ describe('ReferralsService (unit)', () => {
   // protege contra cambios accidentales: si alguien sube
   // INVITER_REWARD_COINS a 100 sin actualizar este test, el test
   // explota y nos pide confirmar la decisión.
-  const INVITER_REWARD_COINS  = 25;
+  const INVITER_REWARD_COINS = 25;
   const INVITED_WELCOME_COINS = 5;
 
   const INVITER_ID = 100;
@@ -68,7 +71,7 @@ describe('ReferralsService (unit)', () => {
   beforeEach(() => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
-    push   = createPushMock();
+    push = createPushMock();
     service = new ReferralsService(prisma as any, events as any, push as any);
   });
 
@@ -78,12 +81,12 @@ describe('ReferralsService (unit)', () => {
   describe('getMyCode()', () => {
     it('devuelve el código existente sin crear duplicado (idempotencia)', async () => {
       prisma.referralCode.findUnique.mockResolvedValue({
-        id:                1,
-        userId:            INVITER_ID,
-        code:              CODE_VALUE,
-        totalInvites:      3,
+        id: 1,
+        userId: INVITER_ID,
+        code: CODE_VALUE,
+        totalInvites: 3,
         successfulInvites: 2,
-        createdAt:         new Date(),
+        createdAt: new Date(),
       });
 
       const result = await service.getMyCode(INVITER_ID);
@@ -100,9 +103,9 @@ describe('ReferralsService (unit)', () => {
         .mockResolvedValueOnce(null) // user sin código
         .mockResolvedValueOnce(null); // código generado no colisiona
       prisma.referralCode.create.mockResolvedValue({
-        id:     2,
+        id: 2,
         userId: INVITER_ID,
-        code:   'GENERATED',
+        code: 'GENERATED',
       });
 
       const result = await service.getMyCode(INVITER_ID);
@@ -112,7 +115,10 @@ describe('ReferralsService (unit)', () => {
       // El código generado se persiste para el user correcto.
       expect(prisma.referralCode.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ userId: INVITER_ID, code: expect.any(String) }),
+          data: expect.objectContaining({
+            userId: INVITER_ID,
+            code: expect.any(String),
+          }),
         }),
       );
     });
@@ -120,7 +126,7 @@ describe('ReferralsService (unit)', () => {
     it('el código generado usa el alfabeto restringido (sin 0/O/1/I) y mide 8 chars', async () => {
       // Forzamos la rama de generación.
       prisma.referralCode.findUnique
-        .mockResolvedValueOnce(null)  // user sin código
+        .mockResolvedValueOnce(null) // user sin código
         .mockResolvedValueOnce(null); // candidato no colisiona
       let captured: string | undefined;
       prisma.referralCode.create.mockImplementation(async ({ data }: any) => {
@@ -144,14 +150,16 @@ describe('ReferralsService (unit)', () => {
   // ────────────────────────────────────────────────────────────────
   describe('applyCode()', () => {
     it('lanza BadRequestException si el código es vacío', async () => {
-      await expect(service.applyCode(INVITED_ID, '   '))
-        .rejects.toThrow(BadRequestException);
+      await expect(service.applyCode(INVITED_ID, '   ')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('lanza NotFoundException si el código no existe en BD', async () => {
       prisma.referralCode.findUnique.mockResolvedValue(null);
-      await expect(service.applyCode(INVITED_ID, CODE_VALUE))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.applyCode(INVITED_ID, CODE_VALUE)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     /**
@@ -162,10 +170,11 @@ describe('ReferralsService (unit)', () => {
     it('PROHIBE la auto-aplicación de tu propio código', async () => {
       prisma.referralCode.findUnique.mockResolvedValue({
         userId: INVITER_ID,
-        code:   CODE_VALUE,
+        code: CODE_VALUE,
       });
-      await expect(service.applyCode(/*mismo userId*/ INVITER_ID, CODE_VALUE))
-        .rejects.toThrow(/tu propio código/i);
+      await expect(
+        service.applyCode(/*mismo userId*/ INVITER_ID, CODE_VALUE),
+      ).rejects.toThrow(/tu propio código/i);
     });
 
     /**
@@ -175,22 +184,25 @@ describe('ReferralsService (unit)', () => {
      */
     it('PROHIBE doble aplicación (409 ConflictException)', async () => {
       prisma.referralCode.findUnique.mockResolvedValue({
-        userId: INVITER_ID, code: CODE_VALUE,
+        userId: INVITER_ID,
+        code: CODE_VALUE,
       });
       prisma.referral.findUnique.mockResolvedValue({
-        id:            1,
-        inviterId:     INVITER_ID,
+        id: 1,
+        inviterId: INVITER_ID,
         invitedUserId: INVITED_ID,
-        status:        'PENDING',
+        status: 'PENDING',
       });
-      await expect(service.applyCode(INVITED_ID, CODE_VALUE))
-        .rejects.toThrow(ConflictException);
+      await expect(service.applyCode(INVITED_ID, CODE_VALUE)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('normaliza el código a uppercase trim antes de buscarlo', async () => {
       prisma.referralCode.findUnique.mockResolvedValue(null);
-      await expect(service.applyCode(INVITED_ID, '  abcdxyz2  '))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.applyCode(INVITED_ID, '  abcdxyz2  '),
+      ).rejects.toThrow(NotFoundException);
       // findUnique recibió la versión trimmed + uppercase.
       expect(prisma.referralCode.findUnique).toHaveBeenCalledWith({
         where: { code: 'ABCDXYZ2' },
@@ -199,14 +211,15 @@ describe('ReferralsService (unit)', () => {
 
     it('en el path feliz: crea Referral PENDING + incrementa totalInvites + notifica al inviter', async () => {
       prisma.referralCode.findUnique.mockResolvedValue({
-        userId: INVITER_ID, code: CODE_VALUE,
+        userId: INVITER_ID,
+        code: CODE_VALUE,
       });
       prisma.referral.findUnique.mockResolvedValue(null);
       prisma.referral.create.mockResolvedValue({
-        id:            7,
-        inviterId:     INVITER_ID,
+        id: 7,
+        inviterId: INVITER_ID,
         invitedUserId: INVITED_ID,
-        status:        'PENDING',
+        status: 'PENDING',
       });
       prisma.referralCode.update.mockResolvedValue({});
 
@@ -217,9 +230,9 @@ describe('ReferralsService (unit)', () => {
       expect(prisma.referral.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            inviterId:     INVITER_ID,
+            inviterId: INVITER_ID,
             invitedUserId: INVITED_ID,
-            status:        'PENDING',
+            status: 'PENDING',
           }),
         }),
       );
@@ -227,13 +240,13 @@ describe('ReferralsService (unit)', () => {
       expect(prisma.referralCode.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId: INVITER_ID },
-          data:  { totalInvites: { increment: 1 } },
+          data: { totalInvites: { increment: 1 } },
         }),
       );
       // Notif REFERRAL_PENDING al inviter.
       expect(events.emitNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          type:         'REFERRAL_PENDING',
+          type: 'REFERRAL_PENDING',
           targetUserId: INVITER_ID,
         }),
       );
@@ -255,11 +268,11 @@ describe('ReferralsService (unit)', () => {
 
     it('no-op si el dueño no tiene Referral PENDING', async () => {
       prisma.provider.findUnique.mockResolvedValue({
-        id:           PROVIDER_ID,
-        userId:       INVITED_ID,
+        id: PROVIDER_ID,
+        userId: INVITED_ID,
         businessName: 'Negocio Test',
-        type:         'OFICIO',
-        user:         { firstName: 'Maria', lastName: 'Lopez' },
+        type: 'OFICIO',
+        user: { firstName: 'Maria', lastName: 'Lopez' },
       });
       prisma.referral.findUnique.mockResolvedValue(null); // no hay referral
       const r = await service.onProviderApproved(PROVIDER_ID);
@@ -269,18 +282,18 @@ describe('ReferralsService (unit)', () => {
 
     it('no-op si el referral existe pero NO está en PENDING (ya aprobado o rechazado)', async () => {
       prisma.provider.findUnique.mockResolvedValue({
-        id:           PROVIDER_ID,
-        userId:       INVITED_ID,
+        id: PROVIDER_ID,
+        userId: INVITED_ID,
         businessName: 'X',
-        type:         'OFICIO',
-        user:         { firstName: 'X', lastName: 'X' },
+        type: 'OFICIO',
+        user: { firstName: 'X', lastName: 'X' },
       });
       prisma.referral.findUnique.mockResolvedValue({
-        id:        1,
-        status:    'APPROVED', // ya pasó
+        id: 1,
+        status: 'APPROVED', // ya pasó
         inviterId: INVITER_ID,
         invitedUserId: INVITED_ID,
-        inviter:   { firstName: 'I', lastName: 'I', email: 'i@i' },
+        inviter: { firstName: 'I', lastName: 'I', email: 'i@i' },
       });
       const r = await service.onProviderApproved(PROVIDER_ID);
       expect(r).toBeNull();
@@ -289,23 +302,23 @@ describe('ReferralsService (unit)', () => {
     it('path feliz: APPROVED + coins 25/5 + successfulInvites + 3 notifs + 2 push', async () => {
       const referralId = 7;
       prisma.provider.findUnique.mockResolvedValue({
-        id:           PROVIDER_ID,
-        userId:       INVITED_ID,
+        id: PROVIDER_ID,
+        userId: INVITED_ID,
         businessName: 'Plomería de Ana',
-        type:         'OFICIO',
-        user:         { firstName: 'Ana', lastName: 'Soto' },
+        type: 'OFICIO',
+        user: { firstName: 'Ana', lastName: 'Soto' },
       });
       prisma.referral.findUnique.mockResolvedValue({
-        id:             referralId,
-        inviterId:      INVITER_ID,
-        invitedUserId:  INVITED_ID,
-        status:         'PENDING',
-        inviter:        { firstName: 'Carlos', lastName: 'Ramos', email: 'c@r' },
+        id: referralId,
+        inviterId: INVITER_ID,
+        invitedUserId: INVITED_ID,
+        status: 'PENDING',
+        inviter: { firstName: 'Carlos', lastName: 'Ramos', email: 'c@r' },
       });
       prisma.referral.update.mockResolvedValue({
-        id:                 referralId,
-        status:             'APPROVED',
-        coinsAwarded:       INVITER_REWARD_COINS,
+        id: referralId,
+        status: 'APPROVED',
+        coinsAwarded: INVITER_REWARD_COINS,
         invitedCoinsAwarded: INVITED_WELCOME_COINS,
       });
       prisma.user.update.mockResolvedValue({});
@@ -320,12 +333,12 @@ describe('ReferralsService (unit)', () => {
       expect(prisma.referral.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: referralId },
-          data:  expect.objectContaining({
-            status:              'APPROVED',
-            coinsAwarded:        INVITER_REWARD_COINS,
+          data: expect.objectContaining({
+            status: 'APPROVED',
+            coinsAwarded: INVITER_REWARD_COINS,
             invitedCoinsAwarded: INVITED_WELCOME_COINS,
-            invitedProviderId:   PROVIDER_ID,
-            approvedAt:          expect.any(Date),
+            invitedProviderId: PROVIDER_ID,
+            approvedAt: expect.any(Date),
           }),
         }),
       );
@@ -333,33 +346,37 @@ describe('ReferralsService (unit)', () => {
       // 2. Inviter recibe +25 coins.
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: INVITER_ID },
-        data:  { coins: { increment: INVITER_REWARD_COINS } },
+        data: { coins: { increment: INVITER_REWARD_COINS } },
       });
 
       // 3. Invitado recibe +5 coins.
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: INVITED_ID },
-        data:  { coins: { increment: INVITED_WELCOME_COINS } },
+        data: { coins: { increment: INVITED_WELCOME_COINS } },
       });
 
       // 4. successfulInvites += 1 en el código del inviter.
       expect(prisma.referralCode.update).toHaveBeenCalledWith({
         where: { userId: INVITER_ID },
-        data:  { successfulInvites: { increment: 1 } },
+        data: { successfulInvites: { increment: 1 } },
       });
 
       // 5. 3 notificaciones in-app (inviter, invited, admin).
       const types = events.emitNotification.mock.calls.map((c) => c[0].type);
-      expect(types).toEqual(expect.arrayContaining([
-        'REFERRAL_APPROVED',
-        'REFERRAL_WELCOME',
-        'REFERRAL_ADMIN_APPROVED',
-      ]));
+      expect(types).toEqual(
+        expect.arrayContaining([
+          'REFERRAL_APPROVED',
+          'REFERRAL_WELCOME',
+          'REFERRAL_ADMIN_APPROVED',
+        ]),
+      );
 
       // 6. 2 push notifications (inviter + invited).
       expect(push.sendToUser).toHaveBeenCalledTimes(2);
       const pushTargets = push.sendToUser.mock.calls.map((c) => c[0]);
-      expect(pushTargets).toEqual(expect.arrayContaining([INVITER_ID, INVITED_ID]));
+      expect(pushTargets).toEqual(
+        expect.arrayContaining([INVITER_ID, INVITED_ID]),
+      );
     });
   });
 
@@ -368,40 +385,46 @@ describe('ReferralsService (unit)', () => {
   // ────────────────────────────────────────────────────────────────
   describe('redeem()', () => {
     it('lanza BadRequestException si no se elige ni plan ni reward', async () => {
-      await expect(service.redeem(INVITER_ID, {} as any))
-        .rejects.toThrow(/elegir/i);
+      await expect(service.redeem(INVITER_ID, {} as any)).rejects.toThrow(
+        /elegir/i,
+      );
     });
 
     it('lanza BadRequestException si se eligen ambos (plan + reward) a la vez', async () => {
-      await expect(service.redeem(INVITER_ID, { plan: 'ESTANDAR', rewardId: 1 }))
-        .rejects.toThrow(/una cosa a la vez/i);
+      await expect(
+        service.redeem(INVITER_ID, { plan: 'ESTANDAR', rewardId: 1 }),
+      ).rejects.toThrow(/una cosa a la vez/i);
     });
 
     it('lanza NotFoundException si el usuario no existe', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      await expect(service.redeem(INVITER_ID, { plan: 'ESTANDAR' }))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.redeem(INVITER_ID, { plan: 'ESTANDAR' }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     // ── Canje de plan ─────────────────────────────────────────
     describe('canje de plan', () => {
       it('lanza BadRequestException si el plan no está en el catálogo', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 100000 });
-        await expect(service.redeem(INVITER_ID, { plan: 'INVENTADO' }))
-          .rejects.toThrow(/no canjeable/i);
+        await expect(
+          service.redeem(INVITER_ID, { plan: 'INVENTADO' }),
+        ).rejects.toThrow(/no canjeable/i);
       });
 
       it('lanza BadRequestException si no tienes suficientes monedas para ESTANDAR (cuesta 1000)', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 500 }); // < 1000
-        await expect(service.redeem(INVITER_ID, { plan: 'ESTANDAR' }))
-          .rejects.toThrow(/Necesitas 1000/i);
+        await expect(
+          service.redeem(INVITER_ID, { plan: 'ESTANDAR' }),
+        ).rejects.toThrow(/Necesitas 1000/i);
       });
 
       it('lanza BadRequestException si el user no tiene proveedor APROBADO', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 1500 });
         prisma.provider.findFirst.mockResolvedValue(null); // no tiene provider aprobado
-        await expect(service.redeem(INVITER_ID, { plan: 'ESTANDAR' }))
-          .rejects.toThrow(/proveedores aprobados/i);
+        await expect(
+          service.redeem(INVITER_ID, { plan: 'ESTANDAR' }),
+        ).rejects.toThrow(/proveedores aprobados/i);
       });
 
       it('path feliz ESTANDAR: descuenta 1000 coins, activa subscription 1 mes, crea redemption COMPLETED', async () => {
@@ -413,26 +436,26 @@ describe('ReferralsService (unit)', () => {
         prisma.user.update.mockResolvedValue({});
         prisma.subscription.create.mockResolvedValue({});
         prisma.coinRedemption.create.mockResolvedValue({
-          id:         1,
-          userId:     INVITER_ID,
-          plan:       'ESTANDAR',
+          id: 1,
+          userId: INVITER_ID,
+          plan: 'ESTANDAR',
           coinsSpent: 1000,
-          status:     'COMPLETED',
+          status: 'COMPLETED',
         });
 
         const result = await service.redeem(INVITER_ID, { plan: 'ESTANDAR' });
 
         expect(result).toMatchObject({
-          success:       true,
+          success: true,
           planActivated: 'ESTANDAR',
-          months:        1,
+          months: 1,
         });
 
         // Descuento de 1000 coins.
         expect(prisma.user.update).toHaveBeenCalledWith(
           expect.objectContaining({
             where: { id: INVITER_ID },
-            data:  { coins: { decrement: 1000 } },
+            data: { coins: { decrement: 1000 } },
           }),
         );
 
@@ -441,9 +464,9 @@ describe('ReferralsService (unit)', () => {
           expect.objectContaining({
             data: expect.objectContaining({
               providerId: 50,
-              plan:       'ESTANDAR',
-              status:     'ACTIVA',
-              endDate:    expect.any(Date),
+              plan: 'ESTANDAR',
+              status: 'ACTIVA',
+              endDate: expect.any(Date),
             }),
           }),
         );
@@ -452,10 +475,10 @@ describe('ReferralsService (unit)', () => {
         expect(prisma.coinRedemption.create).toHaveBeenCalledWith(
           expect.objectContaining({
             data: expect.objectContaining({
-              userId:     INVITER_ID,
-              plan:       'ESTANDAR',
+              userId: INVITER_ID,
+              plan: 'ESTANDAR',
               coinsSpent: 1000,
-              status:     'COMPLETED',
+              status: 'COMPLETED',
             }),
           }),
         );
@@ -463,7 +486,7 @@ describe('ReferralsService (unit)', () => {
         // Notif PLAN_REDEEMED al user.
         expect(events.emitNotification).toHaveBeenCalledWith(
           expect.objectContaining({
-            type:         'PLAN_REDEEMED',
+            type: 'PLAN_REDEEMED',
             targetUserId: INVITER_ID,
           }),
         );
@@ -478,7 +501,11 @@ describe('ReferralsService (unit)', () => {
         prisma.user.update.mockResolvedValue({});
         prisma.subscription.update.mockResolvedValue({});
         prisma.coinRedemption.create.mockResolvedValue({
-          id: 2, userId: INVITER_ID, plan: 'PREMIUM', coinsSpent: 2000, status: 'COMPLETED',
+          id: 2,
+          userId: INVITER_ID,
+          plan: 'PREMIUM',
+          coinsSpent: 2000,
+          status: 'COMPLETED',
         });
 
         const result = await service.redeem(INVITER_ID, { plan: 'PREMIUM' });
@@ -489,7 +516,10 @@ describe('ReferralsService (unit)', () => {
         expect(prisma.subscription.update).toHaveBeenCalledWith(
           expect.objectContaining({
             where: { providerId: 50 },
-            data:  expect.objectContaining({ plan: 'PREMIUM', status: 'ACTIVA' }),
+            data: expect.objectContaining({
+              plan: 'PREMIUM',
+              status: 'ACTIVA',
+            }),
           }),
         );
         expect(prisma.subscription.create).not.toHaveBeenCalled();
@@ -507,47 +537,68 @@ describe('ReferralsService (unit)', () => {
       it('lanza NotFoundException si la reward no existe', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 1000 });
         prisma.referralReward.findUnique.mockResolvedValue(null);
-        await expect(service.redeem(INVITER_ID, { rewardId: 99 }))
-          .rejects.toThrow(NotFoundException);
+        await expect(
+          service.redeem(INVITER_ID, { rewardId: 99 }),
+        ).rejects.toThrow(NotFoundException);
       });
 
       it('lanza BadRequestException si la reward está inactiva', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 1000 });
         prisma.referralReward.findUnique.mockResolvedValue({
-          id: 1, isActive: false, coinsCost: 50, title: 'X', description: 'X',
+          id: 1,
+          isActive: false,
+          coinsCost: 50,
+          title: 'X',
+          description: 'X',
           provider: { id: 1, businessName: 'X', phone: 'X', whatsapp: null },
         });
-        await expect(service.redeem(INVITER_ID, { rewardId: 1 }))
-          .rejects.toThrow(/no está disponible/i);
+        await expect(
+          service.redeem(INVITER_ID, { rewardId: 1 }),
+        ).rejects.toThrow(/no está disponible/i);
       });
 
       it('lanza BadRequestException si no tienes suficientes coins para la reward', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 10 });
         prisma.referralReward.findUnique.mockResolvedValue({
-          id: 1, isActive: true, coinsCost: 500, title: 'Corte', description: 'D',
-          provider: { id: 1, businessName: 'Peluquería', phone: '999', whatsapp: null },
+          id: 1,
+          isActive: true,
+          coinsCost: 500,
+          title: 'Corte',
+          description: 'D',
+          provider: {
+            id: 1,
+            businessName: 'Peluquería',
+            phone: '999',
+            whatsapp: null,
+          },
         });
-        await expect(service.redeem(INVITER_ID, { rewardId: 1 }))
-          .rejects.toThrow(/Necesitas 500/i);
+        await expect(
+          service.redeem(INVITER_ID, { rewardId: 1 }),
+        ).rejects.toThrow(/Necesitas 500/i);
       });
 
       it('path feliz: descuenta coins y crea CoinRedemption PENDING (a coordinar con provider)', async () => {
         prisma.user.findUnique.mockResolvedValue({ coins: 1000 });
         prisma.referralReward.findUnique.mockResolvedValue({
-          id:          1,
-          isActive:    true,
-          coinsCost:   200,
-          title:       'Corte de pelo',
+          id: 1,
+          isActive: true,
+          coinsCost: 200,
+          title: 'Corte de pelo',
           description: 'Corte completo',
-          provider:    { id: 7, businessName: 'Peluquería Bella', phone: '999', whatsapp: '999' },
+          provider: {
+            id: 7,
+            businessName: 'Peluquería Bella',
+            phone: '999',
+            whatsapp: '999',
+          },
         });
         prisma.user.update.mockResolvedValue({});
         prisma.coinRedemption.create.mockResolvedValue({
-          id:         99,
-          userId:     INVITER_ID,
-          rewardId:   1,
+          id: 99,
+          userId: INVITER_ID,
+          rewardId: 1,
           coinsSpent: 200,
-          status:     'PENDING',
+          status: 'PENDING',
         });
 
         const result = await service.redeem(INVITER_ID, { rewardId: 1 });
@@ -559,7 +610,7 @@ describe('ReferralsService (unit)', () => {
         expect(prisma.user.update).toHaveBeenCalledWith(
           expect.objectContaining({
             where: { id: INVITER_ID },
-            data:  { coins: { decrement: 200 } },
+            data: { coins: { decrement: 200 } },
           }),
         );
 
@@ -567,10 +618,10 @@ describe('ReferralsService (unit)', () => {
         expect(prisma.coinRedemption.create).toHaveBeenCalledWith(
           expect.objectContaining({
             data: expect.objectContaining({
-              userId:     INVITER_ID,
-              rewardId:   1,
+              userId: INVITER_ID,
+              rewardId: 1,
               coinsSpent: 200,
-              status:     'PENDING',
+              status: 'PENDING',
             }),
           }),
         );
@@ -578,7 +629,7 @@ describe('ReferralsService (unit)', () => {
         // Notif al usuario para que sepa contactar al provider.
         expect(events.emitNotification).toHaveBeenCalledWith(
           expect.objectContaining({
-            type:         'REWARD_REDEEMED',
+            type: 'REWARD_REDEEMED',
             targetUserId: INVITER_ID,
           }),
         );

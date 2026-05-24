@@ -28,17 +28,16 @@ class ReviewDetailSheet extends StatefulWidget {
 }
 
 class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
-  final _reviewsRepo     = ReviewsRepository();
+  final _reviewsRepo = ReviewsRepository();
   final _replyController = TextEditingController();
   final _scrollController = ScrollController();
 
   List<ReviewReplyModel> _replies = [];
   bool _repliesLoading = false;
-  bool _sending        = false;
+  bool _sending = false;
   File? _replyPhoto;
 
-  int get _currentUserId =>
-      context.read<AuthProvider>().user?.id ?? 0;
+  int get _currentUserId => context.read<AuthProvider>().user?.id ?? 0;
 
   bool get _canReply =>
       _currentUserId == widget.review.userId ||
@@ -95,16 +94,20 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
     if (source == null || !mounted) return;
     if (!context.mounted) return;
 
-    // ignore: use_build_context_synchronously
-    final ok = source == ImageSource.camera
-        // ignore: use_build_context_synchronously
-        ? await PermissionService.requestCamera(context)
-        // ignore: use_build_context_synchronously
-        : await PermissionService.requestGallery(context);
-    if (!ok || !context.mounted) return;
+    // Solo pedimos permiso si es Cámara.
+    // Si es Galería, NO pedimos permiso (image_picker usa el selector del sistema).
+    if (source == ImageSource.camera) {
+      // ignore: use_build_context_synchronously
+      final ok = await PermissionService.requestCamera(context);
+      if (!ok || !context.mounted) return;
+    }
 
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 75);
-    if (picked != null && mounted) setState(() => _replyPhoto = File(picked.path));
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 75,
+    );
+    if (picked != null && mounted)
+      setState(() => _replyPhoto = File(picked.path));
   }
 
   Future<void> _sendReply() async {
@@ -120,8 +123,8 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
       }
       final reply = await _reviewsRepo.createReply(
         reviewId: widget.review.id,
-        userId:   _currentUserId,
-        content:  text.isNotEmpty ? text : '📷',
+        userId: _currentUserId,
+        content: text.isNotEmpty ? text : '📷',
         photoUrl: photoUrl,
       );
       if (mounted) {
@@ -152,25 +155,35 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
 
   String _formatDateFull(DateTime date) {
     const months = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre',
     ];
     return '${date.day} de ${months[date.month - 1]} de ${date.year}';
   }
 
   String _formatDateShort(DateTime date) {
-    final now  = DateTime.now();
+    final now = DateTime.now();
     final diff = now.difference(date);
-    if (diff.inMinutes < 1)  return 'Ahora';
-    if (diff.inHours   < 1)  return 'Hace ${diff.inMinutes} min';
-    if (diff.inDays    < 1)  return 'Hace ${diff.inHours} h';
-    if (diff.inDays    < 7)  return 'Hace ${diff.inDays} d';
+    if (diff.inMinutes < 1) return 'Ahora';
+    if (diff.inHours < 1) return 'Hace ${diff.inMinutes} min';
+    if (diff.inDays < 1) return 'Hace ${diff.inHours} h';
+    if (diff.inDays < 7) return 'Hace ${diff.inDays} d';
     return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
+    final c = context.colors;
     final screenH = MediaQuery.of(context).size.height;
     final bottomPad = MediaQuery.of(context).viewInsets.bottom;
 
@@ -187,7 +200,8 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: c.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
@@ -202,15 +216,26 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
               children: [
                 Text(
                   'Reseña',
-                  style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: c.bgInput, shape: BoxShape.circle),
-                    child: Icon(Icons.close_rounded, color: c.textMuted, size: 18),
+                    decoration: BoxDecoration(
+                      color: c.bgInput,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: c.textMuted,
+                      size: 18,
+                    ),
                   ),
                 ),
               ],
@@ -227,7 +252,8 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                 _buildReviewHeader(c),
 
                 // Comentario
-                if (widget.review.comment != null && widget.review.comment!.isNotEmpty) ...[
+                if (widget.review.comment != null &&
+                    widget.review.comment!.isNotEmpty) ...[
                   const SizedBox(height: 14),
                   _buildCommentBubble(c),
                 ],
@@ -241,14 +267,23 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                 // ── Hilo de respuestas ───────────────────────
                 if (_repliesLoading) ...[
                   const SizedBox(height: 20),
-                  const Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+                  const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2,
+                    ),
+                  ),
                 ] else if (_replies.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   Divider(color: c.border, height: 1),
                   const SizedBox(height: 12),
                   Text(
                     'Respuestas (${_replies.length})',
-                    style: TextStyle(color: c.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   ..._replies.map((r) => _buildReplyBubble(r, c)),
@@ -262,15 +297,26 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.file(_replyPhoto!, height: 100, fit: BoxFit.cover),
+                        child: Image.file(
+                          _replyPhoto!,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       GestureDetector(
                         onTap: () => setState(() => _replyPhoto = null),
                         child: Container(
                           margin: const EdgeInsets.all(4),
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                          child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                         ),
                       ),
                     ],
@@ -298,14 +344,21 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: c.border),
                       ),
-                      child: Icon(Icons.attach_file_rounded, color: c.textMuted, size: 20),
+                      child: Icon(
+                        Icons.attach_file_rounded,
+                        color: c.textMuted,
+                        size: 20,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   // Campo de texto
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: c.bgCard,
                         borderRadius: BorderRadius.circular(24),
@@ -317,8 +370,13 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                         maxLines: 3,
                         minLines: 1,
                         decoration: InputDecoration(
-                          hintText: _isMine ? 'Responde al proveedor…' : 'Responde a esta reseña…',
-                          hintStyle: TextStyle(color: c.textMuted, fontSize: 14),
+                          hintText: _isMine
+                              ? 'Responde al proveedor…'
+                              : 'Responde a esta reseña…',
+                          hintStyle: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 14,
+                          ),
                           border: InputBorder.none,
                           isDense: true,
                         ),
@@ -338,10 +396,18 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                       ),
                       child: _sending
                           ? const SizedBox(
-                              width: 18, height: 18,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
-                          : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                          : const Icon(
+                              Icons.send_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                     ),
                   ),
                 ],
@@ -366,7 +432,11 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
           child: widget.review.user?.avatarUrl == null
               ? Text(
                   widget.review.user?.initial ?? '?',
-                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 )
               : null,
         ),
@@ -377,12 +447,17 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
             children: [
               Text(
                 widget.review.user?.fullName ?? 'Usuario',
-                style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 3),
               RatingBarIndicator(
                 rating: widget.review.rating.toDouble(),
-                itemBuilder: (_, _) => const Icon(Icons.star_rounded, color: AppColors.star),
+                itemBuilder: (_, _) =>
+                    const Icon(Icons.star_rounded, color: AppColors.star),
                 itemCount: 5,
                 itemSize: 16,
               ),
@@ -420,8 +495,14 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Foto de evidencia',
-            style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(
+          'Foto de evidencia',
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () => Navigator.of(context).push(
@@ -446,32 +527,47 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Container(
                   height: 140,
-                  decoration: BoxDecoration(color: c.bgInput, borderRadius: BorderRadius.circular(14)),
-                  child: Icon(Icons.broken_image_rounded, color: c.textMuted, size: 36),
+                  decoration: BoxDecoration(
+                    color: c.bgInput,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: c.textMuted,
+                    size: 36,
+                  ),
                 ),
               ),
             ),
           ),
         ),
         const SizedBox(height: 4),
-        Text('Toca para ver a pantalla completa',
-            style: TextStyle(color: c.textMuted, fontSize: 11)),
+        Text(
+          'Toca para ver a pantalla completa',
+          style: TextStyle(color: c.textMuted, fontSize: 11),
+        ),
       ],
     );
   }
 
   // ── Burbuja de respuesta ──────────────────────────────────
   Widget _buildReplyBubble(ReviewReplyModel reply, AppThemeColors c) {
-    final isMe      = reply.userId == _currentUserId;
+    final isMe = reply.userId == _currentUserId;
     final isProvider = reply.userId == widget.providerUserId;
-    final bubbleColor = isMe ? AppColors.primary.withValues(alpha: 0.12) : c.bgCard;
-    final borderColor = isMe ? AppColors.primary.withValues(alpha: 0.3) : c.border;
+    final bubbleColor = isMe
+        ? AppColors.primary.withValues(alpha: 0.12)
+        : c.bgCard;
+    final borderColor = isMe
+        ? AppColors.primary.withValues(alpha: 0.3)
+        : c.border;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           if (!isMe) ...[
             CircleAvatar(
@@ -483,7 +579,11 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
               child: reply.user?.avatarUrl == null
                   ? Text(
                       reply.user?.initial ?? '?',
-                      style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     )
                   : null,
             ),
@@ -520,14 +620,21 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                       if (isProvider && !isMe) ...[
                         const SizedBox(width: 5),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'Proveedor',
-                            style: TextStyle(color: AppColors.primary, fontSize: 9, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -536,7 +643,14 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
                   const SizedBox(height: 4),
                   // Texto del mensaje
                   if (reply.content != '📷' || reply.photoUrl == null)
-                    Text(reply.content, style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4)),
+                    Text(
+                      reply.content,
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
                   // Foto adjunta
                   if (reply.photoUrl != null) ...[
                     if (reply.content != '📷') const SizedBox(height: 6),

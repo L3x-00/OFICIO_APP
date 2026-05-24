@@ -1,5 +1,15 @@
-import { Injectable, Logger, OnModuleInit, UnauthorizedException } from '@nestjs/common';
-import { initializeApp, cert, getApps, applicationDefault } from 'firebase-admin/app';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
+import {
+  initializeApp,
+  cert,
+  getApps,
+  applicationDefault,
+} from 'firebase-admin/app';
 import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 
 @Injectable()
@@ -23,7 +33,9 @@ export class FirebaseService implements OnModuleInit {
         const serviceAccount = JSON.parse(serviceAccountJson);
         initializeApp({ credential: cert(serviceAccount) });
         this.initialized = true;
-        this.logger.log('✅ Firebase Admin inicializado con SERVICE_ACCOUNT_JSON');
+        this.logger.log(
+          '✅ Firebase Admin inicializado con SERVICE_ACCOUNT_JSON',
+        );
         return;
       }
 
@@ -31,7 +43,9 @@ export class FirebaseService implements OnModuleInit {
         // Fallback local: ruta al archivo .json de la cuenta de servicio
         initializeApp({ credential: applicationDefault() });
         this.initialized = true;
-        this.logger.log('✅ Firebase Admin inicializado con GOOGLE_APPLICATION_CREDENTIALS');
+        this.logger.log(
+          '✅ Firebase Admin inicializado con GOOGLE_APPLICATION_CREDENTIALS',
+        );
         return;
       }
 
@@ -39,8 +53,13 @@ export class FirebaseService implements OnModuleInit {
         '⚠️ SERVICE_ACCOUNT_JSON y GOOGLE_APPLICATION_CREDENTIALS no están definidas. Login social deshabilitado.',
       );
     } catch (error) {
-      this.logger.error('❌ Error al inicializar Firebase Admin:', (error as Error).message ?? error);
-      this.logger.warn('⚠️ Login social deshabilitado por error en la inicialización.');
+      this.logger.error(
+        '❌ Error al inicializar Firebase Admin:',
+        (error as Error).message ?? error,
+      );
+      this.logger.warn(
+        '⚠️ Login social deshabilitado por error en la inicialización.',
+      );
     }
   }
 

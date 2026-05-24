@@ -14,7 +14,7 @@ function norm(s: string | null | undefined): string {
   if (!s) return '';
   return s
     .normalize('NFD')
-    // eslint-disable-next-line no-misleading-character-class
+
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
@@ -41,10 +41,14 @@ export class LocalitiesService {
    * usuario borra su cuenta, la entrada permanece (es propiedad de la
    * plataforma, no del usuario).
    */
-  async suggest(input: { department: string; province?: string; district?: string }) {
+  async suggest(input: {
+    department: string;
+    province?: string;
+    district?: string;
+  }) {
     const department = input.department.trim();
-    const province   = input.province?.trim()  || null;
-    const district   = input.district?.trim()  || null;
+    const province = input.province?.trim() || null;
+    const district = input.district?.trim() || null;
     if (department.length < 2) {
       throw new BadRequestException('El departamento es obligatorio');
     }
@@ -69,8 +73,8 @@ export class LocalitiesService {
     const existing = all.find(
       (l) =>
         norm(l.department) === nDept &&
-        norm(l.province)   === nProv &&
-        norm(l.district)   === nDist,
+        norm(l.province) === nProv &&
+        norm(l.district) === nDist,
     );
     if (existing) return existing;
 
@@ -84,7 +88,7 @@ export class LocalitiesService {
         province,
         district,
         isActive: true,
-        source:   'USER',
+        source: 'USER',
       },
     });
   }
@@ -97,7 +101,11 @@ export class LocalitiesService {
   async listExtras() {
     return this.prisma.locality.findMany({
       where: { source: { in: ['USER', 'ADMIN'] }, isActive: true },
-      orderBy: [{ department: 'asc' }, { province: 'asc' }, { district: 'asc' }],
+      orderBy: [
+        { department: 'asc' },
+        { province: 'asc' },
+        { district: 'asc' },
+      ],
       select: {
         id: true,
         department: true,
@@ -117,13 +125,17 @@ export class LocalitiesService {
       const q = opts.search.trim();
       where.OR = [
         { department: { contains: q, mode: 'insensitive' } },
-        { province:   { contains: q, mode: 'insensitive' } },
-        { district:   { contains: q, mode: 'insensitive' } },
+        { province: { contains: q, mode: 'insensitive' } },
+        { district: { contains: q, mode: 'insensitive' } },
       ];
     }
     return this.prisma.locality.findMany({
       where,
-      orderBy: [{ department: 'asc' }, { province: 'asc' }, { district: 'asc' }],
+      orderBy: [
+        { department: 'asc' },
+        { province: 'asc' },
+        { district: 'asc' },
+      ],
     });
   }
 
@@ -137,39 +149,51 @@ export class LocalitiesService {
     // pero marcamos source como ADMIN al crear.
     const existing = await this.suggest({
       department: input.department,
-      province:   input.province,
-      district:   input.district,
+      province: input.province,
+      district: input.district,
     });
     if (existing.source === 'USER') {
       // Si fue propuesta por un usuario, la promovemos a ADMIN como una
       // forma de "aprobar" desde el panel.
       return this.prisma.locality.update({
         where: { id: existing.id },
-        data:  { source: 'ADMIN', isActive: input.isActive ?? existing.isActive },
+        data: {
+          source: 'ADMIN',
+          isActive: input.isActive ?? existing.isActive,
+        },
       });
     }
     if (input.isActive !== undefined && existing.isActive !== input.isActive) {
       return this.prisma.locality.update({
         where: { id: existing.id },
-        data:  { isActive: input.isActive },
+        data: { isActive: input.isActive },
       });
     }
     return existing;
   }
 
-  async adminUpdate(id: number, data: {
-    department?: string;
-    province?: string;
-    district?: string;
-    isActive?: boolean;
-  }) {
+  async adminUpdate(
+    id: number,
+    data: {
+      department?: string;
+      province?: string;
+      district?: string;
+      isActive?: boolean;
+    },
+  ) {
     const existing = await this.prisma.locality.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Localidad no encontrada');
 
     // Construye un nombre coherente con los nuevos valores
     const department = data.department?.trim() ?? existing.department;
-    const province   = data.province !== undefined ? (data.province.trim() || null) : existing.province;
-    const district   = data.district !== undefined ? (data.district.trim() || null) : existing.district;
+    const province =
+      data.province !== undefined
+        ? data.province.trim() || null
+        : existing.province;
+    const district =
+      data.district !== undefined
+        ? data.district.trim() || null
+        : existing.district;
     const name = district || province || department;
 
     return this.prisma.locality.update({

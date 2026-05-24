@@ -11,13 +11,13 @@
  * salas específicas.
  */
 export type EventsGatewayMock = {
-  emitNotification:           jest.Mock;
-  emitAdminEvent:             jest.Mock;
-  emitSubastaNew:             jest.Mock;
-  emitProviderStatusChanged:  jest.Mock;
-  emitUserDeactivated:        jest.Mock;
+  emitNotification: jest.Mock;
+  emitAdminEvent: jest.Mock;
+  emitSubastaNew: jest.Mock;
+  emitProviderStatusChanged: jest.Mock;
+  emitUserDeactivated: jest.Mock;
   server: {
-    to:   jest.Mock;
+    to: jest.Mock;
     emit: jest.Mock;
   };
 };
@@ -26,11 +26,11 @@ export function createEventsGatewayMock(): EventsGatewayMock {
   const emit = jest.fn();
   const to = jest.fn(() => ({ emit }));
   return {
-    emitNotification:           jest.fn(),
-    emitAdminEvent:             jest.fn(),
-    emitSubastaNew:             jest.fn(),
-    emitProviderStatusChanged:  jest.fn(),
-    emitUserDeactivated:        jest.fn(),
+    emitNotification: jest.fn(),
+    emitAdminEvent: jest.fn(),
+    emitSubastaNew: jest.fn(),
+    emitProviderStatusChanged: jest.fn(),
+    emitUserDeactivated: jest.fn(),
     server: { to, emit },
   };
 }

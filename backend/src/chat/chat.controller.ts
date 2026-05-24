@@ -31,12 +31,12 @@ export class AdminChatsController {
   @Get()
   list(
     @Query('providerType') providerType?: string,
-    @Query('department')   department?: string,
-    @Query('province')     province?: string,
-    @Query('district')     district?: string,
+    @Query('department') department?: string,
+    @Query('province') province?: string,
+    @Query('district') district?: string,
     @Query('activeWithin') activeWithin?: string,
-    @Query('page')         page?: string,
-    @Query('limit')        limit?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     return this.chat.adminList({
       providerType,
@@ -44,7 +44,7 @@ export class AdminChatsController {
       province,
       district,
       activeWithin: activeWithin ? parseInt(activeWithin, 10) : undefined,
-      page:  page  ? parseInt(page, 10)  : 1,
+      page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 30,
     });
   }
@@ -63,7 +63,6 @@ export class ChatController {
 
   // POST /chat/messages — envía mensaje + push + WS
   @Post('messages')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendMessage(@Request() req: any, @Body() dto: CreateChatMessageDto) {
     return this.chat.sendMessage(req.user.userId, dto);
   }
@@ -73,13 +72,13 @@ export class ChatController {
   // independientes; sin scope, devolvemos todo (compat para llamadas
   // legacy).
   @Get('rooms/mine')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   myRooms(
     @Request() req: any,
     @Query('scope') scope?: string,
-    @Query('type')  type?: string,
+    @Query('type') type?: string,
   ) {
-    const safeScope = scope === 'client' || scope === 'provider' ? scope : undefined;
+    const safeScope =
+      scope === 'client' || scope === 'provider' ? scope : undefined;
     return this.chat.getRoomsForUser(req.user.userId, {
       scope: safeScope,
       providerType: type,
@@ -90,9 +89,9 @@ export class ChatController {
   @Get('rooms/:roomId/messages')
   getRoomMessages(
     @Param('roomId', ParseIntPipe) roomId: number,
-    @Query('page',  new DefaultValuePipe(1),  ParseIntPipe) page: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(30), ParseIntPipe) limit: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     @Request() req: any,
   ) {
     return this.chat.getRoomMessages(roomId, req.user.userId, { page, limit });
@@ -102,7 +101,7 @@ export class ChatController {
   @Patch('rooms/:roomId/read')
   markRead(
     @Param('roomId', ParseIntPipe) roomId: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     @Request() req: any,
   ) {
     return this.chat.markRoomAsRead(roomId, req.user.userId);

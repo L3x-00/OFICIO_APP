@@ -13,29 +13,34 @@ export class EmailService {
     const apiKey = this.config.get<string>('BREVO_API_KEY');
 
     if (!apiKey) {
-      this.logger.warn('[EMAIL SKIP] BREVO_API_KEY no configurada. Los correos no se enviarán.');
+      this.logger.warn(
+        '[EMAIL SKIP] BREVO_API_KEY no configurada. Los correos no se enviarán.',
+      );
     } else {
       this.client = new BrevoClient({ apiKey });
     }
 
-    const emailFrom = this.config.get<string>('EMAIL_FROM') ?? 'noreply@oficioapp.pe';
+    const emailFrom =
+      this.config.get<string>('EMAIL_FROM') ?? 'noreply@oficioapp.pe';
     // EMAIL_FROM puede ser "Nombre <email>" o solo "email"
     const match = emailFrom.match(/^(.+?)\s*<(.+?)>$/);
     this.senderEmail = match ? match[2].trim() : emailFrom.trim();
-    this.senderName  = match ? match[1].trim() : 'Servi';
+    this.senderName = match ? match[1].trim() : 'Servi';
   }
 
   async sendOtpEmail(to: string, otp: string): Promise<void> {
     if (!this.client) {
-      this.logger.warn(`[EMAIL SKIP] BREVO_API_KEY no configurada. OTP para ${to}: ${otp}`);
+      this.logger.warn(
+        `[EMAIL SKIP] BREVO_API_KEY no configurada. OTP para ${to}: ${otp}`,
+      );
       return;
     }
 
     try {
       await this.client.transactionalEmails.sendTransacEmail({
-        sender:      { email: this.senderEmail, name: this.senderName },
-        to:          [{ email: to }],
-        subject:     'Tu código de verificación',
+        sender: { email: this.senderEmail, name: this.senderName },
+        to: [{ email: to }],
+        subject: 'Tu código de verificación',
         htmlContent: `
           <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff;border-radius:12px">
             <h2 style="color:#1a1a1a;margin-bottom:8px">Código de verificación</h2>
@@ -49,22 +54,26 @@ export class EmailService {
       });
       this.logger.log(`OTP enviado a ${to}`);
     } catch (error) {
-      this.logger.error(`Error al enviar OTP a ${to}: ${(error as Error).message ?? error}`);
+      this.logger.error(
+        `Error al enviar OTP a ${to}: ${(error as Error).message ?? error}`,
+      );
       throw new Error(`Error al enviar email: ${(error as Error).message}`);
     }
   }
 
   async sendPasswordResetEmail(to: string, code: string): Promise<void> {
     if (!this.client) {
-      this.logger.warn(`[EMAIL SKIP] BREVO_API_KEY no configurada. Reset code para ${to}: ${code}`);
+      this.logger.warn(
+        `[EMAIL SKIP] BREVO_API_KEY no configurada. Reset code para ${to}: ${code}`,
+      );
       return;
     }
 
     try {
       await this.client.transactionalEmails.sendTransacEmail({
-        sender:      { email: this.senderEmail, name: this.senderName },
-        to:          [{ email: to }],
-        subject:     'Restablecer tu contraseña — Servi',
+        sender: { email: this.senderEmail, name: this.senderName },
+        to: [{ email: to }],
+        subject: 'Restablecer tu contraseña — Servi',
         htmlContent: `
           <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff;border-radius:12px">
             <h2 style="color:#1a1a1a;margin-bottom:8px">Restablecer contraseña</h2>
@@ -78,7 +87,9 @@ export class EmailService {
       });
       this.logger.log(`Reset code enviado a ${to}`);
     } catch (error) {
-      this.logger.error(`Error al enviar reset code a ${to}: ${(error as Error).message ?? error}`);
+      this.logger.error(
+        `Error al enviar reset code a ${to}: ${(error as Error).message ?? error}`,
+      );
       throw new Error(`Error al enviar email: ${(error as Error).message}`);
     }
   }

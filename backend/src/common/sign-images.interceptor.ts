@@ -22,9 +22,7 @@ export class SignImagesInterceptor implements NestInterceptor {
   constructor(private readonly minio: MinioService) {}
 
   intercept(_ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
-    return next.handle().pipe(
-      mergeMap(async (data) => this.transform(data)),
-    );
+    return next.handle().pipe(mergeMap(async (data) => this.transform(data)));
   }
 
   private async transform(value: unknown): Promise<unknown> {

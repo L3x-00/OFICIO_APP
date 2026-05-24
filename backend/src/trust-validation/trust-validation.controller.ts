@@ -1,7 +1,18 @@
 import {
-  Controller, Post, Get, Patch, Body, Param, Request,
-  UseGuards, UseInterceptors, UploadedFiles, Query,
-  ParseIntPipe, HttpCode, HttpStatus,
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Body,
+  Param,
+  Request,
+  UseGuards,
+  UseInterceptors,
+  UploadedFiles,
+  Query,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -17,14 +28,19 @@ export class TrustValidationController {
   // POST /trust-validation/request?type=OFICIO|NEGOCIO
   @Post('request')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'dniPhotoFront', maxCount: 1 },
-    { name: 'dniPhotoBack',  maxCount: 1 },
-    { name: 'selfieWithDni', maxCount: 1 },
-    { name: 'businessPhoto',  maxCount: 1 },
-    { name: 'businessPhoto2', maxCount: 1 },
-    { name: 'ownerDniPhoto',  maxCount: 1 },
-  ], { storage: memoryStorage() }))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'dniPhotoFront', maxCount: 1 },
+        { name: 'dniPhotoBack', maxCount: 1 },
+        { name: 'selfieWithDni', maxCount: 1 },
+        { name: 'businessPhoto', maxCount: 1 },
+        { name: 'businessPhoto2', maxCount: 1 },
+        { name: 'ownerDniPhoto', maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
+  )
   submitRequest(
     @Request() req: any,
     @Query('type') type = 'OFICIO',
@@ -37,10 +53,7 @@ export class TrustValidationController {
   // GET /trust-validation/my-status?type=OFICIO|NEGOCIO
   @Get('my-status')
   @UseGuards(JwtAuthGuard)
-  getMyStatus(
-    @Request() req: any,
-    @Query('type') type = 'OFICIO',
-  ) {
+  getMyStatus(@Request() req: any, @Query('type') type = 'OFICIO') {
     return this.service.getMyTrustStatus(req.user.userId, type);
   }
 

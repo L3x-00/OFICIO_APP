@@ -73,12 +73,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /// path evita race conditions con el send + dos posibles filas
   /// (orden de Promise.allSettled vs. emisión sincrónica del WS).
   private static readonly _skipPersist = new Set<string>([
-    'PROVIDER_APPROVED', 'APROBADO',
-    'PROVIDER_REJECTED', 'RECHAZADO',
-    'PLAN_APROBADO', 'PLAN_RECHAZADO', 'PLAN_SOLICITADO',
-    'MAS_INFO', 'VERIFICACION_REVOCADA',
-    'NEW_REVIEW', 'NUEVA_OPORTUNIDAD',
-    'OFERTA_ACEPTADA', 'OFFER_ACCEPTED',
+    'PROVIDER_APPROVED',
+    'APROBADO',
+    'PROVIDER_REJECTED',
+    'RECHAZADO',
+    'PLAN_APROBADO',
+    'PLAN_RECHAZADO',
+    'PLAN_SOLICITADO',
+    'MAS_INFO',
+    'VERIFICACION_REVOCADA',
+    'NEW_REVIEW',
+    'NUEVA_OPORTUNIDAD',
+    'OFERTA_ACEPTADA',
+    'OFFER_ACCEPTED',
     'CHAT_MESSAGE',
   ]);
 
@@ -104,8 +111,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       client.data.user = {
         userId: Number(payload.sub),
-        email:  String(payload.email),
-        role:   String(payload.role),
+        email: String(payload.email),
+        role: String(payload.role),
       };
 
       // Sala personal automática (no depende de evento del cliente)
@@ -127,7 +134,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /** Extrae el token de auth.token o del header Authorization. */
   private extractToken(client: AuthSocket): string | null {
-    const authObj = client.handshake.auth as Record<string, unknown> | undefined;
+    const authObj = client.handshake.auth as
+      | Record<string, unknown>
+      | undefined;
     const fromAuth = typeof authObj?.token === 'string' ? authObj.token : null;
     if (fromAuth) return fromAuth.replace(/^Bearer\s+/i, '');
 
@@ -199,18 +208,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // que sobrevivan al cierre de la app — funciona igual para clientes
     // (sin perfil de proveedor) que para proveedores. Se omiten los tipos
     // que algún servicio ya persiste, para no duplicar la fila.
-    if (
-      payload.targetUserId &&
-      !EventsGateway._skipPersist.has(payload.type)
-    ) {
+    if (payload.targetUserId && !EventsGateway._skipPersist.has(payload.type)) {
       void this.prisma.adminNotification
         .create({
           data: {
-            providerId:        null,
-            targetUserId:      payload.targetUserId,
-            type:              payload.type,
-            title:             payload.title,
-            message:           payload.body,
+            providerId: null,
+            targetUserId: payload.targetUserId,
+            type: payload.type,
+            title: payload.title,
+            message: payload.body,
             targetProfileType: payload.targetProfileType ?? null,
           },
         })
@@ -220,7 +226,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     if (payload.targetUserId) {
-      this.server.to(`user_${payload.targetUserId}`).emit('notification', payload);
+      this.server
+        .to(`user_${payload.targetUserId}`)
+        .emit('notification', payload);
       return;
     }
     if (payload.targetRole === 'ADMIN') {
@@ -247,7 +255,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       | 'USER_PENDING'
       | 'NEW_USER_VERIFIED'
       | 'NEW_YAPE_PAYMENT'
-      | 'NEW_MP_PAYMENT',  // pago MercadoPago auto-aprobado
+      | 'NEW_MP_PAYMENT', // pago MercadoPago auto-aprobado
     data?: Record<string, unknown>,
   ) {
     this.server.to('admin').emit('adminEvent', {

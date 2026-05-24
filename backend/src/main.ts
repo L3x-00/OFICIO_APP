@@ -30,7 +30,7 @@ async function bootstrap() {
   // firmadas + admin panel); compression activa gzip de respuestas JSON.
   app.use(
     helmet({
-      contentSecurityPolicy: false,    // evita romper Next.js admin / Flutter assets remotos
+      contentSecurityPolicy: false, // evita romper Next.js admin / Flutter assets remotos
       crossOriginResourcePolicy: { policy: 'cross-origin' }, // permite cargar imágenes desde R2
     }),
   );
@@ -51,18 +51,20 @@ async function bootstrap() {
 
   // 2. FILTROS Y PIPES DE VALIDACIÓN
   app.useGlobalFilters(new PrismaExceptionFilter());
-  
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // 3. INTERCEPTORES GLOBALES (Agrupados en una sola llamada)
   // Nota: El DiagnosticInterceptor va primero para loguear el error original
   app.useGlobalInterceptors(
     new DiagnosticInterceptor(),
-    new BigintInterceptor()
+    new BigintInterceptor(),
   );
 
   // 4. SERVICIOS DE ARCHIVOS (UPLOADS)
@@ -74,8 +76,8 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   // Confiar en el proxy de Render para obtener la IP real del cliente
   app.set('trust proxy', 1);
-  await app.listen(port, '0.0.0.0'); 
-  
+  await app.listen(port, '0.0.0.0');
+
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
   console.log(`📂 Logs de diagnóstico activados`);
 }

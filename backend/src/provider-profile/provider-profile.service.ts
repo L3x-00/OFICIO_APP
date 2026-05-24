@@ -1,7 +1,17 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { AvailabilityStatus, SubscriptionPlan } from '../generated/client/enums.js';
+import {
+  AvailabilityStatus,
+  SubscriptionPlan,
+} from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 
@@ -21,9 +31,11 @@ export class ProviderProfileService {
   // ── HELPER: obtener proveedor por userId (y opcionalmente por tipo) ──
   private async findProviderByUser(userId: number, type?: string) {
     const where: Prisma.ProviderWhereInput = { userId };
-    if (type === 'OFICIO' || type === 'NEGOCIO') where.type = type as Prisma.EnumProviderTypeFilter;
+    if (type === 'OFICIO' || type === 'NEGOCIO')
+      where.type = type as Prisma.EnumProviderTypeFilter;
     const provider = await this.prisma.provider.findFirst({ where });
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    if (!provider)
+      throw new NotFoundException('Perfil de proveedor no encontrado');
     return provider;
   }
 
@@ -38,15 +50,32 @@ export class ProviderProfileService {
     const provider = await this.prisma.provider.findFirst({
       where,
       include: {
-        providerCategories: { select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } }, orderBy: { isPrimary: 'desc' } },
-        locality:     { select: { id: true, name: true, department: true } },
-        images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
+        providerCategories: {
+          select: {
+            isPrimary: true,
+            category: {
+              select: { id: true, name: true, slug: true, iconUrl: true },
+            },
+          },
+          orderBy: { isPrimary: 'desc' },
+        },
+        locality: { select: { id: true, name: true, department: true } },
+        images: {
+          select: { id: true, url: true, isCover: true },
+          orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
+        },
         subscription: { select: { plan: true, status: true, endDate: true } },
         verificationDocs: {
           select: { id: true, docType: true, status: true },
         },
         user: {
-          select: { email: true, firstName: true, lastName: true, phone: true, avatarUrl: true },
+          select: {
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            avatarUrl: true,
+          },
         },
         // Conteo de favoritos — el mobile lo lee como `totalFavorites`
         // para mostrarlo en la card "Favoritos" del panel INICIO. Antes
@@ -55,7 +84,8 @@ export class ProviderProfileService {
       },
     });
 
-    if (!provider) throw new NotFoundException('Perfil de proveedor no encontrado');
+    if (!provider)
+      throw new NotFoundException('Perfil de proveedor no encontrado');
     // Aplanamos _count.favorites → totalFavorites para que el JSON
     // tenga la misma forma que el modelo DashboardProfileModel del
     // mobile (`json['totalFavorites']`).
@@ -69,21 +99,21 @@ export class ProviderProfileService {
   async updateMyProfile(
     userId: number,
     data: {
-      businessName?:   string;
-      description?:    string;
-      phone?:          string;
-      whatsapp?:       string;
-      address?:        string;
-      scheduleJson?:   Record<string, string>;
-      hasHomeService?: boolean;  // solo OFICIO
-      website?:        string | null;
-      instagram?:      string | null;
-      tiktok?:         string | null;
-      facebook?:       string | null;
-      linkedin?:       string | null;
-      twitterX?:       string | null;
-      telegram?:       string | null;
-      whatsappBiz?:    string | null;
+      businessName?: string;
+      description?: string;
+      phone?: string;
+      whatsapp?: string;
+      address?: string;
+      scheduleJson?: Record<string, string>;
+      hasHomeService?: boolean; // solo OFICIO
+      website?: string | null;
+      instagram?: string | null;
+      tiktok?: string | null;
+      facebook?: string | null;
+      linkedin?: string | null;
+      twitterX?: string | null;
+      telegram?: string | null;
+      whatsappBiz?: string | null;
     },
     type?: string,
   ) {
@@ -93,16 +123,31 @@ export class ProviderProfileService {
       where: { id: provider.id },
       data,
       include: {
-        providerCategories: { select: { isPrimary: true, category: { select: { id: true, name: true, slug: true, iconUrl: true } } }, orderBy: { isPrimary: 'desc' } },
-        locality:     { select: { id: true, name: true, department: true } },
-        images:       { select: { id: true, url: true, isCover: true }, orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
+        providerCategories: {
+          select: {
+            isPrimary: true,
+            category: {
+              select: { id: true, name: true, slug: true, iconUrl: true },
+            },
+          },
+          orderBy: { isPrimary: 'desc' },
+        },
+        locality: { select: { id: true, name: true, department: true } },
+        images: {
+          select: { id: true, url: true, isCover: true },
+          orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
+        },
         subscription: { select: { plan: true, status: true, endDate: true } },
       },
     });
   }
 
   // ── CAMBIAR DISPONIBILIDAD ───────────────────────────────
-  async setAvailability(userId: number, availability: AvailabilityStatus, type?: string) {
+  async setAvailability(
+    userId: number,
+    availability: AvailabilityStatus,
+    type?: string,
+  ) {
     const provider = await this.findProviderByUser(userId, type);
 
     return this.prisma.provider.update({
@@ -128,7 +173,9 @@ export class ProviderProfileService {
   /// (targetUserId) + las de cualquiera de sus perfiles de proveedor.
   /// Antes solo cargaba por providerId → un cliente puro nunca veía
   /// historial y las notifs no sobrevivían al cierre de la app.
-  private async _myNotificationsWhere(userId: number): Promise<Prisma.AdminNotificationWhereInput> {
+  private async _myNotificationsWhere(
+    userId: number,
+  ): Promise<Prisma.AdminNotificationWhereInput> {
     const providers = await this.prisma.provider.findMany({
       where: { userId },
       select: { id: true },
@@ -142,11 +189,18 @@ export class ProviderProfileService {
   async getMyNotifications(userId: number, providerType?: string) {
     const baseWhere = await this._myNotificationsWhere(userId);
 
-    // Filtro opcional por tipo de perfil (OFICIO|NEGOCIO). Cuando el
-    // panel del provider (home tab) consulta, pasa `type=OFICIO` o
-    // `type=NEGOCIO` y queremos mostrar SOLO las notif dirigidas a ese
-    // perfil + las globales (targetProfileType NULL — chat, monedas,
-    // password change, etc.). Sin `type`, devolvemos todo (la pantalla
+    // Filtro estricto por tipo de perfil (OFICIO|NEGOCIO). El home tab
+    // del provider pasa `type=OFICIO` o `type=NEGOCIO`. Antes el filtro
+    // dejaba pasar `targetProfileType=null` sin condición — eso
+    // bleedeaba al otro panel notif legacy/admin que se persistieron
+    // sin tipo (APROBADO/RECHAZADO/MAS_INFO/VERIFICACION_REVOCADA
+    // viejas) y cruzaba paneles.
+    //
+    // Regla: una notif pertenece al panel del provider SOLO si
+    // `targetProfileType=providerType`. Las verdaderamente cross-cutting
+    // (chat, monedas, etc.) NO se vinculan a un provider — tienen
+    // `providerId=null AND targetProfileType=null` y pasan también
+    // cuando el panel consulta. Sin `type`, devolvemos todo (la pantalla
     // "Alertas" del cliente las muestra todas).
     const where: Prisma.AdminNotificationWhereInput =
       providerType === 'OFICIO' || providerType === 'NEGOCIO'
@@ -156,7 +210,7 @@ export class ProviderProfileService {
               {
                 OR: [
                   { targetProfileType: providerType },
-                  { targetProfileType: null },
+                  { AND: [{ targetProfileType: null }, { providerId: null }] },
                 ],
               },
             ],
@@ -229,9 +283,9 @@ export class ProviderProfileService {
    * GRATIS=3, ESTANDAR=6, PREMIUM=10.
    */
   private static readonly PHOTO_LIMITS: Record<string, number> = {
-    GRATIS:   3,
+    GRATIS: 3,
     ESTANDAR: 6,
-    PREMIUM:  10,
+    PREMIUM: 10,
   };
 
   async addImage(userId: number, url: string, isCover = false, type?: string) {
@@ -240,7 +294,7 @@ export class ProviderProfileService {
     const [existingCount, subscription] = await Promise.all([
       this.prisma.providerImage.count({ where: { providerId: provider.id } }),
       this.prisma.subscription.findUnique({
-        where:  { providerId: provider.id },
+        where: { providerId: provider.id },
         select: { plan: true, status: true },
       }),
     ]);
@@ -305,33 +359,50 @@ export class ProviderProfileService {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    const [whatsappClicks, callClicks, views, recentEvents] = await Promise.all([
-      this.prisma.providerAnalytic.count({
-        where: { providerId: provider.id, eventType: 'whatsapp_click', createdAt: { gte: since } },
-      }),
-      this.prisma.providerAnalytic.count({
-        where: { providerId: provider.id, eventType: 'call_click', createdAt: { gte: since } },
-      }),
-      // Conteo de vistas — antes el panel mostraba 0 porque solo contábamos
-      // clicks. Las llamadas a `trackEvent(id, 'view')` desde
-      // ProviderDetailSheet quedaban en la tabla pero no se exponían.
-      this.prisma.providerAnalytic.count({
-        where: { providerId: provider.id, eventType: 'view', createdAt: { gte: since } },
-      }),
-      this.prisma.providerAnalytic.findMany({
-        where: { providerId: provider.id, createdAt: { gte: since } },
-        select: { eventType: true, createdAt: true },
-        orderBy: { createdAt: 'asc' },
-      }),
-    ]);
+    const [whatsappClicks, callClicks, views, recentEvents] = await Promise.all(
+      [
+        this.prisma.providerAnalytic.count({
+          where: {
+            providerId: provider.id,
+            eventType: 'whatsapp_click',
+            createdAt: { gte: since },
+          },
+        }),
+        this.prisma.providerAnalytic.count({
+          where: {
+            providerId: provider.id,
+            eventType: 'call_click',
+            createdAt: { gte: since },
+          },
+        }),
+        // Conteo de vistas — antes el panel mostraba 0 porque solo contábamos
+        // clicks. Las llamadas a `trackEvent(id, 'view')` desde
+        // ProviderDetailSheet quedaban en la tabla pero no se exponían.
+        this.prisma.providerAnalytic.count({
+          where: {
+            providerId: provider.id,
+            eventType: 'view',
+            createdAt: { gte: since },
+          },
+        }),
+        this.prisma.providerAnalytic.findMany({
+          where: { providerId: provider.id, createdAt: { gte: since } },
+          select: { eventType: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        }),
+      ],
+    );
 
-    const byDay: Record<string, { whatsapp: number; calls: number; views: number }> = {};
+    const byDay: Record<
+      string,
+      { whatsapp: number; calls: number; views: number }
+    > = {};
     for (const event of recentEvents) {
       const day = event.createdAt.toISOString().split('T')[0];
       if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0, views: 0 };
       if (event.eventType === 'whatsapp_click') byDay[day].whatsapp++;
-      if (event.eventType === 'call_click')     byDay[day].calls++;
-      if (event.eventType === 'view')           byDay[day].views++;
+      if (event.eventType === 'call_click') byDay[day].calls++;
+      if (event.eventType === 'view') byDay[day].views++;
     }
 
     return {
@@ -341,7 +412,10 @@ export class ProviderProfileService {
         views,
         totalClicks: whatsappClicks + callClicks,
       },
-      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({ date, ...counts })),
+      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({
+        date,
+        ...counts,
+      })),
     };
   }
 
@@ -349,13 +423,17 @@ export class ProviderProfileService {
   async requestPlanUpgrade(userId: number, plan: string, type?: string) {
     const validPlans = ['ESTANDAR', 'PREMIUM'];
     if (!validPlans.includes(plan)) {
-      throw new BadRequestException('Solo puedes solicitar plan ESTANDAR o PREMIUM');
+      throw new BadRequestException(
+        'Solo puedes solicitar plan ESTANDAR o PREMIUM',
+      );
     }
 
     const provider = await this.findProviderByUser(userId, type);
 
     // No permitir solicitar si ya tiene ese plan
-    const sub = await this.prisma.subscription.findUnique({ where: { providerId: provider.id } });
+    const sub = await this.prisma.subscription.findUnique({
+      where: { providerId: provider.id },
+    });
     if (sub?.plan === plan) {
       throw new ConflictException('Ya tienes este plan activo');
     }
@@ -365,7 +443,9 @@ export class ProviderProfileService {
       where: { providerId: provider.id, status: 'PENDIENTE' },
     });
     if (existingPending) {
-      throw new ConflictException('Ya tienes una solicitud en proceso. Espera a que sea revisada.');
+      throw new ConflictException(
+        'Ya tienes una solicitud en proceso. Espera a que sea revisada.',
+      );
     }
 
     const request = await this.prisma.planRequest.create({
@@ -380,30 +460,30 @@ export class ProviderProfileService {
     // Crear notificación interna en AdminNotification para el proveedor
     await this.prisma.adminNotification.create({
       data: {
-        providerId:       provider.id,
-        type:             'PLAN_SOLICITADO',
-        title:            `Solicitud de plan ${plan} enviada`,
-        message:          `Tu solicitud para el plan ${plan} está siendo evaluada por el administrador.`,
-        isRead:           false,
-        targetUserId:     userId,
+        providerId: provider.id,
+        type: 'PLAN_SOLICITADO',
+        title: `Solicitud de plan ${plan} enviada`,
+        message: `Tu solicitud para el plan ${plan} está siendo evaluada por el administrador.`,
+        isRead: false,
+        targetUserId: userId,
         targetProfileType: provider.type,
       },
     });
 
     // Notificación en tiempo real al proveedor
     this.events.emitNotification({
-      type:              'PLAN_SOLICITADO',
-      title:             'Solicitud enviada',
-      body:              `Tu solicitud para el plan ${plan} está siendo evaluada.`,
-      targetUserId:      userId,
+      type: 'PLAN_SOLICITADO',
+      title: 'Solicitud enviada',
+      body: `Tu solicitud para el plan ${plan} está siendo evaluada.`,
+      targetUserId: userId,
       targetProfileType: provider.type,
     });
 
     // Notificación en tiempo real a admins
     this.events.emitNotification({
-      type:       'NEW_PLAN_REQUEST',
-      title:      'Nueva solicitud de plan',
-      body:       `${request.provider.businessName} solicitó el plan ${plan}.`,
+      type: 'NEW_PLAN_REQUEST',
+      title: 'Nueva solicitud de plan',
+      body: `${request.provider.businessName} solicitó el plan ${plan}.`,
       targetRole: 'ADMIN',
     });
 
@@ -431,7 +511,10 @@ export class ProviderProfileService {
     }
 
     // Notificar al admin en tiempo real
-    this.events.emitAdminEvent('PROVIDER_DELETED', { providerId: pid, type: provider.type });
+    this.events.emitAdminEvent('PROVIDER_DELETED', {
+      providerId: pid,
+      type: provider.type,
+    });
 
     return { success: true };
   }

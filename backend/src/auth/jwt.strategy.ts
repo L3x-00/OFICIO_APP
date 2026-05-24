@@ -30,10 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { 
-        id: true,       // Cambiamos sub por id para mayor claridad
-        isActive: true, 
-        role: true      // Asegurémonos de traer el rol real de la DB por seguridad
+      select: {
+        id: true, // Cambiamos sub por id para mayor claridad
+        isActive: true,
+        role: true, // Asegurémonos de traer el rol real de la DB por seguridad
       },
     });
 
@@ -44,9 +44,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Devolvemos el objeto que NestJS pondrá en request.user.
     return {
       userId: user.id,
-      id:     user.id,
-      email:  payload.email,
-      role:   user.role,
+      id: user.id,
+      email: payload.email,
+      role: user.role,
     };
   }
 }

@@ -6,7 +6,7 @@ library;
 
 const kPrivacyOficio = '''
 POLÍTICA DE PRIVACIDAD — Profesionales (OFICIO)
-Servi · Versión 1.0
+Servi · Versión 1.0 . 2026
 
 1. Identidad del Responsable: Servi (en adelante "La Plataforma"), con domicilio en [Tu Ciudad], Perú, es el responsable del tratamiento de sus datos personales.
 2. Datos Recolectados y Finalidad: * Datos Identificativos: Nombre completo, DNI (foto ambas caras), y selfie de validación. Finalidad: Verificar la identidad y otorgar la insignia "Confiable".

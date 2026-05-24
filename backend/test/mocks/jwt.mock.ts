@@ -8,18 +8,22 @@
  * importar el algoritmo HS256 real.
  */
 export type JwtMock = {
-  sign:   jest.Mock;
+  sign: jest.Mock;
   verify: jest.Mock;
 };
 
 export function createJwtMock(): JwtMock {
-  const sign = jest.fn((payload: object, opts?: { secret?: string; expiresIn?: string }) => {
-    const blob = JSON.stringify({ payload, opts });
-    return Buffer.from(blob).toString('base64url');
-  });
+  const sign = jest.fn(
+    (payload: object, opts?: { secret?: string; expiresIn?: string }) => {
+      const blob = JSON.stringify({ payload, opts });
+      return Buffer.from(blob).toString('base64url');
+    },
+  );
   const verify = jest.fn((token: string, _opts?: { secret?: string }) => {
     try {
-      const decoded = JSON.parse(Buffer.from(token, 'base64url').toString('utf8'));
+      const decoded = JSON.parse(
+        Buffer.from(token, 'base64url').toString('utf8'),
+      );
       return decoded.payload;
     } catch {
       throw new Error('invalid token');

@@ -135,7 +135,9 @@ describe('DB migrations / schema integrity (integration)', () => {
 
   // ────────────────────────────────────────────────────────────────
   it('chat_rooms tiene UNIQUE (clientId, providerId) — idempotencia de salas', async () => {
-    const rows = await prisma.$queryRaw<{ index_name: string; columns: string }[]>`
+    const rows = await prisma.$queryRaw<
+      { index_name: string; columns: string }[]
+    >`
       SELECT idx.relname AS index_name,
              string_agg(att.attname, ',' ORDER BY x.ord) AS columns
         FROM pg_index i
@@ -156,7 +158,9 @@ describe('DB migrations / schema integrity (integration)', () => {
 
   // ────────────────────────────────────────────────────────────────
   it('providers tiene UNIQUE (userId, type) — un OFICIO + un NEGOCIO por user', async () => {
-    const rows = await prisma.$queryRaw<{ index_name: string; columns: string }[]>`
+    const rows = await prisma.$queryRaw<
+      { index_name: string; columns: string }[]
+    >`
       SELECT idx.relname AS index_name,
              string_agg(att.attname, ',' ORDER BY x.ord) AS columns
         FROM pg_index i
@@ -208,7 +212,12 @@ describe('DB migrations / schema integrity (integration)', () => {
   // ────────────────────────────────────────────────────────────────
   it('FKs críticas existen — providers→users, chat_rooms→users + providers', async () => {
     const fks = await prisma.$queryRaw<
-      { table_name: string; column_name: string; foreign_table_name: string; foreign_column_name: string }[]
+      {
+        table_name: string;
+        column_name: string;
+        foreign_table_name: string;
+        foreign_column_name: string;
+      }[]
     >`
       SELECT tc.table_name,
              kcu.column_name,
@@ -232,17 +241,19 @@ describe('DB migrations / schema integrity (integration)', () => {
           f.foreign_column_name === fkCol,
       );
 
-    expect(has('providers',          'userId',     'users',     'id')).toBe(true);
-    expect(has('chat_rooms',         'clientId',   'users',     'id')).toBe(true);
-    expect(has('chat_rooms',         'providerId', 'providers', 'id')).toBe(true);
-    expect(has('chat_messages',      'chatRoomId', 'chat_rooms','id')).toBe(true);
-    expect(has('offers',             'serviceRequestId', 'service_requests', 'id')).toBe(true);
-    expect(has('offers',             'providerId', 'providers', 'id')).toBe(true);
-    expect(has('referrals',          'inviterId',  'users',     'id')).toBe(true);
-    expect(has('referrals',          'invitedUserId', 'users',  'id')).toBe(true);
-    expect(has('referral_codes',     'userId',     'users',     'id')).toBe(true);
-    expect(has('subscriptions',      'providerId', 'providers', 'id')).toBe(true);
-    expect(has('refresh_tokens',     'userId',     'users',     'id')).toBe(true);
+    expect(has('providers', 'userId', 'users', 'id')).toBe(true);
+    expect(has('chat_rooms', 'clientId', 'users', 'id')).toBe(true);
+    expect(has('chat_rooms', 'providerId', 'providers', 'id')).toBe(true);
+    expect(has('chat_messages', 'chatRoomId', 'chat_rooms', 'id')).toBe(true);
+    expect(has('offers', 'serviceRequestId', 'service_requests', 'id')).toBe(
+      true,
+    );
+    expect(has('offers', 'providerId', 'providers', 'id')).toBe(true);
+    expect(has('referrals', 'inviterId', 'users', 'id')).toBe(true);
+    expect(has('referrals', 'invitedUserId', 'users', 'id')).toBe(true);
+    expect(has('referral_codes', 'userId', 'users', 'id')).toBe(true);
+    expect(has('subscriptions', 'providerId', 'providers', 'id')).toBe(true);
+    expect(has('refresh_tokens', 'userId', 'users', 'id')).toBe(true);
   });
 
   // ────────────────────────────────────────────────────────────────

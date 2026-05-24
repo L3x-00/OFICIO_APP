@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Param, ParseIntPipe, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { FavoritesService } from './favorites.service.js';
 

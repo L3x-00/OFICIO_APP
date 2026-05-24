@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsPositive, IsArray, ArrayMaxSize, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsPositive,
+  IsArray,
+  ArrayMaxSize,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateProviderDto {

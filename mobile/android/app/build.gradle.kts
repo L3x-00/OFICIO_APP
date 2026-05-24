@@ -36,6 +36,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // ESTO ES LO QUE ENGañaA PERMISSION_HANDLER PARA GOOGLE PLAY
+        manifestPlaceholders["permissionHandlerPermissionPhotos"] = "android.permission.FAKE_PERMISSION_PHOTOS"
+        manifestPlaceholders["permissionHandlerPermissionStorage"] = "android.permission.FAKE_PERMISSION_STORAGE"
     }
 
     signingConfigs {

@@ -1,6 +1,15 @@
 import {
-  Controller, Get, Patch, Post, Delete, Body, Request,
-  UseGuards, Query, Param, ParseIntPipe,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Delete,
+  Body,
+  Request,
+  UseGuards,
+  Query,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProviderProfileService } from './provider-profile.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
@@ -12,10 +21,7 @@ export class ProviderProfileController {
 
   // GET /provider-profile/me?type=OFICIO|NEGOCIO
   @Get('me')
-  getMyProfile(
-    @Request() req: any,
-    @Query('type') type?: string,
-  ) {
+  getMyProfile(@Request() req: any, @Query('type') type?: string) {
     return this.service.getMyProfile(req.user.userId, type);
   }
 
@@ -36,7 +42,11 @@ export class ProviderProfileController {
     @Body() body: { availability: any },
     @Query('type') type?: string,
   ) {
-    return this.service.setAvailability(req.user.userId, body.availability, type);
+    return this.service.setAvailability(
+      req.user.userId,
+      body.availability,
+      type,
+    );
   }
 
   // GET /provider-profile/me/analytics?days=30&type=OFICIO|NEGOCIO
@@ -46,15 +56,16 @@ export class ProviderProfileController {
     @Query('days') days?: string,
     @Query('type') type?: string,
   ) {
-    return this.service.getMyAnalytics(req.user.userId, days ? parseInt(days) : 30, type);
+    return this.service.getMyAnalytics(
+      req.user.userId,
+      days ? parseInt(days) : 30,
+      type,
+    );
   }
 
   // GET /provider-profile/me/notifications[?type=OFICIO|NEGOCIO]
   @Get('me/notifications')
-  getMyNotifications(
-    @Request() req: any,
-    @Query('type') type?: string,
-  ) {
+  getMyNotifications(@Request() req: any, @Query('type') type?: string) {
     return this.service.getMyNotifications(req.user.userId, type);
   }
 
@@ -80,7 +91,12 @@ export class ProviderProfileController {
     @Body() body: { url: string; isCover?: boolean },
     @Query('type') type?: string,
   ) {
-    return this.service.addImage(req.user.userId, body.url, body.isCover ?? false, type);
+    return this.service.addImage(
+      req.user.userId,
+      body.url,
+      body.isCover ?? false,
+      type,
+    );
   }
 
   // DELETE /provider-profile/me/images/:id?type=OFICIO|NEGOCIO — elimina imagen del perfil
@@ -105,10 +121,7 @@ export class ProviderProfileController {
 
   // DELETE /provider-profile/me?type=OFICIO|NEGOCIO — elimina perfil en cascada
   @Delete('me')
-  deleteMyProfile(
-    @Request() req: any,
-    @Query('type') type?: string,
-  ) {
+  deleteMyProfile(@Request() req: any, @Query('type') type?: string) {
     return this.service.deleteMyProfile(req.user.userId, type);
   }
 }

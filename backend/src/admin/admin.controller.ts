@@ -1,8 +1,19 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, ParseIntPipe,
-  HttpCode, HttpStatus, Res, UseGuards,
-  UseInterceptors, UploadedFiles
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
+  Res,
+  UseGuards,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -17,7 +28,10 @@ import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 import { LocalitiesService } from '../localities/localities.service.js';
-import { CreateLocalityDto, UpdateLocalityDto } from '../localities/dto/admin-locality.dto.js';
+import {
+  CreateLocalityDto,
+  UpdateLocalityDto,
+} from '../localities/dto/admin-locality.dto.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,10 +45,14 @@ export class AdminController {
   // ── MÉTRICAS Y ANALYTICS ─────────────────────────────────
 
   @Get('metrics')
-  getMetrics() { return this.adminService.getDashboardMetrics(); }
+  getMetrics() {
+    return this.adminService.getDashboardMetrics();
+  }
 
   @Get('grace-providers')
-  getGraceProviders() { return this.adminService.getGraceProviders(); }
+  getGraceProviders() {
+    return this.adminService.getGraceProviders();
+  }
 
   @Get('analytics')
   getAnalytics(@Query('days') days?: string) {
@@ -70,26 +88,28 @@ export class AdminController {
 
   @Get('providers')
   getAllProviders(
-    @Query('page')   page?:   string,
-    @Query('limit')  limit?:  string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('search') search?: string,
   ) {
     return this.adminService.getAllProviders(
-      page  ? parseInt(page)  : 1,
+      page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 15,
       search,
     );
   }
 
   @Get('form-options')
-  getFormOptions() { return this.adminService.getFormOptions(); }
+  getFormOptions() {
+    return this.adminService.getFormOptions();
+  }
 
   @Post('providers')
   // 'images' es el nombre del campo en el FormData, permitimos hasta 4 fotos
   @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
   createProvider(
-    @Body() body: CreateProviderDto, 
-    @UploadedFiles() files: Express.Multer.File[]
+    @Body() body: CreateProviderDto,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     // IMPORTANTE: Debes actualizar admin.service.ts para que acepte 'files'
     return this.adminService.createProvider(body, files);
@@ -165,15 +185,15 @@ export class AdminController {
 
   @Get('users')
   getUsers(
-    @Query('page')     page?:     string,
-    @Query('limit')    limit?:    string,
-    @Query('search')   search?:   string,
-    @Query('role')     role?:     string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('role') role?: string,
     @Query('isActive') isActive?: string,
   ) {
     return this.adminService.getUsers(
-      page     ? parseInt(page)           : 1,
-      limit    ? parseInt(limit)          : 20,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
       search,
       role,
       isActive !== undefined ? isActive === 'true' : undefined,
@@ -201,11 +221,11 @@ export class AdminController {
 
   @Get('notifications')
   getNotifications(
-    @Query('page')  page?:  string,
+    @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.adminService.getNotifications(
-      page  ? parseInt(page)  : 1,
+      page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
     );
   }
@@ -223,7 +243,9 @@ export class AdminController {
   // ── REPORTES ──────────────────────────────────────────────
 
   @Get('reports')
-  getReports() { return this.adminService.getReports(); }
+  getReports() {
+    return this.adminService.getReports();
+  }
 
   @Get('reports/export/users')
   async exportUsersCSV(@Res() res: Response) {
@@ -237,7 +259,10 @@ export class AdminController {
   async exportProvidersCSV(@Res() res: Response) {
     const csv = await this.adminService.exportProvidersCSV();
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="proveedores.csv"');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="proveedores.csv"',
+    );
     res.send('\uFEFF' + csv);
   }
 
@@ -245,12 +270,12 @@ export class AdminController {
 
   @Get('provider-reports')
   getProviderReports(
-    @Query('page')        page?:        string,
-    @Query('limit')       limit?:       string,
-    @Query('isReviewed')  isReviewed?:  string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('isReviewed') isReviewed?: string,
   ) {
     return this.adminService.getProviderReports(
-      page  ? parseInt(page)  : 1,
+      page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
       isReviewed !== undefined ? isReviewed === 'true' : undefined,
     );
@@ -266,12 +291,12 @@ export class AdminController {
 
   @Get('platform-issues')
   getPlatformIssues(
-    @Query('page')       page?:       string,
-    @Query('limit')      limit?:      string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('isReviewed') isReviewed?: string,
   ) {
     return this.adminService.getPlatformIssues(
-      page  ? parseInt(page)  : 1,
+      page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
       isReviewed !== undefined ? isReviewed === 'true' : undefined,
     );
@@ -286,7 +311,9 @@ export class AdminController {
   // ── CRUD DE CATEGORÍAS ────────────────────────────────────
 
   @Get('categories')
-  getCategories() { return this.adminService.getCategories(); }
+  getCategories() {
+    return this.adminService.getCategories();
+  }
 
   @Post('categories')
   createCategory(@Body() body: CreateCategoryDto) {

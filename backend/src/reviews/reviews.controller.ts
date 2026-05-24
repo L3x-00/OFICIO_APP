@@ -12,7 +12,13 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { ReviewsService } from './reviews.service.js';
-import { CreateReviewDto, ModerateReviewDto, ValidateQrDto, CreateReviewReplyDto, UpdateReviewDto } from './dto/create-review.dto.js';
+import {
+  CreateReviewDto,
+  ModerateReviewDto,
+  ValidateQrDto,
+  CreateReviewReplyDto,
+  UpdateReviewDto,
+} from './dto/create-review.dto.js';
 
 @Controller('reviews')
 export class ReviewsController {

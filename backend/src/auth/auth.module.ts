@@ -20,7 +20,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     FirebaseModule,
     CacheModule.register(),
     JwtModule.registerAsync({
-      imports: [ConfigModule ],
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),

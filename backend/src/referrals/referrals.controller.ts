@@ -1,6 +1,14 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, ParseIntPipe, Request, UseGuards,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -69,19 +77,23 @@ export class AdminReferralsController {
   }
 
   @Post('rewards')
-  createReward(@Body() body: {
-    providerId: number;
-    title: string;
-    description: string;
-    coinsCost: number;
-  }) {
+  createReward(
+    @Body()
+    body: {
+      providerId: number;
+      title: string;
+      description: string;
+      coinsCost: number;
+    },
+  ) {
     return this.referrals.createReward(body);
   }
 
   @Patch('rewards/:id')
   updateReward(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: Partial<{
+    @Body()
+    body: Partial<{
       title: string;
       description: string;
       coinsCost: number;

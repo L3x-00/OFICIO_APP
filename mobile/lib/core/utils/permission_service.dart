@@ -22,7 +22,8 @@ class PermissionService {
         await _showDialog(
           context,
           title: 'GPS desactivado',
-          message: 'Activa la ubicación en los ajustes de tu dispositivo para continuar.',
+          message:
+              'Activa la ubicación en los ajustes de tu dispositivo para continuar.',
           actionLabel: 'Abrir ajustes',
           onAction: () => Geolocator.openLocationSettings(),
         );
@@ -36,7 +37,10 @@ class PermissionService {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         if (context.mounted) {
-          _showSnack(context, 'Permiso de ubicación denegado. No se puede verificar.');
+          _showSnack(
+            context,
+            'Permiso de ubicación denegado. No se puede verificar.',
+          );
         }
         return null;
       }
@@ -47,7 +51,8 @@ class PermissionService {
         await _showDialog(
           context,
           title: 'Permiso bloqueado',
-          message: 'Habilitaste "No preguntar de nuevo". Ve a Ajustes > Aplicaciones > Servi > Permisos.',
+          message:
+              'Habilitaste "No preguntar de nuevo". Ve a Ajustes > Aplicaciones > Servi > Permisos.',
           actionLabel: 'Abrir ajustes',
           onAction: () => openAppSettings(),
         );
@@ -65,7 +70,10 @@ class PermissionService {
       );
     } catch (e) {
       if (context.mounted) {
-        _showSnack(context, 'No se pudo obtener la ubicación. Intenta de nuevo.');
+        _showSnack(
+          context,
+          'No se pudo obtener la ubicación. Intenta de nuevo.',
+        );
       }
       return null;
     }
@@ -84,7 +92,8 @@ class PermissionService {
       await _showDialog(
         context,
         title: 'Cámara bloqueada',
-        message: 'Habilita el permiso de cámara en Ajustes > Aplicaciones > Servi.',
+        message:
+            'Habilita el permiso de cámara en Ajustes > Aplicaciones > Servi.',
         actionLabel: 'Abrir ajustes',
         onAction: openAppSettings,
       );
@@ -94,26 +103,8 @@ class PermissionService {
     return false;
   }
 
-  // ── GALERÍA ───────────────────────────────────────────────
-
-  /// Solicita permiso de galería/almacenamiento según la versión de Android.
-  static Future<bool> requestGallery(BuildContext context) async {
-    // Android 13+: READ_MEDIA_IMAGES | Android ≤12: READ_EXTERNAL_STORAGE
-    final permission = Permission.photos;
-    final status = await permission.request();
-    if (status.isGranted || status.isLimited) return true;
-
-    if (status.isPermanentlyDenied && context.mounted) {
-      await _showDialog(
-        context,
-        title: 'Galería bloqueada',
-        message: 'Habilita el permiso de fotos en Ajustes > Aplicaciones > Servi.',
-        actionLabel: 'Abrir ajustes',
-        onAction: openAppSettings,
-      );
-    }
-    return false;
-  }
+  // ⚠️ SE ELIMINÓ COMPLETAMENTE LA SECCIÓN DE GALERÍA ⚠️
+  // Ya no es necesaria. Image_picker usa el selector del sistema.
 
   // ── SOLICITAR TODOS AL INICIO DE SESIÓN ──────────────────
 
@@ -122,7 +113,7 @@ class PermissionService {
   static Future<void> requestAllOnFirstLaunch(BuildContext context) async {
     await [
       Permission.camera,
-      Permission.photos,
+      // Permission.photos, // ⚠️ ELIMINADO DE AQUÍ
       Permission.location,
     ].request();
   }

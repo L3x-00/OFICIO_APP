@@ -11,6 +11,8 @@
     "fix:image-urls": "npx tsx scripts/fix-image-urls.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint:staged": "eslint --fix",
+    "format:staged": "prettier --write",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

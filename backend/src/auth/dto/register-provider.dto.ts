@@ -1,17 +1,32 @@
 import {
-  IsString, IsOptional, IsEnum, IsNumber, IsPositive, IsBoolean, IsObject,
-  IsArray, ArrayMaxSize, MinLength, MaxLength, Matches, ValidateIf,
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsPositive,
+  IsBoolean,
+  IsObject,
+  IsArray,
+  ArrayMaxSize,
+  MinLength,
+  MaxLength,
+  Matches,
+  ValidateIf,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 // Normaliza strings vacíos a null para que @IsOptional() los trate correctamente.
 // Flutter envía "" en campos no rellenados; sin esto los @Matches fallan.
 const NullIfEmpty = () =>
-  Transform(({ value }) => (value === '' || value === undefined ? null : value));
+  Transform(({ value }) =>
+    value === '' || value === undefined ? null : value,
+  );
 
 export class RegisterProviderDto {
   @IsString()
-  @MinLength(2, { message: 'El nombre del negocio debe tener al menos 2 caracteres' })
+  @MinLength(2, {
+    message: 'El nombre del negocio debe tener al menos 2 caracteres',
+  })
   @MaxLength(100)
   businessName!: string;
 
@@ -20,7 +35,9 @@ export class RegisterProviderDto {
   @MaxLength(20)
   phone!: string;
 
-  @IsEnum(['OFICIO', 'NEGOCIO'], { message: 'El tipo debe ser OFICIO o NEGOCIO' })
+  @IsEnum(['OFICIO', 'NEGOCIO'], {
+    message: 'El tipo debe ser OFICIO o NEGOCIO',
+  })
   type!: 'OFICIO' | 'NEGOCIO';
 
   // ── Campos OFICIO ─────────────────────────────────────────
@@ -33,20 +50,22 @@ export class RegisterProviderDto {
   // ── Campos NEGOCIO ────────────────────────────────────────
   @NullIfEmpty()
   @IsOptional()
-  @ValidateIf(o => o.ruc !== null && o.ruc !== undefined)
+  @ValidateIf((o) => o.ruc !== null && o.ruc !== undefined)
   @Matches(/^\d{11}$/, { message: 'El RUC debe tener exactamente 11 dígitos' })
   ruc?: string | null;
 
   @NullIfEmpty()
   @IsOptional()
-  @ValidateIf(o => o.nombreComercial !== null && o.nombreComercial !== undefined)
+  @ValidateIf(
+    (o) => o.nombreComercial !== null && o.nombreComercial !== undefined,
+  )
   @IsString()
   @MaxLength(100)
   nombreComercial?: string | null;
 
   @NullIfEmpty()
   @IsOptional()
-  @ValidateIf(o => o.razonSocial !== null && o.razonSocial !== undefined)
+  @ValidateIf((o) => o.razonSocial !== null && o.razonSocial !== undefined)
   @IsString()
   @MaxLength(150)
   razonSocial?: string | null;
@@ -77,7 +96,9 @@ export class RegisterProviderDto {
   // Descripción del servicio/negocio. Obligatoria para que las tarjetas
   // tengan contenido útil; sin ella el catálogo se ve vacío.
   @IsString({ message: 'La descripción es obligatoria' })
-  @MinLength(10, { message: 'La descripción debe tener al menos 10 caracteres' })
+  @MinLength(10, {
+    message: 'La descripción debe tener al menos 10 caracteres',
+  })
   @MaxLength(1000)
   description!: string;
 
@@ -137,7 +158,6 @@ export class RegisterProviderDto {
 
   @IsOptional()
   @IsObject()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scheduleJson?: any;
 
   // ── Redes sociales (opcionales, todas) ────────────────────

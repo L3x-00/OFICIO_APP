@@ -15,17 +15,17 @@ import { ArrivedDto } from './dto/arrived.dto.js';
 // Prisma enum values — kept as string constants so the module compiles
 // before `prisma generate` is run after la nueva migration.
 const ServiceRequestStatus = {
-  OPEN:      'OPEN',
-  CLOSED:    'CLOSED',     // Cupo lleno (5 ofertas) — sigue mostrándose para que el usuario elija
-  AWARDED:   'AWARDED',    // Usuario aceptó una oferta y se adjudicó
-  EXPIRED:   'EXPIRED',
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED', // Cupo lleno (5 ofertas) — sigue mostrándose para que el usuario elija
+  AWARDED: 'AWARDED', // Usuario aceptó una oferta y se adjudicó
+  EXPIRED: 'EXPIRED',
   CANCELLED: 'CANCELLED',
 } as const;
 
 const OfferStatus = {
-  PENDING:   'PENDING',
-  ACCEPTED:  'ACCEPTED',
-  REJECTED:  'REJECTED',
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
   WITHDRAWN: 'WITHDRAWN',
 } as const;
 
@@ -107,21 +107,21 @@ export class SubastasService {
 
       await this.prisma.adminNotification.createMany({
         data: matchingProviders.map((p) => ({
-          providerId:        p.id,
-          type:              'NUEVA_OPORTUNIDAD' as const,
-          title:             notifTitle,
-          message:           notifBody,
-          targetUserId:      p.userId,
+          providerId: p.id,
+          type: 'NUEVA_OPORTUNIDAD' as const,
+          title: notifTitle,
+          message: notifBody,
+          targetUserId: p.userId,
           targetProfileType: p.type,
         })),
       });
 
       for (const p of matchingProviders) {
         this.events.emitNotification({
-          type:              'NUEVA_OPORTUNIDAD',
-          title:             notifTitle,
-          body:              notifBody,
-          targetUserId:      p.userId,
+          type: 'NUEVA_OPORTUNIDAD',
+          title: notifTitle,
+          body: notifBody,
+          targetUserId: p.userId,
           targetProfileType: p.type,
         });
         void this.push
@@ -138,9 +138,9 @@ export class SubastasService {
 
   // ── OBTENER SOLICITUDES ACTIVAS (usuario cliente) ────────────
   async getMyRequests(userId: number, page = 1, limit = 10) {
-    const safePage  = Math.max(1, page);
+    const safePage = Math.max(1, page);
     const safeLimit = Math.min(50, Math.max(1, limit));
-    const skip      = (safePage - 1) * safeLimit;
+    const skip = (safePage - 1) * safeLimit;
 
     const [data, total] = await Promise.all([
       this.prisma.serviceRequest.findMany({
@@ -160,7 +160,13 @@ export class SubastasService {
                   totalReviews: true,
                   isTrusted: true,
                   images: { where: { isCover: true }, select: { url: true } },
-                  user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                      avatarUrl: true,
+                    },
+                  },
                 },
               },
             },
@@ -206,7 +212,9 @@ export class SubastasService {
       where: {
         status: ServiceRequestStatus.OPEN,
         expiresAt: { gt: new Date() },
-        categoryId: { in: provider.providerCategories.map(pc => pc.categoryId) },
+        categoryId: {
+          in: provider.providerCategories.map((pc) => pc.categoryId),
+        },
         // No mostrar si el proveedor ya hizo oferta
         offers: { none: { providerId } },
       },
@@ -240,66 +248,72 @@ export class SubastasService {
   async submitOffer(providerId: number, dto: SubmitOfferDto) {
     // Toda la lógica de validación + creación + cierre debe ejecutarse en una
     // sola transacción para evitar race conditions (cupo) y dobles ofertas.
-    const { offer, requestUserId } = await this.prisma.$transaction(async (tx) => {
-      const request = await tx.serviceRequest.findUnique({
-        where: { id: dto.serviceRequestId },
-      });
+    const { offer, requestUserId } = await this.prisma.$transaction(
+      async (tx) => {
+        const request = await tx.serviceRequest.findUnique({
+          where: { id: dto.serviceRequestId },
+        });
 
-      if (!request) throw new NotFoundException('Solicitud no encontrada');
-      if (request.status !== ServiceRequestStatus.OPEN)
-        throw new BadRequestException('La solicitud ya no está activa');
-      if (new Date() > request.expiresAt)
-        throw new BadRequestException('La solicitud ha expirado');
+        if (!request) throw new NotFoundException('Solicitud no encontrada');
+        if (request.status !== ServiceRequestStatus.OPEN)
+          throw new BadRequestException('La solicitud ya no está activa');
+        if (new Date() > request.expiresAt)
+          throw new BadRequestException('La solicitud ha expirado');
 
-      // Cupo: contar dentro de la transacción para que dos providers
-      // simultáneos no superen el límite.
-      const offersCount = await tx.offer.count({
-        where: { serviceRequestId: dto.serviceRequestId },
-      });
-      if (offersCount >= request.maxOffers)
-        throw new BadRequestException('Esta solicitud ya alcanzó el máximo de ofertas');
+        // Cupo: contar dentro de la transacción para que dos providers
+        // simultáneos no superen el límite.
+        const offersCount = await tx.offer.count({
+          where: { serviceRequestId: dto.serviceRequestId },
+        });
+        if (offersCount >= request.maxOffers)
+          throw new BadRequestException(
+            'Esta solicitud ya alcanzó el máximo de ofertas',
+          );
 
-      // Verificar que el provider no tenga oferta previa
-      const existing = await tx.offer.findUnique({
-        where: {
-          serviceRequestId_providerId: {
-            serviceRequestId: dto.serviceRequestId,
-            providerId,
-          },
-        },
-      });
-      if (existing)
-        throw new BadRequestException('Ya enviaste una oferta para esta solicitud');
-
-      const created = await tx.offer.create({
-        data: {
-          serviceRequestId: dto.serviceRequestId,
-          providerId,
-          price: dto.price,
-          message: dto.message,
-        },
-        include: {
-          provider: {
-            select: {
-              businessName: true,
-              averageRating: true,
-              isTrusted: true,
-              user: { select: { avatarUrl: true } },
+        // Verificar que el provider no tenga oferta previa
+        const existing = await tx.offer.findUnique({
+          where: {
+            serviceRequestId_providerId: {
+              serviceRequestId: dto.serviceRequestId,
+              providerId,
             },
           },
-        },
-      });
-
-      // Cerrar la solicitud si la oferta recién creada llenó el cupo
-      if (offersCount + 1 >= request.maxOffers) {
-        await tx.serviceRequest.update({
-          where: { id: dto.serviceRequestId },
-          data: { status: ServiceRequestStatus.CLOSED },
         });
-      }
+        if (existing)
+          throw new BadRequestException(
+            'Ya enviaste una oferta para esta solicitud',
+          );
 
-      return { offer: created, requestUserId: request.userId };
-    });
+        const created = await tx.offer.create({
+          data: {
+            serviceRequestId: dto.serviceRequestId,
+            providerId,
+            price: dto.price,
+            message: dto.message,
+          },
+          include: {
+            provider: {
+              select: {
+                businessName: true,
+                averageRating: true,
+                isTrusted: true,
+                user: { select: { avatarUrl: true } },
+              },
+            },
+          },
+        });
+
+        // Cerrar la solicitud si la oferta recién creada llenó el cupo
+        if (offersCount + 1 >= request.maxOffers) {
+          await tx.serviceRequest.update({
+            where: { id: dto.serviceRequestId },
+            data: { status: ServiceRequestStatus.CLOSED },
+          });
+        }
+
+        return { offer: created, requestUserId: request.userId };
+      },
+    );
 
     // Notificaciones FUERA de la transacción para no alargar el lock.
     this.events.emitNotification({
@@ -329,7 +343,9 @@ export class SubastasService {
 
       if (!offer) throw new NotFoundException('Oferta no encontrada');
       if (offer.serviceRequest.userId !== userId)
-        throw new ForbiddenException('No tienes permiso para aceptar esta oferta');
+        throw new ForbiddenException(
+          'No tienes permiso para aceptar esta oferta',
+        );
 
       // Solo se permite aceptar si la solicitud está OPEN (todavía recibe
       // ofertas) o CLOSED (cupo lleno, esperando elección). Cualquier otro
@@ -388,15 +404,15 @@ export class SubastasService {
 
     if (winningProvider) {
       const accTitle = '¡Felicidades! Tu oferta fue aceptada';
-      const accBody  = 'El cliente eligió tu propuesta. ¡Contáctalo ahora!';
+      const accBody = 'El cliente eligió tu propuesta. ¡Contáctalo ahora!';
 
       // Persistir — así sobrevive cambios de cuenta en el dispositivo.
       await this.prisma.adminNotification.create({
         data: {
-          providerId:   winnerProviderId,
-          type:         'OFERTA_ACEPTADA',
-          title:        accTitle,
-          message:      accBody,
+          providerId: winnerProviderId,
+          type: 'OFERTA_ACEPTADA',
+          title: accTitle,
+          message: accBody,
           targetUserId: winningProvider.userId,
         },
       });
@@ -408,12 +424,10 @@ export class SubastasService {
         targetUserId: winningProvider.userId,
       });
 
-      this.push.sendToUser(
-        winningProvider.userId,
-        accTitle,
-        accBody,
-        { type: 'OFFER_ACCEPTED', requestId: String(dto.offerId) },
-      );
+      this.push.sendToUser(winningProvider.userId, accTitle, accBody, {
+        type: 'OFFER_ACCEPTED',
+        requestId: String(dto.offerId),
+      });
     }
 
     return { success: true, offerId: dto.offerId };
@@ -436,7 +450,9 @@ export class SubastasService {
     });
     if (!request) throw new NotFoundException('Solicitud no encontrada');
     if (request.userId !== userId) {
-      throw new ForbiddenException('No puedes eliminar una solicitud que no es tuya');
+      throw new ForbiddenException(
+        'No puedes eliminar una solicitud que no es tuya',
+      );
     }
 
     // userIds de los proveedores con oferta pendiente (a notificar).
@@ -483,7 +499,9 @@ export class SubastasService {
     if (!offer || offer.providerId !== providerId)
       throw new ForbiddenException('Oferta no válida');
     if (offer.status !== OfferStatus.ACCEPTED)
-      throw new BadRequestException('Solo puedes marcar llegada en ofertas aceptadas');
+      throw new BadRequestException(
+        'Solo puedes marcar llegada en ofertas aceptadas',
+      );
 
     return this.prisma.offer.update({
       where: { id: dto.offerId },
@@ -576,13 +594,16 @@ export class SubastasService {
       where: { userId, isVisible: true },
       select: { id: true },
     });
-    if (!provider) throw new ForbiddenException('No tienes un perfil de proveedor activo');
+    if (!provider)
+      throw new ForbiddenException('No tienes un perfil de proveedor activo');
     return provider;
   }
 
   // ── RETIRAR OFERTA ───────────────────────────────────────────
   async withdrawOffer(providerId: number, offerId: number) {
-    const offer = await this.prisma.offer.findUnique({ where: { id: offerId } });
+    const offer = await this.prisma.offer.findUnique({
+      where: { id: offerId },
+    });
     if (!offer || offer.providerId !== providerId)
       throw new ForbiddenException('Oferta no encontrada');
     if (offer.status !== OfferStatus.PENDING)
@@ -597,7 +618,9 @@ export class SubastasService {
   // ── HELPERS PRIVADOS ─────────────────────────────────────────
 
   private async _checkPenalty(userId: number) {
-    const penalty = await this.prisma.userPenalty.findUnique({ where: { userId } });
+    const penalty = await this.prisma.userPenalty.findUnique({
+      where: { userId },
+    });
     if (penalty?.blockedUntil && penalty.blockedUntil > new Date()) {
       const date = penalty.blockedUntil.toLocaleDateString('es-PE');
       throw new ForbiddenException(
@@ -610,7 +633,7 @@ export class SubastasService {
     // 1) Asegura que la fila exista (insert idempotente sin tocar el contador
     //    si ya existía).
     await this.prisma.userPenalty.upsert({
-      where:  { userId },
+      where: { userId },
       create: { userId, noPickCount: 0 },
       update: {},
     });
@@ -629,15 +652,22 @@ export class SubastasService {
     const newCount = rows[0]?.noPickCount ?? 0;
 
     if (newCount >= NO_PICK_THRESHOLD) {
-      const blockedUntil = new Date(Date.now() + BLOCK_DAYS * 24 * 60 * 60 * 1000);
+      const blockedUntil = new Date(
+        Date.now() + BLOCK_DAYS * 24 * 60 * 60 * 1000,
+      );
       await this.prisma.userPenalty.update({
         where: { userId },
-        data:  { blockedUntil, noPickCount: 0 },
+        data: { blockedUntil, noPickCount: 0 },
       });
     }
   }
 
-  private _haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private _haversineKm(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;

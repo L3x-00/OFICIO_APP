@@ -64,34 +64,41 @@ class ServicesList extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.name,
-                          style: TextStyle(
-                            color: c.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          )),
-                      if (item.description != null && item.description!.isNotEmpty) ...[
+                      Text(
+                        item.name,
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (item.description != null &&
+                          item.description!.isNotEmpty) ...[
                         const SizedBox(height: 2),
-                        Text(item.description!,
-                            style: TextStyle(
-                              color: c.textMuted,
-                              fontSize: 12,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
+                        Text(
+                          item.description!,
+                          style: TextStyle(color: c.textMuted, fontSize: 12),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                       if (item.phone != null && item.phone!.isNotEmpty) ...[
                         const SizedBox(height: 3),
                         Row(
                           children: [
-                            Icon(Icons.phone_outlined,
-                                color: c.textMuted, size: 12),
+                            Icon(
+                              Icons.phone_outlined,
+                              color: c.textMuted,
+                              size: 12,
+                            ),
                             const SizedBox(width: 4),
-                            Text(item.phone!,
-                                style: TextStyle(
-                                  color: c.textMuted,
-                                  fontSize: 11,
-                                )),
+                            Text(
+                              item.phone!,
+                              style: TextStyle(
+                                color: c.textMuted,
+                                fontSize: 11,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -104,7 +111,9 @@ class ServicesList extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 4),
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
@@ -119,7 +128,11 @@ class ServicesList extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 16),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: c.textMuted,
+                      size: 16,
+                    ),
                   ],
                 ),
               ],
@@ -131,15 +144,15 @@ class ServicesList extends StatelessWidget {
   }
 
   Widget _iconBox(bool isNegocio) => Container(
-        width: 48,
-        height: 48,
-        color: accent.withValues(alpha: 0.10),
-        child: Icon(
-          isNegocio ? Icons.inventory_2_rounded : Icons.build_circle_outlined,
-          color: accent,
-          size: 22,
-        ),
-      );
+    width: 48,
+    height: 48,
+    color: accent.withValues(alpha: 0.10),
+    child: Icon(
+      isNegocio ? Icons.inventory_2_rounded : Icons.build_circle_outlined,
+      color: accent,
+      size: 22,
+    ),
+  );
 }
 
 /// ─── Tabla de horarios semanales ────────────────────────────
@@ -148,10 +161,24 @@ class ScheduleTable extends StatelessWidget {
   final Map<String, dynamic> schedule;
   const ScheduleTable({super.key, required this.schedule});
 
+  /// Lee la hora del día tolerando perfiles legacy que persistieron
+  /// `mié`/`sáb` con tilde — el editor nuevo usa `mie`/`sab`.
+  static String? _readHours(Map<String, dynamic> schedule, String key) {
+    final v = schedule[key];
+    if (v is String) return v;
+    const legacy = {'mie': 'mié', 'sab': 'sáb'};
+    final alt = legacy[key];
+    if (alt != null) {
+      final lv = schedule[alt];
+      if (lv is String) return lv;
+    }
+    return null;
+  }
+
   /// true si el scheduleJson tiene al menos un día con horario definido
   static bool hasScheduleData(Map<String, dynamic> schedule) {
     const dayKeys = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
-    return dayKeys.any((d) => schedule[d] != null);
+    return dayKeys.any((d) => _readHours(schedule, d) != null);
   }
 
   @override
@@ -175,7 +202,7 @@ class ScheduleTable extends StatelessWidget {
       ),
       child: Column(
         children: days.entries.map((entry) {
-          final hours = schedule[entry.key] as String?;
+          final hours = _readHours(schedule, entry.key);
           if (hours == null) return const SizedBox.shrink();
           final isClosed = hours == 'Cerrado';
           return Padding(
@@ -186,10 +213,7 @@ class ScheduleTable extends StatelessWidget {
                   width: 88,
                   child: Text(
                     entry.value,
-                    style: TextStyle(
-                      color: c.textSecondary,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: c.textSecondary, fontSize: 13),
                   ),
                 ),
                 Text(

@@ -6,10 +6,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { EventsModule } from '../events/events.module.js';
 
 @Module({
-  imports: [
-    CacheModule.register(),
-    EventsModule,
-  ],
+  imports: [CacheModule.register(), EventsModule],
   controllers: [ProvidersController, PublicProfileController],
   providers: [ProvidersService],
 })

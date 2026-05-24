@@ -32,7 +32,10 @@ export class ChatService {
    */
   async getOrCreateRoom(clientId: number, providerId: number) {
     const [client, provider] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: clientId }, select: { id: true } }),
+      this.prisma.user.findUnique({
+        where: { id: clientId },
+        select: { id: true },
+      }),
       this.prisma.provider.findUnique({
         where: { id: providerId },
         select: { id: true, userId: true },
@@ -78,7 +81,12 @@ export class ChatService {
       where,
       include: {
         client: {
-          select: { id: true, firstName: true, lastName: true, avatarUrl: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
         },
         provider: {
           select: {
@@ -120,10 +128,7 @@ export class ChatService {
         lastActivityAt: r.messages[0]?.createdAt ?? r.createdAt,
         unreadCount: unreadByRoom.get(r.id) ?? 0,
       }))
-      .sort(
-        (a, b) =>
-          b.lastActivityAt.getTime() - a.lastActivityAt.getTime(),
-      )
+      .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())
       .map(({ messages: _msgs, ...rest }) => rest);
   }
 
@@ -140,7 +145,9 @@ export class ChatService {
     dto: { chatRoomId: number; senderId: number; content: string },
   ) {
     if (dto.senderId !== senderUserId) {
-      throw new ForbiddenException('No puedes enviar mensajes en nombre de otro usuario');
+      throw new ForbiddenException(
+        'No puedes enviar mensajes en nombre de otro usuario',
+      );
     }
 
     const room = await this.prisma.chatRoom.findUnique({
@@ -177,8 +184,8 @@ export class ChatService {
     ]);
 
     const senderName =
-      `${sender?.firstName ?? ''} ${sender?.lastName ?? ''}`.trim()
-      || 'Alguien';
+      `${sender?.firstName ?? ''} ${sender?.lastName ?? ''}`.trim() ||
+      'Alguien';
     // Texto solicitado por el user: "Tienes un nuevo mensaje de: X"
     const notifTitle = `Tienes un nuevo mensaje de: ${senderName}`;
     const senderAvatar = sender?.avatarUrl ?? null;
@@ -192,15 +199,17 @@ export class ChatService {
     this.prisma.adminNotification
       .create({
         data: {
-          providerId:   null,
+          providerId: null,
           targetUserId: receiverUserId,
-          type:         'CHAT_MESSAGE',
-          title:        notifTitle,
-          message:      message.content,
+          type: 'CHAT_MESSAGE',
+          title: notifTitle,
+          message: message.content,
         },
       })
       .catch((e) =>
-        this.logger.warn(`persist CHAT_MESSAGE falló: ${(e as Error)?.message ?? e}`),
+        this.logger.warn(
+          `persist CHAT_MESSAGE falló: ${(e as Error)?.message ?? e}`,
+        ),
       );
 
     // Push + WebSocket en paralelo. Errores se loguean pero no rompen la API.
@@ -275,9 +284,9 @@ export class ChatService {
     }
 
     // Sanea paginación; tope alto razonable para evitar dump de tabla
-    const page  = Math.max(1, opts.page  ?? 1);
+    const page = Math.max(1, opts.page ?? 1);
     const limit = Math.min(100, Math.max(1, opts.limit ?? 30));
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
       this.prisma.chatMessage.findMany({
@@ -313,8 +322,7 @@ export class ChatService {
     if (!room) throw new NotFoundException('Sala de chat no encontrada');
 
     const isParticipant =
-      readerUserId === room.clientId ||
-      readerUserId === room.provider.userId;
+      readerUserId === room.clientId || readerUserId === room.provider.userId;
     if (!isParticipant) {
       throw new ForbiddenException('No perteneces a esta sala de chat');
     }
@@ -334,13 +342,11 @@ export class ChatService {
 
     if (result.count > 0) {
       try {
-        this.events.server
-          .to(`user_${otherUserId}`)
-          .emit('chatMessagesRead', {
-            roomId,
-            readerUserId,
-            updatedCount: result.count,
-          });
+        this.events.server.to(`user_${otherUserId}`).emit('chatMessagesRead', {
+          roomId,
+          readerUserId,
+          updatedCount: result.count,
+        });
       } catch (e) {
         this.logger.warn(`ws emit (read) falló: ${(e as Error)?.message}`);
       }
@@ -358,15 +364,16 @@ export class ChatService {
    */
   async adminList(filters: {
     providerType?: string;
-    department?:   string;
-    province?:     string;
-    district?:     string;
+    department?: string;
+    province?: string;
+    district?: string;
     activeWithin?: number;
-    page?:         number;
-    limit?:        number;
+    page?: number;
+    limit?: number;
   }) {
-    const { providerType, department, province, district, activeWithin } = filters;
-    const page  = Math.max(1, filters.page ?? 1);
+    const { providerType, department, province, district, activeWithin } =
+      filters;
+    const page = Math.max(1, filters.page ?? 1);
     const limit = Math.min(100, Math.max(1, filters.limit ?? 30));
 
     const providerWhere: any = {};
@@ -376,18 +383,27 @@ export class ChatService {
     if (department || province || district) {
       providerWhere.locality = {
         ...(department ? { department } : {}),
-        ...(province   ? { province  } : {}),
-        ...(district   ? { district  } : {}),
+        ...(province ? { province } : {}),
+        ...(district ? { district } : {}),
       };
     }
 
-    const messageFilter = activeWithin && activeWithin > 0
-      ? { some: { createdAt: { gte: new Date(Date.now() - activeWithin * 24 * 60 * 60 * 1000) } } }
-      : { some: {} }; // al menos un mensaje
+    const messageFilter =
+      activeWithin && activeWithin > 0
+        ? {
+            some: {
+              createdAt: {
+                gte: new Date(Date.now() - activeWithin * 24 * 60 * 60 * 1000),
+              },
+            },
+          }
+        : { some: {} }; // al menos un mensaje
 
     const where: any = {
       messages: messageFilter,
-      ...(Object.keys(providerWhere).length > 0 ? { provider: providerWhere } : {}),
+      ...(Object.keys(providerWhere).length > 0
+        ? { provider: providerWhere }
+        : {}),
     };
 
     const [rooms, total] = await Promise.all([
@@ -397,17 +413,33 @@ export class ChatService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          client:   { select: { id: true, firstName: true, lastName: true, email: true } },
+          client: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
           provider: {
             select: {
-              id: true, businessName: true, type: true,
-              locality: { select: { name: true, department: true, province: true, district: true } },
+              id: true,
+              businessName: true,
+              type: true,
+              locality: {
+                select: {
+                  name: true,
+                  department: true,
+                  province: true,
+                  district: true,
+                },
+              },
             },
           },
           messages: {
             orderBy: { createdAt: 'desc' },
             take: 1,
-            select: { id: true, content: true, createdAt: true, senderId: true },
+            select: {
+              id: true,
+              content: true,
+              createdAt: true,
+              senderId: true,
+            },
           },
         },
       }),
@@ -415,7 +447,7 @@ export class ChatService {
     ]);
 
     return {
-      data:  rooms,
+      data: rooms,
       total,
       page,
       lastPage: Math.max(1, Math.ceil(total / limit)),

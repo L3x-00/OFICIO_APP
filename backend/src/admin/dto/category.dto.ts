@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsInt, IsPositive, MinLength, MaxLength, Matches } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  IsPositive,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateCategoryDto {
@@ -8,7 +16,9 @@ export class CreateCategoryDto {
   name: string;
 
   @IsString()
-  @Matches(/^[a-z0-9-]+$/, { message: 'El slug solo puede contener letras minúsculas, números y guiones' })
+  @Matches(/^[a-z0-9-]+$/, {
+    message: 'El slug solo puede contener letras minúsculas, números y guiones',
+  })
   slug: string;
 
   @IsOptional()

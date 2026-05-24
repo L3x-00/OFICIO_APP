@@ -18,7 +18,11 @@
 
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../../src/auth/auth.service.js';
-import { getTestPrisma, disconnectTestPrisma, truncateAll } from '../utils/db.util';
+import {
+  getTestPrisma,
+  disconnectTestPrisma,
+  truncateAll,
+} from '../utils/db.util';
 import { createEventsGatewayMock } from '../mocks/events-gateway.mock';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import type { PrismaService } from '../../prisma/prisma.service.js';
@@ -30,15 +34,15 @@ function buildAuthService(prisma: PrismaService) {
     get: (key: string) => process.env[key],
   } as unknown as import('@nestjs/config').ConfigService;
   const events = createEventsGatewayMock();
-  const cache  = createInMemoryCache();
+  const cache = createInMemoryCache();
   // EmailService.sendOtpEmail debe retornar Promise — auth.service hace
   // `.catch()` sobre el resultado (fire-and-forget).
-  const email  = {
-    sendOtpEmail:           jest.fn().mockResolvedValue(undefined),
+  const email = {
+    sendOtpEmail: jest.fn().mockResolvedValue(undefined),
     sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
   };
   const firebase = { verifyIdToken: jest.fn().mockResolvedValue(undefined) };
-  const minio    = { uploadFile:    jest.fn().mockResolvedValue('') };
+  const minio = { uploadFile: jest.fn().mockResolvedValue('') };
 
   const service = new AuthService(
     prisma,
@@ -87,11 +91,11 @@ describe('Auth flow (integration)', () => {
 
     // Paso 1: registerUser
     const reg = await service.registerUser({
-      email:     'flow-register@example.com',
-      password:  'Pwd-flow-2026!',
+      email: 'flow-register@example.com',
+      password: 'Pwd-flow-2026!',
       firstName: 'Lucia',
-      lastName:  'Rojas',
-      phone:     '987654321',
+      lastName: 'Rojas',
+      phone: '987654321',
     });
 
     expect(reg.requiresEmailVerification).toBe(true);
@@ -101,10 +105,14 @@ describe('Auth flow (integration)', () => {
     // El cache debe tener las 3 entradas (pending_reg, pending_otp, pending_email).
     expect(cache._store.has(`pending_reg:${reg.pendingId}`)).toBe(true);
     expect(cache._store.has(`pending_otp:${reg.pendingId}`)).toBe(true);
-    expect(cache._store.has('pending_email:flow-register@example.com')).toBe(true);
+    expect(cache._store.has('pending_email:flow-register@example.com')).toBe(
+      true,
+    );
 
     // Hasta acá, NO debe existir el user en BD.
-    const before = await prisma.user.findUnique({ where: { email: 'flow-register@example.com' } });
+    const before = await prisma.user.findUnique({
+      where: { email: 'flow-register@example.com' },
+    });
     expect(before).toBeNull();
 
     // Paso 2: verifyOtp con el código real
@@ -144,10 +152,10 @@ describe('Auth flow (integration)', () => {
     // Setup: registramos + verificamos para tener un user activo con
     // password real.
     const reg = await service.registerUser({
-      email:     'flow-login@example.com',
-      password:  'Login-flow-2026!',
+      email: 'flow-login@example.com',
+      password: 'Login-flow-2026!',
       firstName: 'Mario',
-      lastName:  'Lopez',
+      lastName: 'Lopez',
     });
     await service.verifyOtp(reg.pendingId, reg._devOtpCode!);
 
@@ -158,19 +166,27 @@ describe('Auth flow (integration)', () => {
     await new Promise((r) => setTimeout(r, 1100));
 
     // Path feliz
-    const result = await service.login('flow-login@example.com', 'Login-flow-2026!', '127.0.0.1');
+    const result = await service.login(
+      'flow-login@example.com',
+      'Login-flow-2026!',
+      '127.0.0.1',
+    );
     expect(result.userId).toBeGreaterThan(0);
     expect(result.accessToken).toBeDefined();
     expect(result.refreshToken).toBeDefined();
     expect(result.firstName).toBe('Mario');
 
     // Token persistido en BD.
-    const stored = await prisma.refreshToken.findUnique({ where: { token: result.refreshToken } });
+    const stored = await prisma.refreshToken.findUnique({
+      where: { token: result.refreshToken },
+    });
     expect(stored).not.toBeNull();
 
     // lastLoginAt y lastIp deben actualizarse (fire-and-forget, esperamos un tick).
     await new Promise((r) => setImmediate(r));
-    const updated = await prisma.user.findUnique({ where: { id: result.userId } });
+    const updated = await prisma.user.findUnique({
+      where: { id: result.userId },
+    });
     expect(updated!.lastLoginAt).not.toBeNull();
     expect(updated!.lastIp).toBe('127.0.0.1');
   });
@@ -179,10 +195,10 @@ describe('Auth flow (integration)', () => {
   it('login con password incorrecta lanza UnauthorizedException', async () => {
     const { service } = buildAuthService(prisma);
     const reg = await service.registerUser({
-      email:     'flow-badpwd@example.com',
-      password:  'Right-pwd-2026!',
+      email: 'flow-badpwd@example.com',
+      password: 'Right-pwd-2026!',
       firstName: 'Ana',
-      lastName:  'Soto',
+      lastName: 'Soto',
     });
     await service.verifyOtp(reg.pendingId, reg._devOtpCode!);
 
@@ -191,8 +207,12 @@ describe('Auth flow (integration)', () => {
     ).rejects.toThrow(UnauthorizedException);
 
     // Y NO debe haberse creado ningún refresh token para esa cuenta.
-    const user  = await prisma.user.findUnique({ where: { email: 'flow-badpwd@example.com' } });
-    const after = await prisma.refreshToken.count({ where: { userId: user!.id } });
+    const user = await prisma.user.findUnique({
+      where: { email: 'flow-badpwd@example.com' },
+    });
+    const after = await prisma.refreshToken.count({
+      where: { userId: user!.id },
+    });
     // Hay 1 sí: el de verifyOtp del setup. NO debe haberse sumado uno por el login fallido.
     expect(after).toBe(1);
   });
@@ -200,18 +220,19 @@ describe('Auth flow (integration)', () => {
   // ──────────────────────────────────────────────────────────────────
   it('login con email no registrado lanza NotFoundException', async () => {
     const { service } = buildAuthService(prisma);
-    await expect(service.login('inexistente@example.com', 'cualquiera'))
-      .rejects.toThrow(NotFoundException);
+    await expect(
+      service.login('inexistente@example.com', 'cualquiera'),
+    ).rejects.toThrow(NotFoundException);
   });
 
   // ──────────────────────────────────────────────────────────────────
   it('refreshTokens invalida el refresh viejo y emite par nuevo', async () => {
     const { service } = buildAuthService(prisma);
     const reg = await service.registerUser({
-      email:     'flow-refresh@example.com',
-      password:  'Pwd-refresh-2026!',
+      email: 'flow-refresh@example.com',
+      password: 'Pwd-refresh-2026!',
       firstName: 'Refresh',
-      lastName:  'Test',
+      lastName: 'Test',
     });
     const verified = await service.verifyOtp(reg.pendingId, reg._devOtpCode!);
     const oldRefresh = verified.refreshToken;
@@ -229,15 +250,23 @@ describe('Auth flow (integration)', () => {
     expect(rotated.refreshToken).not.toBe(oldRefresh);
 
     // El viejo se borró de la BD (single-use).
-    const oldRow = await prisma.refreshToken.findUnique({ where: { token: oldRefresh } });
+    const oldRow = await prisma.refreshToken.findUnique({
+      where: { token: oldRefresh },
+    });
     expect(oldRow).toBeNull();
 
     // El nuevo está en la BD y es la única fila del usuario.
-    const user   = await prisma.user.findUnique({ where: { email: 'flow-refresh@example.com' } });
-    const newRow = await prisma.refreshToken.findUnique({ where: { token: rotated.refreshToken } });
+    const user = await prisma.user.findUnique({
+      where: { email: 'flow-refresh@example.com' },
+    });
+    const newRow = await prisma.refreshToken.findUnique({
+      where: { token: rotated.refreshToken },
+    });
     expect(newRow).not.toBeNull();
     expect(newRow!.userId).toBe(user!.id);
-    const allTokens = await prisma.refreshToken.count({ where: { userId: user!.id } });
+    const allTokens = await prisma.refreshToken.count({
+      where: { userId: user!.id },
+    });
     expect(allTokens).toBe(1);
   });
 
@@ -246,15 +275,17 @@ describe('Auth flow (integration)', () => {
     const { service } = buildAuthService(prisma);
 
     // (a) Token totalmente malformado.
-    await expect(service.refreshTokens('not-a-real-token'))
-      .rejects.toThrow(UnauthorizedException);
+    await expect(service.refreshTokens('not-a-real-token')).rejects.toThrow(
+      UnauthorizedException,
+    );
 
     // (b) Token que parece JWT pero firmado con otro secret.
     const fake = new JwtService({}).sign(
       { sub: 9999, email: 'x@x', role: 'USUARIO' },
       { secret: 'wrong-secret' },
     );
-    await expect(service.refreshTokens(fake))
-      .rejects.toThrow(UnauthorizedException);
+    await expect(service.refreshTokens(fake)).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 });

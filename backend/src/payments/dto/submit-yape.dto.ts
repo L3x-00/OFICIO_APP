@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, Min, Length, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  Min,
+  Length,
+  IsIn,
+} from 'class-validator';
 
 export class SubmitYapeDto {
   @IsString()

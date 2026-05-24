@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Delete, Body, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  UseGuards,
+  Request,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt.guard.js';
 import { RegisterUserDto } from './dto/register-user.dto.js';
@@ -35,9 +45,9 @@ export class AuthController {
   @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
   @HttpCode(HttpStatus.CREATED)
   async registerProvider(
-    @Request() req: any, 
+    @Request() req: any,
     @Body() dto: RegisterProviderDto,
-    @UploadedFiles() files: Express.Multer.File[] // <── AQUÍ recibimos las fotos
+    @UploadedFiles() files: Express.Multer.File[], // <── AQUÍ recibimos las fotos
   ) {
     // Pasamos los archivos al servicio
     return this.authService.registerProvider(req.user.userId, dto, files);
@@ -68,7 +78,11 @@ export class AuthController {
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto.email, dto.token, dto.newPassword);
+    return this.authService.resetPassword(
+      dto.email,
+      dto.token,
+      dto.newPassword,
+    );
   }
 
   // POST /auth/send-otp — genera y envía un código OTP al email del usuario

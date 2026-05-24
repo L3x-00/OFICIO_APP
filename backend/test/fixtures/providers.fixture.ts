@@ -36,54 +36,60 @@ export type FixtureProvider = {
   updatedAt: Date;
 };
 
-export const providerFixture = (overrides: Partial<FixtureProvider> = {}): FixtureProvider => ({
-  id:                  10,
-  userId:              1,
-  type:                'OFICIO',
-  businessName:        'Electricidad Pérez',
-  phone:               '999999999',
-  whatsapp:            '999999999',
-  verificationStatus:  'APROBADO',
-  isVerified:          true,
-  isVisible:           true,
-  isTrusted:           false,
-  averageRating:       4.5,
-  totalReviews:        12,
-  trustStatus:         'NONE',
-  hasDelivery:         false,
-  hasHomeService:      true,
-  plenaCoordinacion:   false,
-  description:         'Servicio eléctrico profesional 24/7',
-  address:             'Av. Test 123',
-  latitude:            -12.0464,
-  longitude:           -77.0428,
-  localityId:          1,
-  dni:                 '12345678',
-  ruc:                 null,
-  nombreComercial:     null,
-  razonSocial:         null,
-  planPriority:        4,
-  createdAt:           new Date('2026-01-01T00:00:00Z'),
-  updatedAt:           new Date('2026-01-01T00:00:00Z'),
+export const providerFixture = (
+  overrides: Partial<FixtureProvider> = {},
+): FixtureProvider => ({
+  id: 10,
+  userId: 1,
+  type: 'OFICIO',
+  businessName: 'Electricidad Pérez',
+  phone: '999999999',
+  whatsapp: '999999999',
+  verificationStatus: 'APROBADO',
+  isVerified: true,
+  isVisible: true,
+  isTrusted: false,
+  averageRating: 4.5,
+  totalReviews: 12,
+  trustStatus: 'NONE',
+  hasDelivery: false,
+  hasHomeService: true,
+  plenaCoordinacion: false,
+  description: 'Servicio eléctrico profesional 24/7',
+  address: 'Av. Test 123',
+  latitude: -12.0464,
+  longitude: -77.0428,
+  localityId: 1,
+  dni: '12345678',
+  ruc: null,
+  nombreComercial: null,
+  razonSocial: null,
+  planPriority: 4,
+  createdAt: new Date('2026-01-01T00:00:00Z'),
+  updatedAt: new Date('2026-01-01T00:00:00Z'),
   ...overrides,
 });
 
 /** Proveedor pendiente — recién registrado, sin aprobar. */
-export const pendingProviderFixture = (overrides: Partial<FixtureProvider> = {}): FixtureProvider =>
+export const pendingProviderFixture = (
+  overrides: Partial<FixtureProvider> = {},
+): FixtureProvider =>
   providerFixture({
     verificationStatus: 'PENDIENTE',
-    isVerified:         false,
-    isVisible:          false,
-    averageRating:      0,
-    totalReviews:       0,
+    isVerified: false,
+    isVisible: false,
+    averageRating: 0,
+    totalReviews: 0,
     ...overrides,
   });
 
 /** Proveedor rechazado. */
-export const rejectedProviderFixture = (overrides: Partial<FixtureProvider> = {}): FixtureProvider =>
+export const rejectedProviderFixture = (
+  overrides: Partial<FixtureProvider> = {},
+): FixtureProvider =>
   providerFixture({
     verificationStatus: 'RECHAZADO',
-    isVerified:         false,
-    isVisible:          false,
+    isVerified: false,
+    isVisible: false,
     ...overrides,
   });

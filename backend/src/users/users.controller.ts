@@ -1,6 +1,14 @@
 import {
-  Controller, Get, Patch, Delete, Body, UseGuards, Request,
-  UseInterceptors, UploadedFile, BadRequestException,
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service.js';
@@ -73,9 +81,19 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('profile-picture')
   @UseInterceptors(FileInterceptor('avatar', memOpts))
-  async updateProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+  async updateProfilePicture(
+    @Request() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    const avatarUrl = await this.minio.uploadFile(file.buffer, file.originalname, 'clients/profiles');
-    return this.usersService.updateProfilePicture(req.user.id || req.user.userId, avatarUrl);
+    const avatarUrl = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      'clients/profiles',
+    );
+    return this.usersService.updateProfilePicture(
+      req.user.id || req.user.userId,
+      avatarUrl,
+    );
   }
 }

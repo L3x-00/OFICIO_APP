@@ -11,8 +11,11 @@
  * resolución de imports siga compilando sin tocar la lógica.
  */
 export class PrismaClient {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(_opts?: any) {}
-  async $connect()    { /* noop */ }
-  async $disconnect() { /* noop */ }
+  async $connect() {
+    /* noop */
+  }
+  async $disconnect() {
+    /* noop */
+  }
 }

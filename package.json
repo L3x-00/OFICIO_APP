@@ -1,0 +1,13 @@
+{
+  "name": "servi-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root del monorepo Servi — solo aloja Husky + lint-staged. Cada subproyecto (backend, admin, mobile) mantiene sus propias dependencias y scripts.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.0"
+  }
+}

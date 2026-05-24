@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { PrismaService } from '../../../prisma/prisma.service.js';
@@ -15,9 +20,12 @@ export class MercadoPagoService {
   // Catálogo server-side de planes. El cliente NUNCA envía el precio
   // — solo elige el plan. Antes el price venía del body, lo que
   // permitía pagar PREMIUM por S/ 0.01 (C-03 de la auditoría).
-  static readonly PLAN_CATALOG: Record<PaidPlan, { price: number; description: string }> = {
-    ESTANDAR: { price: 19.90, description: 'Plan Estándar mensual - Servi' },
-    PREMIUM:  { price: 39.90, description: 'Plan Premium mensual - Servi'  },
+  static readonly PLAN_CATALOG: Record<
+    PaidPlan,
+    { price: number; description: string }
+  > = {
+    ESTANDAR: { price: 19.9, description: 'Plan Estándar mensual - Servi' },
+    PREMIUM: { price: 39.9, description: 'Plan Premium mensual - Servi' },
   };
 
   /// Devuelve el precio esperado para un plan dado. Lo usa el webhook
@@ -31,12 +39,15 @@ export class MercadoPagoService {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
-    this.accessToken = this.configService.get<string>('MERCADOPAGO_ACCESS_TOKEN')!;
-    this.client      = new MercadoPagoConfig({ accessToken: this.accessToken });
-    this.webBaseUrl  = this.configService.get<string>('WEB_BASE_URL')
-                    ?? 'https://www.oficioapp.org.pe';
-    this.apiBaseUrl  = this.configService.get<string>('API_BASE_URL')
-                    ?? 'http://localhost:3000';
+    this.accessToken = this.configService.get<string>(
+      'MERCADOPAGO_ACCESS_TOKEN',
+    )!;
+    this.client = new MercadoPagoConfig({ accessToken: this.accessToken });
+    this.webBaseUrl =
+      this.configService.get<string>('WEB_BASE_URL') ??
+      'https://www.oficioapp.org.pe';
+    this.apiBaseUrl =
+      this.configService.get<string>('API_BASE_URL') ?? 'http://localhost:3000';
   }
 
   async createPreference(params: {
@@ -59,7 +70,12 @@ export class MercadoPagoService {
     // 2. Validar que el user tiene el perfil del providerType pedido.
     //    Evita pagar para un perfil inexistente y desperdiciar webhook.
     const provider = await this.prisma.provider.findUnique({
-      where: { userId_type: { userId: params.userId, type: params.providerType as any } },
+      where: {
+        userId_type: {
+          userId: params.userId,
+          type: params.providerType as any,
+        },
+      },
       select: { id: true },
     });
     if (!provider) {
@@ -120,17 +136,19 @@ export class MercadoPagoService {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
     if (!response.ok) {
-      throw new Error(`Error al consultar pago ${paymentId}: ${response.statusText}`);
+      throw new Error(
+        `Error al consultar pago ${paymentId}: ${response.statusText}`,
+      );
     }
     const data = await response.json();
     return {
-      id:                data.id as number,
-      status:            data.status as string,
-      amount:            data.transaction_amount as number,
-      currency:          data.currency_id as string,
+      id: data.id as number,
+      status: data.status as string,
+      amount: data.transaction_amount as number,
+      currency: data.currency_id as string,
       externalReference: data.external_reference as string,
-      paymentMethod:     data.payment_method_id as string,
-      dateApproved:      data.date_approved as string,
+      paymentMethod: data.payment_method_id as string,
+      dateApproved: data.date_approved as string,
     };
   }
 }

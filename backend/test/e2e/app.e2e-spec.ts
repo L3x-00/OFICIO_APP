@@ -42,9 +42,9 @@ describe('App (e2e)', () => {
     // Mismos hooks que main.ts.
     app.useGlobalPipes(
       new ValidationPipe({
-        whitelist:            true,
+        whitelist: true,
         forbidNonWhitelisted: true,
-        transform:            true,
+        transform: true,
       }),
     );
     await app.init();
@@ -74,7 +74,9 @@ describe('App (e2e)', () => {
       .post('/auth/login')
       .send({ password: 'cualquiera' });
     expect(res.status).toBe(400);
-    expect(Array.isArray(res.body.message) || typeof res.body.message === 'string').toBe(true);
+    expect(
+      Array.isArray(res.body.message) || typeof res.body.message === 'string',
+    ).toBe(true);
   });
 
   it('POST /auth/login con email malformado → 400 ValidationPipe', async () => {
@@ -100,12 +102,12 @@ describe('App (e2e)', () => {
 
     const created = await prisma.user.create({
       data: {
-        email:           'e2e-jwt@example.com',
+        email: 'e2e-jwt@example.com',
         passwordHash,
-        firstName:       'Jwt',
-        lastName:        'Tester',
-        role:            'USUARIO',
-        isActive:        true,
+        firstName: 'Jwt',
+        lastName: 'Tester',
+        role: 'USUARIO',
+        isActive: true,
         isEmailVerified: true,
       },
     });
@@ -153,7 +155,7 @@ describe('App (e2e)', () => {
       responses.push(r.status);
     }
     const throttled = responses.filter((s) => s === 429).length;
-    const ok        = responses.filter((s) => s === 200).length;
+    const ok = responses.filter((s) => s === 200).length;
 
     expect(ok).toBeGreaterThan(0);
     expect(throttled).toBeGreaterThan(0);

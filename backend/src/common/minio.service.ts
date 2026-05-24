@@ -4,12 +4,12 @@ import { extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 const MIME_MAP: Record<string, string> = {
-  '.jpg':  'image/jpeg',
+  '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
-  '.png':  'image/png',
+  '.png': 'image/png',
   '.webp': 'image/webp',
-  '.gif':  'image/gif',
-  '.pdf':  'application/pdf',
+  '.gif': 'image/gif',
+  '.pdf': 'application/pdf',
 };
 
 @Injectable()
@@ -20,14 +20,20 @@ export class MinioService implements OnModuleInit {
   private publicBaseUrl!: string;
 
   onModuleInit() {
-    const endpoint  = process.env.MINIO_ENDPOINT  ?? 'localhost';
-    const port      = parseInt(process.env.MINIO_PORT ?? '9000', 10);
-    const useSSL    = process.env.MINIO_USE_SSL === 'true';
+    const endpoint = process.env.MINIO_ENDPOINT ?? 'localhost';
+    const port = parseInt(process.env.MINIO_PORT ?? '9000', 10);
+    const useSSL = process.env.MINIO_USE_SSL === 'true';
     const accessKey = process.env.MINIO_ACCESS_KEY ?? '';
     const secretKey = process.env.MINIO_SECRET_KEY ?? '';
-    this.bucket     = process.env.MINIO_BUCKET_NAME ?? 'oficio-uploads';
+    this.bucket = process.env.MINIO_BUCKET_NAME ?? 'oficio-uploads';
 
-    this.client = new Minio.Client({ endPoint: endpoint, port, useSSL, accessKey, secretKey });
+    this.client = new Minio.Client({
+      endPoint: endpoint,
+      port,
+      useSSL,
+      accessKey,
+      secretKey,
+    });
 
     // URL pública de acceso a los archivos.
     // Para Cloudflare R2 con bucket público o dominio personalizado, usar MINIO_PUBLIC_URL.
@@ -38,11 +44,13 @@ export class MinioService implements OnModuleInit {
     } else {
       const proto = useSSL ? 'https' : 'http';
       const omitPort = (useSSL && port === 443) || (!useSSL && port === 80);
-      const portStr  = omitPort ? '' : `:${port}`;
+      const portStr = omitPort ? '' : `:${port}`;
       this.publicBaseUrl = `${proto}://${endpoint}${portStr}/${this.bucket}`;
     }
 
-    this.logger.log(`MinioService conectado a ${endpoint}:${port} — bucket: ${this.bucket}`);
+    this.logger.log(
+      `MinioService conectado a ${endpoint}:${port} — bucket: ${this.bucket}`,
+    );
   }
 
   /**
@@ -56,7 +64,7 @@ export class MinioService implements OnModuleInit {
     originalName: string,
     folder: string,
   ): Promise<string> {
-    const ext        = extname(originalName).toLowerCase() || '.jpg';
+    const ext = extname(originalName).toLowerCase() || '.jpg';
     const objectName = `${folder}/${randomUUID()}${ext}`;
     const contentType = MIME_MAP[ext] ?? 'application/octet-stream';
 
@@ -109,7 +117,9 @@ export class MinioService implements OnModuleInit {
       }
       await this.client.removeObject(this.bucket, key);
     } catch (e) {
-      this.logger.warn(`deleteFile: no se pudo eliminar ${fileUrl} — ${(e as Error).message}`);
+      this.logger.warn(
+        `deleteFile: no se pudo eliminar ${fileUrl} — ${(e as Error).message}`,
+      );
     }
   }
 }

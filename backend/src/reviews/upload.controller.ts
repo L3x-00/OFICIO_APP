@@ -11,7 +11,7 @@ import { memOpts } from '../common/multer-image.config.js';
 
 const FOLDERS = {
   reviewEvidence: 'reviews/evidence',
-  provider:       'providers/gallery',
+  provider: 'providers/gallery',
   paymentVoucher: 'payments/vouchers',
 } as const;
 
@@ -23,7 +23,11 @@ export class UploadController {
   @UseInterceptors(FileInterceptor('file', memOpts))
   async uploadReviewPhoto(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    const url = await this.minio.uploadFile(file.buffer, file.originalname, FOLDERS.reviewEvidence);
+    const url = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      FOLDERS.reviewEvidence,
+    );
     return { url };
   }
 
@@ -31,7 +35,11 @@ export class UploadController {
   @UseInterceptors(FileInterceptor('file', memOpts))
   async uploadProviderPhoto(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    const url = await this.minio.uploadFile(file.buffer, file.originalname, FOLDERS.provider);
+    const url = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      FOLDERS.provider,
+    );
     return { url };
   }
 
@@ -39,7 +47,11 @@ export class UploadController {
   @UseInterceptors(FileInterceptor('file', memOpts))
   async uploadPaymentVoucher(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');
-    const url = await this.minio.uploadFile(file.buffer, file.originalname, FOLDERS.paymentVoucher);
+    const url = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      FOLDERS.paymentVoucher,
+    );
     return { url };
   }
 }

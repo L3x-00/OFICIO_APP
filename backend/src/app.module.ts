@@ -30,15 +30,17 @@ import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js'
 @Module({
   imports: [
     // 1. Configuración Global
-    ConfigModule.forRoot({ 
-      isGlobal: true, 
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
 
     // 2. Rate limiting (Throttler): Protección contra ataques
-    ThrottlerModule.forRoot([{
-      ttl: 60000,   // ventana de 60 segundos
-      limit: 60,    // máximo 60 requests
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // ventana de 60 segundos
+        limit: 60, // máximo 60 requests
+      },
+    ]),
 
     // Cron jobs (limpieza de chat expirado, etc.)
     ScheduleModule.forRoot(),

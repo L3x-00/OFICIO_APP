@@ -9,7 +9,11 @@ import { extname } from 'node:path';
  * en `users.controller.ts` y `reviews/upload.controller.ts`.
  */
 export const ALLOWED_IMAGE_EXTENSIONS = [
-  '.jpg', '.jpeg', '.png', '.webp', '.gif',
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.gif',
 ] as const;
 
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -21,11 +25,20 @@ export function imageFilter(
   cb: (err: Error | null, accept: boolean) => void,
 ): void {
   if (!file.mimetype.startsWith('image/')) {
-    cb(new BadRequestException('Solo se permiten imágenes (JPG, PNG, WEBP, GIF)'), false);
+    cb(
+      new BadRequestException(
+        'Solo se permiten imágenes (JPG, PNG, WEBP, GIF)',
+      ),
+      false,
+    );
     return;
   }
   const ext = extname(file.originalname).toLowerCase();
-  if (!ALLOWED_IMAGE_EXTENSIONS.includes(ext as typeof ALLOWED_IMAGE_EXTENSIONS[number])) {
+  if (
+    !ALLOWED_IMAGE_EXTENSIONS.includes(
+      ext as (typeof ALLOWED_IMAGE_EXTENSIONS)[number],
+    )
+  ) {
     cb(
       new BadRequestException(
         `Extensión no permitida. Usa: ${ALLOWED_IMAGE_EXTENSIONS.join(', ')}`,
@@ -39,7 +52,7 @@ export function imageFilter(
 
 /** Opciones listas para `FileInterceptor('field', memOpts)`. */
 export const memOpts: MulterOptions = {
-  storage:    memoryStorage(),
+  storage: memoryStorage(),
   fileFilter: imageFilter,
-  limits:     { fileSize: MAX_IMAGE_SIZE_BYTES },
+  limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
 };

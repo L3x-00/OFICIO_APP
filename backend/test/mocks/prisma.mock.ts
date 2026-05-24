@@ -18,75 +18,75 @@
  */
 
 export type PrismaMock = {
-  user:                ReturnType<typeof modelMock>;
-  provider:            ReturnType<typeof modelMock>;
-  providerImage:       ReturnType<typeof modelMock>;
-  providerCategory:    ReturnType<typeof modelMock>;
-  referralCode:        ReturnType<typeof modelMock>;
-  referral:            ReturnType<typeof modelMock>;
-  referralReward:      ReturnType<typeof modelMock>;
-  coinRedemption:      ReturnType<typeof modelMock>;
-  serviceRequest:      ReturnType<typeof modelMock>;
-  offer:               ReturnType<typeof modelMock>;
-  userPenalty:         ReturnType<typeof modelMock>;
-  adminNotification:   ReturnType<typeof modelMock>;
-  chatRoom:            ReturnType<typeof modelMock>;
-  chatMessage:         ReturnType<typeof modelMock>;
-  refreshToken:        ReturnType<typeof modelMock>;
-  otpCode:             ReturnType<typeof modelMock>;
-  subscription:        ReturnType<typeof modelMock>;
-  payment:             ReturnType<typeof modelMock>;
-  yapePayment:         ReturnType<typeof modelMock>;
+  user: ReturnType<typeof modelMock>;
+  provider: ReturnType<typeof modelMock>;
+  providerImage: ReturnType<typeof modelMock>;
+  providerCategory: ReturnType<typeof modelMock>;
+  referralCode: ReturnType<typeof modelMock>;
+  referral: ReturnType<typeof modelMock>;
+  referralReward: ReturnType<typeof modelMock>;
+  coinRedemption: ReturnType<typeof modelMock>;
+  serviceRequest: ReturnType<typeof modelMock>;
+  offer: ReturnType<typeof modelMock>;
+  userPenalty: ReturnType<typeof modelMock>;
+  adminNotification: ReturnType<typeof modelMock>;
+  chatRoom: ReturnType<typeof modelMock>;
+  chatMessage: ReturnType<typeof modelMock>;
+  refreshToken: ReturnType<typeof modelMock>;
+  otpCode: ReturnType<typeof modelMock>;
+  subscription: ReturnType<typeof modelMock>;
+  payment: ReturnType<typeof modelMock>;
+  yapePayment: ReturnType<typeof modelMock>;
   trustValidationRequest: ReturnType<typeof modelMock>;
-  $transaction:        jest.Mock;
-  $queryRaw:           jest.Mock;
-  $executeRaw:         jest.Mock;
-  $connect:            jest.Mock;
-  $disconnect:         jest.Mock;
+  $transaction: jest.Mock;
+  $queryRaw: jest.Mock;
+  $executeRaw: jest.Mock;
+  $connect: jest.Mock;
+  $disconnect: jest.Mock;
 };
 
 /** Genera un set estándar de métodos delegados de Prisma como `jest.fn`. */
 function modelMock() {
   return {
-    findUnique:     jest.fn(),
+    findUnique: jest.fn(),
     findUniqueOrThrow: jest.fn(),
-    findFirst:      jest.fn(),
+    findFirst: jest.fn(),
     findFirstOrThrow: jest.fn(),
-    findMany:       jest.fn(),
-    create:         jest.fn(),
-    createMany:     jest.fn(),
-    update:         jest.fn(),
-    updateMany:     jest.fn(),
-    upsert:         jest.fn(),
-    delete:         jest.fn(),
-    deleteMany:     jest.fn(),
-    count:          jest.fn(),
-    aggregate:      jest.fn(),
-    groupBy:        jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    createMany: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    upsert: jest.fn(),
+    delete: jest.fn(),
+    deleteMany: jest.fn(),
+    count: jest.fn(),
+    aggregate: jest.fn(),
+    groupBy: jest.fn(),
   };
 }
 
 export function createPrismaMock(): PrismaMock {
   const mock = {
-    user:                modelMock(),
-    provider:            modelMock(),
-    providerImage:       modelMock(),
-    providerCategory:    modelMock(),
-    referralCode:        modelMock(),
-    referral:            modelMock(),
-    referralReward:      modelMock(),
-    coinRedemption:      modelMock(),
-    serviceRequest:      modelMock(),
-    offer:               modelMock(),
-    userPenalty:         modelMock(),
-    adminNotification:   modelMock(),
-    chatRoom:            modelMock(),
-    chatMessage:         modelMock(),
-    refreshToken:        modelMock(),
-    otpCode:             modelMock(),
-    subscription:        modelMock(),
-    payment:             modelMock(),
-    yapePayment:         modelMock(),
+    user: modelMock(),
+    provider: modelMock(),
+    providerImage: modelMock(),
+    providerCategory: modelMock(),
+    referralCode: modelMock(),
+    referral: modelMock(),
+    referralReward: modelMock(),
+    coinRedemption: modelMock(),
+    serviceRequest: modelMock(),
+    offer: modelMock(),
+    userPenalty: modelMock(),
+    adminNotification: modelMock(),
+    chatRoom: modelMock(),
+    chatMessage: modelMock(),
+    refreshToken: modelMock(),
+    otpCode: modelMock(),
+    subscription: modelMock(),
+    payment: modelMock(),
+    yapePayment: modelMock(),
     trustValidationRequest: modelMock(),
     $transaction: jest.fn(async (arg: any) => {
       // Soporta los dos shapes:
@@ -100,10 +100,10 @@ export function createPrismaMock(): PrismaMock {
       }
       return arg;
     }),
-    $queryRaw:           jest.fn(),
-    $executeRaw:         jest.fn(),
-    $connect:            jest.fn().mockResolvedValue(undefined),
-    $disconnect:         jest.fn().mockResolvedValue(undefined),
+    $queryRaw: jest.fn(),
+    $executeRaw: jest.fn(),
+    $connect: jest.fn().mockResolvedValue(undefined),
+    $disconnect: jest.fn().mockResolvedValue(undefined),
   } as PrismaMock;
   return mock;
 }

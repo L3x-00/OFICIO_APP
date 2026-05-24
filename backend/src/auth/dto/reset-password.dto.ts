@@ -1,4 +1,10 @@
-import { IsEmail, IsString, Length, MinLength, MaxLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  Length,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class ResetPasswordDto {
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
@@ -9,7 +15,9 @@ export class ResetPasswordDto {
   token!: string;
 
   @IsString()
-  @MinLength(8, { message: 'La nueva contraseña debe tener al menos 8 caracteres' })
+  @MinLength(8, {
+    message: 'La nueva contraseña debe tener al menos 8 caracteres',
+  })
   @MaxLength(64)
   newPassword!: string;
 }

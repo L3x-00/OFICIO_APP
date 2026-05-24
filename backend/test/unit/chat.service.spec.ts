@@ -20,7 +20,10 @@
 import { ChatService } from '../../src/chat/chat.service.js';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { createPrismaMock, PrismaMock } from '../mocks/prisma.mock';
-import { createEventsGatewayMock, EventsGatewayMock } from '../mocks/events-gateway.mock';
+import {
+  createEventsGatewayMock,
+  EventsGatewayMock,
+} from '../mocks/events-gateway.mock';
 import { createPushMock, PushMock } from '../mocks/push.mock';
 import { providerFixture } from '../fixtures/providers.fixture';
 import { userFixture } from '../fixtures/users.fixture';
@@ -47,7 +50,7 @@ describe('ChatService (unit)', () => {
   beforeEach(() => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
-    push   = createPushMock();
+    push = createPushMock();
     service = new ChatService(prisma as any, events as any, push as any);
   });
 
@@ -57,23 +60,30 @@ describe('ChatService (unit)', () => {
   describe('getOrCreateRoom()', () => {
     it('lanza NotFoundException si el cliente no existe', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      prisma.provider.findUnique.mockResolvedValue(providerFixture({ id: PROVIDER_ID }));
-      await expect(service.getOrCreateRoom(CLIENT_ID, PROVIDER_ID))
-        .rejects.toThrow(NotFoundException);
+      prisma.provider.findUnique.mockResolvedValue(
+        providerFixture({ id: PROVIDER_ID }),
+      );
+      await expect(
+        service.getOrCreateRoom(CLIENT_ID, PROVIDER_ID),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('lanza NotFoundException si el proveedor no existe', async () => {
       prisma.user.findUnique.mockResolvedValue(userFixture({ id: CLIENT_ID }));
       prisma.provider.findUnique.mockResolvedValue(null);
-      await expect(service.getOrCreateRoom(CLIENT_ID, PROVIDER_ID))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.getOrCreateRoom(CLIENT_ID, PROVIDER_ID),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('usa upsert (idempotencia) — devuelve la sala existente sin duplicarla', async () => {
       prisma.user.findUnique.mockResolvedValue(userFixture({ id: CLIENT_ID }));
-      prisma.provider.findUnique.mockResolvedValue(providerFixture({
-        id: PROVIDER_ID, userId: PROVIDER_USER_ID,
-      }));
+      prisma.provider.findUnique.mockResolvedValue(
+        providerFixture({
+          id: PROVIDER_ID,
+          userId: PROVIDER_USER_ID,
+        }),
+      );
       prisma.chatRoom.upsert.mockResolvedValue(baseRoom);
 
       const r1 = await service.getOrCreateRoom(CLIENT_ID, PROVIDER_ID);
@@ -82,7 +92,12 @@ describe('ChatService (unit)', () => {
       expect(r1.id).toBe(r2.id);
       expect(prisma.chatRoom.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          where:  { clientId_providerId: { clientId: CLIENT_ID, providerId: PROVIDER_ID } },
+          where: {
+            clientId_providerId: {
+              clientId: CLIENT_ID,
+              providerId: PROVIDER_ID,
+            },
+          },
           update: {},
         }),
       );
@@ -95,26 +110,29 @@ describe('ChatService (unit)', () => {
   describe('sendMessage()', () => {
     const baseDto = {
       chatRoomId: 100,
-      senderId:   CLIENT_ID,
-      content:    'Hola, ¿estás disponible mañana?',
+      senderId: CLIENT_ID,
+      content: 'Hola, ¿estás disponible mañana?',
     };
 
     it('rechaza si dto.senderId no coincide con el JWT userId (anti-suplantación)', async () => {
-      await expect(service.sendMessage(/*JWT*/ 999, baseDto))
-        .rejects.toThrow(ForbiddenException);
+      await expect(service.sendMessage(/*JWT*/ 999, baseDto)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('rechaza si la sala no existe', async () => {
       prisma.chatRoom.findUnique.mockResolvedValue(null);
-      await expect(service.sendMessage(CLIENT_ID, baseDto))
-        .rejects.toThrow(NotFoundException);
+      await expect(service.sendMessage(CLIENT_ID, baseDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('rechaza si el sender no es cliente ni dueño del provider de la sala', async () => {
       prisma.chatRoom.findUnique.mockResolvedValue(baseRoom);
       // Sender es un user totalmente ajeno con id=42
-      await expect(service.sendMessage(42, { ...baseDto, senderId: 42 }))
-        .rejects.toThrow(ForbiddenException);
+      await expect(
+        service.sendMessage(42, { ...baseDto, senderId: 42 }),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('persiste el mensaje y dispara push + WS al receptor', async () => {
@@ -122,13 +140,15 @@ describe('ChatService (unit)', () => {
       prisma.chatMessage.create.mockResolvedValue({
         id: 555,
         chatRoomId: 100,
-        senderId:   CLIENT_ID,
-        content:    baseDto.content,
-        status:     'SENT',
-        createdAt:  new Date(),
+        senderId: CLIENT_ID,
+        content: baseDto.content,
+        status: 'SENT',
+        createdAt: new Date(),
       });
       prisma.user.findUnique.mockResolvedValue({
-        firstName: 'Ana', lastName: 'Soto', avatarUrl: 'https://avatar',
+        firstName: 'Ana',
+        lastName: 'Soto',
+        avatarUrl: 'https://avatar',
       });
 
       const msg = await service.sendMessage(CLIENT_ID, baseDto);
@@ -149,7 +169,7 @@ describe('ChatService (unit)', () => {
       // Notificación in-app (persistible por gateway gracias a obs 7)
       expect(events.emitNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          type:         'CHAT_MESSAGE',
+          type: 'CHAT_MESSAGE',
           targetUserId: PROVIDER_USER_ID,
         }),
       );
@@ -158,17 +178,23 @@ describe('ChatService (unit)', () => {
     it('cuando el proveedor responde al cliente, el receptor es el clientId', async () => {
       prisma.chatRoom.findUnique.mockResolvedValue(baseRoom);
       prisma.chatMessage.create.mockResolvedValue({
-        id: 556, chatRoomId: 100, senderId: PROVIDER_USER_ID, content: 'Sí, mañana.',
-        status: 'SENT', createdAt: new Date(),
+        id: 556,
+        chatRoomId: 100,
+        senderId: PROVIDER_USER_ID,
+        content: 'Sí, mañana.',
+        status: 'SENT',
+        createdAt: new Date(),
       });
       prisma.user.findUnique.mockResolvedValue({
-        firstName: 'Carlos', lastName: 'Ramos', avatarUrl: null,
+        firstName: 'Carlos',
+        lastName: 'Ramos',
+        avatarUrl: null,
       });
 
       await service.sendMessage(PROVIDER_USER_ID, {
         chatRoomId: 100,
-        senderId:   PROVIDER_USER_ID,
-        content:    'Sí, mañana.',
+        senderId: PROVIDER_USER_ID,
+        content: 'Sí, mañana.',
       });
 
       await new Promise((r) => setImmediate(r));
@@ -187,8 +213,9 @@ describe('ChatService (unit)', () => {
   describe('getRoomMessages()', () => {
     it('lanza ForbiddenException si el caller no es participante', async () => {
       prisma.chatRoom.findUnique.mockResolvedValue(baseRoom);
-      await expect(service.getRoomMessages(100, /*userId*/ 999))
-        .rejects.toThrow(ForbiddenException);
+      await expect(
+        service.getRoomMessages(100, /*userId*/ 999),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('aplica límites de paginación (page≥1, limit≤100)', async () => {
@@ -210,7 +237,10 @@ describe('ChatService (unit)', () => {
       );
       prisma.chatMessage.count.mockResolvedValue(75);
 
-      const res = await service.getRoomMessages(100, CLIENT_ID, { page: 1, limit: 30 });
+      const res = await service.getRoomMessages(100, CLIENT_ID, {
+        page: 1,
+        limit: 30,
+      });
 
       expect(res.hasMore).toBe(true);
       expect(res.total).toBe(75);
@@ -234,7 +264,7 @@ describe('ChatService (unit)', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             chatRoomId: 100,
-            senderId:   { not: CLIENT_ID },
+            senderId: { not: CLIENT_ID },
           }),
           data: { status: 'READ' },
         }),
@@ -257,8 +287,9 @@ describe('ChatService (unit)', () => {
 
     it('lanza ForbiddenException si el reader no es participante', async () => {
       prisma.chatRoom.findUnique.mockResolvedValue(baseRoom);
-      await expect(service.markRoomAsRead(100, /*userId*/ 999))
-        .rejects.toThrow(ForbiddenException);
+      await expect(service.markRoomAsRead(100, /*userId*/ 999)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -293,7 +324,8 @@ describe('ChatService (unit)', () => {
 
     it('scope=provider + providerType=OFICIO restringe al perfil específico', async () => {
       await service.getRoomsForUser(PROVIDER_USER_ID, {
-        scope: 'provider', providerType: 'OFICIO',
+        scope: 'provider',
+        providerType: 'OFICIO',
       });
       expect(prisma.chatRoom.findMany).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -42,13 +42,7 @@
     <!-- ── Cámara y almacenamiento ───────────────────────────── -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Android 12 e inferior -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="29" />
-    <!-- Android 13+ (lectura granular de imágenes) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
+    <!-- Se Eliminadron los permosos permanentes-->
     <!-- ── Features de hardware (no bloquean instalación) ───── -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />

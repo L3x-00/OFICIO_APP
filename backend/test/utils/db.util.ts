@@ -75,30 +75,32 @@ export async function truncateAll(prisma: PrismaService) {
 export async function ensureSeedCatalogs(prisma: PrismaService) {
   // Localidad mínima
   await prisma.locality.upsert({
-    where:  { id: 1 },
+    where: { id: 1 },
     create: {
-      id:         1,
-      name:       'Test City',
+      id: 1,
+      name: 'Test City',
       department: 'Lima',
-      province:   'Lima',
-      district:   'Miraflores',
-      isActive:   true,
-      source:     'SEED',
+      province: 'Lima',
+      district: 'Miraflores',
+      isActive: true,
+      source: 'SEED',
     },
     update: {},
   });
   // Categoría raíz + hija
   await prisma.category.upsert({
-    where:  { slug: 'test-root' },
+    where: { slug: 'test-root' },
     create: { name: 'Servicios', slug: 'test-root', isActive: true },
     update: {},
   });
-  const root = await prisma.category.findUnique({ where: { slug: 'test-root' } });
+  const root = await prisma.category.findUnique({
+    where: { slug: 'test-root' },
+  });
   await prisma.category.upsert({
-    where:  { slug: 'test-electricidad' },
+    where: { slug: 'test-electricidad' },
     create: {
-      name:     'Electricidad',
-      slug:     'test-electricidad',
+      name: 'Electricidad',
+      slug: 'test-electricidad',
       parentId: root!.id,
       isActive: true,
     },

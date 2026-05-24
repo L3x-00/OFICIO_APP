@@ -6,7 +6,7 @@ import { EventsModule } from '../events/events.module.js';
 import { FirebaseModule } from '../firebase/firebase.module.js';
 
 @Module({
-  imports: [PrismaModule, EventsModule,FirebaseModule,],
+  imports: [PrismaModule, EventsModule, FirebaseModule],
   controllers: [TrustValidationController],
   providers: [TrustValidationService],
   exports: [TrustValidationService],

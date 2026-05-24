@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { LocalitiesService } from './localities.service.js';

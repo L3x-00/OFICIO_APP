@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
@@ -41,7 +46,9 @@ export class ReviewsService {
       },
     });
     if (existingReview) {
-      throw new BadRequestException('Ya dejaste una reseña para este proveedor');
+      throw new BadRequestException(
+        'Ya dejaste una reseña para este proveedor',
+      );
     }
 
     // Prueba de interacción: el usuario debe haber interactuado con el
@@ -59,30 +66,32 @@ export class ReviewsService {
     const review = await this.prisma.$transaction(async (tx) => {
       const newReview = await tx.review.create({
         data: {
-          providerId:         data.providerId,
-          userId:             data.userId,
-          rating:             data.rating,
-          comment:            data.comment,
-          photoUrl:           data.photoUrl,
+          providerId: data.providerId,
+          userId: data.userId,
+          rating: data.rating,
+          comment: data.comment,
+          photoUrl: data.photoUrl,
           verificationMethod: interaction.method,
-          isVisible:          true,
+          isVisible: true,
         },
         include: {
-          user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+          user: {
+            select: { firstName: true, lastName: true, avatarUrl: true },
+          },
         },
       });
 
       // Recalcular promedio dentro de la transacción
       const agg = await tx.review.aggregate({
-        where:  { providerId: data.providerId, isVisible: true },
-        _avg:   { rating: true },
+        where: { providerId: data.providerId, isVisible: true },
+        _avg: { rating: true },
         _count: { rating: true },
       });
       await tx.provider.update({
         where: { id: data.providerId },
-        data:  {
+        data: {
           averageRating: agg._avg.rating ?? 0,
-          totalReviews:  agg._count.rating,
+          totalReviews: agg._count.rating,
         },
       });
 
@@ -90,8 +99,12 @@ export class ReviewsService {
     });
 
     // Notificar al proveedor que recibió una nueva reseña
-    const reviewWithUser = review as typeof review & { user?: { firstName: string; lastName: string; avatarUrl: string | null } };
-    const reviewerName = `${reviewWithUser.user?.firstName ?? ''} ${reviewWithUser.user?.lastName ?? ''}`.trim() || 'Un usuario';
+    const reviewWithUser = review as typeof review & {
+      user?: { firstName: string; lastName: string; avatarUrl: string | null };
+    };
+    const reviewerName =
+      `${reviewWithUser.user?.firstName ?? ''} ${reviewWithUser.user?.lastName ?? ''}`.trim() ||
+      'Un usuario';
     const reviewTitle = 'Nueva reseña recibida ⭐';
     const reviewBody =
       `${reviewerName} te dejó una reseña de ${data.rating} ` +
@@ -102,11 +115,11 @@ export class ReviewsService {
     // cuenta y volver desaparecía. Persistida, loadHistory la recupera.
     await this.prisma.adminNotification.create({
       data: {
-        providerId:        data.providerId,
-        type:              'NEW_REVIEW',
-        title:             reviewTitle,
-        message:           reviewBody,
-        targetUserId:      provider.userId,
+        providerId: data.providerId,
+        type: 'NEW_REVIEW',
+        title: reviewTitle,
+        message: reviewBody,
+        targetUserId: provider.userId,
         targetProfileType: provider.type,
       },
     });
@@ -118,12 +131,10 @@ export class ReviewsService {
       targetUserId: provider.userId,
     });
 
-    this.push.sendToUser(
-      provider.userId,
-      reviewTitle,
-      reviewBody,
-      { type: 'NEW_REVIEW', providerId: String(data.providerId) },
-    );
+    this.push.sendToUser(provider.userId, reviewTitle, reviewBody, {
+      type: 'NEW_REVIEW',
+      providerId: String(data.providerId),
+    });
 
     return review;
   }
@@ -208,7 +219,9 @@ export class ReviewsService {
     // El código es único por proveedor + día
     // Así expira automáticamente cada 24h
     const today = new Date().toISOString().split('T')[0];
-    const code = Buffer.from(`${providerId}-${today}-oficio`).toString('base64');
+    const code = Buffer.from(`${providerId}-${today}-oficio`).toString(
+      'base64',
+    );
 
     return { code, expiresAt: `${today}T23:59:59` };
   }
@@ -216,9 +229,9 @@ export class ReviewsService {
   // ── VALIDAR CÓDIGO QR ─────────────────────────────────────
   async validateQrCode(providerId: number, code: string): Promise<boolean> {
     const today = new Date().toISOString().split('T')[0];
-    const expectedCode = Buffer.from(
-      `${providerId}-${today}-oficio`,
-    ).toString('base64');
+    const expectedCode = Buffer.from(`${providerId}-${today}-oficio`).toString(
+      'base64',
+    );
     return code === expectedCode;
   }
 
@@ -228,7 +241,9 @@ export class ReviewsService {
     userId: number,
     data: { rating?: number; comment?: string; photoUrl?: string },
   ) {
-    const review = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
     if (!review) throw new NotFoundException('Reseña no encontrada');
     if (review.userId !== userId)
       throw new ForbiddenException('No puedes editar esta reseña');
@@ -241,24 +256,29 @@ export class ReviewsService {
       const updated = await tx.review.update({
         where: { id: reviewId },
         data: {
-          ...(data.rating    !== undefined && { rating:   data.rating }),
-          ...(data.comment   !== undefined && { comment:  data.comment }),
-          ...(data.photoUrl  !== undefined && { photoUrl: data.photoUrl }),
+          ...(data.rating !== undefined && { rating: data.rating }),
+          ...(data.comment !== undefined && { comment: data.comment }),
+          ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl }),
         },
         include: {
-          user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+          user: {
+            select: { firstName: true, lastName: true, avatarUrl: true },
+          },
         },
       });
 
       // Recalcular promedio del proveedor
       const agg = await tx.review.aggregate({
-        where:  { providerId: review.providerId, isVisible: true },
-        _avg:   { rating: true },
+        where: { providerId: review.providerId, isVisible: true },
+        _avg: { rating: true },
         _count: { rating: true },
       });
       await tx.provider.update({
         where: { id: review.providerId },
-        data:  { averageRating: agg._avg.rating ?? 0, totalReviews: agg._count.rating },
+        data: {
+          averageRating: agg._avg.rating ?? 0,
+          totalReviews: agg._count.rating,
+        },
       });
 
       return updated;
@@ -275,7 +295,9 @@ export class ReviewsService {
     // Cargar reseña + proveedor para verificar permisos y obtener businessName
     const review = await this.prisma.review.findUnique({
       where: { id: data.reviewId },
-      include: { provider: { select: { userId: true, businessName: true, type: true } } },
+      include: {
+        provider: { select: { userId: true, businessName: true, type: true } },
+      },
     });
     if (!review) throw new NotFoundException('Reseña no encontrada');
 
@@ -290,8 +312,8 @@ export class ReviewsService {
     const reply = await this.prisma.reviewReply.create({
       data: {
         reviewId: data.reviewId,
-        userId:   data.userId,
-        content:  data.content,
+        userId: data.userId,
+        content: data.content,
         photoUrl: data.photoUrl,
       },
       include: {
@@ -300,7 +322,9 @@ export class ReviewsService {
     });
 
     // Notificación cruzada: proveedor → revisor y viceversa
-    const replierUser = reply as typeof reply & { user?: { firstName: string; lastName: string } };
+    const replierUser = reply as typeof reply & {
+      user?: { firstName: string; lastName: string };
+    };
     const replierName =
       `${replierUser.user?.firstName ?? ''} ${replierUser.user?.lastName ?? ''}`.trim() ||
       'Alguien';
@@ -329,7 +353,9 @@ export class ReviewsService {
 
   // ── LISTAR RESPUESTAS DE UNA RESEÑA ──────────────────────
   async getReplies(reviewId: number) {
-    const exists = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    const exists = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
     if (!exists) throw new NotFoundException('Reseña no encontrada');
 
     return this.prisma.reviewReply.findMany({
