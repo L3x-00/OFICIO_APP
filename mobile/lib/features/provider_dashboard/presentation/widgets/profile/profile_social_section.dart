@@ -5,6 +5,7 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
 import '../../providers/dashboard_provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Sección desglosable "Redes sociales" del panel del proveedor.
 ///
@@ -47,19 +48,73 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
   /// negocio puede usar arriba — así se mantiene estable al alternar el
   /// tipo de perfil.
   List<_SocialSpec> get _allSpecs => const [
-    _SocialSpec(key: 'whatsappBiz', label: 'WhatsApp Business', icon: Icons.chat_rounded,            color: Color(0xFF25D366), hint: '+51 999 999 999'),
-    _SocialSpec(key: 'website',     label: 'Sitio web',          icon: Icons.public_rounded,          color: Color(0xFF60A5FA), hint: 'https://...'),
-    _SocialSpec(key: 'instagram',   label: 'Instagram',          icon: Icons.camera_alt_rounded,      color: Color(0xFFE1306C), hint: '@usuario'),
-    _SocialSpec(key: 'tiktok',      label: 'TikTok',             icon: Icons.music_note_rounded,      color: Color(0xFFEC4899), hint: '@usuario'),
-    _SocialSpec(key: 'facebook',    label: 'Facebook',           icon: Icons.facebook_rounded,        color: Color(0xFF1877F2), hint: 'usuario o URL'),
-    _SocialSpec(key: 'linkedin',    label: 'LinkedIn',           icon: Icons.work_rounded,            color: Color(0xFF0A66C2), hint: 'usuario o URL'),
-    _SocialSpec(key: 'twitterX',    label: 'X (Twitter)',        icon: Icons.alternate_email_rounded, color: Color(0xFFE5E7EB), hint: '@usuario'),
-    _SocialSpec(key: 'telegram',    label: 'Telegram',           icon: Icons.send_rounded,            color: Color(0xFF229ED9), hint: '@usuario'),
+    _SocialSpec(
+      key: 'whatsappBiz',
+      label: 'WhatsApp Business',
+      svgAsset: 'assets/icons/whatsapp.svg',
+      color: Color(0xFF25D366),
+      hint: '+51 999 999 999',
+    ),
+    _SocialSpec(
+      key: 'website',
+      label: 'Sitio web',
+      svgAsset: 'assets/icons/website.svg',
+      color: Color(0xFF60A5FA),
+      hint: 'https://...',
+    ),
+    _SocialSpec(
+      key: 'instagram',
+      label: 'Instagram',
+      svgAsset: 'assets/icons/instagram.svg',
+      color: Color(0xFFE1306C),
+      hint: '@usuario',
+    ),
+    _SocialSpec(
+      key: 'tiktok',
+      label: 'TikTok',
+      svgAsset: 'assets/icons/tiktok.svg',
+      color: Color(0xFFEC4899),
+      hint: '@usuario',
+    ),
+    _SocialSpec(
+      key: 'facebook',
+      label: 'Facebook',
+      svgAsset: 'assets/icons/facebook.svg',
+      color: Color(0xFF1877F2),
+      hint: 'usuario o URL',
+    ),
+    _SocialSpec(
+      key: 'linkedin',
+      label: 'LinkedIn',
+      svgAsset: 'assets/icons/linkedin.svg',
+      color: Color(0xFF0A66C2),
+      hint: 'usuario o URL',
+    ),
+    _SocialSpec(
+      key: 'twitterX',
+      label: 'X (Twitter)',
+      svgAsset: 'assets/icons/twitterx.svg',
+      color: Color(0xFFE5E7EB),
+      hint: '@usuario',
+    ),
+    _SocialSpec(
+      key: 'telegram',
+      label: 'Telegram',
+      svgAsset: 'assets/icons/telegram.svg',
+      color: Color(0xFF229ED9),
+      hint: '@usuario',
+    ),
   ];
 
   List<_SocialSpec> _allowedSpecs() {
     if (!widget.isNegocio) return _allSpecs;
-    const allowed = {'whatsappBiz', 'website', 'instagram', 'tiktok', 'facebook'};
+    const allowed = {
+      'whatsappBiz',
+      'website',
+      'instagram',
+      'tiktok',
+      'facebook',
+    };
     return _allSpecs.where((s) => allowed.contains(s.key)).toList();
   }
 
@@ -68,14 +123,14 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
     if (p == null) return null;
     return switch (key) {
       'whatsappBiz' => p.whatsappBiz,
-      'website'     => p.website,
-      'instagram'   => p.instagram,
-      'tiktok'      => p.tiktok,
-      'facebook'    => p.facebook,
-      'linkedin'    => p.linkedin,
-      'twitterX'    => p.twitterX,
-      'telegram'    => p.telegram,
-      _             => null,
+      'website' => p.website,
+      'instagram' => p.instagram,
+      'tiktok' => p.tiktok,
+      'facebook' => p.facebook,
+      'linkedin' => p.linkedin,
+      'twitterX' => p.twitterX,
+      'telegram' => p.telegram,
+      _ => null,
     };
   }
 
@@ -83,8 +138,12 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final allowed = _allowedSpecs();
-    final filled  = allowed.where((s) => (_valueFor(s.key) ?? '').isNotEmpty).toList();
-    final empty   = allowed.where((s) => (_valueFor(s.key) ?? '').isEmpty).toList();
+    final filled = allowed
+        .where((s) => (_valueFor(s.key) ?? '').isNotEmpty)
+        .toList();
+    final empty = allowed
+        .where((s) => (_valueFor(s.key) ?? '').isEmpty)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,11 +165,17 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
                 Expanded(
                   child: Text(
                     'Redes sociales${filled.isEmpty ? '' : ' (${filled.length})'}',
-                    style: TextStyle(color: c.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 Icon(
-                  _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  _expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
                   color: c.textMuted,
                 ),
               ],
@@ -132,25 +197,39 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
               ),
             )
           else
-            ...filled.map((s) => _SocialRow(
-                  spec: s,
-                  value: _valueFor(s.key)!,
-                  onEdit: (newValue) => _save(context, s.key, newValue),
-                )),
+            ...filled.map(
+              (s) => _SocialRow(
+                spec: s,
+                value: _valueFor(s.key)!,
+                onEdit: (newValue) => _save(context, s.key, newValue),
+              ),
+            ),
 
           if (empty.isNotEmpty) ...[
             const SizedBox(height: 6),
             OutlinedButton.icon(
               onPressed: () => _showAddSheet(context, empty),
-              icon: const Icon(Icons.add_rounded, size: 18, color: AppColors.amber),
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 18,
+                color: AppColors.amber,
+              ),
               label: Text(
                 'Añadir red',
-                style: TextStyle(color: AppColors.amber, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: AppColors.amber,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: AppColors.amber.withValues(alpha: 0.4)),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -159,7 +238,10 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
     );
   }
 
-  Future<void> _showAddSheet(BuildContext context, List<_SocialSpec> empty) async {
+  Future<void> _showAddSheet(
+    BuildContext context,
+    List<_SocialSpec> empty,
+  ) async {
     final c = context.colors;
     final picked = await showModalBottomSheet<_SocialSpec>(
       context: context,
@@ -175,8 +257,14 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  Text('Añadir red social',
-                      style: TextStyle(color: c.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Añadir red social',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const Spacer(),
                   IconButton(
                     icon: Icon(Icons.close_rounded, color: c.textMuted),
@@ -185,18 +273,26 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
                 ],
               ),
             ),
-            ...empty.map((s) => ListTile(
-                  leading: Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(
-                      color: s.color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(s.icon, color: s.color, size: 18),
+            ...empty.map(
+              (s) => ListTile(
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: s.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  title: Text(s.label, style: TextStyle(color: c.textPrimary, fontSize: 14)),
-                  onTap: () => Navigator.of(sheetCtx).pop(s),
-                )),
+                  child: Center(
+                    child: SvgPicture.asset(s.svgAsset, width: 18, height: 18),
+                  ),
+                ),
+                title: Text(
+                  s.label,
+                  style: TextStyle(color: c.textPrimary, fontSize: 14),
+                ),
+                onTap: () => Navigator.of(sheetCtx).pop(s),
+              ),
+            ),
             const SizedBox(height: 12),
           ],
         ),
@@ -206,16 +302,22 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
     await _openEditor(context, picked, initial: '');
   }
 
-  Future<void> _openEditor(BuildContext context, _SocialSpec spec, {required String initial}) async {
-    final c    = context.colors;
+  Future<void> _openEditor(
+    BuildContext context,
+    _SocialSpec spec, {
+    required String initial,
+  }) async {
+    final c = context.colors;
     final ctrl = TextEditingController(text: initial);
     final result = await showDialog<String?>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Editar ${spec.label}',
-            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Editar ${spec.label}',
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -249,9 +351,14 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
             style: ElevatedButton.styleFrom(
               backgroundColor: spec.color,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Guardar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -265,13 +372,13 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
     final dash = context.read<DashboardProvider>();
     widget.onSavingChanged(true);
     final ok = await dash.updateProfile(
-      website:     key == 'website'     ? newValue : null,
-      instagram:   key == 'instagram'   ? newValue : null,
-      tiktok:      key == 'tiktok'      ? newValue : null,
-      facebook:    key == 'facebook'    ? newValue : null,
-      linkedin:    key == 'linkedin'    ? newValue : null,
-      twitterX:    key == 'twitterX'    ? newValue : null,
-      telegram:    key == 'telegram'    ? newValue : null,
+      website: key == 'website' ? newValue : null,
+      instagram: key == 'instagram' ? newValue : null,
+      tiktok: key == 'tiktok' ? newValue : null,
+      facebook: key == 'facebook' ? newValue : null,
+      linkedin: key == 'linkedin' ? newValue : null,
+      twitterX: key == 'twitterX' ? newValue : null,
+      telegram: key == 'telegram' ? newValue : null,
       whatsappBiz: key == 'whatsappBiz' ? newValue : null,
     );
     if (!context.mounted) return ok;
@@ -288,13 +395,13 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
 class _SocialSpec {
   final String key;
   final String label;
-  final IconData icon;
+  final String svgAsset; // Ya no es opcional, siempre habrá un SVG
   final Color color;
   final String hint;
   const _SocialSpec({
     required this.key,
     required this.label,
-    required this.icon,
+    required this.svgAsset, // Parámetro obligatorio
     required this.color,
     required this.hint,
   });
@@ -304,19 +411,25 @@ class _SocialRow extends StatelessWidget {
   final _SocialSpec spec;
   final String value;
   final Future<bool> Function(String? newValue) onEdit;
-  const _SocialRow({required this.spec, required this.value, required this.onEdit});
+  const _SocialRow({
+    required this.spec,
+    required this.value,
+    required this.onEdit,
+  });
 
   Future<void> _open(BuildContext context) async {
-    final c       = context.colors;
-    final ctrl    = TextEditingController(text: value);
+    final c = context.colors;
+    final ctrl = TextEditingController(text: value);
     final rootNav = Navigator.of(context, rootNavigator: true);
-    final result  = await showDialog<String?>(
+    final result = await showDialog<String?>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Editar ${spec.label}',
-            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Editar ${spec.label}',
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -346,9 +459,14 @@ class _SocialRow extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: spec.color,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Guardar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -377,19 +495,25 @@ class _SocialRow extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: spec.color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(spec.icon, color: spec.color, size: 18),
+              child: Center(
+                child: SvgPicture.asset(spec.svgAsset, width: 18, height: 18),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(spec.label, style: TextStyle(color: c.textMuted, fontSize: 11)),
+                  Text(
+                    spec.label,
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     value,

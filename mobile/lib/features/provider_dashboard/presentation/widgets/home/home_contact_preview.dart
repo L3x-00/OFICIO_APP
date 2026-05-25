@@ -4,6 +4,7 @@ import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../providers_list/presentation/widgets/upsell_sheet.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 /// Preview de cómo los clientes ven los botones de contacto en la tarjeta
 /// del proveedor.
 ///
@@ -37,7 +38,11 @@ class HomeContactPreview extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.visibility_rounded, color: AppColors.primary, size: 16),
+                Icon(
+                  Icons.visibility_rounded,
+                  color: AppColors.primary,
+                  size: 16,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   'Vista pública de tu tarjeta',
@@ -50,11 +55,16 @@ class HomeContactPreview extends StatelessWidget {
                 const Spacer(),
                 if (!isPaid)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.amber.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.amber.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: AppColors.amber.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Text(
                       'GRATIS',
@@ -73,22 +83,27 @@ class HomeContactPreview extends StatelessWidget {
               isPaid
                   ? 'Tus clientes ven estos botones activos.'
                   : 'Mejora tu plan para activar WhatsApp y llamada.',
-              style: TextStyle(color: c.textMuted, fontSize: 11.5, height: 1.35),
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 11.5,
+                height: 1.35,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
+                // ── Chat Interno (Siempre activo) ────────────────────
                 Expanded(
                   child: ContactPreviewIcon(
-                          svgAsset: 'assets/icons/whatsapp.svg',
-                          color: AppColors.whatsapp,
-                          locked: !isPaid,
-                          onTap: isPaid
-                              ? null
-                              : () => UpsellContactSheet.show(context, channel: 'WhatsApp'),
-                        ),
+                    icon: Icons.forum_rounded,
+                    color: AppColors.amber,
+                    locked:
+                        false, // El chat interno NO está bloqueado por el plan
+                    onTap: null, // No abre upsell porque siempre está activo
+                  ),
                 ),
                 const SizedBox(width: 8),
+                // ── WhatsApp (Bloqueado si es plan GRATIS) ──────────
                 Expanded(
                   child: ContactPreviewIcon(
                     svgAsset: 'assets/icons/whatsapp.svg',
@@ -96,10 +111,14 @@ class HomeContactPreview extends StatelessWidget {
                     locked: !isPaid,
                     onTap: isPaid
                         ? null
-                        : () => UpsellContactSheet.show(context, channel: 'WhatsApp'),
+                        : () => UpsellContactSheet.show(
+                            context,
+                            channel: 'WhatsApp',
+                          ),
                   ),
                 ),
                 const SizedBox(width: 8),
+                // ── Llamada (Bloqueado si es plan GRATIS) ───────────
                 Expanded(
                   child: ContactPreviewIcon(
                     icon: Icons.call_rounded,
@@ -107,7 +126,10 @@ class HomeContactPreview extends StatelessWidget {
                     locked: !isPaid,
                     onTap: isPaid
                         ? null
-                        : () => UpsellContactSheet.show(context, channel: 'llamadas'),
+                        : () => UpsellContactSheet.show(
+                            context,
+                            channel: 'llamadas',
+                          ),
                   ),
                 ),
               ],
@@ -125,7 +147,7 @@ class HomeContactPreview extends StatelessWidget {
 /// bloqueado, se muestra activo en su color de marca.
 class ContactPreviewIcon extends StatelessWidget {
   final IconData? icon;
-  final String? svgAsset;   // ← nuevo: ruta del SVG
+  final String? svgAsset; // ← nuevo: ruta del SVG
   final Color color;
   final bool locked;
   final VoidCallback? onTap;
@@ -150,7 +172,9 @@ class ContactPreviewIcon extends StatelessWidget {
         decoration: BoxDecoration(
           color: (locked ? c.textMuted : color).withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: (locked ? c.textMuted : color).withValues(alpha: 0.3)),
+          border: Border.all(
+            color: (locked ? c.textMuted : color).withValues(alpha: 0.3),
+          ),
         ),
         child: Stack(
           alignment: Alignment.center,
@@ -181,7 +205,11 @@ class ContactPreviewIcon extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: c.bgCard, width: 1.5),
                   ),
-                  child: const Icon(Icons.lock_rounded, color: Colors.white, size: 10),
+                  child: const Icon(
+                    Icons.lock_rounded,
+                    color: Colors.white,
+                    size: 10,
+                  ),
                 ),
               ),
           ],

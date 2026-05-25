@@ -33,6 +33,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'es_PE',
     siteName: 'Servi',
+    images: [
+      {
+        url: '/images/logo/servi.png',
+        width: 512,
+        height: 512,
+        alt: 'Servi Logo',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',

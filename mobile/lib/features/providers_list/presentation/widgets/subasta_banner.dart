@@ -53,13 +53,21 @@ class SubastaBanner extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0A2647), Color(0xFF144272)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
+          color: c.bgCard, // Fondo dinámico (blanco en claro, oscuro en dark)
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+          // Sombra suave en tema claro, casi nula en oscuro
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.05
+                    : 0.12,
+              ),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -80,22 +88,25 @@ class SubastaBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '¿No encuentras lo que buscas?',
+                  Text(
+                    '¿No encuentras lo que buscas? 🔍',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: c.textPrimary, // Texto dinámico
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
                     'Publica tu necesidad y recibe ofertas',
-                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                    style: TextStyle(
+                      color: c.textSecondary,
+                      fontSize: 11,
+                    ), // Subtítulo dinámico
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios_rounded,
               color: AppColors.primary,
               size: 14,

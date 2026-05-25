@@ -23,13 +23,21 @@ class OffersBanner extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF2D1B00), Color(0xFF4A2E00)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
+          color: c.bgCard, // Fondo dinámico (blanco en claro, oscuro en dark)
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.amber.withValues(alpha: 0.35)),
+          // Sombra suave en tema claro, casi nula en oscuro
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.amber.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.05
+                    : 0.12,
+              ),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -39,21 +47,37 @@ class OffersBanner extends StatelessWidget {
                 color: AppColors.amber.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 18),
+              child: const Icon(
+                Icons.local_offer_rounded,
+                color: AppColors.amber,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('¡Ofertas y promociones 💸',
-                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
-                  Text('Descuentos de proveedores verificados',
-                      style: TextStyle(color: c.textMuted, fontSize: 11)),
+                  Text(
+                    '¡Ofertas y promociones 💸',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ), // Texto dinámico
+                  Text(
+                    'Descuentos de proveedores verificados',
+                    style: TextStyle(color: c.textSecondary, fontSize: 11),
+                  ), // Subtítulo dinámico
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.amber, size: 14),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.amber,
+              size: 14,
+            ),
           ],
         ),
       ),

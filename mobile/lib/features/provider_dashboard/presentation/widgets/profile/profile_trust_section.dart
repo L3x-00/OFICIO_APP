@@ -19,11 +19,13 @@ class ProfileTrustSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
+    final c = context.colors;
     final auth = context.watch<AuthProvider>();
     final type = isNegocio ? 'NEGOCIO' : 'OFICIO';
-    final trustStatus = auth.providerDataFor(type)?['trustStatus'] as String? ?? 'NONE';
-    final isTrusted   = auth.providerDataFor(type)?['isTrusted']   as bool?   ?? false;
+    final trustStatus =
+        auth.providerDataFor(type)?['trustStatus'] as String? ?? 'NONE';
+    final isTrusted =
+        auth.providerDataFor(type)?['isTrusted'] as bool? ?? false;
 
     // Colores y textos según estado
     final Color accent;
@@ -32,38 +34,47 @@ class ProfileTrustSection extends StatelessWidget {
     final String subtitle;
 
     if (isTrusted) {
-      accent   = const Color(0xFF10B981);
-      icon     = Icons.verified_rounded;
-      title    = '¡Perfil verificado como confiable!';
-      subtitle = 'Tu perfil cuenta con el badge de "Profesional Confiable". Los clientes pueden contratarte con total seguridad.';
+      accent = const Color(0xFF10B981);
+      icon = Icons.verified_rounded;
+      title = '¡Perfil verificado como confiable!';
+      subtitle =
+          'Tu perfil cuenta con el badge de "Profesional Confiable". Los clientes pueden contratarte con total seguridad.';
     } else if (trustStatus == 'PENDING') {
-      accent   = AppColors.amber;
-      icon     = Icons.hourglass_top_rounded;
-      title    = 'Validación en proceso';
-      subtitle = 'Tu solicitud está siendo revisada por nuestro equipo. Te notificaremos cuando tengamos una respuesta.';
+      accent = AppColors.amber;
+      icon = Icons.hourglass_top_rounded;
+      title = 'Validación en proceso';
+      subtitle =
+          'Tu solicitud está siendo revisada por nuestro equipo. Te notificaremos cuando tengamos una respuesta.';
     } else if (trustStatus == 'REJECTED') {
-      accent   = const Color(0xFFEF4444);
-      icon     = Icons.cancel_rounded;
-      title    = 'Solicitud rechazada';
-      subtitle = 'Tu solicitud fue rechazada. Puedes enviar una nueva solicitud corrigiendo la información.';
+      accent = const Color(0xFFEF4444);
+      icon = Icons.cancel_rounded;
+      title = 'Solicitud rechazada';
+      subtitle =
+          'Tu solicitud fue rechazada. Puedes enviar una nueva solicitud corrigiendo la información.';
     } else {
-      accent   = AppColors.primary;
-      icon     = Icons.shield_outlined;
-      title    = 'Solicitar validación de datos';
-      subtitle = 'Valida tu identidad para obtener el badge de "Profesional Confiable" y generar más confianza en los clientes.';
+      accent = AppColors.primary;
+      icon = Icons.shield_outlined;
+      title = 'Solicitar validación de datos';
+      subtitle =
+          'Valida tu identidad para obtener el badge de "Profesional Confiable" y generar más confianza en los clientes.';
     }
 
     // REJECTED → banner rojo con dos botones de acción
     if (trustStatus == 'REJECTED') {
       const red = Color(0xFFEF4444);
       // Prioridad: motivo específico del rechazo de confianza, luego del rechazo de verificación
-      final reason = (auth.providerDataFor(type)?['trustRejectionReason'] as String?)
-          ?? auth.rejectionReasonFor(type)
-          ?? 'No se especificó un motivo.';
+      final reason =
+          (auth.providerDataFor(type)?['trustRejectionReason'] as String?) ??
+          auth.rejectionReasonFor(type) ??
+          'No se especificó un motivo.';
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(icon: Icons.shield_rounded, title: 'Confianza y Validación', color: red),
+          const SectionTitle(
+            icon: Icons.shield_rounded,
+            title: 'Confianza y Validación',
+            color: red,
+          ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(16),
@@ -82,7 +93,11 @@ class ProfileTrustSection extends StatelessWidget {
                     const Expanded(
                       child: Text(
                         'Solicitud rechazada',
-                        style: TextStyle(color: red, fontSize: 14, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -90,7 +105,11 @@ class ProfileTrustSection extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Tu solicitud de validación fue rechazada. Revisa el motivo y vuelve a solicitarla.',
-                  style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.5),
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 Row(
@@ -103,35 +122,52 @@ class ProfileTrustSection extends StatelessWidget {
                             reason: reason,
                             onRevalidate: () {
                               Navigator.of(ctx).pop();
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => TrustValidationFormScreen(providerType: type),
-                              ));
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => TrustValidationFormScreen(
+                                    providerType: type,
+                                  ),
+                                ),
+                              );
                             },
                           ),
                         ),
                         icon: const Icon(Icons.info_outline_rounded, size: 15),
-                        label: const Text('Ver detalles', style: TextStyle(fontSize: 12)),
+                        label: const Text(
+                          'Ver detalles',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: red,
                           side: BorderSide(color: red.withValues(alpha: 0.5)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => TrustValidationFormScreen(providerType: type),
-                        )),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                TrustValidationFormScreen(providerType: type),
+                          ),
+                        ),
                         icon: const Icon(Icons.refresh_rounded, size: 15),
-                        label: const Text('Volver a solicitar', style: TextStyle(fontSize: 12)),
+                        label: const Text(
+                          'Volver a solicitar',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: red,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
@@ -145,71 +181,133 @@ class ProfileTrustSection extends StatelessWidget {
     }
 
     // isTrusted → banner verde prominente, sin botón
+    // isTrusted → tarjeta compacta e interactiva, adaptada al tema
     if (isTrusted) {
-      const green = Color(0xFF10B981);
+      const green = Color(0xFF00E676); // Verde neón brillante (Aprobación)
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(icon: Icons.shield_rounded, title: 'Confianza y Validación', color: green),
+          const SectionTitle(
+            icon: Icons.shield_rounded,
+            title: 'Confianza y Validación',
+            color: green,
+          ),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF065F46), Color(0xFF047857)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(color: green.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6)),
-              ],
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 52, height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+          Material(
+            color: c.bgCard, // Fondo dinámico del tema
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () {
+                // Hacemos la tarjeta interactiva
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Tu identidad fue verificada. Los clientes te ven como un profesional confiable.',
+                    ),
+                    backgroundColor: const Color(0xFF059669),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: const Icon(Icons.verified_rounded, color: Colors.white, size: 30),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'DATOS VALIDADOS',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  isNegocio
-                    ? ' Gracias por validar tus datos. Tu negocio es confiable. Los clientes pueden contratarte con total seguridad.'
-                    : 'Gracias por validar tus datos. Tu perfil profesional es confiable. Los clientes pueden contratarte con total seguridad.',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12, height: 1.5),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.shield_rounded, color: Colors.white, size: 13),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Nueva insignia de confianza',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11, fontWeight: FontWeight.w600),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: green.withValues(alpha: 0.25)),
+                  // Sombra verde sutil en tema claro, casi imperceptible en oscuro
+                  boxShadow: [
+                    BoxShadow(
+                      color: green.withValues(
+                        alpha: Theme.of(context).brightness == Brightness.dark
+                            ? 0.05
+                            : 0.12,
                       ),
-                    ],
-                  ),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
+                child: Row(
+                  children: [
+                    // Ícono circular
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: green.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.verified_rounded,
+                        color: green,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Textos
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Datos Validados',
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isNegocio
+                                ? 'Tu negocio es confiable y seguro'
+                                : 'Tu perfil es confiable y seguro',
+                            style: TextStyle(
+                              color: c.textSecondary,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Badge compacto a la derecha
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: green,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.shield_rounded,
+                            color: Colors.white,
+                            size: 11,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Verificado',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -219,7 +317,11 @@ class ProfileTrustSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle(icon: Icons.shield_rounded, title: 'Confianza y Validación', color: accent),
+        SectionTitle(
+          icon: Icons.shield_rounded,
+          title: 'Confianza y Validación',
+          color: accent,
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -236,35 +338,59 @@ class ProfileTrustSection extends StatelessWidget {
                   Icon(icon, color: accent, size: 22),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(title,
-                      style: TextStyle(color: accent, fontSize: 14, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Text(subtitle,
-                style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.5)),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+              ),
               if (trustStatus != 'PENDING') ...[
                 const SizedBox(height: 14),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => TrustValidationFormScreen(providerType: type),
-                    )),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            TrustValidationFormScreen(providerType: type),
+                      ),
+                    ),
                     icon: Icon(
-                      trustStatus == 'REJECTED' ? Icons.refresh_rounded : Icons.verified_user_rounded,
+                      trustStatus == 'REJECTED'
+                          ? Icons.refresh_rounded
+                          : Icons.verified_user_rounded,
                       size: 16,
                     ),
                     label: Text(
-                      trustStatus == 'REJECTED' ? 'Reintentar validación' : 'Solicitar validación de datos',
+                      trustStatus == 'REJECTED'
+                          ? 'Reintentar validación'
+                          : 'Solicitar validación de datos',
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 11),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),
@@ -283,7 +409,11 @@ class RejectionDetailDialog extends StatelessWidget {
   final String reason;
   final VoidCallback onRevalidate;
 
-  const RejectionDetailDialog({super.key, required this.reason, required this.onRevalidate});
+  const RejectionDetailDialog({
+    super.key,
+    required this.reason,
+    required this.onRevalidate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -298,7 +428,8 @@ class RejectionDetailDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 56, height: 56,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: red.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
@@ -308,7 +439,11 @@ class RejectionDetailDialog extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Motivo del rechazo',
-              style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
@@ -322,7 +457,11 @@ class RejectionDetailDialog extends StatelessWidget {
               ),
               child: Text(
                 reason,
-                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -335,7 +474,9 @@ class RejectionDetailDialog extends StatelessWidget {
                       foregroundColor: c.textMuted,
                       side: BorderSide(color: c.border),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: const Text('Aceptar'),
                   ),
@@ -348,9 +489,14 @@ class RejectionDetailDialog extends StatelessWidget {
                       backgroundColor: red,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: const Text('Solicitar revalidación', style: TextStyle(fontSize: 12)),
+                    child: const Text(
+                      'Solicitar revalidación',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
                 ),
               ],
