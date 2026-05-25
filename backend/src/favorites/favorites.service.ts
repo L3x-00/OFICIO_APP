@@ -46,6 +46,11 @@ export class FavoritesService {
               orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
               take: 4,
             },
+            // Sin esto el modelo del mobile veía `subscription = null`
+            // y caía al default 'GRATIS' → las tarjetas de favoritos
+            // ocultaban los botones de WhatsApp/llamada que solo se
+            // muestran a planes ESTANDAR/PREMIUM.
+            subscription: { select: { plan: true, status: true } },
           },
         },
       },

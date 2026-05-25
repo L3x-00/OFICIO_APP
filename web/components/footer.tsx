@@ -149,7 +149,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3 mb-5 group w-fit">
               <div className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105 border border-white/10">
                 <Image
-                  src="/images/logo/logo_light.png"
+                  src="/images/logo/servi.png"
                   alt="Servi"
                   width={24}
                   height={24}

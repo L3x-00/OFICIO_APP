@@ -80,7 +80,7 @@ export default function HeroSection() {
                   className="transition-transform duration-200 group-hover:translate-x-1"
                 />
               </Link>
-              <a href="#como-funciona" className="btn btn-ghost btn-lg press-effect">
+              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-ghost btn-lg press-effect">
                 Cómo funciona
               </a>
             </motion.div>

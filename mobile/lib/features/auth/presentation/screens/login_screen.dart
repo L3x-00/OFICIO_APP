@@ -15,10 +15,7 @@ enum AuthMode { login, register }
 class LoginScreen extends StatefulWidget {
   final AuthMode initialMode;
 
-  const LoginScreen({
-    super.key,
-    this.initialMode = AuthMode.register,
-  });
+  const LoginScreen({super.key, this.initialMode = AuthMode.register});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -30,16 +27,16 @@ class _LoginScreenState extends State<LoginScreen>
   late final AnimationController _animController;
   late final Animation<double> _fadeAnim;
 
-  final _emailController     = TextEditingController();
-  final _passwordController  = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _password2Controller = TextEditingController();
   final _firstNameController = TextEditingController();
-  final _lastNameController  = TextEditingController();
+  final _lastNameController = TextEditingController();
 
-  bool _obscurePassword  = true;
+  bool _obscurePassword = true;
   bool _obscurePassword2 = true;
-  bool _acceptedTerms    = false;
-  bool _rememberSession  = false;
+  bool _acceptedTerms = false;
+  bool _rememberSession = false;
   String? _passwordMismatch;
 
   @override
@@ -51,10 +48,7 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeIn,
-    );
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeIn);
     _animController.forward();
   }
 
@@ -89,16 +83,18 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
       if (!_acceptedTerms) {
-        context.showWarningSnack('Debes aceptar los Términos y Condiciones para continuar');
+        context.showWarningSnack(
+          'Debes aceptar los Términos y Condiciones para continuar',
+        );
         return;
       }
       setState(() => _passwordMismatch = null);
 
       final ok = await auth.register(
-        email:     _emailController.text.trim(),
-        password:  _passwordController.text,
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
         firstName: _firstNameController.text.trim(),
-        lastName:  _lastNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
       );
 
       if (ok && mounted) {
@@ -123,7 +119,9 @@ class _LoginScreenState extends State<LoginScreen>
       if (ok && mounted) {
         if (auth.savedAccountLimitReached) {
           auth.clearSavedAccountLimitFlag();
-          context.showWarningSnack('Sesión iniciada. Límite de 3 cuentas guardadas alcanzado — elimina una desde tu perfil.');
+          context.showWarningSnack(
+            'Sesión iniciada. Límite de 3 cuentas guardadas alcanzado — elimina una desde tu perfil.',
+          );
         }
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
@@ -154,9 +152,9 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _showForgotPassword() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()));
   }
 
   Future<void> _handleGoogleLogin() async {
@@ -169,7 +167,9 @@ class _LoginScreenState extends State<LoginScreen>
     if (outcome.isCancelled) return; // el usuario canceló — sin feedback
 
     if (outcome.isError) {
-      context.showErrorSnack(outcome.errorMessage ?? 'Error en inicio de sesión social');
+      context.showErrorSnack(
+        outcome.errorMessage ?? 'Error en inicio de sesión social',
+      );
       return;
     }
 
@@ -202,7 +202,9 @@ class _LoginScreenState extends State<LoginScreen>
         iconTheme: IconThemeData(color: c.textSecondary),
         actions: [
           IconButton(
-            tooltip: theme.isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro',
+            tooltip: theme.isDark
+                ? 'Cambiar a tema claro'
+                : 'Cambiar a tema oscuro',
             icon: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               transitionBuilder: (child, anim) => RotationTransition(
@@ -210,7 +212,9 @@ class _LoginScreenState extends State<LoginScreen>
                 child: FadeTransition(opacity: anim, child: child),
               ),
               child: Icon(
-                theme.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                theme.isDark
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
                 key: ValueKey(theme.isDark),
                 color: AppColors.amber,
                 size: 22,
@@ -233,8 +237,7 @@ class _LoginScreenState extends State<LoginScreen>
                 Center(
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.circular(c.isDark ? 20 : 0),
+                      borderRadius: BorderRadius.circular(c.isDark ? 20 : 0),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.amber.withValues(alpha: 0.18),
@@ -249,13 +252,12 @@ class _LoginScreenState extends State<LoginScreen>
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(c.isDark ? 20 : 0),
+                      borderRadius: BorderRadius.circular(c.isDark ? 20 : 0),
                       child: Image.asset(
                         c.isDark
-                            ? 'assets/images/logo/logo_dark.png'
-                            : 'assets/images/logo/logo_light.png',
-                        width:  isRegister ? 64 : 76,
+                            ? 'assets/images/logo/servi.png'
+                            : 'assets/images/logo/servi.png',
+                        width: isRegister ? 64 : 76,
                         height: isRegister ? 64 : 76,
                         filterQuality: FilterQuality.high,
                       ),
@@ -268,18 +270,24 @@ class _LoginScreenState extends State<LoginScreen>
                 if (!isRegister) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 5),
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.3)),
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.person_rounded,
-                            color: AppColors.primary, size: 13),
+                        Icon(
+                          Icons.person_rounded,
+                          color: AppColors.primary,
+                          size: 13,
+                        ),
                         SizedBox(width: 5),
                         Text(
                           'Ingresando como Cliente',
@@ -312,10 +320,7 @@ class _LoginScreenState extends State<LoginScreen>
                   isRegister
                       ? 'Tu comunidad, en quien confiar — gratis'
                       : 'El experto que buscas, en quien puedes confiar',
-                  style: TextStyle(
-                    color: c.textSecondary,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: c.textSecondary, fontSize: 14),
                 ),
                 const SizedBox(height: 28),
 
@@ -332,7 +337,9 @@ class _LoginScreenState extends State<LoginScreen>
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        isRegister ? 'O regístrate con tu correo' : 'O ingresa con tu correo',
+                        isRegister
+                            ? 'O regístrate con tu correo'
+                            : 'O ingresa con tu correo',
                         style: TextStyle(color: c.textMuted, fontSize: 12),
                       ),
                     ),
@@ -416,12 +423,11 @@ class _LoginScreenState extends State<LoginScreen>
                           height: 20,
                           child: Checkbox(
                             value: _rememberSession,
-                            onChanged: (v) => setState(
-                                () => _rememberSession = v ?? false),
+                            onChanged: (v) =>
+                                setState(() => _rememberSession = v ?? false),
                             activeColor: AppColors.primary,
                             checkColor: Colors.white,
-                            side: BorderSide(
-                                color: c.textMuted, width: 1.5),
+                            side: BorderSide(color: c.textMuted, width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -433,10 +439,7 @@ class _LoginScreenState extends State<LoginScreen>
                         Expanded(
                           child: Text(
                             'Mantener sesión iniciada en este dispositivo',
-                            style: TextStyle(
-                              color: c.textMuted,
-                              fontSize: 13,
-                            ),
+                            style: TextStyle(color: c.textMuted, fontSize: 13),
                           ),
                         ),
                       ],
@@ -456,14 +459,16 @@ class _LoginScreenState extends State<LoginScreen>
                     suffixIcon: _ToggleVisibilityButton(
                       isObscure: _obscurePassword2,
                       onToggle: () => setState(
-                          () => _obscurePassword2 = !_obscurePassword2),
+                        () => _obscurePassword2 = !_obscurePassword2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   // Checkbox de términos y condiciones
                   _TermsCheckbox(
                     value: _acceptedTerms,
-                    onChanged: (v) => setState(() => _acceptedTerms = v ?? false),
+                    onChanged: (v) =>
+                        setState(() => _acceptedTerms = v ?? false),
                   ),
                 ],
 
@@ -512,8 +517,7 @@ class _LoginScreenState extends State<LoginScreen>
                       isRegister
                           ? '¿Ya tienes cuenta? '
                           : '¿No tienes cuenta? ',
-                      style: TextStyle(
-                          color: c.textMuted, fontSize: 13),
+                      style: TextStyle(color: c.textMuted, fontSize: 13),
                     ),
                     GestureDetector(
                       onTap: () => _switchMode(
@@ -538,7 +542,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 }
-
 
 // ─── Checkbox de términos y condiciones ──────────────────
 
@@ -806,18 +809,18 @@ class _Field extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     return TextField(
-      controller:   controller,
+      controller: controller,
       keyboardType: keyboardType,
-      obscureText:  obscureText,
+      obscureText: obscureText,
       style: TextStyle(color: c.textPrimary, fontSize: 15),
       decoration: InputDecoration(
-        labelText:  label,
-        errorText:  errorText,
+        labelText: label,
+        errorText: errorText,
         labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
         prefixIcon: Icon(icon, color: c.textMuted, size: 20),
         suffixIcon: suffixIcon,
-        filled:     true,
-        fillColor:  c.bgCard,
+        filled: true,
+        fillColor: c.bgCard,
         errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -854,9 +857,7 @@ class _ToggleVisibilityButton extends StatelessWidget {
     final c = context.colors;
     return IconButton(
       icon: Icon(
-        isObscure
-            ? Icons.visibility_off_outlined
-            : Icons.visibility_outlined,
+        isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
         color: c.textMuted,
         size: 20,
       ),

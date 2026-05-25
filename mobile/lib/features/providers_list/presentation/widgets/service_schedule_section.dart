@@ -47,15 +47,20 @@ class ServicesList extends StatelessWidget {
             child: Row(
               children: [
                 // Foto del servicio/producto — si no hay, icono genérico.
+                // `contain` sobre fondo neutro: la miniatura se ve completa
+                // aunque sea vertical/cuadrada (antes `cover` recortaba).
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: hasImage
-                      ? Image.network(
-                          item.imageUrl!,
+                      ? Container(
                           width: 48,
                           height: 48,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _iconBox(isNegocio),
+                          color: c.bgInput,
+                          child: Image.network(
+                            item.imageUrl!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => _iconBox(isNegocio),
+                          ),
                         )
                       : _iconBox(isNegocio),
                 ),

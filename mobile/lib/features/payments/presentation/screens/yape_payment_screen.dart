@@ -7,19 +7,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/payments_provider.dart';
 
 // Colores Yape
-const _kPurple  = Color(0xFF6D1B7B);
-const _kCyan    = Color(0xFF00E4C3);
-const _kDarkBg  = Color(0xFF1C0A23);
-const _kCard    = Color(0xFF2A1236);
+const _kPurple = Color(0xFF6D1B7B);
+const _kCyan = Color(0xFF00E4C3);
+const _kDarkBg = Color(0xFF1C0A23);
+const _kCard = Color(0xFF2A1236);
 
 // Precios por plan (PEN)
-const _kPrices = {
-  'ESTANDAR': 19.90,
-  'PREMIUM':  39.90,
-};
+const _kPrices = {'ESTANDAR': 19.90, 'PREMIUM': 39.90};
 
 class YapePaymentScreen extends StatefulWidget {
   final String plan;
+
   /// `OFICIO`|`NEGOCIO` — necesario cuando el user tiene ambos perfiles
   /// para aplicar el pago al correcto. Opcional para flujos legacy.
   final String? providerType;
@@ -30,16 +28,15 @@ class YapePaymentScreen extends StatefulWidget {
     BuildContext context, {
     required String plan,
     String? providerType,
-  }) =>
-      Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider(
-            create: (_) => PaymentsProvider(),
-            child: YapePaymentScreen(plan: plan, providerType: providerType),
-          ),
-        ),
-      );
+  }) => Navigator.push<bool>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider(
+        create: (_) => PaymentsProvider(),
+        child: YapePaymentScreen(plan: plan, providerType: providerType),
+      ),
+    ),
+  );
 
   @override
   State<YapePaymentScreen> createState() => _YapePaymentScreenState();
@@ -49,19 +46,19 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
   int _step = 0; // 0=resumen, 1=comprobante, 2=éxito
 
   // Paso 2
-  File?   _voucher;
-  final   _codeCtrl = TextEditingController();
-  final   _noteCtrl = TextEditingController();
-  bool    _submitting = false;
+  File? _voucher;
+  final _codeCtrl = TextEditingController();
+  final _noteCtrl = TextEditingController();
+  bool _submitting = false;
   String? _submitError;
 
   double get _amount => _kPrices[widget.plan.toUpperCase()] ?? 0.0;
 
   String get _planLabel {
     return switch (widget.plan.toUpperCase()) {
-      'PREMIUM'  => 'Premium',
+      'PREMIUM' => 'Premium',
       'ESTANDAR' => 'Estándar',
-      _          => widget.plan,
+      _ => widget.plan,
     };
   }
 
@@ -74,8 +71,8 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final xfile  = await picker.pickImage(
-      source:     ImageSource.gallery,
+    final xfile = await picker.pickImage(
+      source: ImageSource.gallery,
       imageQuality: 80,
     );
     if (xfile != null) {
@@ -106,28 +103,36 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
       return;
     }
     if (_codeCtrl.text.length != 3) {
-      setState(() => _submitError = 'El código debe tener exactamente 3 dígitos');
+      setState(
+        () => _submitError = 'El código debe tener exactamente 3 dígitos',
+      );
       return;
     }
 
-    setState(() { _submitting = true; _submitError = null; });
+    setState(() {
+      _submitting = true;
+      _submitError = null;
+    });
 
     final prov = context.read<PaymentsProvider>();
 
     // 1. Subir imagen
     final url = await prov.uploadVoucher(_voucher!.path);
     if (url == null) {
-      setState(() { _submitting = false; _submitError = 'No se pudo subir la imagen'; });
+      setState(() {
+        _submitting = false;
+        _submitError = 'No se pudo subir la imagen';
+      });
       return;
     }
     // 2. Enviar pago
     final ok = await prov.submitPayment(
-      plan:             widget.plan,
-      amount:           _amount,
-      voucherUrl:       url,
+      plan: widget.plan,
+      amount: _amount,
+      voucherUrl: url,
       verificationCode: _codeCtrl.text,
-      note:             _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
-      providerType:     widget.providerType,
+      note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+      providerType: widget.providerType,
     );
 
     if (!mounted) return;
@@ -158,12 +163,23 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
           backgroundColor: _kDarkBg,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+            ),
             onPressed: () => Navigator.pop(context, false),
           ),
-          title: Image.asset('assets/images/yape/yape.svg',
-              height: 28, errorBuilder: (ctx, err, st) =>
-              const Text('Yape', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          title: Image.asset(
+            'assets/images/yape/yape.svg',
+            height: 28,
+            errorBuilder: (ctx, err, st) => const Text(
+              'Yape',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           centerTitle: true,
         ),
         body: AnimatedSwitcher(
@@ -172,26 +188,26 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
               ? _StepSummary(
                   key: const ValueKey(0),
                   planLabel: _planLabel,
-                  amount:    _amount,
+                  amount: _amount,
                   onOpenYape: _openYape,
                   onNext: () => setState(() => _step = 1),
                 )
               : _step == 1
-                  ? _StepComprobante(
-                      key: const ValueKey(1),
-                      voucher:     _voucher,
-                      codeCtrl:    _codeCtrl,
-                      noteCtrl:    _noteCtrl,
-                      submitting:  _submitting,
-                      error:       _submitError,
-                      onPickImage: _pickImage,
-                      onSubmit:    _submit,
-                    )
-                  : _StepSuccess(
-                      key: const ValueKey(2),
-                      planLabel: _planLabel,
-                      onDone: () => Navigator.pop(context, true),
-                    ),
+              ? _StepComprobante(
+                  key: const ValueKey(1),
+                  voucher: _voucher,
+                  codeCtrl: _codeCtrl,
+                  noteCtrl: _noteCtrl,
+                  submitting: _submitting,
+                  error: _submitError,
+                  onPickImage: _pickImage,
+                  onSubmit: _submit,
+                )
+              : _StepSuccess(
+                  key: const ValueKey(2),
+                  planLabel: _planLabel,
+                  onDone: () => Navigator.pop(context, true),
+                ),
         ),
       ),
     );
@@ -238,16 +254,26 @@ class _StepSummary extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text('Plan $planLabel',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                Text(
+                  'Plan $planLabel',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
                 const SizedBox(height: 8),
-                Text('S/ ${amount.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 44,
-                        fontWeight: FontWeight.w900)),
-                Text('/ mes',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14)),
+                Text(
+                  'S/ ${amount.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 44,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  '/ mes',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
@@ -263,25 +289,43 @@ class _StepSummary extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text('Escanea con Yape',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+                Text(
+                  'Escanea con Yape',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset('assets/images/yape/qr.svg',
-                      width: 200, height: 200, fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, st) => Container(
-                        width: 200, height: 200,
-                        color: Colors.white10,
-                        child: const Center(child: Text('QR no disponible',
-                            style: TextStyle(color: Colors.white38))),
-                      )),
+                  child: Image.asset(
+                    'assets/images/yape/qr.jpeg',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, st) => Container(
+                      width: 200,
+                      height: 200,
+                      color: Colors.white10,
+                      child: const Center(
+                        child: Text(
+                          'QR no disponible',
+                          style: TextStyle(color: Colors.white38),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Text('Monto exacto: S/ ${amount.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        color: _kCyan, fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(
+                  'Monto exacto: S/ ${amount.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: _kCyan,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
@@ -294,12 +338,19 @@ class _StepSummary extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onOpenYape,
               icon: const Icon(Icons.open_in_new_rounded, color: Colors.white),
-              label: const Text('Abrir Yape',
-                  style: TextStyle(
-                      color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+              label: const Text(
+                'Abrir Yape',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kPurple,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 4,
               ),
             ),
@@ -315,10 +366,14 @@ class _StepSummary extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: _kCyan,
                 side: const BorderSide(color: _kCyan, width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: const Text('Ya pagué, subir comprobante →',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+              child: const Text(
+                'Ya pagué, subir comprobante →',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -335,7 +390,11 @@ class _StepSummary extends StatelessWidget {
               '① Abre Yape  ②  Escanea el QR o usa "Pagar con número"\n'
               '③  Ingresa el monto exacto  ④  Confirma el pago\n'
               '⑤  Toma captura del comprobante  ⑥  Regresa aquí',
-              style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.7),
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 12,
+                height: 1.7,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -348,10 +407,10 @@ class _StepSummary extends StatelessWidget {
 // ── Paso 2: Comprobante ───────────────────────────────────────
 
 class _StepComprobante extends StatelessWidget {
-  final File?   voucher;
+  final File? voucher;
   final TextEditingController codeCtrl;
   final TextEditingController noteCtrl;
-  final bool    submitting;
+  final bool submitting;
   final String? error;
   final VoidCallback onPickImage;
   final VoidCallback onSubmit;
@@ -377,12 +436,22 @@ class _StepComprobante extends StatelessWidget {
           _StepIndicator(current: 1),
           const SizedBox(height: 20),
 
-          const Text('Sube tu comprobante',
-              style: TextStyle(
-                  color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+          const Text(
+            'Sube tu comprobante',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('Adjunta la captura de tu operación Yape',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13)),
+          Text(
+            'Adjunta la captura de tu operación Yape',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 13,
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Área de imagen
@@ -395,7 +464,9 @@ class _StepComprobante extends StatelessWidget {
                 color: _kCard,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: voucher != null ? _kCyan : _kPurple.withValues(alpha: 0.5),
+                  color: voucher != null
+                      ? _kCyan
+                      : _kPurple.withValues(alpha: 0.5),
                   width: voucher != null ? 2 : 1,
                   style: BorderStyle.solid,
                 ),
@@ -408,18 +479,27 @@ class _StepComprobante extends StatelessWidget {
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt_rounded,
-                            color: _kPurple.withValues(alpha: 0.7), size: 44),
+                        Icon(
+                          Icons.camera_alt_rounded,
+                          color: _kPurple.withValues(alpha: 0.7),
+                          size: 44,
+                        ),
                         const SizedBox(height: 10),
-                        const Text('Subir captura del Yape',
-                            style: TextStyle(
-                                color: _kCyan,
-                                fontWeight: FontWeight.w700)),
+                        const Text(
+                          'Subir captura del Yape',
+                          style: TextStyle(
+                            color: _kCyan,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Toca para seleccionar de galería',
-                            style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 12)),
+                        Text(
+                          'Toca para seleccionar de galería',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
             ),
@@ -429,9 +509,15 @@ class _StepComprobante extends StatelessWidget {
             Center(
               child: TextButton.icon(
                 onPressed: onPickImage,
-                icon: const Icon(Icons.swap_horiz_rounded, size: 16, color: _kCyan),
-                label: const Text('Cambiar imagen',
-                    style: TextStyle(color: _kCyan, fontSize: 12)),
+                icon: const Icon(
+                  Icons.swap_horiz_rounded,
+                  size: 16,
+                  color: _kCyan,
+                ),
+                label: const Text(
+                  'Cambiar imagen',
+                  style: TextStyle(color: _kCyan, fontSize: 12),
+                ),
               ),
             ),
           ],
@@ -447,15 +533,19 @@ class _StepComprobante extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 12),
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 12,
+            ),
             decoration: InputDecoration(
               counterText: '',
               hintText: '000',
               hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.2), fontSize: 28, letterSpacing: 12),
+                color: Colors.white.withValues(alpha: 0.2),
+                fontSize: 28,
+                letterSpacing: 12,
+              ),
               filled: true,
               fillColor: _kCard,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -470,8 +560,13 @@ class _StepComprobante extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text('Ingresa los 3 dígitos de verificación de tu operación',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11)),
+          Text(
+            'Ingresa los 3 dígitos de verificación de tu operación',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 11,
+            ),
+          ),
           const SizedBox(height: 20),
 
           // Campo nota
@@ -484,7 +579,10 @@ class _StepComprobante extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Ej: Pagué desde el celular de mi pareja...',
-              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 13),
+              hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 13,
+              ),
               filled: true,
               fillColor: _kCard,
               border: OutlineInputBorder(
@@ -495,7 +593,9 @@ class _StepComprobante extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 borderSide: const BorderSide(color: _kCyan, width: 1.5),
               ),
-              counterStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+              counterStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -511,10 +611,21 @@ class _StepComprobante extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.redAccent,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(error!,
-                      style: const TextStyle(color: Colors.redAccent, fontSize: 13))),
+                  Expanded(
+                    child: Text(
+                      error!,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -527,16 +638,27 @@ class _StepComprobante extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kCyan,
                 disabledBackgroundColor: _kCyan.withValues(alpha: 0.4),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               child: submitting
-                  ? const SizedBox(width: 22, height: 22,
-                      child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5))
-                  : const Text('Enviar comprobante',
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : const Text(
+                      'Enviar comprobante',
                       style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800)),
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -548,10 +670,14 @@ class _StepComprobante extends StatelessWidget {
 // ── Paso 3: Éxito ─────────────────────────────────────────────
 
 class _StepSuccess extends StatelessWidget {
-  final String    planLabel;
+  final String planLabel;
   final VoidCallback onDone;
 
-  const _StepSuccess({super.key, required this.planLabel, required this.onDone});
+  const _StepSuccess({
+    super.key,
+    required this.planLabel,
+    required this.onDone,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -562,7 +688,8 @@ class _StepSuccess extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 96, height: 96,
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
@@ -573,17 +700,23 @@ class _StepSuccess extends StatelessWidget {
               child: const Icon(Icons.check_rounded, color: _kCyan, size: 52),
             ),
             const SizedBox(height: 28),
-            const Text('¡Recibimos tu pago!',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900)),
+            const Text(
+              '¡Recibimos tu pago!',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
               'Estamos validando la información.\n'
               'Tu plan $planLabel se activará en breve.',
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.65), fontSize: 14, height: 1.6),
+                color: Colors.white.withValues(alpha: 0.65),
+                fontSize: 14,
+                height: 1.6,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -598,13 +731,20 @@ class _StepSuccess extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.access_time_rounded, color: _kCyan, size: 16),
+                  const Icon(
+                    Icons.access_time_rounded,
+                    color: _kCyan,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
-                  Text('Estado: Validación en proceso',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600)),
+                  Text(
+                    'Estado: Validación en proceso',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -615,11 +755,18 @@ class _StepSuccess extends StatelessWidget {
                 onPressed: onDone,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _kPurple,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: const Text('Volver a mi perfil',
-                    style: TextStyle(
-                        color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                child: const Text(
+                  'Volver a mi perfil',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ],
@@ -641,15 +788,19 @@ class _StepIndicator extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(3, (i) {
         final active = i == current;
-        final done   = i < current;
+        final done = i < current;
         return Row(
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              width:  active ? 28 : 10,
+              width: active ? 28 : 10,
               height: 10,
               decoration: BoxDecoration(
-                color: done ? _kCyan : active ? _kPurple : Colors.white12,
+                color: done
+                    ? _kCyan
+                    : active
+                    ? _kPurple
+                    : Colors.white12,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
@@ -666,9 +817,12 @@ class _YapeLabel extends StatelessWidget {
   const _YapeLabel(this.text);
 
   @override
-  Widget build(BuildContext context) => Text(text,
-      style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.7),
-          fontSize: 13,
-          fontWeight: FontWeight.w600));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(
+      color: Colors.white.withValues(alpha: 0.7),
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+    ),
+  );
 }

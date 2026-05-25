@@ -82,9 +82,11 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               // ── Círculo decorativo superior ───────────────
               Positioned(
-                top: -80, right: -80,
+                top: -80,
+                right: -80,
                 child: Container(
-                  width: 240, height: 240,
+                  width: 240,
+                  height: 240,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.amber.withValues(alpha: 0.06),
@@ -93,9 +95,11 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               // ── Círculo decorativo inferior ───────────────
               Positioned(
-                bottom: -100, left: -80,
+                bottom: -100,
+                left: -80,
                 child: Container(
-                  width: 280, height: 280,
+                  width: 280,
+                  height: 280,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.primary.withValues(alpha: 0.05),
@@ -121,13 +125,15 @@ class _SplashScreenState extends State<SplashScreen>
                               boxShadow: [
                                 BoxShadow(
                                   color: AppColors.amber.withValues(
-                                      alpha: 0.28 * _glowAnim.value),
+                                    alpha: 0.28 * _glowAnim.value,
+                                  ),
                                   blurRadius: 48,
                                   spreadRadius: 8,
                                 ),
                                 BoxShadow(
                                   color: AppColors.primary.withValues(
-                                      alpha: 0.20 * _glowAnim.value),
+                                    alpha: 0.20 * _glowAnim.value,
+                                  ),
                                   blurRadius: 64,
                                   spreadRadius: 12,
                                 ),
@@ -136,13 +142,14 @@ class _SplashScreenState extends State<SplashScreen>
                             child: child,
                           ),
                           child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(c.isDark ? 28 : 0),
+                            borderRadius: BorderRadius.circular(
+                              c.isDark ? 28 : 0,
+                            ),
                             child: Image.asset(
                               c.isDark
-                                  ? 'assets/images/logo/logo_dark.png'
-                                  : 'assets/images/logo/logo_light.png',
-                              width:  120,
+                                  ? 'assets/images/logo/servi.png'
+                                  : 'assets/images/logo/servi.png',
+                              width: 120,
                               height: 120,
                               filterQuality: FilterQuality.high,
                             ),
@@ -165,10 +172,9 @@ class _SplashScreenState extends State<SplashScreen>
 
                         // ── Tagline con gradiente ─────────
                         ShaderMask(
-                          shaderCallback: (bounds) =>
-                              const LinearGradient(
-                                colors: [AppColors.amber, AppColors.primary],
-                              ).createShader(bounds),
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [AppColors.amber, AppColors.primary],
+                          ).createShader(bounds),
                           child: const Text(
                             'Servicios locales, confianza real.',
                             style: TextStyle(
@@ -184,7 +190,8 @@ class _SplashScreenState extends State<SplashScreen>
 
                         // ── Indicador de carga ────────────
                         SizedBox(
-                          width: 28, height: 28,
+                          width: 28,
+                          height: 28,
                           child: CircularProgressIndicator(
                             color: AppColors.amber.withValues(alpha: 0.65),
                             strokeWidth: 2.5,
@@ -198,7 +205,9 @@ class _SplashScreenState extends State<SplashScreen>
 
               // ── Versión en pie de página ──────────────────
               Positioned(
-                bottom: 16, left: 0, right: 0,
+                bottom: 16,
+                left: 0,
+                right: 0,
                 child: FadeTransition(
                   opacity: _glowAnim,
                   child: Text(

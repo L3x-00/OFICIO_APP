@@ -45,7 +45,10 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
     final bytes = await file.readAsBytes();
     if (!mounted) return;
     if (bytes.length > 5 * 1024 * 1024) {
-      _showSnack('La imagen supera 5 MB. Elige una más pequeña.', isError: true);
+      _showSnack(
+        'La imagen supera 5 MB. Elige una más pequeña.',
+        isError: true,
+      );
       return;
     }
 
@@ -110,20 +113,23 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
 
   @override
   Widget build(BuildContext context) {
-    final c        = context.colors;
-    final profile  = widget.profile;
-    final images   = profile?.images ?? [];
-    final plan     = profile?.subscription?.plan ?? 'GRATIS';
+    final c = context.colors;
+    final profile = widget.profile;
+    final images = profile?.images ?? [];
+    final plan = profile?.subscription?.plan ?? 'GRATIS';
     final maxFotos = PlanLimits.photos(plan);
-    final canAdd   = PlanLimits.canAddPhoto(plan, images.length);
+    final canAdd = PlanLimits.canAddPhoto(plan, images.length);
     // Espaciadores: slots vacíos hasta completar la fila visual (max 4 slots visibles)
     final visibleSlots = maxFotos.clamp(0, 4);
-    final emptySlots   = (visibleSlots - images.length - (canAdd ? 1 : 0)).clamp(0, visibleSlots);
+    final emptySlots = (visibleSlots - images.length - (canAdd ? 1 : 0)).clamp(
+      0,
+      visibleSlots,
+    );
 
     final planColor = switch (plan.toUpperCase()) {
-      'PREMIUM'  => AppColors.premium,
+      'PREMIUM' => AppColors.premium,
       'ESTANDAR' => AppColors.primary,
-      _          => c.textMuted,
+      _ => c.textMuted,
     };
 
     return Column(
@@ -135,11 +141,14 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
             Icon(Icons.photo_library_rounded, color: AppColors.amber, size: 18),
             const SizedBox(width: 8),
             Expanded(
-              child: Text('Fotos del servicio',
-                  style: TextStyle(
-                      color: c.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700)),
+              child: Text(
+                'Fotos del servicio',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
             // Chip prominente: X/N fotos · Plan
             Container(
@@ -157,9 +166,10 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
                   Text(
                     '${images.length}/$maxFotos  ·  ${plan[0]}${plan.substring(1).toLowerCase()}',
                     style: TextStyle(
-                        color: planColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700),
+                      color: planColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -167,18 +177,25 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
           ],
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 100,
-          child: Row(
-            children: [
-              ...images.take(maxFotos).map((img) => PhotoTile(
+        // Wrap (no Row) — con planes ESTANDAR (6) y PREMIUM (10) las
+        // fotos antes se alineaban en una sola fila horizontal y
+        // empujaban el botón "Añadir" fuera de pantalla. Wrap baja a
+        // segunda fila automáticamente y mantiene el botón visible.
+        Wrap(
+          spacing: 0, // los tiles ya traen margin right: 8
+          runSpacing: 8,
+          children: [
+            ...images
+                .take(maxFotos)
+                .map(
+                  (img) => PhotoTile(
                     url: img.url,
                     onDelete: () => _confirmDeletePhoto(img),
-                  )),
-              if (canAdd) AddPhotoTile(onTap: _pickPhoto),
-              ...List.generate(emptySlots, (_) => const EmptyPhotoTile()),
-            ],
-          ),
+                  ),
+                ),
+            if (canAdd) AddPhotoTile(onTap: _pickPhoto),
+            ...List.generate(emptySlots, (_) => const EmptyPhotoTile()),
+          ],
         ),
         const SizedBox(height: 8),
         if (!canAdd)
@@ -257,14 +274,24 @@ class AddPhotoTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.amber.withValues(alpha: 0.4), width: 1.5),
+          border: Border.all(
+            color: AppColors.amber.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate_rounded, color: AppColors.amber, size: 28),
+            Icon(
+              Icons.add_photo_alternate_rounded,
+              color: AppColors.amber,
+              size: 28,
+            ),
             SizedBox(height: 4),
-            Text('Añadir', style: TextStyle(color: AppColors.amber, fontSize: 11)),
+            Text(
+              'Añadir',
+              style: TextStyle(color: AppColors.amber, fontSize: 11),
+            ),
           ],
         ),
       ),
@@ -277,7 +304,12 @@ class PhotoLimitNote extends StatelessWidget {
   final String plan;
   final int max;
   final AppThemeColors c;
-  const PhotoLimitNote({super.key, required this.plan, required this.max, required this.c});
+  const PhotoLimitNote({
+    super.key,
+    required this.plan,
+    required this.max,
+    required this.c,
+  });
 
   @override
   Widget build(BuildContext context) {

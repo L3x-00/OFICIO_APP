@@ -43,7 +43,6 @@ class _ProvidersView extends StatefulWidget {
 
 class _ProvidersViewState extends State<_ProvidersView>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-
   @override
   bool get wantKeepAlive => true;
 
@@ -57,8 +56,8 @@ class _ProvidersViewState extends State<_ProvidersView>
       final prov = context.read<ProvidersProvider>();
       prov.init(
         department: user?.department,
-        province:   user?.province,
-        district:   user?.district,
+        province: user?.province,
+        district: user?.district,
       );
       // Trae las localidades extras (USER/ADMIN) del backend para que los
       // dropdowns del filter y el chip de ubicación las muestren además
@@ -100,145 +99,169 @@ class _ProvidersViewState extends State<_ProvidersView>
       builder: (_) => FilterSheet(prov: prov),
     );
   }
- // ... todo el código anterior de _ProvidersViewState ...
+
+  // ... todo el código anterior de _ProvidersViewState ...
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final c = context.colors;
-    final auth    = context.watch<AuthProvider>();
+    final auth = context.watch<AuthProvider>();
     final isGuest = auth.isGuest || auth.user == null;
-    final userId  = auth.user?.id;
+    final userId = auth.user?.id;
 
     return HomeShowcaseHost(
-      userId:  userId,
+      userId: userId,
       isGuest: isGuest,
       child: Scaffold(
-      backgroundColor: c.bg,
-      floatingActionButton: ShowcaseTarget(
-        step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseJoinUsFab),
-        isLast: isLastShowcaseStep(kShowcaseJoinUsFab, isGuest: isGuest),
-        targetHeight: 56,
-        targetWidth: 56,
-        child: const JoinUsFAB(),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      appBar: AppBar(
         backgroundColor: c.bg,
-        elevation: 0,
-        // ── Logo (esquina superior izquierda) ─────
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Image.asset(
-            c.isDark
-                ? 'assets/images/logo/logo_dark.png'
-                : 'assets/images/logo/logo_light.png',
-            width: 32,
-            height: 32,
-            filterQuality: FilterQuality.high,
+        floatingActionButton: ShowcaseTarget(
+          step: kShowcaseStepsRegistered.firstWhere(
+            (s) => s.key == kShowcaseJoinUsFab,
           ),
+          isLast: isLastShowcaseStep(kShowcaseJoinUsFab, isGuest: isGuest),
+          targetHeight: 56,
+          targetWidth: 56,
+          child: const JoinUsFAB(),
         ),
-        leadingWidth: 48,
-        // ── Nombre de la app + monedas ─────────────
-        title: Row(
-          children: [
-            Text(
-              'Servi',
-              style: TextStyle(
-                color: c.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        appBar: AppBar(
+          backgroundColor: c.bg,
+          elevation: 0,
+          // ── Logo (esquina superior izquierda) ─────
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Image.asset(
+              c.isDark
+                  ? 'assets/images/logo/servi.png'
+                  : 'assets/images/logo/servi.png',
+              width: 32,
+              height: 32,
+              filterQuality: FilterQuality.high,
             ),
-            const Spacer(),
-            // Monedas a la derecha del título — wrapper showcase
-            // (solo aplica al deck registered; en guest la key no
-            // aparece en startShowCase y el spotlight nunca se
-            // dispara sobre ella).
-            ShowcaseTarget(
-              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseCoinsIcon),
-              isLast: isLastShowcaseStep(kShowcaseCoinsIcon, isGuest: isGuest),
-              targetHeight: 28, targetWidth: 60,
-              child: Consumer<AuthProvider>(
-                builder: (_, auth, _) {
-                  final coins = auth.user?.coins ?? 0;
-                  return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ReferralScreen(),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.monetization_on_rounded,
-                            color: AppColors.amber, size: 20),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$coins',
-                          style: const TextStyle(
-                            color: AppColors.amber,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          // Botón de filtros — el deck lo destaca como "Filtros
-          // avanzados". Mismo spec en registered y guest.
-          ShowcaseTarget(
-            step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseFiltersIcon),
-            isLast: isLastShowcaseStep(kShowcaseFiltersIcon, isGuest: isGuest),
-            targetHeight: 40, targetWidth: 40,
-            child: Consumer<ProvidersProvider>(
-              builder: (_, prov, _) => IconButton(
-                tooltip: 'Filtros avanzados',
-                icon: Badge(
-                  isLabelVisible: prov.hasActiveFilters,
-                  backgroundColor: AppColors.amber,
-                  child: Icon(Icons.tune_rounded, color: c.textPrimary),
+          ),
+          leadingWidth: 48,
+          // ── Nombre de la app + monedas ─────────────
+          title: Row(
+            children: [
+              Text(
+                'Servi',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
-                onPressed: () => _showFilterSheet(context, prov),
+              ),
+              const Spacer(),
+              // Monedas a la derecha del título — wrapper showcase
+              // (solo aplica al deck registered; en guest la key no
+              // aparece en startShowCase y el spotlight nunca se
+              // dispara sobre ella).
+              ShowcaseTarget(
+                step: kShowcaseStepsRegistered.firstWhere(
+                  (s) => s.key == kShowcaseCoinsIcon,
+                ),
+                isLast: isLastShowcaseStep(
+                  kShowcaseCoinsIcon,
+                  isGuest: isGuest,
+                ),
+                targetHeight: 28,
+                targetWidth: 60,
+                child: Consumer<AuthProvider>(
+                  builder: (_, auth, _) {
+                    final coins = auth.user?.coins ?? 0;
+                    return GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ReferralScreen(),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.monetization_on_rounded,
+                            color: AppColors.amber,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$coins',
+                            style: const TextStyle(
+                              color: AppColors.amber,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            // Botón de filtros — el deck lo destaca como "Filtros
+            // avanzados". Mismo spec en registered y guest.
+            ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere(
+                (s) => s.key == kShowcaseFiltersIcon,
+              ),
+              isLast: isLastShowcaseStep(
+                kShowcaseFiltersIcon,
+                isGuest: isGuest,
+              ),
+              targetHeight: 40,
+              targetWidth: 40,
+              child: Consumer<ProvidersProvider>(
+                builder: (_, prov, _) => IconButton(
+                  tooltip: 'Filtros avanzados',
+                  icon: Badge(
+                    isLabelVisible: prov.hasActiveFilters,
+                    backgroundColor: AppColors.amber,
+                    child: Icon(Icons.tune_rounded, color: c.textPrimary),
+                  ),
+                  onPressed: () => _showFilterSheet(context, prov),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      // SafeArea horizontal: en phones con notch/dynamic-island las
-      // sombras de las tarjetas se cortaban contra el borde del
-      // display. top=false porque el AppBar ya respeta el inset; bottom
-      // lo maneja la BottomNavigationBar del AppShell.
-      body: SafeArea(
-        top: false,
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: GreetingHeader(),
-            ),
-            const _SearchAndLocationRow(),
-            const FilterBar(),
-            // Banner subasta wrapped — paso "publica tus necesidades"
-            // del deck registered (no aparece en guest).
-            ShowcaseTarget(
-              step: kShowcaseStepsRegistered.firstWhere((s) => s.key == kShowcaseSubastaBanner),
-              isLast: isLastShowcaseStep(kShowcaseSubastaBanner, isGuest: isGuest),
-              targetHeight: 90, targetWidth: 360,
-              child: const SubastaBanner(),
-            ),
-            const OffersBanner(),
-            const Expanded(child: ProvidersListView()),
           ],
         ),
-      ),
+        // SafeArea horizontal: en phones con notch/dynamic-island las
+        // sombras de las tarjetas se cortaban contra el borde del
+        // display. top=false porque el AppBar ya respeta el inset; bottom
+        // lo maneja la BottomNavigationBar del AppShell.
+        body: SafeArea(
+          top: false,
+          bottom: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: GreetingHeader(),
+              ),
+              const _SearchAndLocationRow(),
+              const FilterBar(),
+              // Banner subasta wrapped — paso "publica tus necesidades"
+              // del deck registered (no aparece en guest).
+              ShowcaseTarget(
+                step: kShowcaseStepsRegistered.firstWhere(
+                  (s) => s.key == kShowcaseSubastaBanner,
+                ),
+                isLast: isLastShowcaseStep(
+                  kShowcaseSubastaBanner,
+                  isGuest: isGuest,
+                ),
+                targetHeight: 90,
+                targetWidth: 360,
+                child: const SubastaBanner(),
+              ),
+              const OffersBanner(),
+              const Expanded(child: ProvidersListView()),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -255,8 +278,8 @@ class _SearchAndLocationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prov    = context.watch<ProvidersProvider>();
-    final auth    = context.watch<AuthProvider>();
+    final prov = context.watch<ProvidersProvider>();
+    final auth = context.watch<AuthProvider>();
     final isGuest = auth.isGuest || auth.user == null;
 
     return Padding(
@@ -268,7 +291,8 @@ class _SearchAndLocationRow extends StatelessWidget {
               step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
                   .firstWhere((s) => s.key == kShowcaseSearchBar),
               isLast: isLastShowcaseStep(kShowcaseSearchBar, isGuest: isGuest),
-              targetHeight: 44, targetWidth: 240,
+              targetHeight: 44,
+              targetWidth: 240,
               child: const CollapsibleSearchBar(),
             ),
           ),
@@ -277,7 +301,8 @@ class _SearchAndLocationRow extends StatelessWidget {
             step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
                 .firstWhere((s) => s.key == kShowcaseLocationChip),
             isLast: isLastShowcaseStep(kShowcaseLocationChip, isGuest: isGuest),
-            targetHeight: 36, targetWidth: 120,
+            targetHeight: 36,
+            targetWidth: 120,
             child: _CompactLocationChip(prov: prov),
           ),
         ],
@@ -298,7 +323,7 @@ class _CompactLocationChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final hasFilter = prov.hasLocationFilter;
-    
+
     // Construir label solo si hay filtro
     String label = '';
     if (hasFilter) {
@@ -342,7 +367,9 @@ class _CompactLocationChip extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              hasFilter ? 'Mostrando en: $label' : 'Mostrando todos los servicios',
+              hasFilter
+                  ? 'Mostrando en: $label'
+                  : 'Mostrando todos los servicios',
               style: TextStyle(
                 color: c.textPrimary,
                 fontSize: 11.5,
@@ -353,7 +380,11 @@ class _CompactLocationChip extends StatelessWidget {
             ),
             if (hasFilter) ...[
               const SizedBox(width: 2),
-              const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+              const Icon(
+                Icons.arrow_drop_down_rounded,
+                color: AppColors.primary,
+                size: 18,
+              ),
               const SizedBox(width: 2),
               GestureDetector(
                 onTap: () => prov.clearLocationFilter(),
@@ -361,7 +392,11 @@ class _CompactLocationChip extends StatelessWidget {
               ),
             ] else ...[
               const SizedBox(width: 2),
-              const Icon(Icons.arrow_drop_down_rounded, color: AppColors.amber, size: 18),
+              const Icon(
+                Icons.arrow_drop_down_rounded,
+                color: AppColors.amber,
+                size: 18,
+              ),
             ],
           ],
         ),

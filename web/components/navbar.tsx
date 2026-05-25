@@ -137,7 +137,7 @@ export default function Navbar() {
             <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
               <div className="relative w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-transform duration-300 group-hover:scale-[1.04] border border-white/10">
                 <Image
-                  src="/images/logo/logo_light.png"
+                  src="/images/logo/servi.png"
                   alt="Servi logo"
                   width={22}
                   height={22}

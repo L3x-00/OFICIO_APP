@@ -149,7 +149,7 @@ export default function FlipCard3D() {
             <div className="flex items-center justify-center gap-1.5 mt-4 text-white/40 text-[10px]">
               <div className="relative w-4 h-4">
                 <Image
-                  src="/images/logo/logo_light.png"
+                  src="/images/logo/servi.png"
                   alt="Servi"
                   fill
                   className="object-contain"

@@ -30,7 +30,8 @@ class ServiceDetailDialog {
     }
   }
 
-  static Future<void> show(BuildContext context, {
+  static Future<void> show(
+    BuildContext context, {
     required ServiceItem service,
     required bool isNegocio,
     required ProviderModel provider,
@@ -51,8 +52,13 @@ class ServiceDetailDialog {
           dialogCtx = ctx;
           return Dialog(
             backgroundColor: c.bgCard,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 28,
+              vertical: 24,
+            ),
             child: _DialogBody(
               service: service,
               isNegocio: isNegocio,
@@ -98,17 +104,19 @@ class _DialogBodyState extends State<_DialogBody> {
     final auth = context.read<AuthProvider>();
     if (auth.user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inicia sesión para consultar al proveedor')),
+        const SnackBar(
+          content: Text('Inicia sesión para consultar al proveedor'),
+        ),
       );
       return;
     }
     setState(() => _opening = true);
-    final chat      = context.read<ChatProvider>();
+    final chat = context.read<ChatProvider>();
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
     try {
       final roomId = await chat.openRoom(
-        clientId:   auth.user!.id,
+        clientId: auth.user!.id,
         providerId: provider.id,
       );
       final tipo = isNegocio ? 'producto' : 'servicio';
@@ -116,14 +124,16 @@ class _DialogBodyState extends State<_DialogBody> {
           'Hola, ${provider.businessName}, quisiera saber más sobre el '
           '$tipo "${service.name}".';
       navigator.pop(); // cierra el dialog
-      navigator.push(MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          roomId:        roomId,
-          seedTitle:     provider.businessName,
-          seedAvatarUrl: provider.coverImageUrl,
-          initialDraft:  draft,
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            roomId: roomId,
+            seedTitle: provider.businessName,
+            seedAvatarUrl: provider.coverImageUrl,
+            initialDraft: draft,
+          ),
         ),
-      ));
+      );
     } catch (e) {
       if (mounted) setState(() => _opening = false);
       messenger.showSnackBar(
@@ -142,22 +152,32 @@ class _DialogBodyState extends State<_DialogBody> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Imagen del servicio (si existe).
+          // Imagen del servicio (si existe). Usamos `contain` sobre un
+          // fondo neutro para que la foto se vea COMPLETA — antes con
+          // `cover` se recortaban los extremos (típico de fotos
+          // verticales que el usuario sube desde celular).
           if (service.imageUrl != null && service.imageUrl!.isNotEmpty)
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(22),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  service.imageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: c.bgInput,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
-                      color: accent,
-                      size: 40,
+                child: Container(
+                  color: c.bgInput,
+                  child: Image.network(
+                    service.imageUrl!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => Container(
+                      color: c.bgInput,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        isNegocio
+                            ? Icons.inventory_2_rounded
+                            : Icons.design_services_rounded,
+                        color: accent,
+                        size: 40,
+                      ),
                     ),
                   ),
                 ),
@@ -179,7 +199,10 @@ class _DialogBodyState extends State<_DialogBody> {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
@@ -194,11 +217,16 @@ class _DialogBodyState extends State<_DialogBody> {
                     ),
                   ),
                 ),
-                if (service.description != null && service.description!.isNotEmpty) ...[
+                if (service.description != null &&
+                    service.description!.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     service.description!,
-                    style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4),
+                    style: TextStyle(
+                      color: c.textSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
                   ),
                 ],
                 if (service.phone != null && service.phone!.isNotEmpty) ...[
@@ -220,8 +248,13 @@ class _DialogBodyState extends State<_DialogBody> {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: _opening ? null : () => Navigator.of(context).pop(),
-                        child: Text('Cerrar', style: TextStyle(color: c.textMuted)),
+                        onPressed: _opening
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Cerrar',
+                          style: TextStyle(color: c.textMuted),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -231,9 +264,12 @@ class _DialogBodyState extends State<_DialogBody> {
                         onPressed: _opening ? null : _consultarPrecio,
                         icon: _opening
                             ? const SizedBox(
-                                width: 16, height: 16,
+                                width: 16,
+                                height: 16,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : const Icon(Icons.forum_rounded, size: 16),
                         label: const Text('Consultar precio'),

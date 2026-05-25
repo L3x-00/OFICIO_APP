@@ -23,9 +23,10 @@ class WelcomeTopBar extends StatelessWidget {
         children: [
           Image.asset(
             isDark
-                ? 'assets/images/logo/logo_dark.png'
-                : 'assets/images/logo/logo_light.png',
-            width: 34, height: 34,
+                ? 'assets/images/logo/servi.png'
+                : 'assets/images/logo/servi.png',
+            width: 34,
+            height: 34,
             filterQuality: FilterQuality.high,
           ),
           const SizedBox(width: 8),

@@ -75,7 +75,7 @@ export default function ReferralBanner() {
                   </Link>
                 ) : (
                   <>
-                    <a href="#como-funciona" className="btn btn-primary btn-lg press-effect group">
+                    <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-primary btn-lg press-effect group">
                       Más información
                       <ArrowRight
                         size={16}

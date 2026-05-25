@@ -35,7 +35,7 @@ export default function PendingContent() {
             Abrir Servi
           </a>
           <Link
-            href="/"
+            href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile"
             className="text-white/40 hover:text-white/60 text-sm transition-colors"
           >
             O ir al sitio web

@@ -90,7 +90,7 @@ export default function UserManual() {
               <Download size={14} />
               Ventas y planes
             </a>
-            <a href="#" className="btn btn-primary btn-sm press-effect">
+            <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-primary btn-sm press-effect">
               <ExternalLink size={14} />
               Descargar la app
             </a>

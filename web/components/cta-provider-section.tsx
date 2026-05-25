@@ -60,7 +60,7 @@ export default function CtaProviderSection() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href="#" className="btn btn-primary btn-lg press-effect">
+              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-primary btn-lg press-effect">
                 <Smartphone size={18} />
                 Descargar la app
               </a>
@@ -103,7 +103,7 @@ export default function CtaProviderSection() {
                 desde hoy.
               </p>
 
-              <a href="#" className="mt-6 btn btn-ghost btn-sm press-effect border-white/10 hover:border-primary/30">
+              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="mt-6 btn btn-ghost btn-sm press-effect border-white/10 hover:border-primary/30">
                 <Smartphone size={14} />
                 Descarga la app gratis
               </a>

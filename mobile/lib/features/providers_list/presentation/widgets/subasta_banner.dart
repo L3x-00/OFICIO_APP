@@ -7,6 +7,7 @@ import '../../../subastas/presentation/providers/subastas_provider.dart';
 import '../../../subastas/presentation/screens/my_requests_screen.dart';
 import '../../../subastas/presentation/screens/publish_request_sheet.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+
 /// Banner promocional para subastas — solo visible para clientes (no
 /// proveedores). Abre el sheet de publicar pedido y, si el usuario lo
 /// publica, navega a la pantalla de mis pedidos.
@@ -19,33 +20,35 @@ class SubastaBanner extends StatelessWidget {
     // Mostrar para todos: invitados, clientes y proveedores
     return GestureDetector(
       onTap: () async {
-      final auth = context.read<AuthProvider>();
-      
-      // Si es invitado, mostrar diálogo de registro
-      if (auth.user == null) {
-        _showLoginRequired(context);
-        return;
-      }
-      
-      final nav = Navigator.of(context);
-      final result = await showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => ChangeNotifierProvider(
-          create: (_) => SubastasProvider(),
-          child: const PublishRequestSheet(),
-        ),
-      );
-      if (result == true && context.mounted) {
-        nav.push(MaterialPageRoute(
+        final auth = context.read<AuthProvider>();
+
+        // Si es invitado, mostrar diálogo de registro
+        if (auth.user == null) {
+          _showLoginRequired(context);
+          return;
+        }
+
+        final nav = Navigator.of(context);
+        final result = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
           builder: (_) => ChangeNotifierProvider(
             create: (_) => SubastasProvider(),
-            child: const MyRequestsScreen(),
+            child: const PublishRequestSheet(),
           ),
-        ));
-      }
-    },
+        );
+        if (result == true && context.mounted) {
+          nav.push(
+            MaterialPageRoute(
+              builder: (_) => ChangeNotifierProvider(
+                create: (_) => SubastasProvider(),
+                child: const MyRequestsScreen(),
+              ),
+            ),
+          );
+        }
+      },
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -66,33 +69,44 @@ class SubastaBanner extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.campaign_rounded,
-                  color: AppColors.primary, size: 18),
+              child: const Icon(
+                Icons.campaign_rounded,
+                color: AppColors.primary,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('¿No encuentras lo que buscas?',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700)),
-                  Text('Publica tu necesidad y recibe ofertas',
-                      style: TextStyle(
-                          color: c.textMuted, fontSize: 11)),
+                  const Text(
+                    '¿No encuentras lo que buscas?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Publica tu necesidad y recibe ofertas',
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                color: AppColors.primary, size: 14),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.primary,
+              size: 14,
+            ),
           ],
         ),
       ),
     );
   }
 }
+
 void _showLoginRequired(BuildContext context) {
   final c = context.colors;
   showDialog(
@@ -105,7 +119,10 @@ void _showLoginRequired(BuildContext context) {
           Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 24),
           const SizedBox(width: 10),
           const Expanded(
-            child: Text('Inicia sesión', style: TextStyle(fontSize: 17)),
+            child: Text(
+              'Inicia sesión / Registrarse',
+              style: TextStyle(fontSize: 17),
+            ),
           ),
         ],
       ),
@@ -119,14 +136,16 @@ void _showLoginRequired(BuildContext context) {
           child: const Text('Ahora no'),
         ),
         ElevatedButton(
-          onPressed: () {
-            Navigator.pop(ctx);
-            Navigator.of(context).pushNamed('/login');
-          },
+          onPressed: () => Navigator.of(
+            context,
+            rootNavigator: true,
+          ).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: const Text('Iniciar sesión'),
         ),

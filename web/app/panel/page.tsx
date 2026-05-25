@@ -187,7 +187,7 @@ export default function PanelHomePage() {
             <h2 className="text-lg font-bold text-white">Últimas reseñas</h2>
             {reviews.length > 0 && (
               <a
-                href="#"
+                href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile"
                 className="text-primary-light hover:text-primary text-xs font-semibold inline-flex items-center gap-1 group"
               >
                 Ver todas

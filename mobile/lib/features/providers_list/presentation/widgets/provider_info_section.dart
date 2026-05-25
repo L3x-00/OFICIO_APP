@@ -13,7 +13,11 @@ class ProviderHeader extends StatelessWidget {
   final ProviderModel provider;
   final Color accent;
 
-  const ProviderHeader({super.key, required this.provider, required this.accent});
+  const ProviderHeader({
+    super.key,
+    required this.provider,
+    required this.accent,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +29,37 @@ class ProviderHeader extends StatelessWidget {
     final badges = <Widget>[
       if (provider.isVerified &&
           (provider.subscriptionPlan == 'PREMIUM' ||
-           provider.subscriptionPlan == 'ESTANDAR' ||
-           provider.subscriptionPlan == 'GRATIS'))
-        _badge(icon: Icons.verified_rounded, label: 'Verificado', color: AppColors.verified),
+              provider.subscriptionPlan == 'ESTANDAR' ||
+              provider.subscriptionPlan == 'GRATIS'))
+        _badge(
+          icon: Icons.verified_rounded,
+          label: 'Verificado',
+          color: AppColors.verified,
+        ),
       if (provider.isTrusted)
-        _badge(icon: Icons.shield_rounded, label: 'Confiable', color: const Color(0xFF10B981)),
+        _badge(
+          icon: Icons.shield_rounded,
+          label: 'Confiable',
+          color: const Color(0xFF10B981),
+        ),
       if (provider.type == ProviderType.oficio && provider.hasHomeService)
-        _badge(icon: Icons.home_repair_service_rounded, label: 'Va a domicilio', color: AppColors.available),
+        _badge(
+          icon: Icons.home_repair_service_rounded,
+          label: 'Va a domicilio',
+          color: AppColors.available,
+        ),
       if (provider.type == ProviderType.negocio && provider.hasDelivery)
-        _badge(icon: Icons.delivery_dining_rounded, label: 'Delivery', color: const Color(0xFFE07B39)),
+        _badge(
+          icon: Icons.delivery_dining_rounded,
+          label: 'Delivery',
+          color: const Color(0xFFE07B39),
+        ),
       if (provider.type == ProviderType.negocio && provider.plenaCoordinacion)
-        _badge(icon: Icons.handshake_rounded, label: 'Coordinamos entrega', color: const Color(0xFF60A5FA)),
+        _badge(
+          icon: Icons.handshake_rounded,
+          label: 'Coordinamos entrega',
+          color: const Color(0xFF60A5FA),
+        ),
     ];
 
     return Column(
@@ -50,14 +74,49 @@ class ProviderHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          provider.categoryName,
-          style: TextStyle(
-            color: accent,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+        // Multi-categoría: iteramos sobre `categoryNames` (la principal
+        // viene primero gracias al `orderBy isPrimary` del backend).
+        // Antes mostrábamos solo `categoryName` y un perfil con varias
+        // Especialidades se veía como uno solo. Si solo hay una, queda
+        // visualmente igual a la versión vieja.
+        if (provider.categoryNames.length <= 1)
+          Text(
+            provider.categoryName,
+            style: TextStyle(
+              color: accent,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          )
+        else
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var i = 0; i < provider.categoryNames.length; i++)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: i == 0 ? 0.18 : 0.10),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: accent.withValues(alpha: i == 0 ? 0.55 : 0.30),
+                    ),
+                  ),
+                  child: Text(
+                    provider.categoryNames[i],
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 12,
+                      fontWeight: i == 0 ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ),
         if (badges.isNotEmpty) ...[
           const SizedBox(height: 10),
           Wrap(spacing: 8, runSpacing: 8, children: badges),
@@ -66,7 +125,11 @@ class ProviderHeader extends StatelessWidget {
     );
   }
 
-  Widget _badge({required IconData icon, required String label, required Color color}) {
+  Widget _badge({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -79,7 +142,14 @@ class ProviderHeader extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 14),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -145,8 +215,8 @@ class ProviderAvailabilityBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color color = switch (availability) {
       AvailabilityStatus.disponible => AppColors.available,
-      AvailabilityStatus.ocupado    => AppColors.busy,
-      AvailabilityStatus.conDemora  => AppColors.delayed,
+      AvailabilityStatus.ocupado => AppColors.busy,
+      AvailabilityStatus.conDemora => AppColors.delayed,
     };
 
     return Container(
@@ -203,32 +273,38 @@ class ProviderContactInfo extends StatelessWidget {
 
     // Para OFICIO: nombre real del profesional con avatar
     if (isOficio && p.ownerName != null) {
-      rows.add(InfoChip(
-        leading: _OwnerAvatar(provider: p, accent: accent),
-        icon: null,
-        label: p.ownerName!,
-        sublabel: 'Profesional independiente',
-      ));
+      rows.add(
+        InfoChip(
+          leading: _OwnerAvatar(provider: p, accent: accent),
+          icon: null,
+          label: p.ownerName!,
+          sublabel: 'Profesional independiente',
+        ),
+      );
     }
 
     // Teléfono de contacto — el backend lo envía vacío para proveedores
     // de plan gratis (anti-burla); en ese caso ocultamos la fila.
     if (p.phone.isNotEmpty) {
-      rows.add(InfoChip(
-        icon: Icons.phone_outlined,
-        label: p.phone,
-        sublabel: 'Teléfono',
-        onTap: onCall,
-      ));
+      rows.add(
+        InfoChip(
+          icon: Icons.phone_outlined,
+          label: p.phone,
+          sublabel: 'Teléfono',
+          onTap: onCall,
+        ),
+      );
     }
 
     // Dirección (negocios o quienes la tengan)
     if (p.address != null && p.address!.isNotEmpty) {
-      rows.add(InfoChip(
-        icon: Icons.location_on_outlined,
-        label: p.address!,
-        sublabel: 'Dirección',
-      ));
+      rows.add(
+        InfoChip(
+          icon: Icons.location_on_outlined,
+          label: p.address!,
+          sublabel: 'Dirección',
+        ),
+      );
     }
 
     if (rows.isEmpty) return const SizedBox.shrink();
@@ -241,10 +317,11 @@ class ProviderContactInfo extends StatelessWidget {
         border: Border.all(color: c.border),
       ),
       child: Column(
-        children: rows
-            .expand((w) => [w, const Divider(height: 1, thickness: 0.5)])
-            .toList()
-          ..removeLast(),
+        children:
+            rows
+                .expand((w) => [w, const Divider(height: 1, thickness: 0.5)])
+                .toList()
+              ..removeLast(),
       ),
     );
   }
@@ -275,10 +352,7 @@ class _OwnerAvatar extends StatelessWidget {
     return Container(
       width: 36,
       height: 36,
-      decoration: BoxDecoration(
-        color: accent,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
       child: Center(
         child: Text(
           (provider.ownerName ?? provider.businessName).isNotEmpty
@@ -374,7 +448,9 @@ class ProviderLocationSection extends StatelessWidget {
     final p = provider;
     Uri uri;
     if (p.latitude != null && p.longitude != null) {
-      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}');
+      uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}',
+      );
     } else if (p.address != null) {
       final q = Uri.encodeComponent(p.address!);
       uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$q');
@@ -401,10 +477,7 @@ class ProviderLocationSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     provider.address!,
-                    style: TextStyle(
-                      color: c.textSecondary,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: c.textSecondary, fontSize: 13),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -412,7 +485,9 @@ class ProviderLocationSection extends StatelessWidget {
                   onTap: _openMaps,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),

@@ -260,7 +260,7 @@ export default async function PublicProfilePage(
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#6B7280' }}>
           ¿Quieres aparecer aquí?{' '}
-          <Link href="https://oficioapp.org.pe" style={{ color: '#F97316' }}>
+          <Link href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" style={{ color: '#F97316' }}>
             Regístrate gratis en Servi
           </Link>
         </p>

@@ -23,12 +23,13 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: 'Servi – Marketplace de servicios locales en Perú',
   description:
-    'Conecta con profesionales y negocios verificados de tu ciudad. Reseñas con GPS, pagos con Yape y soporte local en todo el Perú.',
+    'Conecta con profesionales y negocios verificados de tu ciudad. Reseñas validadas, pagos con Yape y soporte local en todo el Perú.',
   keywords: ['servicios', 'profesionales', 'Perú', 'marketplace', 'Yape', 'Servi'],
+  manifest: '/site.webmanifest', // 👈 Aquí es donde va el manifest
   openGraph: {
     title: 'Servi – Marketplace de servicios locales',
     description:
-      'Encuentra profesionales verificados en tu ciudad. Reseñas reales con GPS, pagos seguros con Yape.',
+      'Encuentra profesionales verificados en tu ciudad. Reseñas 100% reales y validadas, pagos seguros con Yape.',
     type: 'website',
     locale: 'es_PE',
     siteName: 'Servi',
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#05060F', // Cambiado al fondo Dark Premium
+  themeColor: '#E07B39', // Naranja Servi (antes azul oscuro)
   width: 'device-width',
   initialScale: 1,
 };
@@ -65,9 +66,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${jakarta.variable} ${sora.variable}`}>
-      <head>
-        <link rel="manifest" href="/site.webmanifest" />
-      </head>
       <body className="min-h-screen flex flex-col bg-dark-premium text-white antialiased font-sans">
         <RevealProvider />
         <Navbar />

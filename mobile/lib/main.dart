@@ -65,10 +65,7 @@ void main() async {
   final auth = AuthProvider()..attachRegistration(registration);
   await auth.initialize();
 
-  final router = createRouter(
-    authProvider: auth,
-    navigatorKey: _navigatorKey,
-  );
+  final router = createRouter(authProvider: auth, navigatorKey: _navigatorKey);
 
   // DSN configurado en build con --dart-define=SENTRY_DSN=https://...
   const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
@@ -116,15 +113,19 @@ class Servi extends StatelessWidget {
         title: 'Servi',
         debugShowCheckedModeBanner: false,
         locale: const Locale('es', '419'),
-        supportedLocales: const [Locale('es', '419'), Locale('es'), Locale('en')],
+        supportedLocales: const [
+          Locale('es', '419'),
+          Locale('es'),
+          Locale('en'),
+        ],
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        theme:      AppThemeColors.buildLight(),
-        darkTheme:  AppThemeColors.buildDark(),
-        themeMode:  themeMode,
+        theme: AppThemeColors.buildLight(),
+        darkTheme: AppThemeColors.buildDark(),
+        themeMode: themeMode,
         themeAnimationDuration: const Duration(milliseconds: 250),
         themeAnimationCurve: Curves.easeInOut,
         routerConfig: router,
@@ -155,6 +156,13 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     with WidgetsBindingObserver {
   AppNavigationState? _prevNavState;
   bool _fcmInitialized = false;
+
+  /// Guard contra empujones múltiples del SetupPasswordScreen. El flag
+  /// `socialAccountNeedsPassword` permanece `true` hasta que la pantalla
+  /// se cierra y llama `clearSocialPasswordPrompt()`. Sin este guard
+  /// cada `notifyListeners()` de auth (restoreSession + refresh + sync)
+  /// pusheaba otra instancia → la pantalla aparecía 2-3 veces.
+  bool _setupPasswordPushing = false;
 
   @override
   void initState() {
@@ -191,10 +199,10 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   }
 
   void _onAuthChanged() {
-    final auth   = context.read<AuthProvider>();
+    final auth = context.read<AuthProvider>();
     final notifs = context.read<NotificationsProvider>();
-    final favs   = context.read<FavoritesProvider>();
-    final chat   = context.read<ChatProvider>();
+    final favs = context.read<FavoritesProvider>();
+    final chat = context.read<ChatProvider>();
 
     if (auth.user != null) {
       notifs.setUser(userId: auth.user!.id, role: auth.user!.role);
@@ -203,7 +211,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
 
       if (!_fcmInitialized) {
         _fcmInitialized = true;
-        FcmService.onMessageTap        = _handleFcmTap;
+        FcmService.onMessageTap = _handleFcmTap;
         FcmService.onForegroundMessage = _handleFcmInbound;
         FcmService.instance.initialize();
       }
@@ -228,14 +236,32 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     // del router. Al cerrarse, llama `clearSocialPasswordPrompt()`
     // y el siguiente notifyListeners continúa el flow normal.
     if (auth.socialAccountNeedsPassword &&
-        current != AppNavigationState.loading) {
+        current != AppNavigationState.loading &&
+        !_setupPasswordPushing) {
+      // Marcamos ANTES del post-frame para que cualquier
+      // `notifyListeners()` que dispare auth entre este punto y el
+      // push real no entre por la misma rama y duplique la pantalla.
+      _setupPasswordPushing = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+        if (!mounted) {
+          _setupPasswordPushing = false;
+          return;
+        }
         final navCtx = _navigatorKey.currentContext;
-        if (navCtx == null || !navCtx.mounted) return;
-        Navigator.of(navCtx, rootNavigator: true).push(
-          MaterialPageRoute(builder: (_) => const SetupPasswordScreen()),
-        );
+        if (navCtx == null || !navCtx.mounted) {
+          _setupPasswordPushing = false;
+          return;
+        }
+        Navigator.of(navCtx, rootNavigator: true)
+            .push(
+              MaterialPageRoute(builder: (_) => const SetupPasswordScreen()),
+            )
+            .whenComplete(() {
+              // Liberamos el guard cuando la pantalla se cierra; si el flag
+              // de auth aún sigue `true` (raro), el próximo notifyListeners
+              // podrá re-empujarla.
+              if (mounted) _setupPasswordPushing = false;
+            });
       });
       _prevNavState = current;
       return;
@@ -371,7 +397,9 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       // user volverá a "Quiero ser parte" en home.
       final remaining = auth.activeProfileType;
       if (remaining != null) {
-        context.read<DashboardProvider>().loadDashboard(providerType: remaining);
+        context.read<DashboardProvider>().loadDashboard(
+          providerType: remaining,
+        );
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -390,7 +418,9 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   /// router estaba en transición, navCtx era null por 1-2 frames, el
   /// modal nunca aparecía y el flag se había limpiado SÍNCRONO antes.
   /// El user solo lo veía al entrar manualmente al panel home.
-  Future<void> _tryShowProviderApproval(ProviderApprovalPayload approval) async {
+  Future<void> _tryShowProviderApproval(
+    ProviderApprovalPayload approval,
+  ) async {
     BuildContext? navCtx;
     // Hasta 30 frames (~500ms en 60fps) esperando al navigator.
     for (var i = 0; i < 30; i++) {
@@ -400,8 +430,10 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       if (!mounted) return;
     }
     if (navCtx == null || !navCtx.mounted) {
-      debugPrint('⚠️ Welcome modal: navCtx aún null tras 500ms — '
-                 'flag queda puesto para próximo retry');
+      debugPrint(
+        '⚠️ Welcome modal: navCtx aún null tras 500ms — '
+        'flag queda puesto para próximo retry',
+      );
       return;
     }
     if (!mounted) return;
@@ -412,7 +444,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     await WelcomeProviderPlanModal.showIfFirstTime(
       navCtx,
       displayName: approval.displayName,
-      providerId:  approval.providerId,
+      providerId: approval.providerId,
     );
   }
 
@@ -429,7 +461,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       context: navCtx,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 40),
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: Colors.red,
+          size: 40,
+        ),
         title: Text(
           'Tu perfil ${isNegocio ? "de negocio" : "profesional"} fue eliminado',
           textAlign: TextAlign.center,
@@ -493,11 +529,12 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       context: navCtx,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.verified_user_rounded, color: Colors.green, size: 44),
-        title: const Text(
-          '¡Validación aprobada!',
-          textAlign: TextAlign.center,
+        icon: const Icon(
+          Icons.verified_user_rounded,
+          color: Colors.green,
+          size: 44,
         ),
+        title: const Text('¡Validación aprobada!', textAlign: TextAlign.center),
         content: Text(
           'Los datos de tu perfil${isNegocio ? " de negocio" : " profesional"}$namePart '
           'han sido validados. Ya apareces como "Confiable" para tus clientes.',
@@ -541,7 +578,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       builder: (ctx) => PopScope(
         canPop: false,
         child: AlertDialog(
-          icon: const Icon(Icons.no_accounts_rounded, color: Colors.red, size: 40),
+          icon: const Icon(
+            Icons.no_accounts_rounded,
+            color: Colors.red,
+            size: 40,
+          ),
           title: const Text(
             'Tu cuenta ha sido eliminada',
             textAlign: TextAlign.center,
@@ -586,7 +627,9 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   /// la pantalla actual). El gate por (providerId, plan) en
   /// `WelcomeProviderPlanModal.showIfFirstTime` evita re-mostrar si el
   /// usuario ya lo vio.
-  Future<void> _showPlanActivationCarousel(PlanActivationPayload payload) async {
+  Future<void> _showPlanActivationCarousel(
+    PlanActivationPayload payload,
+  ) async {
     final navCtx = _navigatorKey.currentContext;
     if (navCtx == null || !navCtx.mounted) return;
 
@@ -599,7 +642,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     int? providerId = dash.profile?.id;
     providerId ??= () {
       final data = auth.providerDataFor(auth.activeProfileType ?? 'OFICIO');
-      final raw  = data?['id'];
+      final raw = data?['id'];
       return raw is int ? raw : null;
     }();
     if (providerId == null) {
@@ -608,18 +651,17 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     }
 
     final variant = switch (payload.plan.toUpperCase()) {
-      'PREMIUM'  => WelcomePlan.premium,
+      'PREMIUM' => WelcomePlan.premium,
       'ESTANDAR' => WelcomePlan.estandar,
-      _          => WelcomePlan.estandar,
+      _ => WelcomePlan.estandar,
     };
-    final displayName = dash.profile?.businessName
-        ?? auth.user?.firstName
-        ?? '';
+    final displayName =
+        dash.profile?.businessName ?? auth.user?.firstName ?? '';
     await WelcomeProviderPlanModal.showIfFirstTime(
       navCtx,
       displayName: displayName,
-      providerId:  providerId,
-      plan:        variant,
+      providerId: providerId,
+      plan: variant,
     );
   }
 
@@ -631,11 +673,15 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   void _handleFcmInbound(RemoteMessage message) {
     if (!mounted) return;
     final notif = AppNotification.fromSocket({
-      'type':              message.data['type']
-                          ?? message.notification?.title?.toUpperCase()
-                          ?? 'GENERIC',
-      'title':             message.notification?.title ?? message.data['title'] ?? 'Notificación',
-      'body':              message.notification?.body  ?? message.data['body']  ?? '',
+      'type':
+          message.data['type'] ??
+          message.notification?.title?.toUpperCase() ??
+          'GENERIC',
+      'title':
+          message.notification?.title ??
+          message.data['title'] ??
+          'Notificación',
+      'body': message.notification?.body ?? message.data['body'] ?? '',
       'targetProfileType': message.data['targetProfileType'],
     });
     // B-4: pasamos targetUserId para que el provider lo valide
@@ -667,7 +713,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         final auth = context.read<AuthProvider>();
         auth.setPendingTrustApproval(
           TrustApprovalPayload(
-            profileType:  message.data['profileType'] as String? ?? 'OFICIO',
+            profileType: message.data['profileType'] as String? ?? 'OFICIO',
             businessName: '',
           ),
         );
@@ -719,17 +765,26 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 64, height: 64,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.shield_outlined, color: accent, size: 34),
+                child: const Icon(
+                  Icons.shield_outlined,
+                  color: accent,
+                  size: 34,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 'Solicitud de validación rechazada',
-                style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
@@ -742,8 +797,14 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                   border: Border.all(color: accent.withValues(alpha: 0.25)),
                 ),
                 child: Text(
-                  rejection.reason.isNotEmpty ? rejection.reason : 'No se especificó un motivo.',
-                  style: const TextStyle(color: accent, fontSize: 13, height: 1.5),
+                  rejection.reason.isNotEmpty
+                      ? rejection.reason
+                      : 'No se especificó un motivo.',
+                  style: const TextStyle(
+                    color: accent,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -756,10 +817,15 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                       style: OutlinedButton.styleFrom(
                         foregroundColor: accent,
                         side: BorderSide(color: accent.withValues(alpha: 0.5)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Cerrar', style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: const Text(
+                        'Cerrar',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -772,10 +838,15 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: accent,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Ver detalles', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Ver detalles',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -792,7 +863,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     const green = Color(0xFF10B981);
 
     final benefits = switch (payload.plan) {
-      'PREMIUM'  => [
+      'PREMIUM' => [
         'Máxima visibilidad ante clientes',
         'Servicios y productos ilimitados',
         'Estadísticas avanzadas de perfil',
@@ -805,10 +876,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         'Estadísticas básicas de perfil',
         'Acceso a oportunidades de trabajo',
       ],
-      _ => [
-        'Mayor visibilidad ante clientes',
-        'Acceso a más funcionalidades',
-      ],
+      _ => ['Mayor visibilidad ante clientes', 'Acceso a más funcionalidades'],
     };
 
     showDialog(
@@ -824,7 +892,8 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 68, height: 68,
+                width: 68,
+                height: 68,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF065F46), Color(0xFF047857)],
@@ -832,14 +901,28 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                     end: Alignment.bottomRight,
                   ),
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: green.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 5))],
+                  boxShadow: [
+                    BoxShadow(
+                      color: green.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 34),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.white,
+                  size: 34,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 payload.title,
-                style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.w900),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
@@ -859,16 +942,33 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: benefits.map((b) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle_rounded, color: green, size: 15),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(b, style: const TextStyle(color: green, fontSize: 12, height: 1.4))),
-                      ],
-                    ),
-                  )).toList(),
+                  children: benefits
+                      .map(
+                        (b) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: green,
+                                size: 15,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  b,
+                                  style: const TextStyle(
+                                    color: green,
+                                    fontSize: 12,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
               const SizedBox(height: 20),
@@ -881,7 +981,9 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                         foregroundColor: c.textMuted,
                         side: BorderSide(color: c.border),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       child: const Text('Aceptar'),
                     ),
@@ -897,7 +999,9 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                         backgroundColor: green,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       child: const Text('Ver detalles'),
                     ),
@@ -927,40 +1031,62 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.workspace_premium_rounded, color: green, size: 22),
+                  const Icon(
+                    Icons.workspace_premium_rounded,
+                    color: green,
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     'Plan ${plan[0]}${plan.substring(1).toLowerCase()} — Beneficios',
-                    style: TextStyle(color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              ...benefits.asMap().entries.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 24, height: 24,
-                      decoration: BoxDecoration(
-                        color: green.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${e.key + 1}',
-                          style: const TextStyle(color: green, fontSize: 11, fontWeight: FontWeight.bold),
+              ...benefits.asMap().entries.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: green.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${e.key + 1}',
+                            style: const TextStyle(
+                              color: green,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(e.value, style: TextStyle(color: c.textPrimary, fontSize: 13, height: 1.4)),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          e.value,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )),
+              ),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
@@ -970,9 +1096,14 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                     backgroundColor: green,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -1016,17 +1147,35 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                       color: accent.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.info_outline_rounded, color: accent, size: 20),
+                    child: const Icon(
+                      Icons.info_outline_rounded,
+                      color: accent,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text('Detalles del rechazo',
-                      style: TextStyle(color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Detalles del rechazo',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 18),
-              Text('Motivo', style: TextStyle(color: c.textSecondary, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+              Text(
+                'Motivo',
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
@@ -1037,19 +1186,40 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                   border: Border.all(color: accent.withValues(alpha: 0.25)),
                 ),
                 child: Text(
-                  rejection.reason.isNotEmpty ? rejection.reason : 'No se especificó un motivo.',
-                  style: const TextStyle(color: accent, fontSize: 13, height: 1.5),
+                  rejection.reason.isNotEmpty
+                      ? rejection.reason
+                      : 'No se especificó un motivo.',
+                  style: const TextStyle(
+                    color: accent,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
                 ),
               ),
               if (formattedDate.isNotEmpty) ...[
                 const SizedBox(height: 14),
-                Text('Fecha y hora', style: TextStyle(color: c.textSecondary, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                Text(
+                  'Fecha y hora',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(Icons.schedule_rounded, size: 14, color: c.textSecondary),
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 14,
+                      color: c.textSecondary,
+                    ),
                     const SizedBox(width: 6),
-                    Text(formattedDate, style: TextStyle(color: c.textSecondary, fontSize: 13)),
+                    Text(
+                      formattedDate,
+                      style: TextStyle(color: c.textSecondary, fontSize: 13),
+                    ),
                   ],
                 ),
               ],
@@ -1061,10 +1231,15 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 13),
                   ),
-                  child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -1089,7 +1264,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
             color: AppColors.busy.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.block_rounded, color: AppColors.busy, size: 34),
+          child: const Icon(
+            Icons.block_rounded,
+            color: AppColors.busy,
+            size: 34,
+          ),
         ),
         title: Text(
           'Cuenta desactivada',
@@ -1115,9 +1294,14 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Entendido',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

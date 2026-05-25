@@ -253,11 +253,11 @@ function ClienteContent() {
               Regístrate como profesional o negocio y empieza a recibir clientes desde hoy.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <a href="#" className="btn btn-primary press-effect">
+              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-primary press-effect">
                 <Briefcase size={15} />
                 Registrarme como Profesional
               </a>
-              <a href="#" className="btn btn-ghost press-effect">
+              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-ghost press-effect">
                 <Store size={15} />
                 Registrar mi Negocio
               </a>

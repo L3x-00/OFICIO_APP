@@ -133,7 +133,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 rounded-2xl glass border-primary/20 flex items-center justify-center shadow-glow-sm mb-5">
             <Image
-              src="/images/logo/logo_light.png" // Logo claro para fondo oscuro
+              src="/images/logo/servi.png" // Logo claro para fondo oscuro
               alt="Servi"
               width={28}
               height={28}
@@ -254,7 +254,7 @@ export default function LoginPage() {
         <div className="mt-7 pt-5 border-t border-white/5 text-center">
           <p className="text-white/40 text-[12.5px] mb-3">
             ¿No tienes cuenta?{' '}
-            <Link href="/" className="text-primary-light font-semibold hover:underline underline-offset-4 transition-colors">
+            <Link href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="text-primary-light font-semibold hover:underline underline-offset-4 transition-colors">
               Descarga la app
             </Link>
           </p>

@@ -1,7 +1,7 @@
 name: mobile
 description: "Marketplace de Servicios Locales"
 publish_to: 'none'
-version: 2.0.0+113
+version: 2.0.0+114
 
 environment:
   sdk: ^3.11.4
@@ -91,21 +91,21 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo/logo_light.png"
+  image_path: "assets/images/logo/servi.png"
   min_sdk_android: 21
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo/logo_light.png"
+  adaptive_icon_foreground: "assets/images/logo/servi.png"
 
 # ── Configuración de splash screen ──────────────────────────
 flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#1A1A1A"
-  image: assets/images/logo/logo_light.png
-  image_dark: assets/images/logo/logo_dark.png
+  image: assets/images/logo/servi.png
+  image_dark: assets/images/logo/servi.png
   android_12:
-    image: assets/images/logo/logo_light.png
+    image: assets/images/logo/servi.png
     icon_background_color: "#FFFFFF"
-    image_dark: assets/images/logo/logo_dark.png
+    image_dark: assets/images/logo/servi.png
     icon_background_color_dark: "#1A1A1A"
   fullscreen: false
   android: true
