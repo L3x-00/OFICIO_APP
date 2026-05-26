@@ -156,11 +156,12 @@ export class PushNotificationsService {
         },
       }));
       try {
-        // `sendAll` recibe array de Message — equivalente moderno de
-        // `sendEach` en firebase-admin v11+. En v10 (instalado acá)
-        // solo existe `sendAll`. La forma de la respuesta (BatchResponse
-        // con `.responses[]`) es idéntica.
-        const res = await messaging.sendAll(messages);
+        // `sendEach` (HTTP v1 API). `sendAll` usaba el endpoint /batch
+        // de la API legacy de FCM que Google apagó en junio 2024 → ya
+        // devuelve 404 en producción. La firma y la respuesta
+        // (BatchResponse con `.responses[]`) son idénticas, así que el
+        // manejo de tokens inválidos abajo no cambia.
+        const res = await messaging.sendEach(messages);
         this.logger.log(
           `[broadcast] lote ${i / CHUNK}: éxito=${res.successCount}, fallo=${res.failureCount}`,
         );
@@ -189,7 +190,7 @@ export class PushNotificationsService {
         }
       } catch (err: any) {
         this.logger.error(
-          `[broadcast] sendAll lote ${i / CHUNK} falló: ${err?.message ?? err}`,
+          `[broadcast] sendEach lote ${i / CHUNK} falló: ${err?.message ?? err}`,
         );
       }
     }

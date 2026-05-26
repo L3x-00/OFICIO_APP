@@ -49,7 +49,7 @@
     "class-validator": "^0.15.1",
     "compression": "^1.8.1",
     "dotenv": "^17.4.0",
-    "firebase-admin": "^10.1.0",
+    "firebase-admin": "^12.7.0",
     "helmet": "^8.1.0",
     "mercadopago": "^2.12.1",
     "minio": "^8.0.7",
@@ -136,8 +136,8 @@
     },
     "moduleNameMapper": {
       "generated/client/client\\.js$": "<rootDir>/test/mocks/prisma-client.stub.ts",
-      "generated/client/client$":      "<rootDir>/test/mocks/prisma-client.stub.ts",
-      "^(\\.{1,2}/.*)\\.js$":          "$1"
+      "generated/client/client$": "<rootDir>/test/mocks/prisma-client.stub.ts",
+      "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [
       "src/**/*.(t|j)s",
