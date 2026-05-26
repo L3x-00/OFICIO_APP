@@ -5,6 +5,23 @@ import 'package:dio/dio.dart';
 
 /// Maneja permisos, token y recepción de notificaciones push (FCM).
 /// Llama a [initialize] una vez tras el login.
+///
+/// ── Imágenes en la notificación nativa ─────────────────────
+/// Android: si el payload trae `notification.imageUrl` (cosa que hace el
+/// broadcast del admin → `/admin/notifications/broadcast`), el sistema
+/// renderiza la imagen automáticamente sobre la bandeja. NO hace falta
+/// código Flutter — el plugin `firebase_messaging` ya lo soporta nativo
+/// cuando la app está en background/terminated.
+///
+/// iOS: el payload incluye `apns.fcmOptions.imageUrl` + `mutable-content`,
+/// pero iOS requiere un Notification Service Extension (target nativo
+/// Swift) para enriquecer la notif con la imagen. Esa configuración
+/// vive fuera de Dart — está fuera del scope de este servicio. Mientras
+/// tanto la notif se muestra sin imagen en iOS, todo lo demás
+/// (title/body/data) funciona igual.
+///
+/// In-app (foreground): la imagen llega como `message.data.imageUrl`
+/// para que la UI pueda mostrar un banner enriquecido si lo necesita.
 class FcmService {
   static final FcmService _instance = FcmService._();
   static FcmService get instance => _instance;

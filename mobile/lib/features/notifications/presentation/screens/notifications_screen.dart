@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
@@ -12,8 +13,8 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c      = context.colors;
-    final auth   = context.watch<AuthProvider>();
+    final c = context.colors;
+    final auth = context.watch<AuthProvider>();
     final notifs = context.watch<NotificationsProvider>();
 
     final isLoggedIn = auth.isAuthenticated;
@@ -47,25 +48,25 @@ class NotificationsScreen extends StatelessWidget {
                   'Regístrate o inicia sesión para recibir notificaciones sobre tus servicios, ofertas y actualizaciones.',
             )
           : notifs.items.isEmpty
-              ? _buildEmpty(c)
-              : Column(
-                  children: [
-                    _retentionBanner(c),
-                    Expanded(
-                      child: RefreshIndicator(
-                        color: const Color.fromARGB(176, 246, 255, 0),
-                        onRefresh: () async => {},
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: notifs.items.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 2),
-                          itemBuilder: (_, i) =>
-                              _NotificationTile(notification: notifs.items[i]),
-                        ),
-                      ),
+          ? _buildEmpty(c)
+          : Column(
+              children: [
+                _retentionBanner(c),
+                Expanded(
+                  child: RefreshIndicator(
+                    color: const Color.fromARGB(176, 246, 255, 0),
+                    onRefresh: () async => {},
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: notifs.items.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 2),
+                      itemBuilder: (_, i) =>
+                          _NotificationTile(notification: notifs.items[i]),
                     ),
-                  ],
+                  ),
                 ),
+              ],
+            ),
     );
   }
 
@@ -200,9 +201,10 @@ class _GuestBody extends StatelessWidget {
               child: ElevatedButton(
                 // rootNavigator: el login debe salir del shell del
                 // cliente para no dejar visible la bottom nav debajo.
-                onPressed: () => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                ),
+                onPressed: () => Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -230,7 +232,7 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c      = context.colors;
+    final c = context.colors;
     final notifs = context.read<NotificationsProvider>();
 
     return Dismissible(
@@ -256,9 +258,11 @@ class _NotificationTile extends StatelessWidget {
               // Si la notif trae avatarUrl (caso CHAT_MESSAGE con foto
               // del remitente), mostramos la foto en vez del icono
               // genérico — UX solicitada por el user.
-              if (notification.avatarUrl != null && notification.avatarUrl!.isNotEmpty)
+              if (notification.avatarUrl != null &&
+                  notification.avatarUrl!.isNotEmpty)
                 Container(
-                  width: 42, height: 42,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     color: notification.iconColor.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
@@ -332,6 +336,11 @@ class _NotificationTile extends StatelessWidget {
                       _formatTime(notification.createdAt),
                       style: TextStyle(color: c.textMuted, fontSize: 11),
                     ),
+                    // Botones de acción contextuales — solo se muestran
+                    // cuando el `type` tiene un destino útil. Sin
+                    // `actionData` (notif persistida) caemos a una ruta
+                    // de inbox por tipo (ej. /chats en vez de /chat/:id).
+                    ..._buildActions(context, notification),
                   ],
                 ),
               ),
@@ -342,6 +351,53 @@ class _NotificationTile extends StatelessWidget {
     );
   }
 
+  /// Devuelve `[]` si el tipo no tiene acción asociada — el tile se ve
+  /// idéntico a antes. Si hay acción, agrega un spacing + chip "→ Ir...".
+  List<Widget> _buildActions(BuildContext context, AppNotification n) {
+    final action = _resolveAction(n);
+    if (action == null) return const [];
+    return [
+      const SizedBox(height: 8),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: _NotifActionChip(
+          label: action.label,
+          color: n.iconColor,
+          onTap: () {
+            // Marca leído antes de navegar — UX común en bandejas.
+            context.read<NotificationsProvider>().markRead(n.id);
+            context.go(action.route);
+          },
+        ),
+      ),
+    ];
+  }
+
+  /// Resuelve el botón a mostrar según el tipo + actionData disponible.
+  /// `null` significa "no mostrar botón".
+  _NotifAction? _resolveAction(AppNotification n) {
+    final data = n.actionData ?? const <String, dynamic>{};
+    int? asInt(Object? v) => v is int ? v : int.tryParse(v?.toString() ?? '');
+    switch (n.type) {
+      case 'CHAT_MESSAGE':
+        final roomId = asInt(data['chatRoomId']) ?? asInt(data['roomId']);
+        return _NotifAction(
+          label: 'Ir al chat',
+          route: roomId != null ? '/chat/$roomId' : '/chats',
+        );
+      case 'NEW_OFFER':
+      case 'OFFER_ACCEPTED':
+      case 'OFERTA_ACEPTADA':
+      case 'NUEVA_OPORTUNIDAD':
+        return const _NotifAction(label: 'Ver detalles', route: '/my-requests');
+      case 'NEW_REVIEW':
+      case 'REVIEW_REPLY':
+        return const _NotifAction(label: 'Ver reseña', route: '/profile');
+      default:
+        return null;
+    }
+  }
+
   String _formatTime(DateTime dt) {
     final diff = DateTime.now().difference(dt);
     if (diff.inSeconds < 60) return 'Ahora mismo';
@@ -349,5 +405,56 @@ class _NotificationTile extends StatelessWidget {
     if (diff.inHours < 24) return 'Hace ${diff.inHours} h';
     if (diff.inDays == 1) return 'Ayer';
     return 'Hace ${diff.inDays} días';
+  }
+}
+
+/// Pair label + route que `_resolveAction` produce; no salimos del file.
+class _NotifAction {
+  final String label;
+  final String route;
+  const _NotifAction({required this.label, required this.route});
+}
+
+/// Chip clicable estilo `Ir al chat →` — usa el color del icono de la
+/// notif para mantener coherencia visual con el tile.
+class _NotifActionChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _NotifActionChip({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_forward_rounded, color: color, size: 12),
+          ],
+        ),
+      ),
+    );
   }
 }

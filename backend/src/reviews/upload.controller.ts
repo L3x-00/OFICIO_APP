@@ -13,6 +13,7 @@ const FOLDERS = {
   reviewEvidence: 'reviews/evidence',
   provider: 'providers/gallery',
   paymentVoucher: 'payments/vouchers',
+  broadcast: 'admin/broadcasts',
 } as const;
 
 @Controller('upload')
@@ -51,6 +52,21 @@ export class UploadController {
       file.buffer,
       file.originalname,
       FOLDERS.paymentVoucher,
+    );
+    return { url };
+  }
+
+  // Imagen del broadcast masivo del admin. Va a una carpeta separada
+  // para que el cleanup (vencimiento, retención) pueda tratarlas
+  // distinto del resto del catálogo (no son fotos de catálogo).
+  @Post('broadcast-image')
+  @UseInterceptors(FileInterceptor('file', memOpts))
+  async uploadBroadcastImage(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No se recibió ninguna imagen');
+    const url = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      FOLDERS.broadcast,
     );
     return { url };
   }

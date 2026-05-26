@@ -8,7 +8,6 @@ import {
   Activity, Gift, Coins, MessageSquare, Tag as TagIcon,
   ShieldCheck, UsersRound, MapPin,
 } from 'lucide-react';
-import { useState } from 'react';
 
 // Sidebar reorganizada en torno a flujos: las páginas duales
 // (Pagos+Solicitudes, Verificación+Validación, Proveedores+Usuarios) se
@@ -45,6 +44,7 @@ const navGroups = [
       { href: '/operations/queue',    label: 'Verificación y Validación', icon: ShieldCheck },
       { href: '/operations/payments', label: 'Pagos y Solicitudes',       icon: Activity },
       { href: '/notifications',       label: 'Notificaciones',            icon: Bell },
+      { href: '/broadcast',           label: 'Broadcast push',            icon: Bell },
     ],
   },
   {

@@ -27,6 +27,7 @@ import { CreateProviderDto } from './dto/create-provider.dto.js';
 import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
+import { BroadcastNotificationDto } from './dto/broadcast-notification.dto.js';
 import { LocalitiesService } from '../localities/localities.service.js';
 import {
   CreateLocalityDto,
@@ -385,5 +386,18 @@ export class AdminController {
     @Body() body: { reason?: string },
   ) {
     return this.adminService.rejectPlanRequest(id, body.reason);
+  }
+
+  // ── BROADCAST DE NOTIFICACIONES PUSH ──────────────────────
+  // Envía una push a TODOS los usuarios activos con FCM token.
+  // Responde con { enqueued } y el envío real corre en background.
+  @Post('notifications/broadcast')
+  @HttpCode(HttpStatus.ACCEPTED)
+  broadcastNotification(@Body() body: BroadcastNotificationDto) {
+    return this.adminService.broadcastNotification(
+      body.title,
+      body.message,
+      body.imageUrl,
+    );
   }
 }

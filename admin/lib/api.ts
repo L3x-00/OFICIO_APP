@@ -102,11 +102,45 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit, isRetry = fa
     }
 
     return await response.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     // CORRECCIÓN: Manejar errores de red o DNS para evitar crashes
     console.error(`Fetch error en ${endpoint}:`, error);
     throw error;
   }
+}
+
+// ── BROADCAST DE NOTIFICACIONES PUSH ───────────────────────
+// El admin envía un push masivo a todos los usuarios con FCM token.
+// El backend responde con `enqueued` (cantidad de tokens encolados)
+// y el envío real ocurre en background.
+export const broadcastNotification = (data: {
+  title: string;
+  message: string;
+  imageUrl?: string;
+}) =>
+  fetchApi<{ enqueued: number }>('/admin/notifications/broadcast', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+/// Sube una imagen a MinIO via /upload/broadcast-image. Devuelve la
+/// URL pública para usar como `imageUrl` del broadcast. Usa FormData →
+/// fetch directo (no `fetchApi`) porque ese helper fuerza JSON.
+export async function uploadBroadcastImage(file: File): Promise<string> {
+  const token = getAdminToken();
+  const form  = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${BASE_URL}/upload/broadcast-image`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Error subiendo imagen');
+  }
+  const data = await res.json();
+  return data.url as string;
 }
 
 // ── MÉTRICAS Y ANALYTICS ───────────────────────────────────
@@ -141,12 +175,12 @@ export const getProviders = (page = 1, search?: string) => {
 };
 
 export const getFormOptions = () =>
-  fetchApi<{ categories: any[]; localities: any[] }>('/admin/form-options');
+  fetchApi<{ categories: unknown[]; localities: unknown[] }>('/admin/form-options');
 
-export const createProvider = (data: any) =>
+export const createProvider = (data: Record<string, unknown>) =>
   fetchApi('/admin/providers', { method: 'POST', body: JSON.stringify(data) });
 
-export const updateProvider = (id: number, data: any) =>
+export const updateProvider = (id: number, data: Record<string, unknown>) =>
   fetchApi(`/admin/providers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const deleteProvider = (id: number, reason?: string) =>
@@ -175,7 +209,7 @@ export const promotePlan = (id: number, plan: 'ESTANDAR' | 'PREMIUM') =>
 
 // ── SOLICITUDES DE PLAN ────────────────────────────────────
 export const getPlanRequests = (status?: string) =>
-  fetchApi<any[]>(`/admin/plan-requests${status ? `?status=${status}` : ''}`);
+  fetchApi<unknown[]>(`/admin/plan-requests${status ? `?status=${status}` : ''}`);
 
 export const approvePlanRequest = (id: number) =>
   fetchApi(`/admin/plan-requests/${id}/approve`, { method: 'PATCH' });
@@ -316,9 +350,16 @@ async function downloadXlsx(
   URL.revokeObjectURL(url);
 }
 
+interface ExportUserItem {
+  id: number; firstName: string; lastName: string; email: string;
+  role: string; isActive: boolean; createdAt: string;
+  provider?: { businessName?: string; verificationStatus?: string } | null;
+  _count?: { reviews: number };
+}
+
 export async function exportUsersExcel(): Promise<void> {
-  const data = await fetchApi<{ data: any[] }>('/admin/users?page=1&limit=10000');
-  const rows = data.data.map((u: any) => ({
+  const data = await fetchApi<{ data: ExportUserItem[] }>('/admin/users?page=1&limit=10000');
+  const rows = data.data.map((u) => ({
     ID:           u.id,
     Nombre:       u.firstName,
     Apellido:     u.lastName,
@@ -333,9 +374,19 @@ export async function exportUsersExcel(): Promise<void> {
   await downloadXlsx('Usuarios', 'usuarios.xlsx', rows);
 }
 
+interface ExportProviderItem {
+  id: number; businessName: string; phone: string; type: string;
+  averageRating: number; totalReviews?: number; isVerified: boolean;
+  verificationStatus: string;
+  user?: { email?: string; firstName?: string; lastName?: string } | null;
+  category?: { name: string } | null;
+  locality?: { name: string } | null;
+  subscription?: { plan: string; status: string } | null;
+}
+
 export async function exportProvidersExcel(): Promise<void> {
-  const data = await fetchApi<{ data: any[] }>('/admin/providers?page=1&limit=10000');
-  const rows = data.data.map((p: any) => ({
+  const data = await fetchApi<{ data: ExportProviderItem[] }>('/admin/providers?page=1&limit=10000');
+  const rows = data.data.map((p) => ({
     ID:           p.id,
     Negocio:      p.businessName,
     Email:        p.user?.email ?? '',
@@ -401,7 +452,7 @@ export const rejectTrustValidation = (id: number, reason: string) =>
 
 // ── PAGOS YAPE ────────────────────────────────────────────
 export const getYapePayments = (status?: string) =>
-  fetchApi<any[]>(`/payments/admin/yape${status ? `?status=${status}` : ''}`);
+  fetchApi<unknown[]>(`/payments/admin/yape${status ? `?status=${status}` : ''}`);
 
 export const approveYapePayment = (id: number) =>
   fetchApi(`/payments/admin/yape/${id}/approve`, { method: 'PATCH' });
@@ -653,7 +704,7 @@ export interface ReviewsResponse {
 }
 
 export interface Review {
-  photoUrl: any;
+  photoUrl: string | null;
   id: number;
   rating: number;
   comment: string | null;

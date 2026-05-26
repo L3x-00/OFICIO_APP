@@ -1999,4 +1999,32 @@ export class AdminService {
       data: { isReviewed: true },
     });
   }
+
+  // ── BROADCAST DE NOTIFICACIONES PUSH ──────────────────────
+  //
+  // Envía una push a TODOS los usuarios activos con FCM token. Modo
+  // fire-and-forget: el endpoint responde con `enqueued` (cantidad de
+  // tokens encolados) y el envío real corre en background.
+  //
+  // `imageUrl` es opcional — si está, el banner nativo de Android/iOS
+  // muestra la imagen como cabecera. El cliente la recibe también en
+  // `data.imageUrl` por si quiere usarla en una alerta in-app.
+  async broadcastNotification(
+    title: string,
+    message: string,
+    imageUrl?: string,
+  ): Promise<{ enqueued: number }> {
+    if (!title?.trim()) {
+      throw new BadRequestException('El título es obligatorio');
+    }
+    if (!message?.trim()) {
+      throw new BadRequestException('El mensaje es obligatorio');
+    }
+    return this.push.broadcast({
+      title: title.trim(),
+      body: message.trim(),
+      imageUrl: imageUrl?.trim() || null,
+      data: { type: 'BROADCAST' },
+    });
+  }
 }

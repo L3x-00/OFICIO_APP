@@ -16,7 +16,9 @@ class DashboardRepository {
       '/provider-profile/me',
       queryParameters: type != null ? {'type': type} : null,
     );
-    return DashboardProfileModel.fromJson(response.data as Map<String, dynamic>);
+    return DashboardProfileModel.fromJson(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   Future<DashboardProfileModel> updateMyProfile({
@@ -41,31 +43,38 @@ class DashboardRepository {
     String? twitterX,
     String? telegram,
     String? whatsappBiz,
+    // Edición de Especialidades desde el panel. La primera del array es la
+    // principal — `isPrimary: true` lo asigna el backend por orden.
+    // Si es null, el backend NO toca las categorías existentes.
+    List<int>? categoryIds,
   }) async {
     final body = <String, dynamic>{
       'businessName': ?businessName,
-      'description':  ?description,
-      'phone':        ?phone,
-      'whatsapp':     ?whatsapp,
-      'address':      ?address,
+      'description': ?description,
+      'phone': ?phone,
+      'whatsapp': ?whatsapp,
+      'address': ?address,
       'scheduleJson': ?scheduleJson,
       'hasHomeService': ?hasHomeService,
       // String vacío => limpiar valor en backend (DTO acepta null/'').
-      'website':     ?website,
-      'instagram':   ?instagram,
-      'tiktok':      ?tiktok,
-      'facebook':    ?facebook,
-      'linkedin':    ?linkedin,
-      'twitterX':    ?twitterX,
-      'telegram':    ?telegram,
+      'website': ?website,
+      'instagram': ?instagram,
+      'tiktok': ?tiktok,
+      'facebook': ?facebook,
+      'linkedin': ?linkedin,
+      'twitterX': ?twitterX,
+      'telegram': ?telegram,
       'whatsappBiz': ?whatsappBiz,
+      'categoryIds': ?categoryIds,
     };
     final response = await _dio.patch(
       '/provider-profile/me',
       queryParameters: type != null ? {'type': type} : null,
       data: body,
     );
-    return DashboardProfileModel.fromJson(response.data as Map<String, dynamic>);
+    return DashboardProfileModel.fromJson(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   Future<void> setAvailability(String status, {String? type}) async {
@@ -78,20 +87,23 @@ class DashboardRepository {
 
   // ── ANALÍTICAS ────────────────────────────────────────────
 
-  Future<DashboardAnalytics> getMyAnalytics({int days = 30, String? type}) async {
+  Future<DashboardAnalytics> getMyAnalytics({
+    int days = 30,
+    String? type,
+  }) async {
     final response = await _dio.get(
       '/provider-profile/me/analytics',
-      queryParameters: {
-        'days': days,
-        'type': ?type,
-      },
+      queryParameters: {'days': days, 'type': ?type},
     );
     return DashboardAnalytics.fromJson(response.data as Map<String, dynamic>);
   }
 
   // ── RESEÑAS ───────────────────────────────────────────────
 
-  Future<List<ReviewModel>> getMyReviews(int providerId, {int limit = 5}) async {
+  Future<List<ReviewModel>> getMyReviews(
+    int providerId, {
+    int limit = 5,
+  }) async {
     final response = await _dio.get(
       '/reviews/provider/$providerId',
       queryParameters: {'limit': limit, 'page': 1},
@@ -220,7 +232,9 @@ class DashboardRepository {
   /// las notif del panel admin a las del perfil específico (más las
   /// globales con `targetProfileType=null`). Sin `providerType`,
   /// devuelve todo — usado por la bandeja "Alertas" del cliente.
-  Future<ProviderNotificationsResult> getMyNotifications({String? providerType}) async {
+  Future<ProviderNotificationsResult> getMyNotifications({
+    String? providerType,
+  }) async {
     final response = await _dio.get(
       '/provider-profile/me/notifications',
       queryParameters: providerType != null && providerType.isNotEmpty
@@ -286,7 +300,7 @@ class ProviderNotificationsResult {
 
 class ProviderNotification {
   final int id;
-  final String type;  // APROBADO | RECHAZADO | MAS_INFO | VERIFICACION_REVOCADA
+  final String type; // APROBADO | RECHAZADO | MAS_INFO | VERIFICACION_REVOCADA
   final String message;
   final bool isRead;
   final DateTime sentAt;
@@ -301,13 +315,13 @@ class ProviderNotification {
 
   factory ProviderNotification.fromJson(Map<String, dynamic> json) {
     return ProviderNotification(
-      id:      json['id'] as int,
-      type:    json['type'] as String? ?? '',
+      id: json['id'] as int,
+      type: json['type'] as String? ?? '',
       message: json['message'] as String? ?? '',
-      isRead:  json['isRead'] as bool? ?? false,
-      sentAt:  json['sentAt'] is String
-                 ? DateTime.tryParse(json['sentAt'] as String) ?? DateTime.now()
-                 : DateTime.now(),
+      isRead: json['isRead'] as bool? ?? false,
+      sentAt: json['sentAt'] is String
+          ? DateTime.tryParse(json['sentAt'] as String) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 }

@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../../shared/widgets/phone_input_section.dart';
+import '../../../../../core/errors/failures.dart';
+import '../../../../auth/presentation/screens/onboarding/widgets/onboarding_category_section.dart';
+import '../../../../providers_list/data/providers_repository.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
 import '../../providers/dashboard_provider.dart';
 import 'profile_components.dart';
@@ -55,7 +58,9 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
           icon: Icons.storefront_rounded,
           onTap: () => _showEditDialog(
             context: context,
-            title: widget.isNegocio ? 'Nombre del negocio' : 'Nombre profesional',
+            title: widget.isNegocio
+                ? 'Nombre del negocio'
+                : 'Nombre profesional',
             initialValue: profile?.businessName ?? '',
             onSave: (val) => dash.updateProfile(businessName: val),
           ),
@@ -90,7 +95,9 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                         ? Icons.expand_less_rounded
                         : Icons.add_location_alt_outlined,
                     size: 16,
-                    color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
+                    color: _showAddressCard
+                        ? AppColors.primary
+                        : context.colors.textMuted,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -100,14 +107,19 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                           : 'Agregar dirección (opcional)',
                       style: TextStyle(
                         fontSize: 13,
-                        color: _showAddressCard ? AppColors.primary : context.colors.textMuted,
+                        color: _showAddressCard
+                            ? AppColors.primary
+                            : context.colors.textMuted,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   if (_hasAddress(profile))
-                    Icon(Icons.check_circle_rounded,
-                        size: 14, color: AppColors.available),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 14,
+                      color: AppColors.available,
+                    ),
                 ],
               ),
             ),
@@ -161,7 +173,184 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
             onSave: (val) => dash.updateProfile(description: val),
           ),
         ),
+        // Edición de Especialidades — abre un BottomSheet con el mismo
+        // selector que usa el onboarding. Al guardar manda `categoryIds`
+        // ordenados (primer id = principal) al backend, que reescribe
+        // la relación M:N en una transacción.
+        EditCard(
+          title: 'Especialidades',
+          value: _categoriesLabel(profile),
+          icon: Icons.category_rounded,
+          onTap: () => _openCategoriesSheet(context, profile, dash),
+        ),
       ],
+    );
+  }
+
+  /// Texto de resumen en el EditCard: "Gasfitería · Electricidad" o
+  /// "Sin especialidades" si no hay.
+  String _categoriesLabel(DashboardProfileModel? profile) {
+    final names =
+        profile?.categories.map((c) => c.name).toList() ?? const <String>[];
+    if (names.isEmpty) return 'Sin especialidades';
+    return names.join(' · ');
+  }
+
+  Future<void> _openCategoriesSheet(
+    BuildContext context,
+    DashboardProfileModel? profile,
+    DashboardProvider dash,
+  ) async {
+    if (profile == null) return;
+    final providerType = profile.type;
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Cargamos catálogo completo de la categoría del provider (filtrado
+    // por OFICIO/NEGOCIO) — el sheet necesita la lista para que el user
+    // navegue por sectores y marque hijos.
+    final reposult = await ProvidersRepository().getCategories(
+      forType: providerType,
+    );
+    if (!reposult.isSuccess) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo cargar el catálogo de especialidades'),
+        ),
+      );
+      return;
+    }
+    final categories = reposult.data;
+
+    if (!context.mounted) return;
+
+    // Estado inicial = lo que ya tiene el provider. El primer item
+    // de `categories` es la principal (backend lo ordena por
+    // isPrimary DESC en el include).
+    final initial = profile.categories
+        .map(
+          (c) =>
+              CategorySelectionResult(id: c.id, name: c.name, parentName: ''),
+        )
+        .toList();
+    var selected = List<CategorySelectionResult>.from(initial);
+    var primaryId = selected.isNotEmpty ? selected.first.id : null;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.colors.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.85,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (_, scrollCtrl) => Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                ),
+                child: SingleChildScrollView(
+                  controller: scrollCtrl,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Editar especialidades',
+                            style: TextStyle(
+                              color: ctx.colors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              color: ctx.colors.textMuted,
+                            ),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      OnboardingCategorySection(
+                        providerType: providerType,
+                        categories: categories,
+                        selected: selected,
+                        primaryCategoryId: primaryId,
+                        onChanged: (s, p) {
+                          setSheetState(() {
+                            selected = s;
+                            primaryId = p;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.amber,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: selected.isEmpty
+                              ? null
+                              : () async {
+                                  // Orden: principal primero, resto en
+                                  // el orden actual. El backend usa el
+                                  // índice 0 como `isPrimary`.
+                                  final ordered = <int>[];
+                                  if (primaryId != null)
+                                    ordered.add(primaryId!);
+                                  for (final s in selected) {
+                                    if (s.id != primaryId) ordered.add(s.id);
+                                  }
+                                  Navigator.pop(ctx);
+                                  final ok = await dash.updateProfile(
+                                    categoryIds: ordered,
+                                  );
+                                  if (!context.mounted) {
+                                    return;
+                                  } // <--- CON LLAVES
+                                  if (ok) {
+                                    context.showSuccessSnack(
+                                      'Especialidades actualizadas',
+                                    );
+                                  } else {
+                                    if (!context.mounted)
+                                      return; // <--- AÑADE ESTO
+                                    context.showErrorSnack(
+                                      dash.error ??
+                                          'Error al guardar especialidades',
+                                    );
+                                  }
+                                },
+                          child: const Text(
+                            'Guardar especialidades',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -173,7 +362,7 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
     DashboardProvider dash,
   ) async {
     final c = context.colors;
-    String phone    = profile?.phone    ?? '';
+    String phone = profile?.phone ?? '';
     String? whatsapp = profile?.whatsapp;
 
     await showModalBottomSheet(
@@ -186,7 +375,9 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
       builder: (ctx) {
         return Padding(
           padding: EdgeInsets.only(
-            left: 20, right: 20, top: 20,
+            left: 20,
+            right: 20,
+            top: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
           ),
           child: StatefulBuilder(
@@ -198,8 +389,14 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                   children: [
                     Icon(Icons.phone_rounded, color: AppColors.amber, size: 18),
                     const SizedBox(width: 8),
-                    Text('Números de contacto',
-                        style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      'Números de contacto',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
                       icon: Icon(Icons.close_rounded, color: c.textMuted),
@@ -212,7 +409,7 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                   initialPhone: profile?.phone,
                   initialWhatsapp: profile?.whatsapp,
                   onChange: (p, w) {
-                    phone    = p;
+                    phone = p;
                     whatsapp = w;
                   },
                 ),
@@ -223,16 +420,24 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                     onPressed: () async {
                       Navigator.pop(ctx);
                       widget.onSavingChanged(true);
-                      await dash.updateProfile(phone: phone, whatsapp: whatsapp);
+                      await dash.updateProfile(
+                        phone: phone,
+                        whatsapp: whatsapp,
+                      );
                       if (mounted) widget.onSavingChanged(false);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.amber,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Guardar',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
@@ -262,7 +467,10 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(title, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        title: Text(
+          title,
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           controller: ctrl,
           keyboardType: multiline ? TextInputType.multiline : keyboardType,
@@ -291,9 +499,17 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
             onPressed: () => Navigator.of(dialogCtx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.amber,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: Text('Guardar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Guardar',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -353,7 +569,10 @@ class EditCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(color: c.textMuted, fontSize: 11)),
+                  Text(
+                    title,
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     value.isEmpty ? 'Toca para editar' : value,
@@ -377,11 +596,16 @@ class EditCard extends StatelessWidget {
 
 /// Tarjeta de contacto: teléfono + WhatsApp.
 class ContactCard extends StatelessWidget {
-  final String  phone;
+  final String phone;
   final String? whatsapp;
   final VoidCallback onTap;
 
-  const ContactCard({super.key, required this.phone, required this.whatsapp, required this.onTap});
+  const ContactCard({
+    super.key,
+    required this.phone,
+    required this.whatsapp,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -404,24 +628,42 @@ class ContactCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Contacto', style: TextStyle(color: c.textMuted, fontSize: 11)),
+                  Text(
+                    'Contacto',
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     phone.isEmpty ? 'Sin teléfono' : phone,
-                    style: TextStyle(color: phone.isEmpty ? c.textMuted : c.textPrimary, fontSize: 14),
+                    style: TextStyle(
+                      color: phone.isEmpty ? c.textMuted : c.textPrimary,
+                      fontSize: 14,
+                    ),
                   ),
                   if (whatsapp != null && whatsapp!.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        SvgPicture.asset('assets/icons/whatsapp.svg',
-                            width: 12, height: 12),
+                        SvgPicture.asset(
+                          'assets/icons/whatsapp.svg',
+                          width: 12,
+                          height: 12,
+                        ),
                         const SizedBox(width: 4),
-                        Text(whatsapp!, style: TextStyle(color: AppColors.whatsapp, fontSize: 12)),
+                        Text(
+                          whatsapp!,
+                          style: TextStyle(
+                            color: AppColors.whatsapp,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   ] else
-                    Text('WhatsApp: mismo número', style: TextStyle(color: c.textMuted, fontSize: 12)),
+                    Text(
+                      'WhatsApp: mismo número',
+                      style: TextStyle(color: c.textMuted, fontSize: 12),
+                    ),
                 ],
               ),
             ),

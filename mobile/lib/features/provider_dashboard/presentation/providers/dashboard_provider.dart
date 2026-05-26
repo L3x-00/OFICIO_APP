@@ -16,16 +16,16 @@ class DashboardProvider extends ChangeNotifier {
   final _repo = DashboardRepository();
   final _paymentsRepo = PaymentsRepository();
 
-  DashboardProfileModel?      _profile;
-  DashboardAnalytics?         _analytics;
-  List<ReviewModel>           _reviews = [];
-  List<ServiceItem>           _services = [];
-  List<ProviderNotification>  _notifications = [];
-  int                         _unreadNotifications = 0;
-  DashboardStatus             _status = DashboardStatus.idle;
-  String?                     _error;
-  bool                        _isUploadingPhoto = false;
-  String?                     _currentProviderType;
+  DashboardProfileModel? _profile;
+  DashboardAnalytics? _analytics;
+  List<ReviewModel> _reviews = [];
+  List<ServiceItem> _services = [];
+  List<ProviderNotification> _notifications = [];
+  int _unreadNotifications = 0;
+  DashboardStatus _status = DashboardStatus.idle;
+  String? _error;
+  bool _isUploadingPhoto = false;
+  String? _currentProviderType;
 
   /// Plan del último YapePayment en estado PENDIENTE (revisión admin
   /// pendiente). Si está set, las tarjetas de plan se deshabilitan y
@@ -34,17 +34,18 @@ class DashboardProvider extends ChangeNotifier {
   String? _pendingPaymentPlan;
   String? get pendingPaymentPlan => _pendingPaymentPlan;
 
-  DashboardProfileModel?     get profile              => _profile;
-  DashboardAnalytics?        get analytics            => _analytics;
-  List<ReviewModel>          get reviews              => List.unmodifiable(_reviews);
-  List<ServiceItem>          get services             => List.unmodifiable(_services);
-  List<ProviderNotification> get notifications        => List.unmodifiable(_notifications);
-  int                        get unreadNotifications  => _unreadNotifications;
-  DashboardStatus            get status               => _status;
-  String?                    get error                => _error;
-  bool                       get isLoading            => _status == DashboardStatus.loading;
-  bool                       get isUploadingPhoto     => _isUploadingPhoto;
-  String?                    get currentProviderType  => _currentProviderType;
+  DashboardProfileModel? get profile => _profile;
+  DashboardAnalytics? get analytics => _analytics;
+  List<ReviewModel> get reviews => List.unmodifiable(_reviews);
+  List<ServiceItem> get services => List.unmodifiable(_services);
+  List<ProviderNotification> get notifications =>
+      List.unmodifiable(_notifications);
+  int get unreadNotifications => _unreadNotifications;
+  DashboardStatus get status => _status;
+  String? get error => _error;
+  bool get isLoading => _status == DashboardStatus.loading;
+  bool get isUploadingPhoto => _isUploadingPhoto;
+  String? get currentProviderType => _currentProviderType;
 
   // ── CARGA INICIAL ────────────────────────────────────────
 
@@ -54,7 +55,7 @@ class DashboardProvider extends ChangeNotifier {
 
     _currentProviderType = providerType;
     _status = DashboardStatus.loading;
-    _error  = null;
+    _error = null;
     notifyListeners();
 
     try {
@@ -63,7 +64,7 @@ class DashboardProvider extends ChangeNotifier {
         _repo.getMyAnalytics(days: 30, type: providerType),
       ]);
 
-      _profile   = results[0] as DashboardProfileModel;
+      _profile = results[0] as DashboardProfileModel;
       _analytics = results[1] as DashboardAnalytics;
 
       // Extraer servicios del scheduleJson
@@ -90,7 +91,7 @@ class DashboardProvider extends ChangeNotifier {
       _loadNotificationsSilent();
     } catch (e) {
       _status = DashboardStatus.error;
-      _error  = _formatError(e);
+      _error = _formatError(e);
     }
 
     notifyListeners();
@@ -155,7 +156,7 @@ class DashboardProvider extends ChangeNotifier {
       final result = await _repo.getMyNotifications(
         providerType: _currentProviderType,
       );
-      _notifications       = result.data;
+      _notifications = result.data;
       _unreadNotifications = result.unreadCount;
       notifyListeners();
     } catch (_) {
@@ -178,8 +179,11 @@ class DashboardProvider extends ChangeNotifier {
 
   ProviderNotification _copyNotifRead(ProviderNotification n) =>
       ProviderNotification(
-        id: n.id, type: n.type, message: n.message,
-        isRead: true, sentAt: n.sentAt,
+        id: n.id,
+        type: n.type,
+        message: n.message,
+        isRead: true,
+        sentAt: n.sentAt,
       );
 
   // ── PERFIL ────────────────────────────────────────────────
@@ -202,24 +206,29 @@ class DashboardProvider extends ChangeNotifier {
     String? twitterX,
     String? telegram,
     String? whatsappBiz,
+
+    /// Edición de Especialidades — la primera es principal. Si es null,
+    /// no se tocan.
+    List<int>? categoryIds,
   }) async {
     try {
       final updated = await _repo.updateMyProfile(
         businessName: businessName,
-        description:  description,
-        phone:        phone,
-        whatsapp:     whatsapp,
-        address:      address,
+        description: description,
+        phone: phone,
+        whatsapp: whatsapp,
+        address: address,
         scheduleJson: scheduleJson,
-        website:      website,
-        instagram:    instagram,
-        tiktok:       tiktok,
-        facebook:     facebook,
-        linkedin:     linkedin,
-        twitterX:     twitterX,
-        telegram:     telegram,
-        whatsappBiz:  whatsappBiz,
-        type:         _currentProviderType,
+        website: website,
+        instagram: instagram,
+        tiktok: tiktok,
+        facebook: facebook,
+        linkedin: linkedin,
+        twitterX: twitterX,
+        telegram: telegram,
+        whatsappBiz: whatsappBiz,
+        categoryIds: categoryIds,
+        type: _currentProviderType,
       );
       _profile = updated;
       notifyListeners();
@@ -240,7 +249,10 @@ class DashboardProvider extends ChangeNotifier {
       notifyListeners();
     }
     try {
-      await _repo.updateMyProfile(hasHomeService: value, type: _currentProviderType);
+      await _repo.updateMyProfile(
+        hasHomeService: value,
+        type: _currentProviderType,
+      );
       return true;
     } catch (e) {
       if (_profile != null) {
@@ -277,7 +289,11 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<bool> saveServices(List<ServiceItem> services) async {
     try {
-      await _repo.saveServices(services, _profile?.scheduleJson, type: _currentProviderType);
+      await _repo.saveServices(
+        services,
+        _profile?.scheduleJson,
+        type: _currentProviderType,
+      );
       _services = List.from(services);
       // Actualizar en el perfil local
       final updated = Map<String, dynamic>.from(_profile?.scheduleJson ?? {});
@@ -307,7 +323,10 @@ class DashboardProvider extends ChangeNotifier {
       // 1. Subir archivo al disco
       final url = await _repo.uploadProviderPhoto(filePath);
       // 2. Crear registro en la BD (ProviderImage)
-      final saved = await _repo.saveProviderImage(url, type: _currentProviderType);
+      final saved = await _repo.saveProviderImage(
+        url,
+        type: _currentProviderType,
+      );
       // 3. Actualizar estado local
       final updatedImages = List<ProfileImage>.from(_profile?.images ?? [])
         ..add(ProfileImage(id: saved.id, url: saved.url));
@@ -366,10 +385,14 @@ class DashboardProvider extends ChangeNotifier {
 
   String _mapUploadError(Object e) {
     final msg = e.toString().toLowerCase();
-    if (msg.contains('413') || msg.contains('file too large') || msg.contains('maxfilesize')) {
+    if (msg.contains('413') ||
+        msg.contains('file too large') ||
+        msg.contains('maxfilesize')) {
       return 'La imagen supera el límite de 5 MB. Elige una más pequeña.';
     }
-    if (msg.contains('socketexception') || msg.contains('network') || msg.contains('connection')) {
+    if (msg.contains('socketexception') ||
+        msg.contains('network') ||
+        msg.contains('connection')) {
       return 'Sin conexión. Verifica tu red e inténtalo de nuevo.';
     }
     if (msg.contains('timeout')) {

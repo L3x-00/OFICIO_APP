@@ -114,31 +114,77 @@ export class ProviderProfileService {
       twitterX?: string | null;
       telegram?: string | null;
       whatsappBiz?: string | null;
+      // Edición de categorías desde el panel del proveedor. El primer
+      // id de la lista se marca como `isPrimary: true`. Si no se envía
+      // (undefined), las categorías no se tocan.
+      categoryIds?: number[];
     },
     type?: string,
   ) {
     const provider = await this.findProviderByUser(userId, type);
+    const { categoryIds, ...scalarData } = data;
 
-    return this.prisma.provider.update({
-      where: { id: provider.id },
-      data,
-      include: {
-        providerCategories: {
-          select: {
-            isPrimary: true,
-            category: {
-              select: { id: true, name: true, slug: true, iconUrl: true },
+    // Si vienen categorías, reescribimos la relación M:N entera dentro
+    // de una transacción: delete + createMany. El isPrimary va por
+    // orden de aparición — el cliente decide cuál es la principal
+    // poniéndola primero en el array.
+    return this.prisma.$transaction(async (tx) => {
+      if (categoryIds !== undefined) {
+        if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
+          throw new BadRequestException(
+            'Debes seleccionar al menos una Especialidad',
+          );
+        }
+        // Dedup defensivo — si el cliente repite, conservamos el
+        // primer índice (que marca la principal).
+        const unique = Array.from(new Set(categoryIds.map((n) => Number(n))));
+        if (unique.some((n) => !Number.isInteger(n) || n <= 0)) {
+          throw new BadRequestException('IDs de categoría inválidos');
+        }
+        // Verificamos que existan + estén activas — evita inflar la
+        // tabla con FKs huérfanos por un cliente mal calibrado.
+        const found = await tx.category.findMany({
+          where: { id: { in: unique }, isActive: true },
+          select: { id: true },
+        });
+        if (found.length !== unique.length) {
+          throw new BadRequestException(
+            'Una o más categorías no existen o están inactivas',
+          );
+        }
+        await tx.providerCategory.deleteMany({
+          where: { providerId: provider.id },
+        });
+        await tx.providerCategory.createMany({
+          data: unique.map((catId, i) => ({
+            providerId: provider.id,
+            categoryId: catId,
+            isPrimary: i === 0,
+          })),
+        });
+      }
+
+      return tx.provider.update({
+        where: { id: provider.id },
+        data: scalarData,
+        include: {
+          providerCategories: {
+            select: {
+              isPrimary: true,
+              category: {
+                select: { id: true, name: true, slug: true, iconUrl: true },
+              },
             },
+            orderBy: { isPrimary: 'desc' },
           },
-          orderBy: { isPrimary: 'desc' },
+          locality: { select: { id: true, name: true, department: true } },
+          images: {
+            select: { id: true, url: true, isCover: true },
+            orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
+          },
+          subscription: { select: { plan: true, status: true, endDate: true } },
         },
-        locality: { select: { id: true, name: true, department: true } },
-        images: {
-          select: { id: true, url: true, isCover: true },
-          orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
-        },
-        subscription: { select: { plan: true, status: true, endDate: true } },
-      },
+      });
     });
   }
 

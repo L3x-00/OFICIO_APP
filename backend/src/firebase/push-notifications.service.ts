@@ -55,4 +55,125 @@ export class PushNotificationsService {
       }
     }
   }
+
+  /**
+   * Broadcast a TODOS los usuarios con `fcmToken` no nulo. Fire-and-forget:
+   * el caller (admin) recibe el conteo de tokens encolados de inmediato y
+   * el envío real corre en background. Limpia tokens inválidos al detectar
+   * `registration-token-not-registered` / `invalid-registration-token`.
+   *
+   * - `imageUrl` se incluye como `data.imageUrl` (Flutter lo abre con
+   *   `flutter_local_notifications` o el handler de FCM nativo) y también
+   *   en el bloque `android.notification.imageUrl` para que el sistema
+   *   renderice la cabecera con la foto sin tocar el cliente.
+   */
+  async broadcast(args: {
+    title: string;
+    body: string;
+    imageUrl?: string | null;
+    data?: Record<string, string>;
+  }): Promise<{ enqueued: number }> {
+    if (getApps().length === 0) {
+      this.logger.warn('Firebase Admin no inicializado — broadcast omitido');
+      return { enqueued: 0 };
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: { fcmToken: { not: null }, isActive: true },
+      select: { id: true, fcmToken: true },
+    });
+
+    const tokens = users
+      .filter((u): u is { id: number; fcmToken: string } => !!u.fcmToken)
+      .map((u) => ({ userId: u.id, token: u.fcmToken }));
+
+    if (tokens.length === 0) return { enqueued: 0 };
+
+    // Fire-and-forget — no bloqueamos la respuesta HTTP al admin.
+    this._dispatchBroadcast(tokens, {
+      title: args.title,
+      body: args.body,
+      imageUrl: args.imageUrl ?? null,
+      data: args.data ?? {},
+    }).catch((e) =>
+      this.logger.error(`broadcast falló en background: ${e?.message ?? e}`),
+    );
+
+    return { enqueued: tokens.length };
+  }
+
+  private async _dispatchBroadcast(
+    targets: Array<{ userId: number; token: string }>,
+    payload: {
+      title: string;
+      body: string;
+      imageUrl: string | null;
+      data: Record<string, string>;
+    },
+  ): Promise<void> {
+    const messaging = getMessaging(getApp());
+    // Lotes de 500 — sendEach limita a 500 mensajes por llamada.
+    const CHUNK = 500;
+    let invalidated = 0;
+    for (let i = 0; i < targets.length; i += CHUNK) {
+      const slice = targets.slice(i, i + CHUNK);
+      const messages = slice.map((t) => ({
+        token: t.token,
+        notification: payload.imageUrl
+          ? {
+              title: payload.title,
+              body: payload.body,
+              imageUrl: payload.imageUrl,
+            }
+          : { title: payload.title, body: payload.body },
+        data: {
+          ...payload.data,
+          type: payload.data.type ?? 'BROADCAST',
+          ...(payload.imageUrl ? { imageUrl: payload.imageUrl } : {}),
+        },
+        android: {
+          priority: 'high' as const,
+          notification: payload.imageUrl
+            ? { imageUrl: payload.imageUrl }
+            : undefined,
+        },
+        apns: {
+          payload: { aps: { sound: 'default', 'mutable-content': 1 } },
+          ...(payload.imageUrl
+            ? { fcmOptions: { imageUrl: payload.imageUrl } }
+            : {}),
+        },
+      }));
+      try {
+        // `sendAll` recibe array de Message — equivalente moderno de
+        // `sendEach` en firebase-admin v11+. En v10 (instalado acá)
+        // solo existe `sendAll`. La forma de la respuesta (BatchResponse
+        // con `.responses[]`) es idéntica.
+        const res = await messaging.sendAll(messages);
+        // Limpiar tokens inválidos detectados en este lote.
+        for (let j = 0; j < res.responses.length; j++) {
+          const r = res.responses[j];
+          if (r.success) continue;
+          const code = (r.error as any)?.errorInfo?.code;
+          if (
+            code === 'messaging/registration-token-not-registered' ||
+            code === 'messaging/invalid-registration-token'
+          ) {
+            const userId = slice[j].userId;
+            this.prisma.user
+              .update({ where: { id: userId }, data: { fcmToken: null } })
+              .catch(() => null);
+            invalidated++;
+          }
+        }
+      } catch (err: any) {
+        this.logger.error(
+          `sendEach lote ${i / CHUNK} falló: ${err?.message ?? err}`,
+        );
+      }
+    }
+    this.logger.log(
+      `Broadcast finalizado: ${targets.length} tokens, ${invalidated} inválidos limpiados`,
+    );
+  }
 }

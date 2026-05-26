@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/constants/app_colors.dart';
@@ -174,6 +176,36 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
     });
+    // Checa Play Store por una actualización al arrancar la app. Es
+    // fire-and-forget — la app sigue su flujo sin esperar. Si no hay
+    // Play Store (iOS, Huawei, web) el plugin tira PlatformException
+    // y el try-catch lo absorbe en silencio.
+    _maybeOfferAppUpdate();
+  }
+
+  /// Pregunta a Play Store si hay una update disponible y arranca la
+  /// descarga FLEXIBLE — en background, con snackbar nativo de Google
+  /// Play para que el user reinicie cuando termine. Nunca interrumpe el
+  /// flujo (no usamos `AppUpdateType.immediate`).
+  Future<void> _maybeOfferAppUpdate() async {
+    try {
+      final info = await InAppUpdate.checkForUpdate();
+      if (info.updateAvailability != UpdateAvailability.updateAvailable) {
+        return;
+      }
+      // Solo intentamos el flexible si Play está seguro de que se puede
+      // disparar — evita una excepción adicional si el flow está
+      // bloqueado por política del dispositivo.
+      if (info.flexibleUpdateAllowed) {
+        await InAppUpdate.startFlexibleUpdate();
+        // Cuando la descarga termina el plugin muestra su propio
+        // snackbar nativo "Restart"; no necesitamos hacer nada acá.
+      }
+    } catch (e) {
+      // iOS, build sin Play Services, sin internet — todo cae acá.
+      // No es crítico; solo logueamos en debug y seguimos.
+      if (kDebugMode) debugPrint('[InAppUpdate] check falló: $e');
+    }
   }
 
   @override
