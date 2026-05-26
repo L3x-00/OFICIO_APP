@@ -87,7 +87,18 @@ export class PushNotificationsService {
       .filter((u): u is { id: number; fcmToken: string } => !!u.fcmToken)
       .map((u) => ({ userId: u.id, token: u.fcmToken }));
 
-    if (tokens.length === 0) return { enqueued: 0 };
+    this.logger.log(
+      `[broadcast] solicitud "${args.title}" — ${tokens.length} token(s) FCM encontrados${
+        args.imageUrl ? ' (con imagen)' : ''
+      }`,
+    );
+
+    if (tokens.length === 0) {
+      this.logger.warn(
+        '[broadcast] no hay tokens FCM activos en BD — ningún dispositivo recibirá la push',
+      );
+      return { enqueued: 0 };
+    }
 
     // Fire-and-forget — no bloqueamos la respuesta HTTP al admin.
     this._dispatchBroadcast(tokens, {
@@ -150,6 +161,9 @@ export class PushNotificationsService {
         // solo existe `sendAll`. La forma de la respuesta (BatchResponse
         // con `.responses[]`) es idéntica.
         const res = await messaging.sendAll(messages);
+        this.logger.log(
+          `[broadcast] lote ${i / CHUNK}: éxito=${res.successCount}, fallo=${res.failureCount}`,
+        );
         // Limpiar tokens inválidos detectados en este lote.
         for (let j = 0; j < res.responses.length; j++) {
           const r = res.responses[j];
@@ -164,16 +178,23 @@ export class PushNotificationsService {
               .update({ where: { id: userId }, data: { fcmToken: null } })
               .catch(() => null);
             invalidated++;
+          } else if (code) {
+            // Otro tipo de error (auth, quota, payload) — lo logueamos
+            // explícito para que el admin pueda diagnosticar por qué
+            // los dispositivos no recibieron la push.
+            this.logger.warn(
+              `[broadcast] userId=${slice[j].userId} push falló: ${code} — ${r.error?.message ?? ''}`,
+            );
           }
         }
       } catch (err: any) {
         this.logger.error(
-          `sendEach lote ${i / CHUNK} falló: ${err?.message ?? err}`,
+          `[broadcast] sendAll lote ${i / CHUNK} falló: ${err?.message ?? err}`,
         );
       }
     }
     this.logger.log(
-      `Broadcast finalizado: ${targets.length} tokens, ${invalidated} inválidos limpiados`,
+      `[broadcast] finalizado: ${targets.length} tokens, ${invalidated} inválidos limpiados`,
     );
   }
 }

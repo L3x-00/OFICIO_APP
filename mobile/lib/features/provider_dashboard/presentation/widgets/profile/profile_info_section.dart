@@ -312,8 +312,9 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                                   // el orden actual. El backend usa el
                                   // índice 0 como `isPrimary`.
                                   final ordered = <int>[];
-                                  if (primaryId != null)
+                                  if (primaryId != null) {
                                     ordered.add(primaryId!);
+                                  }
                                   for (final s in selected) {
                                     if (s.id != primaryId) ordered.add(s.id);
                                   }
@@ -321,16 +322,12 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
                                   final ok = await dash.updateProfile(
                                     categoryIds: ordered,
                                   );
-                                  if (!context.mounted) {
-                                    return;
-                                  } // <--- CON LLAVES
+                                  if (!context.mounted) return;
                                   if (ok) {
                                     context.showSuccessSnack(
                                       'Especialidades actualizadas',
                                     );
                                   } else {
-                                    if (!context.mounted)
-                                      return; // <--- AÑADE ESTO
                                     context.showErrorSnack(
                                       dash.error ??
                                           'Error al guardar especialidades',
@@ -520,7 +517,10 @@ class _ProfileInfoSectionState extends State<ProfileInfoSection> {
       final saved = await onSave(ctrl.text.trim());
       if (mounted) widget.onSavingChanged(false);
       // Feedback al usuario — antes podía guardar pero parecer que no.
-      if (mounted) {
+      // `context.mounted` (no `mounted` del State) porque el linter
+      // exige que la guarda coincida con el BuildContext que usamos
+      // a continuación (parámetro del método, no `this.context`).
+      if (context.mounted) {
         if (saved) {
           context.showSuccessSnack('$title actualizado');
         } else {
