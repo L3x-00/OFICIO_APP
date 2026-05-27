@@ -4,20 +4,17 @@ import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 /**
- * Levitación suave infinita en eje Y para darle "vida" a elementos
- * decorativos (mockups, isotipos, hero cards). Cero side-effects:
- * no toca el child, solo lo envuelve.
+ * Levitación suave infinita en Y para elementos decorativos.
  *
- * Respeta `prefers-reduced-motion` — usuarios con accesibilidad
- * activa ven el child estático.
+ * SSR-safe: el árbol JSX (motion.div) es el mismo server y client.
+ * Solo conmutamos la amplitud a 0 cuando el user pidió reducir
+ * movimiento — evita el hydration mismatch que dejaba a Hero
+ * invisible en producción.
  */
 interface Props {
   children: ReactNode;
-  /** Amplitud del swing en px. Default 8 (sutil). */
   amplitude?: number;
-  /** Duración de un ciclo completo en s. Default 4. */
   duration?: number;
-  /** Offset inicial — útil para desfasar varios Floating en la misma vista. */
   delay?: number;
   className?: string;
 }
@@ -30,15 +27,12 @@ export default function Floating({
   className,
 }: Props) {
   const reduceMotion = useReducedMotion();
-
-  if (reduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
+  const amp = reduceMotion ? 0 : amplitude;
 
   return (
     <motion.div
       className={className}
-      animate={{ y: [-amplitude, amplitude, -amplitude] }}
+      animate={{ y: [-amp, amp, -amp] }}
       transition={{
         duration,
         delay,

@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const slides = [
+// Slides "deseados". Si alguna imagen está faltando en /public/images/
+// (devuelve 404), el componente la descarta automáticamente con el
+// `onError` del <img>. Antes esos slides quedaban en negro mientras
+// el carousel rotaba — ahora el usuario solo ve los slides cuyo
+// asset existe realmente.
+const ALL_SLIDES = [
   {
     src: '/images/coin.png',
     alt: 'Red de profesionales verificados',
@@ -36,19 +40,32 @@ const slides = [
     alt: 'Servicios locales a tu alcance',
     caption: 'Servicios locales a tu alcance, cuando los necesites',
   },
-];
+] as const;
 
 const SLIDE_INTERVAL = 4500;
 
 export default function ImageCarousel() {
+  const [broken, setBroken] = useState<Set<string>>(new Set());
+  const slides = ALL_SLIDES.filter((s) => !broken.has(s.src));
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  const next = useCallback(() => {
-    setCurrent((c) => (c + 1) % slides.length);
-  }, []);
+  // Si el slide actual quedó fuera de rango después de filtrar slides
+  // rotos, lo reseteamos a 0.
+  useEffect(() => {
+    if (current >= slides.length && slides.length > 0) {
+      setCurrent(0);
+    }
+  }, [current, slides.length]);
 
-  const prev = () => setCurrent((c) => (c - 1 + slides.length) % slides.length);
+  const next = useCallback(() => {
+    setCurrent((c) => (slides.length === 0 ? 0 : (c + 1) % slides.length));
+  }, [slides.length]);
+
+  const prev = () =>
+    setCurrent((c) =>
+      slides.length === 0 ? 0 : (c - 1 + slides.length) % slides.length,
+    );
 
   useEffect(() => {
     if (paused) return;
@@ -81,7 +98,7 @@ export default function ImageCarousel() {
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -91,7 +108,12 @@ export default function ImageCarousel() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {/* AnimatePresence para transiciones suaves de slides */}
+          {slides.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">
+              Próximamente: galería de Servi.
+            </div>
+          ) : (
+          /* AnimatePresence para transiciones suaves de slides */
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -101,10 +123,21 @@ export default function ImageCarousel() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
               className="absolute inset-0"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={slides[current].src}
                 alt={slides[current].alt}
                 className="absolute inset-0 w-full h-full object-cover"
+                onError={() => {
+                  // Marca este src como roto para que el filter del próximo
+                  // render lo elimine de `slides`. Evita 404 + slide en
+                  // negro cuando los assets están faltando en /public.
+                  setBroken((prev) => {
+                    const next = new Set(prev);
+                    next.add(slides[current].src);
+                    return next;
+                  });
+                }}
               />
               {/* Gradient overlay para texto */}
               <div className="absolute inset-0 bg-gradient-to-t from-dark-premium/80 via-dark-premium/20 to-transparent" />
@@ -118,6 +151,7 @@ export default function ImageCarousel() {
               </div>
             </motion.div>
           </AnimatePresence>
+          )}
 
           {/* Botón anterior */}
           <button

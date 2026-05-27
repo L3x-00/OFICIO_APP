@@ -5,12 +5,14 @@ import { motion, useReducedMotion } from 'framer-motion';
 /**
  * Divisor sutil entre secciones del landing. Línea horizontal con
  * gradiente que se "dibuja" de izquierda a derecha cuando entra al
- * viewport, dándole ritmo visual al scroll sin romper la composición.
+ * viewport.
  *
- * Sin estado, sin lógica. Plug & play entre secciones.
+ * SSR-safe: árbol JSX idéntico server/client (siempre motion.div).
+ * Solo conmutamos `transition.duration` cuando el user pidió reducir
+ * movimiento — así no se genera hydration mismatch que dejaría las
+ * secciones invisibles en producción.
  */
 interface Props {
-  /** Variantes preset de color para combinar con el contexto. */
   tone?: 'primary' | 'accent' | 'amber' | 'muted';
 }
 
@@ -25,21 +27,16 @@ export default function SectionDivider({ tone = 'muted' }: Props) {
   const reduceMotion = useReducedMotion();
   const cls = `h-px w-full max-w-[640px] mx-auto bg-gradient-to-r from-transparent ${TONE[tone]} to-transparent`;
 
-  if (reduceMotion) {
-    return (
-      <div aria-hidden className="py-4">
-        <div className={cls} />
-      </div>
-    );
-  }
-
   return (
     <div aria-hidden className="py-4 overflow-hidden">
       <motion.div
-        initial={{ scaleX: 0, opacity: 0 }}
+        initial={{ scaleX: reduceMotion ? 1 : 0, opacity: reduceMotion ? 1 : 0 }}
         whileInView={{ scaleX: 1, opacity: 1 }}
         viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        transition={{
+          duration: reduceMotion ? 0 : 0.9,
+          ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+        }}
         style={{ originX: 0.5 }}
         className={cls}
       />
