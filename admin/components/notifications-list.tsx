@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle, XCircle, HelpCircle, ShieldOff,
   Bell, BellOff, Loader2, ChevronLeft, ChevronRight, CheckCheck,
-  CreditCard, RefreshCw, AlertCircle,
+  CreditCard, RefreshCw, AlertCircle, Megaphone,
+  type LucideIcon,
 } from 'lucide-react';
 import {
   getNotifications,
@@ -19,7 +20,7 @@ const NotificationDetailModal = dynamic(
   { ssr: false },
 );
 
-const TYPE_CONFIG: Record<string, { icon: any; label: string; color: string; bg: string; border: string }> = {
+const TYPE_CONFIG: Record<string, { icon: LucideIcon; label: string; color: string; bg: string; border: string }> = {
   APROBADO: {
     icon: CheckCircle,
     label: 'Aprobado',
@@ -69,7 +70,55 @@ const TYPE_CONFIG: Record<string, { icon: any; label: string; color: string; bg:
     bg: 'bg-amber-500/10',
     border: 'border-amber-500/20',
   },
+  BROADCAST_LOG: {
+    icon: Megaphone,
+    label: 'Broadcast',
+    color: 'text-purple-400',
+    bg: 'bg-purple-500/10',
+    border: 'border-purple-500/20',
+  },
 };
+
+/**
+ * Mensaje desde la perspectiva del admin. Antes el listado mostraba
+ * el `message` crudo del backend ("Tu perfil X fue aprobado") que está
+ * escrito en segunda persona porque también lo lee el proveedor en su
+ * inbox. Acá lo reescribimos para el panel admin.
+ */
+function buildAdminMessage(n: NotificationItem): string {
+  const biz = n.provider?.businessName?.trim();
+  const fallback = n.message;
+  switch (n.type) {
+    case 'APROBADO':
+      return biz ? `Aprobaste el perfil de ${biz}` : 'Aprobaste un perfil';
+    case 'RECHAZADO':
+      return biz ? `Rechazaste el perfil de ${biz}` : 'Rechazaste un perfil';
+    case 'MAS_INFO':
+      return biz
+        ? `Solicitaste más información a ${biz}`
+        : 'Solicitaste más información a un proveedor';
+    case 'VERIFICACION_REVOCADA':
+      return biz
+        ? `Revocaste la verificación de ${biz}`
+        : 'Revocaste una verificación';
+    case 'PLAN_APROBADO':
+      return biz
+        ? `Aprobaste el plan solicitado por ${biz}`
+        : 'Aprobaste una solicitud de plan';
+    case 'PLAN_RECHAZADO':
+      return biz
+        ? `Rechazaste el plan solicitado por ${biz}`
+        : 'Rechazaste una solicitud de plan';
+    case 'PLAN_SOLICITADO':
+      return biz ? `${biz} solicitó un cambio de plan` : 'Nueva solicitud de plan';
+    case 'BROADCAST_LOG':
+      // El backend ya persiste el título completo "Enviaste una
+      // notificación a todos los usuarios: …" — lo usamos directo.
+      return n.title?.trim() || fallback;
+    default:
+      return fallback;
+  }
+}
 
 const DEFAULT_TYPE_CFG = {
   icon: Bell,
@@ -99,8 +148,8 @@ export function NotificationsList() {
       setTotal(data.total);
       setLastPage(data.lastPage);
       setUnreadCount(data.unreadCount);
-    } catch (err: any) {
-      setError(err?.message ?? 'Error al conectar con el servidor');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al conectar con el servidor');
     } finally {
       setIsLoading(false);
     }
@@ -118,10 +167,18 @@ export function NotificationsList() {
 
   const handleMarkAll = async () => {
     setMarkingAll(true);
+    // Snapshot por si el backend falla — revertimos para no mentirle
+    // al admin sobre el estado real de su inbox.
+    const prevItems = items;
+    const prevUnread = unreadCount;
+    setItems((p) => p.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
     try {
       await markAllNotificationsRead();
-      setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+    } catch (err: unknown) {
+      setItems(prevItems);
+      setUnreadCount(prevUnread);
+      setError(err instanceof Error ? err.message : 'No se pudo marcar todo como leído');
     } finally {
       setMarkingAll(false);
     }
@@ -223,15 +280,29 @@ export function NotificationsList() {
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${cfg.bg} ${cfg.color} border ${cfg.border}`}>
                         {cfg.label}
                       </span>
-                      <span className="text-sm font-semibold text-white truncate">
-                        {n.provider?.businessName ?? '—'}
-                      </span>
-                      <span className="text-xs text-gray-600">
-                        {n.provider?.user?.firstName} {n.provider?.user?.lastName}
-                      </span>
+                      {n.provider?.businessName && (
+                        <span className="text-sm font-semibold text-white truncate">
+                          {n.provider.businessName}
+                        </span>
+                      )}
+                      {(n.provider?.user?.firstName || n.provider?.user?.lastName) && (
+                        <span className="text-xs text-gray-600">
+                          {n.provider?.user?.firstName} {n.provider?.user?.lastName}
+                        </span>
+                      )}
                     </div>
-                    {n.title && <p className="text-sm font-medium text-white/80 mb-0.5">{n.title}</p>}
-                    <p className="text-sm text-gray-400 line-clamp-2">{n.message}</p>
+                    {/* Headline: mensaje en perspectiva-admin generado a
+                        partir del tipo. BROADCAST_LOG cae al título que
+                        ya escribe el backend. */}
+                    <p className="text-sm font-medium text-white/90 mb-0.5">
+                      {buildAdminMessage(n)}
+                    </p>
+                    {/* Mostramos también el message original como
+                        contexto secundario salvo en BROADCAST_LOG donde
+                        ya es el cuerpo del broadcast (lo dejamos). */}
+                    {n.message && n.message !== buildAdminMessage(n) && (
+                      <p className="text-sm text-gray-400 line-clamp-2">{n.message}</p>
+                    )}
                     <p className="text-xs text-gray-700 mt-1">{fmt(n.sentAt)}</p>
                   </div>
 

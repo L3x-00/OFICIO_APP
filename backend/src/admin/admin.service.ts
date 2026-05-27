@@ -229,7 +229,12 @@ export class AdminService {
           },
         },
       }),
-      this.prisma.user.count({ where: { role: 'USUARIO' } }),
+      // `totalUsers` = TODOS los registros en `users` (incluyendo
+      // PROVEEDOR y ADMIN). Antes excluía role=PROVEEDOR — un user que
+      // se convertía en proveedor "desaparecía" del KPI, falseando el
+      // total de personas registradas. Un proveedor SUMA en este
+      // contador Y en `totalProviderUsers` (no se restan).
+      this.prisma.user.count(),
       this.prisma.review.count(),
       this.prisma.provider.count({
         where: { verificationStatus: 'PENDIENTE' },
@@ -1271,7 +1276,31 @@ export class AdminService {
       ];
     }
 
-    if (role) where.role = role as Prisma.EnumUserRoleFilter;
+    // ── Filtro estricto por relación con la tabla `providers` ───────
+    // Antes este endpoint hacía `where.role = role`, lo que producía
+    // mezcla: un user role=USUARIO con un provider activo (caso edge
+    // post-migración) salía en "Usuarios" pero también en algunas
+    // listas como proveedor. Ahora:
+    //
+    //   • USUARIO   → SIN registro en providers (cliente puro).
+    //   • PROVEEDOR → CON al menos un registro en providers.
+    //   • DUAL/BOTH → role=PROVEEDOR Y al menos un registro en providers.
+    //   • ADMIN/SUPERADMIN → respeta `user.role` legacy.
+    //
+    // Para el resto (sin `role` o role desconocido), no filtramos —
+    // devuelve todo.
+    const normalizedRole = role?.toUpperCase();
+    if (normalizedRole === 'DUAL' || normalizedRole === 'BOTH') {
+      where.role = 'PROVEEDOR';
+      where.providers = { some: {} };
+    } else if (normalizedRole === 'PROVEEDOR') {
+      where.providers = { some: {} };
+    } else if (normalizedRole === 'USUARIO') {
+      where.providers = { none: {} };
+    } else if (normalizedRole === 'ADMIN' || normalizedRole === 'SUPERADMIN') {
+      where.role = normalizedRole as Prisma.EnumUserRoleFilter;
+    }
+
     if (isActive !== undefined) where.isActive = isActive;
 
     const [users, total] = await Promise.all([
@@ -1291,8 +1320,37 @@ export class AdminService {
             select: {
               id: true,
               businessName: true,
+              type: true,
               verificationStatus: true,
               isVerified: true,
+              phone: true,
+              whatsapp: true,
+              address: true,
+              locality: {
+                select: {
+                  name: true,
+                  department: true,
+                  province: true,
+                  district: true,
+                },
+              },
+              providerCategories: {
+                select: {
+                  isPrimary: true,
+                  category: { select: { id: true, name: true, slug: true } },
+                },
+                orderBy: { isPrimary: 'desc' },
+              },
+              // Redes sociales — el modal de detalle del admin las
+              // muestra cuando inspecciona un user con perfil.
+              website: true,
+              instagram: true,
+              tiktok: true,
+              facebook: true,
+              linkedin: true,
+              twitterX: true,
+              telegram: true,
+              whatsappBiz: true,
             },
             take: 1,
           },
@@ -1365,14 +1423,25 @@ export class AdminService {
 
   // ── NOTIFICACIONES ────────────────────────────────────────
 
+  /**
+   * Filtro de notificaciones del scope del admin:
+   *   • Cualquier notif vinculada a un provider (aprobaciones, planes,
+   *     verificaciones, etc.) — `providerId IS NOT NULL`.
+   *   • Logs de broadcasts masivos enviados por el admin —
+   *     `type = 'BROADCAST_LOG'`, sin providerId.
+   *
+   * EXCLUYE notif personales de usuarios-cliente (chat, referidos,
+   * ofertas con `providerId=null AND type != 'BROADCAST_LOG'`) — esas
+   * son del inbox del usuario, no del panel admin.
+   */
+  private static readonly ADMIN_NOTIF_WHERE: Prisma.AdminNotificationWhereInput =
+    {
+      OR: [{ providerId: { not: null } }, { type: 'BROADCAST_LOG' }],
+    };
+
   async getNotifications(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
-
-    // El panel admin solo lista las notificaciones de proveedores
-    // (las que tienen providerId). Las dirigidas a usuarios-cliente
-    // (referidos, ofertas, etc., con providerId null) NO se muestran
-    // aquí — son del inbox personal de cada usuario, no del admin.
-    const where = { providerId: { not: null } };
+    const where = AdminService.ADMIN_NOTIF_WHERE;
 
     const [notifications, total, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
@@ -1383,6 +1452,7 @@ export class AdminService {
           provider: {
             select: {
               businessName: true,
+              type: true,
               user: { select: { firstName: true, lastName: true } },
             },
           },
@@ -1412,11 +1482,16 @@ export class AdminService {
   }
 
   async markAllNotificationsRead() {
-    await this.prisma.adminNotification.updateMany({
-      where: { isRead: false },
+    // Antes el `updateMany` corría con `where: { isRead: false }` sin
+    // scope → marcaba leídas también las notif personales de
+    // usuarios-cliente (chat, broadcasts recibidos). Acotamos al
+    // mismo filtro que `getNotifications` para que el "Marcar todo
+    // como leído" del panel admin afecte SOLO al inbox del admin.
+    const result = await this.prisma.adminNotification.updateMany({
+      where: { ...AdminService.ADMIN_NOTIF_WHERE, isRead: false },
       data: { isRead: true },
     });
-    return { success: true };
+    return { success: true, updated: result.count };
   }
 
   // ── REPORTES ──────────────────────────────────────────────
@@ -2020,11 +2095,36 @@ export class AdminService {
     if (!message?.trim()) {
       throw new BadRequestException('El mensaje es obligatorio');
     }
-    return this.push.broadcast({
-      title: title.trim(),
-      body: message.trim(),
-      imageUrl: imageUrl?.trim() || null,
+    const cleanTitle = title.trim();
+    const cleanBody = message.trim();
+    const cleanImage = imageUrl?.trim() || null;
+
+    const result = await this.push.broadcast({
+      title: cleanTitle,
+      body: cleanBody,
+      imageUrl: cleanImage,
       data: { type: 'BROADCAST' },
     });
+
+    // Persistir un log del broadcast para que aparezca en el panel del
+    // admin como "Enviaste una notificación a todos los usuarios: …".
+    // type = 'BROADCAST_LOG' (distinto del 'BROADCAST' que llega a los
+    // dispositivos), providerId NULL, targetUserId NULL → ADMIN scope.
+    // Fire-and-forget — si falla solo se pierde el log, no rompemos
+    // la respuesta al admin que ya recibió `enqueued`.
+    this.prisma.adminNotification
+      .create({
+        data: {
+          providerId: null,
+          targetUserId: null,
+          type: 'BROADCAST_LOG',
+          title: `Enviaste una notificación a todos los usuarios: ${cleanTitle}`,
+          message: cleanBody,
+          isRead: false,
+        },
+      })
+      .catch(() => null);
+
+    return result;
   }
 }

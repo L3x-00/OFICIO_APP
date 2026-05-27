@@ -116,12 +116,16 @@ class FcmService {
     }
   }
 
-  // Clave de navegador global — inyectada desde main.dart. Se mantiene
-  // por compat con onMessageTap del router pero ya no la usa FCM
-  // directamente (B-1 quitó el SnackBar foreground).
-  // ignore: unused_field
+  // Clave de navegador global — inyectada desde main.dart. La usa
+  // [NotificationHandler] para mostrar el modal enriquecido cuando el
+  // usuario abre la app tocando una notif en background/terminated.
   static GlobalKey<NavigatorState>? _navigatorKey;
   static void setNavigatorKey(GlobalKey<NavigatorState> key) {
     _navigatorKey = key;
   }
+
+  /// Acceso público de solo-lectura al navigatorKey inyectado.
+  /// Devuelve null si todavía no se llamó a [setNavigatorKey] (raro —
+  /// `main.dart` la setea antes de `runApp`).
+  static GlobalKey<NavigatorState>? get navigatorKey => _navigatorKey;
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#E07B39</color>
+    <color name="ic_launcher_background">#000000</color>
     <!-- Tinte del icono de la notificación FCM (status bar Android 5+). -->
     <color name="notification_color">#E07B39</color>
 </resources>

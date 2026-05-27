@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/shared/widgets/notification_modal.dart';
 import 'package:provider/provider.dart';
 import '../providers/notifications_provider.dart';
 import '../../domain/models/notification_model.dart';
@@ -246,7 +247,26 @@ class _NotificationTile extends StatelessWidget {
       ),
       onDismissed: (_) => notifs.dismiss(notification.id),
       child: InkWell(
-        onTap: () => notifs.markRead(notification.id),
+        onTap: () {
+          notifs.markRead(notification.id);
+          // Si la notif trae imagen o es un broadcast del admin, el
+          // tap general abre el modal enriquecido con la foto completa.
+          // Los chips de acción rápida (Ir al chat, Ver detalles…) que
+          // viven debajo del cuerpo del tile siguen siendo
+          // independientes — ya manejan su propio `onTap`.
+          final hasImage =
+              notification.imageUrl != null &&
+              notification.imageUrl!.isNotEmpty;
+          final isBroadcast = notification.type == 'BROADCAST';
+          if (hasImage || isBroadcast) {
+            NotificationModal.show(
+              context,
+              title: notification.title,
+              body: notification.body,
+              imageUrl: notification.imageUrl,
+            );
+          }
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           color: notification.isRead

@@ -5,6 +5,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/services/geocoding_service.dart';
+import 'package:mobile/core/utils/geocoding_helper.dart';
 import 'package:mobile/core/utils/permission_service.dart';
 import 'package:mobile/core/utils/plan_limits.dart';
 import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
@@ -34,6 +35,7 @@ class ProviderOnboardingForm extends StatefulWidget {
   final String? providerType;
   final bool isStandalone;
   final Map<String, dynamic>? initialData;
+
   /// Plan elegido en [OnboardingPlansSheet] antes de entrar al formulario.
   /// Determina el flujo de submit: si es GRATIS se registra directo; si es
   /// pagado, se ofrece "Adquirir plan" (→ Yape) o "Registrarme con plan
@@ -54,53 +56,55 @@ class ProviderOnboardingForm extends StatefulWidget {
 
 class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   // ── Controllers ─────────────────────────────────────────
-  final _businessNameController    = TextEditingController();
-  final _dniController             = TextEditingController();
-  final _rucController             = TextEditingController();
+  final _businessNameController = TextEditingController();
+  final _dniController = TextEditingController();
+  final _rucController = TextEditingController();
   // Nota: "Nombre Comercial" y "Razón Social" se eliminaron del formulario.
   // El backend los infiere durante la validación de identidad/SUNAT así que
   // pedirlos aquí era redundante y confundía a los usuarios.
-  final _descriptionController     = TextEditingController();
-  final _addressController         = TextEditingController();
-  final _mapsUrlController         = TextEditingController();
-  final _referralCodeCtrl          = TextEditingController();
-  final _websiteCtrl               = TextEditingController();
-  final _instagramCtrl             = TextEditingController();
-  final _tiktokCtrl                = TextEditingController();
-  final _facebookCtrl              = TextEditingController();
-  final _linkedinCtrl              = TextEditingController();
-  final _twitterCtrl               = TextEditingController();
-  final _telegramCtrl              = TextEditingController();
-  final _whatsappBizCtrl           = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _mapsUrlController = TextEditingController();
+  final _referralCodeCtrl = TextEditingController();
+  final _websiteCtrl = TextEditingController();
+  final _instagramCtrl = TextEditingController();
+  final _tiktokCtrl = TextEditingController();
+  final _facebookCtrl = TextEditingController();
+  final _linkedinCtrl = TextEditingController();
+  final _twitterCtrl = TextEditingController();
+  final _telegramCtrl = TextEditingController();
+  final _whatsappBizCtrl = TextEditingController();
 
   // ── State ────────────────────────────────────────────────
-  String  _phone    = '';
-  String  _whatsapp = '';
-  bool    _hasDelivery       = false;
-  bool    _plenaCoordinacion = false;
-  bool    _isLoading         = false;
-  bool    _showAddressSection = false;
-  bool    _gpsLoading         = false;
+  String _phone = '';
+  String _whatsapp = '';
+  bool _hasDelivery = false;
+  bool _plenaCoordinacion = false;
+  bool _isLoading = false;
+  bool _showAddressSection = false;
+  bool _gpsLoading = false;
+
   /// `true` cuando el usuario opta por el plan Premium (de pago). Se
   /// inicializa desde `widget.selectedPlan` y el usuario puede activarlo
   /// dentro del formulario con la opción bajo el código de referido.
-  bool    _acquirePremium    = false;
+  bool _acquirePremium = false;
 
-  Position?              _gpsPosition;
-  String?                _department;
-  String?                _province;
-  String?                _district;
+  Position? _gpsPosition;
+  String? _department;
+  String? _province;
+  String? _district;
   // Especialidades elegidas (multi-select, máx 3) + la principal.
   List<CategorySelectionResult> _selectedCategories = [];
-  int?                   _primaryCategoryId;
-  Map<String, dynamic>   _scheduleJson         = {};
+  int? _primaryCategoryId;
+  Map<String, dynamic> _scheduleJson = {};
   List<CategoryModel> _categories = [];
 
-  final List<XFile> _photos   = [];
-  final int         _maxPhotos = 3;
+  final List<XFile> _photos = [];
+  final int _maxPhotos = 3;
 
-  bool get _isOficio        => widget.providerType != 'NEGOCIO';
-  bool get _hasAdminLocation => _department != null && _province != null && _district != null;
+  bool get _isOficio => widget.providerType != 'NEGOCIO';
+  bool get _hasAdminLocation =>
+      _department != null && _province != null && _district != null;
 
   String get _formTitle {
     if (widget.providerType == 'NEGOCIO') return 'Registrar Negocio';
@@ -128,20 +132,20 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
     if (widget.initialData != null) {
       final d = widget.initialData!;
-      _businessNameController.text    = d['businessName']    ?? '';
-      _descriptionController.text     = d['description']     ?? '';
-      _addressController.text         = d['address']         ?? '';
-      _dniController.text             = d['dni']             ?? '';
-      _rucController.text             = d['ruc']             ?? '';
+      _businessNameController.text = d['businessName'] ?? '';
+      _descriptionController.text = d['description'] ?? '';
+      _addressController.text = d['address'] ?? '';
+      _dniController.text = d['dni'] ?? '';
+      _rucController.text = d['ruc'] ?? '';
       // Teléfono y whatsapp viven en state (no TextEditingController)
       // porque los maneja `PhoneInputSection` por callback. Pre-llenar
       // antes del primer build asegura que el widget arranca con esos
       // valores (defaultPhone se le pasa en build).
-      _phone    = (d['phone']    as String?) ?? '';
+      _phone = (d['phone'] as String?) ?? '';
       _whatsapp = (d['whatsapp'] as String?) ?? '';
 
       // Flags de delivery / domicilio (negocio + oficio).
-      _hasDelivery       = (d['hasDelivery']       as bool?) ?? false;
+      _hasDelivery = (d['hasDelivery'] as bool?) ?? false;
       _plenaCoordinacion = (d['plenaCoordinacion'] as bool?) ?? false;
       // El backend usa `hasHomeService` para el toggle de oficios; en el
       // form se reusa `_hasDelivery` para ambos perfiles según su tipo.
@@ -154,13 +158,13 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
       // Redes sociales — todas opcionales; el backend las guarda nulas
       // si no se completaron antes.
-      _websiteCtrl.text     = (d['website']     as String?) ?? '';
-      _instagramCtrl.text   = (d['instagram']   as String?) ?? '';
-      _tiktokCtrl.text      = (d['tiktok']      as String?) ?? '';
-      _facebookCtrl.text    = (d['facebook']    as String?) ?? '';
-      _linkedinCtrl.text    = (d['linkedin']    as String?) ?? '';
-      _twitterCtrl.text     = (d['twitterX']    as String?) ?? '';
-      _telegramCtrl.text    = (d['telegram']    as String?) ?? '';
+      _websiteCtrl.text = (d['website'] as String?) ?? '';
+      _instagramCtrl.text = (d['instagram'] as String?) ?? '';
+      _tiktokCtrl.text = (d['tiktok'] as String?) ?? '';
+      _facebookCtrl.text = (d['facebook'] as String?) ?? '';
+      _linkedinCtrl.text = (d['linkedin'] as String?) ?? '';
+      _twitterCtrl.text = (d['twitterX'] as String?) ?? '';
+      _telegramCtrl.text = (d['telegram'] as String?) ?? '';
       _whatsappBizCtrl.text = (d['whatsappBiz'] as String?) ?? '';
 
       // Categorías pre-seleccionadas — el backend devuelve la lista
@@ -173,11 +177,13 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       if (cats != null && cats.isNotEmpty) {
         _selectedCategories = cats
             .whereType<Map<String, dynamic>>()
-            .map((c) => CategorySelectionResult(
-                  id:         (c['id']   as num).toInt(),
-                  name:       (c['name'] as String?) ?? '',
-                  parentName: (c['parentName'] as String?) ?? '',
-                ))
+            .map(
+              (c) => CategorySelectionResult(
+                id: (c['id'] as num).toInt(),
+                name: (c['name'] as String?) ?? '',
+                parentName: (c['parentName'] as String?) ?? '',
+              ),
+            )
             .toList();
         _primaryCategoryId = _selectedCategories.first.id;
       }
@@ -207,7 +213,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   // ── Data Loaders & Helpers ───────────────────────────────
 
   Future<void> _loadCategories() async {
-    final result = await ProvidersRepository().getCategories(forType: widget.providerType);
+    final result = await ProvidersRepository().getCategories(
+      forType: widget.providerType,
+    );
     if (!mounted) return;
     result.when(
       success: (cats) => setState(() => _categories = cats),
@@ -221,27 +229,47 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     if (!mounted) return;
     setState(() {
       _gpsPosition = pos;
-      _gpsLoading  = false;
+      _gpsLoading = false;
     });
     if (pos != null && _addressController.text.trim().isEmpty) {
+      // Geocoding inverso: convertir lat/lng en dirección legible
+      // ("Jr. Domingo Ríos, El Tambo"). Si falla la red o no hay match,
+      // caemos al string de coordenadas para no dejar el campo vacío.
+      // Las coords reales (`_gpsPosition`) NO se tocan — el mapa y el
+      // PostGIS del backend siguen usando lat/lng intactas.
+      final readable = await GeocodingHelper.getAddressFromCoordinates(
+        pos.latitude,
+        pos.longitude,
+      );
+      if (!mounted) return;
       _addressController.text =
+          readable ??
           '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}';
     }
     // Reverse geocoding: rellena departamento/provincia/distrito a
     // partir de las coordenadas. Solo escribe sobre campos vacíos
     // para no pisar lo que el user ya rellenó manualmente.
     if (pos != null) {
-      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude);
+      final geo = await GeocodingService.reverseGeocode(
+        pos.latitude,
+        pos.longitude,
+      );
       if (!mounted || geo == null) return;
       setState(() {
-        _department = (_department == null || _department!.isEmpty) ? geo.department : _department;
-        _province   = (_province   == null || _province!.isEmpty)   ? geo.province   : _province;
-        _district   = (_district   == null || _district!.isEmpty)   ? geo.district   : _district;
+        _department = (_department == null || _department!.isEmpty)
+            ? geo.department
+            : _department;
+        _province = (_province == null || _province!.isEmpty)
+            ? geo.province
+            : _province;
+        _district = (_district == null || _district!.isEmpty)
+            ? geo.district
+            : _district;
       });
     }
   }
 
-  void _parseMapsUrl() {
+  Future<void> _parseMapsUrl() async {
     final url = _mapsUrlController.text.trim();
     if (url.isEmpty) return;
 
@@ -255,9 +283,22 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     for (final pattern in patterns) {
       final match = pattern.firstMatch(url);
       if (match != null) {
-        final lat = match.group(1)!;
-        final lng = match.group(2)!;
-        setState(() => _addressController.text = '$lat, $lng');
+        final latStr = match.group(1)!;
+        final lngStr = match.group(2)!;
+        final lat = double.parse(latStr);
+        final lng = double.parse(lngStr);
+        // Geocoding inverso: si el helper devuelve un nombre legible,
+        // lo usamos como `address`; si falla, caemos al string de
+        // coordenadas (comportamiento original) para no romper el
+        // flujo. Las coords reales viajan separadas via lat/lng.
+        final readable = await GeocodingHelper.getAddressFromCoordinates(
+          lat,
+          lng,
+        );
+        if (!mounted) return;
+        setState(() {
+          _addressController.text = readable ?? '$latStr, $lngStr';
+        });
         _showSnack('Coordenadas extraídas correctamente.');
         return;
       }
@@ -268,7 +309,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   Future<void> _pickPhoto() async {
     if (_photos.length >= _maxPhotos) return;
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file != null && mounted) {
       setState(() => _photos.add(file));
     }
@@ -282,8 +326,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
   void _showSnack(String msg, {bool isError = false}) {
     if (!mounted) return;
-    if (isError) { context.showErrorSnack(msg); } 
-    else { context.showSuccessSnack(msg); }
+    if (isError) {
+      context.showErrorSnack(msg);
+    } else {
+      context.showSuccessSnack(msg);
+    }
   }
 
   // ── Submit Logic ─────────────────────────────────────────
@@ -318,15 +365,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   bool _validateRequired() {
     final name = _businessNameController.text.trim();
     final description = _descriptionController.text.trim();
-    final dni  = _dniController.text.trim();
-    final ruc  = _rucController.text.trim();
+    final dni = _dniController.text.trim();
+    final ruc = _rucController.text.trim();
 
     if (name.isEmpty) {
       _showSnack('El nombre es obligatorio.', isError: true);
       return false;
     }
     if (description.length < 10) {
-      _showSnack('La descripción es obligatoria (mínimo 10 caracteres).', isError: true);
+      _showSnack(
+        'La descripción es obligatoria (mínimo 10 caracteres).',
+        isError: true,
+      );
       return false;
     }
     if (_selectedCategories.isEmpty) {
@@ -334,7 +384,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       return false;
     }
     if (_photos.isEmpty) {
-      _showSnack('Sube al menos una foto del servicio o negocio.', isError: true);
+      _showSnack(
+        'Sube al menos una foto del servicio o negocio.',
+        isError: true,
+      );
       return false;
     }
     if (_phone.isEmpty) {
@@ -342,11 +395,17 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       return false;
     }
     if (!_phone.startsWith('+') && !RegExp(r'^\d{9}$').hasMatch(_phone)) {
-      _showSnack('El teléfono debe tener 9 dígitos (número peruano).', isError: true);
+      _showSnack(
+        'El teléfono debe tener 9 dígitos (número peruano).',
+        isError: true,
+      );
       return false;
     }
     if (!_isOficio && !_hasAdminLocation) {
-      _showSnack('Selecciona tu departamento, provincia y distrito.', isError: true);
+      _showSnack(
+        'Selecciona tu departamento, provincia y distrito.',
+        isError: true,
+      );
       return false;
     }
     if (_isOficio && dni.isNotEmpty && !RegExp(r'^\d{8}$').hasMatch(dni)) {
@@ -381,43 +440,59 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     if (!_validateRequired()) return false;
 
     final name = _businessNameController.text.trim();
-    final dni  = _dniController.text.trim();
-    final ruc  = _rucController.text.trim();
+    final dni = _dniController.text.trim();
+    final ruc = _rucController.text.trim();
 
     setState(() => _isLoading = true);
 
     final auth = context.read<AuthProvider>();
     final result = await auth.registerProvider(
-      businessName:      name,
-      phone:             _phone,
-      whatsapp:          _whatsapp,
-      type:              widget.providerType ?? 'OFICIO',
-      dni:               _isOficio && dni.isNotEmpty ? dni : null,
-      ruc:               !_isOficio && ruc.isNotEmpty ? ruc : null,
-      hasDelivery:       !_isOficio ? _hasDelivery : false,
+      businessName: name,
+      phone: _phone,
+      whatsapp: _whatsapp,
+      type: widget.providerType ?? 'OFICIO',
+      dni: _isOficio && dni.isNotEmpty ? dni : null,
+      ruc: !_isOficio && ruc.isNotEmpty ? ruc : null,
+      hasDelivery: !_isOficio ? _hasDelivery : false,
       // Independiente de hasDelivery — antes solo se enviaba si el otro
       // toggle estaba activo. Ahora ambos viajan por separado y la
       // tarjeta los muestra individualmente.
       plenaCoordinacion: !_isOficio ? _plenaCoordinacion : false,
-      hasHomeService:    _isOficio ? _hasDelivery : false,
-      description:       _descriptionController.text.trim(),
-      address:           _addressController.text.trim(),
-      categoryIds:       _selectedCategories.isEmpty
-                             ? null
-                             : _selectedCategories.map((e) => e.id).toList(),
+      hasHomeService: _isOficio ? _hasDelivery : false,
+      description: _descriptionController.text.trim(),
+      address: _addressController.text.trim(),
+      categoryIds: _selectedCategories.isEmpty
+          ? null
+          : _selectedCategories.map((e) => e.id).toList(),
       primaryCategoryId: _primaryCategoryId,
-      department:        _department,
-      province:          _province,
-      district:          _district,
-      scheduleJson:      !_isOficio && _scheduleJson.isNotEmpty ? _scheduleJson : null,
-      website:           _websiteCtrl.text.trim().isEmpty    ? null : _websiteCtrl.text.trim(),
-      instagram:         _instagramCtrl.text.trim().isEmpty  ? null : _instagramCtrl.text.trim(),
-      tiktok:            _tiktokCtrl.text.trim().isEmpty     ? null : _tiktokCtrl.text.trim(),
-      facebook:          _facebookCtrl.text.trim().isEmpty   ? null : _facebookCtrl.text.trim(),
-      linkedin:          _linkedinCtrl.text.trim().isEmpty   ? null : _linkedinCtrl.text.trim(),
-      twitterX:          _twitterCtrl.text.trim().isEmpty    ? null : _twitterCtrl.text.trim(),
-      telegram:          _telegramCtrl.text.trim().isEmpty   ? null : _telegramCtrl.text.trim(),
-      whatsappBiz:       _whatsappBizCtrl.text.trim().isEmpty ? null : _whatsappBizCtrl.text.trim(),
+      department: _department,
+      province: _province,
+      district: _district,
+      scheduleJson: !_isOficio && _scheduleJson.isNotEmpty
+          ? _scheduleJson
+          : null,
+      website: _websiteCtrl.text.trim().isEmpty
+          ? null
+          : _websiteCtrl.text.trim(),
+      instagram: _instagramCtrl.text.trim().isEmpty
+          ? null
+          : _instagramCtrl.text.trim(),
+      tiktok: _tiktokCtrl.text.trim().isEmpty ? null : _tiktokCtrl.text.trim(),
+      facebook: _facebookCtrl.text.trim().isEmpty
+          ? null
+          : _facebookCtrl.text.trim(),
+      linkedin: _linkedinCtrl.text.trim().isEmpty
+          ? null
+          : _linkedinCtrl.text.trim(),
+      twitterX: _twitterCtrl.text.trim().isEmpty
+          ? null
+          : _twitterCtrl.text.trim(),
+      telegram: _telegramCtrl.text.trim().isEmpty
+          ? null
+          : _telegramCtrl.text.trim(),
+      whatsappBiz: _whatsappBizCtrl.text.trim().isEmpty
+          ? null
+          : _whatsappBizCtrl.text.trim(),
     );
 
     if (!mounted) return false;
@@ -439,11 +514,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
     final repo = DashboardRepository();
     int uploadErrors = 0;
-    debugPrint('[Onboarding] Subiendo ${_photos.length} foto(s) para tipo=${widget.providerType}');
+    debugPrint(
+      '[Onboarding] Subiendo ${_photos.length} foto(s) para tipo=${widget.providerType}',
+    );
     for (int i = 0; i < _photos.length; i++) {
       final photo = _photos[i];
       try {
-        debugPrint('[Onboarding] Foto ${i + 1}/${_photos.length}: ${photo.name} (${photo.path})');
+        debugPrint(
+          '[Onboarding] Foto ${i + 1}/${_photos.length}: ${photo.name} (${photo.path})',
+        );
         final url = await repo.uploadProviderPhotoFile(photo);
         debugPrint('[Onboarding] URL obtenida: $url');
         // La primera foto se marca como cover explícitamente para que la
@@ -463,9 +542,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     }
     if (!mounted) return;
     if (uploadErrors > 0 && uploadErrors < _photos.length) {
-      _showSnack('Algunas fotos no se subieron. Puedes agregarlas desde el panel.');
+      _showSnack(
+        'Algunas fotos no se subieron. Puedes agregarlas desde el panel.',
+      );
     } else if (uploadErrors == _photos.length) {
-      _showSnack('No se pudieron subir las fotos. Agrégalas desde tu panel.', isError: true);
+      _showSnack(
+        'No se pudieron subir las fotos. Agrégalas desde tu panel.',
+        isError: true,
+      );
     }
   }
 
@@ -483,7 +567,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
         _showSnack('Código de referido aplicado.');
       } catch (e) {
         if (!mounted) return;
-        _showSnack('No pudimos aplicar el código de referido porque ya lo has utilizado anteriormente desde este usuario.', isError: true);
+        _showSnack(
+          'No pudimos aplicar el código de referido porque ya lo has utilizado anteriormente desde este usuario.',
+          isError: true,
+        );
       }
     }
 
@@ -493,8 +580,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     if (_hasAdminLocation) {
       auth.updateLocation(
         department: _department!,
-        province:   _province!,
-        district:   _district!,
+        province: _province!,
+        district: _district!,
       );
     }
 
@@ -551,7 +638,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     final messenger = ScaffoldMessenger.of(context);
     final pay = PaymentsProvider();
     await pay.payWithMercadoPago(
-      plan:         plan,
+      plan: plan,
       providerType: widget.providerType ?? 'OFICIO',
     );
     if (!mounted) return;
@@ -559,9 +646,13 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     if (url != null) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } else {
-      messenger.showSnackBar(SnackBar(
-        content: Text(pay.error ?? 'No se pudo iniciar el pago con MercadoPago'),
-      ));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            pay.error ?? 'No se pudo iniciar el pago con MercadoPago',
+          ),
+        ),
+      );
     }
     if (!mounted) return;
     auth.completeOnboarding(role: widget.providerType ?? 'OFICIO');
@@ -596,19 +687,26 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             color: AppColors.available.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: AppColors.available.withValues(alpha: 0.3)),
+              color: AppColors.available.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.card_giftcard_rounded,
-                  color: AppColors.available, size: 18),
+              const Icon(
+                Icons.card_giftcard_rounded,
+                color: AppColors.available,
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Tu registro incluye el plan Estándar GRATIS durante '
                   '1 mes de bienvenida.',
                   style: TextStyle(
-                      color: c.textSecondary, fontSize: 11.5, height: 1.4),
+                    color: c.textSecondary,
+                    fontSize: 11.5,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],
@@ -640,14 +738,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                       _acquirePremium
                           ? Icons.check_circle_rounded
                           : Icons.radio_button_unchecked_rounded,
-                      color: _acquirePremium
-                          ? AppColors.premium
-                          : c.textMuted,
+                      color: _acquirePremium ? AppColors.premium : c.textMuted,
                       size: 22,
                     ),
                     const SizedBox(width: 10),
-                    const Icon(Icons.workspace_premium_rounded,
-                        color: AppColors.premium, size: 18),
+                    const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: AppColors.premium,
+                      size: 18,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -673,13 +772,16 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 Text(
                   _acquirePremium
                       ? 'Al finalizar el registro elegirás cómo pagar '
-                        '(Yape o MercadoPago). Tu perfil quedará en '
-                        'revisión mientras validamos el pago.'
+                            '(Yape o MercadoPago). Tu perfil quedará en '
+                            'revisión mientras validamos el pago.'
                       : 'Posición #1 garantizada, soporte prioritario, '
-                        'análisis de clientes y panel avanzado. Actívalo '
-                        'para pasar al pago al finalizar el registro.',
+                            'análisis de clientes y panel avanzado. Actívalo '
+                            'para pasar al pago al finalizar el registro.',
                   style: TextStyle(
-                      color: c.textMuted, fontSize: 11.5, height: 1.45),
+                    color: c.textMuted,
+                    fontSize: 11.5,
+                    height: 1.45,
+                  ),
                 ),
               ],
             ),
@@ -726,7 +828,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(_formSubtitle, style: TextStyle(color: c.textSecondary, fontSize: 14)),
+            Text(
+              _formSubtitle,
+              style: TextStyle(color: c.textSecondary, fontSize: 14),
+            ),
             const SizedBox(height: 24),
 
             // ── INFORMACIÓN BÁSICA ───────────────────
@@ -735,9 +840,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
             FormFieldTile(
               controller: _businessNameController,
-              label: _isOficio ? 'Nombre del profesional *' : 'Nombre del negocio *',
-              hint:  _isOficio ? 'Ej: Juan Electricista' : 'Ej: Restaurante El Sabor',
-              icon:  _isOficio ? Icons.handyman_outlined : Icons.storefront_outlined,
+              label: _isOficio
+                  ? 'Nombre del profesional *'
+                  : 'Nombre del negocio *',
+              hint: _isOficio
+                  ? 'Ej: Juan Electricista'
+                  : 'Ej: Restaurante El Sabor',
+              icon: _isOficio
+                  ? Icons.handyman_outlined
+                  : Icons.storefront_outlined,
             ),
             const SizedBox(height: 14),
 
@@ -770,7 +881,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
             PhoneInputSection(
               onChange: (phone, wap) => setState(() {
-                _phone    = phone;
+                _phone = phone;
                 _whatsapp = wap ?? '';
               }),
             ),
@@ -778,21 +889,27 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
             if (!_isOficio) ...[
               OnboardingAddressSection(
-                addressController:  _addressController,
-                mapsUrlController:  _mapsUrlController,
+                addressController: _addressController,
+                mapsUrlController: _mapsUrlController,
                 showAddressSection: _showAddressSection,
-                gpsLoading:         _gpsLoading,
-                gpsPosition:        _gpsPosition,
-                onToggleSection:    () => setState(() => _showAddressSection = !_showAddressSection),
-                onFetchGps:         _fetchGpsLocation,
-                onClearGps:         () => setState(() { _gpsPosition = null; _addressController.clear(); }),
-                onParseMapsUrl:     _parseMapsUrl,
+                gpsLoading: _gpsLoading,
+                gpsPosition: _gpsPosition,
+                onToggleSection: () =>
+                    setState(() => _showAddressSection = !_showAddressSection),
+                onFetchGps: _fetchGpsLocation,
+                onClearGps: () => setState(() {
+                  _gpsPosition = null;
+                  _addressController.clear();
+                }),
+                onParseMapsUrl: _parseMapsUrl,
               ),
               const SizedBox(height: 14),
             ],
 
             // ── CATEGORÍA / TIPO DE NEGOCIO ──────────
-            FormSectionHeader(label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO'),
+            FormSectionHeader(
+              label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO',
+            ),
             const SizedBox(height: 12),
             OnboardingCategorySection(
               providerType: widget.providerType,
@@ -803,7 +920,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               maxCategories: PlanLimits.specialties(_planChoice),
               onChanged: (sel, primary) => setState(() {
                 _selectedCategories = sel;
-                _primaryCategoryId  = primary;
+                _primaryCategoryId = primary;
               }),
             ),
             const SizedBox(height: 24),
@@ -814,7 +931,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             FormFieldTile(
               controller: _descriptionController,
               label: _isOficio ? 'Describe tu servicio' : 'Describe tu negocio',
-              hint:  _isOficio
+              hint: _isOficio
                   ? 'Experiencia, especialidades, horario de trabajo...'
                   : 'Qué ofreces, horarios, especialidades...',
               icon: Icons.description_outlined,
@@ -824,7 +941,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
             // ── DOMICILIO / DELIVERY ─────────────────
             FormSectionHeader(
-              label: _isOficio ? 'SERVICIOS A DOMICILIO' : 'SERVICIO DE DELIVERY',
+              label: _isOficio
+                  ? 'SERVICIOS A DOMICILIO'
+                  : 'SERVICIO DE DELIVERY',
             ),
             const SizedBox(height: 12),
             OnboardingDeliverySection(
@@ -845,7 +964,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             ],
 
             // ── UBICACIÓN ────────────────────────────
-            FormSectionHeader(label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *'),
+            FormSectionHeader(
+              label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *',
+            ),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () async {
@@ -858,8 +979,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                 if (result != null && mounted) {
                   setState(() {
                     _department = result.department;
-                    _province   = result.province;
-                    _district   = result.district;
+                    _province = result.province;
+                    _district = result.district;
                   });
                 }
               },
@@ -873,15 +994,15 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
             // ── REDES SOCIALES ──────────────────────
             OnboardingSocialSection(
-              websiteCtrl:     _websiteCtrl,
-              instagramCtrl:   _instagramCtrl,
-              tiktokCtrl:      _tiktokCtrl,
-              facebookCtrl:    _facebookCtrl,
-              linkedinCtrl:    _linkedinCtrl,
-              twitterCtrl:     _twitterCtrl,
-              telegramCtrl:    _telegramCtrl,
+              websiteCtrl: _websiteCtrl,
+              instagramCtrl: _instagramCtrl,
+              tiktokCtrl: _tiktokCtrl,
+              facebookCtrl: _facebookCtrl,
+              linkedinCtrl: _linkedinCtrl,
+              twitterCtrl: _twitterCtrl,
+              telegramCtrl: _telegramCtrl,
               whatsappBizCtrl: _whatsappBizCtrl,
-              isNegocio:       !_isOficio,
+              isNegocio: !_isOficio,
             ),
             const SizedBox(height: 24),
 
@@ -889,10 +1010,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             const FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
             const SizedBox(height: 12),
             OnboardingPhotoSection(
-              photos:          _photos,
-              maxPhotos:       _maxPhotos,
-              onPickPhoto:     _pickPhoto,
-              onRemovePhoto:   _removePhoto,
+              photos: _photos,
+              maxPhotos: _maxPhotos,
+              onPickPhoto: _pickPhoto,
+              onRemovePhoto: _removePhoto,
               onReorderPhotos: _reorderPhotos,
             ),
             const SizedBox(height: 32),
@@ -905,12 +1026,17 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               decoration: BoxDecoration(
                 color: c.bgInput,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.card_giftcard_rounded,
-                      color: AppColors.primary, size: 20),
+                  const Icon(
+                    Icons.card_giftcard_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
@@ -973,8 +1099,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
                         _acquirePremium
                             ? 'Continuar al pago Premium'
                             : (_isOficio
-                                ? 'Registrarme como profesional'
-                                : 'Registrarme como negocio'),
+                                  ? 'Registrarme como profesional'
+                                  : 'Registrarme como negocio'),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

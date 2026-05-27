@@ -109,8 +109,12 @@ export class AuthController {
   // POST /auth/social-login — verifica idToken de Firebase y devuelve JWT propios
   @Post('social-login')
   @HttpCode(HttpStatus.OK)
-  async socialLogin(@Body() dto: SocialLoginDto) {
-    return this.authService.socialLogin(dto.idToken);
+  async socialLogin(@Body() dto: SocialLoginDto, @Request() req: any) {
+    // Pasamos `req.ip` para que el mapa de calor del admin (geo-stats)
+    // tenga datos reales también para los usuarios sociales. Antes solo
+    // los de email/password registraban `lastIp` → el mapa quedaba
+    // vacío en pruebas porque la mayoría entra con Google.
+    return this.authService.socialLogin(dto.idToken, req.ip);
   }
 
   @Delete('account')

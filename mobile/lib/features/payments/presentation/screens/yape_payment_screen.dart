@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/payments_provider.dart';
+import '../../utils/qr_download.dart';
 
 // Colores Yape
 const _kPurple = Color(0xFF6D1B7B);
@@ -326,6 +327,14 @@ class _StepSummary extends StatelessWidget {
                     fontSize: 13,
                   ),
                 ),
+                const SizedBox(height: 6),
+                // Descarga discreta del QR — link-text con icono, sin
+                // background, para que no compita con los CTA primarios
+                // ("Abrir Yape" / "Ya pagué"). El asset vive en
+                // `assets/images/yape/qr.jpeg` y se comparte vía el
+                // sheet del sistema → el user elige "Guardar imagen"
+                // para subirlo después dentro de la app Yape.
+                _DownloadQrLink(),
               ],
             ),
           ),
@@ -825,4 +834,57 @@ class _YapeLabel extends StatelessWidget {
       fontWeight: FontWeight.w600,
     ),
   );
+}
+
+// ── Link de descarga del QR ──────────────────────────────────
+//
+// Botón discreto (estilo link-text con icono pequeño) que vive dentro
+// del card del QR. La acción delega en [YapeQrDownloader.share] —
+// abre la hoja del sistema con la imagen ya cargada del bundle. Sin
+// efectos en el resto del flujo: el user puede ignorarlo y pagar como
+// antes.
+class _DownloadQrLink extends StatefulWidget {
+  @override
+  State<_DownloadQrLink> createState() => _DownloadQrLinkState();
+}
+
+class _DownloadQrLinkState extends State<_DownloadQrLink> {
+  bool _busy = false;
+
+  Future<void> _onTap() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final ok = await YapeQrDownloader.share();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo preparar el QR. Volvé a intentarlo.'),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: _busy ? null : _onTap,
+      style: TextButton.styleFrom(
+        foregroundColor: _kCyan.withValues(alpha: 0.75),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        minimumSize: const Size(0, 28),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      ),
+      icon: _busy
+          ? const SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(strokeWidth: 1.6, color: _kCyan),
+            )
+          : const Icon(Icons.download_rounded, size: 14),
+      label: Text(_busy ? 'Preparando…' : 'Descargar QR'),
+    );
+  }
 }

@@ -606,7 +606,40 @@ export interface UserItem {
   role: string;
   isActive: boolean;
   createdAt: string;
-  provider?: { id: number; businessName: string; verificationStatus: string; isVerified: boolean } | null;
+  /**
+   * Datos del perfil de proveedor cuando existe — el backend ahora trae
+   * categoría primaria, ubicación y redes sociales para el modal de
+   * detalle. `provider=null` significa cliente puro (sin registro en
+   * la tabla `providers`).
+   */
+  provider?: {
+    id: number;
+    businessName: string;
+    type?: 'OFICIO' | 'NEGOCIO';
+    verificationStatus: string;
+    isVerified: boolean;
+    phone?: string;
+    whatsapp?: string;
+    address?: string;
+    locality?: {
+      name?: string;
+      department?: string;
+      province?: string;
+      district?: string;
+    } | null;
+    providerCategories?: Array<{
+      isPrimary: boolean;
+      category: { id: number; name: string; slug: string };
+    }>;
+    website?: string | null;
+    instagram?: string | null;
+    tiktok?: string | null;
+    facebook?: string | null;
+    linkedin?: string | null;
+    twitterX?: string | null;
+    telegram?: string | null;
+    whatsappBiz?: string | null;
+  } | null;
   _count: { reviews: number; favorites: number };
 }
 
@@ -620,12 +653,33 @@ export interface NotificationsResponse {
 
 export interface NotificationItem {
   id: number;
-  type: 'APROBADO' | 'RECHAZADO' | 'MAS_INFO' | 'VERIFICACION_REVOCADA' | 'PLAN_APROBADO' | 'PLAN_RECHAZADO' | 'PLAN_SOLICITADO';
+  /**
+   * Tipos esperados desde el backend. `BROADCAST_LOG` lo emite el admin
+   * service cuando se manda una push masiva — no tiene provider asociado
+   * y el frontend lo renderiza con el título completo.
+   */
+  type:
+    | 'APROBADO'
+    | 'RECHAZADO'
+    | 'MAS_INFO'
+    | 'VERIFICACION_REVOCADA'
+    | 'PLAN_APROBADO'
+    | 'PLAN_RECHAZADO'
+    | 'PLAN_SOLICITADO'
+    | 'BROADCAST_LOG';
   title?: string;
   message: string;
   isRead: boolean;
   sentAt: string;
-  provider: { businessName: string; user: { firstName: string; lastName: string } };
+  /**
+   * Puede ser null para notif sin perfil asociado (ej. BROADCAST_LOG).
+   * `type` del provider permite distinguir OFICIO/NEGOCIO en el listado.
+   */
+  provider: {
+    businessName: string;
+    type?: 'OFICIO' | 'NEGOCIO';
+    user: { firstName: string; lastName: string };
+  } | null;
 }
 
 export interface ReportsResponse {

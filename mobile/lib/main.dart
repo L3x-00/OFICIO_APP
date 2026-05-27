@@ -10,6 +10,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/constants/app_colors.dart';
 import 'core/router/app_router.dart';
 import 'core/services/fcm_service.dart';
+import 'core/services/notification_handler.dart';
 import 'core/theme/app_theme_colors.dart';
 import 'core/theme/theme_provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
@@ -131,6 +132,20 @@ class Servi extends StatelessWidget {
         themeAnimationDuration: const Duration(milliseconds: 250),
         themeAnimationCurve: Curves.easeInOut,
         routerConfig: router,
+        // Clamp del textScaleFactor del sistema. Si el user pone fuente
+        // "Extra grande" en accesibilidad, un `fontSize: 11` (chip de
+        // categoría, contador, helper text) escalaba a ~18 y rompía
+        // paddings y rows. Limitamos entre 0.9 y 1.15 — permite leer
+        // más grande sin reventar layouts. `withClampedTextScaling`
+        // aplica a toda la app de una sola pasada, sin tocar widgets
+        // uno a uno y mantiene accesibilidad parcial.
+        builder: (context, child) {
+          return MediaQuery.withClampedTextScaling(
+            minScaleFactor: 0.9,
+            maxScaleFactor: 1.15,
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }
@@ -732,6 +747,13 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     final type = message.data['type'] as String?;
     debugPrint('[FCM] Navegando por tipo: $type, data: ${message.data}');
     switch (type) {
+      case 'BROADCAST':
+        // Push masiva del admin (con título/cuerpo/foto). NO navegamos
+        // — abrimos el modal enriquecido para que el user vea la foto
+        // completa con el cuerpo del mensaje. Si fue tocada desde
+        // background/terminated, NotificationHandler difiere el show
+        // al próximo frame hasta que el navigator esté montado.
+        NotificationHandler.showFromRemoteMessage(message);
       case 'NEW_REVIEW':
       case 'PROVIDER_APPROVED':
       case 'PROVIDER_REJECTED':
@@ -750,35 +772,22 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
           ),
         );
       case 'NEW_OFFER':
+        widget.router.go('/');
         widget.router.push('/my-requests');
       case 'OFFER_ACCEPTED':
-        // El tab de oportunidades vive dentro del panel del proveedor.
+        widget.router.go('/');
         widget.router.push('/provider-panel');
       case 'CHAT_MESSAGE':
-        _openChatFromPush(message.data);
+        // 1. Nos aseguramos de estar en la pantalla principal (raíz)
+        widget.router.go('/');
+        // 2. Empujamos el chat encima de la principal
+        final roomId = message.data['chatRoomId'] ?? message.data['roomId'];
+        if (roomId != null) {
+          widget.router.push('/chat/$roomId');
+        }
       default:
         break;
     }
-  }
-
-  Future<void> _openChatFromPush(Map<String, dynamic> data) async {
-    final roomId = int.tryParse('${data['chatRoomId'] ?? ''}');
-    if (roomId == null) {
-      debugPrint('[FCM] CHAT_MESSAGE sin chatRoomId — push ignorado');
-      return;
-    }
-
-    final auth = context.read<AuthProvider>();
-    if (auth.user == null) return;
-
-    final chat = context.read<ChatProvider>();
-    await chat.initialize(auth.user!.id);
-    if (!chat.rooms.any((r) => r.id == roomId)) {
-      await chat.loadRooms();
-    }
-
-    if (!mounted) return;
-    widget.router.push('/chat/$roomId');
   }
 
   void _showTrustRejectionDialog(TrustRejectionPayload rejection) {

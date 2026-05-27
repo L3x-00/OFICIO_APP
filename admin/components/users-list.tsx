@@ -20,13 +20,25 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   ADMIN:      { label: 'Admin',        color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
 };
 
-export function UsersList() {
+/**
+ * Lista de usuarios. Por defecto el dropdown de "rol" es editable.
+ * Cuando el caller pasa `lockedRole=true`, ocultamos el dropdown y la
+ * tab parent es la única fuente de verdad del filtro (ej. management
+ * con 3 tabs: Clientes / Proveedores / Duales).
+ */
+export function UsersList({
+  initialRole = '',
+  lockedRole = false,
+}: {
+  initialRole?: string;
+  lockedRole?: boolean;
+} = {}) {
   const [users, setUsers]           = useState<UserItem[]>([]);
   const [total, setTotal]           = useState(0);
   const [lastPage, setLastPage]     = useState(1);
   const [page, setPage]             = useState(1);
   const [search, setSearch]         = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState(initialRole);
   const [statusFilter, setStatusFilter] = useState<'' | 'true' | 'false'>('');
   const [isLoading, setIsLoading]   = useState(true);
   const [actionId, setActionId]     = useState<number | null>(null);
@@ -46,8 +58,8 @@ export function UsersList() {
       setUsers(data.data);
       setTotal(data.total);
       setLastPage(data.lastPage);
-    } catch (err: any) {
-      toast.error(err?.message || 'Error al cargar usuarios');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al cargar usuarios');
     } finally {
       setIsLoading(false);
     }
@@ -66,8 +78,8 @@ export function UsersList() {
       setDeleteReason('');
       toast.success(`Cuenta de ${user.firstName} eliminada`);
       load();
-    } catch (e: any) {
-      toast.error(e?.message || 'Error al eliminar usuario');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al eliminar usuario');
     } finally {
       setActionId(null);
     }
@@ -78,8 +90,8 @@ export function UsersList() {
     try {
       await updateUserStatus(user.id, !user.isActive);
       load();
-    } catch (e: any) {
-      toast.error(e?.message || 'Error al actualizar estado del usuario');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al actualizar estado del usuario');
     } finally {
       setActionId(null);
     }
@@ -102,20 +114,23 @@ export function UsersList() {
           />
         </div>
 
-        <select
-          value={roleFilter}
-          onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className="bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-300 outline-none focus:border-blue-500/40 transition-all"
-        >
-          <option value="">Todos los roles</option>
-          <option value="USUARIO">Clientes</option>
-          <option value="PROVEEDOR">Proveedores</option>
-          <option value="ADMIN">Admins</option>
-        </select>
+        {!lockedRole && (
+          <select
+            value={roleFilter}
+            onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
+            className="bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-300 outline-none focus:border-blue-500/40 transition-all"
+          >
+            <option value="">Todos los roles</option>
+            <option value="USUARIO">Clientes</option>
+            <option value="PROVEEDOR">Proveedores</option>
+            <option value="DUAL">Duales (ambos roles)</option>
+            <option value="ADMIN">Admins</option>
+          </select>
+        )}
 
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value as any); setPage(1); }}
+          onChange={(e) => { setStatusFilter(e.target.value as '' | 'true' | 'false'); setPage(1); }}
           className="bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-300 outline-none focus:border-blue-500/40 transition-all"
         >
           <option value="">Todos los estados</option>

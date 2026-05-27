@@ -126,33 +126,50 @@ export class PushNotificationsService {
     // Lotes de 500 — sendEach limita a 500 mensajes por llamada.
     const CHUNK = 500;
     let invalidated = 0;
+    // El SDK TS usa `imageUrl` para los 3 bloques; en el wire HTTP v1
+    // se serializa como `image`. Repetimos en los 3 lugares porque:
+    //   • `notification.imageUrl`           → fallback genérico.
+    //   • `android.notification.imageUrl`   → Android system tray big-picture.
+    //   • `apns.fcmOptions.imageUrl`        → iOS rich notification.
+    // Si solo dejamos el genérico, varios OEM Android no levantan el
+    // banner con la foto.
+    const hasImage = !!payload.imageUrl;
+    const imageUrl = payload.imageUrl ?? undefined;
+
     for (let i = 0; i < targets.length; i += CHUNK) {
       const slice = targets.slice(i, i + CHUNK);
       const messages = slice.map((t) => ({
         token: t.token,
-        notification: payload.imageUrl
-          ? {
-              title: payload.title,
-              body: payload.body,
-              imageUrl: payload.imageUrl,
-            }
-          : { title: payload.title, body: payload.body },
+        notification: {
+          title: payload.title,
+          body: payload.body,
+          ...(hasImage ? { imageUrl } : {}),
+        },
+        // Las `data` siempre llevan la imageUrl si la hubo — así el
+        // mobile puede leerla en `message.data.imageUrl` para abrir el
+        // modal in-app (incluso si la imagen falló en el banner nativo).
         data: {
           ...payload.data,
           type: payload.data.type ?? 'BROADCAST',
-          ...(payload.imageUrl ? { imageUrl: payload.imageUrl } : {}),
+          ...(hasImage ? { imageUrl: payload.imageUrl as string } : {}),
         },
         android: {
           priority: 'high' as const,
-          notification: payload.imageUrl
-            ? { imageUrl: payload.imageUrl }
-            : undefined,
+          notification: {
+            // Repetimos title/body en android.notification — sin esto,
+            // android.notification queda vacío y algunos firmwares
+            // ignoran la imagen como override.
+            title: payload.title,
+            body: payload.body,
+            // Canal HIGH creado por MainActivity.kt al boot. Sin esto
+            // la notif aparece pero no como heads-up.
+            channelId: 'servi_default_channel',
+            ...(hasImage ? { imageUrl } : {}),
+          },
         },
         apns: {
           payload: { aps: { sound: 'default', 'mutable-content': 1 } },
-          ...(payload.imageUrl
-            ? { fcmOptions: { imageUrl: payload.imageUrl } }
-            : {}),
+          ...(hasImage ? { fcmOptions: { imageUrl } } : {}),
         },
       }));
       try {

@@ -28,7 +28,7 @@ import {
   type RedemptionResult,
 } from '@/lib/api';
 
-const APP_DOWNLOAD_URL = 'https://oficio-backend.onrender.com/download';
+const APP_DOWNLOAD_URL = 'https://play.google.com/store/apps/details?id=com.oficioapp.mobile';
 
 const PLAN_REWARDS = [
   {

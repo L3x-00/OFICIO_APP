@@ -772,7 +772,7 @@ export class AuthService {
   }
 
   // ── SOCIAL LOGIN (Firebase idToken) ─────────────────────
-  async socialLogin(idToken: string) {
+  async socialLogin(idToken: string, ip?: string) {
     // Verificar token con Firebase Admin
     const decoded = await this.firebaseService.verifyIdToken(idToken);
     const { uid, email, name, picture } = decoded;
@@ -852,6 +852,19 @@ export class AuthService {
         'Ya tienes una cuenta con este correo. Inicia sesión con tu correo y contraseña, o regístrate con otro correo.',
       );
     }
+
+    // Log de IP + timestamp para auditoría y mapa de calor (geo-stats).
+    // Fire-and-forget — no bloquea el login. Mismo patrón que login con
+    // email/password (`auth.service.ts` línea ~455).
+    this.prisma.user
+      .update({
+        where: { id: user.id },
+        data: {
+          lastLoginAt: new Date(),
+          ...(ip ? { lastIp: ip } : {}),
+        },
+      })
+      .catch(() => {});
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     return {

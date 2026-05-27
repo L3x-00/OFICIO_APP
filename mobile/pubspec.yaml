@@ -1,7 +1,7 @@
 name: mobile
 description: "Marketplace de Servicios Locales"
 publish_to: 'none'
-version: 2.0.0+117
+version: 2.0.0+118.
 
 environment:
   sdk: ^3.11.4
@@ -31,6 +31,9 @@ dependencies:
 
   # Galería de imágenes
   photo_view: ^0.15.0
+
+  # Geocoding inverso para mostrar direcciones legibles en lugar de coordenadas.
+  geocoding: ^3.0.0
 
   # Compartir vanity URL de proveedores (Web Share API en web, native sheet
   # en Android/iOS). Usado en ProviderDetailSheet → ícono compartir.
@@ -98,7 +101,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/logo/servi_icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#E07B39" # Fondo
+  adaptive_icon_background: "#000000" # Fondo
   adaptive_icon_foreground: "assets/images/logo/servi_icon.png"
 
 # ── Configuración de splash screen ──────────────────────────

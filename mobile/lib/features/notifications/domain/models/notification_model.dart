@@ -25,6 +25,12 @@ class AppNotification {
   /// persistidas (cargadas vía REST) NO tienen esto y caen al fallback
   /// de navegación por tipo.
   final Map<String, dynamic>? actionData;
+
+  /// URL de imagen adjunta a la notificación (típicamente broadcasts del
+  /// admin con foto). Si está presente, el tap en el tile del inbox
+  /// abre el modal enriquecido en vez de solo marcar leído.
+  final String? imageUrl;
+
   bool isRead;
 
   AppNotification({
@@ -36,6 +42,7 @@ class AppNotification {
     this.targetProfileType,
     this.avatarUrl,
     this.actionData,
+    this.imageUrl,
     this.isRead = false,
   });
 
@@ -51,6 +58,7 @@ class AppNotification {
       avatarUrl:
           data['avatarUrl'] as String? ?? data['senderAvatarUrl'] as String?,
       actionData: _extractActionData(data),
+      imageUrl: _readImageUrl(data),
       isRead: false,
     );
   }
@@ -70,8 +78,17 @@ class AppNotification {
           DateTime.now(),
       targetProfileType: json['targetProfileType'] as String?,
       actionData: _extractActionData(json),
+      imageUrl: _readImageUrl(json),
       isRead: json['isRead'] as bool? ?? false,
     );
+  }
+
+  /// Lee la URL de imagen tolerando los dos nombres que circulan:
+  /// `imageUrl` (backend BROADCAST, FCM data) y `image` (alias FCM v1).
+  static String? _readImageUrl(Map<String, dynamic> src) {
+    final v = src['imageUrl'] ?? src['image'];
+    if (v is String && v.isNotEmpty) return v;
+    return null;
   }
 
   /// Copia de las keys de payload que usamos para navegar — las

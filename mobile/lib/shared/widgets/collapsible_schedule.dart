@@ -6,7 +6,11 @@ import 'schedule_editor.dart';
 class CollapsibleSchedule extends StatefulWidget {
   final Map<String, dynamic> scheduleJson;
   final void Function(Map<String, dynamic>) onSave;
-  const CollapsibleSchedule({super.key, required this.scheduleJson, required this.onSave});
+  const CollapsibleSchedule({
+    super.key,
+    required this.scheduleJson,
+    required this.onSave,
+  });
 
   @override
   State<CollapsibleSchedule> createState() => _CollapsibleScheduleState();
@@ -14,6 +18,16 @@ class CollapsibleSchedule extends StatefulWidget {
 
 class _CollapsibleScheduleState extends State<CollapsibleSchedule> {
   bool _expanded = false;
+
+  @override
+  void didUpdateWidget(covariant CollapsibleSchedule oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si el scheduleJson cambió desde el padre (ej. al guardar),
+    // forzamos la reconstrucción para que _summary lea los nuevos datos.
+    if (widget.scheduleJson != oldWidget.scheduleJson) {
+      setState(() {});
+    }
+  }
 
   String get _summary {
     if (widget.scheduleJson.isEmpty) return 'Sin configurar';
@@ -23,17 +37,20 @@ class _CollapsibleScheduleState extends State<CollapsibleSchedule> {
     // antigua y siempre devolvía "Sin configurar" tras guardar.
     // También excluimos los días marcados como 'Cerrado' (otro shape
     // legacy que algunos perfiles antiguos persistían).
-    final days = widget.scheduleJson.entries.where((e) {
-      final v = e.value;
-      if (v == null) return false;
-      if (v is String) {
-        final s = v.trim();
-        return s.isNotEmpty && s.toLowerCase() != 'cerrado';
-      }
-      // Compat con shape legacy `{open: true, ...}`.
-      if (v is Map) return v['open'] == true;
-      return false;
-    }).map((e) => e.key).toList();
+    final days = widget.scheduleJson.entries
+        .where((e) {
+          final v = e.value;
+          if (v == null) return false;
+          if (v is String) {
+            final s = v.trim();
+            return s.isNotEmpty && s.toLowerCase() != 'cerrado';
+          }
+          // Compat con shape legacy `{open: true, ...}`.
+          if (v is Map) return v['open'] == true;
+          return false;
+        })
+        .map((e) => e.key)
+        .toList();
     if (days.isEmpty) return 'Sin configurar';
     return '${days.length} día${days.length == 1 ? '' : 's'} configurados';
   }
@@ -62,14 +79,24 @@ class _CollapsibleScheduleState extends State<CollapsibleSchedule> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Horario de Atención',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: c.textPrimary)),
-                      Text(_summary,
-                          style: TextStyle(fontSize: 12, color: c.textMuted)),
+                      Text(
+                        'Horario de Atención',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: c.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        _summary,
+                        style: TextStyle(fontSize: 12, color: c.textMuted),
+                      ),
                     ],
                   ),
                 ),
-                Icon(_expanded ? Icons.expand_less : Icons.expand_more, color: c.textMuted),
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  color: c.textMuted,
+                ),
               ],
             ),
           ),

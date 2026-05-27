@@ -1,5 +1,6 @@
 /// Constantes y funciones de formato compartidas para el módulo de referidos.
-const kAppDownloadUrl = 'https://oficio-backend.onrender.com/download';
+const kAppDownloadUrl =
+    'https://play.google.com/store/apps/details?id=com.oficioapp.mobile';
 
 String formatNumber(int value) {
   // Inserta separador de miles cada 3 dígitos (formato es-PE: punto como
