@@ -75,7 +75,12 @@ export default function PanelServiciosPage() {
 
   const plan = provider?.subscription?.plan || 'GRATIS';
   const maxItems = plan === 'PREMIUM' ? Infinity : plan === 'ESTANDAR' ? 6 : 3;
-  const currentItems = 0; // Este valor debería venir de provider.servicios?.length, pero lo dejamos como en el original
+  // Servicios reales del provider — vienen embebidos en
+  // `scheduleJson.services` (mismo shape que persiste el mobile).
+  // Antes el contador estaba hardcoded a 0 y nunca se renderizaban los
+  // ítems con sus fotos.
+  const items = provider?.scheduleJson?.services ?? [];
+  const currentItems = items.length;
   const isAtLimit = currentItems >= maxItems;
   const progressPct = maxItems === Infinity ? 0 : Math.min((currentItems / maxItems) * 100, 100);
 
@@ -171,6 +176,47 @@ export default function PanelServiciosPage() {
           </a>
         )}
       </motion.div>
+
+      {/* Lista de servicios/productos del provider (con fotos R2). */}
+      {currentItems > 0 && (
+        <motion.div variants={itemVariants} className="space-y-3">
+          {items.map((item, i) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              className="glass rounded-2xl p-4 flex items-center gap-4 border border-white/5"
+            >
+              <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/[0.04] border border-white/5 flex items-center justify-center">
+                {item.imageUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Package size={24} className="text-white/30" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-sm truncate">{item.name}</p>
+                {item.description && (
+                  <p className="text-white/40 text-xs mt-1 line-clamp-2">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+              {isNegocio && item.price != null && (
+                <span className="text-primary-light font-bold text-sm bg-primary/10 px-3 py-1 rounded-lg flex-shrink-0">
+                  S/. {item.price.toFixed(2)}
+                </span>
+              )}
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
       {/* Empty state con glass y animación */}
       {currentItems === 0 && (

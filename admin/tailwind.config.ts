@@ -80,7 +80,11 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  // `tailwindcss-animate` agrega utilidades `animate-in` / `animate-out`
+  // que usan los primitives de Radix (Dialog, DropdownMenu, Tabs, …).
+  // Mantiene el resto del config intacto — solo añade nuevas clases.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  plugins: [require('tailwindcss-animate')],
 };
 
 export default config;

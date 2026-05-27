@@ -1,8 +1,25 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { MapPin, RefreshCw, Loader2, AlertTriangle, Users } from 'lucide-react';
 import { getUsersGeoStats, UserGeoStatsRow } from '@/lib/api';
+import type { MapPoint } from './maps/peru-providers-map';
+
+// Leaflet rompe en SSR (usa `window`). Cargamos el componente solo en
+// cliente con `dynamic({ ssr: false })`. Mientras tanto un placeholder
+// del mismo alto evita layout shift.
+const PeruProvidersMap = dynamic(() => import('./maps/peru-providers-map'), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{ height: 480 }}
+      className="rounded-2xl border border-white/5 bg-slate-900/50 flex items-center justify-center"
+    >
+      <Loader2 className="animate-spin text-amber-400" size={20} />
+    </div>
+  ),
+});
 
 // Paleta del admin — coherente con analytics-content.
 const C = {
@@ -42,8 +59,8 @@ export default function UsersGeoContent() {
     try {
       const data = await getUsersGeoStats();
       setRows(Array.isArray(data) ? data : []);
-    } catch (e: any) {
-      setError(e?.message ?? 'No se pudieron cargar los datos de geolocalización.');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'No se pudieron cargar los datos de geolocalización.');
     } finally {
       setLoading(false);
       setReloading(false);
@@ -54,6 +71,22 @@ export default function UsersGeoContent() {
 
   const totalUsers = useMemo(
     () => rows.reduce((sum, r) => sum + r.userCount, 0),
+    [rows],
+  );
+
+  // Puntos para el mapa — filtra los que tengan coords (todos los del
+  // nuevo backend las traen; el filter es defensivo si vuelve algún
+  // departamento sin centroide registrado).
+  const mapPoints: MapPoint[] = useMemo(
+    () =>
+      rows
+        .filter((r) => typeof r.lat === 'number' && typeof r.lng === 'number')
+        .map((r) => ({
+          department:    r.department,
+          providerCount: r.userCount,
+          lat:           r.lat as number,
+          lng:           r.lng as number,
+        })),
     [rows],
   );
 
@@ -78,10 +111,10 @@ export default function UsersGeoContent() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-              Mapa de usuarios
+              Mapa de proveedores
             </h1>
             <p style={{ margin: '4px 0 0', fontSize: 12, color: C.textMuted }}>
-              Origen geográfico de los logins. {totalUsers} usuarios localizados.
+              Distribución por departamento. {totalUsers} proveedor{totalUsers === 1 ? '' : 'es'} registrado{totalUsers === 1 ? '' : 's'}.
             </p>
           </div>
         </div>
@@ -107,7 +140,14 @@ export default function UsersGeoContent() {
 
       {!loading && !error && rows.length > 0 && (
         <>
-          {/* ── Top 3 ciudades como cards ─────────────────── */}
+          {/* ── Mapa interactivo del Perú ─────────────────── */}
+          {mapPoints.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <PeruProvidersMap points={mapPoints} height={480} />
+            </div>
+          )}
+
+          {/* ── Top 3 departamentos como cards ────────────── */}
           {top3.length > 0 && (
             <div style={{
               display: 'grid',
@@ -132,20 +172,16 @@ export default function UsersGeoContent() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    <Th>Ciudad</Th>
                     <Th>Departamento</Th>
-                    <Th>País</Th>
-                    <Th align="right">Usuarios</Th>
-                    <Th align="right">Último acceso</Th>
+                    <Th align="right">Proveedores</Th>
+                    <Th align="right">Último alta</Th>
                   </tr>
                 </thead>
                 <tbody>
                   {others.map((r) => (
-                    <tr key={`${r.city}-${r.department}`}
+                    <tr key={r.department}
                         style={{ borderTop: `1px solid ${C.border}` }}>
-                      <Td>{r.city}</Td>
                       <Td>{r.department}</Td>
-                      <Td muted>{r.country}</Td>
                       <Td align="right" bold>{r.userCount}</Td>
                       <Td align="right" muted>{fmtRelative(r.lastAccess)}</Td>
                     </tr>
@@ -183,12 +219,12 @@ function CityCard({ row, rank }: { row: UserGeoStatsRow; rank: number }) {
         <span style={{ fontSize: 22, fontWeight: 700, color: C.text }}>
           {row.userCount}
         </span>
-        <span style={{ fontSize: 11, color: C.textMuted }}>usuarios</span>
+        <span style={{ fontSize: 11, color: C.textMuted }}>
+          proveedor{row.userCount === 1 ? '' : 'es'}
+        </span>
       </div>
-      <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{row.city}</div>
-      <div style={{ fontSize: 12, color: C.textMuted }}>
-        {row.department} · {row.country}
-      </div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{row.department}</div>
+      <div style={{ fontSize: 12, color: C.textMuted }}>Perú</div>
       <div style={{ marginTop: 10, fontSize: 11, color: C.success }}>
         Último: {fmtRelative(row.lastAccess)}
       </div>
@@ -235,7 +271,7 @@ function SkeletonState() {
       padding: 24, color: C.textMuted, fontSize: 13,
     }}>
       <Loader2 size={16} className="animate-spin" />
-      Resolviendo geolocalización de IPs… (puede tardar unos segundos la primera vez)
+      Cargando proveedores por departamento…
     </div>
   );
 }
@@ -275,8 +311,8 @@ function EmptyState() {
     }}>
       <MapPin size={32} style={{ margin: '0 auto 12px' }} />
       <p style={{ margin: 0 }}>
-        Aún no hay datos de geolocalización. Los users aparecerán acá cuando
-        hagan login después de este deploy.
+        Aún no hay proveedores con departamento asignado. Cuando se
+        aprueben perfiles, aparecerán en el mapa según su localidad.
       </p>
     </div>
   );

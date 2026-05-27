@@ -209,6 +209,25 @@ export interface RedemptionResult {
   };
 }
 
+/**
+ * Forma del item que devuelve `GET /favorites`. El backend hace spread
+ * del provider + alias `category: { name }` (ver favorites.service.ts).
+ * Por eso `id` acá es el id del PROVIDER (no del row Favorite), y los
+ * campos del provider están aplanados al primer nivel.
+ */
+export interface FavoriteFromApi {
+  id: number;
+  businessName: string;
+  averageRating?: number;
+  totalReviews?: number;
+  type?: "OFICIO" | "NEGOCIO";
+  phone?: string;
+  whatsapp?: string;
+  images?: Array<{ id: number; url: string; isCover?: boolean }>;
+  category?: { name: string };
+  subscription?: { plan: string; status: string };
+}
+
 /** Shape returned by GET /providers (public listing). */
 export interface PublicProvider {
   id: number;
@@ -245,6 +264,43 @@ interface FlatLoginResponse {
   department?: string;
   province?: string;
   district?: string;
+}
+
+// Shape REAL que devuelve el backend en /provider-profile/me/analytics.
+// El web ya tenía un `Analytics` UI-friendly (totalViews, dailyData) pero
+// el endpoint responde con `summary` + `dailyClicks` (mismo contrato que
+// consume el mobile). Sin esta normalización los KPIs salían 0 y los
+// charts vacíos aunque hubiera datos reales en BD.
+interface RawAnalytics {
+  summary?: {
+    whatsappClicks?: number;
+    callClicks?: number;
+    views?: number;
+    totalClicks?: number;
+  };
+  dailyClicks?: Array<{
+    date: string;
+    whatsapp?: number;
+    calls?: number;
+    views?: number;
+  }>;
+  totalReviews?: number;
+}
+
+function normalizeAnalytics(raw: RawAnalytics): Analytics {
+  const s = raw.summary ?? {};
+  return {
+    totalViews:           s.views          ?? 0,
+    totalWhatsappClicks:  s.whatsappClicks ?? 0,
+    totalCallClicks:      s.callClicks     ?? 0,
+    totalReviews:         raw.totalReviews ?? 0,
+    dailyData: (raw.dailyClicks ?? []).map((d) => ({
+      date:     d.date,
+      views:    d.views    ?? 0,
+      whatsapp: d.whatsapp ?? 0,
+      calls:    d.calls    ?? 0,
+    })),
+  };
 }
 
 function buildUserFromFlat(raw: FlatLoginResponse, fallbackEmail: string): User {
@@ -316,7 +372,10 @@ export const api = {
   ): Promise<Analytics> {
     const params = new URLSearchParams({ days: String(days) });
     if (type) params.set("type", type);
-    return apiFetch<Analytics>(`/provider-profile/me/analytics?${params.toString()}`);
+    const raw = await apiFetch<RawAnalytics>(
+      `/provider-profile/me/analytics?${params.toString()}`,
+    );
+    return normalizeAnalytics(raw);
   },
 
   async deleteImage(imageId: number): Promise<void> {
@@ -364,7 +423,10 @@ export const api = {
 
   async getAnalytics(type?: "OFICIO" | "NEGOCIO"): Promise<Analytics> {
     const qs = type ? `?type=${type}` : "";
-    return apiFetch<Analytics>(`/provider-profile/me/analytics${qs}`);
+    const raw = await apiFetch<RawAnalytics>(
+      `/provider-profile/me/analytics${qs}`,
+    );
+    return normalizeAnalytics(raw);
   },
 
   async getMyProviderStatus(): Promise<{
@@ -381,9 +443,17 @@ export const api = {
     return apiFetch("/users/my-provider-status");
   },
 
-  async getFavorites(userId: number): Promise<unknown[]> {
+  /**
+   * Lista los favoritos del usuario autenticado. El backend resuelve
+   * `userId` desde el JWT — antes el web llamaba `/favorites/:userId`
+   * (sólo existe como POST de toggle), lo que devolvía 404 y caía al
+   * fallback `[]` silenciosamente. La firma sigue aceptando `userId`
+   * (ignorado) para no romper a los callers existentes.
+   */
+  async getFavorites(_userId?: number): Promise<FavoriteFromApi[]> {
+    void _userId;
     try {
-      return await apiFetch<unknown[]>(`/favorites/${userId}`);
+      return await apiFetch<FavoriteFromApi[]>("/favorites");
     } catch {
       return [];
     }
@@ -447,7 +517,14 @@ export const api = {
     return apiFetch<CoinRedemption[]>("/referrals/redemptions");
   },
 
-  async getNotifications(): Promise<{
+  /**
+   * Inbox de notificaciones del usuario autenticado. El backend lo
+   * sirve en `/provider-profile/me/notifications` — mismo endpoint
+   * que el mobile. Cuando se pasa `type`, filtra al perfil OFICIO o
+   * NEGOCIO; sin tipo, devuelve TODO (incl. broadcasts y notif del
+   * cliente puro).
+   */
+  async getNotifications(type?: "OFICIO" | "NEGOCIO"): Promise<{
     data: Array<{
       id: number;
       type: string;
@@ -458,11 +535,24 @@ export const api = {
     }>;
     unreadCount: number;
   }> {
+    const qs = type ? `?type=${type}` : "";
     try {
-      return await apiFetch("/notifications");
+      return await apiFetch(`/provider-profile/me/notifications${qs}`);
     } catch {
       return { data: [], unreadCount: 0 };
     }
+  },
+
+  async markNotificationRead(id: number): Promise<void> {
+    await apiFetch(`/provider-profile/me/notifications/${id}/read`, {
+      method: "PATCH",
+    });
+  },
+
+  async markAllNotificationsRead(): Promise<void> {
+    await apiFetch("/provider-profile/me/notifications/read-all", {
+      method: "PATCH",
+    });
   },
 
   async getUserProfile(): Promise<User> {

@@ -1,7 +1,8 @@
 'use client';
 
 import { X, CheckCircle, XCircle, HelpCircle, ShieldOff, Building2,
-  Briefcase, User, Calendar, MessageSquare } from 'lucide-react';
+  Calendar, MessageSquare, Megaphone,
+  type LucideIcon } from 'lucide-react';
 import { NotificationItem, markNotificationRead } from '@/lib/api';
 
 interface Props {
@@ -12,7 +13,7 @@ interface Props {
 
 const TYPE_CONFIG: Record<
   NotificationItem['type'],
-  { icon: any; label: string; color: string; bg: string; border: string; description: string }
+  { icon: LucideIcon; label: string; color: string; bg: string; border: string; description: string }
 > = {
   APROBADO: {
     icon: CheckCircle,
@@ -70,6 +71,14 @@ const TYPE_CONFIG: Record<
     border: 'border-amber-500/25',
     description: 'El proveedor envió un comprobante de pago para cambio de plan.',
   },
+  BROADCAST_LOG: {
+    icon: Megaphone,
+    label: 'Broadcast',
+    color: 'text-purple-400',
+    bg: 'bg-purple-500/10',
+    border: 'border-purple-500/25',
+    description: 'Push masiva que enviaste a todos los usuarios.',
+  },
 };
 
 function fmt(iso: string) {
@@ -126,21 +135,24 @@ export function NotificationDetailModal({ notification, onClose, onRead }: Props
             <p className={`text-sm ${cfg.color}`}>{cfg.description}</p>
           </div>
 
-          {/* Proveedor */}
-          <section>
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Proveedor</h3>
-            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
-                <Building2 size={16} className="text-purple-400" />
+          {/* Proveedor — solo se muestra cuando la notif está
+              vinculada a uno (BROADCAST_LOG y similares no lo tienen). */}
+          {notification.provider && (
+            <section>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Proveedor</h3>
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/20 flex items-center justify-center">
+                  <Building2 size={16} className="text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm">{notification.provider.businessName}</p>
+                  <p className="text-gray-500 text-xs">
+                    {notification.provider.user.firstName} {notification.provider.user.lastName}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-white font-bold text-sm">{notification.provider.businessName}</p>
-                <p className="text-gray-500 text-xs">
-                  {notification.provider.user.firstName} {notification.provider.user.lastName}
-                </p>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* Mensaje completo */}
           <section>

@@ -47,6 +47,22 @@ export interface Provider {
   images: ProviderImage[];
   category?: Category;
   locality?: Locality;
+  /**
+   * JSON con servicios/productos del provider. El móvil guarda
+   * `services: [{ id, name, description, price, imageUrl, phone }]`
+   * acá. El web lo lee para mostrar productos en /panel/servicios.
+   */
+  scheduleJson?: {
+    services?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      price?: number;
+      imageUrl?: string;
+      phone?: string;
+    }>;
+    [key: string]: unknown;
+  };
 }
 
 export interface Subscription {

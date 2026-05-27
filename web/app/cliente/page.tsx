@@ -23,6 +23,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { clearSession } from '@/lib/auth';
+import { getSocket } from '@/lib/socket';
 import ReferralPanel from '@/components/referral-panel';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -37,16 +38,16 @@ interface NotificationItem {
   isRead: boolean;
 }
 
+// El backend devuelve el provider aplanado (con alias `category:{name}`).
+// Antes el web esperaba un wrapper `.provider` que nunca llegaba → la
+// sección "Mis favoritos" se veía vacía aunque hubiera registros en BD.
 interface FavoriteItem {
   id: number;
-  providerId?: number;
-  provider?: {
-    id: number;
-    businessName: string;
-    averageRating?: number;
-    images?: { url: string }[];
-    category?: { name: string };
-  };
+  businessName: string;
+  averageRating?: number;
+  type?: 'OFICIO' | 'NEGOCIO';
+  images?: { url: string }[];
+  category?: { name: string };
 }
 
 export default function ClientePage() {
@@ -80,11 +81,11 @@ function ClienteContent() {
         setUser(u);
 
         const [favsRaw, notifs] = await Promise.all([
-          api.getFavorites(u.id),
+          api.getFavorites(),
           api.getNotifications(),
         ]);
         if (cancelled) return;
-        setFavorites((favsRaw as FavoriteItem[]) ?? []);
+        setFavorites((favsRaw as unknown as FavoriteItem[]) ?? []);
         setNotifications(notifs.data ?? []);
         setUnreadCount(notifs.unreadCount ?? 0);
       } catch {
@@ -95,6 +96,33 @@ function ClienteContent() {
     }
     load();
     return () => { cancelled = true; };
+  }, []);
+
+  // ── Notificaciones en tiempo real (socket.io) ────────────────
+  // El backend emite el evento `notification` desde events.gateway.ts.
+  // Lo prependemos al inbox y subimos el badge — sin refrescar la página.
+  useEffect(() => {
+    const socket = getSocket();
+    const onNotif = (payload: unknown) => {
+      const p = payload as Partial<NotificationItem> & {
+        type?: string;
+        body?: string;
+        targetUserId?: number;
+      };
+      if (!p?.type) return;
+      const item: NotificationItem = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        type:    p.type,
+        title:   p.title   ?? 'Notificación',
+        message: p.message ?? p.body ?? '',
+        sentAt:  new Date().toISOString(),
+        isRead:  false,
+      };
+      setNotifications((prev) => [item, ...prev]);
+      setUnreadCount((c) => c + 1);
+    };
+    socket.on('notification', onNotif);
+    return () => { socket.off('notification', onNotif); };
   }, []);
 
   if (loading) {
@@ -334,9 +362,9 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {items.map((fav) => {
-        const p = fav.provider;
-        if (!p) return null;
-        const cover = p.images?.[0]?.url;
+        // El backend devuelve provider aplanado: leemos los campos
+        // directamente de `fav` (no de `fav.provider`).
+        const cover = fav.images?.[0]?.url;
         return (
           <div
             key={fav.id}
@@ -344,9 +372,10 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
           >
             <div className="aspect-video bg-dark-card relative">
               {cover ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={cover}
-                  alt={p.businessName}
+                  alt={fav.businessName}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
@@ -362,14 +391,14 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
               </button>
             </div>
             <div className="p-4">
-              <h3 className="font-display font-semibold text-white text-[14px] truncate">{p.businessName}</h3>
-              {p.category?.name && (
-                <p className="text-white/40 text-[12px] truncate mt-0.5">{p.category.name}</p>
+              <h3 className="font-display font-semibold text-white text-[14px] truncate">{fav.businessName}</h3>
+              {fav.category?.name && (
+                <p className="text-white/40 text-[12px] truncate mt-0.5">{fav.category.name}</p>
               )}
-              {typeof p.averageRating === 'number' && p.averageRating > 0 && (
+              {typeof fav.averageRating === 'number' && fav.averageRating > 0 && (
                 <div className="flex items-center gap-1 mt-2 text-white text-[12.5px] font-display font-semibold tabular-nums">
                   <Star size={12} className="text-amber fill-amber" />
-                  {p.averageRating.toFixed(1)}
+                  {fav.averageRating.toFixed(1)}
                 </div>
               )}
             </div>

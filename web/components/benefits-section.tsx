@@ -1,9 +1,23 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Shield, MapPin, CreditCard, HeartHandshake, Zap, Star } from 'lucide-react';
+import Image from 'next/image';
+import { Shield, MapPin, CreditCard, HeartHandshake, Star, type LucideIcon } from 'lucide-react';
 
-const benefits = [
+// `icon` puede ser:
+//   • Un componente Lucide (tipo `LucideIcon`).
+//   • Una ruta a SVG propio (string que empieza con `/`), p.ej. el
+//     ícono oficial de WhatsApp para la tarjeta "Contacto directo".
+type BenefitIcon = LucideIcon | string;
+
+interface BenefitDef {
+  icon: BenefitIcon;
+  title: string;
+  desc: string;
+  accent: 'orange' | 'accent' | 'amber' | 'ink' | 'whatsapp';
+}
+
+const benefits: BenefitDef[] = [
   {
     icon: Shield,
     title: 'Profesionales verificados',
@@ -14,7 +28,7 @@ const benefits = [
     icon: MapPin,
     title: 'Reseñas con GPS',
     desc: 'Opiniones geolocalizadas que garantizan autenticidad en cada experiencia.',
-    accent: 'accent', // Cambiado a 'accent' (Cian) para usar nuestro nuevo color de confianza
+    accent: 'accent',
   },
   {
     icon: CreditCard,
@@ -29,10 +43,12 @@ const benefits = [
     accent: 'orange',
   },
   {
-    icon: Zap,
+    // SVG oficial de WhatsApp — sustituye al ícono Zap genérico que no
+    // representaba la naturaleza del beneficio. Vive en /public.
+    icon: '/images/social/whatsapp.svg',
     title: 'Contacto directo',
     desc: 'Habla directamente con el proveedor por WhatsApp o teléfono sin intermediarios.',
-    accent: 'ink',
+    accent: 'whatsapp',
   },
   {
     icon: Star,
@@ -40,14 +56,16 @@ const benefits = [
     desc: 'Sistema de calificaciones verificadas para tomar la mejor decisión.',
     accent: 'amber',
   },
-] as const;
+];
 
 // Mapa actualizado para el tema Dark Premium (colores brillantes sobre cristal oscuro)
-const accentMap: Record<string, { bg: string; text: string; border: string }> = {
-  orange: { bg: 'bg-primary/10',  text: 'text-primary-light', border: 'border-primary/20' },
-  accent: { bg: 'bg-accent/10',   text: 'text-accent',        border: 'border-accent/20' }, // Cian de confianza
-  amber:  { bg: 'bg-amber/10',    text: 'text-amber',         border: 'border-amber/20' },
-  ink:    { bg: 'bg-white/5',     text: 'text-white/70',      border: 'border-white/10' },
+const accentMap: Record<BenefitDef['accent'], { bg: string; text: string; border: string }> = {
+  orange:   { bg: 'bg-primary/10',         text: 'text-primary-light', border: 'border-primary/20'        },
+  accent:   { bg: 'bg-accent/10',          text: 'text-accent',        border: 'border-accent/20'         }, // Cian de confianza
+  amber:    { bg: 'bg-amber/10',           text: 'text-amber',         border: 'border-amber/20'          },
+  ink:      { bg: 'bg-white/5',            text: 'text-white/70',      border: 'border-white/10'          },
+  // Tono específico para el SVG de WhatsApp: verde corporativo de la app.
+  whatsapp: { bg: 'bg-emerald-500/10',     text: 'text-emerald-300',   border: 'border-emerald-500/25'    },
 };
 
 // Variantes de animación
@@ -105,23 +123,49 @@ export default function BenefitsSection() {
         >
           {benefits.map((b) => {
             const a = accentMap[b.accent];
+            const isSvg = typeof b.icon === 'string';
+            const IconComp = !isSvg ? (b.icon as LucideIcon) : null;
             return (
               <motion.article
                 key={b.title}
                 variants={cardVariants}
-                className="glass glass-hover p-7 group" // Efecto cristal oscuro
+                // `relative overflow-hidden` + capa absoluta hermana
+                // habilita el efecto shine: una franja blanca translúcida
+                // que se desliza de izquierda a derecha en hover usando
+                // utilidades nativas de Tailwind (sin keyframes custom).
+                className="relative overflow-hidden glass glass-hover p-7 group"
               >
-                <div
-                  className={`w-11 h-11 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow-sm`}
-                >
-                  <b.icon className={a.text} size={20} strokeWidth={1.75} />
+                {/* Shine sweep — Tailwind `before:` no aplica a glass, así
+                    que usamos un span absoluto que se translateX al hover
+                    del article padre. Pasa una sola vez por hover. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent skew-x-12 transition-transform duration-700 ease-out group-hover:translate-x-full"
+                />
+
+                <div className="relative">
+                  <div
+                    className={`w-12 h-12 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow-sm`}
+                  >
+                    {isSvg ? (
+                      <Image
+                        src={b.icon as string}
+                        alt=""
+                        width={22}
+                        height={22}
+                        className="opacity-90"
+                      />
+                    ) : (
+                      IconComp && <IconComp className={a.text} size={22} strokeWidth={1.75} />
+                    )}
+                  </div>
+                  <h3 className="font-display font-semibold text-white text-[17px] leading-snug mb-2">
+                    {b.title}
+                  </h3>
+                  <p className="text-white/50 text-[14.5px] leading-relaxed">
+                    {b.desc}
+                  </p>
                 </div>
-                <h3 className="font-display font-semibold text-white text-[17px] leading-snug mb-2">
-                  {b.title}
-                </h3>
-                <p className="text-white/50 text-[14.5px] leading-relaxed">
-                  {b.desc}
-                </p>
               </motion.article>
             );
           })}

@@ -7,75 +7,79 @@ import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
 import CtaProviderSection from '@/components/cta-provider-section';
 import FaqSection from '@/components/faq-section';
-import UserManual from '@/components/user-manual'; 
+import UserManual from '@/components/user-manual';
 import ImageCarousel from '@/components/image-carousel';
+
+// ── Capa de animación scroll-reveal ──────────────────────────
+// Aplicamos las animaciones desde acá envolviendo cada sección, así
+// los componentes internos (HeroSection, StatsSection, …) NO se tocan
+// y su contenido/estilos quedan intactos. Si querés ajustar el efecto
+// global (más sutil, más exagerado), todo vive en
+// `components/motion/`.
+import RevealSection from '@/components/motion/reveal-section';
+import ScrollProgress from '@/components/motion/scroll-progress';
+import SectionDivider from '@/components/motion/section-divider';
+
 export default function HomePage() {
   return (
     <>
-      {/* ============================================
-          SECCIÓN 1: HERO - Impacto inicial
-          Propuesta de valor clara y CTA principal
-      ============================================ */}
+      {/* Barra fina arriba que se llena con el scroll — pista visual
+          de "cuánto te falta del landing". */}
+      <ScrollProgress />
+
+      {/* HERO no lleva RevealSection: ya está en viewport al cargar y
+          el componente trae su propia entrada cinematográfica. */}
       <HeroSection />
 
-      {/* ============================================
-          SECCIÓN 2: STATS - Credibilidad instantánea
-          Datos y números generan confianza rápida
-      ============================================ */}
-      <StatsSection />
+      <RevealSection>
+        <StatsSection />
+      </RevealSection>
 
-      {/* ============================================
-          SECCIÓN 3: BENEFITS - ¿Por qué elegirnos?
-          Valor diferencial de Servi
-      ============================================ */}
-      <BenefitsSection />
+      <SectionDivider tone="primary" />
 
-      {/* ============================================
-          SECCIÓN 4: HOW IT WORKS - Educación
-          Reduce fricción explicando el proceso
-      ============================================ */}
-      <HowItWorksSection />
-      {/* ============================================
-          SECCIÓN 5: User Manual - Manual de usuario
-          Guía paso a paso para nuevos usuarios, profesional y negocios
-      ============================================ */}
+      <RevealSection>
+        <BenefitsSection />
+      </RevealSection>
 
-       <ImageCarousel />
-    
-       <UserManual />
+      <RevealSection y={40}>
+        <HowItWorksSection />
+      </RevealSection>
 
-      {/* ============================================
-          SECCIÓN 6: PROVIDERS SHOWCASE - Prueba social visual
-          Muestra profesionales reales verificados
-      ============================================ */}
-      <ProvidersShowcase />
+      <SectionDivider tone="accent" />
 
-      {/* ============================================
-          SECCIÓN 7: TESTIMONIALS - Validación emocional
-          Reseñas y experiencias de usuarios reales
-          [MOVIDO: ahora va después de Providers]
-      ============================================ */}
-      <TestimonialsSection />
+      <RevealSection>
+        <ImageCarousel />
+      </RevealSection>
 
-      {/* ============================================
-          SECCIÓN 8: REFERRAL BANNER - CTA secundario
-          Programa de referidos post-confianza
-          [MOVIDO: ahora va después de Testimonials]
-      ============================================ */}
-      <ReferralBanner />
+      <RevealSection delay={0.05}>
+        <UserManual />
+      </RevealSection>
 
-      {/* ============================================
-          SECCIÓN 9: FAQ - Resolución de objeciones
-          Dudas frecuentes antes de convertir
-          [MOVIDO: ahora va antes del CTA final]
-      ============================================ */}
-      <FaqSection />
+      <SectionDivider tone="amber" />
 
-      {/* ============================================
-          SECCIÓN 10: CTA PROVIDER - Conversión final
-          Llamada a acción fuerte como cierre
-      ============================================ */}
-      <CtaProviderSection />
+      <RevealSection y={40}>
+        <ProvidersShowcase />
+      </RevealSection>
+
+      <RevealSection>
+        <TestimonialsSection />
+      </RevealSection>
+
+      <SectionDivider tone="primary" />
+
+      <RevealSection>
+        <ReferralBanner />
+      </RevealSection>
+
+      <RevealSection>
+        <FaqSection />
+      </RevealSection>
+
+      <SectionDivider tone="muted" />
+
+      <RevealSection y={48}>
+        <CtaProviderSection />
+      </RevealSection>
     </>
   );
 }

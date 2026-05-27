@@ -158,11 +158,16 @@ export const getAnalytics = (days: number = 30) => {
 
 // ── GEO-STATS de usuarios (mapa de calor por ciudad) ──────
 export interface UserGeoStatsRow {
+  /** Alias del departamento (mantiene compat con la versión anterior). */
   city: string;
   department: string;
   country: string;
+  /** Conteo de PROVEEDORES en ese departamento (no de usuarios). */
   userCount: number;
-  lastAccess: string;  // ISO timestamp
+  lastAccess: string;  // ISO timestamp del último provider creado
+  /** Centroide del departamento — backend lo añade para pintar el mapa. */
+  lat?: number;
+  lng?: number;
 }
 export const getUsersGeoStats = () =>
   fetchApi<UserGeoStatsRow[]>('/admin/users/geo-stats');

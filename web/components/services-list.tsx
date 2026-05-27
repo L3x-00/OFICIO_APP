@@ -1,13 +1,19 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plus, ArrowUpRight } from 'lucide-react';
+import { Plus, ArrowUpRight, Package, Wrench } from 'lucide-react';
 
 interface Service {
   id: string;
   name: string;
   description?: string;
   price?: number;
+  /**
+   * URL de la foto del servicio/producto subida desde el mobile
+   * (Cloudflare R2 o MinIO). Si está, se renderiza como leading 56×56
+   * con `object-cover`. Si no, mostramos un icono genérico.
+   */
+  imageUrl?: string;
 }
 
 interface Props {
@@ -92,20 +98,38 @@ export default function ServicesList({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-              className="glass glass-hover rounded-xl p-4 flex items-center justify-between cursor-default"
+              className="glass glass-hover rounded-xl p-4 flex items-center gap-4 cursor-default"
             >
-              <div>
-                <p className="text-white font-medium text-sm">
+              {/* Foto del servicio/producto. Las URLs de R2 traen
+                  X-Amz-Signature, no son routables por next/image sin
+                  configurar `images.remotePatterns`. Usamos <img> simple
+                  para mantener compat con cualquier host. */}
+              <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-white/[0.04] border border-white/5 flex items-center justify-center">
+                {item.imageUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  isNegocio
+                    ? <Package size={20} className="text-white/30" />
+                    : <Wrench size={20} className="text-white/30" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium text-sm truncate">
                   {item.name}
                 </p>
                 {item.description && (
-                  <p className="text-white/40 text-xs mt-1">
+                  <p className="text-white/40 text-xs mt-1 line-clamp-2">
                     {item.description}
                   </p>
                 )}
               </div>
               {isNegocio && item.price != null && (
-                <span className="text-primary-light font-bold text-sm bg-primary/10 px-3 py-1 rounded-lg">
+                <span className="text-primary-light font-bold text-sm bg-primary/10 px-3 py-1 rounded-lg flex-shrink-0">
                   S/. {item.price.toFixed(2)}
                 </span>
               )}

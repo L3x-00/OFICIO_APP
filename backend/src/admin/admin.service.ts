@@ -76,121 +76,103 @@ export class AdminService {
   private static readonly GEO_CACHE_KEY = 'admin:users-geo-stats';
   private static readonly GEO_CACHE_TTL = 60 * 60; // segundos
 
+  /**
+   * Centroides aproximados de cada departamento del Perú (lat, lng).
+   * Permiten dibujar un mapa real (Leaflet) en el admin sin agregar
+   * lat/lng al esquema de Locality — la fuente de verdad para la
+   * agregación sigue siendo `locality.department`.
+   */
+  private static readonly PERU_DEPT_CENTROIDS: Record<
+    string,
+    { lat: number; lng: number }
+  > = {
+    Amazonas: { lat: -5.05, lng: -78.0 },
+    Áncash: { lat: -9.53, lng: -77.53 },
+    Ancash: { lat: -9.53, lng: -77.53 },
+    Apurímac: { lat: -14.0639, lng: -73.0 },
+    Apurimac: { lat: -14.0639, lng: -73.0 },
+    Arequipa: { lat: -16.409, lng: -71.5375 },
+    Ayacucho: { lat: -13.1588, lng: -74.2236 },
+    Cajamarca: { lat: -7.1611, lng: -78.5128 },
+    Callao: { lat: -12.056, lng: -77.118 },
+    Cusco: { lat: -13.532, lng: -71.9675 },
+    Cuzco: { lat: -13.532, lng: -71.9675 },
+    Huancavelica: { lat: -12.7869, lng: -74.975 },
+    Huánuco: { lat: -9.9306, lng: -76.2422 },
+    Huanuco: { lat: -9.9306, lng: -76.2422 },
+    Ica: { lat: -14.0678, lng: -75.7286 },
+    Junín: { lat: -12.0651, lng: -75.2049 },
+    Junin: { lat: -12.0651, lng: -75.2049 },
+    'La Libertad': { lat: -8.109, lng: -79.0215 },
+    Lambayeque: { lat: -6.7011, lng: -79.9061 },
+    Lima: { lat: -12.0464, lng: -77.0428 },
+    Loreto: { lat: -3.7437, lng: -73.2516 },
+    'Madre de Dios': { lat: -12.5933, lng: -69.1899 },
+    Moquegua: { lat: -17.1939, lng: -70.935 },
+    Pasco: { lat: -10.6828, lng: -76.2566 },
+    Piura: { lat: -5.1945, lng: -80.6328 },
+    Puno: { lat: -15.8402, lng: -70.0219 },
+    'San Martín': { lat: -6.4831, lng: -76.3719 },
+    'San Martin': { lat: -6.4831, lng: -76.3719 },
+    Tacna: { lat: -18.0066, lng: -70.2463 },
+    Tumbes: { lat: -3.5667, lng: -80.4515 },
+    Ucayali: { lat: -8.3829, lng: -74.5539 },
+  };
+
+  /**
+   * Mapa de proveedores por departamento del Perú.
+   *
+   * Antes este endpoint resolvía `users.lastIp` contra ip-api.com,
+   * pero la mayoría de logins son sociales (sin `lastIp`) → el mapa
+   * salía vacío. Ahora agrupamos los **proveedores registrados** por
+   * `locality.department` (la ubicación que ellos mismos declaran en
+   * onboarding). Es la métrica que el admin necesita ver.
+   *
+   * Devuelve además `lat/lng` del centroide del departamento para que
+   * el frontend pueda pintar marcadores en un mapa real.
+   */
   async getUsersGeoStats() {
-    // 1. Cache hit
     const cached = await this.cacheManager.get(AdminService.GEO_CACHE_KEY);
     if (cached) return cached;
 
-    // 2. IPs distintas con conteo y última conexión.
-    //    Limit 500 para no saturar ip-api (5 batch calls de 100).
     const rows = await this.prisma.$queryRaw<
-      Array<{
-        ip: string;
-        user_count: number;
-        last_access: Date;
-      }>
+      Array<{ department: string; provider_count: number; last_created: Date }>
     >`
-      SELECT "lastIp"          AS ip,
-             count(*)::int     AS user_count,
-             max("lastLoginAt") AS last_access
-      FROM users
-      WHERE "lastIp" IS NOT NULL
-        AND "lastLoginAt" IS NOT NULL
-      GROUP BY "lastIp"
-      ORDER BY user_count DESC
-      LIMIT 500
+      SELECT l."department"        AS department,
+             count(p.id)::int      AS provider_count,
+             max(p."createdAt")    AS last_created
+      FROM providers p
+      INNER JOIN localities l ON l.id = p."localityId"
+      WHERE l."department" IS NOT NULL AND l."department" <> ''
+      GROUP BY l."department"
+      ORDER BY provider_count DESC
     `;
 
-    if (rows.length === 0) {
-      const empty: any[] = [];
-      await this.cacheManager.set(
-        AdminService.GEO_CACHE_KEY,
-        empty,
-        AdminService.GEO_CACHE_TTL * 1000,
-      );
-      return empty;
-    }
+    const result = rows.map((r) => {
+      const centroid = AdminService.PERU_DEPT_CENTROIDS[r.department] ?? {
+        lat: -9.19,
+        lng: -75.0152,
+      }; // fallback: centro del Perú
+      const last =
+        r.last_created instanceof Date
+          ? r.last_created
+          : new Date(r.last_created);
+      return {
+        // Mantenemos `city`/`country` por retrocompat con el shape que el
+        // frontend ya consume (UserGeoStatsRow). `city = department`
+        // porque la agregación es a nivel departamento.
+        city: r.department,
+        department: r.department,
+        country: 'Perú',
+        userCount: Number(r.provider_count),
+        lastAccess: last.toISOString(),
+        lat: centroid.lat,
+        lng: centroid.lng,
+      };
+    });
 
-    // 3. Batch resolve a ip-api.com (chunks de 100).
-    const ipToGeo = new Map<
-      string,
-      { city: string; department: string; country: string }
-    >();
-    const ips = rows.map((r) => r.ip);
-    for (let i = 0; i < ips.length; i += 100) {
-      const chunk = ips.slice(i, i + 100);
-      try {
-        const resp = await fetch(
-          'http://ip-api.com/batch?fields=status,query,country,regionName,city',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(chunk),
-          },
-        );
-        if (!resp.ok) {
-          // Rate limit u otro error — saltamos chunk, devolvemos
-          // resultados parciales antes que fallar todo.
-          continue;
-        }
-        const data = (await resp.json()) as Array<{
-          status: string;
-          query: string;
-          country?: string;
-          regionName?: string;
-          city?: string;
-        }>;
-        for (const item of data) {
-          if (item.status !== 'success') continue;
-          ipToGeo.set(item.query, {
-            city: item.city ?? 'Desconocida',
-            department: item.regionName ?? item.country ?? 'Desconocido',
-            country: item.country ?? 'Desconocido',
-          });
-        }
-      } catch {
-        // Falla de red → resultados parciales con lo que ya cacheamos.
-      }
-    }
-
-    // 4. Agrupar por (city, department).
-    const grouped = new Map<
-      string,
-      {
-        city: string;
-        department: string;
-        country: string;
-        userCount: number;
-        lastAccess: string;
-      }
-    >();
-    for (const r of rows) {
-      const geo = ipToGeo.get(r.ip);
-      if (!geo) continue; // IP que no pudimos resolver
-      const key = `${geo.city}|${geo.department}`;
-      const existing = grouped.get(key);
-      const lastAccess = (
-        r.last_access instanceof Date ? r.last_access : new Date(r.last_access)
-      ).toISOString();
-      if (existing) {
-        existing.userCount += Number(r.user_count);
-        if (lastAccess > existing.lastAccess) existing.lastAccess = lastAccess;
-      } else {
-        grouped.set(key, {
-          city: geo.city,
-          department: geo.department,
-          country: geo.country,
-          userCount: Number(r.user_count),
-          lastAccess,
-        });
-      }
-    }
-
-    const result = Array.from(grouped.values()).sort(
-      (a, b) => b.userCount - a.userCount,
-    );
-
-    // 5. Cachear 1h.
+    // Cache 1h (la migración de proveedores es lenta — los datos no
+    // cambian rápido).
     await this.cacheManager.set(
       AdminService.GEO_CACHE_KEY,
       result,

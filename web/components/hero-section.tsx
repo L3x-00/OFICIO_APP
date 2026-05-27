@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FlipCard3D from '@/components/flip-card-3d';
+import Floating from '@/components/motion/floating';
 
 // Variantes de animación para la cascada (Stagger)
 const containerVariants = {
@@ -73,16 +74,33 @@ export default function HeroSection() {
             </motion.p>
 
             <motion.div variants={itemVariants} className="mt-9 flex flex-wrap items-center gap-3">
-              <Link href="/login" className="btn btn-primary btn-lg press-effect group">
-                Empezar gratis
-                <ArrowRight
-                  size={18}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
-              </Link>
-              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-ghost btn-lg press-effect">
-                Cómo funciona
-              </a>
+              {/* Micro-interacciones: scale al hover y al tap.
+                  Wrappers `motion.span` para no romper el styling de
+                  los <Link>/<a> ni el `btn` que viene de globals.css. */}
+              <motion.span
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                className="inline-flex"
+              >
+                <Link href="/login" className="btn btn-primary btn-lg press-effect group">
+                  Empezar gratis
+                  <ArrowRight
+                    size={18}
+                    className="transition-transform duration-200 group-hover:translate-x-1"
+                  />
+                </Link>
+              </motion.span>
+              <motion.span
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                className="inline-flex"
+              >
+                <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-ghost btn-lg press-effect">
+                  Cómo funciona
+                </a>
+              </motion.span>
             </motion.div>
 
             {/* Trust strip */}
@@ -101,14 +119,18 @@ export default function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Columna derecha: tarjeta 3D con Framer Motion */}
-          <motion.div 
+          {/* Columna derecha: tarjeta 3D con entrada cinemática +
+              levitación infinita. El swing es sutil (8px / 4s) — da
+              vida al hero sin distraer del copy de la izquierda. */}
+          <motion.div
             className="flex justify-center lg:justify-end"
             initial={{ opacity: 0, scale: 0.9, x: 40 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           >
-            <FlipCard3D />
+            <Floating amplitude={8} duration={4}>
+              <FlipCard3D />
+            </Floating>
           </motion.div>
         </div>
       </div>

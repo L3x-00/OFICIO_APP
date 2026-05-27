@@ -21,12 +21,17 @@ import {
   Gift,
   MessageSquare,
   User as UserIcon,
+  Bell,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { clearSession, getUser } from '@/lib/auth';
-import { disconnectSocket } from '@/lib/socket';
+import { disconnectSocket, getSocket } from '@/lib/socket';
 import { useProfileTypeOptional } from '@/lib/profile-type-context';
+import { api } from '@/lib/api';
 
+// "Panel Cliente" se sacó de esta lista — ahora vive dentro del
+// PanelSwitcher de abajo, junto al toggle OFICIO ↔ NEGOCIO, para que
+// el cambio de contexto (proveedor ↔ cliente) sea una sola interacción.
 const tabs = [
   { label: 'Inicio',       icon: Home,          href: '/panel' },
   { label: 'Perfil',       icon: UserCog,       href: '/panel/perfil' },
@@ -35,7 +40,6 @@ const tabs = [
   { label: 'Servicios',    icon: Briefcase,     href: '/panel/servicios' },
   { label: 'Estadísticas', icon: BarChart3,     href: '/panel/estadisticas' },
   { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },
-  { label: 'Panel Cliente',icon: UserIcon,      href: '/cliente' },
   { label: 'Ajustes',      icon: Settings,      href: '/panel/ajustes' },
 ];
 
@@ -53,6 +57,7 @@ export default function Sidebar() {
   };
 
   const showSwitcher = !!profileCtx && profileCtx.availableTypes.length > 0;
+  const unread = useUnreadNotifications();
 
   return (
     <aside
@@ -79,13 +84,31 @@ export default function Sidebar() {
           )}
         </Link>
         {!collapsed && (
-          <button
-            onClick={() => setCollapsed(true)}
-            className="text-white/30 hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
-            aria-label="Colapsar menú"
-          >
-            <ChevronLeft size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Bell con badge de notificaciones no leídas. Click →
+                Panel Cliente, sección Notificaciones (donde vive el
+                inbox unificado). Live update vía socket `notification`
+                + seed inicial vía REST. */}
+            <Link
+              href="/cliente?tab=notifications"
+              aria-label="Notificaciones"
+              className="relative text-white/40 hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
+            >
+              <Bell size={16} />
+              {unread > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center leading-none tabular-nums">
+                  {unread > 99 ? '99+' : unread}
+                </span>
+              )}
+            </Link>
+            <button
+              onClick={() => setCollapsed(true)}
+              className="text-white/30 hover:text-primary hover:bg-white/5 rounded-lg p-1.5 transition-colors"
+              aria-label="Colapsar menú"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          </div>
         )}
       </div>
 
@@ -192,7 +215,6 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
   const { activeType, availableTypes, setActiveType } = ctx;
   const activeMeta = activeType ? META[activeType] : META.OFICIO;
   const ActiveIcon = activeMeta.icon;
-  const onlyOne = availableTypes.length === 1;
 
   if (collapsed) {
     // En sidebar colapsado: solo icono indicador, no dropdown
@@ -211,11 +233,9 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
         Panel
       </p>
       <button
-        onClick={() => !onlyOne && setOpen(!open)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl glass border-white/5 hover:border-primary/30 transition-all duration-200 ${
-          onlyOne ? 'cursor-default' : 'cursor-pointer hover:bg-white/[0.04]'
-        }`}
-        aria-haspopup={!onlyOne}
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl glass border-white/5 hover:border-primary/30 transition-all duration-200 cursor-pointer hover:bg-white/[0.04]"
+        aria-haspopup
         aria-expanded={open}
       >
         <div className={`w-9 h-9 rounded-lg ${activeMeta.bg} flex items-center justify-center flex-shrink-0`}>
@@ -229,16 +249,14 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
             {activeMeta.label}
           </div>
         </div>
-        {!onlyOne && (
-          <ChevronDown
-            size={16}
-            className={`text-white/30 transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`}
-          />
-        )}
+        <ChevronDown
+          size={16}
+          className={`text-white/30 transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`}
+        />
       </button>
 
       <AnimatePresence>
-        {open && !onlyOne && (
+        {open && (
           <motion.div
             initial={{ opacity: 0, y: -5, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -273,11 +291,50 @@ function PanelSwitcher({ collapsed }: { collapsed: boolean }) {
                 </button>
               );
             })}
+            {/* Separador + acceso al Panel Cliente — antes vivía como
+                tab suelto al final del menú. Acá tiene más sentido:
+                el usuario decide en un solo lugar qué panel ver
+                (OFICIO / NEGOCIO / Cliente). */}
+            <div className="my-1.5 border-t border-white/5" />
+            <Link
+              href="/cliente"
+              onClick={() => setOpen(false)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left text-white/50 hover:text-white hover:bg-white/[0.04]"
+            >
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/15 flex items-center justify-center flex-shrink-0">
+                <UserIcon size={16} className="text-cyan-300" />
+              </div>
+              <span className="text-sm font-medium">Panel Cliente</span>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+}
+
+// ── Badge de notificaciones no leídas ────────────────────────
+//
+// Lee el inbox histórico una vez al montar (REST) y se suscribe al
+// evento `notification` del socket para incrementar el contador en
+// tiempo real. La fuente de verdad para la lectura sigue siendo
+// `/cliente?tab=notifications` — acá solo mostramos el contador.
+function useUnreadNotifications(): number {
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    api.getNotifications()
+      .then((r) => { if (!cancelled) setUnread(r.unreadCount ?? 0); })
+      .catch(() => {});
+    const socket = getSocket();
+    const onNotif = () => setUnread((c) => c + 1);
+    socket.on('notification', onNotif);
+    return () => {
+      cancelled = true;
+      socket.off('notification', onNotif);
+    };
+  }, []);
+  return unread;
 }
 
 const META: Record<'OFICIO' | 'NEGOCIO', {
