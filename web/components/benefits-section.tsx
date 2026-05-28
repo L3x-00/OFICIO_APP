@@ -129,11 +129,8 @@ export default function BenefitsSection() {
               <motion.article
                 key={b.title}
                 variants={cardVariants}
-                // `relative overflow-hidden` + capa absoluta hermana
-                // habilita el efecto shine: una franja blanca translúcida
-                // que se desliza de izquierda a derecha en hover usando
-                // utilidades nativas de Tailwind (sin keyframes custom).
-                className="relative overflow-hidden glass glass-hover p-7 group"
+                // AQUÍ SE AGREGÓ rounded-2xl
+                className="relative overflow-hidden rounded-2xl glass glass-hover p-7 group"
               >
                 {/* Shine sweep — Tailwind `before:` no aplica a glass, así
                     que usamos un span absoluto que se translateX al hover

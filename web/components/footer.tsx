@@ -131,8 +131,7 @@ export default function Footer() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      className="relative mt-20 border-t border-white/10 bg-dark-premium/80 backdrop-blur-xl"
-    >
+      className="relative mt-20 border-t border-white/10 bg-dark-premium backdrop-blur-xl"    >
       {/* Degradado superior sutil */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 

@@ -827,11 +827,22 @@ html.light nav .bg-white\/5.border-white\/10.shadow-glow-sm {
 /* ─── Footer claro ─────────────────────────────────────────────────
    El footer usa glass, text-white/*, border-white/* y bg-white/*.
    En tema claro pasan a ink dark / superficies paper. */
-html.light footer.text-white { color: #14141C !important; }
+html.light footer.text-white,
+html.light footer { color: #14141C !important; }
+
+html.light footer .text-white\/30 { color: rgba(20, 20, 28, 0.35) !important; }
 html.light footer .text-white\/40 { color: rgba(20, 20, 28, 0.45) !important; }
 html.light footer .text-white\/50 { color: rgba(20, 20, 28, 0.55) !important; }
 html.light footer .text-white\/60 { color: rgba(20, 20, 28, 0.65) !important; }
 html.light footer .text-white\/80 { color: rgba(20, 20, 28, 0.85) !important; }
+
+/* FIX: El fondo del footer tiene /80, agregamos la regla exacta */
+html.light footer .bg-dark-premium\/80 { background-color: rgba(251, 247, 238, 0.85) !important; }
+
+/* FIX: El logo del footer usa gradiente blanco, lo cambiamos a ink */
+html.light footer span.bg-gradient-to-r.from-white {
+  background-image: linear-gradient(to right, #14141C, rgba(20, 20, 28, 0.8)) !important;
+}
 
 /* Dividers y bordes del footer */
 html.light footer .border-white\/5,
@@ -850,4 +861,15 @@ html.light footer input.bg-white\/5 {
 
 /* Links del footer en claro */
 html.light footer a.text-white\/60,
-html.light
+html.light footer button.text-white\/60 {
+  color: rgba(20, 20, 28, 0.65) !important;
+}
+html.light footer a.text-white\/60:hover,
+html.light footer button.text-white\/60:hover {
+  color: #E07B39 !important; /* Naranja de tu marca */
+}
+
+/* FIX: Línea de gradiente superior del footer */
+html.light footer .via-primary\/30 {
+  --tw-gradient-via: rgba(224, 123, 57, 0.4) !important;
+}
