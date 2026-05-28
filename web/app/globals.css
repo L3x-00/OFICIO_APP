@@ -824,3 +824,30 @@ html.light nav .bg-white\/5.border-white\/10.shadow-glow-sm {
   background-color: rgba(20, 20, 28, 0.06) !important;
   border-color: rgba(20, 20,28, 0.10) !important;
 }
+/* ─── Footer claro ─────────────────────────────────────────────────
+   El footer usa glass, text-white/*, border-white/* y bg-white/*.
+   En tema claro pasan a ink dark / superficies paper. */
+html.light footer.text-white { color: #14141C !important; }
+html.light footer .text-white\/40 { color: rgba(20, 20, 28, 0.45) !important; }
+html.light footer .text-white\/50 { color: rgba(20, 20, 28, 0.55) !important; }
+html.light footer .text-white\/60 { color: rgba(20, 20, 28, 0.65) !important; }
+html.light footer .text-white\/80 { color: rgba(20, 20, 28, 0.85) !important; }
+
+/* Dividers y bordes del footer */
+html.light footer .border-white\/5,
+html.light footer .border-white\/10 { border-color: rgba(20, 20, 28, 0.08) !important; }
+
+/* Chips/badges con fondo blanco semitransparente */
+html.light footer .bg-white\/5 { background-color: rgba(20, 20, 28, 0.05) !important; }
+html.light footer .bg-white\/10 { background-color: rgba(20, 20, 28, 0.07) !important; }
+
+/* Inputs de newsletter si existen */
+html.light footer input.bg-white\/5 {
+  background-color: #FFFFFF !important;
+  color: #14141C !important;
+  border-color: rgba(20, 20, 28, 0.12) !important;
+}
+
+/* Links del footer en claro */
+html.light footer a.text-white\/60,
+html.light
