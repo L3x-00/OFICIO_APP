@@ -6,7 +6,7 @@ import ProvidersShowcase from '@/components/providers-showcase';
 import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
 import CtaProviderSection from '@/components/cta-provider-section';
-import FaqSection from '@/components/faq-section';
+// import FaqSection from '@/components/faq-section'; comvertido en modal
 import UserManual from '@/components/user-manual';
 import ImageCarousel from '@/components/image-carousel';
 
@@ -71,9 +71,10 @@ export default function HomePage() {
         <ReferralBanner />
       </RevealSection>
 
-      <RevealSection>
-        <FaqSection />
-      </RevealSection>
+      // FaqSection se convirtió en un modal global para acceso desde cualquier parte del sitio, así que lo removemos de esta página. Si queremos
+      // destacar el FAQ dentro del landing, podríamos agregar un CTA
+      // específico que abra el modal, pero por ahora confiamos en el
+      // botón flotante (FloatingFaqButton) para eso.
 
       <SectionDivider tone="muted" />
 

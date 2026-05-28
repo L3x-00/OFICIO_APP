@@ -147,8 +147,7 @@ export default function FaqModal({ isOpen, onClose }: FaqModalProps) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="relative glass rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto shadow-glow-lg border border-white/10"
-          >
+            className="relative glass rounded-2xl w-full max-w-xl max-h-[80vh] overflow-y-auto shadow-glow-lg border border-white/10"          >
             {/* Header */}
             <div className="sticky top-0 glass border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
