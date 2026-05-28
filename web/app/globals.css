@@ -685,3 +685,111 @@ h1, h2, h3, h4, h5, h6, .display {
 .animate-modal-pop {
   animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ───────────────────────────────────────────────────────────────────
+   El sitio nació dark-first con utilidades literales (bg-dark-*,
+   text-white, .glass, etc.). En vez de tocar 50+ componentes con
+   `dark:` variants — que romperían visualmente cualquier cosa que se
+   nos pase — usamos selectors `html.light .clase` con alta
+   especificidad para INVERTIR la paleta cuando el user elige el
+   tema claro.
+
+   Cubrimos los tokens más usados:
+     • bg-dark-premium / -surface / -card / -input  → tonos crema/blanco.
+     • text-white + opacidades                      → ink dark.
+     • .glass / .glass-hover                        → translúcido claro.
+     • borders white/X                              → borders dark/X.
+     • Toaster + scrollbar                          → matchean.
+
+   Lo que queda intacto: gradientes de marca (naranja/cian/ámbar),
+   chips de status, iconos coloreados — todos esos siguen visibles
+   sobre el fondo claro porque son colores saturados.
+═══════════════════════════════════════════════════════════════════ */
+
+html.light {
+  color-scheme: light;
+  background-color: #FBF7EE; /* paper */
+}
+
+html.light body {
+  background-color: #FBF7EE;
+  color: #14141C;
+}
+
+/* Surfaces (bg-dark-*) */
+html.light .bg-dark-premium { background-color: #FBF7EE !important; }
+html.light .bg-dark-surface { background-color: #FFFFFF !important; }
+html.light .bg-dark-card    { background-color: #FFFFFF !important; }
+html.light .bg-dark-input   { background-color: #FBF8F0 !important; }
+
+/* Text base — invertimos text-white pero respetamos opacidades. */
+html.light .text-white          { color: #14141C !important; }
+html.light .text-white\/90      { color: rgba(20, 20, 28, 0.92) !important; }
+html.light .text-white\/80      { color: rgba(20, 20, 28, 0.85) !important; }
+html.light .text-white\/70      { color: rgba(20, 20, 28, 0.75) !important; }
+html.light .text-white\/60      { color: rgba(20, 20, 28, 0.65) !important; }
+html.light .text-white\/50      { color: rgba(20, 20, 28, 0.55) !important; }
+html.light .text-white\/40      { color: rgba(20, 20, 28, 0.45) !important; }
+html.light .text-white\/30      { color: rgba(75, 75, 89, 0.55) !important; }
+html.light .text-white\/\[0\.7\] { color: rgba(20, 20, 28, 0.7) !important; }
+
+/* Borders sobre white/X → borders sobre dark/X. Mantenemos opacidad
+   pero invertimos color base para que las divisiones sean visibles. */
+html.light .border-white\/5      { border-color: rgba(20, 20, 28, 0.06) !important; }
+html.light .border-white\/10     { border-color: rgba(20, 20, 28, 0.08) !important; }
+html.light .border-white\/15     { border-color: rgba(20, 20, 28, 0.10) !important; }
+html.light .border-white\/20     { border-color: rgba(20, 20, 28, 0.14) !important; }
+html.light .border-white\/\[0\.06\] { border-color: rgba(20, 20, 28, 0.06) !important; }
+
+/* Glass cards — fondo claro semi-transparente con borde dark sutil. */
+html.light .glass {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(20, 20, 28, 0.08);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+html.light .glass-hover:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(224, 123, 57, 0.35); /* hover naranja-ish */
+}
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(20, 20, 28, 0.10);
+}
+html.light .glass-warm {
+  background: rgba(252, 248, 240, 0.85);
+  border: 1px solid rgba(224, 123, 57, 0.18);
+}
+
+/* Backgrounds white/X → dark/X muy sutil para chips/badges sobre
+   light. Sin esto los chips quedaban casi invisibles. */
+html.light .bg-white\/5       { background-color: rgba(20, 20, 28, 0.04) !important; }
+html.light .bg-white\/\[0\.04\] { background-color: rgba(20, 20, 28, 0.04) !important; }
+html.light .bg-white\/\[0\.03\] { background-color: rgba(20, 20, 28, 0.03) !important; }
+html.light .bg-white\/10      { background-color: rgba(20, 20, 28, 0.06) !important; }
+
+/* Inputs / textareas con background dark — los pasamos a paper. */
+html.light input.bg-white\/5,
+html.light textarea.bg-white\/5,
+html.light select.bg-white\/5 {
+  background-color: #FFFFFF !important;
+  color: #14141C !important;
+  border-color: rgba(20, 20, 28, 0.12) !important;
+}
+
+/* Toaster (Sonner) — fuerza tema claro cuando html.light. */
+html.light [data-sonner-toaster] {
+  --normal-bg: rgba(255, 255, 255, 0.95) !important;
+  --normal-border: rgba(20, 20, 28, 0.10) !important;
+  --normal-text: #14141C !important;
+}
+
+/* Scrollbar */
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(20, 20, 28, 0.18);
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 20, 28, 0.30);
+}

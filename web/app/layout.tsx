@@ -5,7 +5,9 @@ import Navbar from '@/components/navbar';
 import LayoutShell from '@/components/layout-shell';
 import RevealProvider from '@/components/reveal-provider';
 import WhatsAppButton from '@/components/whatsapp-button';
+import ThemeProvider from '@/components/theme/theme-provider';
 import { Toaster } from 'sonner';
+import FloatingFaqButton from '@/components/floating-faq-button';
 
 // ── Nueva tipografía nativa (rendimiento óptimo) ──────────
 const jakarta = Plus_Jakarta_Sans({
@@ -73,29 +75,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${jakarta.variable} ${sora.variable}`}>
+    /* `suppressHydrationWarning` es lo que pide next-themes para que la
+       primera pintura SSR (sin clase dark/light) no choque con la
+       hidratación cliente (que sí la tiene). Sin él, React 19 marca
+       hydration mismatch en producción y abandona el árbol. */
+    <html lang="es" className={`${jakarta.variable} ${sora.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col bg-dark-premium text-white antialiased font-sans">
-        <RevealProvider />
-        <Navbar />
-        <LayoutShell>{children}</LayoutShell>
-        <Toaster
-          position="bottom-right"
-          theme="dark"
-          richColors
-          closeButton
-          duration={4000}
-          toastOptions={{
-            style: {
-              background: 'rgba(10, 14, 26, 0.85)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              color: '#FFFFFF',
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
-            },
-            className: 'shadow-glass',
-          }}
-        />
-        <WhatsAppButton />
+        <ThemeProvider>
+          <RevealProvider />
+          <Navbar />
+          <LayoutShell>{children}</LayoutShell>
+          <Toaster
+            position="bottom-right"
+            theme="dark"
+            richColors
+            closeButton
+            duration={4000}
+            toastOptions={{
+              style: {
+                background: 'rgba(10, 14, 26, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+              },
+              className: 'shadow-glass',
+            }}
+          />
+          <WhatsAppButton />
+          <FloatingFaqButton /> {/* 👈 Nuevo botón flotante de FAQ */}
+        </ThemeProvider>
       </body>
     </html>
   );

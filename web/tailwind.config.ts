@@ -1,6 +1,11 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Estrategia `class`: el toggle (next-themes) agrega `dark` o `light`
+  // al <html>. La mayoría del override del light se hace con reglas
+  // CSS en `globals.css` para no obligar a tocar cada componente con
+  // `dark:` prefixes (decisión: migración progresiva, no big-bang).
+  darkMode: 'class',
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { isAuthenticated, getUser, clearSession } from '@/lib/auth';
 import AboutModal from '@/components/about-modal';
+import ThemeToggle from '@/components/theme/theme-toggle';
 
 const navLinks = [
   { href: '/#beneficios',    label: 'Beneficios' },
@@ -169,8 +170,11 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Desktop CTA - solo botón "Acceder" */}
+            {/* Desktop CTA - toggle de tema + Acceder/avatar */}
             <div className="hidden md:flex items-center gap-2.5">
+              {/* Toggle de tema (sol/luna) — siempre visible antes
+                  del CTA, igual para users autenticados y públicos. */}
+              <ThemeToggle />
               {authed ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -339,6 +343,11 @@ export default function Navbar() {
                       Acceder
                     </Link>
                   )}
+                  {/* Toggle de tema en el drawer mobile — mismo botón
+                      ícono que en desktop, alineado a la derecha. */}
+                  <div className="flex justify-end pt-2 border-t border-white/5">
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
             </motion.div>
