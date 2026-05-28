@@ -1,4 +1,4 @@
-'use client'; // 👈 SOLUCIÓN: Indica a Next.js que este componente se ejecuta en el cliente
+'use client';
 
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
@@ -20,14 +20,13 @@ const itemVariants = {
   visible: { 
     y: 0, 
     opacity: 1, 
-    // 👈 SOLUCIÓN: Tipado estricto para la curva Bezier de Framer Motion
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } 
   }
 };
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden pt-24 sm:pt-28 min-h-[90vh] flex items-center">
+    <section className="relative overflow-hidden pt-24 sm:pt-28 min-h-[90vh] flex items-center bg-dark-premium">
       {/* Fondo Dark Premium con manchas luminosas (Blobs) */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
         {/* Blob naranja principal */}
@@ -53,9 +52,10 @@ export default function HeroSection() {
               Marketplace local · Perú
             </motion.div>
 
+            {/* Títulos con opacidad 90/95 para que se adapten bien en tema claro */}
             <motion.h1 
               variants={itemVariants}
-              className="font-display font-extrabold tracking-tightest text-white leading-[1.05] text-[40px] sm:text-[56px] lg:text-[66px]"
+              className="font-display font-extrabold tracking-tightest text-white/95 leading-[1.05] text-[40px] sm:text-[56px] lg:text-[66px]"
             >
               Encuentra al{' '}
               <span className="text-gradient">
@@ -74,9 +74,6 @@ export default function HeroSection() {
             </motion.p>
 
             <motion.div variants={itemVariants} className="mt-9 flex flex-wrap items-center gap-3">
-              {/* Micro-interacciones: scale al hover y al tap.
-                  Wrappers `motion.span` para no romper el styling de
-                  los <Link>/<a> ni el `btn` que viene de globals.css. */}
               <motion.span
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
@@ -103,10 +100,10 @@ export default function HeroSection() {
               </motion.span>
             </motion.div>
 
-            {/* Trust strip */}
+            {/* Trust strip con bordes y opacidades adaptativas */}
             <motion.div variants={itemVariants} className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-white/40 text-[13px]">
               <div className="flex items-center gap-2">
-                <ShieldCheck size={15} className="text-accent" /> {/* Color cian de confianza */}
+                <ShieldCheck size={15} className="text-accent" />
                 <span>+500 profesionales verificados</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-white/10" />
@@ -119,18 +116,21 @@ export default function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Columna derecha: tarjeta 3D con entrada cinemática +
-              levitación infinita. El swing es sutil (8px / 4s) — da
-              vida al hero sin distraer del copy de la izquierda. */}
+          {/* Columna derecha: tarjeta 3D con envoltorio para tema claro */}
           <motion.div
             className="flex justify-center lg:justify-end"
             initial={{ opacity: 0, scale: 0.9, x: 40 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           >
-            <Floating amplitude={8} duration={4}>
-              <FlipCard3D />
-            </Floating>
+            {/* Contenedor wrapper para la tarjeta 3D.
+                En tema oscuro mantiene los bordes oscuros de la tarjeta.
+                En tema claro (definido en CSS) cambiará a bordes claros. */}
+            <div className="hero-3d-wrapper">
+              <Floating amplitude={8} duration={4}>
+                <FlipCard3D />
+              </Floating>
+            </div>
           </motion.div>
         </div>
       </div>

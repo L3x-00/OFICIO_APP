@@ -796,3 +796,12 @@ html.light footer span.bg-gradient-to-r.from-white {
 html.light footer .via-primary\/30 { --tw-gradient-via: rgba(224, 123, 57, 0.4) !important; }
 html.light footer a.text-white\/60:hover,
 html.light footer button.text-white\/60:hover { color: #E07B39 !important; }
+/* ─── Hero Section claro ────────────────────────────────────────── */
+/* El H1 usaba text-white/95, lo aseguramos en tinta oscura */
+html.light .text-white\/95 { color: rgba(20, 20, 28, 0.95) !important; }
+
+/* Los bordes de la tarjeta 3D están forzados con variables oscuras en tu CSS base. 
+   Forzamos la variable a un tono claro solo dentro del hero cuando el tema es claro. */
+html.light .hero-3d-wrapper {
+  --dark-surface: #ECE6D9; /* Tono papel cálido para los bordes y "espesor" de la tarjeta */
+}

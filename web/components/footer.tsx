@@ -286,49 +286,57 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* ─── Legal ─── (Ocupa 3 columnas) */}
+        {/* ─── Legal ─── (Ocupa 3 columnas) */}
           <motion.div variants={itemVariants} className="lg:col-span-3">
             <h4 className="eyebrow mb-6 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber shadow-glow-sm" />
               Legal
             </h4>
-            <div className="glass rounded-2xl p-5 border border-white/5 space-y-3">
-              <p className="text-white/40 text-xs leading-relaxed mb-4">
-                El uso de Servi está sujeto a las siguientes políticas destinadas a proteger tu información y experiencia.
-              </p>
-              <button
-                onClick={() =>
-                  setLegalModal({
-                    open: true,
-                    title: 'Términos y Condiciones',
-                    content: TERMS_CONTENT,
-                  })
-                }
-                className="group/leg w-full text-left flex items-center justify-between p-2.5 -ml-2 rounded-lg hover:bg-white/5 transition-colors duration-200"
-              >
-                <span className="text-white/70 text-sm group-hover/leg:text-primary-light transition-colors">
-                  Términos y condiciones
-                </span>
-                <ArrowUp size={12} className="text-white/30 rotate-45 group-hover/leg:text-primary-light transition-all" />
-              </button>
-              <button
-                onClick={() =>
-                  setLegalModal({
-                    open: true,
-                    title: 'Política de Privacidad',
-                    content: PRIVACY_CONTENT,
-                  })
-                }
-                className="group/leg w-full text-left flex items-center justify-between p-2.5 -ml-2 rounded-lg hover:bg-white/5 transition-colors duration-200"
-              >
-                <span className="text-white/70 text-sm group-hover/leg:text-primary-light transition-colors">
-                  Política de privacidad
-                </span>
-                <ArrowUp size={12} className="text-white/30 rotate-45 group-hover/leg:text-primary-light transition-all" />
-              </button>
-            </div>
+            
+            <p className="text-white/40 text-xs leading-relaxed mb-6">
+              El uso de Servi está sujeto a las siguientes políticas destinadas a proteger tu información y experiencia.
+            </p>
+
+            <ul className="space-y-4">
+              <li>
+                <button
+                  onClick={() =>
+                    setLegalModal({
+                      open: true,
+                      title: 'Términos y Condiciones',
+                      content: TERMS_CONTENT,
+                    })
+                  }
+                  className="group/link text-white/60 text-[14.5px] hover:text-primary-light transition-all duration-300 inline-flex items-center gap-2"
+                >
+                  <span className="w-0 h-px bg-primary-light transition-all duration-300 group-hover/link:w-3" />
+                  <span className="relative">
+                    Términos y condiciones
+                    <span className="absolute bottom-0 left-0 w-0 h-px bg-gradient-to-r from-primary to-accent transition-all duration-300 group-hover/link:w-full" />
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() =>
+                    setLegalModal({
+                      open: true,
+                      title: 'Política de Privacidad',
+                      content: PRIVACY_CONTENT,
+                    })
+                  }
+                  className="group/link text-white/60 text-[14.5px] hover:text-primary-light transition-all duration-300 inline-flex items-center gap-2"
+                >
+                  <span className="w-0 h-px bg-primary-light transition-all duration-300 group-hover/link:w-3" />
+                  <span className="relative">
+                    Política de privacidad
+                    <span className="absolute bottom-0 left-0 w-0 h-px bg-gradient-to-r from-primary to-accent transition-all duration-300 group-hover/link:w-full" />
+                  </span>
+                </button>
+              </li>
+            </ul>
           </motion.div>
-        </motion.div>
+        </motion.div> {/* 👈 ESTA ETIQUETA FALTABA - Cierra el grid de 12 columnas */}
 
         {/* ─── Barra inferior ─── */}
         <motion.div
