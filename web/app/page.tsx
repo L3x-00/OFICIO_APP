@@ -70,12 +70,7 @@ export default function HomePage() {
       <RevealSection>
         <ReferralBanner />
       </RevealSection>
-
-      // FaqSection se convirtió en un modal global para acceso desde cualquier parte del sitio, así que lo removemos de esta página. Si queremos
-      // destacar el FAQ dentro del landing, podríamos agregar un CTA
-      // específico que abra el modal, pero por ahora confiamos en el
-      // botón flotante (FloatingFaqButton) para eso.
-
+      
       <SectionDivider tone="muted" />
 
       <RevealSection y={48}>

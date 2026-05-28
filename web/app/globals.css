@@ -793,3 +793,34 @@ html.light ::-webkit-scrollbar-thumb {
 html.light ::-webkit-scrollbar-thumb:hover {
   background: rgba(20, 20, 28, 0.30);
 }
+/* ─── Navbar claro ─────────────────────────────────────────────────
+   El navbar usa muchas clases text-white/* y border-white/* inline.
+   En tema claro deben pasar a ink dark. */
+html.light .nav-link-light { color: rgba(20, 20, 28, 0.65) !important; }
+html.light .nav-link-light:hover { color: #14141C !important; }
+
+html.light nav span.text-white,
+html.light nav a.text-white,
+html.light nav button > span.text-white\/80 { color: #14141C !important; }
+
+html.light nav .text-white\/60,
+html.light nav .text-white\/70 { color: rgba(20, 20, 28, 0.65) !important; }
+
+html.light nav .border-white\/10 { border-color: rgba(20, 20, 28, 0.10) !important; }
+html.light nav .bg-white\/5 { background-color: rgba(20, 20, 28, 0.05) !important; }
+
+/* Fondo del contenedor del nombre de usuario en desktop */
+html.light nav .bg-white\/5.border-white\/10 {
+  background-color: rgba(20, 20,28, 0.05) !important;
+  border-color: rgba(20, 20, 28, 0.10) !important;
+}
+
+/* Botón hamburguesa */
+html.light nav button.text-white\/60 { color: rgba(20, 20, 28, 0.65) !important; }
+html.light nav button.text-white\/60:hover { color: #14141C !important; }
+
+/* Contenedor del logo */
+html.light nav .bg-white\/5.border-white\/10.shadow-glow-sm {
+  background-color: rgba(20, 20, 28, 0.06) !important;
+  border-color: rgba(20, 20,28, 0.10) !important;
+}

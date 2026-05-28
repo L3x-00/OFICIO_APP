@@ -42,7 +42,7 @@ export default function FloatingFaqButton() {
             <path d="M12 17h.01"/>
           </svg>
           <span className="text-white/70 group-hover:text-primary-light text-xs font-semibold font-display transition-colors">
-            FAQ
+            Preguntas frecuentes
           </span>
         </div>
       </motion.button>
