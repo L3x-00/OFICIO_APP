@@ -50,13 +50,17 @@ export default function ImageCarousel() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  // Si el slide actual quedó fuera de rango después de filtrar slides
-  // rotos, lo reseteamos a 0.
+  // Índice acotado — protege contra el race entre filter (sincrónico)
+  // y `setCurrent` del useEffect (asincrónico). Si todos los slides
+  // están rotos `slide` queda undefined y el JSX cae al empty state.
+  const safeIndex = slides.length > 0 ? current % slides.length : 0;
+  const slide = slides[safeIndex];
+
+  // Si el slide actual quedó fuera de rango, lo reseteamos a 0 en el
+  // próximo tick (no afecta el render actual gracias al guard arriba).
   useEffect(() => {
-    if (current >= slides.length && slides.length > 0) {
-      setCurrent(0);
-    }
-  }, [current, slides.length]);
+    if (current !== safeIndex) setCurrent(safeIndex);
+  }, [current, safeIndex]);
 
   const next = useCallback(() => {
     setCurrent((c) => (slides.length === 0 ? 0 : (c + 1) % slides.length));
@@ -68,10 +72,10 @@ export default function ImageCarousel() {
     );
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || slides.length <= 1) return;
     const timer = setInterval(next, SLIDE_INTERVAL);
     return () => clearInterval(timer);
-  }, [paused, next]);
+  }, [paused, next, slides.length]);
 
   return (
     <section className="py-24 sm:py-32 bg-dark-surface relative overflow-hidden">
@@ -108,49 +112,54 @@ export default function ImageCarousel() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {slides.length === 0 ? (
+          {!slide ? (
             <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">
               Próximamente: galería de Servi.
             </div>
           ) : (
-          /* AnimatePresence para transiciones suaves de slides */
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current}
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-              className="absolute inset-0"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={slides[current].src}
-                alt={slides[current].alt}
-                className="absolute inset-0 w-full h-full object-cover"
-                onError={() => {
-                  // Marca este src como roto para que el filter del próximo
-                  // render lo elimine de `slides`. Evita 404 + slide en
-                  // negro cuando los assets están faltando en /public.
-                  setBroken((prev) => {
-                    const next = new Set(prev);
-                    next.add(slides[current].src);
-                    return next;
-                  });
-                }}
-              />
-              {/* Gradient overlay para texto */}
-              <div className="absolute inset-0 bg-gradient-to-t from-dark-premium/80 via-dark-premium/20 to-transparent" />
-              
-              <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="glass rounded-xl px-5 py-3 inline-block">
-                  <p className="text-white text-sm sm:text-base font-medium drop-shadow-lg max-w-xl">
-                    {slides[current].caption}
-                  </p>
+            /* AnimatePresence para transiciones suaves de slides */
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={slide.src}
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                className="absolute inset-0"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={slide.src}
+                  alt={slide.alt}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  data-src={slide.src}
+                  onError={(e) => {
+                    // Tomamos el src desde el DOM (no del closure) para
+                    // no crashear si el componente ya rotó a otro slide
+                    // entre el render y el evento onError.
+                    const failed =
+                      e.currentTarget.getAttribute('data-src') ?? '';
+                    if (!failed) return;
+                    setBroken((prev) => {
+                      if (prev.has(failed)) return prev;
+                      const nextSet = new Set(prev);
+                      nextSet.add(failed);
+                      return nextSet;
+                    });
+                  }}
+                />
+                {/* Gradient overlay para texto */}
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-premium/80 via-dark-premium/20 to-transparent" />
+
+                <div className="absolute bottom-6 left-6 right-6 z-10">
+                  <div className="glass rounded-xl px-5 py-3 inline-block">
+                    <p className="text-white text-sm sm:text-base font-medium drop-shadow-lg max-w-xl">
+                      {slide.caption}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
           )}
 
           {/* Botón anterior */}
