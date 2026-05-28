@@ -35,7 +35,8 @@ export default function ReferralBanner() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          className="relative glass overflow-hidden p-8 sm:p-12 lg:p-14 border-amber/10 shadow-glow-md"
+          // AQUÍ SE AGREGÓ rounded-2xl
+          className="relative rounded-2xl glass overflow-hidden p-8 sm:p-12 lg:p-14 border-amber/10 shadow-glow-md"
         >
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 items-center">
 

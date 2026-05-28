@@ -32,7 +32,8 @@ export default function CtaProviderSection() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          className="relative glass p-10 sm:p-14 lg:p-16 overflow-hidden border-primary/20 shadow-glow-md"
+          // AQUÍ SE AGREGÓ rounded-2xl
+          className="relative rounded-2xl glass p-10 sm:p-14 lg:p-16 overflow-hidden border-primary/20 shadow-glow-md"
         >
           {/* Spotlight / Blob naranja intenso */}
           <div
@@ -91,7 +92,8 @@ export default function CtaProviderSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-          className="relative mt-8 glass p-8 sm:p-10"
+          // AQUÍ SE AGREGÓ rounded-2xl
+          className="relative mt-8 rounded-2xl glass p-8 sm:p-10"
         >
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>

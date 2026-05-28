@@ -83,7 +83,8 @@ export default function TestimonialsSection() {
             <motion.article
               key={t.name}
               variants={cardVariants}
-              className="glass glass-hover p-7 relative"
+              // AQUÍ SE AGREGÓ rounded-2xl
+              className="relative overflow-hidden rounded-2xl glass glass-hover p-7"
             >
               <Quote
                 className="absolute top-6 right-6 text-white/5" // Transparencia sutil sobre cristal oscuro

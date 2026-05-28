@@ -10,11 +10,11 @@ import AboutModal from '@/components/about-modal';
 
 // ========== ANIMACIONES TIPADAS ==========
 const footerVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
   },
 };
 
@@ -22,16 +22,16 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.2 },
   },
 };
 
 const itemVariants = {
-  hidden: { y: 15, opacity: 0 },
+  hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
   },
 };
 
@@ -131,220 +131,216 @@ export default function Footer() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      className="relative mt-20 border-t border-white/10 bg-dark-premium backdrop-blur-xl"    >
-      {/* Degradado superior sutil */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      className="relative mt-20 border-t border-white/5 bg-dark-premium overflow-hidden"
+    >
+      {/* Fondo ambiental con grid y blob */}
+      <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" aria-hidden />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[160px] opacity-30 pointer-events-none" aria-hidden />
 
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16">
+      {/* Línea de gradiente superior brillante */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-20">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12"
+          className="grid sm:grid-cols-2 lg:grid-cols-12 gap-12 mb-16"
         >
-          {/* Marca + redes */}
-          <motion.div variants={itemVariants} className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-3 mb-5 group w-fit">
-              <div className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105 border border-white/10">
+          {/* ─── Marca + redes ─── (Ocupa 4 columnas) */}
+          <motion.div variants={itemVariants} className="lg:col-span-4">
+            <Link href="/" className="flex items-center gap-3 mb-6 group w-fit">
+              <div className="relative w-12 h-12 rounded-2xl gradient-border flex items-center justify-center bg-dark-card shadow-glow-sm transition-all duration-500 group-hover:shadow-glow-md group-hover:scale-110">
                 <Image
                   src="/images/logo/servi.png"
                   alt="Servi"
-                  width={24}
-                  height={24}
+                  width={26}
+                  height={26}
                   className="object-contain"
                 />
               </div>
-              <span className="font-display font-bold text-white text-xl tracking-tightest bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+              <span className="font-display font-bold text-2xl tracking-tightest text-gradient">
                 Servi
               </span>
             </Link>
-            <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-xs">
+            <p className="text-white/50 text-[15px] leading-relaxed mb-8 max-w-sm">
               Encuentra al profesional ideal en minutos, no en horas. El marketplace peruano que garantiza seguridad y calidad en oficios y negocios locales.
             </p>
 
-            <div className="flex items-center gap-2 mb-4">
-              <Mail size={14} className="text-white/30" />
+            <div className="flex items-center gap-3 mb-4 text-sm">
+              <div className="w-8 h-8 rounded-lg glass flex items-center justify-center border border-white/10">
+                <Mail size={14} className="text-primary-light" />
+              </div>
               <a
                 href="mailto:soporteofiapp@gmail.com"
-                className="text-white/50 text-xs hover:text-primary-light transition-colors"
+                className="text-white/60 hover:text-primary-light transition-colors duration-300"
               >
                 soporteofiapp@gmail.com
               </a>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin size={14} className="text-white/30" />
-              <span className="text-white/40 text-xs">Perú</span>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg glass flex items-center justify-center border border-white/10">
+                <MapPin size={14} className="text-primary-light" />
+              </div>
+              <span className="text-white/60">Perú</span>
             </div>
 
-            <span className="eyebrow block mt-6 mb-3">Síguenos</span>
-            <div className="flex items-center gap-2">
-              <a
-                href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Gmail"
-                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
-              >
-                <img
-                  src="/images/social/gmail.svg"
-                  alt="Gmail"
-                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                />
-              </a>
-              <a
-                href="https://www.tiktok.com/@ofiapp.pe"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="TikTok"
-                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
-              >
-                <img
-                  src="/images/social/tiktok.svg"
-                  alt="TikTok"
-                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                />
-              </a>
-              <a
-                href="https://www.facebook.com/profile.php?id=61585849044376"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
-              >
-                <img
-                  src="/images/social/facebook.svg"
-                  alt="Facebook"
-                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                />
-              </a>
-              <a
-                href="https://www.instagram.com/ofiapp.pe/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="w-9 h-9 rounded-lg glass flex items-center justify-center border border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 hover:scale-110 group"
-              >
-                <img
-                  src="/images/social/instagram.svg"
-                  alt="Instagram"
-                  className="w-5 h-5 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                />
-              </a>
+            {/* Redes Sociales - Estilo Premium Glass */}
+            <div className="mt-8">
+              <span className="chip-eyebrow mb-4">
+                <span className="dot" />
+                Síguenos
+              </span>
+              <div className="flex items-center gap-2">
+                {[
+                  { href: "https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com", src: "/images/social/gmail.svg", alt: "Gmail" },
+                  { href: "https://www.tiktok.com/@ofiapp.pe", src: "/images/social/tiktok.svg", alt: "TikTok" },
+                  { href: "https://www.facebook.com/profile.php?id=61585849044376", src: "/images/social/facebook.svg", alt: "Facebook" },
+                  { href: "https://www.instagram.com/ofiapp.pe/", src: "/images/social/instagram.svg", alt: "Instagram" }
+                ].map((social) => (
+                  <a
+                    key={social.alt}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.alt}
+                    className="w-10 h-10 rounded-xl glass glass-hover hover-lift press-effect flex items-center justify-center border border-white/10 group"
+                  >
+                    <img
+                      src={social.src}
+                      alt={social.alt}
+                      className="w-5 h-5 object-contain opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+                    />
+                  </a>
+                ))}
+              </div>
             </div>
           </motion.div>
 
-          {/* Explorar */}
-          <motion.div variants={itemVariants}>
-            <h4 className="eyebrow mb-4">Explorar</h4>
-            <ul className="space-y-2.5">
+          {/* ─── Explorar ─── (Ocupa 2 columnas) */}
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <h4 className="eyebrow mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-glow-sm" />
+              Explorar
+            </h4>
+            <ul className="space-y-4">
               {productLinks.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
+                    className="group/link text-white/60 text-[14.5px] hover:text-primary-light transition-all duration-300 inline-flex items-center gap-2"
                   >
-                    {l.label}
+                    <span className="w-0 h-px bg-primary-light transition-all duration-300 group-hover/link:w-3" />
+                    <span className="relative">
+                      {l.label}
+                      <span className="absolute bottom-0 left-0 w-0 h-px bg-gradient-to-r from-primary to-accent transition-all duration-300 group-hover/link:w-full" />
+                    </span>
                   </Link>
                 </li>
               ))}
               <li>
                 <button
                   onClick={() => setAboutOpen(true)}
-                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
+                  className="group/link text-white/60 text-[14.5px] hover:text-primary-light transition-all duration-300 inline-flex items-center gap-2"
                 >
-                  Conócenos
+                  <span className="w-0 h-px bg-primary-light transition-all duration-300 group-hover/link:w-3" />
+                  <span className="relative">
+                    Conócenos
+                    <span className="absolute bottom-0 left-0 w-0 h-px bg-gradient-to-r from-primary to-accent transition-all duration-300 group-hover/link:w-full" />
+                  </span>
                 </button>
               </li>
             </ul>
           </motion.div>
 
-          {/* Contacto */}
-          <motion.div variants={itemVariants}>
-            <h4 className="eyebrow mb-4">Contacto</h4>
-            <ul className="space-y-2.5">
-              <li>
-                <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-flex items-center gap-1.5"
-                >
-                  <Mail size={12} />
-                  Soporte técnico
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=ronla.angarita31@gmail.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-flex items-center gap-1.5"
-                >
-                  <Mail size={12} />
-                  Ventas y planes
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=dannyafk2000@gmail.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-flex items-center gap-1.5"
-                >
-                  <Mail size={12} />
-                  Centro de ayuda
-                </a>
-              </li>
+          {/* ─── Contacto ─── (Ocupa 3 columnas) */}
+          <motion.div variants={itemVariants} className="lg:col-span-3">
+            <h4 className="eyebrow mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent shadow-glow-sm" />
+              Contacto
+            </h4>
+            <ul className="space-y-4">
+              {[
+                { href: "https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com", label: "Soporte técnico", icon: "🛡️" },
+                { href: "https://mail.google.com/mail/?view=cm&fs=1&to=ronla.angarita31@gmail.com", label: "Ventas y planes", icon: "📈" },
+                { href: "https://mail.google.com/mail/?view=cm&fs=1&to=dannyafk2000@gmail.com", label: "Centro de ayuda", icon: "💬" }
+              ].map((contact) => (
+                <li key={contact.label}>
+                  <a
+                    href={contact.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group/contact flex items-center gap-3 p-3 -ml-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300"
+                  >
+                    <span className="text-lg">{contact.icon}</span>
+                    <div>
+                      <span className="text-white/80 text-sm font-medium block group-hover/contact:text-primary-light transition-colors">
+                        {contact.label}
+                      </span>
+                      <span className="text-white/40 text-xs">Respuesta en 24h</span>
+                    </div>
+                  </a>
+                </li>
+              ))}
             </ul>
           </motion.div>
 
-          {/* Legal */}
-          <motion.div variants={itemVariants}>
-            <h4 className="eyebrow mb-4">Legal</h4>
-            <ul className="space-y-2.5">
-              <li>
-                <button
-                  onClick={() =>
-                    setLegalModal({
-                      open: true,
-                      title: 'Términos y Condiciones',
-                      content: TERMS_CONTENT,
-                    })
-                  }
-                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
-                >
+          {/* ─── Legal ─── (Ocupa 3 columnas) */}
+          <motion.div variants={itemVariants} className="lg:col-span-3">
+            <h4 className="eyebrow mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber shadow-glow-sm" />
+              Legal
+            </h4>
+            <div className="glass rounded-2xl p-5 border border-white/5 space-y-3">
+              <p className="text-white/40 text-xs leading-relaxed mb-4">
+                El uso de Servi está sujeto a las siguientes políticas destinadas a proteger tu información y experiencia.
+              </p>
+              <button
+                onClick={() =>
+                  setLegalModal({
+                    open: true,
+                    title: 'Términos y Condiciones',
+                    content: TERMS_CONTENT,
+                  })
+                }
+                className="group/leg w-full text-left flex items-center justify-between p-2.5 -ml-2 rounded-lg hover:bg-white/5 transition-colors duration-200"
+              >
+                <span className="text-white/70 text-sm group-hover/leg:text-primary-light transition-colors">
                   Términos y condiciones
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() =>
-                    setLegalModal({
-                      open: true,
-                      title: 'Política de Privacidad',
-                      content: PRIVACY_CONTENT,
-                    })
-                  }
-                  className="text-white/60 text-sm hover:text-primary-light transition-colors duration-200 hover:translate-x-1 inline-block"
-                >
+                </span>
+                <ArrowUp size={12} className="text-white/30 rotate-45 group-hover/leg:text-primary-light transition-all" />
+              </button>
+              <button
+                onClick={() =>
+                  setLegalModal({
+                    open: true,
+                    title: 'Política de Privacidad',
+                    content: PRIVACY_CONTENT,
+                  })
+                }
+                className="group/leg w-full text-left flex items-center justify-between p-2.5 -ml-2 rounded-lg hover:bg-white/5 transition-colors duration-200"
+              >
+                <span className="text-white/70 text-sm group-hover/leg:text-primary-light transition-colors">
                   Política de privacidad
-                </button>
-              </li>
-            </ul>
+                </span>
+                <ArrowUp size={12} className="text-white/30 rotate-45 group-hover/leg:text-primary-light transition-all" />
+              </button>
+            </div>
           </motion.div>
         </motion.div>
 
-        {/* Barra inferior con botón de scroll up */}
+        {/* ─── Barra inferior ─── */}
         <motion.div
           variants={itemVariants}
-          className="pt-7 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4"
+          className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6"
         >
-          <span className="text-white/30 text-xs">
-            © {year} Servi. Todos los derechos reservados.
-          </span>
-          <div className="flex items-center gap-4">
-            <span className="text-white/30 text-xs inline-flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <span className="text-white/30 text-xs font-mono tabular-nums">
+              © {year} Servi. Todos los derechos reservados.
+            </span>
+            <span className="hidden sm:block w-1 h-1 rounded-full bg-white/20" />
+            <span className="text-white/40 text-xs inline-flex items-center gap-2">
               <span className="peru-stripe">
                 <i />
                 <i />
@@ -352,14 +348,18 @@ export default function Footer() {
               </span>
               Hecho con <Heart size={10} className="text-rose fill-rose" /> en Perú
             </span>
-            <button
-              onClick={scrollToTop}
-              className="w-8 h-8 rounded-full glass flex items-center justify-center text-white/50 hover:text-primary-light hover:shadow-glow-sm transition-all hover:scale-105"
-              aria-label="Volver arriba"
-            >
-              <ArrowUp size={14} />
-            </button>
           </div>
+
+          <button
+            onClick={scrollToTop}
+            className="group/btn flex items-center gap-2 text-white/40 text-xs font-display font-medium hover:text-primary-light transition-all duration-300 press-effect"
+            aria-label="Volver arriba"
+          >
+            <span>Volver arriba</span>
+            <div className="w-9 h-9 rounded-xl glass glass-hover flex items-center justify-center border border-white/10 group-hover/btn:border-primary/30 group-hover/btn:shadow-glow-sm transition-all duration-300 group-hover/btn:-translate-y-0.5">
+              <ArrowUp size={14} />
+            </div>
+          </button>
         </motion.div>
       </div>
 

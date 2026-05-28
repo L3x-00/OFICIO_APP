@@ -689,25 +689,11 @@ h1, h2, h3, h4, h5, h6, .display {
 /* ═══════════════════════════════════════════════════════════════════
    LIGHT THEME OVERRIDES
    ───────────────────────────────────────────────────────────────────
-   El sitio nació dark-first con utilidades literales (bg-dark-*,
-   text-white, .glass, etc.). En vez de tocar 50+ componentes con
-   `dark:` variants — que romperían visualmente cualquier cosa que se
-   nos pase — usamos selectors `html.light .clase` con alta
-   especificidad para INVERTIR la paleta cuando el user elige el
-   tema claro.
-
-   Cubrimos los tokens más usados:
-     • bg-dark-premium / -surface / -card / -input  → tonos crema/blanco.
-     • text-white + opacidades                      → ink dark.
-     • .glass / .glass-hover                        → translúcido claro.
-     • borders white/X                              → borders dark/X.
-     • Toaster + scrollbar                          → matchean.
-
-   Lo que queda intacto: gradientes de marca (naranja/cian/ámbar),
-   chips de status, iconos coloreados — todos esos siguen visibles
-   sobre el fondo claro porque son colores saturados.
+   Reglas centralizadas para el tema claro. Orden: Base → Surfaces → 
+   Tipografía → Bordes → Componentes globales → Componentes específicos.
 ═══════════════════════════════════════════════════════════════════ */
 
+/* 1. Base & Root */
 html.light {
   color-scheme: light;
   background-color: #FBF7EE; /* paper */
@@ -718,32 +704,40 @@ html.light body {
   color: #14141C;
 }
 
-/* Surfaces (bg-dark-*) */
+/* 2. Surfaces (bg-dark-*) */
 html.light .bg-dark-premium { background-color: #FBF7EE !important; }
+html.light .bg-dark-premium\/80 { background-color: rgba(251, 247, 238, 0.85) !important; } /* Footer fix */
 html.light .bg-dark-surface { background-color: #FFFFFF !important; }
 html.light .bg-dark-card    { background-color: #FFFFFF !important; }
 html.light .bg-dark-input   { background-color: #FBF8F0 !important; }
 
-/* Text base — invertimos text-white pero respetamos opacidades. */
+/* 3. Tipografía (text-white → ink) - Proporcional */
 html.light .text-white          { color: #14141C !important; }
-html.light .text-white\/90      { color: rgba(20, 20, 28, 0.92) !important; }
-html.light .text-white\/80      { color: rgba(20, 20, 28, 0.85) !important; }
-html.light .text-white\/70      { color: rgba(20, 20, 28, 0.75) !important; }
-html.light .text-white\/60      { color: rgba(20, 20, 28, 0.65) !important; }
-html.light .text-white\/50      { color: rgba(20, 20, 28, 0.55) !important; }
-html.light .text-white\/40      { color: rgba(20, 20, 28, 0.45) !important; }
-html.light .text-white\/30      { color: rgba(75, 75, 89, 0.55) !important; }
-html.light .text-white\/\[0\.7\] { color: rgba(20, 20, 28, 0.7) !important; }
+html.light .text-white\/90      { color: rgba(20, 20, 28, 0.90) !important; }
+html.light .text-white\/80      { color: rgba(20, 20, 28, 0.80) !important; }
+html.light .text-white\/\[0\.7\] { color: rgba(20, 20, 28, 0.70) !important; }
+html.light .text-white\/70      { color: rgba(20, 20, 28, 0.70) !important; }
+html.light .text-white\/60      { color: rgba(20, 20, 28, 0.60) !important; }
+html.light .text-white\/50      { color: rgba(20, 20, 28, 0.50) !important; }
+html.light .text-white\/40      { color: rgba(20, 20, 28, 0.40) !important; }
+html.light .text-white\/30      { color: rgba(20, 20, 28, 0.30) !important; } /* Corregido de 0.55 */
+html.light .text-white\/\[0\.04\] { color: rgba(20, 20, 28, 0.06) !important; } /* How it works */
+html.light .text-primary\/\[0\.08\] { color: rgba(224, 123, 57, 0.10) !important; } /* How it works hover */
 
-/* Borders sobre white/X → borders sobre dark/X. Mantenemos opacidad
-   pero invertimos color base para que las divisiones sean visibles. */
-html.light .border-white\/5      { border-color: rgba(20, 20, 28, 0.06) !important; }
-html.light .border-white\/10     { border-color: rgba(20, 20, 28, 0.08) !important; }
-html.light .border-white\/15     { border-color: rgba(20, 20, 28, 0.10) !important; }
-html.light .border-white\/20     { border-color: rgba(20, 20, 28, 0.14) !important; }
+/* 4. Bordes (border-white → border-ink) */
+html.light .border-white\/5         { border-color: rgba(20, 20, 28, 0.05) !important; }
 html.light .border-white\/\[0\.06\] { border-color: rgba(20, 20, 28, 0.06) !important; }
+html.light .border-white\/10        { border-color: rgba(20, 20, 28, 0.10) !important; }
+html.light .border-white\/15        { border-color: rgba(20, 20, 28, 0.15) !important; } /* Corregido de 0.10 */
+html.light .border-white\/20        { border-color: rgba(20, 20, 28, 0.20) !important; } /* Corregido de 0.14 */
 
-/* Glass cards — fondo claro semi-transparente con borde dark sutil. */
+/* 5. Fondos varios (bg-white/X → bg-ink/X) */
+html.light .bg-white\/5            { background-color: rgba(20, 20, 28, 0.05) !important; } /* Corregido de 0.04 */
+html.light .bg-white\/\[0\.04\]    { background-color: rgba(20, 20, 28, 0.04) !important; }
+html.light .bg-white\/\[0\.03\]    { background-color: rgba(20, 20, 28, 0.03) !important; }
+html.light .bg-white\/10           { background-color: rgba(20, 20, 28, 0.10) !important; } /* Corregido de 0.06 */
+
+/* 6. Glassmorphism en claro */
 html.light .glass {
   background: rgba(255, 255, 255, 0.65);
   border: 1px solid rgba(20, 20, 28, 0.08);
@@ -752,7 +746,7 @@ html.light .glass {
 }
 html.light .glass-hover:hover {
   background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(224, 123, 57, 0.35); /* hover naranja-ish */
+  border-color: rgba(224, 123, 57, 0.35);
 }
 html.light .glass-card {
   background: rgba(255, 255, 255, 0.85);
@@ -763,14 +757,7 @@ html.light .glass-warm {
   border: 1px solid rgba(224, 123, 57, 0.18);
 }
 
-/* Backgrounds white/X → dark/X muy sutil para chips/badges sobre
-   light. Sin esto los chips quedaban casi invisibles. */
-html.light .bg-white\/5       { background-color: rgba(20, 20, 28, 0.04) !important; }
-html.light .bg-white\/\[0\.04\] { background-color: rgba(20, 20, 28, 0.04) !important; }
-html.light .bg-white\/\[0\.03\] { background-color: rgba(20, 20, 28, 0.03) !important; }
-html.light .bg-white\/10      { background-color: rgba(20, 20, 28, 0.06) !important; }
-
-/* Inputs / textareas con background dark — los pasamos a paper. */
+/* 7. Componentes Globales */
 html.light input.bg-white\/5,
 html.light textarea.bg-white\/5,
 html.light select.bg-white\/5 {
@@ -779,7 +766,7 @@ html.light select.bg-white\/5 {
   border-color: rgba(20, 20, 28, 0.12) !important;
 }
 
-/* Toaster (Sonner) — fuerza tema claro cuando html.light. */
+/* Toaster (Sonner) */
 html.light [data-sonner-toaster] {
   --normal-bg: rgba(255, 255, 255, 0.95) !important;
   --normal-border: rgba(20, 20, 28, 0.10) !important;
@@ -787,89 +774,25 @@ html.light [data-sonner-toaster] {
 }
 
 /* Scrollbar */
-html.light ::-webkit-scrollbar-thumb {
-  background: rgba(20, 20, 28, 0.18);
-}
-html.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(20, 20, 28, 0.30);
-}
-/* ─── Navbar claro ─────────────────────────────────────────────────
-   El navbar usa muchas clases text-white/* y border-white/* inline.
-   En tema claro deben pasar a ink dark. */
-html.light .nav-link-light { color: rgba(20, 20, 28, 0.65) !important; }
-html.light .nav-link-light:hover { color: #14141C !important; }
+html.light ::-webkit-scrollbar-thumb { background: rgba(20, 20, 28, 0.18); }
+html.light ::-webkit-scrollbar-thumb:hover { background: rgba(20, 20, 28, 0.30); }
 
+/* ─── 8. Componentes Específicos ──────────────────────────── */
+
+/* Navbar */
+html.light .nav-link-light { color: rgba(20, 20, 28, 0.65) !important; }
+html.light .nav-link-light:hover { color: #14141C !important; text-shadow: none !important; }
 html.light nav span.text-white,
 html.light nav a.text-white,
 html.light nav button > span.text-white\/80 { color: #14141C !important; }
-
-html.light nav .text-white\/60,
-html.light nav .text-white\/70 { color: rgba(20, 20, 28, 0.65) !important; }
-
-html.light nav .border-white\/10 { border-color: rgba(20, 20, 28, 0.10) !important; }
 html.light nav .bg-white\/5 { background-color: rgba(20, 20, 28, 0.05) !important; }
 
-/* Fondo del contenedor del nombre de usuario en desktop */
-html.light nav .bg-white\/5.border-white\/10 {
-  background-color: rgba(20, 20,28, 0.05) !important;
-  border-color: rgba(20, 20, 28, 0.10) !important;
-}
-
-/* Botón hamburguesa */
-html.light nav button.text-white\/60 { color: rgba(20, 20, 28, 0.65) !important; }
-html.light nav button.text-white\/60:hover { color: #14141C !important; }
-
-/* Contenedor del logo */
-html.light nav .bg-white\/5.border-white\/10.shadow-glow-sm {
-  background-color: rgba(20, 20, 28, 0.06) !important;
-  border-color: rgba(20, 20,28, 0.10) !important;
-}
-/* ─── Footer claro ─────────────────────────────────────────────────
-   El footer usa glass, text-white/*, border-white/* y bg-white/*.
-   En tema claro pasan a ink dark / superficies paper. */
-html.light footer.text-white,
-html.light footer { color: #14141C !important; }
-
-html.light footer .text-white\/30 { color: rgba(20, 20, 28, 0.35) !important; }
-html.light footer .text-white\/40 { color: rgba(20, 20, 28, 0.45) !important; }
-html.light footer .text-white\/50 { color: rgba(20, 20, 28, 0.55) !important; }
-html.light footer .text-white\/60 { color: rgba(20, 20, 28, 0.65) !important; }
-html.light footer .text-white\/80 { color: rgba(20, 20, 28, 0.85) !important; }
-
-/* FIX: El fondo del footer tiene /80, agregamos la regla exacta */
-html.light footer .bg-dark-premium\/80 { background-color: rgba(251, 247, 238, 0.85) !important; }
-
-/* FIX: El logo del footer usa gradiente blanco, lo cambiamos a ink */
+/* Footer */
+html.light footer,
+html.light footer.text-white { color: #14141C !important; }
 html.light footer span.bg-gradient-to-r.from-white {
   background-image: linear-gradient(to right, #14141C, rgba(20, 20, 28, 0.8)) !important;
 }
-
-/* Dividers y bordes del footer */
-html.light footer .border-white\/5,
-html.light footer .border-white\/10 { border-color: rgba(20, 20, 28, 0.08) !important; }
-
-/* Chips/badges con fondo blanco semitransparente */
-html.light footer .bg-white\/5 { background-color: rgba(20, 20, 28, 0.05) !important; }
-html.light footer .bg-white\/10 { background-color: rgba(20, 20, 28, 0.07) !important; }
-
-/* Inputs de newsletter si existen */
-html.light footer input.bg-white\/5 {
-  background-color: #FFFFFF !important;
-  color: #14141C !important;
-  border-color: rgba(20, 20, 28, 0.12) !important;
-}
-
-/* Links del footer en claro */
-html.light footer a.text-white\/60,
-html.light footer button.text-white\/60 {
-  color: rgba(20, 20, 28, 0.65) !important;
-}
+html.light footer .via-primary\/30 { --tw-gradient-via: rgba(224, 123, 57, 0.4) !important; }
 html.light footer a.text-white\/60:hover,
-html.light footer button.text-white\/60:hover {
-  color: #E07B39 !important; /* Naranja de tu marca */
-}
-
-/* FIX: Línea de gradiente superior del footer */
-html.light footer .via-primary\/30 {
-  --tw-gradient-via: rgba(224, 123, 57, 0.4) !important;
-}
+html.light footer button.text-white\/60:hover { color: #E07B39 !important; }
