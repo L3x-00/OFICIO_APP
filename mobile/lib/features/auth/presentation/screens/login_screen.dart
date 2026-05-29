@@ -39,6 +39,12 @@ class _LoginScreenState extends State<LoginScreen>
   bool _rememberSession = false;
   String? _passwordMismatch;
 
+  /// True durante todo el flujo de login social (selector de cuenta
+  /// Google → Firebase → backend). Bloquea el botón de Google y el
+  /// botón principal "Crear mi cuenta"/"Ingresar" para evitar el
+  /// doble-tap durante el delay del picker — el bug reportado.
+  bool _socialBusy = false;
+
   @override
   void initState() {
     super.initState();
@@ -158,33 +164,45 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _handleGoogleLogin() async {
+    // Guard de re-entrada: si ya hay un flujo social en curso, ignora
+    // el tap. Cubre el caso del doble-tap rapidísimo antes de que el
+    // setState propague el disabled al botón.
+    if (_socialBusy) return;
     final auth = context.read<AuthProvider>();
 
-    final outcome = await SocialAuthService.signInWithGoogle();
+    setState(() => _socialBusy = true);
+    try {
+      final outcome = await SocialAuthService.signInWithGoogle();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (outcome.isCancelled) return; // el usuario canceló — sin feedback
+      if (outcome.isCancelled) return; // el usuario canceló — sin feedback
 
-    if (outcome.isError) {
-      context.showErrorSnack(
-        outcome.errorMessage ?? 'Error en inicio de sesión social',
-      );
-      return;
-    }
-
-    final ok = await auth.loginWithSocial(outcome.idToken!);
-
-    if (!mounted) return;
-    if (ok) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      final error = auth.error ?? 'Error en inicio de sesión social';
-      context.showErrorSnack(error);
-      // Cuenta ya existe con contraseña → llevar a login manual
-      if (_isConflictError(error)) {
-        _switchMode(AuthMode.login);
+      if (outcome.isError) {
+        context.showErrorSnack(
+          outcome.errorMessage ?? 'Error en inicio de sesión social',
+        );
+        return;
       }
+
+      final ok = await auth.loginWithSocial(outcome.idToken!);
+
+      if (!mounted) return;
+      if (ok) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        final error = auth.error ?? 'Error en inicio de sesión social';
+        context.showErrorSnack(error);
+        // Cuenta ya existe con contraseña → llevar a login manual
+        if (_isConflictError(error)) {
+          _switchMode(AuthMode.login);
+        }
+      }
+    } finally {
+      // Libera el flag pase lo que pase (éxito, error, cancel). Si el
+      // login tuvo éxito ya navegamos fuera, pero el `mounted` guard
+      // evita setState sobre un widget desmontado.
+      if (mounted) setState(() => _socialBusy = false);
     }
   }
 
@@ -327,6 +345,7 @@ class _LoginScreenState extends State<LoginScreen>
                 // ── Botón de inicio de sesión con Google ─────
                 SocialLoginButton(
                   provider: SocialProvider.google,
+                  busy: _socialBusy,
                   onTap: () => _handleGoogleLogin(),
                 ),
                 const SizedBox(height: 20),
@@ -476,36 +495,42 @@ class _LoginScreenState extends State<LoginScreen>
 
                 // ── Botón principal ─────────────────────────
                 Consumer<AuthProvider>(
-                  builder: (_, auth, _) => SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: auth.isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  builder: (_, auth, _) {
+                    // Deshabilitado si: el provider está en loading (submit
+                    // normal en curso) O hay un flujo social activo — esto
+                    // último cierra la ventana de doble-tap reportada.
+                    final busy = auth.isLoading || _socialBusy;
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: busy ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
+                        child: auth.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                isRegister ? 'Crear mi cuenta' : 'Ingresar',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
-                      child: auth.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              isRegister ? 'Crear mi cuenta' : 'Ingresar',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 20),
 

@@ -91,6 +91,35 @@ class AppNotification {
     return null;
   }
 
+  /// Serializa para persistir en SharedPreferences. Usado SOLO para las
+  /// notificaciones broadcast del admin (que no viven en BD por-usuario):
+  /// así sobreviven al cierre de la app y el usuario puede re-abrir el
+  /// modal cuantas veces quiera desde "Alertas".
+  Map<String, dynamic> toLocalJson() => {
+    'id': id,
+    'type': type,
+    'title': title,
+    'body': body,
+    'createdAt': createdAt.toIso8601String(),
+    'imageUrl': imageUrl,
+    'isRead': isRead,
+  };
+
+  /// Reconstruye desde el JSON local de SharedPreferences.
+  factory AppNotification.fromLocalJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: json['id'] as String? ?? '${DateTime.now().millisecondsSinceEpoch}',
+      type: json['type'] as String? ?? 'BROADCAST',
+      title: json['title'] as String? ?? 'Notificación',
+      body: json['body'] as String? ?? '',
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      imageUrl: json['imageUrl'] as String?,
+      isRead: json['isRead'] as bool? ?? false,
+    );
+  }
+
   /// Copia de las keys de payload que usamos para navegar — las
   /// preservamos como ints porque el destino (go_router) las consume así.
   static Map<String, dynamic>? _extractActionData(Map<String, dynamic> src) {

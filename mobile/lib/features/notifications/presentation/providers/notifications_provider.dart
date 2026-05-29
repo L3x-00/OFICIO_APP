@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,7 @@ class NotificationsProvider extends ChangeNotifier {
   final List<AppNotification> _items = [];
   int? _currentUserId;
   String? _currentUserRole;
+
   /// Tipo de perfil activo (OFICIO|NEGOCIO). Si es null, no filtramos.
   String? _activeProfileType;
 
@@ -25,10 +27,24 @@ class NotificationsProvider extends ChangeNotifier {
   /// Clave: `read_notifs_{userId}` → JSON list de ids serializables.
   final Set<String> _readOverrides = <String>{};
 
+  /// Broadcasts del admin persistidos localmente. El backend NO guarda
+  /// una fila por-usuario para los broadcasts masivos (sería caro y no
+  /// hay columna `imageUrl`), así que los almacenamos en
+  /// SharedPreferences para que sobrevivan al cierre de la app y el
+  /// usuario pueda re-abrir el modal desde "Alertas" cuantas veces
+  /// quiera. Clave: `broadcast_notifs_{userId}`.
+  final List<AppNotification> _broadcasts = [];
+
   List<AppNotification> get items => List.unmodifiable(_items);
   int get unreadCount => _items.where((n) => !n.isRead).length;
 
   String _readKey(int userId) => 'read_notifs_$userId';
+  String _broadcastKey(int userId) => 'broadcast_notifs_$userId';
+
+  /// Una notif es "broadcast persistible" si trae imagen o es del tipo
+  /// que emite el panel admin masivamente.
+  static bool _isBroadcast(AppNotification n) =>
+      n.type == 'BROADCAST' || (n.imageUrl != null && n.imageUrl!.isNotEmpty);
 
   Future<void> _loadReadOverrides(int userId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -41,7 +57,53 @@ class NotificationsProvider extends ChangeNotifier {
   Future<void> _persistReadOverrides() async {
     if (_currentUserId == null) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_readKey(_currentUserId!), _readOverrides.toList());
+    await prefs.setStringList(
+      _readKey(_currentUserId!),
+      _readOverrides.toList(),
+    );
+  }
+
+  // ── Persistencia local de broadcasts ────────────────────────
+
+  Future<void> _loadBroadcasts(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_broadcastKey(userId)) ?? const [];
+    _broadcasts
+      ..clear()
+      ..addAll(
+        raw.map((s) {
+          try {
+            return AppNotification.fromLocalJson(
+              jsonDecode(s) as Map<String, dynamic>,
+            );
+          } catch (_) {
+            return null;
+          }
+        }).whereType<AppNotification>(),
+      );
+  }
+
+  Future<void> _persistBroadcasts() async {
+    if (_currentUserId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    // Cap a 50 más recientes — evita crecer sin límite.
+    final capped = _broadcasts.take(50).toList();
+    await prefs.setStringList(
+      _broadcastKey(_currentUserId!),
+      capped.map((n) => jsonEncode(n.toLocalJson())).toList(),
+    );
+  }
+
+  /// Registra un broadcast recibido (foreground inbound o tap en
+  /// background) — lo agrega al inbox + lo persiste local. Idempotente:
+  /// dedup por (title+body) en ±5s evita doble entrada entre canales.
+  void recordBroadcast(AppNotification n) {
+    if (_currentUserId == null) return;
+    if (_isRecentDuplicate(n)) return;
+    _broadcasts.insert(0, n);
+    _items.insert(0, n);
+    _persistBroadcasts();
+    notifyListeners();
   }
 
   /// Llamar tras el login. Empieza a filtrar notificaciones por usuario/rol y
@@ -54,17 +116,26 @@ class NotificationsProvider extends ChangeNotifier {
     if (_currentUserId != null && _currentUserId != userId) {
       _items.clear();
       _readOverrides.clear();
+      _broadcasts.clear();
     }
-    _currentUserId      = userId;
-    _currentUserRole    = role;
-    _activeProfileType  = activeProfileType;
+    _currentUserId = userId;
+    _currentUserRole = role;
+    _activeProfileType = activeProfileType;
     SocketService.instance.addNotificationListener(_onNotification);
     notifyListeners();
 
-    // Hidratar el set local de IDs leídos antes de pedir el historial — así
-    // si el backend devuelve isRead=false por una latencia del PATCH, el
-    // override local lo corrige al instante.
-    _loadReadOverrides(userId).then((_) {
+    // Hidratar overrides de leídos + broadcasts persistidos antes de
+    // pedir el historial. Los broadcasts viven solo en local (no en BD),
+    // así que se siembran acá para que aparezcan en "Alertas" tras
+    // reabrir la app.
+    Future.wait([_loadReadOverrides(userId), _loadBroadcasts(userId)]).then((
+      _,
+    ) {
+      // Sembrar broadcasts en la lista visible (sin duplicar).
+      for (final b in _broadcasts) {
+        if (!_items.any((n) => n.id == b.id)) _items.insert(0, b);
+      }
+      _items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       _applyOverrides();
       notifyListeners();
       loadHistory();
@@ -89,10 +160,11 @@ class NotificationsProvider extends ChangeNotifier {
 
   void clearUser() {
     SocketService.instance.removeNotificationListener(_onNotification);
-    _currentUserId      = null;
-    _currentUserRole    = null;
-    _activeProfileType  = null;
+    _currentUserId = null;
+    _currentUserRole = null;
+    _activeProfileType = null;
     _items.clear();
+    _broadcasts.clear();
     notifyListeners();
   }
 
@@ -144,19 +216,25 @@ class NotificationsProvider extends ChangeNotifier {
     if (!_passesFilters(notification)) return;
     if (_isRecentDuplicate(notification)) return;
     _items.insert(0, notification);
+    // Broadcast del admin → persistir local para que sobreviva al
+    // cierre de la app (no vive en BD por-usuario).
+    if (_isBroadcast(notification)) {
+      _broadcasts.insert(0, notification);
+      _persistBroadcasts();
+    }
     notifyListeners();
   }
 
   void _onNotification(Map<String, dynamic> data) {
     final notification = AppNotification.fromSocket(data);
     final targetUserId = data['targetUserId'];
-    final targetRole   = data['targetRole']        as String?;
-    final targetType   = data['targetProfileType'] as String?;
+    final targetRole = data['targetRole'] as String?;
+    final targetType = data['targetProfileType'] as String?;
 
     if (!_passesTargets(
       targetUserId: targetUserId,
-      targetRole:   targetRole,
-      targetType:   targetType,
+      targetRole: targetRole,
+      targetType: targetType,
     )) {
       return;
     }
@@ -164,6 +242,10 @@ class NotificationsProvider extends ChangeNotifier {
     if (_isRecentDuplicate(notification)) return;
 
     _items.insert(0, notification);
+    if (_isBroadcast(notification)) {
+      _broadcasts.insert(0, notification);
+      _persistBroadcasts();
+    }
     notifyListeners();
   }
 
@@ -175,19 +257,22 @@ class NotificationsProvider extends ChangeNotifier {
   /// compararlo dejaba pasar duplicados.
   bool _isRecentDuplicate(AppNotification incoming) {
     final cutoff = DateTime.now().subtract(const Duration(seconds: 5));
-    return _items.any((n) =>
-      n.title == incoming.title &&
-      n.body == incoming.body &&
-      n.createdAt.isAfter(cutoff));
+    return _items.any(
+      (n) =>
+          n.title == incoming.title &&
+          n.body == incoming.body &&
+          n.createdAt.isAfter(cutoff),
+    );
   }
 
   // ── Filtros ─────────────────────────────────────────────────
 
   bool _passesFilters(AppNotification n) {
     return _passesTargets(
-      targetUserId: null, // ya viene filtrada del backend (es del provider del user)
-      targetRole:   null,
-      targetType:   n.targetProfileType,
+      targetUserId:
+          null, // ya viene filtrada del backend (es del provider del user)
+      targetRole: null,
+      targetType: n.targetProfileType,
     );
   }
 

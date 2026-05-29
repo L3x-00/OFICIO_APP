@@ -1,8 +1,8 @@
 # Servi / Servi — Documentación Completa del Sistema
 
-**Última actualización**: 2026-05-19
-**Versión Mobile**: 2.0.0+107
-**Estado**: Producción (backend desplegado en Render) — Hito 9.x
+**Última actualización**: 2026-05-29
+**Versión Mobile**: 2.0.0+118
+**Estado**: Producción (backend desplegado en Render) — Hito 10.x
 
 > Este documento es la **especificación completa** del sistema:
 > requisitos funcionales (RF) y no funcionales (RNF) de las **4
@@ -253,7 +253,9 @@ Tambo, etc.). Conecta:
 | RF-ADM-08 | Moderación de reseñas y reportes (de proveedores, de ofertas, de plataforma) | Admin |
 | RF-ADM-09 | CRUD de categorías y de localidades (soft-delete) | Admin |
 | RF-ADM-10 | Analytics estratégico: 13 KPIs, gráficas (line, pie, bar), funnel, top-10 | Admin |
-| RF-ADM-11 | Mapa de calor de usuarios por ciudad (geo-stats vía IP) | Admin |
+| RF-ADM-11 | **Mapa interactivo del Perú con proveedores por departamento** (Leaflet + tiles CartoDB Dark, centroides hardcoded de las 24 regiones, marcadores rojos escalados por conteo) | Admin |
+| RF-ADM-11b | Filtro estricto en gestión de cuentas: **`role=USUARIO` / `role=PROVEEDOR` / `role=DUAL`** — basado en `providers: { some/none }` y no en `user.role` legacy | Admin, Backend |
+| RF-ADM-11c | Sistema de notificaciones admin con scope correcto: filtra a `providerId IS NOT NULL OR type='BROADCAST_LOG'`; mark-all-read optimista en frontend; soporta tipo **BROADCAST_LOG** ("Enviaste una notificación a todos los usuarios: …") | Admin, Backend |
 | RF-ADM-12 | Exportar reportes CSV (usuarios, proveedores) y Excel | Admin |
 | RF-ADM-13 | Panel en tiempo real: socket.io, toasts live, badge de pendientes | Admin |
 | RF-ADM-14 | CRUD de recompensas con ProviderPicker (solo aprobados) | Admin |
@@ -481,11 +483,53 @@ JWT/Passport, class-validator, Sentry, Firebase Admin, Brevo (email).
 `/referrals`, `/rewards`, `/p/[slug]`, `/login`.
 
 **Packages**: next 16, react 19, tailwindcss 3, recharts, lucide-react,
-sonner, @radix-ui/*, exceljs, date-fns, socket.io-client, Sentry.
+sonner, @radix-ui/* (dialog + dropdown-menu + slot + **tabs**),
+**class-variance-authority**, **tailwindcss-animate**, exceljs, date-fns,
+socket.io-client, Sentry, **leaflet + react-leaflet** (mapa de Perú).
 
 **Características**: panel en tiempo real (hook `use-admin-realtime`),
 13 KPIs, gráficas, exportación Excel/CSV, diseño dark, **responsivo
 completo en móvil**.
+
+### Sistema de diseño (`components/ui/` — shadcn-style, sin CLI)
+Primitives propios construidos con `cva` + Radix headless. Mismas
+ergonomías que shadcn-ui pero alineados a la paleta `surface-*` /
+`brand` / `orange` del admin actual:
+
+| Primitive | Variantes |
+|---|---|
+| `Button` | `primary` / `default` / `outline` / `ghost` / `danger` / `link` × 4 tamaños (`sm/md/lg/icon`); `asChild` con Radix Slot |
+| `Card` | `CardHeader` / `Title` / `Description` / `Content` / `Footer` — fondo `#0D1117`, borde `white/[0.06]` |
+| `Badge` | 8 tonos (`neutral/success/warning/danger/info/orange/purple/emerald`) |
+| `Tabs` | sobre `@radix-ui/react-tabs`, active = gradiente naranja con `data-[state=active]` variants |
+
+### Módulos de gestión (`components/management/`)
+Patrón **hot-swap**: reutiliza componentes legacy (`UsersList`,
+`ProvidersList`, `EditProviderModal`) ENVUELTOS en los primitives
+nuevos para no romper flujos de aprobación / edición existentes.
+
+| Módulo | Función |
+|---|---|
+| `ManagementStatCard` | Tarjeta KPI con ícono coloreado, value tabular-nums, loading skeleton; 5 tonos |
+| `ManagementHeader` | Hero con 4 KPIs (Usuarios totales · Proveedores · Activos · Verificación pendiente); consume `getDashboardMetrics()` |
+| `ManagementTabs` | Tabs *Clientes / Proveedores / Duales* con `Tabs` de Radix; cada vista monta el componente legacy dentro de una `Card` |
+
+### Mapa de proveedores del Perú
+- Backend: `getUsersGeoStats` reescrito → cuenta proveedores por
+  `locality.department`, anexa lat/lng del centroide. Antes leía
+  `users.lastIp` + ip-api.com → siempre vacío porque los logins
+  sociales nunca escribían `lastIp`.
+- Frontend: `components/maps/peru-providers-map.tsx` —
+  `MapContainer` centrado en Perú (`-9.19, -75.0152`, zoom 5) con
+  tiles oscuros CartoDB. Cada departamento con proveedores: rojo
+  `CircleMarker` con radio `6 + sqrt(count) * 6`, `Tooltip` on-hover.
+  Dynamic import con `ssr: false` para evitar `window` en SSR.
+
+### Foco Perú-only
+- Backend `Locality.country` queda como `'Perú'` literal en
+  `getUsersGeoStats`.
+- Admin: quitada la columna "País" de la tabla geo y reemplazada por
+  literal "Perú" en las cards.
 
 ---
 
@@ -606,4 +650,6 @@ npx prisma generate
 | 8.0-8.1 | Subasta ConfiServ, 23 observaciones post-despliegue |
 | 9.0 | Sistema de referidos y monedas |
 | 9.x | Chat con inboxes por rol, pagos MercadoPago + Yape, panel admin responsivo, integración FCM, 2 rondas de correcciones post-prueba (29 observaciones) |
+| 10.0 | **Sistema de diseño Admin (shadcn-style sin CLI)**: primitives `Button`/`Card`/`Badge`/`Tabs` con `cva` + Radix; módulos `ManagementHeader` + `ManagementTabs` + `ManagementStatCard`; página `/management` migrada con patrón hot-swap (componentes legacy reutilizados dentro de los nuevos primitives) |
+| 10.1 | **Mapa de proveedores del Perú** (Leaflet + react-leaflet): `getUsersGeoStats` reescrito de IP-geocoding a `GROUP BY locality.department`, centroides hardcoded de las 24 regiones, `CircleMarker` rojo escalado por conteo. Foco Perú-only (sin columna "País"). Filtro estricto USUARIO/PROVEEDOR/DUAL. Soporte `BROADCAST_LOG` en notificaciones admin. |
 ```

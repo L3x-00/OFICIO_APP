@@ -730,6 +730,9 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
           'Notificación',
       'body': message.notification?.body ?? message.data['body'] ?? '',
       'targetProfileType': message.data['targetProfileType'],
+      // imageUrl viaja en data (broadcast del admin) — sin esto el
+      // modal re-abierto desde Alertas perdía la foto.
+      'imageUrl': _imageUrlFromMessage(message),
     });
     // B-4: pasamos targetUserId para que el provider lo valide
     // contra el user actual — defensa contra cross-contaminación
@@ -739,6 +742,34 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       notif,
       targetUserId: message.data['targetUserId'],
     );
+  }
+
+  /// Extrae la imageUrl del RemoteMessage (data o bloques nativos).
+  String? _imageUrlFromMessage(RemoteMessage m) {
+    final fromData = m.data['imageUrl'] ?? m.data['image'];
+    if (fromData is String && fromData.isNotEmpty) return fromData;
+    final android = m.notification?.android?.imageUrl;
+    if (android != null && android.isNotEmpty) return android;
+    final apple = m.notification?.apple?.imageUrl;
+    if (apple != null && apple.isNotEmpty) return apple;
+    return null;
+  }
+
+  /// Construye una AppNotification de broadcast desde el push y la
+  /// registra en el inbox persistido (usado en el tap de background,
+  /// que no pasa por _handleFcmInbound).
+  void _recordBroadcastFromMessage(RemoteMessage message) {
+    if (!mounted) return;
+    final notif = AppNotification.fromSocket({
+      'type': 'BROADCAST',
+      'title':
+          message.notification?.title ??
+          message.data['title'] ??
+          'Notificación',
+      'body': message.notification?.body ?? message.data['body'] ?? '',
+      'imageUrl': _imageUrlFromMessage(message),
+    });
+    context.read<NotificationsProvider>().recordBroadcast(notif);
   }
 
   /// Deep-link FCM → ruta GoRouter correspondiente.
@@ -754,8 +785,19 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         // background/terminated, NotificationHandler difiere el show
         // al próximo frame hasta que el navigator esté montado.
         NotificationHandler.showFromRemoteMessage(message);
-      case 'NEW_REVIEW':
+        // Persistir en "Alertas" para que el user pueda re-abrir el
+        // modal cuantas veces quiera. El tap en background NO pasa por
+        // _handleFcmInbound, así que lo registramos acá explícito.
+        _recordBroadcastFromMessage(message);
       case 'PROVIDER_APPROVED':
+        // El push pudo llegar con la app en background → el socket NO
+        // recibió PROVIDER_APPROVED en vivo, por lo que el welcome modal
+        // nunca se encoló. Forzamos un refresh del estado del proveedor:
+        // si hay un perfil aprobado, _syncProviderStatus encola el modal
+        // y _onAuthChanged lo muestra sobre la pantalla actual.
+        context.read<AuthProvider>().refreshProviderStatus();
+        widget.router.go('/profile');
+      case 'NEW_REVIEW':
       case 'PROVIDER_REJECTED':
       case 'PLAN_APROBADO':
       case 'PLAN_RECHAZADO':
