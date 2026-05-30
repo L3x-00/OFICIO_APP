@@ -295,20 +295,20 @@ model PlanRequest {
 }
 
 model Review {
-  id              Int           @id @default(autoincrement())
-  providerId      Int
-  userId          Int
-  rating          Int
-  comment         String?
-  photoUrl        String?
-  isVisible          Boolean    @default(true)
+  id                 Int           @id @default(autoincrement())
+  providerId         Int
+  userId             Int
+  rating             Int
+  comment            String?
+  photoUrl           String?
+  isVisible          Boolean       @default(true)
   /// Cómo se validó la interacción cliente-proveedor antes de la reseña:
   /// 'AUCTION' | 'CONTACT' | 'CHAT'. null en reseñas previas al sistema.
   verificationMethod String?
-  createdAt          DateTime   @default(now())
-  replies         ReviewReply[]
-  provider        Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime      @default(now())
+  replies            ReviewReply[]
+  provider           Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([providerId, isVisible])
   @@map("reviews")
@@ -368,7 +368,7 @@ model ProviderAnalytic {
 }
 
 model AdminNotification {
-  id                Int              @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   /// Nullable: las notificaciones dirigidas a un usuario-cliente (sin
   /// perfil de proveedor) no tienen providerId — se ubican por targetUserId.
   providerId        Int?
@@ -376,12 +376,12 @@ model AdminNotification {
   /// cualquier tipo de notificación (chat, referidos, ofertas, etc.).
   type              String
   message           String
-  isRead            Boolean          @default(false)
-  sentAt            DateTime         @default(now())
+  isRead            Boolean   @default(false)
+  sentAt            DateTime  @default(now())
   targetProfileType String?
   targetUserId      Int?
-  title             String           @default("")
-  provider          Provider?        @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  title             String    @default("")
+  provider          Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId, isRead])
   @@index([targetUserId])
@@ -478,7 +478,7 @@ model ServiceRequest {
   expiresAt      DateTime
   createdAt      DateTime                  @default(now())
   updatedAt      DateTime                  @updatedAt
-    location_geog  Unsupported("geography")?
+  location_geog  Unsupported("geography")?
   offers         Offer[]
   category       Category                  @relation(fields: [categoryId], references: [id])
   user           User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -706,6 +706,63 @@ model spatial_ref_sys {
   auth_srid Int?
   srtext    String? @db.VarChar(2048)
   proj4text String? @db.VarChar(2048)
+}
+
+/// Knowledge Base dinámica del asistente IA "Ofi" (Fase 2). Cada fila
+/// es un "tema" (topic) con contenido JSON estructurado que se inyecta
+/// en el system prompt. Editable sin redeploy. `createdBy` es el userId
+/// del admin que la creó (Int? plano — sin relación FK para mantener el
+/// módulo IA desacoplado del resto del esquema).
+model AiKnowledgeEntry {
+  id        Int      @id @default(autoincrement())
+  topic     String   @unique
+  content   Json
+  version   Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdBy Int?
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("ai_knowledge_entries")
+}
+
+/// Conversación con el asistente IA "Ofi" (Fase 4). `userId` es Int plano
+/// (sin FK a User) para mantener el módulo IA desacoplado. Guarda la
+/// versión de prompt activa al crearse (regla 8) y sus mensajes en
+/// cascada. Política de retención: se purga > 90 días (AiRetentionService).
+model AiConversation {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  promptVersion String      @default("v1")
+  messages      AiMessage[]
+  createdAt     DateTime    @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ai_conversations")
+}
+
+/// Mensaje individual de una conversación con "Ofi" (Fase 4). Persiste
+/// metadata de observabilidad: IP/UA del request, latencia, tokens
+/// consumidos y banderas de moderación (flagged + moderationPass).
+model AiMessage {
+  id             Int            @id @default(autoincrement())
+  conversationId Int
+  /// 'user' | 'model'.
+  role           String
+  content        String
+  ipAddress      String?
+  userAgent      String?
+  responseTimeMs Int?
+  tokensUsed     Int?
+  flagged        Boolean        @default(false)
+  moderationPass Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([createdAt])
+  @@map("ai_messages")
 }
 
 enum UserRole {

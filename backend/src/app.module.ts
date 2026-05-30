@@ -27,6 +27,7 @@ import { ChatModule } from './chat/chat.module.js';
 import { LocalitiesModule } from './localities/localities.module.js';
 import { OfferPostsModule } from './offer-posts/offer-posts.module.js';
 import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js';
+import { AiAssistantModule } from './ai-assistant/ai-assistant.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -47,6 +48,11 @@ import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js'
 
     // En el módulo de Redis o donde configures CacheModule
     CacheModule.registerAsync({
+      // isGlobal va a NIVEL de registerAsync (no dentro del useFactory) para
+      // que CACHE_MANAGER quede disponible en TODOS los módulos (incl.
+      // AiAssistantModule). Antes estaba anidado en el return del factory,
+      // donde se ignora → CacheModule no era global.
+      isGlobal: true,
       useFactory: async () => {
         const store = await redisStore({
           socket: {
@@ -59,7 +65,6 @@ import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js'
         return {
           store,
           ttl: 60 * 5, // 5 minutos por defecto
-          isGlobal: true,
         };
       },
     }),
@@ -83,6 +88,8 @@ import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js'
     LocalitiesModule,
     OfferPostsModule,
     MercadoPagoModule,
+    // "Ofi" — asistente IA. Aislado: si falla, el resto de Servi sigue.
+    AiAssistantModule,
   ],
   controllers: [AppController],
   providers: [
