@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Star, BarChart2,
   Tag, Zap, Bell, FileBarChart, ChevronRight,
   Activity, Gift, Coins, MessageSquare, Tag as TagIcon,
-  ShieldCheck, UsersRound, MapPin,
+  ShieldCheck, UsersRound, MapPin, Bot,
 } from 'lucide-react';
 
 // Sidebar reorganizada en torno a flujos: las páginas duales
@@ -19,6 +19,7 @@ const navGroups = [
     items: [
       { href: '/', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/analytics', label: 'Analytics', icon: BarChart2 },
+      { href: '/analytics/ia', label: 'Observabilidad IA', icon: Bot },
       { href: '/users-geo', label: 'Mapa de usuarios', icon: MapPin },
       { href: '/reports', label: 'Reportes', icon: FileBarChart },
     ],

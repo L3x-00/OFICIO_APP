@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/features/ai_assistant/presentation/ai_assistant_fab.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../../../features/subastas/presentation/screens/oportunidades_tab.dart';
@@ -19,6 +20,7 @@ import '../../../chat/presentation/providers/chat_provider.dart';
 class ProviderPanel extends StatefulWidget {
   /// Tipo de perfil que abre el panel: 'OFICIO' | 'NEGOCIO' | null (usa activeProfileType)
   final String? providerType;
+
   /// Tab inicial al abrir el panel. Por defecto 0 (Inicio). Se usa, por
   /// ejemplo, al pulsar "Editar oferta" para aterrizar en Servicios (3).
   final int initialTabIndex;
@@ -54,71 +56,75 @@ class _ProviderPanelState extends State<ProviderPanel> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final auth    = context.watch<AuthProvider>();
-    final isNeg   = (widget.providerType ?? auth.activeProfileType) == 'NEGOCIO';
+    final auth = context.watch<AuthProvider>();
+    final isNeg = (widget.providerType ?? auth.activeProfileType) == 'NEGOCIO';
 
     return AdminShowcaseWrapper(
       child: Scaffold(
-      backgroundColor: c.bg,
-      appBar: _PanelAppBar(
-        activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
-        hasOficio: auth.hasOficioProfile,
-        hasNegocio: auth.hasNegocioProfile,
-        onSwitch: (type) {
-          auth.switchProfile(type);
-          context.read<DashboardProvider>().loadDashboard(providerType: type);
-        },
-        onLogout: () => _confirmLogout(context),
-      ),
-      body: Stack(
-        children: [
-          ChangeNotifierProvider(
-            create: (_) => SubastasProvider(),
-            child: IndexedStack(
-              index: _currentIndex,
-              children: [
-                PanelHomeTab(
-                  isNegocio: isNeg,
-                  isPaused: _isPaused,
-                  onChangeTab: (i) => setState(() => _currentIndex = i),
-                ),
-                PanelProfileTab(
-                  isNegocio: isNeg,
-                  isPaused: _isPaused,
-                  onPauseToggle: _togglePause,
-                ),
-                const OportunidadesTab(),
-                PanelServicesTab(isNegocio: isNeg),
-                PanelStatsTab(
-                  isNegocio: isNeg,
-                  onNavigateToSettings: () => setState(() => _currentIndex = 6),
-                ),
-                // scope:'provider' + providerType separa la bandeja
-                // de cada perfil. Si el user es OFICIO y NEGOCIO a la
-                // vez, ver mensajes en el panel de NEGOCIO no muestra
-                // los del panel de OFICIO ni los del rol cliente.
-                ChatListScreen(
-                  scope:        'provider',
-                  providerType: widget.providerType ?? auth.activeProfileType,
-                ),
-                const PanelSettingsTab(),
-              ],
+        backgroundColor: c.bg,
+        // FAB ámbar de Ofi — abre el chat con el perfil activo como contexto.
+        floatingActionButton: AiAssistantFab(
+          providerType: widget.providerType ?? auth.activeProfileType,
+        ),
+        appBar: _PanelAppBar(
+          activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
+          hasOficio: auth.hasOficioProfile,
+          hasNegocio: auth.hasNegocioProfile,
+          onSwitch: (type) {
+            auth.switchProfile(type);
+            context.read<DashboardProvider>().loadDashboard(providerType: type);
+          },
+          onLogout: () => _confirmLogout(context),
+        ),
+        body: Stack(
+          children: [
+            ChangeNotifierProvider(
+              create: (_) => SubastasProvider(),
+              child: IndexedStack(
+                index: _currentIndex,
+                children: [
+                  PanelHomeTab(
+                    isNegocio: isNeg,
+                    isPaused: _isPaused,
+                    onChangeTab: (i) => setState(() => _currentIndex = i),
+                  ),
+                  PanelProfileTab(
+                    isNegocio: isNeg,
+                    isPaused: _isPaused,
+                    onPauseToggle: _togglePause,
+                  ),
+                  const OportunidadesTab(),
+                  PanelServicesTab(isNegocio: isNeg),
+                  PanelStatsTab(
+                    isNegocio: isNeg,
+                    onNavigateToSettings: () =>
+                        setState(() => _currentIndex = 6),
+                  ),
+                  // scope:'provider' + providerType separa la bandeja
+                  // de cada perfil. Si el user es OFICIO y NEGOCIO a la
+                  // vez, ver mensajes en el panel de NEGOCIO no muestra
+                  // los del panel de OFICIO ni los del rol cliente.
+                  ChatListScreen(
+                    scope: 'provider',
+                    providerType: widget.providerType ?? auth.activeProfileType,
+                  ),
+                  const PanelSettingsTab(),
+                ],
+              ),
             ),
-          ),
-
-        ],
-      ),
-      bottomNavigationBar: _PanelBottomNav(
-        currentIndex: _currentIndex,
-        // Cancelar showcase activo ANTES de cambiar de tab — el
-        // tutorial de un tab no debe seguir corriendo en otro.
-        onTap: (i) {
-          AdminTabShowcase.dismissActive(context);
-          setState(() => _currentIndex = i);
-        },
-        isPaused: _isPaused,
-        isNegocio: isNeg,
-      ),
+          ],
+        ),
+        bottomNavigationBar: _PanelBottomNav(
+          currentIndex: _currentIndex,
+          // Cancelar showcase activo ANTES de cambiar de tab — el
+          // tutorial de un tab no debe seguir corriendo en otro.
+          onTap: (i) {
+            AdminTabShowcase.dismissActive(context);
+            setState(() => _currentIndex = i);
+          },
+          isPaused: _isPaused,
+          isNegocio: isNeg,
+        ),
       ),
     );
   }
@@ -152,13 +158,21 @@ class _ProviderPanelState extends State<ProviderPanel> {
               if (!context.mounted) return;
               // Pop hasta raíz para que _AppRoot reconstruya el árbol según el
               // nuevo estado (unauthenticated).
-              Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).popUntil((r) => r.isFirst);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.busy,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Cerrar sesión', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Cerrar sesión',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -175,7 +189,7 @@ class _ProviderPanelState extends State<ProviderPanel> {
 // visible, sin importar en qué tab esté el usuario.
 
 class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String activeType;          // 'OFICIO' | 'NEGOCIO'
+  final String activeType; // 'OFICIO' | 'NEGOCIO'
   final bool hasOficio;
   final bool hasNegocio;
   final ValueChanged<String> onSwitch;
@@ -214,16 +228,16 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
             // el user tiene un único perfil, el chip es estático y no
             // aporta valor destacarlo.
             _canSwitch
-              ? ShowcaseTarget(
-                  // C-10: misma constante que consume buildAdminHomeSteps —
-                  // evita divergencia si los textos cambian. El switch
-                  // role siempre es el ÚLTIMO paso del deck home (cuando
-                  // existe, hasBothProfiles=true).
-                  step: kAdminSwitchRoleStep,
-                  isLast: true,
-                  child: _buildSwitchChip(context, isNeg, label),
-                )
-              : _buildSwitchChip(context, isNeg, label),
+                ? ShowcaseTarget(
+                    // C-10: misma constante que consume buildAdminHomeSteps —
+                    // evita divergencia si los textos cambian. El switch
+                    // role siempre es el ÚLTIMO paso del deck home (cuando
+                    // existe, hasBothProfiles=true).
+                    step: kAdminSwitchRoleStep,
+                    isLast: true,
+                    child: _buildSwitchChip(context, isNeg, label),
+                  )
+                : _buildSwitchChip(context, isNeg, label),
           ],
         ),
       ),
@@ -232,7 +246,9 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
           tooltip: 'Más opciones',
           icon: Icon(Icons.more_vert_rounded, color: c.textPrimary),
           color: c.bgCard,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           onSelected: (value) {
             if (value == 'logout') onLogout();
             if (value == 'switch_oficio') onSwitch('OFICIO');
@@ -244,10 +260,16 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
                 value: 'switch_oficio',
                 child: Row(
                   children: [
-                    Icon(Icons.handyman_rounded, size: 16, color: AppColors.primary),
+                    Icon(
+                      Icons.handyman_rounded,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 10),
-                    Text('Ir a Panel Profesional',
-                        style: TextStyle(color: c.textPrimary, fontSize: 13.5)),
+                    Text(
+                      'Ir a Panel Profesional',
+                      style: TextStyle(color: c.textPrimary, fontSize: 13.5),
+                    ),
                   ],
                 ),
               ),
@@ -258,8 +280,10 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     Icon(Icons.store_rounded, size: 16, color: AppColors.amber),
                     const SizedBox(width: 10),
-                    Text('Ir a Panel Negocio',
-                        style: TextStyle(color: c.textPrimary, fontSize: 13.5)),
+                    Text(
+                      'Ir a Panel Negocio',
+                      style: TextStyle(color: c.textPrimary, fontSize: 13.5),
+                    ),
                   ],
                 ),
               ),
@@ -270,8 +294,14 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
                 children: [
                   Icon(Icons.logout_rounded, size: 16, color: AppColors.busy),
                   const SizedBox(width: 10),
-                  Text('Cerrar sesión',
-                      style: TextStyle(color: AppColors.busy, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Cerrar sesión',
+                    style: TextStyle(
+                      color: AppColors.busy,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -290,8 +320,9 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
             : AppColors.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: (isNeg ? AppColors.amber : AppColors.primary)
-              .withValues(alpha: 0.35),
+          color: (isNeg ? AppColors.amber : AppColors.primary).withValues(
+            alpha: 0.35,
+          ),
         ),
       ),
       child: Row(
@@ -342,7 +373,8 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: c.textMuted.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
@@ -425,7 +457,8 @@ class _SwitcherOption extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40, height: 40,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
@@ -518,7 +551,11 @@ class _PanelBottomNav extends StatelessWidget {
             label: 'Ofertas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded),
+            icon: Icon(
+              isNegocio
+                  ? Icons.inventory_2_rounded
+                  : Icons.design_services_rounded,
+            ),
             label: isNegocio ? 'Productos' : 'Servicios',
           ),
           const BottomNavigationBarItem(

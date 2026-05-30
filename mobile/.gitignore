@@ -49,3 +49,6 @@ app.*.map.json
 /android/app/release-key.jks
 /android/app/*.jks
 /android/app/*.keystore
+
+# Flutter web no usado (proyecto Android/iOS)
+/web/

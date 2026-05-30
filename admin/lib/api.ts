@@ -109,6 +109,79 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit, isRetry = fa
   }
 }
 
+// ── ASISTENTE IA "OFI" ─────────────────────────────────────
+export interface AiChatResponse {
+  reply: string;
+  meta: {
+    promptVersion: string;
+    blocked: boolean;
+    reason?: string;
+    cached?: boolean;
+  };
+}
+
+/** Envía un mensaje al asistente. `fetchApi` adjunta el JWT y maneja el
+ *  refresh; 403 (flag) y 429 (límites) llegan como Error con el mensaje
+ *  del backend, que el widget muestra como burbuja de error. */
+export const askAssistant = (
+  message: string,
+  history?: Array<{ role: 'user' | 'model'; text: string }>,
+) =>
+  fetchApi<AiChatResponse>('/ai-assistant/chat', {
+    method: 'POST',
+    body: JSON.stringify({
+      message,
+      ...(history && history.length ? { history } : {}),
+    }),
+  });
+
+// ── OBSERVABILIDAD IA (Fase 8) ─────────────────────────────
+export interface AiUsagePoint {
+  day: string;
+  questions: number;
+  tokens: number;
+}
+
+export interface AiSummary {
+  questionsToday: number;
+  questionsAllTime: number;
+  tokensToday: number;
+  estimatedCostTodayUSD: number;
+  avgLatencyMs: number;
+  promptVersion: string;
+  timeline: AiUsagePoint[];
+}
+
+export interface AiTopQuery {
+  query: string;
+  count: number;
+}
+
+export interface AiCircuitStatus {
+  state: string;
+  fails: number;
+  openedAt: number | null;
+  isOpen: boolean;
+}
+
+export interface AiSecurityEvents {
+  jailbreakToday: number;
+  jailbreakTotal: number;
+  geminiErrorsToday: number;
+  breakerOpensToday: number;
+  circuitBreaker: AiCircuitStatus;
+  recentJailbreaks: Array<{ content: string; createdAt: string; ip: string | null }>;
+}
+
+export const getAiSummary = () =>
+  fetchApi<AiSummary>('/ai-assistant/analytics/summary');
+
+export const getAiTopQueries = (limit = 10) =>
+  fetchApi<AiTopQuery[]>(`/ai-assistant/analytics/top-queries?limit=${limit}`);
+
+export const getAiSecurityEvents = () =>
+  fetchApi<AiSecurityEvents>('/ai-assistant/analytics/security-events');
+
 // ── BROADCAST DE NOTIFICACIONES PUSH ───────────────────────
 // El admin envía un push masivo a todos los usuarios con FCM token.
 // El backend responde con `enqueued` (cantidad de tokens encolados)

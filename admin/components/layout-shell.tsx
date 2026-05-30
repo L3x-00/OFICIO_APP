@@ -9,6 +9,7 @@ import { AdminNotificationPayload } from '@/lib/socket';
 import { getNotifications, markNotificationRead, markAllNotificationsRead, clearAdminToken } from '@/lib/api';
 import type { NotificationItem } from '@/lib/api';
 import { toast } from 'sonner';
+import { AiChatWidget } from './ai-chat-widget';
 
 // Mapeo type → ruta destino. Las rutas viejas (`/verification`,
 // `/plan-requests`, etc.) siguen activas, pero la versión nueva apunta a
@@ -98,6 +99,7 @@ function Topbar({ onMenuClick, mobileOpen }: TopbarProps) {
     '/notifications':             ['Operaciones', 'Notificaciones'],
     '/reports':                   ['Principal', 'Reportes'],
     '/analytics':                 ['Principal', 'Analytics'],
+    '/analytics/ia':              ['Principal', 'Observabilidad IA'],
   };
 
   const crumbs = breadcrumbs[pathname] || ['ADMIN'];
@@ -397,6 +399,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
   // Close drawer on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
 
@@ -449,6 +452,10 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Asistente IA "Ofi" — FAB flotante (Fase 7). Fuera del <main> para
+          que flote sobre todo el panel. No aparece en /login (early return). */}
+      <AiChatWidget />
     </div>
   );
 }

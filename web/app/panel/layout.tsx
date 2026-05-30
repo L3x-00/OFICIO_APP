@@ -11,6 +11,7 @@ import {
   updateLastActivity,
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
+import AiChatWidget from '@/components/ai-chat-widget';
 import { getSocket } from '@/lib/socket';
 import {
   Home, UserCog, Zap, Briefcase, BarChart3, Settings, Gift, LogOut,
@@ -181,6 +182,10 @@ function PanelGate({ children }: { children: React.ReactNode }) {
 
       {/* Navegación inferior mejorada (glass + microinteracciones) */}
       <MobileBottomNav />
+
+      {/* Asistente IA "Ofi" — FAB flotante del proveedor (Fase 7). Solo
+          aquí (dentro del panel autenticado con perfil de proveedor). */}
+      <AiChatWidget />
     </div>
   );
 }

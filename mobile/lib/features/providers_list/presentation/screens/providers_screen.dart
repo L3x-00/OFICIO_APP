@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../ai_assistant/presentation/ai_assistant_fab.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../localities/data/dynamic_locations.dart';
 import '../../../referrals/presentation/screens/referral_screen.dart';
@@ -114,14 +115,23 @@ class _ProvidersViewState extends State<_ProvidersView>
       isGuest: isGuest,
       child: Scaffold(
         backgroundColor: c.bg,
-        floatingActionButton: ShowcaseTarget(
-          step: kShowcaseStepsRegistered.firstWhere(
-            (s) => s.key == kShowcaseJoinUsFab,
-          ),
-          isLast: isLastShowcaseStep(kShowcaseJoinUsFab, isGuest: isGuest),
-          targetHeight: 56,
-          targetWidth: 56,
-          child: const JoinUsFAB(),
+        // Dos FAB apilados: Ofi (asistente IA, ámbar) arriba y "Únete"
+        // (showcase) abajo. Column min para no romper el layout existente.
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AiAssistantFab(),
+            const SizedBox(height: 12),
+            ShowcaseTarget(
+              step: kShowcaseStepsRegistered.firstWhere(
+                (s) => s.key == kShowcaseJoinUsFab,
+              ),
+              isLast: isLastShowcaseStep(kShowcaseJoinUsFab, isGuest: isGuest),
+              targetHeight: 56,
+              targetWidth: 56,
+              child: const JoinUsFAB(),
+            ),
+          ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         appBar: AppBar(
