@@ -55,9 +55,8 @@ export class ProvidersController {
     });
   }
 
-  // Cachea el listado de categorías por 10 minutos
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(600)
+  // SIN caché: los cambios de categoría desde el admin deben verse de
+  // inmediato en mobile/web. El catálogo es pequeño y la query es barata.
   @Get('categories')
   getCategories(@Query('type') type?: string) {
     return this.providersService.getCategories(type);

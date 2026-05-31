@@ -30,12 +30,12 @@ const q = (s) => `"${s}"`;
 // generador de Prisma y NO se tocan a mano. Los excluimos antes de
 // pasarlos a eslint/prettier — si no, el hook intenta arreglar miles
 // de líneas autogeneradas y rompe el flujo de commit.
-const IGNORE_BACKEND = /[\\/]backend[\\/]src[\\/]generated[\\/]/;
+const IGNORE_BACKEND = /[\\/]backend[\\/](src[\\/]generated|scripts|test)[\\/]/;
 const filterBackend = (files) => files.filter((f) => !IGNORE_BACKEND.test(f));
 
 export default {
   // ── BACKEND (NestJS, TypeScript ESM) ─────────────────────
-  'backend/**/*.ts': (files) => {
+  'backend/src/**/*.ts': (files) => {
     const filtered = filterBackend(files);
     if (filtered.length === 0) return [];
     const list = filtered.map(q).join(' ');

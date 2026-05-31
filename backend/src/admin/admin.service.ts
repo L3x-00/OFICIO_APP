@@ -1714,7 +1714,9 @@ export class AdminService {
     if (existing)
       throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
 
-    return this.prisma.category.create({ data });
+    const created = await this.prisma.category.create({ data });
+    await this.clearProvidersCache(); // propaga a mobile/web de inmediato
+    return created;
   }
 
   async updateCategory(
@@ -1739,17 +1741,53 @@ export class AdminService {
         throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
     }
 
-    return this.prisma.category.update({ where: { id }, data });
+    const updated = await this.prisma.category.update({ where: { id }, data });
+    await this.clearProvidersCache(); // refleja el cambio en proveedores ya
+    return updated;
   }
 
   async toggleCategoryActive(id: number) {
     const category = await this.prisma.category.findUnique({ where: { id } });
     if (!category) throw new NotFoundException('Categoría no encontrada');
 
-    return this.prisma.category.update({
+    const toggled = await this.prisma.category.update({
       where: { id },
       data: { isActive: !category.isActive },
     });
+    await this.clearProvidersCache();
+    return toggled;
+  }
+
+  /**
+   * Elimina una categoría. Las relaciones `providerCategories` y
+   * `offerPostCategories` tienen `onDelete: Cascade` → los proveedores y
+   * posts quedan desvinculados (como anuncia la UI). En cambio `children`
+   * (subcategorías) y `serviceRequests` son RESTRICT → bloqueamos con un
+   * mensaje claro en vez de un 500 de FK.
+   */
+  async deleteCategory(id: number) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { children: true, serviceRequests: true } },
+      },
+    });
+    if (!category) throw new NotFoundException('Categoría no encontrada');
+
+    if (category._count.children > 0) {
+      throw new ConflictException(
+        'No se puede eliminar: la categoría tiene subcategorías. Muévelas o elimínalas primero.',
+      );
+    }
+    if (category._count.serviceRequests > 0) {
+      throw new ConflictException(
+        'No se puede eliminar: hay solicitudes de servicio asociadas a esta categoría.',
+      );
+    }
+
+    await this.prisma.category.delete({ where: { id } });
+    await this.clearProvidersCache(); // desaparece de mobile/web de inmediato
+    return { success: true, id };
   }
 
   // ── ELIMINAR PROVEEDOR ────────────────────────────────────

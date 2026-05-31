@@ -334,6 +334,11 @@ export class AdminController {
     return this.adminService.toggleCategoryActive(id);
   }
 
+  @Delete('categories/:id')
+  deleteCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteCategory(id);
+  }
+
   // ── LOCALIDADES ───────────────────────────────────────────
   // CRUD para que el admin pueda gestionar el catálogo de ubicaciones.
 

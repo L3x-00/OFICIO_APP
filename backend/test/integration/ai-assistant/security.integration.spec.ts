@@ -13,6 +13,7 @@
  * Gemini mockeado; se usa el modo sandbox (sin BD ni caché) para aislar la
  * decisión del sanitizer. NO se valida contenido textual.
  */
+
 import { RISK_BLOCK_THRESHOLD } from '../../../src/ai-assistant/ai-assistant.constants.js';
 
 const mockGenerateContent = jest.fn();
