@@ -23,11 +23,12 @@
     "test:cov": "jest --coverage --forceExit",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:integration": "npx --yes cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-integration.json --runInBand --forceExit",
-    "test:e2e": "npx --yes cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand --forceExit"
+    "test:e2e": "npx --yes cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand --forceExit",
+    "test:contract": "npx --yes cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-contract.json --runInBand --forceExit"
   },
   "dependencies": {
     "@getbrevo/brevo": "^5.0.4",
-    "@google/genai": "^2.7.0",
+    "@google/genai": "2.7.0",
     "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",

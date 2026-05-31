@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -20,6 +20,7 @@ import { AiFeatureFlagService } from './ai-feature-flag.service.js';
 import { AiKnowledgeService } from './ai-knowledge.service.js';
 import { AiDataAccessService } from './ai-data-access.service.js';
 import { AiConversationService } from './ai-conversation.service.js';
+import { AiQuotaService } from './ai-quota.service.js';
 import { buildActiveTools } from './tools/tool-registry.js';
 import type {
   AiCaller,
@@ -85,6 +86,12 @@ export class AiAssistantService {
     private readonly data: AiDataAccessService,
     private readonly conversations: AiConversationService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    // Contadores de cuota ATÓMICOS (Redis dedicado). Opcional: si no se
+    // inyecta (tests que construyen el servicio a mano), las cuotas caen a
+    // un fallback no-atómico sobre `cache` — solo válido single-thread.
+    @Optional()
+    @Inject(AiQuotaService)
+    private readonly quota?: AiQuotaService,
   ) {}
 
   /** Lazy init del SDK moderno @google/genai. */
@@ -624,15 +631,10 @@ export class AiAssistantService {
     role: AiUserRole,
   ): Promise<{ allowed: boolean; limit: number; count: number }> {
     const limit = DAILY_LIMIT_BY_ROLE[role] ?? DAILY_LIMIT_FALLBACK;
-    try {
-      const count = (await this.cache.get<number>(userDailyKey(userId))) ?? 0;
-      return { allowed: count < limit, limit, count };
-    } catch (e) {
-      this.logger.warn(
-        `checkDailyLimit falló (fail-open): ${(e as Error)?.message ?? e}`,
-      );
-      return { allowed: true, limit, count: 0 };
-    }
+    // Read-only (pre-check del controller). El gate AUTORITATIVO y atómico
+    // es `checkAndConsume` (INCR-then-check). Aquí solo "espiamos".
+    const count = await this.peekCounter(userDailyKey(userId));
+    return { allowed: count < limit, limit, count };
   }
 
   /**
@@ -645,29 +647,33 @@ export class AiAssistantService {
   ): Promise<{ allowed: boolean; limit: number; count: number }> {
     const limit = this.globalDailyLimit();
     if (role === 'ADMIN') return { allowed: true, limit, count: 0 };
-    try {
-      const count = (await this.cache.get<number>(GLOBAL_DAILY_KEY)) ?? 0;
-      const allowed = count < limit;
-      if (!allowed) {
-        this.logger.warn(`Presupuesto global IA excedido: ${count}/${limit}`);
-        Sentry.captureMessage(
-          `AI global daily budget exceeded (${count}/${limit})`,
-          'warning',
-        );
-      }
-      return { allowed, limit, count };
-    } catch (e) {
-      this.logger.warn(
-        `checkGlobalLimit falló (fail-open): ${(e as Error)?.message ?? e}`,
+    // Read-only (pre-check del controller). El consumo atómico vive en
+    // `checkAndConsume`.
+    const count = await this.peekCounter(GLOBAL_DAILY_KEY);
+    const allowed = count < limit;
+    if (!allowed) {
+      this.logger.warn(`Presupuesto global IA excedido: ${count}/${limit}`);
+      Sentry.captureMessage(
+        `AI global daily budget exceeded (${count}/${limit})`,
+        'warning',
       );
-      return { allowed: true, limit, count: 0 };
     }
+    return { allowed, limit, count };
   }
 
   /**
-   * Verifica AMBOS límites y, si pasan, CONSUME (incrementa) los contadores.
-   * En sandbox no consume nada. Es el backstop del control que ya hace el
-   * controller (defensa en profundidad).
+   * Verifica y CONSUME ambos límites de forma ATÓMICA (INCR-then-check).
+   *
+   * A diferencia del patrón previo (check → set, con race), aquí cada
+   * contador se incrementa con un único `INCR` atómico de Redis y se compara
+   * el valor resultante contra el límite. Garantiza como máximo `limit`
+   * consultas que llegan a Gemini, sin importar la concurrencia. En sandbox
+   * no consume. ADMIN queda exento del presupuesto GLOBAL (no lo incrementa).
+   *
+   * Nota: una request rechazada igual incrementó su contador (no hay
+   * rollback); como las rechazadas NO llaman a Gemini, el costo real sigue
+   * acotado a `limit`. El contador puede superar `limit` contando intentos —
+   * irrelevante para el control de costos.
    */
   private async checkAndConsume(
     caller: AiCaller,
@@ -675,36 +681,70 @@ export class AiAssistantService {
   ): Promise<{ allowed: boolean; global: boolean }> {
     if (sandbox) return { allowed: true, global: false };
 
-    const global = await this.checkGlobalLimit(caller.role);
-    if (!global.allowed) return { allowed: false, global: true };
+    const ttlMs = this.secondsUntilPeruMidnight() * 1000;
 
-    const daily = await this.checkDailyLimit(caller.userId, caller.role);
-    if (!daily.allowed) return { allowed: false, global: false };
+    // 1. Presupuesto GLOBAL (ADMIN exento) — INCR atómico + verificación.
+    if (caller.role !== 'ADMIN') {
+      const globalLimit = this.globalDailyLimit();
+      const g = await this.consumeCounter(GLOBAL_DAILY_KEY, globalLimit, ttlMs);
+      if (!g.allowed) {
+        this.logger.warn(
+          `Presupuesto global IA excedido: ${g.count}/${globalLimit}`,
+        );
+        Sentry.captureMessage(
+          `AI global daily budget exceeded (${g.count}/${globalLimit})`,
+          'warning',
+        );
+        return { allowed: false, global: true };
+      }
+    }
 
-    await this.consumeDaily(caller.userId);
+    // 2. Límite POR USUARIO (rol) — INCR atómico + verificación.
+    const limit = DAILY_LIMIT_BY_ROLE[caller.role] ?? DAILY_LIMIT_FALLBACK;
+    const u = await this.consumeCounter(
+      userDailyKey(caller.userId),
+      limit,
+      ttlMs,
+    );
+    if (!u.allowed) return { allowed: false, global: false };
+
     return { allowed: true, global: false };
   }
 
   /**
-   * Incrementa el contador del usuario y el global con TTL hasta la próxima
-   * medianoche de Perú (reset diario coherente). Fail-open si Redis cae.
+   * Incremento atómico + verificación contra el límite. Usa el contador
+   * atómico de Redis (`AiQuotaService`) cuando está inyectado. Solo si NO lo
+   * está (tests que construyen el servicio a mano, single-thread) cae a un
+   * fallback `get`→`set` — nunca en el flujo productivo.
    */
-  private async consumeDaily(userId: number): Promise<void> {
+  private async consumeCounter(
+    key: string,
+    limit: number,
+    ttlMs: number,
+  ): Promise<{ allowed: boolean; count: number }> {
+    if (this.quota) return this.quota.incrementWithLimit(key, limit, ttlMs);
     try {
-      const ttlMs = this.secondsUntilPeruMidnight() * 1000;
-      const uKey = userDailyKey(userId);
-      const [u, g] = await Promise.all([
-        this.cache.get<number>(uKey),
-        this.cache.get<number>(GLOBAL_DAILY_KEY),
-      ]);
-      await Promise.all([
-        this.cache.set(uKey, (u ?? 0) + 1, ttlMs),
-        this.cache.set(GLOBAL_DAILY_KEY, (g ?? 0) + 1, ttlMs),
-      ]);
+      const count = ((await this.cache.get<number>(key)) ?? 0) + 1;
+      await this.cache.set(key, count, ttlMs);
+      return { allowed: count <= limit, count };
     } catch (e) {
       this.logger.warn(
-        `consumeDaily falló (fail-open): ${(e as Error)?.message ?? e}`,
+        `consumeCounter fallback fail-open (${key}): ${(e as Error)?.message ?? e}`,
       );
+      return { allowed: true, count: 0 };
+    }
+  }
+
+  /** Lectura read-only de un contador de cuota (atómico si está disponible). */
+  private async peekCounter(key: string): Promise<number> {
+    if (this.quota) return this.quota.peek(key);
+    try {
+      return (await this.cache.get<number>(key)) ?? 0;
+    } catch (e) {
+      this.logger.warn(
+        `peekCounter fail-open (${key}): ${(e as Error)?.message ?? e}`,
+      );
+      return 0;
     }
   }
 

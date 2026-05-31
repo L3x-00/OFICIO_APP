@@ -9,6 +9,7 @@ import { AiDataAccessService } from './ai-data-access.service.js';
 import { AiKnowledgeService } from './ai-knowledge.service.js';
 import { AiKnowledgeSeeder } from './ai-knowledge.seeder.js';
 import { AiConversationService } from './ai-conversation.service.js';
+import { AiQuotaService } from './ai-quota.service.js';
 import { AiRetentionService } from './ai-retention.service.js';
 import { AiAnalyticsController } from './ai-analytics.controller.js';
 import { AiAnalyticsService } from './ai-analytics.service.js';
@@ -39,6 +40,7 @@ import { RolesGuard } from '../auth/roles.guard.js';
     AiKnowledgeService,
     AiKnowledgeSeeder,
     AiConversationService,
+    AiQuotaService,
     AiRetentionService,
     AiAnalyticsService,
     RolesGuard,

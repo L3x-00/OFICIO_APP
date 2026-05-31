@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "note": "Baseline del CONTRATO de @google/genai contra gemini-2.5-flash. Solo tipos (no valores: el contenido de Gemini es no-determinista). Si un cambio del SDK es legítimo, regenerar con UPDATE_GEMINI_SNAPSHOT=true tras revisar el diff.",
+    "sdkVersion": "2.7.0",
+    "capturedAt": "2026-05-31",
+    "validatedAgainstRealGemini": true
+  },
+  "sdk": "@google/genai",
+  "model": "gemini-2.5-flash",
+  "textCall": {
+    "text": "string",
+    "functionCalls": "none",
+    "usageMetadata": {
+      "promptTokenCount": "number",
+      "candidatesTokenCount": "number",
+      "totalTokenCount": "number"
+    }
+  },
+  "functionCall": {
+    "functionCalls": "array",
+    "call0": {
+      "name": "string",
+      "args": "object"
+    },
+    "usageMetadata": {
+      "totalTokenCount": "number"
+    }
+  }
+}

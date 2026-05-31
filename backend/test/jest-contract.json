@@ -1,0 +1,34 @@
+{
+  "moduleFileExtensions": ["js", "mjs", "json", "ts"],
+  "rootDir": "..",
+  "roots": ["<rootDir>/test/contracts"],
+  "testRegex": ".*\\.contract\\.spec\\.ts$",
+  "testEnvironment": "node",
+  "testTimeout": 60000,
+  "extensionsToTreatAsEsm": [".ts"],
+  "setupFiles": ["<rootDir>/test/contracts/setup-contract.ts"],
+  "transform": {
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "useESM": true,
+        "tsconfig": {
+          "module": "esnext",
+          "moduleResolution": "node",
+          "esModuleInterop": true,
+          "experimentalDecorators": true,
+          "emitDecoratorMetadata": true,
+          "target": "ES2023",
+          "skipLibCheck": true,
+          "strict": false,
+          "strictNullChecks": true,
+          "isolatedModules": false,
+          "allowSyntheticDefaultImports": true
+        }
+      }
+    ]
+  },
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  }
+}
