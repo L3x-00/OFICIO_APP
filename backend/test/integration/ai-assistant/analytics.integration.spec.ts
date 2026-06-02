@@ -230,10 +230,11 @@ describe('AI analytics (integration, BD real)', () => {
     const sumTop = top.reduce((a: number, t: any) => a + t.count, 0);
     expect(sumTop + sec.jailbreakTotal).toBe(summary.questionsAllTime);
 
-    // timeline de hoy: questions == questionsToday, tokens == tokensToday.
-    const todayKey = peruDayKey();
-    const todayRow = summary.timeline.find((p: any) => p.day === todayKey);
-    expect(todayRow).toBeDefined();
+    // timeline: todo se insertó "ahora" → cae en UNA sola fila de día. La
+    // comparamos por contenido en vez de por el string de día (que difiere
+    // entre JS `peruDayKey` y el SQL `AT TIME ZONE` cerca de medianoche).
+    expect(summary.timeline.length).toBeGreaterThanOrEqual(1);
+    const todayRow = summary.timeline[summary.timeline.length - 1];
     expect(todayRow.questions).toBe(summary.questionsToday);
     expect(todayRow.tokens).toBe(summary.tokensToday);
     expect(summary.tokensToday).toBe(200); // 120 + 80

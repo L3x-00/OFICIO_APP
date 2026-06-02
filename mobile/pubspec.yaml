@@ -78,6 +78,7 @@ dependencies:
   # segundo plano (modo flexible). iOS/dispositivos sin Play Store
   # devuelven error y se ignoran silenciosamente.
   in_app_update: ^4.2.3
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:

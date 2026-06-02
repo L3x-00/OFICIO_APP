@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   Headers,
   HttpException,
   HttpStatus,
@@ -106,6 +107,19 @@ export class AiAssistantController {
     }
 
     return result;
+  }
+
+  /**
+   * Historial reciente del usuario autenticado (últimos 20 mensajes) para
+   * sincronizar el chat entre dispositivos. Protegido por JwtAuthGuard
+   * (a nivel de clase). El userId SIEMPRE sale del JWT — nunca del cliente.
+   */
+  @Get('history')
+  async history(@Request() req: any): Promise<{
+    messages: Array<{ role: string; content: string; createdAt: Date }>;
+  }> {
+    const messages = await this.service.getHistory(req.user.userId, 20);
+    return { messages };
   }
 
   /**

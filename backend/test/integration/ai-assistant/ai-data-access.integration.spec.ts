@@ -2,12 +2,12 @@
  * INTEGRATION — AiDataAccessService contra Postgres+PostGIS real.
  *
  * NO se mockea Prisma. Validamos:
- *   1. searchProvidersSafe (geo) → DTOs PLANOS (sin phone/email/userId).
+ *   1. searchProvidersSafe (por localidad) → DTOs PLANOS (sin phone/email/userId).
  *   2. withTimeout corta queries lentas (>3s) y devuelve fallback.
  *   3. getMyContextSafe → DTO estricto (rating, plan / coins).
  *
- * Las tablas IA se crearon en oficio_test_db. El trigger de geog no existe
- * en test → seteamos location_geog a mano para la prueba PostGIS.
+ * La búsqueda filtra por la relación `locality` del proveedor
+ * (department/province/district), no por PostGIS.
  */
 import { AiDataAccessService } from '../../../src/ai-assistant/ai-data-access.service.js';
 import {
@@ -18,9 +18,6 @@ import {
 } from '../../utils/db.util';
 import { createTestUser, createTestProvider } from '../../utils/factories';
 import type { PrismaService } from '../../../prisma/prisma.service.js';
-
-const HCO_LAT = -12.0653;
-const HCO_LNG = -75.2049;
 
 describe('AiDataAccessService (integration, BD real)', () => {
   let prisma: PrismaService;
@@ -40,31 +37,39 @@ describe('AiDataAccessService (integration, BD real)', () => {
     await disconnectTestPrisma();
   });
 
-  it('Test 1 (PostGIS): searchProvidersSafe con coords Huancayo → DTOs planos (sin phone/email/userId)', async () => {
+  it('Test 1 (Localidad): searchProvidersSafe por provincia → encuentra el proveedor, DTO plano', async () => {
     const u = await createTestUser(prisma);
     const p = await createTestProvider(prisma, u.id, {
       categoryName: 'Electricistas',
       businessName: 'Electricistas Huancayo',
       averageRating: 4.5,
     });
-    // En prod un trigger calcula location_geog; en test lo seteamos a mano.
-    await prisma.$executeRawUnsafe(
-      `UPDATE providers SET latitude = $1, longitude = $2,
-         location_geog = ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
-       WHERE id = $3`,
-      HCO_LAT,
-      HCO_LNG,
-      p.id,
-    );
+    // El seed deja al proveedor en Lima; reconfiguramos SU localidad a
+    // Huancayo para que el `where: { locality: { province } }` haga match.
+    await prisma.locality.update({
+      where: { id: p.localityId },
+      data: {
+        name: 'Huancayo',
+        department: 'Junín',
+        province: 'Huancayo',
+        district: 'Huancayo',
+      },
+    });
 
-    const res = await data.searchProvidersSafe('electricista', HCO_LAT, HCO_LNG, 10);
+    const res = await data.searchProvidersSafe(
+      'electricista',
+      undefined,
+      'Huancayo',
+      undefined,
+    );
 
     expect(res.length).toBeGreaterThanOrEqual(1);
     const dto = res[0];
-    // DTO plano esperado:
-    expect(dto).toHaveProperty('businessName');
+    // Encontró al proveedor de prueba:
+    expect(dto).toHaveProperty('businessName', 'Electricistas Huancayo');
     expect(dto).toHaveProperty('averageRating', 4.5);
-    expect(dto).toHaveProperty('distanceKm');
+    // Sin PostGIS → distanceKm es null:
+    expect(dto.distanceKm).toBeNull();
     // NUNCA expone campos crudos de la entidad Prisma:
     expect(dto).not.toHaveProperty('phone');
     expect(dto).not.toHaveProperty('whatsapp');

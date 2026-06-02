@@ -70,7 +70,7 @@ describe('Referrals flow (integration)', () => {
     expect(rows).toHaveLength(1);
   });
 
-  it('rechaza auto-aplicación + código inválido + doble aplicación', async () => {
+  it('rechaza auto-aplicación + código inválido; mismo código es idempotente, distinto se bloquea', async () => {
     const { service } = build(prisma);
     const inviter = await createTestUser(prisma);
     const invited = await createTestUser(prisma, {
@@ -92,8 +92,21 @@ describe('Referrals flow (integration)', () => {
     const ok = await service.applyCode(invited.id, code.code);
     expect(ok.success).toBe(true);
 
-    // Doble aplicación bloqueada.
-    await expect(service.applyCode(invited.id, code.code)).rejects.toThrow(
+    // Re-aplicar el MISMO código → idempotente (no-op exitoso, SIN doble
+    // recompensa ni 2ª referral). Re-registro legítimo, no fraude (ver
+    // applyCode: existing.inviterId === owner.userId).
+    const again = await service.applyCode(invited.id, code.code);
+    expect(again.success).toBe(true);
+    expect(again.alreadyApplied).toBe(true);
+    expect(again.referralId).toBe(ok.referralId);
+
+    // Aplicar un código DISTINTO habiendo aplicado otro → ConflictException
+    // (anti-farm).
+    const inviter2 = await createTestUser(prisma, {
+      email: `inv2-${Date.now()}@x.com`,
+    });
+    const code2 = await service.getMyCode(inviter2.id);
+    await expect(service.applyCode(invited.id, code2.code)).rejects.toThrow(
       ConflictException,
     );
 

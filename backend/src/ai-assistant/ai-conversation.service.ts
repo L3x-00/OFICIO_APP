@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/nestjs';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AiHistoryTurn } from './ai-assistant.types.js';
 import {
@@ -41,6 +42,25 @@ export class AiConversationService {
     userId: number,
     promptVersion: string,
   ): Promise<number | null> {
+    // userId SIEMPRE viene del JWT. Si no es un entero positivo válido, NO
+    // intentamos insertar (evita el null-constraint visto en producción) y
+    // degradamos a null: el chat sigue sin persistencia.
+    if (!Number.isInteger(userId) || userId <= 0) {
+      this.logger.warn(
+        `getOrCreate: userId inválido (${userId}) — chat sin persistencia`,
+      );
+      Sentry.captureMessage(
+        `AiConversation.getOrCreate userId inválido: ${userId}`,
+        'warning',
+      );
+      return null;
+    }
+    // promptVersion NUNCA debe ir null/'' a la BD (columna NOT NULL).
+    const version =
+      typeof promptVersion === 'string' && promptVersion.trim()
+        ? promptVersion
+        : 'v1';
+
     try {
       const existing = await this.prisma.aiConversation.findFirst({
         where: { userId },
@@ -50,7 +70,7 @@ export class AiConversationService {
       if (existing) return existing.id;
 
       const created = await this.prisma.aiConversation.create({
-        data: { userId, promptVersion },
+        data: { userId, promptVersion: version },
         select: { id: true },
       });
       return created.id;
@@ -58,6 +78,10 @@ export class AiConversationService {
       this.logger.warn(
         `getOrCreate conversación falló: ${(e as Error)?.message ?? e}`,
       );
+      Sentry.captureException(e, {
+        tags: { module: 'ai-assistant', op: 'getOrCreate' },
+        extra: { userId },
+      });
       return null;
     }
   }
@@ -98,6 +122,31 @@ export class AiConversationService {
   }
 
   /**
+   * Últimos `limit` mensajes del usuario (en cualquiera de sus conversaciones),
+   * en orden cronológico, para sincronizar el chat entre dispositivos. Filtra
+   * por la relación `conversation.userId`. Resiliente: [] si la BD falla.
+   */
+  async getRecentMessages(
+    userId: number,
+    limit = 20,
+  ): Promise<Array<{ role: string; content: string; createdAt: Date }>> {
+    try {
+      const rows = await this.prisma.aiMessage.findMany({
+        where: { conversation: { userId } },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: { role: true, content: true, createdAt: true },
+      });
+      return rows.reverse(); // cronológico (viejo → nuevo)
+    } catch (e) {
+      this.logger.warn(
+        `getRecentMessages falló: ${(e as Error)?.message ?? e}`,
+      );
+      return [];
+    }
+  }
+
+  /**
    * Persiste un mensaje con su metadata de observabilidad. No-op si no hay
    * conversación (BD caída). Nunca lanza.
    */
@@ -118,7 +167,12 @@ export class AiConversationService {
         },
       });
     } catch (e) {
+      // BD caída (p.ej. Render): logueamos + Sentry y seguimos. La respuesta
+      // de Gemini ya se devolvió al usuario; la persistencia es best-effort.
       this.logger.warn(`saveMessage falló: ${(e as Error)?.message ?? e}`);
+      Sentry.captureException(e, {
+        tags: { module: 'ai-assistant', op: 'saveMessage' },
+      });
     }
   }
 }

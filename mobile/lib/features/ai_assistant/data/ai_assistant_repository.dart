@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:mobile/core/network/dio_client.dart';
+import '../domain/ai_message_model.dart';
 
 /// Un turno del historial que el cliente envía al backend.
 class AiHistoryTurn {
@@ -53,6 +54,17 @@ class AiAssistantException implements Exception {
   String toString() => 'AiAssistantException($kind): $message';
 }
 
+/// Sesión expirada (HTTP 401). La UI debe cerrar sesión y pedir re-login.
+class SessionExpiredException implements Exception {
+  final String message;
+  const SessionExpiredException([
+    this.message = 'Tu sesión ha expirado. Por favor, inicia sesión de nuevo.',
+  ]);
+
+  @override
+  String toString() => 'SessionExpiredException: $message';
+}
+
 /// Acceso al endpoint del asistente "Ofi".
 ///
 /// El token JWT lo inyecta automáticamente [ApiInterceptor]; aquí solo
@@ -79,7 +91,31 @@ class AiAssistantRepository {
       );
       return AiChatReply.fromJson(Map<String, dynamic>.from(res.data as Map));
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw const SessionExpiredException();
       throw _mapError(e);
+    }
+  }
+
+  /// Trae los últimos mensajes del usuario (cross-device) desde el backend.
+  /// 401 → [SessionExpiredException]. Cualquier otro fallo se relanza para que
+  /// el provider lo trate como best-effort (mantiene el saludo local).
+  Future<List<AiMessageModel>> fetchHistory() async {
+    try {
+      final res = await _dio.get('/ai-assistant/history');
+      final data = Map<String, dynamic>.from(res.data as Map);
+      final list = (data['messages'] as List?) ?? const [];
+      return list.map((m) {
+        final map = Map<String, dynamic>.from(m as Map);
+        final role = map['role']?.toString() ?? 'model';
+        return AiMessageModel(
+          text: map['content']?.toString() ?? '',
+          sender: role == 'user' ? AiSender.user : AiSender.ofi,
+          timestamp: DateTime.tryParse(map['createdAt']?.toString() ?? ''),
+        );
+      }).toList();
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw const SessionExpiredException();
+      rethrow;
     }
   }
 

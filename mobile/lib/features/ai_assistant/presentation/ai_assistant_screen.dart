@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import '../domain/ai_message_model.dart';
 import 'ai_assistant_provider.dart';
+import 'guest_chat_screen.dart';
 
 /// Pantalla de chat con "Ofi", el asistente IA de Servi.
 ///
@@ -18,9 +21,21 @@ class AiAssistantScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Modo invitado: sin sesión activa → solo FAQ local (sin backend).
+    // Con sesión → chat completo y personalizado.
+    final isAuthenticated = context.watch<AuthProvider>().isAuthenticated;
+    if (!isAuthenticated) {
+      return const GuestChatScreen();
+    }
+
     return ChangeNotifierProvider(
-      create: (_) =>
-          AiAssistantProvider(providerType: providerType)..seedGreeting(),
+      create: (ctx) {
+        final p = AiAssistantProvider(providerType: providerType);
+        p.attachAuth(ctx.read<AuthProvider>()); // independencia de cuentas
+        p.seedGreeting();
+        p.loadHistory(); // sincroniza historial entre dispositivos
+        return p;
+      },
       child: const _AiChatView(),
     );
   }
@@ -36,6 +51,7 @@ class _AiChatView extends StatefulWidget {
 class _AiChatViewState extends State<_AiChatView> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  bool _expiryHandled = false;
 
   @override
   void dispose() {
@@ -68,6 +84,25 @@ class _AiChatViewState extends State<_AiChatView> {
     final prov = context.watch<AiAssistantProvider>();
     final messages = prov.messages;
     final isLoading = prov.isLoading;
+
+    // Sesión expirada (401): avisamos y cerramos sesión una sola vez. El
+    // SnackBar se encola en el ScaffoldMessenger raíz ANTES del logout, así
+    // sobrevive a la navegación a la pantalla de bienvenida/login.
+    if (prov.sessionExpired && !_expiryHandled) {
+      _expiryHandled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Tu sesión ha expirado. Por favor, inicia sesión de nuevo.',
+            ),
+          ),
+        );
+        prov.acknowledgeSessionExpired();
+        context.read<AuthProvider>().logout();
+      });
+    }
 
     // Auto-scroll cada vez que cambia el estado (mensaje nuevo / typing).
     _scrollToBottom();
@@ -220,10 +255,45 @@ class _MessageBubble extends StatelessWidget {
                 ],
               ),
             ),
-          Text(
-            message.text,
-            style: TextStyle(color: fg, fontSize: 15, height: 1.35),
-          ),
+          // El usuario va en texto plano; Ofi puede responder con Markdown
+          // (**negrita**, viñetas, etc.) → lo renderizamos como tal.
+          isUser
+              ? Text(
+                  message.text,
+                  style: TextStyle(color: fg, fontSize: 15, height: 1.35),
+                )
+              : MarkdownBody(
+                  data: message.text,
+                  shrinkWrap: true,
+                  // No interactivo: ignoramos taps en links para no sacar
+                  // al usuario de la app.
+                  onTapLink: (_, _, _) {},
+                  styleSheet: MarkdownStyleSheet(
+                    p: TextStyle(color: fg, fontSize: 15, height: 1.35),
+                    strong: TextStyle(
+                      color: fg,
+                      fontSize: 15,
+                      height: 1.35,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    em: TextStyle(
+                      color: fg,
+                      fontSize: 15,
+                      height: 1.35,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    listBullet: TextStyle(
+                      color: fg,
+                      fontSize: 15,
+                      height: 1.35,
+                    ),
+                    a: const TextStyle(
+                      color: AppColors.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                    blockSpacing: 6,
+                  ),
+                ),
           const SizedBox(height: 4),
           Text(
             _formatTime(message.timestamp),

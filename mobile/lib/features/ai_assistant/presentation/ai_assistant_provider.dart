@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import '../data/ai_assistant_repository.dart';
 import '../domain/ai_message_model.dart';
 
@@ -23,10 +24,17 @@ class AiAssistantProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  AuthProvider? _auth;
+  bool _sessionExpired = false;
+  bool _disposed = false;
+
   List<AiMessageModel> get messages => List.unmodifiable(_messages);
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasMessages => _messages.isNotEmpty;
+
+  /// True cuando el backend devolvió 401: la UI debe avisar y cerrar sesión.
+  bool get sessionExpired => _sessionExpired;
 
   /// Inserta el saludo inicial de Ofi (solo una vez).
   void seedGreeting() {
@@ -58,6 +66,10 @@ class AiAssistantProvider extends ChangeNotifier {
         providerType: providerType,
       );
       _messages.add(AiMessageModel.ofi(reply.reply));
+    } on SessionExpiredException catch (e) {
+      // 401: no agregamos burbuja de error; flageamos para que la UI avise
+      // y cierre sesión. El `finally` notifica.
+      _flagSessionExpired(e.message);
     } on AiAssistantException catch (e) {
       _error = e.message;
       _messages.add(AiMessageModel.error(e.message));
@@ -76,6 +88,73 @@ class AiAssistantProvider extends ChangeNotifier {
     _error = null;
     _isLoading = false;
     seedGreeting();
+  }
+
+  /// Conecta el [AuthProvider] global para (a) limpiar el chat al cerrar
+  /// sesión — independencia de cuentas — y (b) que la UI pueda hacer logout.
+  void attachAuth(AuthProvider auth) {
+    if (identical(_auth, auth)) return;
+    _auth?.removeListener(_onAuthChanged);
+    _auth = auth;
+    _auth!.addListener(_onAuthChanged);
+  }
+
+  void _onAuthChanged() {
+    // Al cerrar sesión, descartamos el historial del usuario anterior.
+    if (_auth != null && !_auth!.isAuthenticated) clear();
+  }
+
+  /// Carga el historial del backend (cross-device) y puebla los mensajes.
+  /// Best-effort: si falla (red/servidor) mantiene el saludo local; un 401
+  /// se trata como sesión expirada.
+  Future<void> loadHistory() async {
+    try {
+      final history = await _repo.fetchHistory();
+      if (history.isNotEmpty) {
+        _messages
+          ..clear()
+          ..addAll(history);
+        _error = null;
+        _safeNotify();
+      }
+    } on SessionExpiredException catch (e) {
+      _flagSessionExpired(e.message);
+      _safeNotify();
+    } catch (_) {
+      // Historial es opcional: no rompemos la pantalla si falla.
+    }
+  }
+
+  /// Marca sesión expirada (lo consume la UI para mostrar el SnackBar).
+  void _flagSessionExpired(String message) {
+    _error = message;
+    _sessionExpired = true;
+  }
+
+  /// La UI confirma que ya mostró el aviso de sesión expirada.
+  void acknowledgeSessionExpired() {
+    _sessionExpired = false;
+  }
+
+  /// Limpia todo el estado (logout / cambio de cuenta).
+  void clear() {
+    _messages.clear();
+    _error = null;
+    _isLoading = false;
+    _sessionExpired = false;
+    _safeNotify();
+  }
+
+  void _safeNotify() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _auth?.removeListener(_onAuthChanged);
+    super.dispose();
   }
 
   /// Historial reciente excluyendo el mensaje actual (último user), los

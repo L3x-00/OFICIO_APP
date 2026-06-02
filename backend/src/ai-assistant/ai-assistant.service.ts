@@ -251,7 +251,9 @@ export class AiAssistantService {
       );
       return blocked(
         'circuit',
-        'El asistente tuvo un problema. Intenta de nuevo en unos momentos.',
+        this.isGeminiOverloaded(err)
+          ? 'Gemini está con mucha demanda en este momento. Por favor, intenta de nuevo en un par de minutos.'
+          : 'El asistente tuvo un problema. Intenta de nuevo en unos momentos.',
       );
     }
 
@@ -281,6 +283,17 @@ export class AiAssistantService {
       reply: guarded.safe,
       meta: { promptVersion, blocked: false, cached: false },
     };
+  }
+
+  /**
+   * Historial reciente del usuario para sincronizar el chat entre
+   * dispositivos (cross-device). Best-effort: [] si la BD no responde.
+   */
+  async getHistory(
+    userId: number,
+    limit = 20,
+  ): Promise<Array<{ role: string; content: string; createdAt: Date }>> {
+    return this.conversations.getRecentMessages(userId, limit);
   }
 
   // ── Caché inteligente (Fase 4) ──────────────────────────────
@@ -471,9 +484,9 @@ export class AiAssistantService {
           return {
             providers: await this.data.searchProvidersSafe(
               this.asString(args.category),
-              this.asNumber(args.lat),
-              this.asNumber(args.lng),
-              this.asNumber(args.radiusKm),
+              this.asString(args.department),
+              this.asString(args.province),
+              this.asString(args.district),
             ),
           };
         case 'search_categories':
@@ -539,9 +552,24 @@ export class AiAssistantService {
     return typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined;
   }
 
-  /** Coerción segura de un arg desconocido a número finito. */
-  private asNumber(v: unknown): number | undefined {
-    return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+  /**
+   * Detecta saturación de Gemini (HTTP 503 / status UNAVAILABLE / overloaded)
+   * para responder con un mensaje específico en vez del genérico.
+   */
+  private isGeminiOverloaded(err: unknown): boolean {
+    const e = err as { status?: unknown; code?: unknown };
+    if (e?.status === 503 || e?.code === 503 || e?.status === 'UNAVAILABLE') {
+      return true;
+    }
+    const msg = (
+      err instanceof Error ? err.message : String(err)
+    ).toLowerCase();
+    return (
+      msg.includes('503') ||
+      msg.includes('unavailable') ||
+      msg.includes('overloaded') ||
+      msg.includes('high demand')
+    );
   }
 
   /**
@@ -604,6 +632,10 @@ export class AiAssistantService {
       '- NUNCA inventes proveedores, precios ni teléfonos: si no lo sabes, dilo.',
       '- Si te piden algo fuera de Servi, redirige con amabilidad.',
       '- Sé breve: máximo 4 frases salvo que pidan detalle.',
+      // Búsqueda de proveedores.
+      'Para buscar proveedores, NO pidas coordenadas GPS al usuario. Usa la',
+      'herramienta search_providers con la ubicación del usuario (department,',
+      'province, district).',
       // Rol.
       `ROL ACTUAL: ${role}`,
     ];

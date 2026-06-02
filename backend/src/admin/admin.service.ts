@@ -758,7 +758,7 @@ export class AdminService {
     // aparte sobre la tabla de unión providerCategories.
     const { categoryIds, primaryCategoryId, ...providerData } = data;
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       // Si llegan Especialidades, reemplazamos el set completo.
       // Premium puede hasta 6; el resto, 3.
       if (categoryIds && categoryIds.length > 0) {
@@ -792,6 +792,9 @@ export class AdminService {
         },
       });
     });
+
+    await this.clearProvidersCache(); // cambio visible en mobile/web de inmediato
+    return updated;
   }
 
   // ── HELPER: plan → prioridad de listado ──────────────────

@@ -23,7 +23,8 @@ export const COMMON_TOOLS: AiToolDef[] = [
       description:
         'Busca proveedores (profesionales o negocios) verificados en Servi. ' +
         'Úsala cuando el usuario quiere encontrar quién presta un servicio. ' +
-        'Si conoces la ubicación del usuario (lat/lng) la búsqueda es por cercanía.',
+        'Filtra por la ubicación del usuario (department, province, district). ' +
+        'NO pidas coordenadas GPS.',
       parameters: {
         type: Type.OBJECT,
         properties: {
@@ -32,19 +33,17 @@ export const COMMON_TOOLS: AiToolDef[] = [
             description:
               "Rubro o especialidad a buscar, p.ej. 'gasfitero', 'peluquería', 'restaurante'.",
           },
-          lat: {
-            type: Type.NUMBER,
-            description: 'Latitud del usuario para buscar cercanos (opcional).',
+          department: {
+            type: Type.STRING,
+            description: "Departamento del usuario, p.ej. 'Junín' (opcional).",
           },
-          lng: {
-            type: Type.NUMBER,
-            description:
-              'Longitud del usuario para buscar cercanos (opcional).',
+          province: {
+            type: Type.STRING,
+            description: "Provincia del usuario, p.ej. 'Huancayo' (opcional).",
           },
-          radiusKm: {
-            type: Type.NUMBER,
-            description:
-              'Radio de búsqueda en kilómetros (opcional, máximo 50).',
+          district: {
+            type: Type.STRING,
+            description: "Distrito del usuario, p.ej. 'El Tambo' (opcional).",
           },
         },
       },

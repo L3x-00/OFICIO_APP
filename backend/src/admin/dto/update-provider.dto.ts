@@ -6,6 +6,8 @@ import {
   IsArray,
   ArrayMaxSize,
   MaxLength,
+  IsIn,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -34,6 +36,16 @@ export class UpdateProviderDto {
   @IsString()
   @MaxLength(200)
   address?: string;
+
+  // Estado de disponibilidad — enum AvailabilityStatus del schema.
+  @IsOptional()
+  @IsIn(['DISPONIBLE', 'OCUPADO', 'CON_DEMORA'])
+  availability?: string;
+
+  // Visibilidad pública del perfil.
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
 
   @IsOptional()
   @IsArray()

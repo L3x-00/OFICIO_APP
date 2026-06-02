@@ -33,7 +33,7 @@ export const CACHE_TTL_FAQ_MS = 24 * 60 * 60 * 1000;
 /** TTL caché de respuestas de búsqueda (volátiles): 5 min. */
 export const CACHE_TTL_SEARCH_MS = 5 * 60 * 1000;
 /** Días de retención de conversaciones IA antes de purgar (política). */
-export const RETENTION_DAYS = 90;
+export const RETENTION_DAYS = 7;
 
 /**
  * Clasificador de intención por palabras clave (Fase 4 — caché inteligente).

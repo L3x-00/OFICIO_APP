@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { Prisma } from '../generated/client/client.js';
 import { TOOL_TIMEOUT_MS } from './ai-assistant.constants.js';
 
 /**
@@ -64,6 +63,8 @@ export interface ProviderStatsDto {
   totalReviews: number;
   totalRecommendations: number;
   profileViews: number;
+  whatsappClicks: number;
+  favorites: number;
 }
 
 export interface KnowledgeDto {
@@ -104,16 +105,6 @@ export interface MyContextDto {
   user?: MyUserContextDto;
 }
 
-/** Fila cruda del search geolocalizado (raw SQL → DTO). */
-interface ProviderGeoRow {
-  id: number;
-  businessName: string;
-  averageRating: number;
-  totalReviews: number;
-  slug: string | null;
-  distanceKm: number;
-}
-
 @Injectable()
 export class AiDataAccessService {
   private readonly logger = new Logger(AiDataAccessService.name);
@@ -142,119 +133,64 @@ export class AiDataAccessService {
   // ── Tools comunes ───────────────────────────────────────────
 
   /**
-   * Busca proveedores verificados. Si hay lat/lng usa PostGIS
-   * (`ST_DWithin` parametrizado sobre `location_geog`); si no, ordena por
-   * rating. Tope: 5 resultados con `select` estricto.
+   * Busca proveedores verificados filtrando por la UBICACIÓN configurada del
+   * usuario (department/province/district) vía la relación `locality`. SIN
+   * PostGIS: los usuarios prefieren buscar por su ciudad, no por GPS. Tope: 5
+   * resultados con `select` estricto, ranking por plan + rating.
    */
   async searchProvidersSafe(
     category?: string,
-    lat?: number,
-    lng?: number,
-    radiusKm?: number,
+    department?: string,
+    province?: string,
+    district?: string,
   ): Promise<ProviderCardDto[]> {
     const limit = Math.min(AiDataAccessService.MAX_RESULTS, 5);
-    const geo = typeof lat === 'number' && typeof lng === 'number';
 
-    const run = geo
-      ? this.searchProvidersGeo(category, lat, lng, radiusKm, limit)
-      : this.searchProvidersByRating(category, limit);
+    // Filtro por la relación locality — solo los campos efectivamente provistos.
+    const locality: {
+      department?: string;
+      province?: string;
+      district?: string;
+    } = {};
+    if (department && department.trim())
+      locality.department = department.trim();
+    if (province && province.trim()) locality.province = province.trim();
+    if (district && district.trim()) locality.district = district.trim();
 
-    return this.withTimeout(run, [], 'search_providers');
-  }
-
-  /** Rama geolocalizada: Prisma.sql + ST_DWithin (regla 3). */
-  private async searchProvidersGeo(
-    category: string | undefined,
-    lat: number,
-    lng: number,
-    radiusKm: number | undefined,
-    limit: number,
-  ): Promise<ProviderCardDto[]> {
-    // Radio en metros, acotado a [1, 50] km para no escanear de más.
-    const radiusMeters = Math.min(Math.max(radiusKm ?? 10, 1), 50) * 1000;
-
-    // Filtro opcional de categoría como fragmento parametrizado (bind).
-    const catFilter =
-      category && category.trim().length > 0
-        ? Prisma.sql`AND EXISTS (
-            SELECT 1 FROM provider_categories pc
-            JOIN categories c ON c.id = pc."categoryId"
-            WHERE pc."providerId" = p.id
-              AND (c.name ILIKE ${`%${category}%`} OR c.slug ILIKE ${`%${category}%`})
-          )`
-        : Prisma.empty;
-
-    const rows = await this.prisma.$queryRaw<ProviderGeoRow[]>(Prisma.sql`
-      SELECT
-        p.id,
-        p."businessName" AS "businessName",
-        p."averageRating" AS "averageRating",
-        p."totalReviews"  AS "totalReviews",
-        p.slug,
-        (ST_Distance(
-           p.location_geog,
-           ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
-         ) / 1000.0)::float8 AS "distanceKm"
-      FROM providers p
-      WHERE p."isVisible" = true
-        AND p."verificationStatus" = 'APROBADO'
-        AND p.location_geog IS NOT NULL
-        AND ST_DWithin(
-              p.location_geog,
-              ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
-              ${radiusMeters}
-            )
-        ${catFilter}
-      ORDER BY "distanceKm" ASC
-      LIMIT ${limit}
-    `);
-
-    return rows.map((r) => ({
-      id: r.id,
-      businessName: r.businessName,
-      averageRating: r.averageRating,
-      totalReviews: r.totalReviews,
-      slug: r.slug,
-      distanceKm: Math.round(r.distanceKm * 100) / 100,
-    }));
-  }
-
-  /** Rama sin ubicación: ranking por plan + rating (Prisma typed). */
-  private async searchProvidersByRating(
-    category: string | undefined,
-    limit: number,
-  ): Promise<ProviderCardDto[]> {
-    const rows = await this.prisma.provider.findMany({
-      where: {
-        isVisible: true,
-        verificationStatus: 'APROBADO',
-        ...(category && category.trim().length > 0
-          ? {
-              providerCategories: {
-                some: {
-                  category: {
-                    OR: [
-                      { name: { contains: category, mode: 'insensitive' } },
-                      { slug: { contains: category, mode: 'insensitive' } },
-                    ],
+    const run = this.prisma.provider
+      .findMany({
+        where: {
+          isVisible: true,
+          verificationStatus: 'APROBADO',
+          ...(category && category.trim().length > 0
+            ? {
+                providerCategories: {
+                  some: {
+                    category: {
+                      OR: [
+                        { name: { contains: category, mode: 'insensitive' } },
+                        { slug: { contains: category, mode: 'insensitive' } },
+                      ],
+                    },
                   },
                 },
-              },
-            }
-          : {}),
-      },
-      select: {
-        id: true,
-        businessName: true,
-        averageRating: true,
-        totalReviews: true,
-        slug: true,
-      },
-      orderBy: [{ planPriority: 'asc' }, { averageRating: 'desc' }],
-      take: limit,
-    });
+              }
+            : {}),
+          ...(Object.keys(locality).length > 0 ? { locality } : {}),
+        },
+        select: {
+          id: true,
+          businessName: true,
+          averageRating: true,
+          totalReviews: true,
+          slug: true,
+        },
+        orderBy: [{ planPriority: 'asc' }, { averageRating: 'desc' }],
+        take: limit,
+      })
+      .then((rows) => rows.map((r) => ({ ...r, distanceKm: null })));
 
-    return rows.map((r) => ({ ...r, distanceKm: null }));
+    return this.withTimeout(run, [], 'search_providers');
   }
 
   /** Categorías activas (opcionalmente filtradas por nombre). */
@@ -576,15 +512,27 @@ export class AiDataAccessService {
     });
     if (!provider) return null;
 
-    const profileViews = await this.prisma.providerAnalytic.count({
-      where: { providerId: provider.id, eventType: 'profile_view' },
-    });
+    // Las métricas reales viven en ProviderAnalytic / Favorite, NO en Provider.
+    // IMPORTANTE: las vistas se registran como eventType 'view' (ver
+    // track-event.dto: enum ['whatsapp_click','call_click','view']) — 'profile_view'
+    // NO se escribe nunca, por eso antes la IA reportaba 0.
+    const [profileViews, whatsappClicks, favorites] = await Promise.all([
+      this.prisma.providerAnalytic.count({
+        where: { providerId: provider.id, eventType: 'view' },
+      }),
+      this.prisma.providerAnalytic.count({
+        where: { providerId: provider.id, eventType: 'whatsapp_click' },
+      }),
+      this.prisma.favorite.count({ where: { providerId: provider.id } }),
+    ]);
 
     return {
       averageRating: provider.averageRating,
       totalReviews: provider.totalReviews,
       totalRecommendations: provider.totalRecommendations,
       profileViews,
+      whatsappClicks,
+      favorites,
     };
   }
 
