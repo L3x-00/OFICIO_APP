@@ -2,6 +2,8 @@ import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { Redis } from 'ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SignImagesInterceptor } from './common/sign-images.interceptor.js';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -35,13 +37,35 @@ import { AiAssistantModule } from './ai-assistant/ai-assistant.module.js';
       isGlobal: true,
     }),
 
-    // 2. Rate limiting (Throttler): Protección contra ataques
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // ventana de 60 segundos
-        limit: 60, // máximo 60 requests
+    // 2. Rate limiting (Throttler): Protección contra ataques.
+    // Storage en REDIS (Upstash) → el límite es coherente entre instancias
+    // (antes era in-memory: N instancias = N×límite, bypass — auditoría A2).
+    ThrottlerModule.forRootAsync({
+      useFactory: () => {
+        const tls = process.env.REDIS_TLS === 'true';
+        const redis = new Redis({
+          host: process.env.REDIS_HOST,
+          port: Number.parseInt(process.env.REDIS_PORT || '6379', 10),
+          password: process.env.REDIS_PASSWORD || undefined,
+          tls: tls ? {} : undefined,
+          maxRetriesPerRequest: 3,
+        });
+        // Un error de Redis NO debe tumbar el proceso: lo logueamos.
+        const logger = new Logger('ThrottlerRedis');
+        redis.on('error', (e: Error) =>
+          logger.error(`Redis error: ${e?.message ?? e}`),
+        );
+        return {
+          throttlers: [
+            {
+              ttl: 60000, // ventana de 60 segundos
+              limit: 60, // máximo 60 requests
+            },
+          ],
+          storage: new ThrottlerStorageRedisService(redis),
+        };
       },
-    ]),
+    }),
 
     // Cron jobs (limpieza de chat expirado, etc.)
     ScheduleModule.forRoot(),

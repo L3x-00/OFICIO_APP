@@ -6,7 +6,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { BigintInterceptor } from './common/interceptors/bigint.interceptor.js';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.js';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'node:path';
 import { DiagnosticInterceptor } from './common/interceptors/diagnostic.interceptor.js';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -67,10 +66,9 @@ async function bootstrap() {
     new BigintInterceptor(),
   );
 
-  // 4. SERVICIOS DE ARCHIVOS (UPLOADS)
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads',
-  });
+  // 4. SERVICIOS DE ARCHIVOS (UPLOADS) — ELIMINADO (auditoría A3).
+  // El flujo real sube a Cloudflare R2; servir el directorio local `/uploads`
+  // sin autenticación exponía PII potencial (DNI/RUC/vouchers) por URL.
 
   // 5. ARRANQUE
   const port = process.env.PORT ?? 3000;
