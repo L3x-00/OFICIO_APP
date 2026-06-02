@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SignImagesInterceptor } from './common/sign-images.interceptor.js';
 import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
+import KeyvRedis from '@keyv/redis';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -53,18 +53,36 @@ import { AiAssistantModule } from './ai-assistant/ai-assistant.module.js';
       // AiAssistantModule). Antes estaba anidado en el return del factory,
       // donde se ignora → CacheModule no era global.
       isGlobal: true,
-      useFactory: async () => {
-        const store = await redisStore({
-          socket: {
-            host: process.env.REDIS_HOST,
-            port: parseInt(process.env.REDIS_PORT || '6379', 10),
-            tls: process.env.REDIS_TLS === 'true', // ← ESTO ES CLAVE
-          },
-          password: process.env.REDIS_PASSWORD || undefined,
-        });
+      useFactory: () => {
+        // cache-manager v7 usa `stores` (array de Keyv), NO `store` (singular):
+        // ese era el bug — `store` se ignoraba y la caché caía a memoria. Aquí
+        // construimos un Keyv sobre Redis (rediss:// si REDIS_TLS=true → Upstash).
+        const tls = process.env.REDIS_TLS === 'true';
+        const proto = tls ? 'rediss' : 'redis';
+        const host = process.env.REDIS_HOST ?? 'localhost';
+        const port = process.env.REDIS_PORT ?? '6379';
+        const pass = process.env.REDIS_PASSWORD;
+        const auth = pass ? `:${encodeURIComponent(pass)}@` : '';
+        const url = `${proto}://${auth}${host}:${port}`;
+
+        // Pasamos el ADAPTER KeyvRedis (no un Keyv ya construido): @nestjs/
+        // cache-manager lo envuelve con SU propio Keyv, evitando el choque de
+        // `instanceof` entre copias de keyv (que rompía el arranque).
+        const store = new KeyvRedis(url);
+        // Un error de Redis NO debe tumbar el proceso: lo logueamos y seguimos
+        // (la caché degrada; el resto de la app sigue funcionando).
+        const logger = new Logger('CacheModule');
+        store.on('error', (err: unknown) =>
+          logger.error(
+            `Redis error: ${err instanceof Error ? err.message : String(err)}`,
+          ),
+        );
+
         return {
-          store,
-          ttl: 60 * 5, // 5 minutos por defecto
+          stores: [store],
+          // TTL por defecto en MILISEGUNDOS (v7). Antes `60*5` se interpretaba
+          // como 300ms; el intent documentado siempre fue 5 minutos.
+          ttl: 1000 * 60 * 5,
         };
       },
     }),
