@@ -19,6 +19,7 @@ import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 import { ReferralsService } from '../referrals/referrals.service.js';
+import { AdminCategoriesService } from './services/admin-categories.service.js';
 
 @Injectable()
 export class AdminService {
@@ -30,6 +31,7 @@ export class AdminService {
     private minio: MinioService,
     private push: PushNotificationsService,
     private referrals: ReferralsService,
+    private categories: AdminCategoriesService,
 
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
@@ -1694,19 +1696,13 @@ export class AdminService {
     return [header, ...rows].join('\n');
   }
 
-  // ── CRUD DE CATEGORÍAS ────────────────────────────────────
+  // ── CRUD DE CATEGORÍAS (Facade → AdminCategoriesService) ──
+  // La lógica vive en AdminCategoriesService (hito M1: primera pieza
+  // extraída del god object). AdminService delega para no romper el
+  // controller ni los consumidores existentes.
 
   async getCategories() {
-    return this.prisma.category.findMany({
-      include: {
-        children: {
-          select: { id: true, name: true, slug: true, isActive: true },
-        },
-        parent: { select: { id: true, name: true } },
-        _count: { select: { providerCategories: true } },
-      },
-      orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
-    });
+    return this.categories.getCategories();
   }
 
   async createCategory(data: {
@@ -1716,15 +1712,7 @@ export class AdminService {
     parentId?: number;
     isActive?: boolean;
   }) {
-    const existing = await this.prisma.category.findUnique({
-      where: { slug: data.slug },
-    });
-    if (existing)
-      throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
-
-    const created = await this.prisma.category.create({ data });
-    await this.clearProvidersCache(); // propaga a mobile/web de inmediato
-    return created;
+    return this.categories.createCategory(data);
   }
 
   async updateCategory(
@@ -1738,64 +1726,15 @@ export class AdminService {
       isActive?: boolean;
     },
   ) {
-    const exists = await this.prisma.category.findUnique({ where: { id } });
-    if (!exists) throw new NotFoundException('Categoría no encontrada');
-
-    if (data.slug && data.slug !== exists.slug) {
-      const slugTaken = await this.prisma.category.findUnique({
-        where: { slug: data.slug },
-      });
-      if (slugTaken)
-        throw new ConflictException(`El slug '${data.slug}' ya está en uso`);
-    }
-
-    const updated = await this.prisma.category.update({ where: { id }, data });
-    await this.clearProvidersCache(); // refleja el cambio en proveedores ya
-    return updated;
+    return this.categories.updateCategory(id, data);
   }
 
   async toggleCategoryActive(id: number) {
-    const category = await this.prisma.category.findUnique({ where: { id } });
-    if (!category) throw new NotFoundException('Categoría no encontrada');
-
-    const toggled = await this.prisma.category.update({
-      where: { id },
-      data: { isActive: !category.isActive },
-    });
-    await this.clearProvidersCache();
-    return toggled;
+    return this.categories.toggleCategoryActive(id);
   }
 
-  /**
-   * Elimina una categoría. Las relaciones `providerCategories` y
-   * `offerPostCategories` tienen `onDelete: Cascade` → los proveedores y
-   * posts quedan desvinculados (como anuncia la UI). En cambio `children`
-   * (subcategorías) y `serviceRequests` son RESTRICT → bloqueamos con un
-   * mensaje claro en vez de un 500 de FK.
-   */
   async deleteCategory(id: number) {
-    const category = await this.prisma.category.findUnique({
-      where: { id },
-      include: {
-        _count: { select: { children: true, serviceRequests: true } },
-      },
-    });
-    if (!category) throw new NotFoundException('Categoría no encontrada');
-
-    if (category._count.children > 0) {
-      throw new ConflictException(
-        'No se puede eliminar: la categoría tiene subcategorías. Muévelas o elimínalas primero.',
-      );
-    }
-    if (category._count.serviceRequests > 0) {
-      throw new ConflictException(
-        'No se puede eliminar: hay solicitudes de servicio asociadas a esta categoría.',
-      );
-    }
-
-    await this.prisma.category.delete({ where: { id } });
-    await this.clearProvidersCache(); // desaparece de mobile/web de inmediato
-    return { success: true, id };
+    return this.categories.deleteCategory(id);
   }
 
   // ── ELIMINAR PROVEEDOR ────────────────────────────────────

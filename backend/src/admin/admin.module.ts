@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AdminService } from './admin.service.js';
+import { AdminCategoriesService } from './services/admin-categories.service.js';
 import { AdminController } from './admin.controller.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -19,6 +20,6 @@ import { LocalitiesModule } from '../localities/localities.module.js';
     LocalitiesModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, RolesGuard],
+  providers: [AdminService, AdminCategoriesService, RolesGuard],
 })
 export class AdminModule {}

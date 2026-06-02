@@ -38,4 +38,38 @@ describe('AiGuardrailsService (unit)', () => {
     expect(r.redacted).toBe(false);
     expect(r.toxic).toBe(false);
   });
+
+  it('Test 4: toxicidad (insulto) → toxic true y respuesta neutra (no filtra el insulto)', () => {
+    const r = service.apply('Eres un idiota y no sirves para nada.');
+    expect(r.toxic).toBe(true);
+    expect(r.safe).not.toContain('idiota');
+    // Cuando es tóxica, el guardrail sustituye por el fallback ANTES de
+    // redactar PII → redacted queda en false.
+    expect(r.redacted).toBe(false);
+  });
+
+  it('Test 5: PII email → enmascarado a [DATO PRIVADO]', () => {
+    const r = service.apply('Escríbele a soporte@serviapp.com para coordinar.');
+    expect(r.safe).toContain('[DATO PRIVADO]');
+    expect(r.safe).not.toContain('soporte@serviapp.com');
+    expect(r.redacted).toBe(true);
+    expect(r.toxic).toBe(false);
+  });
+
+  it('Test 6: PII UUID → enmascarado a [DATO PRIVADO]', () => {
+    const uuid = '550e8400-e29b-41d4-a716-446655440000';
+    const r = service.apply(`El identificador del ticket es ${uuid}.`);
+    expect(r.safe).toContain('[DATO PRIVADO]');
+    expect(r.safe).not.toContain(uuid);
+    expect(r.redacted).toBe(true);
+    expect(r.toxic).toBe(false);
+  });
+
+  it('Test 7: PII RUC (11 díg, empieza 10) → enmascarado a [DATO PRIVADO]', () => {
+    const r = service.apply('La empresa tiene RUC 10456789012 registrado en SUNAT.');
+    expect(r.safe).toContain('[DATO PRIVADO]');
+    expect(r.safe).not.toContain('10456789012');
+    expect(r.redacted).toBe(true);
+    expect(r.toxic).toBe(false);
+  });
 });
