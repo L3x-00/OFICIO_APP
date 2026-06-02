@@ -19,6 +19,7 @@ import { AiAssistantService } from './ai-assistant.service.js';
 import { AiFeatureFlagService } from './ai-feature-flag.service.js';
 import { AskAiDto } from './dto/ask-ai.dto.js';
 import { SandboxAiDto } from './dto/sandbox-ai.dto.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 import type {
   AiCaller,
   AiUserRole,
@@ -51,7 +52,7 @@ export class AiAssistantController {
   @Post('chat')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   async chat(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() dto: AskAiDto,
   ): Promise<AiChatResult> {
     const role = (req.user?.role as AiUserRole) ?? 'USUARIO';
@@ -115,7 +116,7 @@ export class AiAssistantController {
    * (a nivel de clase). El userId SIEMPRE sale del JWT — nunca del cliente.
    */
   @Get('history')
-  async history(@Request() req: any): Promise<{
+  async history(@Request() req: AuthenticatedRequest): Promise<{
     messages: Array<{ role: string; content: string; createdAt: Date }>;
   }> {
     const messages = await this.service.getHistory(req.user.userId, 20);
@@ -131,7 +132,7 @@ export class AiAssistantController {
    */
   @Post('test')
   async test(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Headers('x-test-secret') secret: string | undefined,
     @Body() dto: SandboxAiDto,
   ): Promise<AiChatResult> {

@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../../auth/jwt.guard.js';
 import { MercadoPagoService } from './mercadopago.service.js';
 import { PaymentsService } from '../payments.service.js';
 import { CreatePreferenceDto } from './dto/create-preference.dto.js';
+import type { AuthenticatedRequest } from '../../common/interfaces/auth-request.js';
 
 @Controller('payments/mercadopago')
 export class MercadoPagoController {
@@ -32,7 +33,7 @@ export class MercadoPagoController {
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   async createPreference(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() dto: CreatePreferenceDto,
   ) {
     return this.mpService.createPreference({
@@ -47,7 +48,7 @@ export class MercadoPagoController {
   // payment IDs que un atacante intentaría para forzar lookups.
   @Post('webhook')
   @Throttle({ default: { ttl: 60_000, limit: 60 } })
-  async webhook(@Req() req: any) {
+  async webhook(@Req() req: AuthenticatedRequest) {
     // C-02: validar firma HMAC antes de procesar nada. Sin esto,
     // un atacante envía POST falsificado y activa planes "gratis".
     if (!this.verifySignature(req)) {

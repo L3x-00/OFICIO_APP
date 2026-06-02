@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { FavoritesService } from './favorites.service.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 // userId SIEMPRE del JWT — el cliente solo pasa providerId. Antes el
 // userId venía del path y permitía crear/listar favoritos de cualquier
@@ -21,7 +22,7 @@ export class FavoritesController {
   // POST /favorites/:providerId — toggle
   @Post(':providerId')
   toggle(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Param('providerId', ParseIntPipe) providerId: number,
   ) {
     return this.favoritesService.toggle(req.user.userId, providerId);
@@ -29,7 +30,7 @@ export class FavoritesController {
 
   // GET /favorites — listar favoritos del usuario autenticado
   @Get()
-  getUserFavorites(@Request() req: any) {
+  getUserFavorites(@Request() req: AuthenticatedRequest) {
     return this.favoritesService.getUserFavorites(req.user.userId);
   }
 }

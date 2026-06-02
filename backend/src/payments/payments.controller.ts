@@ -14,6 +14,7 @@ import { SubmitYapeDto } from './dto/submit-yape.dto.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
 import { RolesGuard } from '../auth/roles.guard.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @UseGuards(JwtAuthGuard)
 @Controller('payments')
@@ -22,19 +23,19 @@ export class PaymentsController {
 
   // ── Proveedor: enviar comprobante Yape ───────────────────────
   @Post('yape')
-  submitYape(@Request() req: any, @Body() dto: SubmitYapeDto) {
+  submitYape(@Request() req: AuthenticatedRequest, @Body() dto: SubmitYapeDto) {
     return this.svc.submitYapePayment(req.user.id, dto);
   }
 
   // ── Proveedor: historial de pagos ────────────────────────────
   @Get('yape/mine')
-  myPayments(@Request() req: any) {
+  myPayments(@Request() req: AuthenticatedRequest) {
     return this.svc.getMyPayments(req.user.id);
   }
 
   // ── Proveedor: cancelar plan activo ──────────────────────────
   @Patch('cancel-plan')
-  cancelPlan(@Request() req: any) {
+  cancelPlan(@Request() req: AuthenticatedRequest) {
     return this.svc.cancelPlan(req.user.id);
   }
 
@@ -50,7 +51,7 @@ export class PaymentsController {
   @Patch('admin/yape/:id/approve')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  approve(@Param('id') id: string, @Request() req: any) {
+  approve(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.svc.approvePayment(Number(id), req.user.id);
   }
 
@@ -60,7 +61,7 @@ export class PaymentsController {
   @Roles('ADMIN')
   reject(
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body('reason') reason?: string,
   ) {
     return this.svc.rejectPayment(Number(id), req.user.id, reason);

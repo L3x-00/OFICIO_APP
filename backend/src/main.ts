@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/nestjs';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { BigintInterceptor } from './common/interceptors/bigint.interceptor.js';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter.js';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -76,7 +76,8 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
-  console.log(`📂 Logs de diagnóstico activados`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`Servidor corriendo en http://localhost:${port}`);
+  logger.log('Logs de diagnóstico activados');
 }
 bootstrap();

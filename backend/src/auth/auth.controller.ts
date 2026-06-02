@@ -23,6 +23,7 @@ import { UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Throttle } from '@nestjs/throttler';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -35,7 +36,7 @@ export class AuthController {
 
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  async login(@Body() dto: LoginDto, @Request() req: any) {
+  async login(@Body() dto: LoginDto, @Request() req: AuthenticatedRequest) {
     return this.authService.login(dto.email, dto.password, req.ip);
   }
 
@@ -45,7 +46,7 @@ export class AuthController {
   @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
   @HttpCode(HttpStatus.CREATED)
   async registerProvider(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() dto: RegisterProviderDto,
     @UploadedFiles() files: Express.Multer.File[], // <── AQUÍ recibimos las fotos
   ) {
@@ -63,7 +64,7 @@ export class AuthController {
   // Retorna el perfil completo del usuario autenticado (usuario + proveedor si aplica)
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMe(@Request() req: any) {
+  async getMe(@Request() req: AuthenticatedRequest) {
     return this.authService.getMe(req.user.userId);
   }
 
@@ -109,7 +110,10 @@ export class AuthController {
   // POST /auth/social-login — verifica idToken de Firebase y devuelve JWT propios
   @Post('social-login')
   @HttpCode(HttpStatus.OK)
-  async socialLogin(@Body() dto: SocialLoginDto, @Request() req: any) {
+  async socialLogin(
+    @Body() dto: SocialLoginDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
     // Pasamos `req.ip` para que el mapa de calor del admin (geo-stats)
     // tenga datos reales también para los usuarios sociales. Antes solo
     // los de email/password registraban `lastIp` → el mapa quedaba
@@ -120,7 +124,7 @@ export class AuthController {
   @Delete('account')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async deleteAccount(@Request() req: any) {
+  async deleteAccount(@Request() req: AuthenticatedRequest) {
     return this.authService.deleteAccount(req.user.userId);
   }
 
@@ -132,7 +136,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async setupPassword(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() body: { newPassword: string },
   ) {
     return this.authService.setupPassword(req.user.userId, body.newPassword);

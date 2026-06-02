@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   NotFoundException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -22,6 +23,8 @@ const PLAN_LIMITS: Record<
 
 @Injectable()
 export class OfferPostsService {
+  private readonly logger = new Logger(OfferPostsService.name);
+
   constructor(
     private prisma: PrismaService,
     private minio: MinioService,
@@ -411,7 +414,7 @@ export class OfferPostsService {
       data: { isActive: false },
     });
     if (result.count > 0) {
-      console.log(`[OfferPosts] Expiradas ${result.count} oferta(s)`);
+      this.logger.log(`Expiradas ${result.count} oferta(s)`);
     }
   }
 

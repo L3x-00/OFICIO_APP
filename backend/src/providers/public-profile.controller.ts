@@ -15,6 +15,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { slugify, uniqueSlug } from '../common/slug.util.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 /**
  * Endpoints públicos del perfil Vanity URL.
@@ -199,7 +200,7 @@ export class PublicProfileController implements OnModuleInit {
   @UseGuards(JwtAuthGuard)
   @Patch('me/slug')
   async editMySlug(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() body: { providerId: number; slug: string },
   ) {
     const desired = slugify(body.slug ?? '');

@@ -17,6 +17,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { MinioService } from '../common/minio.service.js';
 import { memOpts } from '../common/multer-image.config.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @Controller('users')
 export class UsersController {
@@ -28,28 +29,34 @@ export class UsersController {
   // GET /users/me
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req: any) {
+  getMe(@Request() req: AuthenticatedRequest) {
     return this.usersService.getMe(req.user.userId);
   }
 
   // GET /users/my-provider-status
   @UseGuards(JwtAuthGuard)
   @Get('my-provider-status')
-  getMyProviderStatus(@Request() req: any) {
+  getMyProviderStatus(@Request() req: AuthenticatedRequest) {
     return this.usersService.getMyProviderStatus(req.user.userId);
   }
 
   // PATCH /users/profile
   @UseGuards(JwtAuthGuard)
   @Patch('profile')
-  updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+  updateProfile(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: UpdateProfileDto,
+  ) {
     return this.usersService.updateProfile(req.user.userId, dto);
   }
 
   // PATCH /users/me/device-token
   @UseGuards(JwtAuthGuard)
   @Patch('me/device-token')
-  saveDeviceToken(@Request() req: any, @Body('token') token: string) {
+  saveDeviceToken(
+    @Request() req: AuthenticatedRequest,
+    @Body('token') token: string,
+  ) {
     if (!token) throw new BadRequestException('token requerido');
     return this.usersService.saveFcmToken(req.user.userId, token);
   }
@@ -57,7 +64,7 @@ export class UsersController {
   // DELETE /users/me/device-token — invalida el token al hacer logout
   @UseGuards(JwtAuthGuard)
   @Delete('me/device-token')
-  clearDeviceToken(@Request() req: any) {
+  clearDeviceToken(@Request() req: AuthenticatedRequest) {
     return this.usersService.clearFcmToken(req.user.userId);
   }
 
@@ -69,7 +76,10 @@ export class UsersController {
   // como "contraseña actual incorrecta".
   @UseGuards(JwtAuthGuard)
   @Patch('change-password')
-  changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+  changePassword(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: ChangePasswordDto,
+  ) {
     return this.usersService.changePassword(
       req.user.userId,
       dto.currentPassword,
@@ -82,7 +92,7 @@ export class UsersController {
   @Patch('profile-picture')
   @UseInterceptors(FileInterceptor('avatar', memOpts))
   async updateProfilePicture(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');

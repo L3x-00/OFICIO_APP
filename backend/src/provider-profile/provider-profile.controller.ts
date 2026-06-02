@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ProviderProfileService } from './provider-profile.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @Controller('provider-profile')
 @UseGuards(JwtAuthGuard)
@@ -21,14 +22,17 @@ export class ProviderProfileController {
 
   // GET /provider-profile/me?type=OFICIO|NEGOCIO
   @Get('me')
-  getMyProfile(@Request() req: any, @Query('type') type?: string) {
+  getMyProfile(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') type?: string,
+  ) {
     return this.service.getMyProfile(req.user.userId, type);
   }
 
   // PATCH /provider-profile/me?type=OFICIO|NEGOCIO
   @Patch('me')
   updateMyProfile(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() body: any,
     @Query('type') type?: string,
   ) {
@@ -38,7 +42,7 @@ export class ProviderProfileController {
   // PATCH /provider-profile/me/availability?type=OFICIO|NEGOCIO
   @Patch('me/availability')
   setAvailability(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() body: { availability: any },
     @Query('type') type?: string,
   ) {
@@ -52,7 +56,7 @@ export class ProviderProfileController {
   // GET /provider-profile/me/analytics?days=30&type=OFICIO|NEGOCIO
   @Get('me/analytics')
   getMyAnalytics(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query('days') days?: string,
     @Query('type') type?: string,
   ) {
@@ -65,20 +69,23 @@ export class ProviderProfileController {
 
   // GET /provider-profile/me/notifications[?type=OFICIO|NEGOCIO]
   @Get('me/notifications')
-  getMyNotifications(@Request() req: any, @Query('type') type?: string) {
+  getMyNotifications(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') type?: string,
+  ) {
     return this.service.getMyNotifications(req.user.userId, type);
   }
 
   // PATCH /provider-profile/me/notifications/read-all
   @Patch('me/notifications/read-all')
-  markAllNotificationsRead(@Request() req: any) {
+  markAllNotificationsRead(@Request() req: AuthenticatedRequest) {
     return this.service.markAllNotificationsRead(req.user.userId);
   }
 
   // PATCH /provider-profile/me/notifications/:id/read
   @Patch('me/notifications/:id/read')
   markNotificationRead(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.service.markNotificationRead(req.user.userId, id);
@@ -87,7 +94,7 @@ export class ProviderProfileController {
   // POST /provider-profile/me/images?type=OFICIO|NEGOCIO — vincula imagen subida al perfil del proveedor
   @Post('me/images')
   addImage(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() body: { url: string; isCover?: boolean },
     @Query('type') type?: string,
   ) {
@@ -102,7 +109,7 @@ export class ProviderProfileController {
   // DELETE /provider-profile/me/images/:id?type=OFICIO|NEGOCIO — elimina imagen del perfil
   @Delete('me/images/:id')
   deleteImage(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Query('type') type?: string,
   ) {
@@ -112,7 +119,7 @@ export class ProviderProfileController {
   // POST /provider-profile/me/plan-request?type=OFICIO|NEGOCIO
   @Post('me/plan-request')
   requestPlanUpgrade(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Body() body: { plan: string },
     @Query('type') type?: string,
   ) {
@@ -121,7 +128,10 @@ export class ProviderProfileController {
 
   // DELETE /provider-profile/me?type=OFICIO|NEGOCIO — elimina perfil en cascada
   @Delete('me')
-  deleteMyProfile(@Request() req: any, @Query('type') type?: string) {
+  deleteMyProfile(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') type?: string,
+  ) {
     return this.service.deleteMyProfile(req.user.userId, type);
   }
 }

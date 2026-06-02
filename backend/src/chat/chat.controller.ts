@@ -17,6 +17,7 @@ import { Roles } from '../auth/roles.decorator.js';
 import { ChatService } from './chat.service.js';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto.js';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 /// Endpoints de admin para auditar conversaciones. Filtros soportados:
 ///   - providerType: OFICIO | NEGOCIO
@@ -63,7 +64,10 @@ export class ChatController {
 
   // POST /chat/messages — envía mensaje + push + WS
   @Post('messages')
-  sendMessage(@Request() req: any, @Body() dto: CreateChatMessageDto) {
+  sendMessage(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: CreateChatMessageDto,
+  ) {
     return this.chat.sendMessage(req.user.userId, dto);
   }
 
@@ -73,7 +77,7 @@ export class ChatController {
   // legacy).
   @Get('rooms/mine')
   myRooms(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query('scope') scope?: string,
     @Query('type') type?: string,
   ) {
@@ -92,7 +96,7 @@ export class ChatController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(30), ParseIntPipe) limit: number,
 
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.chat.getRoomMessages(roomId, req.user.userId, { page, limit });
   }
@@ -102,7 +106,7 @@ export class ChatController {
   markRead(
     @Param('roomId', ParseIntPipe) roomId: number,
 
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.chat.markRoomAsRead(roomId, req.user.userId);
   }

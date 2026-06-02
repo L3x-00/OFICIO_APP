@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { ReviewsService } from './reviews.service.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 import {
   CreateReviewDto,
   ModerateReviewDto,
@@ -29,7 +30,7 @@ export class ReviewsController {
   // venga en el body para evitar IDOR (suplantar reseñas).
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Request() req: any, @Body() body: CreateReviewDto) {
+  create(@Request() req: AuthenticatedRequest, @Body() body: CreateReviewDto) {
     return this.reviewsService.create({ ...body, userId: req.user.userId });
   }
 
@@ -52,7 +53,7 @@ export class ReviewsController {
   @Get('can-review/:providerId')
   @UseGuards(JwtAuthGuard)
   canReview(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Param('providerId', ParseIntPipe) providerId: number,
   ) {
     return this.reviewsService.canReview(req.user.userId, providerId);
@@ -78,7 +79,7 @@ export class ReviewsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   updateReview(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateReviewDto,
   ) {
@@ -100,7 +101,7 @@ export class ReviewsController {
   @Post(':id/replies')
   @UseGuards(JwtAuthGuard)
   createReply(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() body: CreateReviewReplyDto,
   ) {

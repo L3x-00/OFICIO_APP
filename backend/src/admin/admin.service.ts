@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -21,6 +22,8 @@ import { ReferralsService } from '../referrals/referrals.service.js';
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
@@ -1104,7 +1107,9 @@ export class AdminService {
     try {
       await this.referrals.onProviderApproved(updated.id);
     } catch (err) {
-      console.error('[ReferralsService.onProviderApproved] error:', err);
+      this.logger.error(
+        `onProviderApproved error: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     return updated;

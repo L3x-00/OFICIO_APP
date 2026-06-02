@@ -20,6 +20,7 @@ import { TrustValidationService } from './trust-validation.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @Controller('trust-validation')
 export class TrustValidationController {
@@ -42,7 +43,7 @@ export class TrustValidationController {
     ),
   )
   submitRequest(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query('type') type = 'OFICIO',
     @Body() body: any,
     @UploadedFiles() files: any,
@@ -53,7 +54,10 @@ export class TrustValidationController {
   // GET /trust-validation/my-status?type=OFICIO|NEGOCIO
   @Get('my-status')
   @UseGuards(JwtAuthGuard)
-  getMyStatus(@Request() req: any, @Query('type') type = 'OFICIO') {
+  getMyStatus(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') type = 'OFICIO',
+  ) {
     return this.service.getMyTrustStatus(req.user.userId, type);
   }
 

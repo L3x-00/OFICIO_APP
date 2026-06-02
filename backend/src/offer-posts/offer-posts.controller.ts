@@ -24,6 +24,7 @@ import {
 } from './dto/create-offer-post.dto.js';
 import { ReportOfferDto } from './dto/report-offer.dto.js';
 import { memOpts as multerImageConfig } from '../common/multer-image.config.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 // ── RUTAS PÚBLICAS ────────────────────────────────────────────
 @Controller('offers')
@@ -58,7 +59,7 @@ export class OffersPublicController {
   report(
     @Param('id', ParseIntPipe) offerId: number,
     @Body() dto: ReportOfferDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.service.reportOffer(req.user.userId, offerId, dto.reason);
   }
@@ -72,7 +73,10 @@ export class ProviderOffersController {
   constructor(private service: OfferPostsService) {}
 
   @Get()
-  getMyOffers(@Request() req: any, @Query('type') type?: string) {
+  getMyOffers(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') type?: string,
+  ) {
     return this.service.getMyOffersByUser(req.user.userId, type);
   }
 
@@ -80,7 +84,7 @@ export class ProviderOffersController {
   @UseInterceptors(FileInterceptor('photo', multerImageConfig))
   create(
     @Body() dto: CreateOfferPostDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query('type') type: string,
     @UploadedFile() photo?: Express.Multer.File,
   ) {
@@ -88,7 +92,10 @@ export class ProviderOffersController {
   }
 
   @Delete(':id')
-  delete(@Param('id', ParseIntPipe) offerId: number, @Request() req: any) {
+  delete(
+    @Param('id', ParseIntPipe) offerId: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
     return this.service.deleteOfferByUser(req.user.userId, offerId);
   }
 
@@ -100,7 +107,7 @@ export class ProviderOffersController {
   update(
     @Param('id', ParseIntPipe) offerId: number,
     @Body() dto: UpdateOfferPostDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @UploadedFile() photo?: Express.Multer.File,
   ) {
     return this.service.updateOfferByUser(req.user.userId, offerId, dto, photo);

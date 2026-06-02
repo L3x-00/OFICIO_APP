@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
@@ -37,6 +38,8 @@ const BLOCK_DAYS = 7;
 
 @Injectable()
 export class SubastasService {
+  private readonly logger = new Logger(SubastasService.name);
+
   constructor(
     private prisma: PrismaService,
     private events: EventsGateway,
@@ -551,8 +554,8 @@ export class SubastasService {
         failed++;
         // No re-lanzamos: log y seguimos con la siguiente solicitud.
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(
-          `[expireStaleRequests] error procesando request ${req.id}: ${msg}`,
+        this.logger.error(
+          `expireStaleRequests: error procesando request ${req.id}: ${msg}`,
         );
       }
     }
