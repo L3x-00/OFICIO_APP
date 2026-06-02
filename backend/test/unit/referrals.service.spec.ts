@@ -178,18 +178,22 @@ describe('ReferralsService (unit)', () => {
     });
 
     /**
-     * Doble aplicación: cada usuario tiene UN solo Referral como
-     * invitado (unique en invitedUserId). Si ya aplicó antes (incluso
-     * después de re-registrarse desde la misma cuenta), no puede volver.
+     * Anti-farm: cada usuario tiene UN solo Referral como invitado
+     * (unique en invitedUserId). Si YA fue referido por OTRO inviter,
+     * aplicar un código DISTINTO se bloquea con 409.
+     *
+     * (Reaplicar el MISMO código del MISMO inviter SÍ es idempotente —
+     * eso se cubre en referrals.flow.spec.ts contra BD real.)
      */
-    it('PROHIBE doble aplicación (409 ConflictException)', async () => {
+    it('PROHIBE doble aplicación con inviter distinto (409 ConflictException)', async () => {
       prisma.referralCode.findUnique.mockResolvedValue({
         userId: INVITER_ID,
         code: CODE_VALUE,
       });
+      // El invitado ya tiene un Referral de OTRO inviter (id 999 ≠ 100).
       prisma.referral.findUnique.mockResolvedValue({
         id: 1,
-        inviterId: INVITER_ID,
+        inviterId: 999,
         invitedUserId: INVITED_ID,
         status: 'PENDING',
       });

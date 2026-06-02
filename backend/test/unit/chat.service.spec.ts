@@ -51,6 +51,9 @@ describe('ChatService (unit)', () => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     push = createPushMock();
+    // La persistencia de la notif CHAT_MESSAGE es fire-and-forget con
+    // `.catch()`; el mock debe devolver una promesa o el `.catch` revienta.
+    prisma.adminNotification.create.mockResolvedValue({} as any);
     service = new ChatService(prisma as any, events as any, push as any);
   });
 

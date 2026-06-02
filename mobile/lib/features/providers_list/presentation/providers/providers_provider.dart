@@ -380,8 +380,9 @@ class ProvidersProvider extends ChangeNotifier {
     required String? newProvince,
     required String? newDistrict,
   }) async {
-    if (newProvince == null || newDistrict == null || newDepartment == null)
+    if (newProvince == null || newDistrict == null || newDepartment == null) {
       return;
+    }
 
     final zoneChanged = newProvince != _province || newDistrict != _district;
     final distFar =

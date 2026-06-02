@@ -17,9 +17,11 @@ import { TrackEventDto } from './dto/track-event.dto.js';
 export class ProvidersController {
   constructor(private readonly providersService: ProvidersService) {}
 
-  // Cachea el listado general de proveedores por 2 minutos
+  // Cachea el listado general de proveedores por 30 segundos.
+  // El valor va en MILISEGUNDOS: Keyv (cache-manager v6/Prisma v7) interpreta
+  // el TTL en ms, no en segundos. Con `30` las claves expiraban en 30 ms.
   @UseInterceptors(CacheInterceptor)
-  @CacheTTL(30)
+  @CacheTTL(30000)
   @Get()
   findAll(
     @Query('categorySlug') categorySlug?: string,

@@ -18,6 +18,8 @@
  */
 
 import { AuthService } from '../../src/auth/auth.service.js';
+import { AuthRegistrationService } from '../../src/auth/services/auth-registration.service.js';
+import { AuthAccountService } from '../../src/auth/services/auth-account.service.js';
 import {
   ConflictException,
   UnauthorizedException,
@@ -65,16 +67,37 @@ describe('AuthService (unit)', () => {
     };
     firebase = { verifyIdToken: jest.fn() };
     minio = { uploadFile: jest.fn() };
+    // Auditoría fire-and-forget (lastLoginAt/lastIp) en login/socialLogin usa
+    // `.catch()`; sin un valor por defecto el mock devuelve undefined y el
+    // `.catch` revienta. Los tests que necesitan el RETORNO lo overridean.
+    prisma.user.update.mockResolvedValue({} as any);
+
+    // Sub-servicios extraídos del god object (patrón Facade): AuthService
+    // delega registro/OTP y gestión de cuenta en ellos. Comparten los mismos
+    // mocks para que las pruebas de registro/setup ejerciten la lógica real.
+    const registration = new AuthRegistrationService(
+      prisma as any,
+      jwt as any,
+      config as any,
+      events as any,
+      email as any,
+      minio as any,
+      cache as any,
+    );
+    const account = new AuthAccountService(
+      prisma as any,
+      config as any,
+      email as any,
+    );
 
     service = new AuthService(
       prisma as any,
       jwt as any,
       config as any,
       events as any,
-      email as any,
       firebase as any,
-      minio as any,
-      cache as any,
+      registration,
+      account,
     );
   });
 
