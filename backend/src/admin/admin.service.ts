@@ -4,7 +4,6 @@ import {
   NotFoundException,
   BadRequestException,
   Inject,
-  Logger,
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -18,20 +17,27 @@ import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
-import { ReferralsService } from '../referrals/referrals.service.js';
 import { AdminCategoriesService } from './services/admin-categories.service.js';
+import { AdminDashboardService } from './services/admin-dashboard.service.js';
+import { AdminTrustService } from './services/admin-trust.service.js';
+import { AdminPaymentsService } from './services/admin-payments.service.js';
+import {
+  withCategoryAlias as sharedWithCategoryAlias,
+  planToPriority as sharedPlanToPriority,
+  clearProvidersCache as sharedClearProvidersCache,
+} from './services/admin-shared.js';
 
 @Injectable()
 export class AdminService {
-  private readonly logger = new Logger(AdminService.name);
-
   constructor(
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
     private minio: MinioService,
     private push: PushNotificationsService,
-    private referrals: ReferralsService,
     private categories: AdminCategoriesService,
+    private dashboard: AdminDashboardService,
+    private trust: AdminTrustService,
+    private payments: AdminPaymentsService,
 
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
@@ -46,463 +52,35 @@ export class AdminService {
   private withCategoryAlias<
     T extends { providerCategories?: Array<{ category: { name: string } }> },
   >(p: T): T & { category: { name: string } } {
-    const name = p?.providerCategories?.[0]?.category?.name ?? 'Sin categoría';
-    return { ...p, category: { name } };
+    return sharedWithCategoryAlias(p);
   }
 
-  // ── DASHBOARD STATS (materialized view) ──────────────────
-  // Lee admin_dashboard_stats (migración 20260517170000_optimizations_part5).
-  // Una sola fila precomputada con counts/sumas; los aggregates ad-hoc
-  // del dashboard antiguo eran ~10 queries cada vez.
+  // ── DASHBOARD / MÉTRICAS / ANALYTICS (Facade → AdminDashboardService) ──
+  // Lógica extraída a AdminDashboardService (refactor god object). Métricas,
+  // analytics, dashboard stats y mapa de proveedores. El controller no cambia.
+
   async getDashboardStats() {
-    const rows = await this.prisma.$queryRaw<any[]>`
-      SELECT * FROM admin_dashboard_stats
-    `;
-    return rows[0] ?? null;
+    return this.dashboard.getDashboardStats();
   }
 
-  // Refresca la MV. CONCURRENTLY no bloquea lecturas — el dashboard
-  // sigue respondiendo con datos viejos mientras el refresh corre.
   async refreshDashboardStats() {
-    await this.prisma.$executeRaw`SELECT refresh_admin_dashboard_stats()`;
-    return { success: true, refreshedAt: new Date().toISOString() };
+    return this.dashboard.refreshDashboardStats();
   }
 
-  // ── GEO-STATS: mapa de calor de usuarios por ciudad ───────
-  //
-  // Lee users.lastIp + users.lastLoginAt, resuelve geolocalización
-  // contra ip-api.com (batch HTTP, gratis, sin API key) y devuelve
-  // agregado por (city, department).
-  //
-  // Cache: 1h por endpoint completo (admins consultan rara vez).
-  // El batch de ip-api permite hasta 100 IPs por request y 45 req/min
-  // por IP origen — con el cache un dashboard activo no excede eso.
-
-  private static readonly GEO_CACHE_KEY = 'admin:users-geo-stats';
-  private static readonly GEO_CACHE_TTL = 60 * 60; // segundos
-
-  /**
-   * Centroides aproximados de cada departamento del Perú (lat, lng).
-   * Permiten dibujar un mapa real (Leaflet) en el admin sin agregar
-   * lat/lng al esquema de Locality — la fuente de verdad para la
-   * agregación sigue siendo `locality.department`.
-   */
-  private static readonly PERU_DEPT_CENTROIDS: Record<
-    string,
-    { lat: number; lng: number }
-  > = {
-    Amazonas: { lat: -5.05, lng: -78.0 },
-    Áncash: { lat: -9.53, lng: -77.53 },
-    Ancash: { lat: -9.53, lng: -77.53 },
-    Apurímac: { lat: -14.0639, lng: -73.0 },
-    Apurimac: { lat: -14.0639, lng: -73.0 },
-    Arequipa: { lat: -16.409, lng: -71.5375 },
-    Ayacucho: { lat: -13.1588, lng: -74.2236 },
-    Cajamarca: { lat: -7.1611, lng: -78.5128 },
-    Callao: { lat: -12.056, lng: -77.118 },
-    Cusco: { lat: -13.532, lng: -71.9675 },
-    Cuzco: { lat: -13.532, lng: -71.9675 },
-    Huancavelica: { lat: -12.7869, lng: -74.975 },
-    Huánuco: { lat: -9.9306, lng: -76.2422 },
-    Huanuco: { lat: -9.9306, lng: -76.2422 },
-    Ica: { lat: -14.0678, lng: -75.7286 },
-    Junín: { lat: -12.0651, lng: -75.2049 },
-    Junin: { lat: -12.0651, lng: -75.2049 },
-    'La Libertad': { lat: -8.109, lng: -79.0215 },
-    Lambayeque: { lat: -6.7011, lng: -79.9061 },
-    Lima: { lat: -12.0464, lng: -77.0428 },
-    Loreto: { lat: -3.7437, lng: -73.2516 },
-    'Madre de Dios': { lat: -12.5933, lng: -69.1899 },
-    Moquegua: { lat: -17.1939, lng: -70.935 },
-    Pasco: { lat: -10.6828, lng: -76.2566 },
-    Piura: { lat: -5.1945, lng: -80.6328 },
-    Puno: { lat: -15.8402, lng: -70.0219 },
-    'San Martín': { lat: -6.4831, lng: -76.3719 },
-    'San Martin': { lat: -6.4831, lng: -76.3719 },
-    Tacna: { lat: -18.0066, lng: -70.2463 },
-    Tumbes: { lat: -3.5667, lng: -80.4515 },
-    Ucayali: { lat: -8.3829, lng: -74.5539 },
-  };
-
-  /**
-   * Mapa de proveedores por departamento del Perú.
-   *
-   * Antes este endpoint resolvía `users.lastIp` contra ip-api.com,
-   * pero la mayoría de logins son sociales (sin `lastIp`) → el mapa
-   * salía vacío. Ahora agrupamos los **proveedores registrados** por
-   * `locality.department` (la ubicación que ellos mismos declaran en
-   * onboarding). Es la métrica que el admin necesita ver.
-   *
-   * Devuelve además `lat/lng` del centroide del departamento para que
-   * el frontend pueda pintar marcadores en un mapa real.
-   */
   async getUsersGeoStats() {
-    const cached = await this.cacheManager.get(AdminService.GEO_CACHE_KEY);
-    if (cached) return cached;
-
-    const rows = await this.prisma.$queryRaw<
-      Array<{ department: string; provider_count: number; last_created: Date }>
-    >`
-      SELECT l."department"        AS department,
-             count(p.id)::int      AS provider_count,
-             max(p."createdAt")    AS last_created
-      FROM providers p
-      INNER JOIN localities l ON l.id = p."localityId"
-      WHERE l."department" IS NOT NULL AND l."department" <> ''
-      GROUP BY l."department"
-      ORDER BY provider_count DESC
-    `;
-
-    const result = rows.map((r) => {
-      const centroid = AdminService.PERU_DEPT_CENTROIDS[r.department] ?? {
-        lat: -9.19,
-        lng: -75.0152,
-      }; // fallback: centro del Perú
-      const last =
-        r.last_created instanceof Date
-          ? r.last_created
-          : new Date(r.last_created);
-      return {
-        // Mantenemos `city`/`country` por retrocompat con el shape que el
-        // frontend ya consume (UserGeoStatsRow). `city = department`
-        // porque la agregación es a nivel departamento.
-        city: r.department,
-        department: r.department,
-        country: 'Perú',
-        userCount: Number(r.provider_count),
-        lastAccess: last.toISOString(),
-        lat: centroid.lat,
-        lng: centroid.lng,
-      };
-    });
-
-    // Cache 1h (la migración de proveedores es lenta — los datos no
-    // cambian rápido).
-    await this.cacheManager.set(
-      AdminService.GEO_CACHE_KEY,
-      result,
-      AdminService.GEO_CACHE_TTL * 1000,
-    );
-    return result;
+    return this.dashboard.getUsersGeoStats();
   }
 
-  // ── MÉTRICAS ─────────────────────────────────────────────
   async getDashboardMetrics() {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const [
-      totalProviders,
-      activeProviders,
-      providersInGrace,
-      providersExpiringSoon,
-      totalUsers,
-      totalReviews,
-      pendingVerifications,
-      whatsappClicks,
-      callClicks,
-      totalActiveUsers,
-      totalProviderUsers,
-    ] = await Promise.all([
-      this.prisma.provider.count(),
-      this.prisma.provider.count({ where: { isVisible: true } }),
-      this.prisma.subscription.count({ where: { status: 'GRACIA' } }),
-      this.prisma.subscription.count({
-        where: {
-          status: 'GRACIA',
-          endDate: {
-            lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
-            gte: now,
-          },
-        },
-      }),
-      // `totalUsers` = TODOS los registros en `users` (incluyendo
-      // PROVEEDOR y ADMIN). Antes excluía role=PROVEEDOR — un user que
-      // se convertía en proveedor "desaparecía" del KPI, falseando el
-      // total de personas registradas. Un proveedor SUMA en este
-      // contador Y en `totalProviderUsers` (no se restan).
-      this.prisma.user.count(),
-      this.prisma.review.count(),
-      this.prisma.provider.count({
-        where: { verificationStatus: 'PENDIENTE' },
-      }),
-      this.prisma.providerAnalytic.count({
-        where: {
-          eventType: 'whatsapp_click',
-          createdAt: { gte: startOfMonth },
-        },
-      }),
-      this.prisma.providerAnalytic.count({
-        where: { eventType: 'call_click', createdAt: { gte: startOfMonth } },
-      }),
-      this.prisma.user.count({ where: { isActive: true } }),
-      this.prisma.user.count({ where: { role: 'PROVEEDOR' } }),
-    ]);
-
-    return {
-      totalProviders,
-      activeProviders,
-      providersInGrace,
-      providersExpiringSoon,
-      totalUsers,
-      totalReviews,
-      pendingVerifications,
-      whatsappClicks,
-      callClicks,
-      totalActiveUsers,
-      totalProviderUsers,
-    };
+    return this.dashboard.getDashboardMetrics();
   }
 
-  // ── PROVEEDORES EN GRACIA ─────────────────────────────────
   async getGraceProviders() {
-    const now = new Date();
-    const subscriptions = await this.prisma.subscription.findMany({
-      where: { status: 'GRACIA' },
-      include: {
-        provider: {
-          include: {
-            providerCategories: {
-              select: { category: { select: { name: true } } },
-            },
-            locality: { select: { name: true } },
-          },
-        },
-      },
-      orderBy: { endDate: 'asc' },
-    });
-
-    return subscriptions.map((sub) => ({
-      ...sub,
-      provider: this.withCategoryAlias(sub.provider),
-      daysLeft: Math.ceil(
-        (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      ),
-      isUrgent:
-        Math.ceil(
-          (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-        ) <= 7,
-    }));
+    return this.dashboard.getGraceProviders();
   }
 
-  // ── ANALYTICS ─────────────────────────────────────────────
   async getAnalytics(days = 30) {
-    const since = new Date();
-    since.setDate(since.getDate() - days);
-    const prevSince = new Date(since);
-    prevSince.setDate(prevSince.getDate() - days);
-
-    const [
-      dailyAgg,
-      prevWA,
-      prevCalls,
-      prevViews,
-      planDist,
-      totalProviders,
-      approvedProviders,
-      pendingProviders,
-      rejectedProviders,
-      activeProviders,
-      availDist,
-      geoDist,
-      topProviderClicks,
-    ] = await Promise.all([
-      // Agrupado por día + tipo de evento en SQL (evita traer todas las filas)
-      this.prisma.$queryRaw<
-        Array<{ day: string; eventType: string; count: bigint }>
-      >`
-        SELECT TO_CHAR(DATE_TRUNC('day', "createdAt"), 'YYYY-MM-DD') AS "day",
-               "eventType"::text                                   AS "eventType",
-               COUNT(*)                                            AS "count"
-          FROM "provider_analytics"
-         WHERE "createdAt" >= ${since}
-         GROUP BY 1, 2
-         ORDER BY 1 ASC
-      `,
-      // Período anterior para comparación
-      this.prisma.providerAnalytic.count({
-        where: {
-          eventType: 'whatsapp_click',
-          createdAt: { gte: prevSince, lt: since },
-        },
-      }),
-      this.prisma.providerAnalytic.count({
-        where: {
-          eventType: 'call_click',
-          createdAt: { gte: prevSince, lt: since },
-        },
-      }),
-      this.prisma.providerAnalytic.count({
-        where: { eventType: 'view', createdAt: { gte: prevSince, lt: since } },
-      }),
-      // Distribución de planes
-      this.prisma.subscription.groupBy({
-        by: ['plan'],
-        _count: { id: true },
-        where: { provider: { verificationStatus: 'APROBADO' } },
-      }),
-      // Funnel de proveedores
-      this.prisma.provider.count(),
-      this.prisma.provider.count({ where: { verificationStatus: 'APROBADO' } }),
-      this.prisma.provider.count({
-        where: { verificationStatus: 'PENDIENTE' },
-      }),
-      this.prisma.provider.count({
-        where: { verificationStatus: 'RECHAZADO' },
-      }),
-      this.prisma.provider.count({ where: { isVisible: true } }),
-      // Distribución de disponibilidad
-      this.prisma.provider.groupBy({
-        by: ['availability'],
-        _count: { id: true },
-        where: { verificationStatus: 'APROBADO' },
-      }),
-      // Distribución geográfica (top 10 localidades)
-      this.prisma.provider.groupBy({
-        by: ['localityId'],
-        _count: { id: true },
-        where: { localityId: { not: undefined } },
-        orderBy: { _count: { id: 'desc' } },
-        take: 10,
-      }),
-      // Top proveedores por clicks en el período
-      this.prisma.providerAnalytic.groupBy({
-        by: ['providerId'],
-        _count: { id: true },
-        where: {
-          createdAt: { gte: since },
-          eventType: { in: ['whatsapp_click', 'call_click'] },
-        },
-        orderBy: { _count: { id: 'desc' } },
-        take: 10,
-      }),
-    ]);
-
-    // Construir dailyClicks a partir del agrupado SQL.
-    const byDay: Record<
-      string,
-      { whatsapp: number; calls: number; views: number }
-    > = {};
-    let totalWA = 0,
-      totalCalls = 0,
-      totalViews = 0;
-    for (const row of dailyAgg) {
-      const day = row.day;
-      const cnt = Number(row.count); // bigint → number
-      if (!byDay[day]) byDay[day] = { whatsapp: 0, calls: 0, views: 0 };
-      if (row.eventType === 'whatsapp_click') {
-        byDay[day].whatsapp += cnt;
-        totalWA += cnt;
-      } else if (row.eventType === 'call_click') {
-        byDay[day].calls += cnt;
-        totalCalls += cnt;
-      } else if (row.eventType === 'view') {
-        byDay[day].views += cnt;
-        totalViews += cnt;
-      }
-    }
-
-    // Delta % vs período anterior
-    const pctDelta = (curr: number, prev: number) =>
-      prev === 0
-        ? curr > 0
-          ? 100
-          : 0
-        : Math.round(((curr - prev) / prev) * 100);
-
-    // Obtener nombres de localidades para geo
-    const localityIds = geoDist
-      .map((g) => g.localityId)
-      .filter((id): id is number => id != null);
-    const localityData =
-      localityIds.length > 0
-        ? await this.prisma.locality.findMany({
-            where: { id: { in: localityIds } },
-            select: { id: true, name: true },
-          })
-        : [];
-    const localityMap = new Map(localityData.map((l) => [l.id, l.name]));
-
-    // Obtener nombres de top proveedores
-    const topProviderIds = topProviderClicks.map((t) => t.providerId);
-    const topProviderData =
-      topProviderIds.length > 0
-        ? await this.prisma.provider.findMany({
-            where: { id: { in: topProviderIds } },
-            select: {
-              id: true,
-              businessName: true,
-              type: true,
-              providerCategories: {
-                select: { category: { select: { name: true } } },
-              },
-            },
-          })
-        : [];
-    const topProviderMap = new Map(topProviderData.map((p) => [p.id, p]));
-
-    return {
-      // Daily engagement con views
-      dailyClicks: Object.entries(byDay).map(([date, counts]) => ({
-        date,
-        ...counts,
-      })),
-
-      // KPIs del período con comparación
-      kpis: {
-        whatsappTotal: totalWA,
-        callsTotal: totalCalls,
-        viewsTotal: totalViews,
-        whatsappDelta: pctDelta(totalWA, prevWA),
-        callsDelta: pctDelta(totalCalls, prevCalls),
-        viewsDelta: pctDelta(totalViews, prevViews),
-      },
-
-      // Distribución de planes
-      planDistribution: planDist.map((p) => ({
-        plan: p.plan,
-        count: p._count.id,
-      })),
-
-      // Funnel de proveedores
-      providerFunnel: {
-        total: totalProviders,
-        approved: approvedProviders,
-        pending: pendingProviders,
-        rejected: rejectedProviders,
-        active: activeProviders,
-        conversionRate:
-          totalProviders > 0
-            ? Math.round((approvedProviders / totalProviders) * 100)
-            : 0,
-      },
-
-      // Distribución de disponibilidad
-      availabilityDistribution: availDist.map((a) => ({
-        status: a.availability,
-        count: a._count.id,
-      })),
-
-      // Distribución geográfica
-      geoDistribution: geoDist
-        .filter((g) => g.localityId != null)
-        .map((g) => ({
-          department: localityMap.get(g.localityId) ?? `Loc #${g.localityId}`,
-          count: g._count.id,
-        })),
-
-      // Top proveedores por engagement
-      topProviders: topProviderClicks.map((t) => {
-        const p = topProviderMap.get(t.providerId);
-        return {
-          providerId: t.providerId,
-          businessName: p?.businessName ?? `Proveedor #${t.providerId}`,
-          type: p?.type ?? 'OFICIO',
-          categoryName: p?.providerCategories?.[0]?.category?.name ?? '—',
-          clicks: t._count.id,
-        };
-      }),
-    };
+    return this.dashboard.getAnalytics(days);
   }
 
   // ── LISTAR TODOS LOS PROVEEDORES ──────────────────────────
@@ -804,17 +382,7 @@ export class AdminService {
 
   // ── HELPER: plan → prioridad de listado ──────────────────
   private planToPriority(plan: string, status: string): number {
-    if (status !== 'ACTIVA') return 4;
-    switch (plan) {
-      case 'PREMIUM':
-        return 1;
-      case 'ESTANDAR':
-        return 2;
-      case 'GRATIS':
-        return 3;
-      default:
-        return 4;
-    }
+    return sharedPlanToPriority(plan, status);
   }
 
   // ── CAMBIAR PLAN DE SUSCRIPCIÓN ────────────────────────────
@@ -909,343 +477,30 @@ export class AdminService {
   // Borrado SELECTIVO por prefijo "providers_*" — ya no usamos flushAll
   // para no purgar caches de otros módulos en el mismo Redis.
   private async clearProvidersCache(): Promise<void> {
-    const PATTERN = 'providers_*';
-    try {
-      const cm = this.cacheManager;
-      const client =
-        cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client ?? null;
-
-      // Caso ideal: cliente Redis con SCAN (cache-manager-redis-yet expone uno).
-      if (client && typeof client.scanIterator === 'function') {
-        const toDelete: string[] = [];
-        for await (const key of client.scanIterator({
-          MATCH: PATTERN,
-          COUNT: 200,
-        })) {
-          toDelete.push(key as string);
-        }
-        if (toDelete.length > 0 && typeof client.del === 'function') {
-          await client.del(toDelete);
-        }
-        return;
-      }
-
-      // Fallback: KEYS (bloqueante, solo en datasets pequeños).
-      if (client && typeof client.keys === 'function') {
-        const keys: string[] = await client.keys(PATTERN);
-        if (keys.length > 0) {
-          if (typeof client.del === 'function') await client.del(keys);
-          else {
-            for (const k of keys) await cm.del?.(k);
-          }
-        }
-        return;
-      }
-
-      // Último recurso: si el cache-manager no expone client, intentamos
-      // borrar por nombre conocido (lista vacía → no-op). NO hacemos
-      // flushAll para evitar afectar caches no relacionadas.
-    } catch {
-      // Si la limpieza falla, el TTL natural (~30s) invalida la caché.
-    }
+    return sharedClearProvidersCache(this.cacheManager);
   }
 
-  // ── VERIFICACIÓN ──────────────────────────────────────────
+  // ── VERIFICACIÓN (Facade → AdminTrustService) ────────────
+  // Lógica extraída a AdminTrustService (refactor god object).
 
   async getPendingVerifications() {
-    const providers = await this.prisma.provider.findMany({
-      where: { verificationStatus: 'PENDIENTE' },
-      include: {
-        user: {
-          select: {
-            email: true,
-            firstName: true,
-            lastName: true,
-            createdAt: true,
-          },
-        },
-        providerCategories: {
-          select: { category: { select: { name: true } } },
-        },
-        locality: { select: { name: true } },
-        verificationDocs: true,
-        images: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    });
-    return providers.map((p) => this.withCategoryAlias(p));
+    return this.trust.getPendingVerifications();
   }
 
   async approveVerification(id: number) {
-    const provider = await this.prisma.provider.findUnique({
-      where: { id },
-      include: { subscription: true, user: { select: { hasUsedTrial: true } } },
-    });
-    if (!provider) throw new NotFoundException('Proveedor no encontrado');
-
-    // Anti freemium abuse: si el dueño ya consumió su mes de cortesía en
-    // una cuenta previa (hasUsedTrial), el perfil arranca en GRATIS sin
-    // gracia. Si es su primera vez, recibe ESTANDAR de cortesía por 1 mes
-    // (al expirar, el cron de suscripciones lo degrada a GRATIS).
-    const usedTrial = provider.user?.hasUsedTrial ?? false;
-    const trialPlan = usedTrial ? 'GRATIS' : 'ESTANDAR';
-    const trialStatus = usedTrial ? 'ACTIVA' : 'GRACIA';
-
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 1);
-
-    const [updated] = await this.prisma.$transaction(async (tx) => {
-      // 1. Aprobar proveedor y hacerlo visible
-      const updatedProvider = await tx.provider.update({
-        where: { id },
-        data: {
-          isVerified: true,
-          verificationStatus: 'APROBADO',
-          isVisible: true,
-          // Prioridad de listado según el plan inicial real del proveedor.
-          planPriority: this.planToPriority(
-            usedTrial ? 'GRATIS' : 'ESTANDAR',
-            'ACTIVA',
-          ),
-        },
-      });
-
-      // 2. Cambiar rol del usuario a PROVEEDOR (ahora sí está aprobado)
-      await tx.user.update({
-        where: { id: provider.userId },
-        data: { role: 'PROVEEDOR' },
-      });
-
-      // 3. Crear suscripción de cortesía (solo si no tiene una ya).
-      // Plan ESTANDAR, status GRACIA — el dashboard del proveedor detecta esa
-      // combinación y muestra el modal de bienvenida exclusivo de primera vez.
-      if (!provider.subscription) {
-        await tx.subscription.create({
-          data: {
-            providerId: id,
-            plan: trialPlan,
-            status: trialStatus,
-            endDate,
-          },
-        });
-      }
-
-      // 4. Notificación en BD — un solo texto unificado. Antes había
-      // DOS notifs distintas (una de "¡Felicidades verificado!" y otra
-      // de "Perfil aprobado + Plan Estándar..."). El user veía duplicado
-      // en su inbox: la persistida por BD + la in-memory por WS.
-      // Ahora ambas comparten el MISMO título/cuerpo y el dedup por
-      // (type+title+body+timestamp) del notifications_provider las
-      // colapsa a una sola entrada.
-      //
-      // IMPORTANTE: usar `updatedProvider` (variable local de la tx), NO
-      // `updated` — esa última es el resultado de la transacción y aún
-      // no está inicializada acá dentro (TDZ → ReferenceError
-      // "Cannot access 'updated' before initialization").
-      const approveBody =
-        `Tu perfil "${updatedProvider.businessName}" fue aprobado. ` +
-        (usedTrial
-          ? 'Ya estás activo en el plan Gratis.'
-          : 'Plan Estándar activado gratis por 1 mes de bienvenida.');
-      await tx.adminNotification.create({
-        data: {
-          providerId: id,
-          type: 'APROBADO',
-          title: '¡Perfil aprobado! ✅',
-          message: approveBody,
-          // Sin esto, la notif aparecía en ambos paneles del usuario
-          // (OFICIO y NEGOCIO) porque el filtro por tipo dejaba pasar
-          // las nulas. Bind explícito al perfil del provider.
-          targetProfileType: updatedProvider.type,
-          targetUserId: provider.userId,
-        },
-      });
-
-      return [updatedProvider];
-    });
-
-    // Invalidar caché para que la app móvil vea al proveedor de inmediato
-    await this.clearProvidersCache();
-
-    // Notificar en tiempo real a todos los clientes conectados (admin panel)
-    this.eventsGateway.emitProviderStatusChanged({
-      id: updated.id,
-      businessName: updated.businessName,
-      verificationStatus: updated.verificationStatus,
-      isVerified: updated.isVerified,
-    });
-    this.eventsGateway.emitAdminEvent('PROVIDER_APPROVED', {
-      providerId: id,
-      businessName: updated.businessName,
-    });
-
-    // Notificar al proveedor específico en la app móvil. Mismo texto que
-    // se persistió en BD para que el dedup del cliente (type+title+body
-    // dentro de ±60s) las trate como la misma entrada.
-    const approveTitle = '¡Perfil aprobado! ✅';
-    const approveBody =
-      `Tu perfil "${updated.businessName}" fue aprobado. ` +
-      (usedTrial
-        ? 'Ya estás activo en el plan Gratis.'
-        : 'Plan Estándar activado gratis por 1 mes de bienvenida.');
-
-    this.eventsGateway.emitNotification({
-      type: 'PROVIDER_APPROVED',
-      title: approveTitle,
-      body: approveBody,
-      targetUserId: provider.userId,
-      targetProfileType: updated.type,
-    });
-
-    this.push.sendToUser(provider.userId, approveTitle, approveBody, {
-      type: 'PROVIDER_APPROVED',
-      plan: trialPlan,
-      trial: String(!usedTrial),
-    });
-
-    // Sistema de referidos: si este provider tiene un referral pendiente,
-    // entrega monedas al inviter y al invitado y emite las notificaciones extra.
-    // Falla en silencio para no romper la aprobación si algo va mal.
-    try {
-      await this.referrals.onProviderApproved(updated.id);
-    } catch (err) {
-      this.logger.error(
-        `onProviderApproved error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
-    return updated;
+    return this.trust.approveVerification(id);
   }
 
   async rejectVerification(id: number, reason: string) {
-    if (!reason?.trim())
-      throw new BadRequestException('El motivo de rechazo es obligatorio');
-
-    const provider = await this.prisma.provider.findUnique({ where: { id } });
-    if (!provider) throw new NotFoundException('Proveedor no encontrado');
-
-    const [updated] = await this.prisma.$transaction(async (tx) => {
-      // 1. Marcar proveedor como rechazado y oculto
-      const updatedProvider = await tx.provider.update({
-        where: { id },
-        data: {
-          isVerified: false,
-          verificationStatus: 'RECHAZADO',
-          isVisible: false,
-        },
-      });
-
-      // 2. Asegurar que el usuario quede como USUARIO (nunca PROVEEDOR si fue rechazado)
-      await tx.user.update({
-        where: { id: provider.userId },
-        data: { role: 'USUARIO' },
-      });
-
-      // 3. Notificación en BD con el motivo exacto
-      await tx.adminNotification.create({
-        data: {
-          providerId: id,
-          type: 'RECHAZADO',
-          message: `Tu solicitud de verificación fue rechazada. Motivo: ${reason}`,
-          // Bind al perfil para que el filtro del panel no la mezcle.
-          targetProfileType: updatedProvider.type,
-          targetUserId: provider.userId,
-        },
-      });
-
-      return [updatedProvider];
-    });
-
-    // Notificar en tiempo real (el proveedor dejará de aparecer si estaba visible)
-    await this.clearProvidersCache();
-    this.eventsGateway.emitProviderStatusChanged({
-      id: updated.id,
-      businessName: updated.businessName,
-      verificationStatus: updated.verificationStatus,
-      isVerified: updated.isVerified,
-    });
-    this.eventsGateway.emitAdminEvent('PROVIDER_REJECTED', {
-      providerId: id,
-      businessName: updated.businessName,
-    });
-
-    // Notificar al proveedor específico en la app móvil. Incluimos
-    // `targetProfileType` para que el cliente sepa cuál perfil
-    // (OFICIO/NEGOCIO) actualizar en su estado local.
-    this.eventsGateway.emitNotification({
-      type: 'PROVIDER_REJECTED',
-      title: 'Perfil rechazado',
-      body: `Tu perfil "${updated.businessName}" no fue aprobado. Motivo: ${reason}`,
-      targetUserId: provider.userId,
-      targetProfileType: updated.type,
-    });
-
-    this.push.sendToUser(
-      provider.userId,
-      'Perfil rechazado',
-      `Tu perfil "${updated.businessName}" no fue aprobado. Motivo: ${reason}`,
-      { type: 'PROVIDER_REJECTED' },
-    );
-
-    return updated;
+    return this.trust.rejectVerification(id, reason);
   }
 
   async requestMoreInfo(id: number, reason: string) {
-    if (!reason?.trim())
-      throw new BadRequestException(
-        'El detalle de la solicitud es obligatorio',
-      );
-
-    const provider = await this.prisma.provider.findUnique({ where: { id } });
-    if (!provider) throw new NotFoundException('Proveedor no encontrado');
-
-    await this.prisma.adminNotification.create({
-      data: {
-        providerId: id,
-        type: 'MAS_INFO',
-        message: `Necesitamos más información para verificar tu perfil: ${reason}`,
-        targetProfileType: provider.type,
-        targetUserId: provider.userId,
-      },
-    });
-
-    return { success: true, message: 'Solicitud de información enviada' };
+    return this.trust.requestMoreInfo(id, reason);
   }
 
   async revokeVerification(id: number, reason?: string) {
-    const provider = await this.prisma.provider.findUnique({ where: { id } });
-    if (!provider) throw new NotFoundException('Proveedor no encontrado');
-    if (!provider.isVerified)
-      throw new BadRequestException('Este proveedor no está verificado');
-
-    const [updated] = await Promise.all([
-      this.prisma.provider.update({
-        where: { id },
-        data: { isVerified: false, verificationStatus: 'PENDIENTE' },
-      }),
-      this.prisma.adminNotification.create({
-        data: {
-          providerId: id,
-          type: 'VERIFICACION_REVOCADA',
-          message: reason
-            ? `Tu verificación ha sido revocada. Motivo: ${reason}`
-            : 'Tu verificación ha sido revocada por el administrador.',
-          targetProfileType: provider.type,
-          targetUserId: provider.userId,
-        },
-      }),
-    ]);
-
-    // Invalidar caché y notificar — el proveedor ya no aparecerá en la app
-    await this.clearProvidersCache();
-    this.eventsGateway.emitProviderStatusChanged({
-      id: updated.id,
-      businessName: updated.businessName,
-      verificationStatus: updated.verificationStatus,
-      isVerified: updated.isVerified,
-    });
-
-    return updated;
+    return this.trust.revokeVerification(id, reason);
   }
 
   // ── GESTIÓN DE USUARIOS ───────────────────────────────────
@@ -1792,163 +1047,19 @@ export class AdminService {
     return { success: true, message: 'Proveedor eliminado correctamente' };
   }
 
-  // ── SOLICITUDES DE PLAN ───────────────────────────────────
+  // ── SOLICITUDES DE PLAN / PAGOS YAPE (Facade → AdminPaymentsService) ──
+  // Lógica extraída a AdminPaymentsService (refactor god object).
 
   async getPlanRequests(status?: string) {
-    return this.prisma.planRequest.findMany({
-      where: status ? { status: status as any } : undefined,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        provider: {
-          select: {
-            id: true,
-            businessName: true,
-            type: true,
-            phone: true,
-            subscription: { select: { plan: true, status: true } },
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    return this.payments.getPlanRequests(status);
   }
 
   async approvePlanRequest(requestId: number) {
-    const req = await this.prisma.planRequest.findUnique({
-      where: { id: requestId },
-      include: { provider: { include: { subscription: true, user: true } } },
-    });
-    if (!req) throw new NotFoundException('Solicitud no encontrada');
-    if (req.status !== 'PENDIENTE')
-      throw new BadRequestException('La solicitud ya fue procesada');
-
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 1);
-
-    const priority = this.planToPriority(req.plan, 'ACTIVA');
-
-    // Update or create subscription + actualizar prioridad (transacción atómica)
-    await this.prisma.$transaction(async (tx) => {
-      if (req.provider.subscription) {
-        await tx.subscription.update({
-          where: { providerId: req.providerId },
-          data: { plan: req.plan, status: 'ACTIVA', endDate },
-        });
-      } else {
-        await tx.subscription.create({
-          data: {
-            providerId: req.providerId,
-            plan: req.plan,
-            status: 'ACTIVA',
-            endDate,
-          },
-        });
-      }
-
-      // Subir en el ranking de listado
-      await tx.provider.update({
-        where: { id: req.providerId },
-        data: { planPriority: priority },
-      });
-
-      // Mark request approved
-      await tx.planRequest.update({
-        where: { id: requestId },
-        data: { status: 'APROBADO' },
-      });
-    });
-
-    // Persist notification for provider
-    await this.prisma.adminNotification.create({
-      data: {
-        providerId: req.providerId,
-        type: 'PLAN_APROBADO',
-        title: `¡Plan ${req.plan} aprobado!`,
-        message: `¡Felicidades! Tu solicitud para el plan ${req.plan} ha sido aprobada. Ya puedes disfrutar de todos los beneficios.`,
-        isRead: false,
-        targetUserId: req.provider.userId,
-        targetProfileType: req.provider.type,
-      },
-    });
-
-    // Real-time notification to provider
-    this.eventsGateway.emitNotification({
-      type: 'PLAN_APROBADO',
-      title: `¡Plan ${req.plan} aprobado!`,
-      body: `¡Felicidades! Tu plan ${req.plan} ha sido aprobado.`,
-      targetUserId: req.provider.userId,
-      targetProfileType: req.provider.type,
-    });
-    this.eventsGateway.emitAdminEvent('PLAN_APPROVED', {
-      requestId,
-      plan: req.plan,
-    });
-
-    this.push.sendToUser(
-      req.provider.userId,
-      `¡Plan ${req.plan} aprobado!`,
-      `¡Felicidades! Tu plan ${req.plan} ha sido aprobado. Ya disfrutas de todos sus beneficios.`,
-      { type: 'PLAN_APROBADO', plan: req.plan },
-    );
-
-    return { success: true };
+    return this.payments.approvePlanRequest(requestId);
   }
 
   async rejectPlanRequest(requestId: number, reason?: string) {
-    const req = await this.prisma.planRequest.findUnique({
-      where: { id: requestId },
-      include: {
-        provider: { select: { userId: true, businessName: true, type: true } },
-      },
-    });
-    if (!req) throw new NotFoundException('Solicitud no encontrada');
-    if (req.status !== 'PENDIENTE')
-      throw new BadRequestException('La solicitud ya fue procesada');
-
-    await this.prisma.planRequest.update({
-      where: { id: requestId },
-      data: { status: 'RECHAZADO', reason: reason ?? null },
-    });
-
-    const msg = reason
-      ? `Tu solicitud de plan ${req.plan} fue rechazada. Motivo: ${reason}`
-      : `Tu solicitud de plan ${req.plan} fue rechazada.`;
-
-    await this.prisma.adminNotification.create({
-      data: {
-        providerId: req.providerId,
-        type: 'PLAN_RECHAZADO',
-        title: `Solicitud de plan ${req.plan} rechazada`,
-        message: msg,
-        isRead: false,
-        targetUserId: req.provider.userId,
-        targetProfileType: req.provider.type,
-      },
-    });
-
-    this.eventsGateway.emitNotification({
-      type: 'PLAN_RECHAZADO',
-      title: 'Solicitud rechazada',
-      body: msg,
-      targetUserId: req.provider.userId,
-      targetProfileType: req.provider.type,
-    });
-
-    this.push.sendToUser(
-      req.provider.userId,
-      `Solicitud de plan ${req.plan} rechazada`,
-      msg,
-      { type: 'PLAN_RECHAZADO', plan: req.plan },
-    );
-
-    return { success: true };
+    return this.payments.rejectPlanRequest(requestId, reason);
   }
 
   // ── REPORTES DE USUARIOS A PROVEEDORES ───────────────────

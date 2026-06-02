@@ -7,16 +7,15 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { clearProvidersCache as sharedClearProvidersCache } from './admin-shared.js';
 
 /**
  * CRUD de Categorías — primera pieza extraída del "god object" AdminService
  * (hito M1). AdminService delega aquí vía Facade; el controller no cambia.
  *
- * Mantiene su propia invalidación de caché (`clearProvidersCache`) para ser
- * autónomo: cada mutación de categoría debe propagarse a mobile/web de
- * inmediato. El helper se duplica a propósito porque AdminService aún lo usa
- * para otras mutaciones (proveedores, suscripciones); una futura extracción
- * de un `ProvidersCacheService` compartido lo unificará.
+ * Cada mutación de categoría invalida la caché de proveedores
+ * (`clearProvidersCache`, helper compartido en admin-shared) para propagar
+ * el cambio a mobile/web de inmediato.
  */
 @Injectable()
 export class AdminCategoriesService {
@@ -129,48 +128,8 @@ export class AdminCategoriesService {
     return { success: true, id };
   }
 
-  // ── HELPER: INVALIDAR CACHÉ DE PROVEEDORES ───────────────
-  // Borrado SELECTIVO por prefijo "providers_*" — ya no usamos flushAll
-  // para no purgar caches de otros módulos en el mismo Redis.
+  // Invalida la caché de proveedores (helper compartido en admin-shared).
   private async clearProvidersCache(): Promise<void> {
-    const PATTERN = 'providers_*';
-    try {
-      const cm = this.cacheManager;
-      const client =
-        cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client ?? null;
-
-      // Caso ideal: cliente Redis con SCAN (cache-manager-redis-yet expone uno).
-      if (client && typeof client.scanIterator === 'function') {
-        const toDelete: string[] = [];
-        for await (const key of client.scanIterator({
-          MATCH: PATTERN,
-          COUNT: 200,
-        })) {
-          toDelete.push(key as string);
-        }
-        if (toDelete.length > 0 && typeof client.del === 'function') {
-          await client.del(toDelete);
-        }
-        return;
-      }
-
-      // Fallback: KEYS (bloqueante, solo en datasets pequeños).
-      if (client && typeof client.keys === 'function') {
-        const keys: string[] = await client.keys(PATTERN);
-        if (keys.length > 0) {
-          if (typeof client.del === 'function') await client.del(keys);
-          else {
-            for (const k of keys) await cm.del?.(k);
-          }
-        }
-        return;
-      }
-
-      // Último recurso: si el cache-manager no expone client, intentamos
-      // borrar por nombre conocido (lista vacía → no-op). NO hacemos
-      // flushAll para evitar afectar caches no relacionadas.
-    } catch {
-      // Si la limpieza falla, el TTL natural (~30s) invalida la caché.
-    }
+    return sharedClearProvidersCache(this.cacheManager);
   }
 }
