@@ -24,11 +24,11 @@ class SettingsProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
-    final name    = profile?.businessName ?? auth.user?.fullName ?? 'Mi negocio';
+    final c = context.colors;
+    final name = profile?.businessName ?? auth.user?.fullName ?? 'Mi negocio';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
-    final type    = profile?.type == 'NEGOCIO' ? 'Negocio' : 'Profesional';
-    final plan    = profile?.subscription?.planLabel ?? 'Gratis';
+    final type = profile?.type == 'NEGOCIO' ? 'Negocio' : 'Profesional';
+    final plan = profile?.subscription?.planLabel ?? 'Gratis';
     // Use first provider photo, then user avatar, then initial fallback
     final avatarUrl = profile?.images.isNotEmpty == true
         ? profile!.images.first.url
@@ -58,7 +58,7 @@ class SettingsProfileHeader extends StatelessWidget {
                       fit: BoxFit.cover,
                       width: 60,
                       height: 60,
-                      errorWidget: (_, __, err) => Center(
+                      errorWidget: (_, _, err) => Center(
                         child: Text(
                           initial,
                           style: TextStyle(
@@ -98,7 +98,10 @@ class SettingsProfileHeader extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
@@ -110,14 +113,20 @@ class SettingsProfileHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         'Plan $plan',
-                        style: TextStyle(color: AppColors.primary, fontSize: 11),
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   ],

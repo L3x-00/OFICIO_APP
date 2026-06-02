@@ -23,14 +23,14 @@ class ProvidersProvider extends ChangeNotifier {
   ViewMode _viewMode = ViewMode.detalles;
 
   // Filtros activos
-  String? _selectedCategory;      // slug de subcategoría (hoja)
-  String? _expandedParentSlug;    // macrocategoría seleccionada en la barra
+  String? _selectedCategory; // slug de subcategoría (hoja)
+  String? _expandedParentSlug; // macrocategoría seleccionada en la barra
   String? _selectedAvailability;
-  String? _selectedType;          // null | 'PROFESSIONAL' | 'BUSINESS'
-  String? _sortBy;                // null | 'reviews' | 'availability' | 'rating'
-  String  _location = '';
-  bool    _verifiedOnly = true;   // true = solo verificados (default)
-  String  _searchQuery = '';
+  String? _selectedType; // null | 'PROFESSIONAL' | 'BUSINESS'
+  String? _sortBy; // null | 'reviews' | 'availability' | 'rating'
+  String _location = '';
+  bool _verifiedOnly = true; // true = solo verificados (default)
+  String _searchQuery = '';
   // Ubicación estructurada para filtrar por zona
   String? _department;
   String? _province;
@@ -49,6 +49,7 @@ class ProvidersProvider extends ChangeNotifier {
 
   // ── Stream GPS en tiempo real (gestionado por el Provider) ────
   StreamSubscription<Position>? _gpsSub;
+
   /// Etiqueta de provincia detectada por el stream GPS (sobreescribe
   /// la del filtro para mostrar la zona real al usuario en tiempo real).
   String? _liveProvince;
@@ -61,25 +62,25 @@ class ProvidersProvider extends ChangeNotifier {
   String? get liveDistrict => _liveDistrict;
 
   // ── Getters ───────────────────────────────────────────────
-  List<ProviderModel> get providers            => _providers;
-  List<CategoryModel> get categories           => _categories;
-  bool                get isLoading            => _isLoading;
-  bool                get hasError             => _hasError;
-  String              get errorMessage         => _errorMessage;
-  String?             get selectedCategory     => _selectedCategory;
-  String?             get expandedParentSlug   => _expandedParentSlug;
-  String?             get selectedAvailability => _selectedAvailability;
-  String?             get selectedType         => _selectedType;
-  String?             get sortBy               => _sortBy;
-  String              get location             => _location;
-  bool                get verifiedOnly         => _verifiedOnly;
-  String              get searchQuery          => _searchQuery;
-  String?             get department           => _department;
-  String?             get province             => _province;
-  String?             get district             => _district;
-  bool                get hasLocationFilter    => _department != null;
-  ViewMode            get viewMode             => _viewMode;
-  bool                get showCategoryFilter   => _showCategoryFilter;
+  List<ProviderModel> get providers => _providers;
+  List<CategoryModel> get categories => _categories;
+  bool get isLoading => _isLoading;
+  bool get hasError => _hasError;
+  String get errorMessage => _errorMessage;
+  String? get selectedCategory => _selectedCategory;
+  String? get expandedParentSlug => _expandedParentSlug;
+  String? get selectedAvailability => _selectedAvailability;
+  String? get selectedType => _selectedType;
+  String? get sortBy => _sortBy;
+  String get location => _location;
+  bool get verifiedOnly => _verifiedOnly;
+  String get searchQuery => _searchQuery;
+  String? get department => _department;
+  String? get province => _province;
+  String? get district => _district;
+  bool get hasLocationFilter => _department != null;
+  ViewMode get viewMode => _viewMode;
+  bool get showCategoryFilter => _showCategoryFilter;
 
   void setViewMode(ViewMode mode) {
     if (_viewMode == mode) return;
@@ -106,8 +107,7 @@ class ProvidersProvider extends ChangeNotifier {
       : _categories.where((c) => c.slug == _expandedParentSlug).firstOrNull;
 
   /// Devuelve las subcategorías del padre expandido (o lista vacía)
-  List<CategoryModel> get expandedChildren =>
-      expandedParent?.children ?? [];
+  List<CategoryModel> get expandedChildren => expandedParent?.children ?? [];
 
   /// true cuando hay algún filtro no-default activo (para el badge)
   /// 'rating' no cuenta porque es el orden por defecto del backend
@@ -127,8 +127,8 @@ class ProvidersProvider extends ChangeNotifier {
   static const _kLocDept = 'loc_department';
   static const _kLocProv = 'loc_province';
   static const _kLocDist = 'loc_district';
-  static const _kLocLat  = 'loc_last_lat';
-  static const _kLocLng  = 'loc_last_lng';
+  static const _kLocLat = 'loc_last_lat';
+  static const _kLocLng = 'loc_last_lng';
 
   Future<void> _persistLocation() async {
     final prefs = await SharedPreferences.getInstance();
@@ -139,6 +139,7 @@ class ProvidersProvider extends ChangeNotifier {
         await prefs.setString(key, value);
       }
     }
+
     await setOrRemove(_kLocDept, _department);
     await setOrRemove(_kLocProv, _province);
     await setOrRemove(_kLocDist, _district);
@@ -153,11 +154,11 @@ class ProvidersProvider extends ChangeNotifier {
 
   Future<void> _hydrateLocation() async {
     final prefs = await SharedPreferences.getInstance();
-    _department      = prefs.getString(_kLocDept);
-    _province        = prefs.getString(_kLocProv);
-    _district        = prefs.getString(_kLocDist);
-    _lastQueriedLat  = prefs.getDouble(_kLocLat);
-    _lastQueriedLng  = prefs.getDouble(_kLocLng);
+    _department = prefs.getString(_kLocDept);
+    _province = prefs.getString(_kLocProv);
+    _district = prefs.getString(_kLocDist);
+    _lastQueriedLat = prefs.getDouble(_kLocLat);
+    _lastQueriedLng = prefs.getDouble(_kLocLng);
   }
 
   // ── Carga inicial ─────────────────────────────────────────
@@ -176,8 +177,8 @@ class ProvidersProvider extends ChangeNotifier {
     await _hydrateLocation();
     if (_department == null && department != null) {
       _department = department;
-      _province   = province;
-      _district   = district;
+      _province = province;
+      _district = district;
     }
     await Future.wait([loadCategories(), loadProviders(), loadPreferences()]);
   }
@@ -199,17 +200,19 @@ class ProvidersProvider extends ChangeNotifier {
     notifyListeners();
 
     final result = await _repo.getProviders(
-      categorySlug:       _selectedCategory,
-      parentCategorySlug: _selectedCategory == null ? _expandedParentSlug : null,
-      availability:       _selectedAvailability,
-      verified:           _verifiedOnly ? null : false,
-      search:             _searchQuery.isNotEmpty ? _searchQuery : null,
-      type:               _selectedType,
-      sortBy:             _sortBy,
-      location:           _location.isNotEmpty ? _location : null,
-      department:         _department,
-      province:           _province,
-      district:           _district,
+      categorySlug: _selectedCategory,
+      parentCategorySlug: _selectedCategory == null
+          ? _expandedParentSlug
+          : null,
+      availability: _selectedAvailability,
+      verified: _verifiedOnly ? null : false,
+      search: _searchQuery.isNotEmpty ? _searchQuery : null,
+      type: _selectedType,
+      sortBy: _sortBy,
+      location: _location.isNotEmpty ? _location : null,
+      department: _department,
+      province: _province,
+      district: _district,
     );
 
     result.when(
@@ -230,8 +233,8 @@ class ProvidersProvider extends ChangeNotifier {
     bool verifiedOnly = true,
     String? sortBy,
     String location = '',
-    String? category,        // subcategoría hoja (desde el sheet)
-    String? parentCategory,  // macrocategoría (desde el sheet)
+    String? category, // subcategoría hoja (desde el sheet)
+    String? parentCategory, // macrocategoría (desde el sheet)
     // Ubicación estructurada (jerarquía peruana). Pasar `null` mantiene el
     // valor previo NO es lo deseado aquí: el sheet aplica una snapshot
     // completa, así que un `null` explícito significa "limpiar este nivel".
@@ -241,20 +244,22 @@ class ProvidersProvider extends ChangeNotifier {
     bool clearLocation = false,
   }) async {
     _selectedAvailability = availability;
-    _verifiedOnly         = verifiedOnly;
-    _sortBy               = sortBy;
-    _location             = location;
-    _selectedCategory     = category;
-    _expandedParentSlug   = category != null ? (parentCategory ?? _expandedParentSlug) : parentCategory;
+    _verifiedOnly = verifiedOnly;
+    _sortBy = sortBy;
+    _location = location;
+    _selectedCategory = category;
+    _expandedParentSlug = category != null
+        ? (parentCategory ?? _expandedParentSlug)
+        : parentCategory;
     if (clearLocation) {
       _department = null;
-      _province   = null;
-      _district   = null;
+      _province = null;
+      _district = null;
     } else {
       // Siempre actualizar los 3 niveles. null en prov/dist = búsqueda ampliada.
       _department = department;
-      _province   = province;
-      _district   = district;
+      _province = province;
+      _district = district;
     }
     // Persist el snapshot del sheet — el chip único del header debe
     // reflejar lo elegido aquí y mantenerlo tras reinicio.
@@ -267,14 +272,14 @@ class ProvidersProvider extends ChangeNotifier {
   /// Expande una macrocategoría en la barra de filtros y filtra por ella.
   Future<void> setParentCategory(String slug) async {
     _expandedParentSlug = slug;
-    _selectedCategory   = null;
+    _selectedCategory = null;
     await loadProviders();
   }
 
   /// Colapsa la vista de subcategorías y limpia el filtro de categoría.
   Future<void> collapseParent() async {
     _expandedParentSlug = null;
-    _selectedCategory   = null;
+    _selectedCategory = null;
     await loadProviders();
   }
 
@@ -316,8 +321,8 @@ class ProvidersProvider extends ChangeNotifier {
     String? district,
   }) async {
     _department = department;
-    _province   = province;
-    _district   = district;
+    _province = province;
+    _district = district;
     await _persistLocation();
     await loadProviders();
   }
@@ -333,14 +338,14 @@ class ProvidersProvider extends ChangeNotifier {
   }
 
   void clearFilters() {
-    _selectedCategory     = null;
-    _expandedParentSlug   = null;
+    _selectedCategory = null;
+    _expandedParentSlug = null;
     _selectedAvailability = null;
-    _selectedType         = null;
-    _sortBy               = null;
-    _location             = '';
-    _verifiedOnly         = true;
-    _searchQuery          = '';
+    _selectedType = null;
+    _sortBy = null;
+    _location = '';
+    _verifiedOnly = true;
+    _searchQuery = '';
     // No limpia _department/_province/_district — son del perfil del usuario
     loadProviders();
   }
@@ -350,8 +355,8 @@ class ProvidersProvider extends ChangeNotifier {
   /// hasta que se vuelva a detectar / elegir.
   Future<void> clearLocationFilter() async {
     _department = null;
-    _province   = null;
-    _district   = null;
+    _province = null;
+    _district = null;
     _lastQueriedLat = null;
     _lastQueriedLng = null;
     await _persistLocation();
@@ -375,17 +380,20 @@ class ProvidersProvider extends ChangeNotifier {
     required String? newProvince,
     required String? newDistrict,
   }) async {
-    if (newProvince == null || newDistrict == null || newDepartment == null) return;
+    if (newProvince == null || newDistrict == null || newDepartment == null)
+      return;
 
     final zoneChanged = newProvince != _province || newDistrict != _district;
-    final distFar = _lastQueriedLat != null &&
-        _haversineMeters(_lastQueriedLat!, _lastQueriedLng!, lat, lng) >= _reloadDistanceMeters;
+    final distFar =
+        _lastQueriedLat != null &&
+        _haversineMeters(_lastQueriedLat!, _lastQueriedLng!, lat, lng) >=
+            _reloadDistanceMeters;
 
     if (!zoneChanged && !distFar) return;
 
     _department = newDepartment;
-    _province   = newProvince;
-    _district   = newDistrict;
+    _province = newProvince;
+    _district = newDistrict;
     _lastQueriedLat = lat;
     _lastQueriedLng = lng;
 
@@ -397,13 +405,21 @@ class ProvidersProvider extends ChangeNotifier {
   }
 
   /// Haversine — retorna distancia en metros entre dos coordenadas.
-  static double _haversineMeters(double lat1, double lng1, double lat2, double lng2) {
+  static double _haversineMeters(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const r = 6371000.0;
     final dLat = _rad(lat2 - lat1);
     final dLng = _rad(lng2 - lng1);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(_rad(lat1)) * math.cos(_rad(lat2)) *
-        math.sin(dLng / 2) * math.sin(dLng / 2);
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_rad(lat1)) *
+            math.cos(_rad(lat2)) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
@@ -467,14 +483,22 @@ class ProvidersProvider extends ChangeNotifier {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
+        if (context == null || !context.mounted) return false;
         _showSnack(context, 'Permiso de ubicación denegado');
         return false;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
-      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
+      final geo = await GeocodingService.reverseGeocode(
+        pos.latitude,
+        pos.longitude,
+        force: true,
+      );
       if (geo == null) {
+        if (context == null || !context.mounted) return false;
         _showSnack(context, 'No pudimos detectar tu ubicación');
         return false;
       }
@@ -483,6 +507,7 @@ class ProvidersProvider extends ChangeNotifier {
       final d = dyn.findDepartmentCanonical(geo.department);
       if (d == null) {
         // No matchea ni catálogo estático ni extras — ofrecer añadir.
+        if (context == null || !context.mounted) return false;
         _offerAddToCatalog(
           context: context,
           dept: geo.department,
@@ -491,11 +516,12 @@ class ProvidersProvider extends ChangeNotifier {
         );
         return false;
       }
-      final p  = dyn.findProvinceCanonical(d, geo.province);
+      final p = dyn.findProvinceCanonical(d, geo.province);
       final di = dyn.findDistrictCanonical(p, geo.district);
       await setUserLocation(department: d, province: p, district: di);
       return true;
     } catch (_) {
+      if (context == null || !context.mounted) return false;
       _showSnack(context, 'No se pudo obtener la ubicación');
       return false;
     }
@@ -526,36 +552,45 @@ class ProvidersProvider extends ChangeNotifier {
 
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        duration: const Duration(seconds: 8),
-        content: Text(
-          'Tu ubicación ($label) no está en el catálogo.',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 8),
+          content: Text(
+            'Tu ubicación ($label) no está en el catálogo.',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          action: (dept != null && dept.isNotEmpty)
+              ? SnackBarAction(
+                  label: 'Añadir',
+                  onPressed: () => _suggestAndApply(context, dept, prov, dist),
+                )
+              : null,
         ),
-        action: (dept != null && dept.isNotEmpty)
-            ? SnackBarAction(
-                label: 'Añadir',
-                onPressed: () => _suggestAndApply(context, dept, prov, dist),
-              )
-            : null,
-      ));
+      );
   }
 
-  Future<void> _suggestAndApply(BuildContext context, String dept, String? prov, String? dist) async {
+  Future<void> _suggestAndApply(
+    BuildContext context,
+    String dept,
+    String? prov,
+    String? dist,
+  ) async {
     try {
       final created = await DynamicLocations.instance.suggest(
         department: dept,
-        province:   prov,
-        district:   dist,
+        province: prov,
+        district: dist,
       );
       await setUserLocation(
         department: created.department,
-        province:   created.province,
-        district:   created.district,
+        province: created.province,
+        district: created.district,
       );
+      if (!context.mounted) return;
       _showSnack(context, 'Ubicación añadida al catálogo');
     } catch (e) {
+      if (!context.mounted) return;
       _showSnack(context, 'No se pudo añadir: $e');
     }
   }
@@ -579,12 +614,16 @@ class ProvidersProvider extends ChangeNotifier {
     }
 
     const settings = LocationSettings(
-      accuracy:       LocationAccuracy.medium,
+      accuracy: LocationAccuracy.medium,
       distanceFilter: 100, // metros
     );
 
-    _gpsSub = Geolocator.getPositionStream(locationSettings: settings)
-        .listen(_onStreamPosition, onError: (_) {/* silent fallback */});
+    _gpsSub = Geolocator.getPositionStream(locationSettings: settings).listen(
+      _onStreamPosition,
+      onError: (_) {
+        /* silent fallback */
+      },
+    );
   }
 
   /// Detiene el stream GPS y libera recursos. Llamar en dispose() y al
@@ -595,7 +634,11 @@ class ProvidersProvider extends ChangeNotifier {
   }
 
   Future<void> _onStreamPosition(Position pos) async {
-    final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
+    final geo = await GeocodingService.reverseGeocode(
+      pos.latitude,
+      pos.longitude,
+      force: true,
+    );
     if (geo == null) return;
 
     // 1. Actualiza el label de la pill (sin recargar el backend). Provincia
@@ -611,11 +654,11 @@ class ProvidersProvider extends ChangeNotifier {
 
     // 2. Si la zona cambió o la distancia >= 2 km, recarga el backend.
     await updateLocationFromGps(
-      lat:           pos.latitude,
-      lng:           pos.longitude,
+      lat: pos.latitude,
+      lng: pos.longitude,
       newDepartment: geo.department,
-      newProvince:   geo.province,
-      newDistrict:   geo.district,
+      newProvince: geo.province,
+      newDistrict: geo.district,
     );
   }
 

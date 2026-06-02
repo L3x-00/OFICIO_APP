@@ -106,8 +106,9 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
       source: source,
       imageQuality: 75,
     );
-    if (picked != null && mounted)
+    if (picked != null && mounted) {
       setState(() => _replyPhoto = File(picked.path));
+    }
   }
 
   Future<void> _sendReply() async {

@@ -32,12 +32,9 @@ class AppNetworkImage extends StatelessWidget {
         fit: fit,
         width: width,
         height: height,
-        errorBuilder: errorWidget != null
-            ? (_, _e, _s) => errorWidget!
-            : null,
+        errorBuilder: errorWidget != null ? (_, e, s) => errorWidget! : null,
         loadingBuilder: placeholder != null
-            ? (_, child, progress) =>
-                progress == null ? child : placeholder!
+            ? (_, child, progress) => progress == null ? child : placeholder!
             : null,
       );
     }
@@ -46,8 +43,8 @@ class AppNetworkImage extends StatelessWidget {
       fit: fit,
       width: width,
       height: height,
-      placeholder: placeholder != null ? (_, _u) => placeholder! : null,
-      errorWidget: errorWidget != null ? (_, _u, _e) => errorWidget! : null,
+      placeholder: placeholder != null ? (_, u) => placeholder! : null,
+      errorWidget: errorWidget != null ? (_, u, e) => errorWidget! : null,
     );
   }
 }

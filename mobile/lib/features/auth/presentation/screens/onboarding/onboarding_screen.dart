@@ -41,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ],
       ),
     );
-    if (confirmed == true && mounted) {
+    if (confirmed == true && context.mounted) {
       await context.read<AuthProvider>().logout();
     }
   }
@@ -121,7 +121,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (_selectedRole == null || _isNavigating) ? null : _continue,
+                    onPressed: (_selectedRole == null || _isNavigating)
+                        ? null
+                        : _continue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       disabledBackgroundColor: c.bgCard,
@@ -161,14 +163,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           if (result == null) return;
           await auth.updateLocation(
             department: result.department,
-            province:   result.province,
-            district:   result.district,
+            province: result.province,
+            district: result.district,
           );
           if (!mounted) return;
           context.read<ProvidersProvider>().setUserLocation(
             department: result.department,
-            province:   result.province,
-            district:   result.district,
+            province: result.province,
+            district: result.district,
           );
         }
       }
@@ -232,10 +234,14 @@ class _RoleOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : c.bgCard,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : c.bgCard,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? AppColors.primary.withValues(alpha: 0.6) : c.border,
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.6)
+                : c.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),

@@ -23,7 +23,7 @@ class OfferPostsRepository {
     String? type,
   }) async {
     final data = FormData.fromMap({
-      'title':       title,
+      'title': title,
       'description': description,
       if (price != null) 'price': price.toString(),
       if (photoPath != null)
@@ -53,14 +53,17 @@ class OfferPostsRepository {
     bool? resetDuration,
   }) async {
     final data = FormData.fromMap({
-      if (title       != null) 'title':       title,
-      if (description != null) 'description': description,
-      if (price       != null) 'price':       price.toString(),
+      'title': ?title,
+      'description': ?description,
+      if (price != null) 'price': price.toString(),
       if (resetDuration != null) 'resetDuration': resetDuration.toString(),
       if (photoPath != null)
         'photo': await MultipartFile.fromFile(photoPath, filename: 'offer.jpg'),
     });
-    final response = await _dio.patch('/providers/me/offers/$offerId', data: data);
+    final response = await _dio.patch(
+      '/providers/me/offers/$offerId',
+      data: data,
+    );
     return OfferPostModel.fromJson(response.data as Map<String, dynamic>);
   }
 }

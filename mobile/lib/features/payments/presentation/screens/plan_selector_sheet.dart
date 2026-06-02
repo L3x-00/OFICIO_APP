@@ -8,21 +8,29 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../payments/presentation/providers/payments_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
-const _kPlanPrices = {
-  'ESTANDAR': 19.90,
-  'PREMIUM':  39.90,
-};
+const _kPlanPrices = {'ESTANDAR': 19.90, 'PREMIUM': 39.90};
 
 const _kPlanFeatures = {
-  'GRATIS':   ['3 fotos', '3 servicios', 'Listado básico'],
-  'ESTANDAR': ['6 fotos', '15 servicios', 'Prioridad media', 'Badge verificado'],
-  'PREMIUM':  ['10 fotos', 'Servicios ilimitados', 'Máxima prioridad', 'Badge Premium', 'Subastas'],
+  'GRATIS': ['3 fotos', '3 servicios', 'Listado básico'],
+  'ESTANDAR': [
+    '6 fotos',
+    '15 servicios',
+    'Prioridad media',
+    'Badge verificado',
+  ],
+  'PREMIUM': [
+    '10 fotos',
+    'Servicios ilimitados',
+    'Máxima prioridad',
+    'Badge Premium',
+    'Subastas',
+  ],
 };
 
 const _kPlanLabels = {
-  'GRATIS':   'Gratis',
+  'GRATIS': 'Gratis',
   'ESTANDAR': 'Estándar',
-  'PREMIUM':  'Premium',
+  'PREMIUM': 'Premium',
 };
 
 class PlanSelectorSheet extends StatelessWidget {
@@ -46,8 +54,8 @@ class PlanSelectorSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
-    final dash    = context.watch<DashboardProvider>();
+    final c = context.colors;
+    final dash = context.watch<DashboardProvider>();
     final current = dash.profile?.subscription?.plan ?? 'GRATIS';
 
     return DraggableScrollableSheet(
@@ -65,7 +73,8 @@ class PlanSelectorSheet extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
               child: Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: c.border,
                     borderRadius: BorderRadius.circular(2),
@@ -77,17 +86,25 @@ class PlanSelectorSheet extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
               child: Row(
                 children: [
-                  const Icon(Icons.rocket_launch_rounded,
-                      color: AppColors.amber, size: 22),
+                  const Icon(
+                    Icons.rocket_launch_rounded,
+                    color: AppColors.amber,
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
-                  Text('Elige tu plan',
-                      style: TextStyle(
-                          color: c.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800)),
+                  Text(
+                    'Elige tu plan',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   const Spacer(),
-                  Text('Plan actual: ${_kPlanLabels[current] ?? current}',
-                      style: TextStyle(color: c.textMuted, fontSize: 12)),
+                  Text(
+                    'Plan actual: ${_kPlanLabels[current] ?? current}',
+                    style: TextStyle(color: c.textMuted, fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -109,9 +126,9 @@ class PlanSelectorSheet extends StatelessWidget {
                   const SizedBox(height: 12),
                   // ── Planes comprables ────────────────────────
                   ..._kPlanPrices.entries.map((entry) {
-                    final plan     = entry.key;
-                    final price    = entry.value;
-                    final label    = _kPlanLabels[plan]!;
+                    final plan = entry.key;
+                    final price = entry.value;
+                    final label = _kPlanLabels[plan]!;
                     final features = _kPlanFeatures[plan] ?? [];
                     final isCurrent = plan == current;
                     final isPremium = plan == 'PREMIUM';
@@ -172,9 +189,7 @@ class _PlanCard extends StatelessWidget {
         color: c.bg,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isCurrent
-              ? planColor.withValues(alpha: 0.6)
-              : c.border,
+          color: isCurrent ? planColor.withValues(alpha: 0.6) : c.border,
           width: isCurrent ? 2 : 1,
         ),
       ),
@@ -186,40 +201,53 @@ class _PlanCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: planColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: planColor.withValues(alpha: 0.4)),
                   ),
-                  child: Text(label,
-                      style: TextStyle(
-                          color: planColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700)),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: planColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 if (isCurrent) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('Plan actual',
-                        style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      'Plan actual',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
                 const Spacer(),
                 Text(
                   isFree ? 'Gratis' : 'S/ ${price!.toStringAsFixed(2)}/mes',
                   style: TextStyle(
-                      color: c.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800),
+                    color: c.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
@@ -227,21 +255,35 @@ class _PlanCard extends StatelessWidget {
             Wrap(
               spacing: 6,
               runSpacing: 4,
-              children: features.map((f) => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.check_circle_rounded, size: 13, color: planColor),
-                  const SizedBox(width: 4),
-                  Text(f, style: TextStyle(color: c.textSecondary, fontSize: 12)),
-                ],
-              )).toList(),
+              children: features
+                  .map(
+                    (f) => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 13,
+                          color: planColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          f,
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  .toList(),
             ),
-                        if (!isFree) ...[
+            if (!isFree) ...[
               const SizedBox(height: 14),
 
               // ── Botón MercadoPago ───────────────────────
               Consumer<PaymentsProvider>(
-                builder: (_, payProv, __) {
+                builder: (_, payProv, _) {
                   return SizedBox(
                     width: double.infinity,
                     height: 44,
@@ -255,10 +297,11 @@ class _PlanCard extends StatelessWidget {
                               // providerType: el perfil al que se aplica el plan.
                               // activeProfileType es 'OFICIO' o 'NEGOCIO' según
                               // el panel del que el user abrió el plan selector.
-                              final providerType = auth.activeProfileType ?? 'OFICIO';
+                              final providerType =
+                                  auth.activeProfileType ?? 'OFICIO';
 
                               await payProv.payWithMercadoPago(
-                                plan:         planKey,
+                                plan: planKey,
                                 providerType: providerType,
                               );
 
@@ -274,11 +317,13 @@ class _PlanCard extends StatelessWidget {
                                 // notifica pero esto cubre desconexiones.
                                 if (context.mounted) {
                                   // Capturar el read antes del await async
-                                  final dashProv = context.read<DashboardProvider>();
+                                  final dashProv = context
+                                      .read<DashboardProvider>();
                                   await payProv.pollMercadoPagoCompletion(
                                     refresh: () => dashProv.loadDashboard(),
                                     currentPlan: () =>
-                                        dashProv.profile?.subscription?.plan ?? 'GRATIS',
+                                        dashProv.profile?.subscription?.plan ??
+                                        'GRATIS',
                                   );
                                 }
                               } else if (payProv.error != null) {
@@ -292,27 +337,32 @@ class _PlanCard extends StatelessWidget {
                             },
                       icon: payProv.mpLoading
                           ? const SizedBox(
-                              width: 16, height: 16,
+                              width: 16,
+                              height: 16,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Icon(Icons.payment_rounded, size: 18),
                       label: Text(
                         payProv.mpLoading
                             ? 'Conectando...'
                             : isCurrent
-                                ? 'Plan actual'
-                                : 'Pagar con tarjeta o PagoEfectivo',
+                            ? 'Plan actual'
+                            : 'Pagar con tarjeta o PagoEfectivo',
                         style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isCurrent
                             ? null
                             : const Color(0xFF009EE3),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   );
@@ -348,23 +398,29 @@ class _PlanCard extends StatelessWidget {
                             plan: planKey,
                           );
                           if (ok == true && context.mounted) {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(
-                              content: Text('Comprobante enviado. '
-                                  'Te notificaremos cuando se valide.'),
-                              backgroundColor: Color(0xFF6D1B7B),
-                            ));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Comprobante enviado. '
+                                  'Te notificaremos cuando se valide.',
+                                ),
+                                backgroundColor: Color(0xFF6D1B7B),
+                              ),
+                            );
                           }
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isCurrent ? null : AppColors.amber,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
                     isCurrent ? 'Plan actual' : 'Pagar con Yape',
                     style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.w700),
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),

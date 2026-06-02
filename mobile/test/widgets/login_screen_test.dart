@@ -8,7 +8,7 @@
 ///   • Cuando `auth.isLoading=true`, el botón muestra spinner y
 ///     `onPressed` es null (no se puede re-disparar el submit).
 ///   • Smoke: el widget se monta sin lanzar excepciones bajo MaterialApp
-///     + theme + ChangeNotifierProvider<AuthProvider>.
+///     + theme + `ChangeNotifierProvider<AuthProvider>`.
 library;
 
 import 'package:flutter/material.dart';
@@ -52,7 +52,9 @@ Widget _harness({required AuthProvider auth, AuthMode mode = AuthMode.login}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<AuthProvider>.value(value: auth),
-      ChangeNotifierProvider<RegistrationProvider>(create: (_) => RegistrationProvider()),
+      ChangeNotifierProvider<RegistrationProvider>(
+        create: (_) => RegistrationProvider(),
+      ),
       ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
     ],
     child: MaterialApp(
@@ -67,93 +69,107 @@ void main() {
     installTestBackend();
   });
 
-  testWidgets('Modo LOGIN: muestra "Ingresar" y NO muestra el campo "Nombre"', (tester) async {
+  testWidgets('Modo LOGIN: muestra "Ingresar" y NO muestra el campo "Nombre"', (
+    tester,
+  ) async {
     final auth = _FakeAuth();
     await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
     await tester.pump();
 
     expect(find.text('Ingresar'), findsOneWidget);
     // Campos exclusivos del modo register no deben aparecer.
-    expect(find.text('Nombre'),               findsNothing);
-    expect(find.text('Apellido'),             findsNothing);
+    expect(find.text('Nombre'), findsNothing);
+    expect(find.text('Apellido'), findsNothing);
     expect(find.text('Confirmar contraseña'), findsNothing);
     // Login muestra "Olvidaste tu contraseña?".
     expect(find.text('¿Olvidaste tu contraseña?'), findsOneWidget);
     // Y muestra el switch a registro.
-    expect(find.text('¿No tienes cuenta? '),  findsOneWidget);
-    expect(find.text('Regístrate gratis'),    findsOneWidget);
+    expect(find.text('¿No tienes cuenta? '), findsOneWidget);
+    expect(find.text('Regístrate gratis'), findsOneWidget);
   });
 
-  testWidgets('Modo REGISTER: muestra Nombre, Apellido, Confirmar contraseña + botón "Crear mi cuenta"', (tester) async {
-    final auth = _FakeAuth();
-    await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.register));
-    await tester.pump();
+  testWidgets(
+    'Modo REGISTER: muestra Nombre, Apellido, Confirmar contraseña + botón "Crear mi cuenta"',
+    (tester) async {
+      final auth = _FakeAuth();
+      await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.register));
+      await tester.pump();
 
-    expect(find.text('Crear mi cuenta'),       findsOneWidget);
-    expect(find.text('Nombre'),                findsOneWidget);
-    expect(find.text('Apellido'),              findsOneWidget);
-    expect(find.text('Confirmar contraseña'),  findsOneWidget);
-    // En register NO debe aparecer "¿Olvidaste tu contraseña?".
-    expect(find.text('¿Olvidaste tu contraseña?'), findsNothing);
-    // Y muestra el switch a login.
-    expect(find.text('¿Ya tienes cuenta? '),   findsOneWidget);
-    expect(find.text('Inicia sesión'),         findsOneWidget);
-  });
+      expect(find.text('Crear mi cuenta'), findsOneWidget);
+      expect(find.text('Nombre'), findsOneWidget);
+      expect(find.text('Apellido'), findsOneWidget);
+      expect(find.text('Confirmar contraseña'), findsOneWidget);
+      // En register NO debe aparecer "¿Olvidaste tu contraseña?".
+      expect(find.text('¿Olvidaste tu contraseña?'), findsNothing);
+      // Y muestra el switch a login.
+      expect(find.text('¿Ya tienes cuenta? '), findsOneWidget);
+      expect(find.text('Inicia sesión'), findsOneWidget);
+    },
+  );
 
-  testWidgets('Cuando auth.isLoading=true, el botón principal muestra spinner y NO es tappable', (tester) async {
-    final auth = _FakeAuth();
-    auth.setLoading(true);
+  testWidgets(
+    'Cuando auth.isLoading=true, el botón principal muestra spinner y NO es tappable',
+    (tester) async {
+      final auth = _FakeAuth();
+      auth.setLoading(true);
 
-    await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
-    await tester.pump();
+      await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
+      await tester.pump();
 
-    // Hay UN CircularProgressIndicator visible: el del botón principal.
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Hay UN CircularProgressIndicator visible: el del botón principal.
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    // El botón principal — el ElevatedButton que envuelve el spinner —
-    // tiene onPressed=null cuando isLoading.
-    final btn = tester.widget<ElevatedButton>(
-      find.ancestor(
-        of:      find.byType(CircularProgressIndicator),
+      // El botón principal — el ElevatedButton que envuelve el spinner —
+      // tiene onPressed=null cuando isLoading.
+      final btn = tester.widget<ElevatedButton>(
+        find.ancestor(
+          of: find.byType(CircularProgressIndicator),
+          matching: find.byType(ElevatedButton),
+        ),
+      );
+      expect(btn.onPressed, isNull);
+    },
+  );
+
+  testWidgets(
+    'Cuando NO está loading, el botón principal SÍ es tappable (onPressed != null)',
+    (tester) async {
+      final auth = _FakeAuth();
+      await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
+      await tester.pump();
+
+      // No hay spinner del botón principal.
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      // El botón "Ingresar" tiene onPressed != null.
+      final btnFinder = find.ancestor(
+        of: find.text('Ingresar'),
         matching: find.byType(ElevatedButton),
-      ),
-    );
-    expect(btn.onPressed, isNull);
-  });
+      );
+      expect(btnFinder, findsOneWidget);
+      final btn = tester.widget<ElevatedButton>(btnFinder);
+      expect(btn.onPressed, isNotNull);
+    },
+  );
 
-  testWidgets('Cuando NO está loading, el botón principal SÍ es tappable (onPressed != null)', (tester) async {
-    final auth = _FakeAuth();
-    await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
-    await tester.pump();
+  testWidgets(
+    'Switch login → register en runtime cambia el contenido visible',
+    (tester) async {
+      final auth = _FakeAuth();
+      await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
+      await tester.pump();
 
-    // No hay spinner del botón principal.
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('Ingresar'), findsOneWidget);
 
-    // El botón "Ingresar" tiene onPressed != null.
-    final btnFinder = find.ancestor(
-      of:      find.text('Ingresar'),
-      matching: find.byType(ElevatedButton),
-    );
-    expect(btnFinder, findsOneWidget);
-    final btn = tester.widget<ElevatedButton>(btnFinder);
-    expect(btn.onPressed, isNotNull);
-  });
+      // "Regístrate gratis" puede quedar debajo del fold del ScrollView —
+      // hacemos scroll explícito para que sea hit-testable.
+      await tester.ensureVisible(find.text('Regístrate gratis'));
+      await tester.tap(find.text('Regístrate gratis'));
+      // La animación de fade dura ~300ms; settle espera a que termine
+      // y descarta cualquier otra micro-animación interna.
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-  testWidgets('Switch login → register en runtime cambia el contenido visible', (tester) async {
-    final auth = _FakeAuth();
-    await tester.pumpWidget(_harness(auth: auth, mode: AuthMode.login));
-    await tester.pump();
-
-    expect(find.text('Ingresar'), findsOneWidget);
-
-    // "Regístrate gratis" puede quedar debajo del fold del ScrollView —
-    // hacemos scroll explícito para que sea hit-testable.
-    await tester.ensureVisible(find.text('Regístrate gratis'));
-    await tester.tap(find.text('Regístrate gratis'));
-    // La animación de fade dura ~300ms; settle espera a que termine
-    // y descarta cualquier otra micro-animación interna.
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-
-    expect(find.text('Crear mi cuenta'), findsOneWidget);
-  });
+      expect(find.text('Crear mi cuenta'), findsOneWidget);
+    },
+  );
 }

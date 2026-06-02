@@ -298,7 +298,7 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
         ),
       ),
     );
-    if (picked == null || !mounted) return;
+    if (picked == null || !context.mounted) return;
     await _openEditor(context, picked, initial: '');
   }
 
