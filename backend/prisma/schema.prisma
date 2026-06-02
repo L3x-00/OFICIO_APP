@@ -56,6 +56,8 @@ model User {
   serviceRequests  ServiceRequest[]
   penalty          UserPenalty?
 
+  @@index([role, isActive])
+  @@index([department, province])
   @@map("users")
 }
 
