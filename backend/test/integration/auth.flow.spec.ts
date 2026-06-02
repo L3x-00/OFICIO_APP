@@ -18,6 +18,8 @@
 
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../../src/auth/auth.service.js';
+import { AuthRegistrationService } from '../../src/auth/services/auth-registration.service.js';
+import { AuthAccountService } from '../../src/auth/services/auth-account.service.js';
 import {
   getTestPrisma,
   disconnectTestPrisma,
@@ -44,15 +46,27 @@ function buildAuthService(prisma: PrismaService) {
   const firebase = { verifyIdToken: jest.fn().mockResolvedValue(undefined) };
   const minio = { uploadFile: jest.fn().mockResolvedValue('') };
 
-  const service = new AuthService(
+  // Sub-servicios extraídos del god object (patrón Facade): AuthService
+  // delega registro/OTP y gestión de cuenta en ellos.
+  const registration = new AuthRegistrationService(
     prisma,
     jwt,
     config,
     events as any,
     email as any,
-    firebase as any,
     minio as any,
     cache as any,
+  );
+  const account = new AuthAccountService(prisma, config, email as any);
+
+  const service = new AuthService(
+    prisma,
+    jwt,
+    config,
+    events as any,
+    firebase as any,
+    registration,
+    account,
   );
   return { service, jwt, events, cache, email };
 }

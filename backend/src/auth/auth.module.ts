@@ -3,6 +3,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service.js';
+import { AuthRegistrationService } from './services/auth-registration.service.js';
+import { AuthAccountService } from './services/auth-account.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { JwtAuthGuard } from './jwt.guard.js';
@@ -30,7 +32,14 @@ import { CacheModule } from '@nestjs/cache-manager';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  providers: [
+    AuthService,
+    AuthRegistrationService,
+    AuthAccountService,
+    JwtStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
   controllers: [AuthController],
   exports: [JwtAuthGuard, JwtStrategy, RolesGuard, PassportModule],
 })
