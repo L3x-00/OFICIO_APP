@@ -3,8 +3,8 @@ dist
 .env
 /src/generated/client
 *.log
-AUDITORÍA_TÉCNICA.md
+/AUDITORÍA_TÉCNICA.md
 CLAUDE.md
-ARQUITERCTURA_DESPLIEGUE.md
+/ARQUITECTURA_DESPLIEGUE.md
 errores.md
-ESTADO_ACTUAL.md
+/ESTADO_ACTUAL.md
