@@ -13,6 +13,13 @@ class AiAssistantProvider extends ChangeNotifier {
   /// panel — contextualiza las respuestas. Null para el rol cliente.
   final String? providerType;
 
+  /// True si el chat se abrió desde el panel del proveedor.
+  bool get _isProviderContext => providerType != null;
+
+  /// Contexto/pantalla que se envía al backend para forzar la Estrategia de
+  /// Contexto: 'PROVIDER' desde el panel del proveedor, 'CLIENT' en cliente.
+  String get context => _isProviderContext ? 'PROVIDER' : 'CLIENT';
+
   /// Máximo de turnos de historial que el cliente adjunta como respaldo
   /// (el backend recupera el historial real de BD; esto es fallback).
   static const int _historyCap = 8;
@@ -36,16 +43,18 @@ class AiAssistantProvider extends ChangeNotifier {
   /// True cuando el backend devolvió 401: la UI debe avisar y cerrar sesión.
   bool get sessionExpired => _sessionExpired;
 
-  /// Inserta el saludo inicial de Ofi (solo una vez).
+  /// Inserta el saludo inicial de Ofi (solo una vez). El saludo cambia según
+  /// el contexto: negocio (panel proveedor) vs cliente.
   void seedGreeting() {
     if (_messages.isNotEmpty) return;
-    _messages.add(
-      AiMessageModel.greeting(
-        '¡Hola! 👋 Soy Ofi, tu asistente de Servi. '
-        'Puedo ayudarte a encontrar proveedores, explicarte cómo funciona '
-        'la app y más. ¿En qué te ayudo?',
-      ),
-    );
+    final greeting = _isProviderContext
+        ? '¡Hola! 👋 Soy Ofi, tu asistente de negocio en Servi. '
+              'Puedo ayudarte a mejorar tu visibilidad, entender tu plan y '
+              'revisar tus estadísticas. ¿En qué te ayudo?'
+        : '¡Hola! 👋 Soy Ofi, tu asistente de Servi. '
+              'Puedo ayudarte a encontrar proveedores, explicarte cómo funciona '
+              'la app y más. ¿En qué te ayudo?';
+    _messages.add(AiMessageModel.greeting(greeting));
     notifyListeners();
   }
 
@@ -64,6 +73,7 @@ class AiAssistantProvider extends ChangeNotifier {
         message: trimmed,
         history: _recentHistory(),
         providerType: providerType,
+        context: context,
       );
       _messages.add(AiMessageModel.ofi(reply.reply));
     } on SessionExpiredException catch (e) {

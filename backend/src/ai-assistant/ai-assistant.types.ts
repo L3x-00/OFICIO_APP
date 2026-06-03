@@ -81,6 +81,18 @@ export interface AiChatResult {
 export interface AiRequestMeta {
   ip?: string;
   userAgent?: string;
+  /**
+   * Origen de la app que hace el request (header `X-App-Origin`). `'admin'`
+   * cuando viene del panel administrativo → habilita la persona ADMIN (solo
+   * si además el rol verificado es ADMIN).
+   */
+  appOrigin?: string;
+  /**
+   * Contexto/pantalla activa declarado por la app cliente (body `context`):
+   * `'CLIENT'` | `'PROVIDER'`. Fuerza esa persona por encima del rol del JWT.
+   * `'ADMIN'` no se honra desde aquí (anti-escalada).
+   */
+  appContext?: string;
 }
 
 /** Intención detectada para la política de caché (Fase 4). */

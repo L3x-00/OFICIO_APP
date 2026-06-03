@@ -29,6 +29,10 @@ class AiAssistantScreen extends StatelessWidget {
     }
 
     return ChangeNotifierProvider(
+      // Key por contexto: si se cambia de pestaña (Cliente ↔ Panel Proveedor)
+      // y la pantalla se reconstruye con otro `providerType`, el provider se
+      // RECREA → saludo y contexto correctos para el rol activo.
+      key: ValueKey('ai-ctx-${providerType ?? 'client'}'),
       create: (ctx) {
         final p = AiAssistantProvider(providerType: providerType);
         p.attachAuth(ctx.read<AuthProvider>()); // independencia de cuentas

@@ -2,11 +2,13 @@
  * INTEGRATION — Orquestación multi-tool (cadenas reales de Function Calling).
  *
  * Gemini mockeado (ESM) para guionar las rondas de function-calling; el resto
- * REAL: el loop de `callGemini`, `buildActiveTools` (rol ∩ flag), `executeTool`
- * y AiDataAccessService contra Postgres. NO se valida texto generado.
+ * REAL: el loop de `callGemini`, `buildActiveTools` (persona ∩ flag),
+ * `executeTool` y AiDataAccessService contra Postgres. NO se valida texto.
  *
+ * Las cadenas usan tools de la persona PROVIDER (get_my_context,
+ * get_subscription_status, get_provider_stats, recommend_actions):
  *   1. Cadena doble  (get_my_context → recommend_actions).
- *   2. Cadena triple (search_providers → get_provider_stats → recommend_actions).
+ *   2. Cadena triple (get_subscription_status → get_provider_stats → recommend_actions).
  *   3. Anti-loop     (4 rondas seguidas → corte + FORCED_REPHRASE_MESSAGE).
  *   4. Tool OFF      (search_providers apagada → no se declara ni se ejecuta).
  *   5. Tool timeout  (query >3s → withTimeout corta → el flujo continúa).
@@ -152,7 +154,9 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
   }
 
   it('Case 1: cadena doble (get_my_context → recommend_actions) — ambas ejecutadas, en orden, reinyectadas', async () => {
-    const u = await createTestUser(prisma, { role: 'USUARIO', coins: 50 });
+    // get_my_context + recommend_actions son tools de la persona PROVIDER.
+    const u = await createTestUser(prisma, { role: 'PROVEEDOR', coins: 50 });
+    await createTestProvider(prisma, u.id, { businessName: 'Negocio Case1' });
     const ctxSpy = jest.spyOn(data, 'getMyContextSafe');
     const recSpy = jest.spyOn(data, 'recommendActionsSafe');
 
@@ -162,7 +166,7 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
       .mockResolvedValueOnce(fnText());
 
     const res = await build().chat(
-      { userId: u.id, role: 'USUARIO', providerType: null },
+      { userId: u.id, role: 'PROVEEDOR', providerType: null },
       'qué hago ahora',
     );
 
@@ -187,19 +191,19 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
     expect(call3).toContain('recommend_actions');
   });
 
-  it('Case 2: cadena triple (search_providers → get_provider_stats → recommend_actions) — las 3 ejecutadas', async () => {
+  it('Case 2: cadena triple (get_subscription_status → get_provider_stats → recommend_actions) — las 3 ejecutadas', async () => {
     const u = await createTestUser(prisma, { role: 'PROVEEDOR', coins: 10 });
     await createTestProvider(prisma, u.id, {
       categoryName: 'Electricistas',
       businessName: 'Electricistas Test',
       averageRating: 4.2,
     });
-    const searchSpy = jest.spyOn(data, 'searchProvidersSafe');
+    const subSpy = jest.spyOn(data, 'getSubscriptionStatusSafe');
     const statsSpy = jest.spyOn(data, 'getProviderStatsSafe');
     const recSpy = jest.spyOn(data, 'recommendActionsSafe');
 
     mockGenerateContent
-      .mockResolvedValueOnce(fnCall('search_providers', { category: 'electricista' }))
+      .mockResolvedValueOnce(fnCall('get_subscription_status'))
       .mockResolvedValueOnce(fnCall('get_provider_stats'))
       .mockResolvedValueOnce(fnCall('recommend_actions'))
       .mockResolvedValueOnce(fnText());
@@ -211,11 +215,11 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
 
     expect(res.meta.blocked).toBe(false);
     expect(mockGenerateContent).toHaveBeenCalledTimes(4); // 3 tools + cierre
-    expect(searchSpy).toHaveBeenCalledTimes(1);
+    expect(subSpy).toHaveBeenCalledTimes(1);
     expect(statsSpy).toHaveBeenCalledTimes(1);
     expect(recSpy).toHaveBeenCalledTimes(1);
     // Orden encadenado.
-    expect(searchSpy.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(subSpy.mock.invocationCallOrder[0]).toBeLessThan(
       statsSpy.mock.invocationCallOrder[0],
     );
     expect(statsSpy.mock.invocationCallOrder[0]).toBeLessThan(
@@ -293,4 +297,51 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
     expect(elapsed).toBeGreaterThanOrEqual(2800);
     expect(elapsed).toBeLessThan(4800);
   }, 15000);
+
+  it('Case 6 (admin): X-App-Origin admin + rol ADMIN → get_top_providers ejecutada con movimiento real', async () => {
+    // Proveedor APROBADO con movimiento (2 vistas + 1 clic de WhatsApp).
+    const owner = await createTestUser(prisma, {
+      role: 'PROVEEDOR',
+      email: `top_${Date.now()}@x.com`,
+    });
+    const provider = await createTestProvider(prisma, owner.id, {
+      businessName: 'Proveedor Movido',
+    });
+    await prisma.providerAnalytic.createMany({
+      data: [
+        { providerId: provider.id, eventType: 'view' as any },
+        { providerId: provider.id, eventType: 'view' as any },
+        { providerId: provider.id, eventType: 'whatsapp_click' as any },
+      ],
+    });
+
+    // El admin consulta desde el PANEL (header X-App-Origin: admin).
+    const admin = await createTestUser(prisma, {
+      role: 'ADMIN',
+      email: `admin_${Date.now()}@x.com`,
+    });
+    const topSpy = jest.spyOn(data, 'getTopProvidersSafe');
+
+    mockGenerateContent
+      .mockResolvedValueOnce(fnCall('get_top_providers'))
+      .mockResolvedValueOnce(fnText('El que más se mueve es Proveedor Movido.'));
+
+    const res = await build().chat(
+      { userId: admin.id, role: 'ADMIN', providerType: null },
+      'qué proveedor tiene más movimiento',
+      [],
+      { appOrigin: 'admin' },
+    );
+
+    expect(res.meta.blocked).toBe(false);
+    // La tool admin se ejecutó: la persona ADMIN la tiene activa.
+    expect(topSpy).toHaveBeenCalledTimes(1);
+    // Devolvió datos REALES (movimiento = 3) y se reinyectaron a Gemini.
+    const reinjected = JSON.stringify(
+      mockGenerateContent.mock.calls[1][0].contents,
+    );
+    expect(reinjected).toContain('get_top_providers');
+    expect(reinjected).toContain('Proveedor Movido');
+    expect(reinjected).toContain('"movement":3');
+  });
 });

@@ -129,6 +129,9 @@ export const askAssistant = (
 ) =>
   fetchApi<AiChatResponse>('/ai-assistant/chat', {
     method: 'POST',
+    // Fuerza la persona ADMIN de "Ofi" (analista de datos del panel). El
+    // backend solo la habilita si además el JWT es de un ADMIN real.
+    headers: { 'X-App-Origin': 'admin' },
     body: JSON.stringify({
       message,
       ...(history && history.length ? { history } : {}),

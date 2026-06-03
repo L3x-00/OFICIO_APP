@@ -88,9 +88,16 @@ export class AiAssistantController {
     };
 
     // Metadata del request para auditoría (Fase 4) — IP + User-Agent.
+    // `X-App-Origin` distingue el panel admin del resto de apps → habilita la
+    // persona ADMIN (solo si además el rol verificado es ADMIN).
+    const rawOrigin = req.headers?.['x-app-origin'];
+    const appOrigin = Array.isArray(rawOrigin) ? rawOrigin[0] : rawOrigin;
     const reqMeta = {
       ip: req.ip ?? req.socket?.remoteAddress,
       userAgent: req.headers?.['user-agent'],
+      appOrigin,
+      // Contexto/pantalla activa declarado por la app (body) → fuerza persona.
+      appContext: dto.context,
     };
 
     const result = await this.service.chat(

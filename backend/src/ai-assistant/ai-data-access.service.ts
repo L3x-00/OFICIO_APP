@@ -105,6 +105,44 @@ export interface MyContextDto {
   user?: MyUserContextDto;
 }
 
+// ── DTOs de las tools ADMIN (persona ADMIN) ─────────────────────
+
+/** Métricas globales de plataforma para el panel admin. */
+export interface PlatformStatsDto {
+  /** Usuarios registrados hoy (medianoche Perú a ahora). */
+  newUsersToday: number;
+  /** Proveedores en cola de verificación (verificationStatus PENDIENTE). */
+  pendingProviders: number;
+  /** Ingresos confirmados del mes en curso (suma de pagos, en PEN). */
+  monthlyRevenue: number;
+}
+
+/** Proveedor destacado del ranking admin. */
+export interface TopProviderDto {
+  businessName: string;
+  type: string;
+  averageRating: number;
+  totalReviews: number;
+  /** Movimiento reciente: nº de eventos (vistas + clics de contacto). */
+  movement: number;
+}
+
+/** Item de una cola de aprobación (proveedor o trust validation). */
+export interface PendingApprovalItemDto {
+  businessName: string;
+  type: string;
+  /** Fecha de ingreso a la cola (YYYY-MM-DD). */
+  since: string;
+}
+
+/** Colas de aprobación pendientes para moderación admin. */
+export interface PendingApprovalsDto {
+  providers: PendingApprovalItemDto[];
+  trustValidations: PendingApprovalItemDto[];
+  totalProviders: number;
+  totalTrustValidations: number;
+}
+
 @Injectable()
 export class AiDataAccessService {
   private readonly logger = new Logger(AiDataAccessService.name);
@@ -543,6 +581,181 @@ export class AiDataAccessService {
    * o lanza, loguea y devuelve `fallback` — la tool falla en suave, sin
    * romper el ciclo de function-calling ni la app.
    */
+  // ── Tools ADMIN (persona ADMIN) ─────────────────────────────
+  // Consultas agregadas de plataforma. Solo se ofrecen a la persona ADMIN
+  // (allowlist del tool-registry) → un no-admin no puede invocarlas. Todas
+  // corren con timeout y fallback vacío como el resto.
+
+  /**
+   * KPIs globales: usuarios nuevos de hoy, proveedores pendientes de
+   * verificación e ingresos confirmados del mes en curso (PEN).
+   */
+  async getPlatformStatsSafe(): Promise<PlatformStatsDto> {
+    const fallback: PlatformStatsDto = {
+      newUsersToday: 0,
+      pendingProviders: 0,
+      monthlyRevenue: 0,
+    };
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const run = (async (): Promise<PlatformStatsDto> => {
+      const [newUsersToday, pendingProviders, revenue] = await Promise.all([
+        this.prisma.user.count({
+          where: { createdAt: { gte: startOfToday } },
+        }),
+        this.prisma.provider.count({
+          where: { verificationStatus: 'PENDIENTE' },
+        }),
+        this.prisma.payment.aggregate({
+          _sum: { amount: true },
+          where: { confirmedAt: { gte: startOfMonth } },
+        }),
+      ]);
+      return {
+        newUsersToday,
+        pendingProviders,
+        monthlyRevenue: revenue._sum.amount ?? 0,
+      };
+    })();
+
+    return this.withTimeout(run, fallback, 'get_platform_stats');
+  }
+
+  /**
+   * Ranking de proveedores con más MOVIMIENTO reciente: cantidad de eventos
+   * (vistas + clics de WhatsApp/llamada) en `provider_analytics`. Si no hay
+   * analítica registrada, cae a un ranking por mejor rating.
+   */
+  async getTopProvidersSafe(): Promise<TopProviderDto[]> {
+    const limit = AiDataAccessService.MAX_RESULTS;
+
+    const run = (async (): Promise<TopProviderDto[]> => {
+      const top = await this.prisma.providerAnalytic.groupBy({
+        by: ['providerId'],
+        _count: { id: true },
+        where: {
+          eventType: { in: ['view', 'whatsapp_click', 'call_click'] },
+        },
+        orderBy: { _count: { id: 'desc' } },
+        take: limit,
+      });
+
+      // Sin movimiento registrado → fallback a mejor rating (movement = 0).
+      if (top.length === 0) {
+        const byRating = await this.prisma.provider.findMany({
+          where: { isVisible: true, verificationStatus: 'APROBADO' },
+          select: {
+            businessName: true,
+            type: true,
+            averageRating: true,
+            totalReviews: true,
+          },
+          orderBy: [{ averageRating: 'desc' }, { totalReviews: 'desc' }],
+          take: limit,
+        });
+        return byRating.map((r) => ({
+          businessName: r.businessName,
+          type: r.type as string,
+          averageRating: r.averageRating,
+          totalReviews: r.totalReviews,
+          movement: 0,
+        }));
+      }
+
+      const ids = top.map((t) => t.providerId);
+      const providers = await this.prisma.provider.findMany({
+        where: { id: { in: ids } },
+        select: {
+          id: true,
+          businessName: true,
+          type: true,
+          averageRating: true,
+          totalReviews: true,
+        },
+      });
+      const byId = new Map(providers.map((p) => [p.id, p]));
+
+      // Conserva el orden del ranking (por movimiento desc).
+      return top.flatMap((t) => {
+        const p = byId.get(t.providerId);
+        if (!p) return [];
+        return [
+          {
+            businessName: p.businessName,
+            type: p.type as string,
+            averageRating: p.averageRating,
+            totalReviews: p.totalReviews,
+            movement: t._count.id,
+          },
+        ];
+      });
+    })();
+
+    return this.withTimeout(run, [], 'get_top_providers');
+  }
+
+  /**
+   * Colas de aprobación: proveedores PENDIENTE de verificación + solicitudes
+   * de validación de confianza PENDING, con sus totales.
+   */
+  async getPendingApprovalsSafe(): Promise<PendingApprovalsDto> {
+    const fallback: PendingApprovalsDto = {
+      providers: [],
+      trustValidations: [],
+      totalProviders: 0,
+      totalTrustValidations: 0,
+    };
+    const limit = AiDataAccessService.MAX_RESULTS;
+    const ymd = (d: Date) => d.toISOString().slice(0, 10);
+
+    const run = (async (): Promise<PendingApprovalsDto> => {
+      const [providers, totalProviders, trust, totalTrust] = await Promise.all([
+        this.prisma.provider.findMany({
+          where: { verificationStatus: 'PENDIENTE' },
+          select: { businessName: true, type: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+          take: limit,
+        }),
+        this.prisma.provider.count({
+          where: { verificationStatus: 'PENDIENTE' },
+        }),
+        this.prisma.trustValidationRequest.findMany({
+          where: { status: 'PENDING' },
+          select: {
+            createdAt: true,
+            provider: { select: { businessName: true, type: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+          take: limit,
+        }),
+        this.prisma.trustValidationRequest.count({
+          where: { status: 'PENDING' },
+        }),
+      ]);
+
+      return {
+        providers: providers.map((p) => ({
+          businessName: p.businessName,
+          type: p.type as string,
+          since: ymd(p.createdAt),
+        })),
+        trustValidations: trust.map((t) => ({
+          businessName: t.provider.businessName,
+          type: t.provider.type as string,
+          since: ymd(t.createdAt),
+        })),
+        totalProviders,
+        totalTrustValidations: totalTrust,
+      };
+    })();
+
+    return this.withTimeout(run, fallback, 'get_pending_approvals');
+  }
+
   private async withTimeout<T>(
     op: Promise<T>,
     fallback: T,

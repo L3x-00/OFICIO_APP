@@ -77,6 +77,7 @@ class AiAssistantRepository {
     required String message,
     List<AiHistoryTurn>? history,
     String? providerType,
+    String? context,
   }) async {
     try {
       final res = await _dio.post(
@@ -87,6 +88,8 @@ class AiAssistantRepository {
             'history': history.map((h) => h.toJson()).toList(),
           if (providerType != null && providerType.isNotEmpty)
             'providerType': providerType,
+          // Pantalla activa → el backend fuerza la Estrategia de Contexto.
+          if (context != null && context.isNotEmpty) 'context': context,
         },
       );
       return AiChatReply.fromJson(Map<String, dynamic>.from(res.data as Map));

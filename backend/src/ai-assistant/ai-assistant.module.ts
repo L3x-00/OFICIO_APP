@@ -13,6 +13,10 @@ import { AiQuotaService } from './ai-quota.service.js';
 import { AiRetentionService } from './ai-retention.service.js';
 import { AiAnalyticsController } from './ai-analytics.controller.js';
 import { AiAnalyticsService } from './ai-analytics.service.js';
+import { GuestStrategy } from './strategies/guest.strategy.js';
+import { ClientStrategy } from './strategies/client.strategy.js';
+import { ProviderStrategy } from './strategies/provider.strategy.js';
+import { AdminStrategy } from './strategies/admin.strategy.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 
 /**
@@ -43,6 +47,11 @@ import { RolesGuard } from '../auth/roles.guard.js';
     AiQuotaService,
     AiRetentionService,
     AiAnalyticsService,
+    // Estrategias de Contexto (persona) — inyectadas en AiAssistantService.
+    GuestStrategy,
+    ClientStrategy,
+    ProviderStrategy,
+    AdminStrategy,
     RolesGuard,
   ],
 })
