@@ -1,0 +1,24 @@
+{
+  // Config SOLO para el IDE / type-check de los tests. El build real usa
+  // ../tsconfig.build.json (que excluye test/ y *.spec.ts) y el gate de CI
+  // usa ../tsconfig.json (solo src/). Este archivo existe para que el
+  // language server asocie los specs a un proyecto TS y resuelva los
+  // globals de Jest (describe/it/expect/beforeEach) vía @types/jest.
+  //
+  // - `moduleResolution: bundler` refleja cómo ts-jest resuelve los imports
+  //   de los specs: tolera tanto las rutas relativas SIN extensión
+  //   (`../utils/db.util`) como las que sí la llevan (`../../src/x.js` →
+  //   `x.ts`). nodenext (la base) exigiría `.js` en todas y marcaría rojo.
+  // - `noImplicitAny`/`isolatedModules` relajados para igualar el bloque
+  //   `transform` de ts-jest (ver jest config en package.json) y evitar
+  //   falsos positivos en el editor.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noImplicitAny": false,
+    "isolatedModules": false
+  },
+  "include": ["**/*.ts"]
+}
