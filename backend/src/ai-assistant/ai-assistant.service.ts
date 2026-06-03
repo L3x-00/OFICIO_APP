@@ -404,6 +404,13 @@ export class AiAssistantService {
     // sin tools, solo respuestas predefinidas.
     const { tools, activeNames } = buildActiveTools(persona, this.flags);
 
+    // [AI-AUDIT TEMPORAL] Persona detectada + tools que se ENVÍAN a Gemini.
+    this.logger.log(
+      `[AI-AUDIT] persona=${persona} role=${caller.role} | tools activas=[${
+        [...activeNames].join(', ') || '(ninguna)'
+      }]`,
+    );
+
     // Ciclo de function-calling con ANTI-LOOP (regla 5): contamos rondas
     // de tools y si superan MAX_TOOL_ROUNDS forzamos respuesta de texto.
     // `tokensUsed` acumula el consumo de TODAS las rondas (observabilidad).
@@ -427,6 +434,13 @@ export class AiAssistantService {
         return { reply: text, tokensUsed };
       }
 
+      // [AI-AUDIT TEMPORAL] Tool calls que Gemini decidió invocar.
+      this.logger.log(
+        `[AI-AUDIT] Gemini pidió tools: [${calls
+          .map((c) => c.name)
+          .join(', ')}]`,
+      );
+
       rounds += 1;
       if (rounds > MAX_TOOL_ROUNDS) {
         this.logger.warn(
@@ -447,6 +461,12 @@ export class AiAssistantService {
       const responseParts: Part[] = [];
       for (const call of calls) {
         const result = await this.executeTool(caller, activeNames, call);
+        // [AI-AUDIT TEMPORAL] Resultado devuelto por cada tool (truncado).
+        this.logger.log(
+          `[AI-AUDIT] tool ${call.name ?? '(sin nombre)'} → ${JSON.stringify(
+            result,
+          ).slice(0, 400)}`,
+        );
         responseParts.push({
           functionResponse: { name: call.name ?? 'unknown', response: result },
         });

@@ -109,8 +109,18 @@ export interface MyContextDto {
 
 /** Métricas globales de plataforma para el panel admin. */
 export interface PlatformStatsDto {
-  /** Usuarios registrados hoy (medianoche Perú a ahora). */
+  /** Total de usuarios registrados (todos los roles). */
+  totalUsers: number;
+  /** Usuarios registrados hoy (desde medianoche). */
   newUsersToday: number;
+  /** Registros de los últimos 7 días. */
+  newUsersThisWeek: number;
+  /** Registros de los 7 días anteriores (para comparar crecimiento). */
+  newUsersLastWeek: number;
+  /** Total de proveedores (todos los estados). */
+  totalProviders: number;
+  /** Proveedores aprobados (verificationStatus APROBADO). */
+  approvedProviders: number;
   /** Proveedores en cola de verificación (verificationStatus PENDIENTE). */
   pendingProviders: number;
   /** Ingresos confirmados del mes en curso (suma de pagos, en PEN). */
@@ -592,20 +602,44 @@ export class AiDataAccessService {
    */
   async getPlatformStatsSafe(): Promise<PlatformStatsDto> {
     const fallback: PlatformStatsDto = {
+      totalUsers: 0,
       newUsersToday: 0,
+      newUsersThisWeek: 0,
+      newUsersLastWeek: 0,
+      totalProviders: 0,
+      approvedProviders: 0,
       pendingProviders: 0,
       monthlyRevenue: 0,
     };
 
+    const now = Date.now();
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgo = new Date(now - 14 * 24 * 60 * 60 * 1000);
+    const d = new Date();
+    const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
 
     const run = (async (): Promise<PlatformStatsDto> => {
-      const [newUsersToday, pendingProviders, revenue] = await Promise.all([
+      const [
+        totalUsers,
+        newUsersToday,
+        newUsersThisWeek,
+        newUsersLastWeek,
+        totalProviders,
+        approvedProviders,
+        pendingProviders,
+        revenue,
+      ] = await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
+        this.prisma.user.count({ where: { createdAt: { gte: weekAgo } } }),
         this.prisma.user.count({
-          where: { createdAt: { gte: startOfToday } },
+          where: { createdAt: { gte: twoWeeksAgo, lt: weekAgo } },
+        }),
+        this.prisma.provider.count(),
+        this.prisma.provider.count({
+          where: { verificationStatus: 'APROBADO' },
         }),
         this.prisma.provider.count({
           where: { verificationStatus: 'PENDIENTE' },
@@ -616,7 +650,12 @@ export class AiDataAccessService {
         }),
       ]);
       return {
+        totalUsers,
         newUsersToday,
+        newUsersThisWeek,
+        newUsersLastWeek,
+        totalProviders,
+        approvedProviders,
         pendingProviders,
         monthlyRevenue: revenue._sum.amount ?? 0,
       };

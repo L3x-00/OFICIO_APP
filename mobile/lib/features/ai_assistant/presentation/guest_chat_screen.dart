@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../domain/ai_message_model.dart';
+import 'ofi_chat_avatar.dart';
+import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 
 /// Preguntas frecuentes del MODO INVITADO. Respuestas 100% locales (Dart),
 /// SIN llamar al backend ni gastar cuota de IA. La IA completa y personalizada
@@ -73,11 +75,12 @@ class _GuestChatScreenState extends State<GuestChatScreen> {
   }
 
   void _goToLogin() {
-    // Pantalla abierta con Navigator.push (MaterialPageRoute). Capturamos el
-    // GoRouter ANTES de hacer pop para no usar un context desactivado.
-    final router = GoRouter.of(context);
-    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-    router.go('/login');
+    // Usamos rootNavigator: true para que el Login tape todo,
+    // incluyendo la BottomNavBar, tal como ya haces en Notificaciones.
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   @override
@@ -322,29 +325,11 @@ class _GuestBubble extends StatelessWidget {
   }
 }
 
-/// Avatar circular de Ofi (ámbar + smart_toy).
+/// Avatar circular de Ofi con la mascota oficial (`ofi.png`).
 class _OfiAvatar extends StatelessWidget {
   final double size;
   const _OfiAvatar({this.size = 32});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [AppColors.amber, AppColors.amberDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Icon(
-        Icons.smart_toy_rounded,
-        color: Colors.black,
-        size: size * 0.58,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => OfiChatAvatar(size: size);
 }

@@ -7,6 +7,7 @@ import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import '../domain/ai_message_model.dart';
 import 'ai_assistant_provider.dart';
 import 'guest_chat_screen.dart';
+import 'ofi_chat_avatar.dart';
 
 /// Pantalla de chat con "Ofi", el asistente IA de Servi.
 ///
@@ -174,31 +175,13 @@ class _AiChatViewState extends State<_AiChatView> {
   }
 }
 
-/// Avatar circular de Ofi (ámbar + smart_toy).
+/// Avatar circular de Ofi con la mascota oficial (`ofi.png`).
 class _OfiAvatar extends StatelessWidget {
   final double size;
   const _OfiAvatar({this.size = 32});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [AppColors.amber, AppColors.amberDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Icon(
-        Icons.smart_toy_rounded,
-        color: Colors.black,
-        size: size * 0.58,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => OfiChatAvatar(size: size);
 }
 
 /// Burbuja de un mensaje (usuario o Ofi).

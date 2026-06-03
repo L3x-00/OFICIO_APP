@@ -119,6 +119,9 @@ class _ProvidersViewState extends State<_ProvidersView>
         // (showcase) abajo. Column min para no romper el layout existente.
         floatingActionButton: Column(
           mainAxisSize: MainAxisSize.min,
+          // Ancla los FAB a la derecha: el globo de Ofi cambia el ancho y, sin
+          // esto, el JoinUsFAB se movería horizontalmente al aparecer/ocultarse.
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const AiAssistantFab(),
             const SizedBox(height: 12),
@@ -247,10 +250,7 @@ class _ProvidersViewState extends State<_ProvidersView>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: GreetingHeader(),
-              ),
+              const _GreetingRow(),
               const _SearchAndLocationRow(),
               const FilterBar(),
               // Banner subasta wrapped — paso "publica tus necesidades"
@@ -281,10 +281,13 @@ class _ProvidersViewState extends State<_ProvidersView>
 // CLASES AUXILIARES (FUERA de _ProvidersViewState)
 // ══════════════════════════════════════════════════════════════
 
-// ── Fila combinada: barra de búsqueda + chip de ubicación ──
+// ── Fila del saludo + chip de ubicación (Fase 1) ──────────
+// El saludo va a la izquierda (misma posición de siempre) y el chip de
+// ubicación a la derecha, en la MISMA fila, con spaceBetween. Antes el chip
+// compartía fila con la búsqueda y se encimaba con fuentes grandes.
 
-class _SearchAndLocationRow extends StatelessWidget {
-  const _SearchAndLocationRow();
+class _GreetingRow extends StatelessWidget {
+  const _GreetingRow();
 
   @override
   Widget build(BuildContext context) {
@@ -293,29 +296,51 @@ class _SearchAndLocationRow extends StatelessWidget {
     final isGuest = auth.isGuest || auth.user == null;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 12, 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
+          const Flexible(child: GreetingHeader()),
+          const SizedBox(width: 8),
+          Flexible(
             child: ShowcaseTarget(
               step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
-                  .firstWhere((s) => s.key == kShowcaseSearchBar),
-              isLast: isLastShowcaseStep(kShowcaseSearchBar, isGuest: isGuest),
-              targetHeight: 44,
-              targetWidth: 240,
-              child: const CollapsibleSearchBar(),
+                  .firstWhere((s) => s.key == kShowcaseLocationChip),
+              isLast: isLastShowcaseStep(
+                kShowcaseLocationChip,
+                isGuest: isGuest,
+              ),
+              targetHeight: 36,
+              targetWidth: 140,
+              child: _CompactLocationChip(prov: prov),
             ),
           ),
-          const SizedBox(width: 8),
-          ShowcaseTarget(
-            step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
-                .firstWhere((s) => s.key == kShowcaseLocationChip),
-            isLast: isLastShowcaseStep(kShowcaseLocationChip, isGuest: isGuest),
-            targetHeight: 36,
-            targetWidth: 120,
-            child: _CompactLocationChip(prov: prov),
-          ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Fila de búsqueda (ahora a ancho completo, sin el chip) ──
+
+class _SearchAndLocationRow extends StatelessWidget {
+  const _SearchAndLocationRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final isGuest = auth.isGuest || auth.user == null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: ShowcaseTarget(
+        step: (isGuest ? kShowcaseStepsGuest : kShowcaseStepsRegistered)
+            .firstWhere((s) => s.key == kShowcaseSearchBar),
+        isLast: isLastShowcaseStep(kShowcaseSearchBar, isGuest: isGuest),
+        targetHeight: 44,
+        targetWidth: 240,
+        child: const CollapsibleSearchBar(),
       ),
     );
   }
@@ -376,17 +401,19 @@ class _CompactLocationChip extends StatelessWidget {
               size: 14,
             ),
             const SizedBox(width: 4),
-            Text(
-              hasFilter
-                  ? 'Mostrando en: $label'
-                  : 'Mostrando todos los servicios',
-              style: TextStyle(
-                color: c.textPrimary,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                hasFilter
+                    ? 'Mostrando en: $label'
+                    : 'Mostrando todos los servicios',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             if (hasFilter) ...[
               const SizedBox(width: 2),

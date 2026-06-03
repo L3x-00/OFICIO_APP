@@ -21,12 +21,22 @@ class GreetingHeader extends StatelessWidget {
       children: [
         Text(
           firstName != null ? '¡Hola, $firstName!' : '¡Explora los servicios!',
-          style: TextStyle(color: c.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 2),
         Text(
-          firstName != null ? '¿Qué necesitas hoy?' : 'Contrata sin registro • Es gratis',
+          firstName != null
+              ? '¿Qué servicios necesitas hoy?'
+              : 'Contrata sin registro • Es gratis',
           style: TextStyle(color: c.textSecondary, fontSize: 13),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

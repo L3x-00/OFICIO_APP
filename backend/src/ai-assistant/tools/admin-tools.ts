@@ -21,9 +21,13 @@ export const ADMIN_TOOLS: AiToolDef[] = [
     declaration: {
       name: 'get_platform_stats',
       description:
-        'Devuelve métricas globales de la plataforma Servi: usuarios nuevos ' +
-        'de hoy, proveedores pendientes de aprobación e ingresos del mes ' +
-        'en curso. Úsala cuando el admin pida el estado general o KPIs.',
+        'KPIs globales de Servi: total de usuarios y registros nuevos (hoy, ' +
+        'esta semana y la semana anterior, para comparar crecimiento); total ' +
+        'de proveedores, aprobados y pendientes; e ingresos confirmados del ' +
+        'mes. ÚSALA SIEMPRE que el admin pregunte CUÁNTOS usuarios o ' +
+        'proveedores hay, por registros, crecimiento, por qué subieron o ' +
+        'bajaron los registros, ingresos, facturación, métricas, estadísticas ' +
+        'o el estado general de la plataforma.',
       parameters: {
         type: Type.OBJECT,
         properties: {},
@@ -50,10 +54,11 @@ export const ADMIN_TOOLS: AiToolDef[] = [
     declaration: {
       name: 'get_pending_approvals',
       description:
-        'Devuelve las colas de aprobación pendientes: proveedores en estado ' +
+        'Colas de aprobación/moderación pendientes: proveedores en estado ' +
         'PENDIENTE de verificación y solicitudes de validación de confianza ' +
-        '(trust) sin revisar. Úsala cuando el admin pregunte qué tiene por ' +
-        'aprobar o moderar.',
+        '(trust) sin revisar, con sus totales. Úsala cuando el admin pregunte ' +
+        'qué tiene pendiente, qué falta aprobar, verificar o moderar, o ' +
+        'cuántas aprobaciones/validaciones están en cola.',
       parameters: {
         type: Type.OBJECT,
         properties: {},
