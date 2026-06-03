@@ -7,6 +7,42 @@
 
 ---
 
+## ✅ Resolución Completa (2026-06-02)
+
+**Todos los hallazgos CRÍTICOS, ALTOS y MEDIOS de esta auditoría fueron RESUELTOS** en la sesión de hardening del 2026-06-02. Estado final validado: `tsc --noEmit` limpio · **97/97** integration · **113/113** unit · `dart analyze` 0 issues · 0 `console.*` en `backend/src`. Cambios desplegados a producción (Render) vía `origin/main`.
+
+| # | Hallazgo | Sev. | Resolución |
+|---|----------|------|------------|
+| A1 | `CacheModule` corría en memoria (no Redis) | 🟠 | Cableado a Redis vía `KeyvRedis` adapter (`stores: [...]`). `clearProvidersCache` y el circuit breaker IA ahora persisten entre instancias. |
+| A2 | Throttler en memoria (rate-limit por-instancia) | 🟠 | `ThrottlerStorageRedisService` + ioredis → rate-limit global compartido. |
+| A3 | Assets estáticos `/uploads` servidos por el API | 🟠 | Removido `useStaticAssets`; archivos solo vía MinIO/R2. |
+| A4 | Historial de migraciones Prisma roto (dup-init) | 🟠 | Rebaseline a un único `0_init` fiel a prod (extensiones + GENERATED + MV + triggers). `migrate resolve --applied` en Supabase. |
+| A6 | DTO drift (admin enviaba campos no whitelisteados) | 🟠 | `slug`, `availability`, `isVisible` añadidos como opcionales en `UpdateCategoryDto`/`UpdateProviderDto`. |
+| C1 | DoS en Next.js (admin + web) | 🔴 | `next@latest` en `admin/` y `web/` (parche DoS). |
+| C1b | Vulns transitivas en `firebase-admin@12` | 🔴 | Migrado a `firebase-admin@13.x`. |
+| M2 | `noImplicitAny: false` | 🟡 | Activado `noImplicitAny: true` + interfaz `AuthenticatedRequest` tipando todos los `@Request()`. |
+| M5 | `use_build_context_synchronously` (Flutter) | 🟡 | Guards `context.mounted` tras cada `await` en los archivos reportados. |
+| M6 | Índices faltantes en `User` | 🟡 | `@@index([role, isActive])`, `@@index([department, province])`. |
+| M7 | `console.*` residuales en backend | 🟡 | Reemplazados por `Logger` de NestJS; 0 `console.*` en `backend/src`. |
+| M8 | **CacheTTL en ms (bug latente)** | 🟡 | `@CacheTTL(30)` → `@CacheTTL(30000)`: Keyv interpreta el TTL en milisegundos (Prisma v7), las claves expiraban en 30 ms. |
+| B1 | Infos de `dart analyze` | ⚪ | `dart fix --apply` + correcciones manuales → 0 issues. |
+
+### 🏗️ God Objects refactorizados (patrón Facade)
+
+Los dos God Objects más grandes se descompusieron **sin cambiar ninguna firma pública** (los controllers no se tocaron):
+
+- **`admin.service.ts`** → extraídos `AdminCategoriesService`, `AdminDashboardService`, `AdminTrustService`, `AdminPaymentsService` + helper compartido `admin-shared.ts` (`withCategoryAlias`, `planToPriority`, `clearProvidersCache`). El god object delega vía Facade.
+- **`auth.service.ts`** (998 → 323 líneas) → extraídos `AuthRegistrationService` y `AuthAccountService` + `auth-shared.ts` (`generateTokens`).
+
+### 🧪 Tests críticos de dinero e identidad añadidos
+
+Flujos que antes tenían **0 cobertura** y causarían pérdidas si un refactor los rompiera:
+
+- `payments.flow.spec.ts` — PlanRequest (Yape) → aprobar activa suscripción ACTIVA; rechazar NO la cambia; doble-aprobación bloqueada.
+- `trust.flow.spec.ts` — envío de documentos → cola PENDING; aprobación → `trustStatus=APPROVED` + badge `isTrusted`.
+
+---
+
 ## 📊 Resumen Ejecutivo
 
 | Severidad | Cantidad | Apps afectadas |
