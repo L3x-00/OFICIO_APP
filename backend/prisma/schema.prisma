@@ -55,6 +55,7 @@ model User {
   reviews          Review[]
   serviceRequests  ServiceRequest[]
   penalty          UserPenalty?
+  aiMemory         AiUserMemory?
 
   @@index([role, isActive])
   @@index([department, province])
@@ -208,6 +209,7 @@ model Provider {
   trustValidations     TrustValidationRequest[]
   verificationDocs     VerificationDoc[]
   yapePayments         YapePayment[]
+  aiMemory             AiProviderMemory?
 
   @@unique([userId, type])
   @@index([isVisible, verificationStatus])
@@ -765,6 +767,41 @@ model AiMessage {
   @@index([conversationId, createdAt])
   @@index([createdAt])
   @@map("ai_messages")
+}
+
+/// Memoria persistente del CLIENTE para "Ofi" — continuidad + menos tokens.
+/// PEQUEÑA y acotada: NO guarda transcripciones, solo señales resumidas que
+/// se inyectan compactas en el system prompt para no repreguntar y reducir
+/// tool calls. 1 fila por usuario; se actualiza best-effort tras cada turno.
+model AiUserMemory {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  /// Rubros buscados recientemente (cap 5, más reciente primero).
+  searchCategories  String[] @default([])
+  /// Proveedores surgidos/visitados en el chat (cap 8, más reciente primero).
+  recentProviderIds Int[]    @default([])
+  /// Última intención: 'search' | 'faq' | 'financial' | 'other'.
+  lastIntent        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_user_memories")
+}
+
+/// Memoria persistente del PROVEEDOR para "Ofi". 1 fila por proveedor.
+model AiProviderMemory {
+  id              Int      @id @default(autoincrement())
+  providerId      Int      @unique
+  /// Categorías principales del perfil (cap 5).
+  mainCategories  String[] @default([])
+  /// Snapshot compacto de métricas: { rating, reviews, plan }.
+  metricsSnapshot Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  provider        Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("ai_provider_memories")
 }
 
 enum UserRole {

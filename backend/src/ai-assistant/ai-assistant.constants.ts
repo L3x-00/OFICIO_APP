@@ -32,8 +32,12 @@ export const RESP_CACHE_PREFIX = 'ai:resp:';
 export const CACHE_TTL_FAQ_MS = 24 * 60 * 60 * 1000;
 /** TTL caché de respuestas de búsqueda (volátiles): 5 min. */
 export const CACHE_TTL_SEARCH_MS = 5 * 60 * 1000;
-/** Días de retención de conversaciones IA antes de purgar (política). */
-export const RETENTION_DAYS = 7;
+/**
+ * Días de retención del asistente IA: los MENSAJES con más antigüedad se
+ * borran automáticamente (scheduler diario) y las conversaciones que quedan
+ * vacías expiran. Política de privacidad/almacenamiento: 3 días.
+ */
+export const RETENTION_DAYS = 3;
 
 /**
  * Clasificador de intención por palabras clave (Fase 4 — caché inteligente).
@@ -96,6 +100,95 @@ export const FAQ_KEYWORDS: readonly string[] = [
   'sirve',
   'puedo',
   'requisito',
+];
+
+/**
+ * Stopwords para la NORMALIZACIÓN SEMÁNTICA de la clave de caché (Fase 4+).
+ *
+ * Se eliminan del mensaje antes de hashear para que consultas equivalentes
+ * compartan caché: "electricista en Huancayo", "electricistas en Huancayo" y
+ * "busco un electricista en Huancayo" → misma clave canónica
+ * "electricista huancayo". SIN acentos (la clave se normaliza antes).
+ *
+ * Conservador a propósito: solo artículos, preposiciones y verbos/muletillas
+ * de consulta — nunca términos de dominio (rubros, ciudades).
+ */
+export const AI_QUERY_STOPWORDS: readonly string[] = [
+  // Artículos y preposiciones.
+  'el',
+  'la',
+  'los',
+  'las',
+  'un',
+  'una',
+  'unos',
+  'unas',
+  'de',
+  'del',
+  'en',
+  'a',
+  'al',
+  'y',
+  'o',
+  'u',
+  'con',
+  'sin',
+  'para',
+  'por',
+  'que',
+  'lo',
+  'su',
+  'mi',
+  'mis',
+  'me',
+  'se',
+  'es',
+  'son',
+  // Verbos y muletillas de consulta.
+  'busco',
+  'buscar',
+  'busca',
+  'buscando',
+  'quiero',
+  'queria',
+  'necesito',
+  'necesita',
+  'necesitar',
+  'recomienda',
+  'recomiendame',
+  'recomiendas',
+  'conoces',
+  'conoce',
+  'sabes',
+  'dime',
+  'dame',
+  'muestra',
+  'muestrame',
+  'hay',
+  'algun',
+  'alguna',
+  'alguno',
+  'cerca',
+  'cercano',
+  'cercanos',
+  'favor',
+  'porfavor',
+  'hola',
+  'ofi',
+  'ayudame',
+  'podrias',
+  'puedes',
+  'donde',
+  'cual',
+  'cuales',
+  'cuanto',
+  'cuantos',
+  'cuantas',
+  'tengo',
+  'tienes',
+  'existe',
+  'existen',
+  'porfa',
 ];
 
 // ── Límites de generación ───────────────────────────────────

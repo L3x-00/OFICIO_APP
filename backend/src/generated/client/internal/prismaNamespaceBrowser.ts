@@ -89,7 +89,9 @@ export const ModelName = {
   spatial_ref_sys: 'spatial_ref_sys',
   AiKnowledgeEntry: 'AiKnowledgeEntry',
   AiConversation: 'AiConversation',
-  AiMessage: 'AiMessage'
+  AiMessage: 'AiMessage',
+  AiUserMemory: 'AiUserMemory',
+  AiProviderMemory: 'AiProviderMemory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -685,6 +687,31 @@ export const AiMessageScalarFieldEnum = {
 } as const
 
 export type AiMessageScalarFieldEnum = (typeof AiMessageScalarFieldEnum)[keyof typeof AiMessageScalarFieldEnum]
+
+
+export const AiUserMemoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  searchCategories: 'searchCategories',
+  recentProviderIds: 'recentProviderIds',
+  lastIntent: 'lastIntent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiUserMemoryScalarFieldEnum = (typeof AiUserMemoryScalarFieldEnum)[keyof typeof AiUserMemoryScalarFieldEnum]
+
+
+export const AiProviderMemoryScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  mainCategories: 'mainCategories',
+  metricsSnapshot: 'metricsSnapshot',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiProviderMemoryScalarFieldEnum = (typeof AiProviderMemoryScalarFieldEnum)[keyof typeof AiProviderMemoryScalarFieldEnum]
 
 
 export const SortOrder = {

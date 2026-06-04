@@ -228,3 +228,16 @@ export type AiConversation = Prisma.AiConversationModel
  * consumidos y banderas de moderación (flagged + moderationPass).
  */
 export type AiMessage = Prisma.AiMessageModel
+/**
+ * Model AiUserMemory
+ * Memoria persistente del CLIENTE para "Ofi" — continuidad + menos tokens.
+ * PEQUEÑA y acotada: NO guarda transcripciones, solo señales resumidas que
+ * se inyectan compactas en el system prompt para no repreguntar y reducir
+ * tool calls. 1 fila por usuario; se actualiza best-effort tras cada turno.
+ */
+export type AiUserMemory = Prisma.AiUserMemoryModel
+/**
+ * Model AiProviderMemory
+ * Memoria persistente del PROVEEDOR para "Ofi". 1 fila por proveedor.
+ */
+export type AiProviderMemory = Prisma.AiProviderMemoryModel

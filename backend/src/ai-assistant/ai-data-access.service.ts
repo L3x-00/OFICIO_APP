@@ -23,14 +23,42 @@ import { TOOL_TIMEOUT_MS } from './ai-assistant.constants.js';
  */
 
 // ── DTOs estrictos (lo único que ve Gemini) ─────────────────────
+/**
+ * Tarjeta de proveedor devuelta por `search_providers`. El shape replica el
+ * del catálogo público (`/providers`) para que el cliente Flutter lo consuma
+ * con el MISMO `ProviderModel.fromJson` (cero parser nuevo) y renderice las
+ * mismas tarjetas navegables.
+ *
+ * Privacidad: `phone`/`whatsapp` se enmascaran para planes NO pagos (regla
+ * anti-burla del plan gratis) y el ORQUESTADOR los elimina de la copia que ve
+ * el modelo — el modelo nunca recibe datos de contacto.
+ */
 export interface ProviderCardDto {
   id: number;
+  slug: string | null;
   businessName: string;
+  /** 'OFICIO' | 'NEGOCIO'. */
+  type: string;
   averageRating: number;
   totalReviews: number;
-  slug: string | null;
+  isVerified: boolean;
+  /** Estado de disponibilidad (enum como string). */
+  availability: string;
+  /** Vacío si el plan no es de pago (anti-burla). */
+  phone: string;
+  whatsapp: string | null;
   /** Distancia en km si la búsqueda fue geolocalizada; null si no. */
   distanceKm: number | null;
+  images: Array<{ url: string; isCover: boolean }>;
+  providerCategories: Array<{
+    category: { name: string; slug: string | null };
+  }>;
+  locality: {
+    department: string | null;
+    province: string | null;
+    district: string | null;
+  } | null;
+  subscription: { plan: string } | null;
 }
 
 export interface CategoryDto {
@@ -228,15 +256,64 @@ export class AiDataAccessService {
         },
         select: {
           id: true,
+          slug: true,
           businessName: true,
+          type: true,
           averageRating: true,
           totalReviews: true,
-          slug: true,
+          isVerified: true,
+          availability: true,
+          phone: true,
+          whatsapp: true,
+          images: {
+            orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
+            select: { url: true, isCover: true },
+          },
+          providerCategories: {
+            select: { category: { select: { name: true, slug: true } } },
+            orderBy: { isPrimary: 'desc' },
+            take: 1,
+          },
+          locality: {
+            select: { department: true, province: true, district: true },
+          },
+          subscription: { select: { plan: true } },
         },
         orderBy: [{ planPriority: 'asc' }, { averageRating: 'desc' }],
         take: limit,
       })
-      .then((rows) => rows.map((r) => ({ ...r, distanceKm: null })));
+      .then((rows) =>
+        rows.map((r): ProviderCardDto => {
+          const plan = r.subscription?.plan ?? 'GRATIS';
+          // Solo planes de pago exponen contacto directo (anti-burla).
+          const paid = plan === 'PREMIUM' || plan === 'ESTANDAR';
+          return {
+            id: r.id,
+            slug: r.slug,
+            businessName: r.businessName,
+            type: r.type,
+            averageRating: r.averageRating,
+            totalReviews: r.totalReviews,
+            isVerified: r.isVerified,
+            availability: r.availability,
+            phone: paid ? (r.phone ?? '') : '',
+            whatsapp: paid ? (r.whatsapp ?? null) : null,
+            distanceKm: null,
+            images: r.images.map((i) => ({ url: i.url, isCover: i.isCover })),
+            providerCategories: r.providerCategories.map((pc) => ({
+              category: { name: pc.category.name, slug: pc.category.slug },
+            })),
+            locality: r.locality
+              ? {
+                  department: r.locality.department,
+                  province: r.locality.province,
+                  district: r.locality.district,
+                }
+              : null,
+            subscription: { plan },
+          };
+        }),
+      );
 
     return this.withTimeout(run, [], 'search_providers');
   }

@@ -18,6 +18,7 @@ import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
 import { OpenRouterProvider } from './providers/openrouter.provider.js';
+import { AiMemoryService } from './ai-memory.service.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 
 /**
@@ -55,6 +56,8 @@ import { RolesGuard } from '../auth/roles.guard.js';
     AdminStrategy,
     // Proveedor de fallback IA (OpenRouter — DeepSeek → Qwen).
     OpenRouterProvider,
+    // Memoria persistente por usuario/proveedor.
+    AiMemoryService,
     RolesGuard,
   ],
 })

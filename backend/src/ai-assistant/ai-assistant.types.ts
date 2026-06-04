@@ -3,6 +3,7 @@
  * entidades de dominio — mantiene el módulo desacoplable.
  */
 import type { FunctionDeclaration } from '@google/genai';
+import type { ProviderCardDto } from './ai-data-access.service.js';
 
 /** Rol del usuario que consulta (espejo de UserRole, como string). */
 export type AiUserRole = 'USUARIO' | 'PROVEEDOR' | 'ADMIN';
@@ -66,6 +67,14 @@ export interface GuardrailResult {
 /** Respuesta pública del endpoint /ai-assistant/chat. */
 export interface AiChatResult {
   reply: string;
+  /**
+   * Tipo de payload enriquecido. Presente solo cuando la tool
+   * `search_providers` corrió durante el turno → el cliente renderiza
+   * tarjetas navegables en vez de solo texto.
+   */
+  type?: 'PROVIDER_RESULTS';
+  /** Proveedores encontrados (shape de catálogo). Acompaña a `reply`. */
+  providers?: ProviderCardDto[];
   /** Metadata no sensible para el cliente (debug/UX). */
   meta: {
     promptVersion: string;
@@ -74,6 +83,11 @@ export interface AiChatResult {
     reason?: string;
     /** True si la respuesta salió de la caché (Fase 4). */
     cached?: boolean;
+    /**
+     * True si la respondió el router determinístico de métricas admin (sin
+     * IA): consulta directa a BD, sin Gemini/OpenRouter ni cuota.
+     */
+    deterministic?: boolean;
   };
 }
 

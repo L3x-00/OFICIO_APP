@@ -19,6 +19,12 @@ import { AiGuardrailsService } from './ai-guardrails.service.js';
 import { AiFeatureFlagService } from './ai-feature-flag.service.js';
 import { AiKnowledgeService } from './ai-knowledge.service.js';
 import { AiDataAccessService } from './ai-data-access.service.js';
+import type {
+  ProviderCardDto,
+  PlatformStatsDto,
+  TopProviderDto,
+  PendingApprovalsDto,
+} from './ai-data-access.service.js';
 import { AiConversationService } from './ai-conversation.service.js';
 import { AiQuotaService } from './ai-quota.service.js';
 import {
@@ -31,6 +37,7 @@ import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
 import { buildActiveTools } from './tools/tool-registry.js';
 import { OpenRouterProvider } from './providers/openrouter.provider.js';
+import { AiMemoryService } from './ai-memory.service.js';
 import type {
   AiCaller,
   AiChatResult,
@@ -41,6 +48,7 @@ import type {
 } from './ai-assistant.types.js';
 import {
   AI_MODEL,
+  AI_QUERY_STOPWORDS,
   ANALYTICS_COUNTER_TTL_MS,
   CACHE_TTL_FAQ_MS,
   CACHE_TTL_SEARCH_MS,
@@ -65,6 +73,23 @@ import {
 } from './ai-assistant.constants.js';
 
 /**
+ * Métricas administrativas que el router determinístico resuelve sin IA,
+ * mapeadas 1:1 con las tools admin (`get_platform_stats`, etc.).
+ */
+type AdminMetric = 'platform_stats' | 'pending_approvals' | 'top_providers';
+
+/**
+ * Payload del caché de respuestas: el texto + (si la consulta fue una búsqueda
+ * de proveedores) las tarjetas, para reconstruir la respuesta enriquecida
+ * COMPLETA desde caché — no solo el texto.
+ */
+interface CachedResponse {
+  reply: string;
+  type?: 'PROVIDER_RESULTS';
+  providers?: ProviderCardDto[];
+}
+
+/**
  * Orquestador de "Ofi". 100% aislado: cualquier fallo se traduce en una
  * respuesta controlada y NUNCA propaga al resto de Servi.
  *
@@ -84,6 +109,9 @@ export class AiAssistantService {
   private readonly logger = new Logger(AiAssistantService.name);
   private client: GoogleGenAI | null = null;
   private clientInitTried = false;
+
+  /** Stopwords del caché semántico, como Set para lookup O(1). */
+  private static readonly STOPWORDS = new Set<string>(AI_QUERY_STOPWORDS);
 
   constructor(
     private readonly config: ConfigService,
@@ -114,6 +142,11 @@ export class AiAssistantService {
     @Optional()
     @Inject(OpenRouterProvider)
     private readonly openrouter?: OpenRouterProvider,
+    // Memoria persistente por usuario/proveedor. Opcional: si no se inyecta
+    // (tests antiguos) el prompt se arma igual sin el bloque de memoria.
+    @Optional()
+    @Inject(AiMemoryService)
+    private readonly memory?: AiMemoryService,
   ) {}
 
   /** Lazy init del SDK moderno @google/genai. */
@@ -146,6 +179,47 @@ export class AiAssistantService {
       reply,
       meta: { promptVersion, blocked: true, reason },
     });
+
+    // ── Router determinístico de métricas admin (SIN IA) ──────────
+    // Antes de tocar Gemini/OpenRouter: si un ADMIN pregunta por una métrica
+    // conocida (usuarios, proveedores, aprobaciones, ranking), se responde
+    // directo desde BD. No consume IA, ni cuota, ni circuit breaker, y funciona
+    // aunque Gemini esté caído. Si no matchea o la BD falla → sigue el flujo IA.
+    const persona = this.resolvePersona(
+      caller,
+      reqMeta.appOrigin,
+      reqMeta.appContext,
+    );
+    if (persona === AiPersonaType.ADMIN) {
+      const metric = this.matchAdminMetric(message);
+      if (metric) {
+        const reply = await this.answerAdminMetric(metric);
+        if (reply) {
+          this.logger.log(
+            `[AI-ROUTER] métrica admin '${metric}' resuelta sin IA`,
+          );
+          if (!sandbox) {
+            await this.persistDeterministic(
+              caller,
+              message,
+              reply,
+              reqMeta,
+              startedAt,
+              promptVersion,
+            );
+          }
+          return {
+            reply,
+            meta: {
+              promptVersion,
+              blocked: false,
+              cached: false,
+              deterministic: true,
+            },
+          };
+        }
+      }
+    }
 
     // 1. Circuit breaker.
     const cb = await this.breaker.canRequest();
@@ -237,30 +311,36 @@ export class AiAssistantService {
     if (cacheable) {
       const hit = await this.cacheGet(cacheKey);
       if (hit) {
+        this.logger.log(`[AI-CACHE] hit (${intent}) → respuesta sin IA`);
         await this.conversations.saveMessage({
           conversationId,
           role: 'model',
-          content: hit,
+          content: hit.reply,
           responseTimeMs: Date.now() - startedAt,
           tokensUsed: 0,
           flagged: false,
           moderationPass: true,
         });
         return {
-          reply: hit,
+          reply: hit.reply,
+          // Reconstruye las tarjetas si la respuesta cacheada las traía.
+          ...(hit.type === 'PROVIDER_RESULTS' && hit.providers
+            ? { type: hit.type, providers: hit.providers }
+            : {}),
           meta: { promptVersion, blocked: false, cached: true },
         };
       }
     }
 
     // ── Llamada a Gemini ────────────────────────────────────────
-    // Persona REAL del request (admin panel / invitado / cliente / proveedor)
-    // → define qué Estrategia de Contexto arma el system prompt.
-    const persona = this.resolvePersona(
-      caller,
-      reqMeta.appOrigin,
-      reqMeta.appContext,
-    );
+    // `persona` ya se resolvió arriba (router determinístico) y define qué
+    // Estrategia de Contexto arma el system prompt.
+    // Acumulador de proveedores de `search_providers` durante el turno (en
+    // CUALQUIER ronda, vía Gemini o el fallback OpenRouter). Si queda con
+    // datos, se exponen al cliente como tarjetas navegables.
+    const providerSink: ProviderCardDto[] = [];
+    // Rubros buscados en el turno (args de search_providers) → memoria.
+    const categorySink: string[] = [];
     let rawReply: string;
     let tokensUsed: number | null = null;
     try {
@@ -270,6 +350,8 @@ export class AiAssistantService {
         san.cleaned,
         recovered,
         persona,
+        providerSink,
+        categorySink,
       );
       rawReply = out.reply;
       tokensUsed = out.tokensUsed;
@@ -291,7 +373,14 @@ export class AiAssistantService {
       // persona, system prompt, historial y tools → function-calling idéntico.
       const fb =
         this.shouldFallback(err) && this.openrouter?.isConfigured()
-          ? await this.tryOpenRouter(caller, san.cleaned, recovered, persona)
+          ? await this.tryOpenRouter(
+              caller,
+              san.cleaned,
+              recovered,
+              persona,
+              providerSink,
+              categorySink,
+            )
           : null;
 
       if (!fb) {
@@ -322,14 +411,47 @@ export class AiAssistantService {
       });
     }
 
-    // Guardamos en caché solo respuestas limpias (no tóxicas).
+    // Proveedores encontrados → tarjetas navegables (dedupe por id).
+    const providers = this.dedupeProviders(providerSink);
+
+    // Memoria persistente (best-effort, NO bloquea la respuesta): rubros
+    // buscados + proveedores vistos + intención. Solo CLIENT/PROVIDER.
+    if (
+      this.memory &&
+      !sandbox &&
+      caller.userId > 0 &&
+      (persona === AiPersonaType.CLIENT || persona === AiPersonaType.PROVIDER)
+    ) {
+      void this.memory.recordTurn(caller.userId, {
+        intent,
+        categories: categorySink,
+        providerIds: providers.map((p) => p.id),
+      });
+      if (persona === AiPersonaType.PROVIDER) {
+        void this.memory.refreshProviderMemory(caller.userId);
+      }
+    }
+
+    // Caché semántico: guardamos texto + tarjetas juntos (no tóxicas). Así una
+    // búsqueda repetida ("electricista en Huancayo") devuelve la respuesta Y
+    // las tarjetas sin tocar la IA. TTL corto en búsquedas (frescura) vs 24h
+    // en FAQ (estables).
     if (cacheable && !guarded.toxic) {
       const ttl = intent === 'faq' ? CACHE_TTL_FAQ_MS : CACHE_TTL_SEARCH_MS;
-      await this.cacheSet(cacheKey, guarded.safe, ttl);
+      const payload: CachedResponse = {
+        reply: guarded.safe,
+        ...(providers.length > 0
+          ? { type: 'PROVIDER_RESULTS', providers }
+          : {}),
+      };
+      await this.cacheSet(cacheKey, payload, ttl);
     }
 
     return {
       reply: guarded.safe,
+      ...(providers.length > 0
+        ? { type: 'PROVIDER_RESULTS' as const, providers }
+        : {}),
       meta: { promptVersion, blocked: false, cached: false },
     };
   }
@@ -363,17 +485,60 @@ export class AiAssistantService {
     return 'other';
   }
 
-  /** Clave de caché: prefijo + versión + rol + hash del mensaje normalizado. */
+  /**
+   * Clave de caché SEMÁNTICA: prefijo + versión + rol + hash de la forma
+   * CANÓNICA del mensaje. Consultas equivalentes ("electricista en Huancayo",
+   * "electricistas en Huancayo", "busco un electricista en Huancayo") colapsan
+   * a la misma clava → reutilizan la respuesta cacheada.
+   */
   private respCacheKey(version: string, role: string, message: string): string {
-    const normalized = message.toLowerCase().replace(/\s+/g, ' ').trim();
-    const hash = createHash('sha1').update(normalized).digest('hex');
+    const canonical = this.semanticCanonical(message);
+    const hash = createHash('sha1').update(canonical).digest('hex');
     return `${RESP_CACHE_PREFIX}${version}:${role}:${hash}`;
   }
 
-  /** Lee la caché de respuesta. Fallback a null si Redis falla. */
-  private async cacheGet(key: string): Promise<string | null> {
+  /**
+   * Forma canónica para el caché semántico: normaliza (minúsculas, sin
+   * acentos), tokeniza, descarta stopwords de consulta, singulariza plurales
+   * comunes y ordena los tokens. El orden de palabras y los plurales dejan de
+   * importar → "busco un electricista" ≡ "electricistas".
+   */
+  private semanticCanonical(message: string): string {
+    const tokens = this.normalizeText(message)
+      .split(/[^a-z0-9]+/)
+      .filter((t) => t.length > 0 && !AiAssistantService.STOPWORDS.has(t))
+      .map((t) => this.singularize(t))
+      .filter((t) => t.length > 0);
+    return Array.from(new Set(tokens)).sort().join(' ');
+  }
+
+  /** Singulariza plurales del dominio (vocal+'s'): electricistas → electricista. */
+  private singularize(t: string): string {
+    return t.length > 3 && t.endsWith('s') ? t.slice(0, -1) : t;
+  }
+
+  /**
+   * Lee la caché de respuesta. Devuelve el payload (texto + providers) o null.
+   * Tolera valores antiguos guardados como texto plano (backward-compatible).
+   */
+  private async cacheGet(key: string): Promise<CachedResponse | null> {
     try {
-      return (await this.cache.get<string>(key)) ?? null;
+      const raw = await this.cache.get<string>(key);
+      if (raw == null) return null;
+      if (typeof raw !== 'string') {
+        // El store devolvió un objeto ya deserializado.
+        return raw as CachedResponse;
+      }
+      const trimmed = raw.trim();
+      if (trimmed.startsWith('{')) {
+        try {
+          return JSON.parse(raw) as CachedResponse;
+        } catch {
+          return { reply: raw };
+        }
+      }
+      // Valor legacy: texto plano.
+      return { reply: raw };
     } catch (e) {
       this.logger.warn(
         `cacheGet falló (fallback): ${(e as Error)?.message ?? e}`,
@@ -382,14 +547,14 @@ export class AiAssistantService {
     }
   }
 
-  /** Escribe la caché de respuesta. No-op si Redis falla. */
+  /** Escribe el payload de respuesta (JSON). No-op si Redis falla. */
   private async cacheSet(
     key: string,
-    value: string,
+    payload: CachedResponse,
     ttlMs: number,
   ): Promise<void> {
     try {
-      await this.cache.set(key, value, ttlMs);
+      await this.cache.set(key, JSON.stringify(payload), ttlMs);
     } catch (e) {
       this.logger.warn(
         `cacheSet falló (ignorado): ${(e as Error)?.message ?? e}`,
@@ -416,6 +581,8 @@ export class AiAssistantService {
     cleanedMessage: string,
     history: AiHistoryTurn[],
     persona: AiPersonaType,
+    providerSink: ProviderCardDto[],
+    categorySink: string[],
   ): Promise<{ reply: string; tokensUsed: number | null }> {
     const contents = this.buildContents(history, cleanedMessage);
     const systemInstruction = await this.systemPrompt(caller, persona);
@@ -482,14 +649,28 @@ export class AiAssistantService {
       const responseParts: Part[] = [];
       for (const call of calls) {
         const result = await this.executeTool(caller, activeNames, call);
+        // Captura proveedores para el cliente + devuelve la versión SIN
+        // contacto que ve el modelo (privacidad intacta).
+        const modelResult = this.captureSearchProviders(
+          call.name,
+          result,
+          providerSink,
+        );
+        if (call.name === 'search_providers') {
+          const cat = this.asString(call.args?.category);
+          if (cat) categorySink.push(cat);
+        }
         // [AI-AUDIT TEMPORAL] Resultado devuelto por cada tool (truncado).
         this.logger.log(
           `[AI-AUDIT] tool ${call.name ?? '(sin nombre)'} → ${JSON.stringify(
-            result,
+            modelResult,
           ).slice(0, 400)}`,
         );
         responseParts.push({
-          functionResponse: { name: call.name ?? 'unknown', response: result },
+          functionResponse: {
+            name: call.name ?? 'unknown',
+            response: modelResult,
+          },
         });
       }
       contents.push({ role: 'user', parts: responseParts });
@@ -631,6 +812,290 @@ export class AiAssistantService {
   }
 
   /**
+   * Si la tool ejecutada fue `search_providers`, acumula sus proveedores en
+   * `sink` (para exponerlos al CLIENTE como tarjetas) y devuelve una copia
+   * SIN datos de contacto para que la vea el MODELO — preservando la barrera
+   * de privacidad de la Regla 2 (el modelo nunca recibe teléfonos). Para
+   * cualquier otra tool, devuelve el resultado intacto.
+   */
+  private captureSearchProviders(
+    name: string | undefined,
+    result: Record<string, unknown>,
+    sink: ProviderCardDto[],
+  ): Record<string, unknown> {
+    if (name !== 'search_providers') return result;
+    const providers = result.providers;
+    if (!Array.isArray(providers)) return result;
+
+    sink.push(...(providers as ProviderCardDto[]));
+
+    const modelSafe = (providers as ProviderCardDto[]).map((p) => {
+      const clone: Partial<ProviderCardDto> = { ...p };
+      delete clone.phone;
+      delete clone.whatsapp;
+      return clone;
+    });
+    return { providers: modelSafe };
+  }
+
+  /** Deduplica proveedores por id conservando el orden (ranking del query). */
+  private dedupeProviders(list: ProviderCardDto[]): ProviderCardDto[] {
+    const seen = new Set<number>();
+    const out: ProviderCardDto[] = [];
+    for (const p of list) {
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      out.push(p);
+    }
+    return out;
+  }
+
+  // ── Router determinístico de métricas admin (sin IA) ──────────
+
+  /** Minúsculas + sin acentos + espacios colapsados (match robusto). */
+  private normalizeText(s: string): string {
+    return s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Clasifica el mensaje contra las métricas admin conocidas. Devuelve la
+   * métrica si hay match claro, o null para delegar en la IA. El orden va de
+   * lo más específico (ranking) a lo más general (KPIs).
+   */
+  private matchAdminMetric(message: string): AdminMetric | null {
+    const m = this.normalizeText(message);
+    if (m.length === 0) return null;
+    const has = (...kw: string[]): boolean => kw.some((k) => m.includes(k));
+
+    // 1) Ranking / movimiento de proveedores.
+    if (
+      (has('top', 'mejor', 'destacad', 'ranking') &&
+        has('proveedor', 'negocio')) ||
+      has(
+        'mas movimiento',
+        'mayor movimiento',
+        'mas trafico',
+        'mas activ',
+        'mas visto',
+        'mas contactad',
+      )
+    ) {
+      return 'top_providers';
+    }
+
+    // 2) Colas de aprobación / moderación.
+    if (
+      has(
+        'aprobacion',
+        'por aprobar',
+        'falta aprobar',
+        'falta revisar',
+        'falta verificar',
+        'por verificar',
+        'verificaciones pendientes',
+        'moderar',
+        'moderacion',
+        'cola de',
+        'en cola',
+        'solicitudes pendientes',
+        'validaciones pendientes',
+      ) ||
+      (has('pendiente') &&
+        has(
+          'aprob',
+          'solicitud',
+          'verific',
+          'moder',
+          'cola',
+          'revisar',
+          'trust',
+        ))
+    ) {
+      return 'pending_approvals';
+    }
+
+    // 3) KPIs de plataforma (usuarios, proveedores, registros, ingresos).
+    if (
+      has(
+        'cuantos usuario',
+        'cuantas usuario',
+        'cantidad de usuario',
+        'numero de usuario',
+        'total de usuario',
+        'usuarios registrado',
+        'cuantos proveedor',
+        'cantidad de proveedor',
+        'numero de proveedor',
+        'total de proveedor',
+        'proveedores activo',
+        'proveedores aprobado',
+        'proveedores registrado',
+        'cuantos negocio',
+        'cuantos registro',
+        'registros nuevo',
+        'nuevos registro',
+        'crecimiento',
+        'ingreso',
+        'facturacion',
+        'cuanto factur',
+        'metricas',
+        'estadisticas',
+        'kpi',
+        'estado de la plataforma',
+        'estado general',
+      ) ||
+      m === 'usuarios' ||
+      m === 'proveedores' ||
+      m === 'proveedores activos' ||
+      m === 'cantidad de usuarios' ||
+      m === 'cantidad de proveedores'
+    ) {
+      return 'platform_stats';
+    }
+
+    return null;
+  }
+
+  /**
+   * Ejecuta la consulta de la métrica y formatea la respuesta en markdown.
+   * Reutiliza los MISMOS métodos `*Safe` que usan las tools (con timeout +
+   * fallback). Devuelve null si la BD falla → el orquestador delega en IA.
+   */
+  private async answerAdminMetric(metric: AdminMetric): Promise<string | null> {
+    try {
+      switch (metric) {
+        case 'platform_stats':
+          return this.formatPlatformStats(
+            await this.data.getPlatformStatsSafe(),
+          );
+        case 'pending_approvals':
+          return this.formatPendingApprovals(
+            await this.data.getPendingApprovalsSafe(),
+          );
+        case 'top_providers':
+          return this.formatTopProviders(await this.data.getTopProvidersSafe());
+      }
+    } catch (e) {
+      this.logger.warn(
+        `[AI-ROUTER] métrica ${metric} falló (cae a IA): ${
+          (e as Error)?.message ?? e
+        }`,
+      );
+      return null;
+    }
+  }
+
+  /** OFICIO → 'Profesional', NEGOCIO → 'Negocio'. */
+  private providerTypeLabel(type: string): string {
+    return type === 'NEGOCIO' ? 'Negocio' : 'Profesional';
+  }
+
+  private formatPlatformStats(s: PlatformStatsDto): string {
+    const trend =
+      s.newUsersThisWeek > s.newUsersLastWeek
+        ? '📈 en alza'
+        : s.newUsersThisWeek < s.newUsersLastWeek
+          ? '📉 a la baja'
+          : 'estable';
+    const revenue = Number(s.monthlyRevenue).toFixed(2);
+    return [
+      '**📊 Estado de la plataforma** _(en tiempo real, sin IA)_',
+      '',
+      `- **Usuarios:** ${s.totalUsers} · hoy +${s.newUsersToday} · últimos 7 días +${s.newUsersThisWeek} (semana previa ${s.newUsersLastWeek}, ${trend})`,
+      `- **Proveedores:** ${s.totalProviders} · ${s.approvedProviders} aprobados · ${s.pendingProviders} pendientes`,
+      `- **Ingresos del mes:** S/ ${revenue}`,
+    ].join('\n');
+  }
+
+  private formatPendingApprovals(p: PendingApprovalsDto): string {
+    if (p.totalProviders === 0 && p.totalTrustValidations === 0) {
+      return '✅ **No hay nada pendiente.** Todas las aprobaciones y validaciones están al día.';
+    }
+    const lines = [
+      '**🗂️ Aprobaciones pendientes** _(en tiempo real, sin IA)_',
+      '',
+      `- **Proveedores por verificar:** ${p.totalProviders}`,
+      `- **Validaciones de confianza:** ${p.totalTrustValidations}`,
+    ];
+    if (p.providers.length > 0) {
+      lines.push('', '_Proveedores más antiguos en cola:_');
+      for (const it of p.providers) {
+        lines.push(
+          `- ${it.businessName} (${this.providerTypeLabel(it.type)}) — desde ${it.since}`,
+        );
+      }
+    }
+    return lines.join('\n');
+  }
+
+  private formatTopProviders(list: TopProviderDto[]): string {
+    if (list.length === 0) {
+      return 'Aún no hay datos de movimiento de proveedores para rankear.';
+    }
+    const lines = [
+      '**🏆 Proveedores con más movimiento** _(en tiempo real, sin IA)_',
+      '',
+    ];
+    list.forEach((p, i) => {
+      const mov = p.movement > 0 ? ` · ${p.movement} interacciones` : '';
+      lines.push(
+        `${i + 1}. **${p.businessName}** (${this.providerTypeLabel(p.type)}) — ⭐ ${p.averageRating.toFixed(1)} (${p.totalReviews} reseñas)${mov}`,
+      );
+    });
+    return lines.join('\n');
+  }
+
+  /**
+   * Persiste el turno (user + model) de una respuesta determinística para que
+   * aparezca en el historial cross-device. Best-effort: nunca lanza.
+   */
+  private async persistDeterministic(
+    caller: AiCaller,
+    message: string,
+    reply: string,
+    reqMeta: AiRequestMeta,
+    startedAt: number,
+    promptVersion: string,
+  ): Promise<void> {
+    try {
+      const conversationId = await this.conversations.getOrCreate(
+        caller.userId,
+        promptVersion,
+      );
+      if (conversationId == null) return;
+      await this.conversations.saveMessage({
+        conversationId,
+        role: 'user',
+        content: message,
+        ip: reqMeta.ip,
+        userAgent: reqMeta.userAgent,
+        flagged: false,
+        moderationPass: true,
+      });
+      await this.conversations.saveMessage({
+        conversationId,
+        role: 'model',
+        content: reply,
+        responseTimeMs: Date.now() - startedAt,
+        tokensUsed: 0,
+        flagged: false,
+        moderationPass: true,
+      });
+    } catch (e) {
+      this.logger.warn(
+        `[AI-ROUTER] persistencia falló (ignorado): ${
+          (e as Error)?.message ?? e
+        }`,
+      );
+    }
+  }
+
+  /**
    * Detecta saturación de Gemini (HTTP 503 / status UNAVAILABLE / overloaded)
    * para responder con un mensaje específico en vez del genérico.
    */
@@ -706,6 +1171,8 @@ export class AiAssistantService {
     cleanedMessage: string,
     history: AiHistoryTurn[],
     persona: AiPersonaType,
+    providerSink: ProviderCardDto[],
+    categorySink: string[],
   ): Promise<{ reply: string; tokensUsed: number | null } | null> {
     const provider = this.openrouter;
     if (!provider) return null;
@@ -722,7 +1189,15 @@ export class AiAssistantService {
         history,
         userMessage: cleanedMessage,
         tools,
-        runTool: (call) => this.executeTool(caller, activeNames, call),
+        runTool: async (call) => {
+          const result = await this.executeTool(caller, activeNames, call);
+          if (call.name === 'search_providers') {
+            const cat = this.asString(call.args?.category);
+            if (cat) categorySink.push(cat);
+          }
+          // Mismo sink + stripping de contacto que el camino Gemini.
+          return this.captureSearchProviders(call.name, result, providerSink);
+        },
       });
 
       this.logger.log(
@@ -800,6 +1275,21 @@ export class AiAssistantService {
       ? await strategy.getSystemPrompt(caller.userId)
       : this.fallbackPersonaPrompt(caller);
 
+    // Memoria persistente (best-effort, bloque compacto). Solo CLIENT/PROVIDER:
+    // da continuidad y evita repreguntar ubicación/rubros → menos tokens.
+    let memoryBlock = '';
+    if (this.memory) {
+      try {
+        if (persona === AiPersonaType.PROVIDER) {
+          memoryBlock = await this.memory.getProviderMemoryBlock(caller.userId);
+        } else if (persona === AiPersonaType.CLIENT) {
+          memoryBlock = await this.memory.getUserMemoryBlock(caller.userId);
+        }
+      } catch {
+        memoryBlock = '';
+      }
+    }
+
     const parts: string[] = [
       `[prompt:${version}:${persona}]`,
       // ── Seguridad COMPARTIDA (inquebrantable, cualquier persona) ──
@@ -813,6 +1303,10 @@ export class AiAssistantService {
       // ── Persona (Estrategia de Contexto) ──
       personaPrompt,
     ];
+
+    if (memoryBlock.trim().length > 0) {
+      parts.push('', memoryBlock);
+    }
 
     if (knowledge.trim().length > 0) {
       parts.push(

@@ -4,13 +4,16 @@ import '../../../provider_dashboard/domain/models/service_item_model.dart';
 /// Mapea exactamente con la tabla `providers` del backend
 class ProviderModel {
   final int id;
+
   /// Slug URL-friendly único — base de la Vanity URL pública
   /// `oficioapp.org.pe/p/{slug}`. Null para registros migrados antes de
   /// que existiera el campo; en ese caso la app cae al deep-link por id.
   final String? slug;
   final String businessName;
+
   /// Especialidad principal del proveedor (la marcada con isPrimary).
   final String categoryName;
+
   /// Todas las Especialidades (la primera es la principal `categoryName`).
   final List<String> categoryNames;
   final String phone;
@@ -31,29 +34,40 @@ class ProviderModel {
   final String? address;
   final Map<String, dynamic>? scheduleJson;
   final List<Map<String, dynamic>>? reviews;
+
   /// Nombre real del dueño/profesional (de user.firstName + user.lastName)
   final String? ownerName;
+
   /// Avatar del dueño — relevante sobre todo para tipo OFICIO
   final String? ownerAvatarUrl;
+
   /// Plan de suscripción: 'GRATIS'| 'ESTANDAR' | 'PREMIUM'
   final String subscriptionPlan;
+
   /// ID del usuario propietario — para detectar auto-interacción
   final int? userId;
+
   /// Número de usuarios que recomendaron este proveedor
   final int totalRecommendations;
+
   /// Solo OFICIO: indica que el profesional atiende a domicilio
   final bool hasHomeService;
+
   /// Solo NEGOCIO: ofrece servicio de delivery propio
   final bool hasDelivery;
+
   /// Solo NEGOCIO: entrega pedidos coordinando con el cliente
   final bool plenaCoordinacion;
+
   /// Locality info (name, department, province, district) — usada por
   /// `locationLabel` para formatear la ubicación en la tarjeta.
   final String? localityDepartment;
   final String? localityProvince;
   final String? localityDistrict;
+
   /// Servicios/productos del proveedor (parseados de scheduleJson['services'])
   final List<ServiceItem> services;
+
   /// true cuando el admin validó los documentos de identidad del proveedor
   final bool isTrusted;
   // ── Redes sociales (todas opcionales) ───────────────────
@@ -115,55 +129,53 @@ class ProviderModel {
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
     return ProviderModel(
-      id:            json['id'] as int,
-      slug:          json['slug'] as String?,
-      businessName:  json['businessName'] as String,
-      categoryName:  _firstCategoryName(json),
+      id: json['id'] as int,
+      slug: json['slug'] as String?,
+      businessName: json['businessName'] as String,
+      categoryName: _firstCategoryName(json),
       categoryNames: _allCategoryNames(json),
-      phone:         json['phone'] as String,
-      whatsapp:      json['whatsapp'] as String?,
+      phone: json['phone'] as String? ?? '',
+      whatsapp: json['whatsapp'] as String?,
       averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
-      totalReviews:  json['totalReviews'] as int? ?? 0,
-      availability:  AvailabilityStatus.fromString(
-                       json['availability'] as String? ?? 'DISPONIBLE',
-                     ),
-      isVerified:    json['isVerified'] as bool? ?? false,
+      totalReviews: json['totalReviews'] as int? ?? 0,
+      availability: AvailabilityStatus.fromString(
+        json['availability'] as String? ?? 'DISPONIBLE',
+      ),
+      isVerified: json['isVerified'] as bool? ?? false,
       hasCleanRecord: json['hasCleanRecord'] as bool? ?? false,
-      type:          ProviderType.fromString(
-                       json['type'] as String? ?? 'OFICIO',
-                     ),
+      type: ProviderType.fromString(json['type'] as String? ?? 'OFICIO'),
       coverImageUrl: _coverFromImages(json['images'] as List?),
       thumbnailUrls: _thumbnailsFromImages(json['images'] as List?),
-      latitude:     (json['latitude'] as num?)?.toDouble(),
-      longitude:    (json['longitude'] as num?)?.toDouble(),
-      isFavorite:   json['isFavorite'] as bool? ?? false,
-      description:  json['description'] as String?,
-      address:      json['address'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      description: json['description'] as String?,
+      address: json['address'] as String?,
       scheduleJson: json['scheduleJson'] as Map<String, dynamic>?,
-      reviews:      (json['reviews'] as List?)
-                      ?.map((r) => r as Map<String, dynamic>)
-                      .toList(),
-      ownerName:              _buildOwnerName(json['user']),
-      ownerAvatarUrl:         json['user']?['avatarUrl'] as String?,
-      subscriptionPlan:       json['subscription']?['plan'] as String? ?? 'GRATIS',
-      userId:                 json['userId'] as int?,
-      totalRecommendations:   json['totalRecommendations'] as int? ?? 0,
-      hasHomeService:         json['hasHomeService'] as bool? ?? false,
-      hasDelivery:            json['hasDelivery'] as bool? ?? false,
-      plenaCoordinacion:      json['plenaCoordinacion'] as bool? ?? false,
-      localityDepartment:     json['locality']?['department'] as String?,
-      localityProvince:       json['locality']?['province']   as String?,
-      localityDistrict:       json['locality']?['district']   as String?,
-      services:               _parseServices(json['scheduleJson']),
-      isTrusted:              json['isTrusted'] as bool? ?? false,
-      website:                json['website']     as String?,
-      instagram:              json['instagram']   as String?,
-      tiktok:                 json['tiktok']      as String?,
-      facebook:               json['facebook']    as String?,
-      linkedin:               json['linkedin']    as String?,
-      twitterX:               json['twitterX']    as String?,
-      telegram:               json['telegram']    as String?,
-      whatsappBiz:            json['whatsappBiz'] as String?,
+      reviews: (json['reviews'] as List?)
+          ?.map((r) => r as Map<String, dynamic>)
+          .toList(),
+      ownerName: _buildOwnerName(json['user']),
+      ownerAvatarUrl: json['user']?['avatarUrl'] as String?,
+      subscriptionPlan: json['subscription']?['plan'] as String? ?? 'GRATIS',
+      userId: json['userId'] as int?,
+      totalRecommendations: json['totalRecommendations'] as int? ?? 0,
+      hasHomeService: json['hasHomeService'] as bool? ?? false,
+      hasDelivery: json['hasDelivery'] as bool? ?? false,
+      plenaCoordinacion: json['plenaCoordinacion'] as bool? ?? false,
+      localityDepartment: json['locality']?['department'] as String?,
+      localityProvince: json['locality']?['province'] as String?,
+      localityDistrict: json['locality']?['district'] as String?,
+      services: _parseServices(json['scheduleJson']),
+      isTrusted: json['isTrusted'] as bool? ?? false,
+      website: json['website'] as String?,
+      instagram: json['instagram'] as String?,
+      tiktok: json['tiktok'] as String?,
+      facebook: json['facebook'] as String?,
+      linkedin: json['linkedin'] as String?,
+      twitterX: json['twitterX'] as String?,
+      telegram: json['telegram'] as String?,
+      whatsappBiz: json['whatsappBiz'] as String?,
     );
   }
 
@@ -214,8 +226,9 @@ class ProviderModel {
         .toList();
     if (urls.isEmpty) return const [];
 
-    final hasFlaggedCover =
-        images.any((img) => img is Map && img['isCover'] == true);
+    final hasFlaggedCover = images.any(
+      (img) => img is Map && img['isCover'] == true,
+    );
     if (hasFlaggedCover) {
       return images
           .whereType<Map>()
@@ -254,7 +267,10 @@ class ProviderModel {
     if (pcList is List && pcList.isNotEmpty) {
       final names = pcList
           .whereType<Map<String, dynamic>>()
-          .map((pc) => (pc['category'] as Map<String, dynamic>?)?['name'] as String?)
+          .map(
+            (pc) =>
+                (pc['category'] as Map<String, dynamic>?)?['name'] as String?,
+          )
           .whereType<String>()
           .where((n) => n.isNotEmpty)
           .toList();
@@ -286,8 +302,8 @@ class ProviderModel {
   static String? _buildOwnerName(dynamic user) {
     if (user == null) return null;
     final first = user['firstName'] as String? ?? '';
-    final last  = user['lastName']  as String? ?? '';
-    final full  = '$first $last'.trim();
+    final last = user['lastName'] as String? ?? '';
+    final full = '$first $last'.trim();
     return full.isEmpty ? null : full;
   }
 
@@ -297,50 +313,50 @@ class ProviderModel {
     List<ServiceItem>? services,
   }) {
     return ProviderModel(
-      id:               id,
-      slug:             slug,
-      businessName:     businessName,
-      categoryName:     categoryName,
-      categoryNames:    categoryNames,
-      phone:            phone,
-      whatsapp:         whatsapp,
-      averageRating:    averageRating,
-      totalReviews:     totalReviews,
-      availability:     availability,
-      isVerified:       isVerified,
-      hasCleanRecord:   hasCleanRecord,
-      type:             type,
-      coverImageUrl:    coverImageUrl,
-      thumbnailUrls:    thumbnailUrls,
-      latitude:         latitude,
-      longitude:        longitude,
-      distanceKm:       distanceKm,
-      isFavorite:       isFavorite ?? this.isFavorite,
-      description:      description,
-      address:          address,
-      scheduleJson:     scheduleJson,
-      reviews:          reviews ?? this.reviews,
-      ownerName:              ownerName,
-      ownerAvatarUrl:         ownerAvatarUrl,
-      subscriptionPlan:       subscriptionPlan,
-      userId:                 userId,
-      totalRecommendations:   totalRecommendations,
-      hasHomeService:         hasHomeService,
-      hasDelivery:            hasDelivery,
-      plenaCoordinacion:      plenaCoordinacion,
-      localityDepartment:     localityDepartment,
-      localityProvince:       localityProvince,
-      localityDistrict:       localityDistrict,
-      services:               services ?? this.services,
-      isTrusted:              isTrusted,
-      website:                website,
-      instagram:              instagram,
-      tiktok:                 tiktok,
-      facebook:               facebook,
-      linkedin:               linkedin,
-      twitterX:               twitterX,
-      telegram:               telegram,
-      whatsappBiz:            whatsappBiz,
+      id: id,
+      slug: slug,
+      businessName: businessName,
+      categoryName: categoryName,
+      categoryNames: categoryNames,
+      phone: phone,
+      whatsapp: whatsapp,
+      averageRating: averageRating,
+      totalReviews: totalReviews,
+      availability: availability,
+      isVerified: isVerified,
+      hasCleanRecord: hasCleanRecord,
+      type: type,
+      coverImageUrl: coverImageUrl,
+      thumbnailUrls: thumbnailUrls,
+      latitude: latitude,
+      longitude: longitude,
+      distanceKm: distanceKm,
+      isFavorite: isFavorite ?? this.isFavorite,
+      description: description,
+      address: address,
+      scheduleJson: scheduleJson,
+      reviews: reviews ?? this.reviews,
+      ownerName: ownerName,
+      ownerAvatarUrl: ownerAvatarUrl,
+      subscriptionPlan: subscriptionPlan,
+      userId: userId,
+      totalRecommendations: totalRecommendations,
+      hasHomeService: hasHomeService,
+      hasDelivery: hasDelivery,
+      plenaCoordinacion: plenaCoordinacion,
+      localityDepartment: localityDepartment,
+      localityProvince: localityProvince,
+      localityDistrict: localityDistrict,
+      services: services ?? this.services,
+      isTrusted: isTrusted,
+      website: website,
+      instagram: instagram,
+      tiktok: tiktok,
+      facebook: facebook,
+      linkedin: linkedin,
+      twitterX: twitterX,
+      telegram: telegram,
+      whatsappBiz: whatsappBiz,
     );
   }
 }
@@ -354,17 +370,23 @@ enum AvailabilityStatus {
 
   static AvailabilityStatus fromString(String value) {
     switch (value.toUpperCase()) {
-      case 'OCUPADO':     return AvailabilityStatus.ocupado;
-      case 'CON_DEMORA':  return AvailabilityStatus.conDemora;
-      default:            return AvailabilityStatus.disponible;
+      case 'OCUPADO':
+        return AvailabilityStatus.ocupado;
+      case 'CON_DEMORA':
+        return AvailabilityStatus.conDemora;
+      default:
+        return AvailabilityStatus.disponible;
     }
   }
 
   String get label {
     switch (this) {
-      case AvailabilityStatus.disponible: return 'Disponible';
-      case AvailabilityStatus.ocupado:    return 'Ocupado';
-      case AvailabilityStatus.conDemora:  return 'Con demora';
+      case AvailabilityStatus.disponible:
+        return 'Disponible';
+      case AvailabilityStatus.ocupado:
+        return 'Ocupado';
+      case AvailabilityStatus.conDemora:
+        return 'Con demora';
     }
   }
 }

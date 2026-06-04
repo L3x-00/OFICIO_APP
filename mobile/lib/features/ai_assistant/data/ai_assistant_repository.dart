@@ -19,24 +19,43 @@ class AiChatReply {
   final String? reason;
   final bool cached;
 
+  /// Tipo de payload enriquecido (p.ej. 'PROVIDER_RESULTS') cuando la IA
+  /// devuelve resultados estructurados además del texto.
+  final String? type;
+
+  /// Proveedores (shape de catálogo) cuando [type] == 'PROVIDER_RESULTS'.
+  /// Vacío en cualquier otro caso. Cada item alimenta `ProviderModel.fromJson`.
+  final List<Map<String, dynamic>> providers;
+
   const AiChatReply({
     required this.reply,
     required this.promptVersion,
     required this.blocked,
     this.reason,
     this.cached = false,
+    this.type,
+    this.providers = const [],
   });
 
   factory AiChatReply.fromJson(Map<String, dynamic> json) {
     final meta = json['meta'] is Map
         ? Map<String, dynamic>.from(json['meta'] as Map)
         : const <String, dynamic>{};
+    final rawProviders = json['providers'];
+    final providers = rawProviders is List
+        ? rawProviders
+              .whereType<Map>()
+              .map((m) => Map<String, dynamic>.from(m))
+              .toList()
+        : <Map<String, dynamic>>[];
     return AiChatReply(
       reply: json['reply']?.toString() ?? '',
       promptVersion: meta['promptVersion']?.toString() ?? 'v1',
       blocked: meta['blocked'] as bool? ?? false,
       reason: meta['reason']?.toString(),
       cached: meta['cached'] as bool? ?? false,
+      type: json['type']?.toString(),
+      providers: providers,
     );
   }
 }

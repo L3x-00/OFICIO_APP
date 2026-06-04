@@ -422,7 +422,9 @@ export const ModelName = {
   spatial_ref_sys: 'spatial_ref_sys',
   AiKnowledgeEntry: 'AiKnowledgeEntry',
   AiConversation: 'AiConversation',
-  AiMessage: 'AiMessage'
+  AiMessage: 'AiMessage',
+  AiUserMemory: 'AiUserMemory',
+  AiProviderMemory: 'AiProviderMemory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -438,7 +440,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "providerCategory" | "provider" | "providerImage" | "subscription" | "subscriptionAuditLog" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "providerCategory" | "provider" | "providerImage" | "subscription" | "subscriptionAuditLog" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3328,6 +3330,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AiUserMemory: {
+      payload: Prisma.$AiUserMemoryPayload<ExtArgs>
+      fields: Prisma.AiUserMemoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiUserMemoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiUserMemoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>
+        }
+        findFirst: {
+          args: Prisma.AiUserMemoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiUserMemoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>
+        }
+        findMany: {
+          args: Prisma.AiUserMemoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>[]
+        }
+        create: {
+          args: Prisma.AiUserMemoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>
+        }
+        createMany: {
+          args: Prisma.AiUserMemoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiUserMemoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>[]
+        }
+        delete: {
+          args: Prisma.AiUserMemoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>
+        }
+        update: {
+          args: Prisma.AiUserMemoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiUserMemoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiUserMemoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiUserMemoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiUserMemoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiUserMemoryPayload>
+        }
+        aggregate: {
+          args: Prisma.AiUserMemoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiUserMemory>
+        }
+        groupBy: {
+          args: Prisma.AiUserMemoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiUserMemoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiUserMemoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiUserMemoryCountAggregateOutputType> | number
+        }
+      }
+    }
+    AiProviderMemory: {
+      payload: Prisma.$AiProviderMemoryPayload<ExtArgs>
+      fields: Prisma.AiProviderMemoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiProviderMemoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiProviderMemoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>
+        }
+        findFirst: {
+          args: Prisma.AiProviderMemoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiProviderMemoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>
+        }
+        findMany: {
+          args: Prisma.AiProviderMemoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>[]
+        }
+        create: {
+          args: Prisma.AiProviderMemoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>
+        }
+        createMany: {
+          args: Prisma.AiProviderMemoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiProviderMemoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>[]
+        }
+        delete: {
+          args: Prisma.AiProviderMemoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>
+        }
+        update: {
+          args: Prisma.AiProviderMemoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiProviderMemoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiProviderMemoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiProviderMemoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiProviderMemoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderMemoryPayload>
+        }
+        aggregate: {
+          args: Prisma.AiProviderMemoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiProviderMemory>
+        }
+        groupBy: {
+          args: Prisma.AiProviderMemoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiProviderMemoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiProviderMemoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiProviderMemoryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3946,6 +4096,31 @@ export const AiMessageScalarFieldEnum = {
 export type AiMessageScalarFieldEnum = (typeof AiMessageScalarFieldEnum)[keyof typeof AiMessageScalarFieldEnum]
 
 
+export const AiUserMemoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  searchCategories: 'searchCategories',
+  recentProviderIds: 'recentProviderIds',
+  lastIntent: 'lastIntent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiUserMemoryScalarFieldEnum = (typeof AiUserMemoryScalarFieldEnum)[keyof typeof AiUserMemoryScalarFieldEnum]
+
+
+export const AiProviderMemoryScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  mainCategories: 'mainCategories',
+  metricsSnapshot: 'metricsSnapshot',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiProviderMemoryScalarFieldEnum = (typeof AiProviderMemoryScalarFieldEnum)[keyof typeof AiProviderMemoryScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4505,6 +4680,8 @@ export type GlobalOmitConfig = {
   aiKnowledgeEntry?: Prisma.AiKnowledgeEntryOmit
   aiConversation?: Prisma.AiConversationOmit
   aiMessage?: Prisma.AiMessageOmit
+  aiUserMemory?: Prisma.AiUserMemoryOmit
+  aiProviderMemory?: Prisma.AiProviderMemoryOmit
 }
 
 /* Types for Logging */

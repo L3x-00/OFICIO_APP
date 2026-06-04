@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/features/providers_list/domain/models/provider_model.dart';
 import '../data/ai_assistant_repository.dart';
 import '../domain/ai_message_model.dart';
 
@@ -75,7 +76,7 @@ class AiAssistantProvider extends ChangeNotifier {
         providerType: providerType,
         context: context,
       );
-      _messages.add(AiMessageModel.ofi(reply.reply));
+      _messages.add(_buildOfiMessage(reply));
     } on SessionExpiredException catch (e) {
       // 401: no agregamos burbuja de error; flageamos para que la UI avise
       // y cierre sesión. El `finally` notifica.
@@ -90,6 +91,26 @@ class AiAssistantProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Construye el mensaje de Ofi: si la respuesta es PROVIDER_RESULTS con
+  /// proveedores válidos, devuelve un mensaje con tarjetas navegables; si no,
+  /// texto normal. Un proveedor mal formado se ignora sin romper el mensaje.
+  AiMessageModel _buildOfiMessage(AiChatReply reply) {
+    if (reply.type == 'PROVIDER_RESULTS' && reply.providers.isNotEmpty) {
+      final models = <ProviderModel>[];
+      for (final raw in reply.providers) {
+        try {
+          models.add(ProviderModel.fromJson(raw));
+        } catch (_) {
+          // Item inválido → se omite; el resto del mensaje sigue.
+        }
+      }
+      if (models.isNotEmpty) {
+        return AiMessageModel.providerResults(reply.reply, models);
+      }
+    }
+    return AiMessageModel.ofi(reply.reply);
   }
 
   /// Limpia la conversación y vuelve a sembrar el saludo.

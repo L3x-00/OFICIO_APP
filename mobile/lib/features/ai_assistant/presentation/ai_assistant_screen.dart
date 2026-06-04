@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/features/providers_list/presentation/screens/provider_detail_screen.dart';
+import 'package:mobile/features/providers_list/presentation/widgets/service_card.dart';
 import '../domain/ai_message_model.dart';
 import 'ai_assistant_provider.dart';
 import 'guest_chat_screen.dart';
@@ -149,6 +151,7 @@ class _AiChatViewState extends State<_AiChatView> {
       body: SafeArea(
         child: Column(
           children: [
+            const _RetentionNotice(),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -182,6 +185,37 @@ class _OfiAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OfiChatAvatar(size: size);
+}
+
+/// Aviso de retención: informa que los mensajes se borran solos a los 3 días
+/// (la limpieza la hace el backend; aquí solo se informa al usuario).
+class _RetentionNotice extends StatelessWidget {
+  const _RetentionNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      color: c.bgCard,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.auto_delete_outlined, size: 14, color: c.textMuted),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              'Los mensajes de esta conversación se eliminan automáticamente '
+              'después de 3 días.',
+              style: TextStyle(color: c.textMuted, fontSize: 11.5, height: 1.2),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Burbuja de un mensaje (usuario o Ofi).
@@ -293,19 +327,48 @@ class _MessageBubble extends StatelessWidget {
       ),
     );
 
+    final row = Row(
+      mainAxisAlignment: isUser
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (!isUser) ...[const _OfiAvatar(size: 28), const SizedBox(width: 8)],
+        Flexible(child: bubble),
+      ],
+    );
+
+    // Mensaje normal → solo la burbuja.
+    if (!message.hasProviders) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: row,
+      );
+    }
+
+    // Mensaje PROVIDER_RESULTS → texto (burbuja) arriba + tarjetas navegables
+    // debajo, indentadas bajo la burbuja de Ofi. Reutiliza ServiceCardContent
+    // del catálogo; el tap abre el detalle del proveedor por id. El scroll lo
+    // maneja el ListView del chat (tarjetas en columna vertical, sin scroll
+    // anidado).
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            const _OfiAvatar(size: 28),
-            const SizedBox(width: 8),
-          ],
-          Flexible(child: bubble),
+          row,
+          Padding(
+            padding: const EdgeInsets.only(left: 36, top: 8),
+            child: Column(
+              children: [
+                for (final p in message.providers!)
+                  ServiceCardContent(
+                    provider: p,
+                    onTap: () => ProviderDetailSheet.show(context, p),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
