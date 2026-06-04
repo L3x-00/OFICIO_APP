@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/nestjs';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AiHistoryTurn } from './ai-assistant.types.js';
 import {
+  AI_PROMPT_VERSION,
   HISTORY_MAX_CHARS,
   HISTORY_MAX_MESSAGES,
 } from './ai-assistant.constants.js';
@@ -55,11 +56,13 @@ export class AiConversationService {
       );
       return null;
     }
-    // promptVersion NUNCA debe ir null/'' a la BD (columna NOT NULL).
+    // promptVersion NUNCA debe ir null/'' a la BD (columna NOT NULL). El
+    // fallback usa la constante canónica AI_PROMPT_VERSION (no un literal
+    // hardcodeado) — misma fuente que el @default("v1") del schema.
     const version =
       typeof promptVersion === 'string' && promptVersion.trim()
         ? promptVersion
-        : 'v1';
+        : AI_PROMPT_VERSION;
 
     try {
       const existing = await this.prisma.aiConversation.findFirst({
@@ -69,6 +72,13 @@ export class AiConversationService {
       });
       if (existing) return existing.id;
 
+      // DIAGNÓSTICO (nivel debug, silencioso en prod): evidencia del payload
+      // EXACTO que recibe Postgres. `userId` es la única columna NOT NULL del
+      // INSERT sin default; si llegara null/NaN aquí, ese sería el infractor.
+      this.logger.debug(
+        `aiConversation.create payload → userId=${userId} (${typeof userId}), ` +
+          `promptVersion=${JSON.stringify(version)} (${typeof version})`,
+      );
       const created = await this.prisma.aiConversation.create({
         data: { userId, promptVersion: version },
         select: { id: true },

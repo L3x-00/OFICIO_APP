@@ -17,6 +17,7 @@ import { GuestStrategy } from './strategies/guest.strategy.js';
 import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
+import { OpenRouterProvider } from './providers/openrouter.provider.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 
 /**
@@ -52,6 +53,8 @@ import { RolesGuard } from '../auth/roles.guard.js';
     ClientStrategy,
     ProviderStrategy,
     AdminStrategy,
+    // Proveedor de fallback IA (OpenRouter — DeepSeek → Qwen).
+    OpenRouterProvider,
     RolesGuard,
   ],
 })

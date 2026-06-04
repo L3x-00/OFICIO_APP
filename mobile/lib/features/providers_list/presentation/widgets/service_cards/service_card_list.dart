@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
-import 'package:mobile/shared/widgets/app_network_image.dart';
 import '../../../domain/models/provider_model.dart';
 import 'card_contact_actions.dart';
 import 'card_helpers.dart';
+import 'card_image_carousel.dart';
 
 /// Variante LISTA — fila compacta (~72px) para el modo de vista en lista.
 class ServiceCardList extends StatelessWidget {
@@ -63,16 +63,14 @@ class ServiceCardList extends StatelessWidget {
               SizedBox(
                 width: 68,
                 height: double.infinity,
-                child: provider.coverImageUrl != null
-                    ? AppNetworkImage(
-                        url: provider.coverImageUrl!,
-                        width: 68,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        placeholder: _avatarFallback(c),
-                        errorWidget: _avatarFallback(c),
-                      )
-                    : _avatarFallback(c),
+                child: ProviderImageCarousel(
+                  provider: provider,
+                  width: 68,
+                  fit: BoxFit.cover,
+                  dotSize: 4,
+                  placeholder: _avatarFallback(c),
+                  errorWidget: _avatarFallback(c),
+                ),
               ),
               // Contenido + acciones (con su propio padding).
               Expanded(

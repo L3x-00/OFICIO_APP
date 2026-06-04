@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
-import 'package:mobile/shared/widgets/app_network_image.dart';
 import '../../../domain/models/provider_model.dart';
 import 'card_action_buttons.dart';
 import 'card_contact_actions.dart';
 import 'card_helpers.dart';
+import 'card_image_carousel.dart';
+import 'card_location_text.dart';
 
 /// Variante CONTENIDO — tarjeta horizontal (~115px) con imagen a la
 /// izquierda y datos + acciones a la derecha.
@@ -29,21 +30,21 @@ class ServiceCardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c         = context.colors;
-    final plan      = provider.subscriptionPlan;
-    final premium   = isPremiumPlan(plan);
-    final standard  = isStandardPlan(plan);
+    final c = context.colors;
+    final plan = provider.subscriptionPlan;
+    final premium = isPremiumPlan(plan);
+    final standard = isStandardPlan(plan);
     final availColor = switch (provider.availability) {
       AvailabilityStatus.disponible => AppColors.available,
-      AvailabilityStatus.ocupado    => AppColors.busy,
-      AvailabilityStatus.conDemora  => AppColors.delayed,
+      AvailabilityStatus.ocupado => AppColors.busy,
+      AvailabilityStatus.conDemora => AppColors.delayed,
     };
 
     final borderColor = premium
         ? AppColors.premium.withValues(alpha: 0.6)
         : standard
-            ? AppColors.standard.withValues(alpha: 0.4)
-            : c.border;
+        ? AppColors.standard.withValues(alpha: 0.4)
+        : c.border;
 
     return GestureDetector(
       onTap: onTap,
@@ -65,16 +66,17 @@ class ServiceCardContent extends StatelessWidget {
           children: [
             // Imagen cuadrada izquierda
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-              child: provider.coverImageUrl != null
-                  ? AppNetworkImage(
-                      url: provider.coverImageUrl!,
-                      width: 95, height: 115,
-                      fit: BoxFit.cover,
-                      placeholder: _contentPlaceholder(c),
-                      errorWidget: _contentPlaceholder(c),
-                    )
-                  : _contentPlaceholder(c),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(15),
+              ),
+              child: ProviderImageCarousel(
+                provider: provider,
+                width: 95,
+                height: 115,
+                fit: BoxFit.cover,
+                placeholder: _contentPlaceholder(c),
+                errorWidget: _contentPlaceholder(c),
+              ),
             ),
             // Contenido derecho
             Expanded(
@@ -102,12 +104,20 @@ class ServiceCardContent extends StatelessWidget {
                         if (premium)
                           Padding(
                             padding: const EdgeInsets.only(left: 4),
-                            child: Icon(Icons.star_rounded, color: AppColors.premium, size: 14),
+                            child: Icon(
+                              Icons.star_rounded,
+                              color: AppColors.premium,
+                              size: 14,
+                            ),
                           ),
                         if (provider.isVerified)
                           Padding(
                             padding: const EdgeInsets.only(left: 3),
-                            child: Icon(Icons.verified_rounded, color: AppColors.verified, size: 14),
+                            child: Icon(
+                              Icons.verified_rounded,
+                              color: AppColors.verified,
+                              size: 14,
+                            ),
                           ),
                       ],
                     ),
@@ -125,13 +135,21 @@ class ServiceCardContent extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          width: 6, height: 6,
-                          decoration: BoxDecoration(color: availColor, shape: BoxShape.circle),
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: availColor,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                         const SizedBox(width: 3),
                         Text(
                           provider.availability.label,
-                          style: TextStyle(color: availColor, fontSize: 10, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: availColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -139,66 +157,68 @@ class ServiceCardContent extends StatelessWidget {
                     // Rating
                     Row(
                       children: [
-                        Icon(Icons.star_rounded, color: AppColors.star, size: 12),
+                        Icon(
+                          Icons.star_rounded,
+                          color: AppColors.star,
+                          size: 12,
+                        ),
                         const SizedBox(width: 2),
                         Text(
                           '${provider.averageRating.toStringAsFixed(1)} (${provider.totalReviews})',
-                          style: TextStyle(color: c.textSecondary, fontSize: 11),
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
-                    // Ubicación: OFICIO sólo distrito; NEGOCIO provincia,
-                    // distrito + dirección en línea adicional si existe.
-                    if (provider.locationLabel != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.location_on_outlined, color: c.textMuted, size: 12),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  provider.locationLabel!,
-                                  style: TextStyle(color: c.textSecondary, fontSize: 11),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (provider.type == ProviderType.negocio &&
-                                    provider.address != null &&
-                                    provider.address!.isNotEmpty)
-                                  Text(
-                                    provider.address!,
-                                    style: TextStyle(color: c.textMuted, fontSize: 10.5),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    // Ubicación (tercera línea): dirección de BD → "Provincia,
+                    // Distrito" (BD) → dirección geocodificada de las
+                    // coordenadas (shimmer mientras carga).
+                    const SizedBox(height: 4),
+                    ProviderAddressText(
+                      provider: provider,
+                      fallbackToLocality: true,
+                      icon: Icons.location_on_outlined,
+                      iconSize: 12,
+                      style: TextStyle(color: c.textSecondary, fontSize: 11),
+                    ),
                     // Chips de servicios (máx 2)
                     if (provider.services.isNotEmpty) ...[
                       const SizedBox(height: 5),
                       Wrap(
                         spacing: 5,
                         runSpacing: 4,
-                        children: provider.services.take(2).map((s) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.07),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                          ),
-                          child: Text(
-                            s.name,
-                            style: const TextStyle(color: AppColors.primary, fontSize: 9.5, fontWeight: FontWeight.w500),
-                          ),
-                        )).toList(),
+                        children: provider.services
+                            .take(2)
+                            .map(
+                              (s) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.07,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  s.name,
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ],
                     const SizedBox(height: 6),
@@ -207,18 +227,34 @@ class ServiceCardContent extends StatelessWidget {
                       GestureDetector(
                         onTap: onGoToDashboard,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 13),
+                              Icon(
+                                Icons.dashboard_rounded,
+                                color: AppColors.primary,
+                                size: 13,
+                              ),
                               SizedBox(width: 5),
-                              Text('Mi panel', style: TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w700)),
+                              Text(
+                                'Mi panel',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -236,13 +272,19 @@ class ServiceCardContent extends StatelessWidget {
                             CompactActionBtn(
                               svgAsset: 'assets/icons/whatsapp.svg',
                               color: AppColors.whatsapp,
-                              onTap: () => CardContactActions.openWhatsApp(context, provider),
+                              onTap: () => CardContactActions.openWhatsApp(
+                                context,
+                                provider,
+                              ),
                             ),
                             const SizedBox(width: 6),
                             CompactActionBtn(
                               icon: Icons.call_rounded,
                               color: AppColors.call,
-                              onTap: () => CardContactActions.makeCall(context, provider),
+                              onTap: () => CardContactActions.makeCall(
+                                context,
+                                provider,
+                              ),
                             ),
                           ],
                           const SizedBox(width: 6),
@@ -250,7 +292,9 @@ class ServiceCardContent extends StatelessWidget {
                             icon: provider.isFavorite
                                 ? Icons.favorite_rounded
                                 : Icons.favorite_border_rounded,
-                            color: provider.isFavorite ? AppColors.favorite : c.textMuted,
+                            color: provider.isFavorite
+                                ? AppColors.favorite
+                                : c.textMuted,
                             onTap: onFavoriteToggle,
                           ),
                         ],
@@ -267,7 +311,8 @@ class ServiceCardContent extends StatelessWidget {
 
   Widget _contentPlaceholder(AppThemeColors c) {
     return Container(
-      width: 95, height: 115,
+      width: 95,
+      height: 115,
       color: c.bgInput,
       child: Icon(Icons.storefront_rounded, size: 28, color: c.textMuted),
     );

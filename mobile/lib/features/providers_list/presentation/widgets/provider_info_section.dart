@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/provider_model.dart';
+import 'service_cards/card_helpers.dart';
+import 'service_cards/card_location_text.dart';
 
 /// ─── Header (nombre, categoría, badges Verificado/Confiable/Domicilio) ───
 
@@ -463,20 +465,29 @@ class ProviderLocationSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final hasCoords = provider.latitude != null && provider.longitude != null;
+    final hasAddressTarget =
+        (provider.address != null && provider.address!.isNotEmpty) || hasCoords;
+    final locationLine = provinceDistrictLabel(provider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (provider.address != null)
+        // Dirección: si está en BD se muestra; si no, se traduce desde las
+        // coordenadas con GeocodingService (shimmer mientras carga).
+        if (hasAddressTarget)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.location_on_rounded, color: accent, size: 16),
-                const SizedBox(width: 6),
                 Expanded(
-                  child: Text(
-                    provider.address!,
+                  child: ProviderAddressText(
+                    provider: provider,
+                    icon: Icons.location_on_rounded,
+                    iconColor: accent,
+                    iconSize: 16,
+                    maxLines: 2,
                     style: TextStyle(color: c.textSecondary, fontSize: 13),
                   ),
                 ),
@@ -512,8 +523,24 @@ class ProviderLocationSection extends StatelessWidget {
               ],
             ),
           ),
-        if (provider.latitude != null && provider.longitude != null)
-          _buildMap(),
+        // Ubicación: "Provincia, Distrito" SIEMPRE desde la BD (sin geocoding).
+        if (locationLine != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Icon(Icons.map_outlined, color: c.textMuted, size: 15),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    locationLine,
+                    style: TextStyle(color: c.textSecondary, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (hasCoords) _buildMap(),
       ],
     );
   }

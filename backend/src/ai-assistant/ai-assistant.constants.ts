@@ -112,6 +112,17 @@ export const TOOL_TIMEOUT_MS = 3000;
 /** Timeout de la llamada a Gemini (no debe colgar el request HTTP). */
 export const GEMINI_TIMEOUT_MS = 15000;
 
+// ── OpenRouter (proveedor de fallback) ──────────────────────
+/** Endpoint OpenAI-compatible de OpenRouter para chat completions. */
+export const OPENROUTER_BASE_URL =
+  'https://openrouter.ai/api/v1/chat/completions';
+/**
+ * Timeout de CADA llamada a OpenRouter. Más holgado que Gemini porque ya
+ * estamos en ruta de degradación y los modelos de fallback (DeepSeek/Qwen)
+ * pueden tardar algo más en la primera respuesta.
+ */
+export const OPENROUTER_TIMEOUT_MS = 30000;
+
 // ── Anti-loop de tools (regla 5) ────────────────────────────
 export const MAX_TOOL_ROUNDS = 3;
 /**

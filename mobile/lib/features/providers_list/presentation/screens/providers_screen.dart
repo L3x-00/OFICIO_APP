@@ -359,12 +359,29 @@ class _CompactLocationChip extends StatelessWidget {
     final c = context.colors;
     final hasFilter = prov.hasLocationFilter;
 
+    // El chip refleja la zona REAL del usuario EN TIEMPO REAL: prioriza los
+    // valores del stream GPS (liveDistrict/liveProvince) — que se actualizan
+    // al instante en cada cambio de zona (independiente del reload de 2 km)
+    // y disparan notifyListeners — y cae al filtro persistido si el stream
+    // aún no tiene dato. Antes el chip leía solo el filtro persistido, por
+    // eso se quedaba en "El Tambo" al moverse a otro distrito.
+    final liveDistrict = prov.liveDistrict;
+    final liveProvince = prov.liveProvince;
+    final displayDistrict = (liveDistrict?.isNotEmpty ?? false)
+        ? liveDistrict
+        : prov.district;
+    final displayProvince = (liveProvince?.isNotEmpty ?? false)
+        ? liveProvince
+        : prov.province;
+
     // Construir label solo si hay filtro
     String label = '';
     if (hasFilter) {
       final parts = [
-        if (prov.district != null) prov.district!,
-        if (prov.province != null) prov.province!,
+        if (displayDistrict != null && displayDistrict.isNotEmpty)
+          displayDistrict,
+        if (displayProvince != null && displayProvince.isNotEmpty)
+          displayProvince,
         if (prov.department != null) prov.department!,
       ];
       label = parts.isNotEmpty ? parts.first : '';

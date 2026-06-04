@@ -84,7 +84,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.15,
+                        ),
                         _buildEmpty(c),
                       ],
                     ),
@@ -119,6 +121,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             return ServiceCardMosaic(
               provider: provider,
               onTap: () => ProviderDetailSheet.show(context, provider),
+              onChat: () => _openChat(context, provider.id),
             );
           },
         );
@@ -165,8 +168,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       );
       return;
     }
-    final chat    = context.read<ChatProvider>();
-    final nav     = Navigator.of(context);
+    final chat = context.read<ChatProvider>();
+    final nav = Navigator.of(context);
     final scaffold = ScaffoldMessenger.of(context);
     try {
       final roomId = await chat.openRoom(
@@ -174,9 +177,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         providerId: providerId,
       );
       if (!mounted) return;
-      nav.push(MaterialPageRoute(
-        builder: (_) => ChatScreen(roomId: roomId),
-      ));
+      nav.push(MaterialPageRoute(builder: (_) => ChatScreen(roomId: roomId)));
     } catch (e) {
       if (!mounted) return;
       scaffold.showSnackBar(
@@ -216,11 +217,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           const SizedBox(height: 8),
           Text(
             'Guarda profesionales y negocios\nque te interesen para encontrarlos rápido.',
-            style: TextStyle(
-              color: c.textSecondary,
-              fontSize: 13,
-              height: 1.5,
-            ),
+            style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],
@@ -303,7 +300,9 @@ class _ToggleBtn extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: active ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
+            color: active
+                ? AppColors.primary.withValues(alpha: 0.15)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -375,9 +374,10 @@ class _GuestBody extends StatelessWidget {
               child: ElevatedButton(
                 // rootNavigator: el login debe salir del shell del
                 // cliente para no dejar visible la bottom nav debajo.
-                onPressed: () => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                ),
+                onPressed: () => Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,

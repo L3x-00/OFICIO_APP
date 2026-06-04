@@ -14,22 +14,19 @@ class GeocodingResult {
   final String? province;
   final String? district;
 
-  const GeocodingResult({
-    this.department,
-    this.province,
-    this.district,
-  });
+  const GeocodingResult({this.department, this.province, this.district});
 
-  bool get isEmpty => department == null && province == null && district == null;
+  bool get isEmpty =>
+      department == null && province == null && district == null;
 }
 
 /// Geocodificación inversa usando Nominatim (OpenStreetMap) — sin API key.
 /// Incluye caché en memoria con clave redondeada a 3 decimales (~111m de precisión)
 /// para evitar llamadas repetidas a Nominatim en cada tick del stream GPS.
 class GeocodingService {
-  static const _baseUrl   = 'https://nominatim.openstreetmap.org/reverse';
+  static const _baseUrl = 'https://nominatim.openstreetmap.org/reverse';
   static const _userAgent = 'Servi/1.0';
-  static const _timeout   = Duration(seconds: 10);
+  static const _timeout = Duration(seconds: 10);
 
   // Clave: "lat3,lng3" (redondeado a 3 decimales ≈ 111m de celda)
   static final Map<String, GeocodingResult> _cache = {};
@@ -40,28 +37,33 @@ class GeocodingService {
   /// Convierte coordenadas GPS en departamento, provincia y distrito del Perú.
   /// Retorna `null` si la API falla o no encuentra resultados.
   /// Devuelve resultado cacheado si la celda ya fue consultada.
-  static Future<GeocodingResult?> reverseGeocode(double lat, double lng, {bool force = false}) async {
+  static Future<GeocodingResult?> reverseGeocode(
+    double lat,
+    double lng, {
+    bool force = false,
+  }) async {
     final key = _cacheKey(lat, lng);
     if (!force && _cache.containsKey(key)) {
       debugPrint('[Geocoding] Cache hit: $key');
       return _cache[key];
     }
 
-    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-      'format':          'json',
-      'lat':             lat.toString(),
-      'lon':             lng.toString(),
-      'zoom':            '10',
-      'accept-language': 'es',
-    });
+    final uri = Uri.parse(_baseUrl).replace(
+      queryParameters: {
+        'format': 'json',
+        'lat': lat.toString(),
+        'lon': lng.toString(),
+        'zoom': '10',
+        'accept-language': 'es',
+      },
+    );
 
     debugPrint('[Geocoding] Solicitando: $uri');
 
     try {
-      final response = await http.get(
-        uri,
-        headers: {'User-Agent': _userAgent},
-      ).timeout(_timeout);
+      final response = await http
+          .get(uri, headers: {'User-Agent': _userAgent})
+          .timeout(_timeout);
 
       if (kDebugMode) {
         debugPrint('[Geocoding] Status: ${response.statusCode}');
@@ -70,26 +72,25 @@ class GeocodingService {
 
       if (response.statusCode != 200) return null;
 
-      final json    = jsonDecode(response.body) as Map<String, dynamic>;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
       final address = json['address'] as Map<String, dynamic>?;
       if (address == null) return null;
 
       final department = _clean(
-        address['state']    as String? ??
-        address['region']   as String?,
+        address['state'] as String? ?? address['region'] as String?,
       );
       final province = _clean(
-        address['province']     as String? ??
-        address['county']       as String? ??
-        address['region']       as String? ??
-        address['city']         as String? ??
-        address['municipality'] as String?,
+        address['province'] as String? ??
+            address['county'] as String? ??
+            address['region'] as String? ??
+            address['city'] as String? ??
+            address['municipality'] as String?,
       );
       final district = _clean(
-        address['city']    as String? ??
-        address['town']    as String? ??
-        address['village'] as String? ??
-        address['suburb']  as String?,
+        address['city'] as String? ??
+            address['town'] as String? ??
+            address['village'] as String? ??
+            address['suburb'] as String?,
       );
 
       // ── Snap al catálogo oficial del Perú ───────────────────
@@ -113,11 +114,13 @@ class GeocodingService {
 
       final result = GeocodingResult(
         department: canonDept ?? department,
-        province:   canonProv ?? province,
-        district:   canonDist,
+        province: canonProv ?? province,
+        district: canonDist,
       );
       if (result.isEmpty) {
-        debugPrint('[Geocoding] Sin campos utilizables: dept=$department, prov=$province, dist=$district');
+        debugPrint(
+          '[Geocoding] Sin campos utilizables: dept=$department, prov=$province, dist=$district',
+        );
         return null;
       }
       _cache[key] = result;
@@ -128,10 +131,66 @@ class GeocodingService {
     }
   }
 
+  // Caché de direcciones legibles (display_name acortado) por celda.
+  static final Map<String, String> _addressCache = {};
+
+  /// Traduce coordenadas a una DIRECCIÓN legible (nivel calle) usando el
+  /// `display_name` de Nominatim, acortado a las primeras partes (calle ·
+  /// zona · distrito) para no incluir país/código postal. Cacheada.
+  ///
+  /// Úsala SOLO cuando el proveedor no tiene `address` en BD. Retorna null
+  /// si la API falla o no hay resultado.
+  static Future<String?> reverseGeocodeAddress(double lat, double lng) async {
+    final key = _cacheKey(lat, lng);
+    final cached = _addressCache[key];
+    if (cached != null) return cached;
+
+    final uri = Uri.parse(_baseUrl).replace(
+      queryParameters: {
+        'format': 'json',
+        'lat': lat.toString(),
+        'lon': lng.toString(),
+        'zoom': '18', // nivel edificio/calle
+        'accept-language': 'es',
+      },
+    );
+
+    try {
+      final response = await http
+          .get(uri, headers: {'User-Agent': _userAgent})
+          .timeout(_timeout);
+      if (response.statusCode != 200) return null;
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final display = (json['display_name'] as String?)?.trim();
+      if (display == null || display.isEmpty) return null;
+
+      // Las primeras 3 partes ≈ "calle, zona, distrito" — suficiente y legible.
+      final short = display
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .take(3)
+          .join(', ');
+      final result = short.isEmpty ? display : short;
+      _addressCache[key] = result;
+      return result;
+    } catch (e) {
+      debugPrint('[Geocoding] reverseGeocodeAddress error: $e');
+      return null;
+    }
+  }
+
   static String? _clean(String? value) {
     if (value == null || value.trim().isEmpty) return null;
     return value
-        .replaceFirst(RegExp(r'^(?:Departamento|Región|Provincia) de ', caseSensitive: false), '')
+        .replaceFirst(
+          RegExp(
+            r'^(?:Departamento|Región|Provincia) de ',
+            caseSensitive: false,
+          ),
+          '',
+        )
         .trim();
   }
 

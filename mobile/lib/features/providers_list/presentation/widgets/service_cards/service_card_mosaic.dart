@@ -2,37 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
-import 'package:mobile/shared/widgets/app_network_image.dart';
 import '../../../domain/models/provider_model.dart';
 import 'card_badges.dart';
 import 'card_contact_actions.dart';
 import 'card_helpers.dart';
+import 'card_image_carousel.dart';
 
 /// Variante MOSAICO — tile para grilla de 2 columnas.
 class ServiceCardMosaic extends StatelessWidget {
   final ProviderModel provider;
   final VoidCallback? onTap;
   final bool isOwnCard;
+  final VoidCallback? onChat;
 
   const ServiceCardMosaic({
     super.key,
     required this.provider,
     this.onTap,
     this.isOwnCard = false,
+    this.onChat,
   });
 
   @override
   Widget build(BuildContext context) {
-    final c        = context.colors;
-    final plan     = provider.subscriptionPlan;
-    final premium  = isPremiumPlan(plan);
+    final c = context.colors;
+    final plan = provider.subscriptionPlan;
+    final premium = isPremiumPlan(plan);
     final standard = isStandardPlan(plan);
+    // Ubicación SIEMPRE desde la BD (sin geocoding por tile — performance).
+    final locationLabel = districtProvinceLabel(provider);
 
     final borderColor = premium
         ? AppColors.premium.withValues(alpha: 0.65)
         : standard
-            ? AppColors.standard.withValues(alpha: 0.45)
-            : c.border;
+        ? AppColors.standard.withValues(alpha: 0.45)
+        : c.border;
 
     return GestureDetector(
       onTap: onTap,
@@ -57,53 +61,57 @@ class ServiceCardMosaic extends StatelessWidget {
               flex: 6,
               child: Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                    child: provider.coverImageUrl != null
-                        ? AppNetworkImage(
-                            url: provider.coverImageUrl!,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: _mosaicPlaceholder(c),
-                            errorWidget: _mosaicPlaceholder(c),
-                          )
-                        : _mosaicPlaceholder(c),
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(15),
+                      ),
+                      child: ProviderImageCarousel(
+                        provider: provider,
+                        fit: BoxFit.cover,
+                        placeholder: _mosaicPlaceholder(c),
+                        errorWidget: _mosaicPlaceholder(c),
+                      ),
+                    ),
                   ),
                   // Badge de plan
                   if (premium)
-                    Positioned(
-                      top: 6, left: 6,
-                      child: PlanBadge.premium(),
-                    ),
+                    Positioned(top: 6, left: 6, child: PlanBadge.premium()),
                   if (standard && !premium)
-                    Positioned(
-                      top: 6, left: 6,
-                      child: PlanBadge.standard(),
-                    ),
+                    Positioned(top: 6, left: 6, child: PlanBadge.standard()),
                   // Verified + trusted badges
                   if (provider.isVerified)
                     Positioned(
-                      top: 6, right: 6,
+                      top: 6,
+                      right: 6,
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: AppColors.verified.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.verified_rounded, color: Colors.white, size: 12),
+                        child: const Icon(
+                          Icons.verified_rounded,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                       ),
                     ),
                   if (provider.isTrusted)
                     Positioned(
-                      top: provider.isVerified ? 32 : 6, right: 6,
+                      top: provider.isVerified ? 32 : 6,
+                      right: 6,
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981).withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.shield_rounded, color: Colors.white, size: 12),
+                        child: const Icon(
+                          Icons.shield_rounded,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                       ),
                     ),
                 ],
@@ -113,56 +121,86 @@ class ServiceCardMosaic extends StatelessWidget {
             Expanded(
               flex: 4,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Nombre (1 línea — deja espacio a ubicación + acciones)
                     Text(
                       provider.businessName,
                       style: TextStyle(
                         color: c.textPrimary,
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontWeight: FontWeight.bold,
-                        height: 1.2,
+                        height: 1.15,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.star_rounded, color: AppColors.star, size: 11),
-                        const SizedBox(width: 2),
-                        Text(
-                          provider.averageRating.toStringAsFixed(1),
-                          style: TextStyle(color: c.textSecondary, fontSize: 10),
-                        ),
-                        const Spacer(),
-                        // En la grilla 2-col los botones WhatsApp/llamada
-                        // solo aparecen para planes pagados — para gratis
-                        // se mantiene la etiqueta de categoría sin saturar.
-                        if (!isOwnCard && isPaidPlan(plan)) ...[
-                          _GridContactBtn(
-                            svgAsset: 'assets/icons/whatsapp.svg',
-                            color: AppColors.whatsapp,
-                            onTap: () => CardContactActions.openWhatsApp(context, provider),
+                    // Ubicación "Distrito, Provincia" (BD — sin geocoding).
+                    if (locationLabel != null) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 11,
+                            color: c.textMuted,
                           ),
-                          const SizedBox(width: 4),
-                          _GridContactBtn(
-                            icon: Icons.call_rounded,
-                            color: AppColors.call,
-                            onTap: () => CardContactActions.makeCall(context, provider),
-                          ),
-                        ] else
-                          Flexible(
+                          const SizedBox(width: 2),
+                          Expanded(
                             child: Text(
-                              provider.categoryLabel,
-                              style: TextStyle(color: c.textMuted, fontSize: 9),
+                              locationLabel,
+                              style: TextStyle(
+                                color: c.textMuted,
+                                fontSize: 10,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                      ],
+                        ],
+                      ),
+                    ],
+                    const Spacer(),
+                    // Estado (dot OFICIO / badge Abierto-Cerrado NEGOCIO) +
+                    // acciones rápidas. FittedBox evita overflow si no caben.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: [
+                          _MosaicStatusBadge(provider: provider),
+                          if (!isOwnCard) ...[
+                            const SizedBox(width: 8),
+                            _GridContactBtn(
+                              icon: Icons.forum_rounded,
+                              color: AppColors.amber,
+                              onTap: onChat,
+                            ),
+                            if (isPaidPlan(plan)) ...[
+                              const SizedBox(width: 5),
+                              _GridContactBtn(
+                                svgAsset: 'assets/icons/whatsapp.svg',
+                                color: AppColors.whatsapp,
+                                onTap: () => CardContactActions.openWhatsApp(
+                                  context,
+                                  provider,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              _GridContactBtn(
+                                icon: Icons.call_rounded,
+                                color: AppColors.call,
+                                onTap: () => CardContactActions.makeCall(
+                                  context,
+                                  provider,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -190,7 +228,7 @@ class _GridContactBtn extends StatelessWidget {
   final IconData? icon;
   final String? svgAsset;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   const _GridContactBtn({
     this.icon,
     this.svgAsset,
@@ -215,6 +253,62 @@ class _GridContactBtn extends StatelessWidget {
               ? SvgPicture.asset(svgAsset!, width: 12, height: 12)
               : Icon(icon, color: color, size: 12),
         ),
+      ),
+    );
+  }
+}
+
+/// Pastilla de estado del tile mosaico:
+///   • OFICIO   → dot de color por disponibilidad + etiqueta.
+///   • NEGOCIO  → "Abierto" (verde) / "Cerrado" (rojo) según disponibilidad.
+class _MosaicStatusBadge extends StatelessWidget {
+  final ProviderModel provider;
+  const _MosaicStatusBadge({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = provider;
+    final Color color;
+    final String label;
+
+    if (p.type == ProviderType.negocio) {
+      final open = isBusinessOpen(p);
+      color = open ? AppColors.available : AppColors.busy;
+      label = open ? 'Abierto' : 'Cerrado';
+    } else {
+      color = switch (p.availability) {
+        AvailabilityStatus.disponible => AppColors.available,
+        AvailabilityStatus.ocupado => AppColors.busy,
+        AvailabilityStatus.conDemora => AppColors.delayed,
+      };
+      label = p.availability.label;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

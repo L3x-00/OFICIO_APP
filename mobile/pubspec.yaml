@@ -1,7 +1,7 @@
 name: mobile
 description: "Marketplace de Servicios Locales"
 publish_to: 'none'
-version: 2.0.0+121
+version: 2.0.0+122
 
 environment:
   sdk: ^3.11.4
@@ -79,6 +79,7 @@ dependencies:
   # devuelven error y se ignoran silenciosamente.
   in_app_update: ^4.2.3
   flutter_markdown: ^0.7.7+1
+  carousel_slider: ^5.1.2
 
 dev_dependencies:
   flutter_test:

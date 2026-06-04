@@ -30,6 +30,7 @@ import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
 import { buildActiveTools } from './tools/tool-registry.js';
+import { OpenRouterProvider } from './providers/openrouter.provider.js';
 import type {
   AiCaller,
   AiChatResult,
@@ -107,6 +108,12 @@ export class AiAssistantService {
     @Optional() private readonly clientStrategy?: ClientStrategy,
     @Optional() private readonly providerStrategy?: ProviderStrategy,
     @Optional() private readonly adminStrategy?: AdminStrategy,
+    // Proveedor de FALLBACK (OpenRouter). Opcional: si no se inyecta (tests
+    // antiguos) o no hay API key, el flujo degrada al error de Gemini de
+    // siempre. Gemini SIGUE siendo el proveedor principal.
+    @Optional()
+    @Inject(OpenRouterProvider)
+    private readonly openrouter?: OpenRouterProvider,
   ) {}
 
   /** Lazy init del SDK moderno @google/genai. */
@@ -277,12 +284,26 @@ export class AiAssistantService {
       this.logger.error(
         `Gemini falló: ${err instanceof Error ? err.message : String(err)}`,
       );
-      return blocked(
-        'circuit',
-        this.isGeminiOverloaded(err)
-          ? 'Gemini está con mucha demanda en este momento. Por favor, intenta de nuevo en un par de minutos.'
-          : 'El asistente tuvo un problema. Intenta de nuevo en unos momentos.',
-      );
+
+      // ── FALLBACK a OpenRouter (proveedor secundario) ──────────
+      // Solo ante fallos TRANSITORIOS de Gemini (quota / rate-limit / timeout
+      // >15s / 5xx / ECONNRESET) y si OpenRouter está configurado. Reutiliza
+      // persona, system prompt, historial y tools → function-calling idéntico.
+      const fb =
+        this.shouldFallback(err) && this.openrouter?.isConfigured()
+          ? await this.tryOpenRouter(caller, san.cleaned, recovered, persona)
+          : null;
+
+      if (!fb) {
+        return blocked(
+          'circuit',
+          this.isGeminiOverloaded(err)
+            ? 'Gemini está con mucha demanda en este momento. Por favor, intenta de nuevo en un par de minutos.'
+            : 'El asistente tuvo un problema. Intenta de nuevo en unos momentos.',
+        );
+      }
+      rawReply = fb.reply;
+      tokensUsed = fb.tokensUsed;
     }
 
     // 5. Guardrails (post-filtro).
@@ -627,6 +648,97 @@ export class AiAssistantService {
       msg.includes('overloaded') ||
       msg.includes('high demand')
     );
+  }
+
+  /**
+   * Decide si un fallo de Gemini es TRANSITORIO y, por tanto, candidato a
+   * reintentar con OpenRouter. Cubre: quota/rate-limit (HTTP 429,
+   * RESOURCE_EXHAUSTED), saturación (503/UNAVAILABLE/overloaded), timeout
+   * (>15s → "Gemini timeout") y cortes de red (ECONNRESET/ETIMEDOUT/5xx).
+   *
+   * NO incluye errores de configuración/programación (4xx ≠ 429), que
+   * reintentar no arreglaría.
+   */
+  private shouldFallback(err: unknown): boolean {
+    if (this.isGeminiOverloaded(err)) return true;
+
+    const e = err as { status?: unknown; code?: unknown };
+    const status = e?.status ?? e?.code;
+    if (status === 429 || status === 500 || status === 503) return true;
+    if (
+      status === 'RESOURCE_EXHAUSTED' ||
+      status === 'UNAVAILABLE' ||
+      status === 'ECONNRESET' ||
+      status === 'ETIMEDOUT'
+    ) {
+      return true;
+    }
+
+    const msg = (
+      err instanceof Error ? err.message : String(err)
+    ).toLowerCase();
+    return (
+      msg.includes('429') ||
+      msg.includes('resource_exhausted') ||
+      msg.includes('quota') ||
+      msg.includes('rate limit') ||
+      msg.includes('rate-limit') ||
+      msg.includes('ratelimit') ||
+      msg.includes('timeout') ||
+      msg.includes('timed out') ||
+      msg.includes('econnreset') ||
+      msg.includes('etimedout') ||
+      msg.includes('socket hang up')
+    );
+  }
+
+  /**
+   * Ejecuta el FALLBACK a OpenRouter reutilizando el material del request:
+   * mismo system prompt (persona), historial recuperado y tools activas. La
+   * ejecución de tools delega en el MISMO `executeTool` que usa Gemini, así
+   * que permisos, anti-IDOR, auditoría y data-access son idénticos.
+   *
+   * Resiliente: si OpenRouter (DeepSeek → Qwen) también falla, devuelve null
+   * y el orquestador degrada al error habitual.
+   */
+  private async tryOpenRouter(
+    caller: AiCaller,
+    cleanedMessage: string,
+    history: AiHistoryTurn[],
+    persona: AiPersonaType,
+  ): Promise<{ reply: string; tokensUsed: number | null } | null> {
+    const provider = this.openrouter;
+    if (!provider) return null;
+    try {
+      const systemInstruction = await this.systemPrompt(caller, persona);
+      const { tools, activeNames } = buildActiveTools(persona, this.flags);
+
+      this.logger.warn(
+        `[AI-FALLBACK] Gemini → OpenRouter | persona=${persona} role=${caller.role}`,
+      );
+
+      const out = await provider.generate({
+        systemInstruction,
+        history,
+        userMessage: cleanedMessage,
+        tools,
+        runTool: (call) => this.executeTool(caller, activeNames, call),
+      });
+
+      this.logger.log(
+        `[AI-FALLBACK] OpenRouter respondió correctamente (modelo=${out.model})`,
+      );
+      return { reply: out.reply, tokensUsed: out.tokensUsed };
+    } catch (e) {
+      this.logger.error(
+        `[AI-FALLBACK] OpenRouter también falló: ${(e as Error)?.message ?? e}`,
+      );
+      Sentry.captureException(e, {
+        tags: { module: 'ai-assistant', op: 'openrouter-fallback' },
+        extra: { userId: caller.userId, role: caller.role },
+      });
+      return null;
+    }
   }
 
   /**
