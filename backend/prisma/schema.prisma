@@ -544,6 +544,9 @@ model UserPenalty {
   id           Int       @id @default(autoincrement())
   userId       Int       @unique
   noPickCount  Int       @default(0)
+  /// Veces que el PROVEEDOR canceló (retiró) una oferta. A partir de 10 no
+  /// puede postular a nuevas solicitudes (sí puede verlas).
+  offerCancelCount Int   @default(0)
   blockedUntil DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

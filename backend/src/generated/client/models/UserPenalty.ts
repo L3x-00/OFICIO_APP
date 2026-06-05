@@ -30,18 +30,21 @@ export type UserPenaltyAvgAggregateOutputType = {
   id: number | null
   userId: number | null
   noPickCount: number | null
+  offerCancelCount: number | null
 }
 
 export type UserPenaltySumAggregateOutputType = {
   id: number | null
   userId: number | null
   noPickCount: number | null
+  offerCancelCount: number | null
 }
 
 export type UserPenaltyMinAggregateOutputType = {
   id: number | null
   userId: number | null
   noPickCount: number | null
+  offerCancelCount: number | null
   blockedUntil: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -51,6 +54,7 @@ export type UserPenaltyMaxAggregateOutputType = {
   id: number | null
   userId: number | null
   noPickCount: number | null
+  offerCancelCount: number | null
   blockedUntil: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -60,6 +64,7 @@ export type UserPenaltyCountAggregateOutputType = {
   id: number
   userId: number
   noPickCount: number
+  offerCancelCount: number
   blockedUntil: number
   createdAt: number
   updatedAt: number
@@ -71,18 +76,21 @@ export type UserPenaltyAvgAggregateInputType = {
   id?: true
   userId?: true
   noPickCount?: true
+  offerCancelCount?: true
 }
 
 export type UserPenaltySumAggregateInputType = {
   id?: true
   userId?: true
   noPickCount?: true
+  offerCancelCount?: true
 }
 
 export type UserPenaltyMinAggregateInputType = {
   id?: true
   userId?: true
   noPickCount?: true
+  offerCancelCount?: true
   blockedUntil?: true
   createdAt?: true
   updatedAt?: true
@@ -92,6 +100,7 @@ export type UserPenaltyMaxAggregateInputType = {
   id?: true
   userId?: true
   noPickCount?: true
+  offerCancelCount?: true
   blockedUntil?: true
   createdAt?: true
   updatedAt?: true
@@ -101,6 +110,7 @@ export type UserPenaltyCountAggregateInputType = {
   id?: true
   userId?: true
   noPickCount?: true
+  offerCancelCount?: true
   blockedUntil?: true
   createdAt?: true
   updatedAt?: true
@@ -197,6 +207,7 @@ export type UserPenaltyGroupByOutputType = {
   id: number
   userId: number
   noPickCount: number
+  offerCancelCount: number
   blockedUntil: Date | null
   createdAt: Date
   updatedAt: Date
@@ -229,6 +240,7 @@ export type UserPenaltyWhereInput = {
   id?: Prisma.IntFilter<"UserPenalty"> | number
   userId?: Prisma.IntFilter<"UserPenalty"> | number
   noPickCount?: Prisma.IntFilter<"UserPenalty"> | number
+  offerCancelCount?: Prisma.IntFilter<"UserPenalty"> | number
   blockedUntil?: Prisma.DateTimeNullableFilter<"UserPenalty"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"UserPenalty"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserPenalty"> | Date | string
@@ -239,6 +251,7 @@ export type UserPenaltyOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -252,6 +265,7 @@ export type UserPenaltyWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.UserPenaltyWhereInput[]
   NOT?: Prisma.UserPenaltyWhereInput | Prisma.UserPenaltyWhereInput[]
   noPickCount?: Prisma.IntFilter<"UserPenalty"> | number
+  offerCancelCount?: Prisma.IntFilter<"UserPenalty"> | number
   blockedUntil?: Prisma.DateTimeNullableFilter<"UserPenalty"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"UserPenalty"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserPenalty"> | Date | string
@@ -262,6 +276,7 @@ export type UserPenaltyOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -279,6 +294,7 @@ export type UserPenaltyScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"UserPenalty"> | number
   userId?: Prisma.IntWithAggregatesFilter<"UserPenalty"> | number
   noPickCount?: Prisma.IntWithAggregatesFilter<"UserPenalty"> | number
+  offerCancelCount?: Prisma.IntWithAggregatesFilter<"UserPenalty"> | number
   blockedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"UserPenalty"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"UserPenalty"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"UserPenalty"> | Date | string
@@ -286,6 +302,7 @@ export type UserPenaltyScalarWhereWithAggregatesInput = {
 
 export type UserPenaltyCreateInput = {
   noPickCount?: number
+  offerCancelCount?: number
   blockedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -296,6 +313,7 @@ export type UserPenaltyUncheckedCreateInput = {
   id?: number
   userId: number
   noPickCount?: number
+  offerCancelCount?: number
   blockedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -303,6 +321,7 @@ export type UserPenaltyUncheckedCreateInput = {
 
 export type UserPenaltyUpdateInput = {
   noPickCount?: Prisma.IntFieldUpdateOperationsInput | number
+  offerCancelCount?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -313,6 +332,7 @@ export type UserPenaltyUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   noPickCount?: Prisma.IntFieldUpdateOperationsInput | number
+  offerCancelCount?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -322,6 +342,7 @@ export type UserPenaltyCreateManyInput = {
   id?: number
   userId: number
   noPickCount?: number
+  offerCancelCount?: number
   blockedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -329,6 +350,7 @@ export type UserPenaltyCreateManyInput = {
 
 export type UserPenaltyUpdateManyMutationInput = {
   noPickCount?: Prisma.IntFieldUpdateOperationsInput | number
+  offerCancelCount?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -338,6 +360,7 @@ export type UserPenaltyUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   noPickCount?: Prisma.IntFieldUpdateOperationsInput | number
+  offerCancelCount?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -352,6 +375,7 @@ export type UserPenaltyCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -361,12 +385,14 @@ export type UserPenaltyAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
 }
 
 export type UserPenaltyMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -376,6 +402,7 @@ export type UserPenaltyMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
   blockedUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -385,6 +412,7 @@ export type UserPenaltySumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   noPickCount?: Prisma.SortOrder
+  offerCancelCount?: Prisma.SortOrder
 }
 
 export type UserPenaltyCreateNestedOneWithoutUserInput = {
@@ -421,6 +449,7 @@ export type UserPenaltyUncheckedUpdateOneWithoutUserNestedInput = {
 
 export type UserPenaltyCreateWithoutUserInput = {
   noPickCount?: number
+  offerCancelCount?: number
   blockedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -429,6 +458,7 @@ export type UserPenaltyCreateWithoutUserInput = {
 export type UserPenaltyUncheckedCreateWithoutUserInput = {
   id?: number
   noPickCount?: number
+  offerCancelCount?: number
   blockedUntil?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -452,6 +482,7 @@ export type UserPenaltyUpdateToOneWithWhereWithoutUserInput = {
 
 export type UserPenaltyUpdateWithoutUserInput = {
   noPickCount?: Prisma.IntFieldUpdateOperationsInput | number
+  offerCancelCount?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -460,6 +491,7 @@ export type UserPenaltyUpdateWithoutUserInput = {
 export type UserPenaltyUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   noPickCount?: Prisma.IntFieldUpdateOperationsInput | number
+  offerCancelCount?: Prisma.IntFieldUpdateOperationsInput | number
   blockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -471,6 +503,7 @@ export type UserPenaltySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   userId?: boolean
   noPickCount?: boolean
+  offerCancelCount?: boolean
   blockedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -481,6 +514,7 @@ export type UserPenaltySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   userId?: boolean
   noPickCount?: boolean
+  offerCancelCount?: boolean
   blockedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -491,6 +525,7 @@ export type UserPenaltySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   userId?: boolean
   noPickCount?: boolean
+  offerCancelCount?: boolean
   blockedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -501,12 +536,13 @@ export type UserPenaltySelectScalar = {
   id?: boolean
   userId?: boolean
   noPickCount?: boolean
+  offerCancelCount?: boolean
   blockedUntil?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserPenaltyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "noPickCount" | "blockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["userPenalty"]>
+export type UserPenaltyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "noPickCount" | "offerCancelCount" | "blockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["userPenalty"]>
 export type UserPenaltyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -526,6 +562,11 @@ export type $UserPenaltyPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: number
     userId: number
     noPickCount: number
+    /**
+     * Veces que el PROVEEDOR canceló (retiró) una oferta. A partir de 10 no
+     * puede postular a nuevas solicitudes (sí puede verlas).
+     */
+    offerCancelCount: number
     blockedUntil: Date | null
     createdAt: Date
     updatedAt: Date
@@ -956,6 +997,7 @@ export interface UserPenaltyFieldRefs {
   readonly id: Prisma.FieldRef<"UserPenalty", 'Int'>
   readonly userId: Prisma.FieldRef<"UserPenalty", 'Int'>
   readonly noPickCount: Prisma.FieldRef<"UserPenalty", 'Int'>
+  readonly offerCancelCount: Prisma.FieldRef<"UserPenalty", 'Int'>
   readonly blockedUntil: Prisma.FieldRef<"UserPenalty", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"UserPenalty", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"UserPenalty", 'DateTime'>

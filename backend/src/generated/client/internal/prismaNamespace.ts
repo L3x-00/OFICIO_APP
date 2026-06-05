@@ -3925,6 +3925,7 @@ export const UserPenaltyScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   noPickCount: 'noPickCount',
+  offerCancelCount: 'offerCancelCount',
   blockedUntil: 'blockedUntil',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -75,7 +75,8 @@ class ServiceRequestModel {
       maxOffers: json['maxOffers'] as int? ?? 5,
       expiresAt: DateTime.parse(json['expiresAt'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
-      offers: (json['offers'] as List?)
+      offers:
+          (json['offers'] as List?)
               ?.map((o) => OfferModel.fromJson(o as Map<String, dynamic>))
               .toList() ??
           [],
@@ -84,10 +85,14 @@ class ServiceRequestModel {
 
   static ServiceRequestStatus _statusFromString(String s) {
     switch (s.toUpperCase()) {
-      case 'CLOSED':    return ServiceRequestStatus.closed;
-      case 'EXPIRED':   return ServiceRequestStatus.expired;
-      case 'CANCELLED': return ServiceRequestStatus.cancelled;
-      default:          return ServiceRequestStatus.open;
+      case 'CLOSED':
+        return ServiceRequestStatus.closed;
+      case 'EXPIRED':
+        return ServiceRequestStatus.expired;
+      case 'CANCELLED':
+        return ServiceRequestStatus.cancelled;
+      default:
+        return ServiceRequestStatus.open;
     }
   }
 }
@@ -133,21 +138,26 @@ class OfferModel {
       providerRating: (provider?['averageRating'] as num?)?.toDouble() ?? 0.0,
       providerTotalReviews: provider?['totalReviews'] as int? ?? 0,
       providerIsTrusted: provider?['isTrusted'] as bool? ?? false,
-      providerAvatarUrl: user?['avatarUrl'] as String? ??
+      providerAvatarUrl:
+          user?['avatarUrl'] as String? ??
           (images?.isNotEmpty == true ? images!.first['url'] as String? : null),
       price: (json['price'] as num).toDouble(),
       message: json['message'] as String,
-      status: _offerStatusFromString(json['status'] as String? ?? 'PENDING'),
+      status: statusFromString(json['status'] as String? ?? 'PENDING'),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 
-  static OfferStatus _offerStatusFromString(String s) {
+  static OfferStatus statusFromString(String s) {
     switch (s.toUpperCase()) {
-      case 'ACCEPTED':  return OfferStatus.accepted;
-      case 'REJECTED':  return OfferStatus.rejected;
-      case 'WITHDRAWN': return OfferStatus.withdrawn;
-      default:          return OfferStatus.pending;
+      case 'ACCEPTED':
+        return OfferStatus.accepted;
+      case 'REJECTED':
+        return OfferStatus.rejected;
+      case 'WITHDRAWN':
+        return OfferStatus.withdrawn;
+      default:
+        return OfferStatus.pending;
     }
   }
 }
@@ -155,6 +165,7 @@ class OfferModel {
 // Modelo ligero para la vista del proveedor en "Oportunidades"
 class OpportunityModel {
   final int id;
+
   /// userId del cliente que publicó la necesidad — para detectar si la
   /// necesidad le pertenece al usuario actual (puede eliminarla).
   final int? userId;
@@ -172,6 +183,14 @@ class OpportunityModel {
   final DateTime expiresAt;
   final bool canParticipate;
 
+  /// Estado de MI postulación a esta oportunidad (null = aún no oferté).
+  /// La oportunidad ya no desaparece tras postular: muestra este estado.
+  final int? myOfferId;
+  final OfferStatus? myOfferStatus;
+
+  /// True si el proveedor canceló >= 10 ofertas → puede ver pero no postular.
+  final bool blockedFromOffering;
+
   const OpportunityModel({
     required this.id,
     this.userId,
@@ -188,13 +207,21 @@ class OpportunityModel {
     required this.maxOffers,
     required this.expiresAt,
     required this.canParticipate,
+    this.myOfferId,
+    this.myOfferStatus,
+    this.blockedFromOffering = false,
   });
 
   bool get isFull => offersCount >= maxOffers;
   Duration get timeLeft => expiresAt.difference(DateTime.now());
 
+  /// True si el proveedor ya envió una oferta (en cualquier estado) a esta
+  /// solicitud.
+  bool get hasOffered => myOfferStatus != null;
+
   factory OpportunityModel.fromJson(Map<String, dynamic> json) {
     final user = json['user'] as Map<String, dynamic>?;
+    final rawOfferStatus = json['myOfferStatus'] as String?;
     return OpportunityModel(
       id: json['id'] as int,
       userId: json['userId'] as int?,
@@ -211,6 +238,11 @@ class OpportunityModel {
       maxOffers: json['maxOffers'] as int? ?? 5,
       expiresAt: DateTime.parse(json['expiresAt'] as String),
       canParticipate: json['canParticipate'] as bool? ?? true,
+      myOfferId: json['myOfferId'] as int?,
+      myOfferStatus: rawOfferStatus != null
+          ? OfferModel.statusFromString(rawOfferStatus)
+          : null,
+      blockedFromOffering: json['blockedFromOffering'] as bool? ?? false,
     );
   }
 }

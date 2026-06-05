@@ -35,6 +35,11 @@ const EXPIRY_HOURS = 24;
 // 3 subastas sin elegir → bloqueo de 7 días
 const NO_PICK_THRESHOLD = 3;
 const BLOCK_DAYS = 7;
+// 10 ofertas canceladas por el proveedor → no puede postular (sí ver).
+const MAX_OFFER_CANCELS = 10;
+// Las solicitudes ya ofertadas siguen visibles en Oportunidades por esta
+// ventana (para que el proveedor vea el estado de su postulación).
+const APPLIED_VISIBLE_DAYS = 7;
 
 @Injectable()
 export class SubastasService {
@@ -197,6 +202,7 @@ export class SubastasService {
     const provider = await this.prisma.provider.findUnique({
       where: { id: providerId },
       select: {
+        userId: true,
         providerCategories: { select: { categoryId: true } },
         latitude: true,
         longitude: true,
@@ -211,40 +217,78 @@ export class SubastasService {
     // Solo proveedores con rating >= 3 o confianza pueden participar
     const canParticipate = provider.averageRating >= 3 || provider.isTrusted;
 
+    // Bloqueo por cancelaciones: con >= 10 ofertas canceladas el proveedor
+    // PUEDE VER las oportunidades pero NO postular.
+    const penalty = await this.prisma.userPenalty.findUnique({
+      where: { userId: provider.userId },
+      select: { offerCancelCount: true },
+    });
+    const blockedFromOffering =
+      (penalty?.offerCancelCount ?? 0) >= MAX_OFFER_CANCELS;
+
+    const appliedSince = new Date(
+      Date.now() - APPLIED_VISIBLE_DAYS * 24 * 60 * 60 * 1000,
+    );
+
     const requests = await this.prisma.serviceRequest.findMany({
       where: {
-        status: ServiceRequestStatus.OPEN,
-        expiresAt: { gt: new Date() },
         categoryId: {
           in: provider.providerCategories.map((pc) => pc.categoryId),
         },
-        // No mostrar si el proveedor ya hizo oferta
-        offers: { none: { providerId } },
+        OR: [
+          // (a) Disponibles para postular: OPEN y vigentes.
+          {
+            status: ServiceRequestStatus.OPEN,
+            expiresAt: { gt: new Date() },
+          },
+          // (b) Donde el proveedor YA postuló — NO desaparecen; muestran el
+          //     estado de su oferta (enviada / aceptada / cancelada). Acotado
+          //     a una ventana reciente para no crecer sin límite.
+          {
+            offers: { some: { providerId } },
+            createdAt: { gt: appliedSince },
+          },
+        ],
       },
       include: {
         category: { select: { id: true, name: true, iconUrl: true } },
         user: { select: { firstName: true, district: true, province: true } },
+        // SOLO la oferta del propio proveedor — nunca expone las de otros.
+        offers: {
+          where: { providerId },
+          select: { id: true, status: true },
+        },
         _count: { select: { offers: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
     // Calcular distancia (si el proveedor tiene coordenadas)
-    return requests.map((req) => ({
-      ...req,
-      canParticipate,
-      distanceKm:
-        provider.latitude && provider.longitude && req.latitude && req.longitude
-          ? this._haversineKm(
-              provider.latitude,
-              provider.longitude,
-              req.latitude,
-              req.longitude,
-            )
-          : null,
-      offersCount: req._count.offers,
-      isFull: req._count.offers >= req.maxOffers,
-    }));
+    return requests.map((req) => {
+      const myOffer = req.offers[0] ?? null;
+      return {
+        ...req,
+        canParticipate,
+        blockedFromOffering,
+        // Estado de MI postulación (null si aún no oferté).
+        myOfferId: myOffer?.id ?? null,
+        myOfferStatus: myOffer?.status ?? null,
+        distanceKm:
+          provider.latitude &&
+          provider.longitude &&
+          req.latitude &&
+          req.longitude
+            ? this._haversineKm(
+                provider.latitude,
+                provider.longitude,
+                req.latitude,
+                req.longitude,
+              )
+            : null,
+        offersCount: req._count.offers,
+        isFull: req._count.offers >= req.maxOffers,
+      };
+    });
   }
 
   // ── ENVIAR OFERTA (transacción atómica) ─────────────────────
@@ -577,13 +621,18 @@ export class SubastasService {
   }
 
   async submitOfferByUser(userId: number, dto: SubmitOfferDto) {
+    // Bloqueo por cancelaciones (>= 10): puede ver pero NO postular.
+    await this._assertCanSubmitOffers(userId);
     const provider = await this._getActiveProvider(userId);
     return this.submitOffer(provider.id, dto);
   }
 
   async withdrawOfferByUser(userId: number, offerId: number) {
     const provider = await this._getActiveProvider(userId);
-    return this.withdrawOffer(provider.id, offerId);
+    const result = await this.withdrawOffer(provider.id, offerId);
+    // Cancelar penaliza: incrementa el contador del proveedor.
+    await this._incrementOfferCancel(userId);
+    return result;
   }
 
   async markArrivedByUser(userId: number, dto: ArrivedDto) {
@@ -662,6 +711,49 @@ export class SubastasService {
         where: { userId },
         data: { blockedUntil, noPickCount: 0 },
       });
+    }
+  }
+
+  /**
+   * Bloquea el envío de ofertas si el proveedor ya canceló >= MAX_OFFER_CANCELS.
+   * Lanza 403 (ForbiddenException). El proveedor PODRÁ seguir viendo las
+   * oportunidades (getOpportunities no filtra por esto).
+   */
+  private async _assertCanSubmitOffers(userId: number) {
+    const penalty = await this.prisma.userPenalty.findUnique({
+      where: { userId },
+      select: { offerCancelCount: true },
+    });
+    if ((penalty?.offerCancelCount ?? 0) >= MAX_OFFER_CANCELS) {
+      throw new ForbiddenException(
+        `Cancelaste ${MAX_OFFER_CANCELS} ofertas. No puedes postular a nuevas ` +
+          'solicitudes. Mejora tu compromiso para volver a participar.',
+      );
+    }
+  }
+
+  /**
+   * Incremento ATÓMICO del contador de cancelaciones del proveedor (mismo
+   * patrón seguro que `_incrementNoPick`). Best-effort: un fallo no rompe la
+   * cancelación de la oferta que ya se aplicó.
+   */
+  private async _incrementOfferCancel(userId: number) {
+    try {
+      await this.prisma.userPenalty.upsert({
+        where: { userId },
+        create: { userId },
+        update: {},
+      });
+      await this.prisma.$executeRaw`
+        UPDATE "user_penalties"
+           SET "offerCancelCount" = "offerCancelCount" + 1,
+               "updatedAt"        = NOW()
+         WHERE "userId" = ${userId}
+      `;
+    } catch (e) {
+      this.logger.warn(
+        `_incrementOfferCancel falló: ${(e as Error)?.message ?? e}`,
+      );
     }
   }
 

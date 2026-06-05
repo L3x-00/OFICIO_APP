@@ -1,0 +1,1 @@
+ALTER TABLE "user_penalties" ADD COLUMN IF NOT EXISTS "offerCancelCount" INTEGER NOT NULL DEFAULT 0;

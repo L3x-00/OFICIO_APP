@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +48,7 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
 
   List<CategoryModel> _categories = [];
   bool _loadingCats = true;
+
   /// Lock local con setState — al primer toque pone `_submitting = true`
   /// SÍNCRONO, deshabilitando el botón y mostrando el spinner en el
   /// mismo frame. Los toques 2 y 3 ven `_submitting == true` y el guard
@@ -95,7 +97,10 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
 
   Future<void> _pickPhoto() async {
     final picker = ImagePicker();
-    final img = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+    final img = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+    );
     if (img != null) setState(() => _photo = File(img.path));
   }
 
@@ -144,7 +149,9 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
         return;
       }
       if (!_formKey.currentState!.validate()) {
-        context.showWarningSnack('Completa la descripción (mínimo 10 caracteres).');
+        context.showWarningSnack(
+          'Completa la descripción (mínimo 10 caracteres).',
+        );
         return;
       }
 
@@ -156,11 +163,14 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
       String? photoUrl;
       if (_photo != null) {
         try {
-          photoUrl = await DashboardRepository()
-              .uploadProviderPhotoFile(XFile(_photo!.path));
+          photoUrl = await DashboardRepository().uploadProviderPhotoFile(
+            XFile(_photo!.path),
+          );
         } catch (e) {
           if (!mounted) return;
-          context.showErrorSnack('No pudimos subir la foto. Inténtalo otra vez.');
+          context.showErrorSnack(
+            'No pudimos subir la foto. Inténtalo otra vez.',
+          );
           return;
         }
       }
@@ -197,6 +207,14 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     }
   }
 
+  /// Cierra el sheet y navega a "Mis solicitudes". Captura el router ANTES
+  /// del pop para no usar un context desactivado.
+  void _goToMyRequests() {
+    final router = GoRouter.of(context);
+    Navigator.of(context).pop(); // cierra el sheet de publicación
+    router.go('/my-requests');
+  }
+
   /// Diálogo emergente "solicitud publicada con éxito".
   Future<void> _showPublishedDialog() {
     final c = context.colors;
@@ -206,11 +224,20 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
       builder: (ctx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        icon: const Icon(Icons.check_circle_rounded,
-            color: AppColors.available, size: 48),
-        title: Text('¡Solicitud publicada con éxito!',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
+        icon: const Icon(
+          Icons.check_circle_rounded,
+          color: AppColors.available,
+          size: 48,
+        ),
+        title: Text(
+          '¡Solicitud publicada con éxito!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: Text(
           'Los profesionales de tu zona ya pueden ver tu necesidad y '
           'enviarte sus ofertas. Te avisaremos cuando recibas propuestas.',
@@ -225,7 +252,9 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('Entendido'),
             ),
@@ -278,22 +307,29 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                       color: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.campaign_rounded,
-                        color: AppColors.primary, size: 20),
+                    child: const Icon(
+                      Icons.campaign_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Publicar necesidad',
-                            style: TextStyle(
-                              color: c.textPrimary,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            )),
-                        Text('Recibe ofertas de técnicos cercanos',
-                            style: TextStyle(color: c.textMuted, fontSize: 12)),
+                        Text(
+                          'Publicar necesidad',
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Recibe ofertas de técnicos cercanos',
+                          style: TextStyle(color: c.textMuted, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -315,12 +351,14 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
                   children: [
                     // ── Categoría ──────────────────────────────
-                    Text('Categoría *',
-                        style: TextStyle(
-                          color: c.textSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        )),
+                    Text(
+                      'Categoría *',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 10),
 
                     if (_loadingCats)
@@ -328,15 +366,19 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                         height: 82,
                         child: Center(
                           child: CircularProgressIndicator(
-                              color: AppColors.primary, strokeWidth: 2),
+                            color: AppColors.primary,
+                            strokeWidth: 2,
+                          ),
                         ),
                       )
                     else if (_categories.isEmpty)
                       Container(
                         height: 60,
                         alignment: Alignment.center,
-                        child: Text('No se pudieron cargar categorías',
-                            style: TextStyle(color: c.textMuted, fontSize: 13)),
+                        child: Text(
+                          'No se pudieron cargar categorías',
+                          style: TextStyle(color: c.textMuted, fontSize: 13),
+                        ),
                       )
                     else
                       SizedBox(
@@ -349,13 +391,16 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                             final cat = _categories[i];
                             final selected = cat.id == _selectedCategoryId;
                             return GestureDetector(
-                              onTap: () => setState(() => _selectedCategoryId = cat.id),
+                              onTap: () =>
+                                  setState(() => _selectedCategoryId = cat.id),
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
                                 width: 72,
                                 decoration: BoxDecoration(
                                   color: selected
-                                      ? AppColors.primary.withValues(alpha: 0.18)
+                                      ? AppColors.primary.withValues(
+                                          alpha: 0.18,
+                                        )
                                       : c.bgCard,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
@@ -402,19 +447,24 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                     const SizedBox(height: 20),
 
                     // ── Descripción ────────────────────────────
-                    Text('¿Qué necesitas? *',
-                        style: TextStyle(
-                            color: c.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      '¿Qué necesitas? *',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _descCtrl,
                       style: TextStyle(color: c.textPrimary),
                       maxLines: 3,
                       maxLength: 500,
-                      decoration: _inputDeco(c,
-                          'Ej: "Se me fue la luz en el baño, necesito revisar el interruptor"'),
+                      decoration: _inputDeco(
+                        c,
+                        'Ej: "Se me fue la luz en el baño, necesito revisar el interruptor"',
+                      ),
                       validator: (v) => (v == null || v.trim().length < 10)
                           ? 'Mínimo 10 caracteres'
                           : null,
@@ -423,11 +473,14 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                     const SizedBox(height: 16),
 
                     // ── Foto ───────────────────────────────────
-                    Text('Foto del problema (opcional)',
-                        style: TextStyle(
-                            color: c.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      'Foto del problema (opcional)',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: _pickPhoto,
@@ -437,25 +490,36 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                           color: c.bgCard,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: _photo != null
-                                  ? AppColors.primary
-                                  : c.border),
+                            color: _photo != null
+                                ? AppColors.primary
+                                : c.border,
+                          ),
                         ),
                         child: _photo != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(11),
-                                child: Image.file(_photo!,
-                                    fit: BoxFit.cover, width: double.infinity),
+                                child: Image.file(
+                                  _photo!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                ),
                               )
                             : Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.add_a_photo_outlined,
-                                      color: c.textMuted, size: 28),
+                                  Icon(
+                                    Icons.add_a_photo_outlined,
+                                    color: c.textMuted,
+                                    size: 28,
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text('Tomar foto',
-                                      style: TextStyle(
-                                          color: c.textMuted, fontSize: 12)),
+                                  Text(
+                                    'Tomar foto',
+                                    style: TextStyle(
+                                      color: c.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
                                 ],
                               ),
                       ),
@@ -464,11 +528,14 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                     const SizedBox(height: 20),
 
                     // ── Presupuesto ────────────────────────────
-                    Text('Presupuesto estimado S/ (opcional)',
-                        style: TextStyle(
-                            color: c.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      'Presupuesto estimado S/ (opcional)',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -478,15 +545,17 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                             style: TextStyle(color: c.textPrimary),
                             keyboardType: TextInputType.number,
                             inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
+                              FilteringTextInputFormatter.digitsOnly,
                             ],
                             decoration: _inputDeco(c, 'Mínimo'),
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('—',
-                              style: TextStyle(color: c.textMuted)),
+                          child: Text(
+                            '—',
+                            style: TextStyle(color: c.textMuted),
+                          ),
                         ),
                         Expanded(
                           child: TextFormField(
@@ -494,7 +563,7 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                             style: TextStyle(color: c.textPrimary),
                             keyboardType: TextInputType.number,
                             inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
+                              FilteringTextInputFormatter.digitsOnly,
                             ],
                             decoration: _inputDeco(c, 'Máximo'),
                           ),
@@ -505,32 +574,40 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                     const SizedBox(height: 20),
 
                     // ── Fecha deseada ──────────────────────────
-                    Text('Fecha deseada (opcional)',
-                        style: TextStyle(
-                            color: c.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      'Fecha deseada (opcional)',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: _pickDate,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 14),
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: c.bgCard,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: _desiredDate != null
-                                  ? AppColors.primary
-                                  : c.border),
+                            color: _desiredDate != null
+                                ? AppColors.primary
+                                : c.border,
+                          ),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.calendar_today_outlined,
-                                color: _desiredDate != null
-                                    ? AppColors.primary
-                                    : c.textMuted,
-                                size: 18),
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              color: _desiredDate != null
+                                  ? AppColors.primary
+                                  : c.textMuted,
+                              size: 18,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               _desiredDate != null
@@ -550,24 +627,30 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                     const SizedBox(height: 20),
 
                     // ── Ubicación ──────────────────────────────
-                    Text('Ubicación precisa (recomendado)',
-                        style: TextStyle(
-                            color: c.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      'Ubicación precisa (recomendado)',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: _locating ? null : _getLocation,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 14),
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: c.bgCard,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: _lat != null
-                                  ? AppColors.available
-                                  : c.border),
+                            color: _lat != null
+                                ? AppColors.available
+                                : c.border,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -576,14 +659,17 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                                     width: 18,
                                     height: 18,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: AppColors.primary),
+                                      strokeWidth: 2,
+                                      color: AppColors.primary,
+                                    ),
                                   )
-                                : Icon(Icons.my_location_rounded,
+                                : Icon(
+                                    Icons.my_location_rounded,
                                     color: _lat != null
                                         ? AppColors.available
                                         : c.textMuted,
-                                    size: 18),
+                                    size: 18,
+                                  ),
                             const SizedBox(width: 10),
                             Text(
                               _lat != null
@@ -609,19 +695,25 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                         color: AppColors.amber.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppColors.amber.withValues(alpha: 0.25)),
+                          color: AppColors.amber.withValues(alpha: 0.25),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline_rounded,
-                              color: AppColors.amber, size: 16),
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            color: AppColors.amber,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Tu solicitud recibirá hasta 5 ofertas en 24 h. '
                               'Los técnicos de tu zona serán notificados.',
                               style: TextStyle(
-                                  color: AppColors.amber, fontSize: 11.5),
+                                color: AppColors.amber,
+                                fontSize: 11.5,
+                              ),
                             ),
                           ),
                         ],
@@ -640,18 +732,50 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                         child: submitting
                             ? const SizedBox(
                                 width: 22,
                                 height: 22,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2.5, color: Colors.white),
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
                               )
-                            : const Text('Publicar solicitud',
+                            : const Text(
+                                'Publicar solicitud',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.w700, fontSize: 15)),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ── Acceso rápido a "Mis solicitudes" ──────
+                    // Útil tras publicar (o como atajo) para rastrear el
+                    // estado. Cierra el sheet y navega a /my-requests.
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: submitting ? null : () => _goToMyRequests(),
+                        icon: const Icon(Icons.list_alt_rounded, size: 18),
+                        label: const Text(
+                          'Ir a mis solicitudes',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -665,41 +789,43 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
   }
 
   InputDecoration _inputDeco(AppThemeColors c, String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
-        filled: true,
-        fillColor: c.bgCard,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: c.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: c.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary),
-        ),
-      );
+    hintText: hint,
+    hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+    filled: true,
+    fillColor: c.bgCard,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: c.border),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: c.border),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.primary),
+    ),
+  );
 
   /// Icono por nombre de categoría (fallback genérico).
   IconData _catIcon(String name) {
     final n = name.toLowerCase();
-    if (n.contains('electr'))  return Icons.electrical_services_rounded;
+    if (n.contains('electr')) return Icons.electrical_services_rounded;
     if (n.contains('gasf') || n.contains('plom')) return Icons.plumbing_rounded;
-    if (n.contains('carpin'))  return Icons.carpenter_rounded;
-    if (n.contains('pintur'))  return Icons.format_paint_rounded;
-    if (n.contains('limpi'))   return Icons.cleaning_services_rounded;
-    if (n.contains('cerraj'))  return Icons.lock_outline_rounded;
+    if (n.contains('carpin')) return Icons.carpenter_rounded;
+    if (n.contains('pintur')) return Icons.format_paint_rounded;
+    if (n.contains('limpi')) return Icons.cleaning_services_rounded;
+    if (n.contains('cerraj')) return Icons.lock_outline_rounded;
     if (n.contains('techo') || n.contains('teja')) return Icons.roofing_rounded;
-    if (n.contains('jardin'))  return Icons.grass_rounded;
-    if (n.contains('comput') || n.contains('tecno')) return Icons.computer_rounded;
-    if (n.contains('albaÑil') || n.contains('albanil') || n.contains('constru')) return Icons.construction_rounded;
-    if (n.contains('mecani') || n.contains('auto'))  return Icons.car_repair_rounded;
-    if (n.contains('mudanz'))  return Icons.local_shipping_rounded;
+    if (n.contains('jardin')) return Icons.grass_rounded;
+    if (n.contains('comput') || n.contains('tecno'))
+      return Icons.computer_rounded;
+    if (n.contains('albaÑil') || n.contains('albanil') || n.contains('constru'))
+      return Icons.construction_rounded;
+    if (n.contains('mecani') || n.contains('auto'))
+      return Icons.car_repair_rounded;
+    if (n.contains('mudanz')) return Icons.local_shipping_rounded;
     return Icons.handyman_rounded;
   }
 }
