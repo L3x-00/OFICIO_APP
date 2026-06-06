@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import Image from 'next/image'; // Regla: no-img-element
+import Image from 'next/image';
 import {
   Plus, Edit, Trash2, Tag, Loader2, Search, X, Check,
   ChevronDown, ChevronRight, FolderOpen, Folder, ArrowRightLeft,
@@ -40,7 +40,6 @@ function buildTree(flat: Category[]): Category[] {
 
 const EMPTY_FORM = { name: '', slug: '', iconUrl: '', parentId: '', forType: '' };
 
-// Regla: no-explicit-any - Usamos interfaz tipada
 interface EditAction {
   cat: Category;
   startMoving?: boolean;
@@ -50,12 +49,12 @@ interface EditAction {
 
 function MovePopover({
   cat,
-  parentOptions,
+  allParentOptions,
   onMove,
   onClose,
 }: {
   cat: Category;
-  parentOptions: Category[];
+  allParentOptions: Category[]; // Usa la lista global para no perder referencias
   onMove: (catId: number, newParentId: number | null) => Promise<void>;
   onClose: () => void;
 }) {
@@ -80,7 +79,7 @@ function MovePopover({
   const isRoot = cat.parentId == null;
   const available = isRoot
     ? [] 
-    : parentOptions.filter((p) => p.id !== cat.parentId && p.id !== cat.id);
+    : allParentOptions.filter((p) => p.id !== cat.parentId && p.id !== cat.id);
 
   return (
     <div
@@ -89,7 +88,6 @@ function MovePopover({
     >
       <div className="px-3 py-2 border-b border-white/5">
         <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Mover a…</p>
-        {/* Regla: no-unescaped-entities - Comillas escapadas */}
         <p className="text-xs text-gray-600 mt-0.5 truncate">&ldquo;{cat.name}&rdquo;</p>
       </div>
 
@@ -125,7 +123,7 @@ function MovePopover({
           </p>
         )}
 
-        {available.length === 0 && !isRoot && parentOptions.length <= 1 && (
+        {available.length === 0 && !isRoot && allParentOptions.length <= 1 && (
           <p className="px-3 py-3 text-xs text-gray-600">
             No hay otros Sectores disponibles.
           </p>
@@ -135,7 +133,7 @@ function MovePopover({
   );
 }
 
-// ── Componente de Sección (Negocio / Oficio) ──────────────────
+// ── Componente de Sección ──────────────────────────────────────
 
 function CategorySection({
   title,
@@ -143,6 +141,7 @@ function CategorySection({
   icon: Icon,
   accentColor,
   allCategories,
+  allParentOptions, // Recibimos las opciones globales
   isLoading,
   actionLoading,
   editingId,
@@ -168,6 +167,7 @@ function CategorySection({
   icon: React.ElementType;
   accentColor: string;
   allCategories: Category[];
+  allParentOptions: Category[];
   isLoading: boolean;
   actionLoading: number | string | null;
   editingId: number | null;
@@ -211,7 +211,7 @@ function CategorySection({
     const hasChildren = (cat.children?.length ?? 0) > 0;
     const isOpen      = expanded.has(cat.id);
     const isEditing   = editingId === cat.id;
-    const isMoving    = movingId === cat.id; // Regla: no-unused-vars - Se usa abajo en la clase CSS
+    const isMoving    = movingId === cat.id;
     const provCount   = cat._count?.providers ?? cat.providerCount ?? 0;
 
     return [
@@ -254,7 +254,7 @@ function CategorySection({
                   className="w-full bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-white text-sm outline-none"
                 >
                   <option value="">— Es un Sector (sin padre) —</option>
-                  {sectionParentOptions
+                  {allParentOptions // Mostramos todos para poder mover entre secciones si se desea
                     .filter((p) => p.id !== cat.id)
                     .map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
@@ -286,7 +286,6 @@ function CategorySection({
           <>
             <td className="p-4 w-14">
               {cat.iconUrl
-                // Regla: no-img-element - Usamos Image de next/image
                 ? <Image src={cat.iconUrl} alt={cat.name} width={32} height={32} className="w-8 h-8 rounded-lg object-cover" />
                 : (
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
@@ -385,7 +384,7 @@ function CategorySection({
                     {isMoving && (
                       <MovePopover
                         cat={cat}
-                        parentOptions={sectionParentOptions}
+                        allParentOptions={allParentOptions}
                         onMove={onMove}
                         onClose={onResetForm}
                       />
@@ -585,12 +584,20 @@ export default function CategoriesPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  // ✅ CORRECCIÓN CRÍTICA: Evitar que se abra todo al guardar
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await getCategories();
       setCategories(data);
-      setExpanded(new Set(data.filter((c) => !c.parentId).map((c) => c.id)));
+      
+      // Solo en la primera carga (o si el set está vacío), abrimos los padres
+      setExpanded(prev => {
+        if (prev.size === 0) {
+          return new Set(data.filter((c) => !c.parentId).map((c) => c.id));
+        }
+        return prev; // Mantener el estado actual de apertura si ya existía
+      });
     } catch (err) {
       console.error('Error cargando categorías:', err);
     } finally {
@@ -599,6 +606,8 @@ export default function CategoriesPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const allParentOptions = useMemo(() => categories.filter((c) => c.parentId == null), [categories]);
 
   const resetForm = () => {
     setForm(EMPTY_FORM);
@@ -632,7 +641,6 @@ export default function CategoriesPage() {
       await load();
       showToast('Categoría creada');
     } catch (err) {
-      // Regla: no-explicit-any - Tipado estricto en catch
       const error = err as Error;
       setFormError(error.message || 'Error al crear categoría');
     } finally {
@@ -717,7 +725,6 @@ export default function CategoriesPage() {
   const toggleExpand = (id: number) =>
     setExpanded((prev) => {
       const next = new Set(prev);
-      // Regla: no-unused-expressions - Cambio de ternario a if/else
       if (next.has(id)) {
         next.delete(id);
       } else {
@@ -775,6 +782,7 @@ export default function CategoriesPage() {
         icon={Briefcase}
         accentColor="text-blue-400"
         allCategories={categories}
+        allParentOptions={allParentOptions}
         isLoading={isLoading}
         actionLoading={actionLoading}
         editingId={editingId}
@@ -802,6 +810,7 @@ export default function CategoriesPage() {
         icon={Wrench}
         accentColor="text-purple-400"
         allCategories={categories}
+        allParentOptions={allParentOptions}
         isLoading={isLoading}
         actionLoading={actionLoading}
         editingId={editingId}
