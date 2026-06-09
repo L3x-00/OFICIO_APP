@@ -386,7 +386,7 @@ class _NotificationTile extends StatelessWidget {
           onTap: () {
             // Marca leído antes de navegar — UX común en bandejas.
             context.read<NotificationsProvider>().markRead(n.id);
-            context.go(action.route);
+            context.push(action.route);
           },
         ),
       ),

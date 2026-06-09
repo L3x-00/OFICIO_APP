@@ -19,12 +19,16 @@ import 'package:mobile/features/referrals/presentation/widgets/referral/referral
 Widget _harness(Widget child) {
   return MaterialApp(
     theme: AppThemeColors.buildLight(),
-    home: Scaffold(body: SingleChildScrollView(child: child)),
+    home: Scaffold(
+      body: SafeArea(child: SingleChildScrollView(child: child)),
+    ),
   );
 }
 
 void main() {
-  testWidgets('CoinsCard muestra el balance numérico formateado', (tester) async {
+  testWidgets('CoinsCard muestra el balance numérico formateado', (
+    tester,
+  ) async {
     await tester.pumpWidget(_harness(const CoinsCard(coins: 125)));
     await tester.pump();
 
@@ -37,7 +41,9 @@ void main() {
     expect(find.byIcon(Icons.monetization_on_rounded), findsOneWidget);
   });
 
-  testWidgets('CoinsCard con balance grande mantiene el formato (no rompe)', (tester) async {
+  testWidgets('CoinsCard con balance grande mantiene el formato (no rompe)', (
+    tester,
+  ) async {
     await tester.pumpWidget(_harness(const CoinsCard(coins: 1500)));
     await tester.pump();
     // No assertamos sobre el separador específico (depende del locale),
@@ -46,23 +52,28 @@ void main() {
     expect(find.byIcon(Icons.monetization_on_rounded), findsOneWidget);
   });
 
-  testWidgets('MyCodeCard muestra el código + botón de copiar + CTA "Copiar enlace"', (tester) async {
-    await tester.pumpWidget(_harness(const MyCodeCard(code: 'ABCD1234')));
-    await tester.pump();
+  testWidgets(
+    'MyCodeCard muestra el código + botón de copiar + CTA "Copiar enlace"',
+    (tester) async {
+      await tester.pumpWidget(_harness(const MyCodeCard(code: 'ABCD1234')));
+      await tester.pump();
 
-    // El código visible.
-    expect(find.text('ABCD1234'), findsOneWidget);
-    // Header "TU CÓDIGO PERSONAL".
-    expect(find.text('TU CÓDIGO PERSONAL'), findsOneWidget);
-    // IconButton con tooltip "Copiar código".
-    final iconBtn = find.byTooltip('Copiar código');
-    expect(iconBtn, findsOneWidget);
-    // CTA principal de share.
-    expect(find.text('Copiar enlace para invitar'), findsOneWidget);
-    expect(find.byIcon(Icons.share_rounded), findsOneWidget);
-  });
+      // El código visible.
+      expect(find.text('ABCD1234'), findsOneWidget);
+      // Header "TU CÓDIGO PERSONAL".
+      expect(find.text('TU CÓDIGO PERSONAL'), findsOneWidget);
+      // IconButton con tooltip "Copiar código".
+      final iconBtn = find.byTooltip('Copiar código');
+      expect(iconBtn, findsOneWidget);
+      // CTA principal de share.
+      expect(find.text('Copiar enlace para invitar'), findsOneWidget);
+      expect(find.byIcon(Icons.share_rounded), findsOneWidget);
+    },
+  );
 
-  testWidgets('Tap en "Copiar código" muestra SnackBar de confirmación', (tester) async {
+  testWidgets('Tap en "Copiar código" muestra SnackBar de confirmación', (
+    tester,
+  ) async {
     await tester.pumpWidget(_harness(const MyCodeCard(code: 'CODE0001')));
     await tester.pump();
 
@@ -75,15 +86,19 @@ void main() {
   });
 
   testWidgets('MetricBox renderiza icono, valor y etiqueta', (tester) async {
-    await tester.pumpWidget(_harness(const MetricBox(
-      icon:  Icons.verified_rounded,
-      label: 'Aprobadas',
-      value: '7',
-      color: Color(0xFF10B981),
-    )));
+    await tester.pumpWidget(
+      _harness(
+        const MetricBox(
+          icon: Icons.verified_rounded,
+          label: 'Aprobadas',
+          value: '7',
+          color: Color(0xFF10B981),
+        ),
+      ),
+    );
     await tester.pump();
 
-    expect(find.text('7'),         findsOneWidget);
+    expect(find.text('7'), findsOneWidget);
     expect(find.text('Aprobadas'), findsOneWidget);
     expect(find.byIcon(Icons.verified_rounded), findsOneWidget);
   });

@@ -53,7 +53,7 @@ class ProviderDetailSheet extends StatefulWidget {
 }
 
 class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
-  final _reviewsRepo   = ReviewsRepository();
+  final _reviewsRepo = ReviewsRepository();
   final _providersRepo = ProvidersRepository();
 
   /// Copia mutable del proveedor — se refresca tras dejar reseña / recomendar
@@ -62,12 +62,22 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   late ProviderModel _provider = widget.provider;
 
   List<ReviewModel> _reviews = [];
-  bool _reviewsLoading  = false;
-  bool _reviewsError    = false;
-  bool _isRecommended   = false;
+  bool _reviewsLoading = false;
+  bool _reviewsError = false;
+  bool _isRecommended = false;
+
   /// true si el usuario interactuó con el proveedor (chat/llamada/subasta)
   /// y por tanto puede dejar una reseña — prueba de interacción.
-  bool _canReview       = false;
+  bool _canReview = false;
+
+  /// Controla si la sección de servicios/productos está expandida o colapsada.
+  bool _isServicesExpanded = false;
+
+  /// Controla si la sección de Horario de atención está expandida o colapsada.
+  bool _isScheduleExpanded = false;
+
+  /// Controla si la sección de Reseñas está expandida o colapsada.
+  bool _isReviewsExpanded = false;
 
   bool get _isOwnCard {
     final auth = context.read<AuthProvider>();
@@ -112,7 +122,10 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   Future<void> _loadReviews() async {
-    setState(() { _reviewsLoading = true; _reviewsError = false; });
+    setState(() {
+      _reviewsLoading = true;
+      _reviewsError = false;
+    });
     try {
       final reviews = await _reviewsRepo.getProviderReviews(_provider.id);
       if (!mounted) return;
@@ -122,12 +135,14 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       final uid = context.read<AuthProvider>().user?.id ?? 0;
       if (uid != 0) {
         final recommended = await _providersRepo.checkRecommendation(
-            _provider.id, uid);
+          _provider.id,
+          uid,
+        );
         final canRev = await _reviewsRepo.canReview(_provider.id);
         if (mounted) {
           setState(() {
             _isRecommended = recommended;
-            _canReview     = canRev;
+            _canReview = canRev;
           });
         }
       }
@@ -144,11 +159,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   /// tanto en este sheet como en la lista del home (propagado vía
   /// `ProvidersProvider.refreshProvider`).
   Future<void> _refreshProviderStats() async {
-    final updated = await context
-        .read<ProvidersProvider>()
-        .refreshProvider(_provider.id);
+    final updated = await context.read<ProvidersProvider>().refreshProvider(
+      _provider.id,
+    );
     if (!mounted || updated == null) return;
-    setState(() => _provider = updated.copyWith(isFavorite: _provider.isFavorite));
+    setState(
+      () => _provider = updated.copyWith(isFavorite: _provider.isFavorite),
+    );
   }
 
   /// Recarga reseñas y refresca contadores en paralelo. Pasado como
@@ -170,7 +187,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     // Prefer slug; si todavía no se generó (perfil viejo sin backfill),
     // cae al id numérico — el backend resuelve `/profiles/:id` también
     // y backfilla el slug al primer hit.
-    final pathSegment = (p.slug != null && p.slug!.isNotEmpty) ? p.slug! : '${p.id}';
+    final pathSegment = (p.slug != null && p.slug!.isNotEmpty)
+        ? p.slug!
+        : '${p.id}';
     final url = '${DioClient.publicWebUrl}/p/$pathSegment';
     final text = p.type == ProviderType.negocio
         ? 'Mira el negocio ${p.businessName} en Servi'
@@ -186,17 +205,25 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   void _showLoginRequired() {
-    final c       = context.colors;
+    final c = context.colors;
     final rootNav = Navigator.of(context, rootNavigator: true);
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Inicia sesión para continuar',
-            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17)),
-        content: Text('Necesitas una cuenta para realizar esta acción.',
-            style: TextStyle(color: c.textSecondary, height: 1.5)),
+        title: Text(
+          'Inicia sesión para continuar',
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
+        ),
+        content: Text(
+          'Necesitas una cuenta para realizar esta acción.',
+          style: TextStyle(color: c.textSecondary, height: 1.5),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(),
@@ -205,16 +232,23 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogCtx).pop();
-              rootNav.push(MaterialPageRoute(
-                builder: (_) => const LoginScreen(initialMode: AuthMode.login),
-              ));
+              rootNav.push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const LoginScreen(initialMode: AuthMode.login),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Iniciar sesión / Registrarme',
-                style: TextStyle(color: Colors.white, fontSize: 12)),
+            child: const Text(
+              'Iniciar sesión / Registrarme',
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
           ),
         ],
       ),
@@ -226,20 +260,23 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     final c = context.colors;
     final screenHeight = MediaQuery.of(context).size.height;
     final p = _provider;
-    final hasSchedule = p.scheduleJson != null &&
+    final hasSchedule =
+        p.scheduleJson != null &&
         ScheduleTable.hasScheduleData(p.scheduleJson!);
-    final hasServices = (p.scheduleJson?['services'] is List) &&
+    final hasServices =
+        (p.scheduleJson?['services'] is List) &&
         (p.scheduleJson!['services'] as List).isNotEmpty;
-    final hasLocation = p.type == ProviderType.negocio &&
+    final hasLocation =
+        p.type == ProviderType.negocio &&
         (p.address != null || (p.latitude != null && p.longitude != null));
     final social = SocialMediaRow(
-      website:     p.website,
-      instagram:   p.instagram,
-      tiktok:      p.tiktok,
-      facebook:    p.facebook,
-      linkedin:    p.linkedin,
-      twitterX:    p.twitterX,
-      telegram:    p.telegram,
+      website: p.website,
+      instagram: p.instagram,
+      tiktok: p.tiktok,
+      facebook: p.facebook,
+      linkedin: p.linkedin,
+      twitterX: p.twitterX,
+      telegram: p.telegram,
       whatsappBiz: p.whatsappBiz,
     );
 
@@ -252,14 +289,11 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       child: Column(
         children: [
           // ── Handle ─────────────────────────────────────────
-          // El botón de compartir vivía aquí; se movió como overlay en
-          // la galería (inferior-derecha de la foto) para que esté
-          // visualmente sobre el contenido y libere espacio en el
-          // header.
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: c.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
@@ -270,7 +304,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
           // ── Contenido scrollable ────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 32),
+              padding: const EdgeInsets.only(bottom: 48),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -278,10 +312,6 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                     ProviderGallery(
                       images: _allImages,
                       accent: _accent,
-                      // Siempre disponible: si el provider aún no tiene
-                      // slug, _shareProfile cae al id numérico (que el
-                      // backend resuelve y backfilla el slug en el
-                      // primer hit).
                       trailingAction: _ShareFab(onTap: () => _shareProfile(p)),
                     ),
 
@@ -330,24 +360,92 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                         ],
 
                         // ── Horarios (solo NEGOCIO) ───────────
-                        if (p.type == ProviderType.negocio && hasSchedule) ...[
-                          const SectionTitle('Horarios'),
-                          const SizedBox(height: 8),
-                          ScheduleTable(schedule: p.scheduleJson!),
-                          const SizedBox(height: 20),
-                        ],
+                        // Usamos un bucle 'for' para poder declarar la variable activeDays
+                        // sin romper la lista de children del Column.
+                        for (final hasSched in [hasSchedule])
+                          if (p.type == ProviderType.negocio && hasSched) ...[
+                            // Calculamos los días activos aquí de forma segura
+                            () {
+                              final activeDays = ScheduleTable.countActiveDays(
+                                p.scheduleJson!,
+                              );
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (activeDays <= 2)
+                                    const SectionTitle('Horarios')
+                                  else
+                                    _SectionHeaderWithToggle(
+                                      title: 'Horarios',
+                                      isExpanded: _isScheduleExpanded,
+                                      onToggle: () => setState(
+                                        () => _isScheduleExpanded =
+                                            !_isScheduleExpanded,
+                                      ),
+                                      accent: _accent,
+                                      expandLabel: 'Ver más horarios ->',
+                                      collapseLabel: 'Ver menos',
+                                    ),
+                                  const SizedBox(height: 8),
+                                  ScheduleTable(
+                                    schedule: p.scheduleJson!,
+                                    limit:
+                                        !_isScheduleExpanded && activeDays > 2
+                                        ? 2
+                                        : 0,
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                              );
+                            }(),
+                          ],
 
                         // ── Productos (NEGOCIO) / Servicios (OFICIO) ─
-                        if (hasServices) ...[
-                          SectionTitle(
-                            p.type == ProviderType.negocio
-                                ? 'Productos'
-                                : 'Servicios',
-                          ),
-                          const SizedBox(height: 10),
-                          ServicesList(provider: p, accent: _accent),
-                          const SizedBox(height: 12),
-                        ],
+                        for (final hasServ in [hasServices])
+                          if (hasServ) ...[
+                            // Calculamos la cantidad de servicios aquí de forma segura
+                            () {
+                              final servicesCount =
+                                  (p.scheduleJson?['services'] as List).length;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (servicesCount <= 2)
+                                    SectionTitle(
+                                      p.type == ProviderType.negocio
+                                          ? 'Productos'
+                                          : 'Servicios',
+                                    )
+                                  else
+                                    _SectionHeaderWithToggle(
+                                      title: p.type == ProviderType.negocio
+                                          ? 'Productos'
+                                          : 'Servicios',
+                                      isExpanded: _isServicesExpanded,
+                                      onToggle: () => setState(
+                                        () => _isServicesExpanded =
+                                            !_isServicesExpanded,
+                                      ),
+                                      accent: _accent,
+                                      expandLabel:
+                                          'Ver más ${p.type == ProviderType.negocio ? "productos" : "servicios"} ->',
+                                      collapseLabel: 'Ver menos',
+                                    ),
+                                  const SizedBox(height: 10),
+                                  ServicesList(
+                                    provider: p,
+                                    accent: _accent,
+                                    limit:
+                                        !_isServicesExpanded &&
+                                            servicesCount > 2
+                                        ? 2
+                                        : 0,
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                              );
+                            }(),
+                          ],
 
                         // ── Ubicación (solo NEGOCIO) ──────────
                         if (hasLocation) ...[
@@ -450,14 +548,19 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                 Text(
                   'Aún sin reseñas',
                   style: TextStyle(
-                      color: c.textSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600),
+                    color: c.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Sé el primero en dejar una reseña tras contratar este servicio.',
-                  style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -468,15 +571,35 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       );
     }
 
+    // ── Estado con reseñas existentes ──────────────────────
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle('Reseñas (${_reviews.length})'),
+        // Si hay 2 o menos, título normal. Si hay 3+, título con botón.
+        if (_reviews.length <= 2)
+          SectionTitle('Reseñas (${_reviews.length})')
+        else
+          _SectionHeaderWithToggle(
+            title: 'Reseñas (${_reviews.length})',
+            isExpanded: _isReviewsExpanded,
+            onToggle: () =>
+                setState(() => _isReviewsExpanded = !_isReviewsExpanded),
+            accent: _accent,
+            expandLabel: 'Ver más reseñas ->',
+            collapseLabel: 'Ver menos',
+          ),
+
         const SizedBox(height: 12),
-        ..._reviews.take(5).map((r) => ReviewCard(
-              review: r,
-              providerUserId: _provider.userId ?? 0,
-            )),
+
+        // Si está colapsado y hay más de 2, muestra 2. Si no, muestra todas.
+        ...(!_isReviewsExpanded && _reviews.length > 2
+                ? _reviews.take(2)
+                : _reviews)
+            .map(
+              (r) =>
+                  ReviewCard(review: r, providerUserId: _provider.userId ?? 0),
+            ),
+
         const SizedBox(height: 8),
       ],
     );
@@ -486,28 +609,41 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
   Widget _buildReportButton() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: OutlinedButton.icon(
         onPressed: () {
           final auth = context.read<AuthProvider>();
-          if (auth.user == null) { _showLoginRequired(); return; }
+          if (auth.user == null) {
+            _showLoginRequired();
+            return;
+          }
           ReportSheet.show(
             context,
-            providerId:    _provider.id,
-            providerName:  _provider.businessName,
-            userId:        auth.user!.id,
-            repo:          _providersRepo,
+            providerId: _provider.id,
+            providerName: _provider.businessName,
+            userId: auth.user!.id,
+            repo: _providersRepo,
           );
         },
-        icon: const Icon(Icons.flag_rounded, size: 16, color: Color(0xFFEF4444)),
+        icon: const Icon(
+          Icons.flag_rounded,
+          size: 16,
+          color: Color(0xFFEF4444),
+        ),
         label: const Text(
           'Reportar este servicio',
-          style: TextStyle(color: Color(0xFFEF4444), fontSize: 13, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            color: Color(0xFFEF4444),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
     );
@@ -534,6 +670,52 @@ class _ShareFab extends StatelessWidget {
           child: Icon(Icons.ios_share_rounded, color: Colors.white, size: 20),
         ),
       ),
+    );
+  }
+}
+
+/// Fila de título con acción "Ver más" alineada a la derecha.
+/// Usada para colapsar/expandir servicios, horarios y reseñas.
+class _SectionHeaderWithToggle extends StatelessWidget {
+  final String title;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final Color accent;
+  final String expandLabel;
+  final String collapseLabel;
+
+  const _SectionHeaderWithToggle({
+    required this.title,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.accent,
+    this.expandLabel = 'Ver más ->',
+    this.collapseLabel = 'Ver menos',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      // Alinea los textos por la línea base para que se vean prolijos
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Expanded(child: SectionTitle(title)),
+        GestureDetector(
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+            child: Text(
+              isExpanded ? collapseLabel : expandLabel,
+              style: TextStyle(
+                color: accent,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

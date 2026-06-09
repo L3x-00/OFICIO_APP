@@ -13,13 +13,31 @@ import 'service_cards/service_detail_dialog.dart';
 class ServicesList extends StatelessWidget {
   final ProviderModel provider;
   final Color accent;
+  final int limit; // 👈 NUEVO: Cantidad máxima a mostrar (0 = sin límite)
+  final int skip; // 👈 NUEVO: Cantidad a saltar desde el inicio (0 = no saltar)
 
-  const ServicesList({super.key, required this.provider, required this.accent});
+  const ServicesList({
+    super.key,
+    required this.provider,
+    required this.accent,
+    this.limit = 0, // Valor por defecto: sin límite
+    this.skip = 0, // Valor por defecto: no saltar
+  });
 
   @override
   Widget build(BuildContext context) {
-    final services = provider.services;
+    var services = provider.services;
     if (services.isEmpty) return const SizedBox.shrink();
+
+    // ── Aplicar lógica de paginación ──────────────────────
+    // 1. Saltar los primeros 'skip' (usado cuando se expande para no repetir los 2 primeros)
+    if (skip > 0) {
+      services = services.skip(skip).toList();
+    }
+    // 2. Limitar la cantidad a mostrar (usado para mostrar solo 2 inicialmente)
+    if (limit > 0) {
+      services = services.take(limit).toList();
+    }
 
     final isNegocio = provider.type == ProviderType.negocio;
     final c = context.colors;
@@ -164,7 +182,15 @@ class ServicesList extends StatelessWidget {
 
 class ScheduleTable extends StatelessWidget {
   final Map<String, dynamic> schedule;
-  const ScheduleTable({super.key, required this.schedule});
+  final int limit; // 👈 NUEVO
+  final int skip; // 👈 NUEVO
+
+  const ScheduleTable({
+    super.key,
+    required this.schedule,
+    this.limit = 0, // 0 = sin límite
+    this.skip = 0, // 0 = no saltar
+  });
 
   /// Lee la hora del día tolerando perfiles legacy que persistieron
   /// `mié`/`sáb` con tilde — el editor nuevo usa `mie`/`sab`.
@@ -186,10 +212,18 @@ class ScheduleTable extends StatelessWidget {
     return dayKeys.any((d) => _readHours(schedule, d) != null);
   }
 
+  /// Cuenta cuántos días tienen horario definido (para saber si mostrar el botón "Ver más")
+  static int countActiveDays(Map<String, dynamic> schedule) {
+    const dayKeys = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
+    return dayKeys.where((d) => _readHours(schedule, d) != null).length;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final days = {
+
+    // Mantenemos el orden correcto de los días
+    final daysMap = {
       'lun': 'Lunes',
       'mar': 'Martes',
       'mie': 'Miércoles',
@@ -199,6 +233,19 @@ class ScheduleTable extends StatelessWidget {
       'dom': 'Domingo',
     };
 
+    // 1. Filtrar solo los días que tienen horario
+    var activeDays = daysMap.entries
+        .where((entry) => _readHours(schedule, entry.key) != null)
+        .toList();
+
+    // 2. Aplicar lógica de paginación
+    if (skip > 0) {
+      activeDays = activeDays.skip(skip).toList();
+    }
+    if (limit > 0) {
+      activeDays = activeDays.take(limit).toList();
+    }
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -206,9 +253,11 @@ class ScheduleTable extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        children: days.entries.map((entry) {
-          final hours = _readHours(schedule, entry.key);
-          if (hours == null) return const SizedBox.shrink();
+        children: activeDays.map((entry) {
+          final hours = _readHours(
+            schedule,
+            entry.key,
+          )!; // Ya filtramos los nulos arriba
           final isClosed = hours == 'Cerrado';
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),

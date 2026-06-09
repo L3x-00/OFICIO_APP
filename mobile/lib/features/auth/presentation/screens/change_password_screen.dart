@@ -12,14 +12,14 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final _formKey        = GlobalKey<FormState>();
-  final _currentCtrl    = TextEditingController();
-  final _newCtrl        = TextEditingController();
-  final _confirmCtrl    = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _currentCtrl = TextEditingController();
+  final _newCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
 
-  bool _obscureCurrent  = true;
-  bool _obscureNew      = true;
-  bool _obscureConfirm  = true;
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -44,7 +44,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final auth = context.read<AuthProvider>();
     final ok = await auth.changePassword(
       currentPassword: _currentCtrl.text,
-      newPassword:     _newCtrl.text,
+      newPassword: _newCtrl.text,
     );
 
     if (!mounted) return;
@@ -69,7 +69,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c         = context.colors;
+    final c = context.colors;
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
 
     return Scaffold(
@@ -78,104 +78,137 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         backgroundColor: c.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: c.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Cambiar contraseña',
-          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Info callout
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Info callout
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Al cambiar tu contraseña se cerrarán todas tus sesiones activas.',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Al cambiar tu contraseña se cerrarán todas tus sesiones activas.',
-                        style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+                const SizedBox(height: 28),
+
+                // Contraseña actual
+                _PasswordField(
+                  controller: _currentCtrl,
+                  label: 'Contraseña actual',
+                  isObscure: _obscureCurrent,
+                  onToggle: () =>
+                      setState(() => _obscureCurrent = !_obscureCurrent),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Campo requerido' : null,
+                ),
+                const SizedBox(height: 16),
+
+                // Nueva contraseña
+                _PasswordField(
+                  controller: _newCtrl,
+                  label: 'Nueva contraseña',
+                  isObscure: _obscureNew,
+                  onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo requerido';
+                    if (v.length < 8) return 'Mínimo 8 caracteres';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Confirmar nueva contraseña
+                _PasswordField(
+                  controller: _confirmCtrl,
+                  label: 'Confirmar nueva contraseña',
+                  isObscure: _obscureConfirm,
+                  onToggle: () =>
+                      setState(() => _obscureConfirm = !_obscureConfirm),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo requerido';
+                    if (v != _newCtrl.text)
+                      return 'Las contraseñas no coinciden';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 36),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // Contraseña actual
-              _PasswordField(
-                controller: _currentCtrl,
-                label:      'Contraseña actual',
-                isObscure:  _obscureCurrent,
-                onToggle:   () => setState(() => _obscureCurrent = !_obscureCurrent),
-                validator:  (v) => (v == null || v.isEmpty) ? 'Campo requerido' : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Nueva contraseña
-              _PasswordField(
-                controller: _newCtrl,
-                label:      'Nueva contraseña',
-                isObscure:  _obscureNew,
-                onToggle:   () => setState(() => _obscureNew = !_obscureNew),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Campo requerido';
-                  if (v.length < 8) return 'Mínimo 8 caracteres';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Confirmar nueva contraseña
-              _PasswordField(
-                controller: _confirmCtrl,
-                label:      'Confirmar nueva contraseña',
-                isObscure:  _obscureConfirm,
-                onToggle:   () => setState(() => _obscureConfirm = !_obscureConfirm),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Campo requerido';
-                  if (v != _newCtrl.text) return 'Las contraseñas no coinciden';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 36),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Actualizar contraseña',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20, width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Actualizar contraseña',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -202,22 +235,25 @@ class _PasswordField extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     return TextFormField(
-      controller:  controller,
+      controller: controller,
       obscureText: isObscure,
       style: TextStyle(color: c.textPrimary, fontSize: 15),
       validator: validator,
       decoration: InputDecoration(
-        labelText:  label,
+        labelText: label,
         labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
         prefixIcon: Icon(Icons.lock_outline, color: c.textMuted, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
-            isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: c.textMuted, size: 20,
+            isObscure
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            color: c.textMuted,
+            size: 20,
           ),
           onPressed: onToggle,
         ),
-        filled:    true,
+        filled: true,
         fillColor: c.bgCard,
         errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
         border: OutlineInputBorder(

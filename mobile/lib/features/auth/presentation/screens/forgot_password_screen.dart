@@ -13,8 +13,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final _formKey     = GlobalKey<FormState>();
-  final _emailCtrl   = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
   String? _emailError;
 
   @override
@@ -44,17 +44,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ResetPasswordScreen(
-          email:    email,
-          devToken: devToken,
-        ),
+        builder: (_) => ResetPasswordScreen(email: email, devToken: devToken),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final c         = context.colors;
+    final c = context.colors;
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
 
     return Scaffold(
@@ -63,117 +60,158 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: c.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: c.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Recuperar contraseña',
-          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icono ilustrativo
-              Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.lock_reset_rounded,
-                    color: AppColors.primary,
-                    size: 40,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icono ilustrativo
+                Center(
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lock_reset_rounded,
+                      color: AppColors.primary,
+                      size: 40,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              Text(
-                'Ingresa tu correo',
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  'Ingresa tu correo',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Te enviaremos un código de 6 dígitos para que puedas crear una nueva contraseña.',
-                style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 8),
+                Text(
+                  'Te enviaremos un código de 6 dígitos para que puedas crear una nueva contraseña.',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 14,
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 32),
 
-              // Campo email
-              TextFormField(
-                controller:  _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                style: TextStyle(color: c.textPrimary, fontSize: 15),
-                onChanged: (_) {
-                  if (_emailError != null) setState(() => _emailError = null);
-                },
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Ingresa tu correo';
-                  if (!v.contains('@') || !v.contains('.')) return 'Correo inválido';
-                  return _emailError;
-                },
-                decoration: InputDecoration(
-                  labelText:  'Correo electrónico',
-                  labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
-                  prefixIcon: Icon(Icons.email_outlined, color: c.textMuted, size: 20),
-                  filled:     true,
-                  fillColor:  c.bgCard,
-                  errorText:  _emailError,
-                  errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.busy, width: 1.5),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.busy, width: 1.5),
+                // Campo email
+                TextFormField(
+                  controller: _emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: c.textPrimary, fontSize: 15),
+                  onChanged: (_) {
+                    if (_emailError != null) setState(() => _emailError = null);
+                  },
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty)
+                      return 'Ingresa tu correo';
+                    if (!v.contains('@') || !v.contains('.'))
+                      return 'Correo inválido';
+                    return _emailError;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Correo electrónico',
+                    labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      color: c.textMuted,
+                      size: 20,
+                    ),
+                    filled: true,
+                    fillColor: c.bgCard,
+                    errorText: _emailError,
+                    errorStyle: const TextStyle(
+                      color: AppColors.busy,
+                      fontSize: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.busy,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.busy,
+                        width: 1.5,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 36),
+                const SizedBox(height: 36),
 
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Enviar código',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20, width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Enviar código',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

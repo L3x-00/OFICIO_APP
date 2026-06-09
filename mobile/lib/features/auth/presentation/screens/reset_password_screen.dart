@@ -7,29 +7,26 @@ import '../providers/auth_provider.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
+
   /// Token de 6 dígitos pre-llenado solo en entornos de desarrollo
   final String? devToken;
 
-  const ResetPasswordScreen({
-    super.key,
-    required this.email,
-    this.devToken,
-  });
+  const ResetPasswordScreen({super.key, required this.email, this.devToken});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  final _formKey     = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _tokenCtrl;
-  final _oldPassCtrl    = TextEditingController();
-  final _newPassCtrl    = TextEditingController();
-  final _confirmCtrl    = TextEditingController();
+  final _oldPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
 
-  bool _obscureOld      = true;
-  bool _obscureNew      = true;
-  bool _obscureConfirm  = true;
+  bool _obscureOld = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
   @override
   void initState() {
@@ -51,8 +48,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     final auth = context.read<AuthProvider>();
     final ok = await auth.resetPassword(
-      email:       widget.email,
-      token:       _tokenCtrl.text.trim(),
+      email: widget.email,
+      token: _tokenCtrl.text.trim(),
       newPassword: _newPassCtrl.text,
     );
 
@@ -64,7 +61,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1A2E1A),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -75,8 +74,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   color: AppColors.available.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_circle_rounded,
-                    color: AppColors.available, size: 36),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.available,
+                  size: 36,
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -108,11 +110,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
-                  child: const Text('Ir al inicio de sesión',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Ir al inicio de sesión',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -133,7 +138,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c         = context.colors;
+    final c = context.colors;
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
 
     return Scaffold(
@@ -142,159 +147,207 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         backgroundColor: c.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: c.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Nueva contraseña',
-          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Email en el que se envió el código
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Email en el que se envió el código
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.email_outlined,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Código enviado a ${widget.email}',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.email_outlined, color: AppColors.primary, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Código enviado a ${widget.email}',
-                        style: TextStyle(color: c.textSecondary, fontSize: 13),
+                const SizedBox(height: 28),
+
+                Text(
+                  'Ingresa el código de 6 dígitos y tu nueva contraseña.',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Campo código
+                TextFormField(
+                  controller: _tokenCtrl,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(6),
+                  ],
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 8,
+                  ),
+                  textAlign: TextAlign.center,
+                  validator: (v) {
+                    if (v == null || v.length != 6)
+                      return 'El código debe tener 6 dígitos';
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Código de verificación',
+                    labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
+                    filled: true,
+                    fillColor: c.bgCard,
+                    errorStyle: const TextStyle(
+                      color: AppColors.busy,
+                      fontSize: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 2,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              Text(
-                'Ingresa el código de 6 dígitos y tu nueva contraseña.',
-                style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.5),
-              ),
-              const SizedBox(height: 24),
-
-              // Campo código
-              TextFormField(
-                controller:  _tokenCtrl,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(6),
-                ],
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 8,
-                ),
-                textAlign: TextAlign.center,
-                validator: (v) {
-                  if (v == null || v.length != 6) return 'El código debe tener 6 dígitos';
-                  return null;
-                },
-                decoration: InputDecoration(
-                  labelText:  'Código de verificación',
-                  labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
-                  filled:     true,
-                  fillColor:  c.bgCard,
-                  errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.busy, width: 1.5),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.busy, width: 1.5),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.busy,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.busy,
+                        width: 1.5,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Última contraseña utilizada
-              _PasswordField(
-                controller: _oldPassCtrl,
-                label:      'Última contraseña utilizada',
-                isObscure:  _obscureOld,
-                onToggle:   () => setState(() => _obscureOld = !_obscureOld),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Campo requerido';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Nueva contraseña
-              _PasswordField(
-                controller: _newPassCtrl,
-                label:      'Nueva contraseña',
-                isObscure:  _obscureNew,
-                onToggle:   () => setState(() => _obscureNew = !_obscureNew),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Campo requerido';
-                  if (v.length < 8) return 'Mínimo 8 caracteres';
-                  if (v == _oldPassCtrl.text) return 'La nueva contraseña no puede ser igual a la anterior';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Confirmar nueva contraseña
-              _PasswordField(
-                controller: _confirmCtrl,
-                label:      'Confirmar nueva contraseña',
-                isObscure:  _obscureConfirm,
-                onToggle:   () => setState(() => _obscureConfirm = !_obscureConfirm),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Campo requerido';
-                  if (v != _newPassCtrl.text) return 'Las contraseñas no coinciden';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 36),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20, width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Restablecer contraseña',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
+                // Última contraseña utilizada
+                _PasswordField(
+                  controller: _oldPassCtrl,
+                  label: 'Última contraseña utilizada',
+                  isObscure: _obscureOld,
+                  onToggle: () => setState(() => _obscureOld = !_obscureOld),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo requerido';
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // Nueva contraseña
+                _PasswordField(
+                  controller: _newPassCtrl,
+                  label: 'Nueva contraseña',
+                  isObscure: _obscureNew,
+                  onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo requerido';
+                    if (v.length < 8) return 'Mínimo 8 caracteres';
+                    if (v == _oldPassCtrl.text)
+                      return 'La nueva contraseña no puede ser igual a la anterior';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Confirmar nueva contraseña
+                _PasswordField(
+                  controller: _confirmCtrl,
+                  label: 'Confirmar nueva contraseña',
+                  isObscure: _obscureConfirm,
+                  onToggle: () =>
+                      setState(() => _obscureConfirm = !_obscureConfirm),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo requerido';
+                    if (v != _newPassCtrl.text)
+                      return 'Las contraseñas no coinciden';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 36),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Restablecer contraseña',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -321,22 +374,25 @@ class _PasswordField extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     return TextFormField(
-      controller:  controller,
+      controller: controller,
       obscureText: isObscure,
       style: TextStyle(color: c.textPrimary, fontSize: 15),
       validator: validator,
       decoration: InputDecoration(
-        labelText:  label,
+        labelText: label,
         labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
         prefixIcon: Icon(Icons.lock_outline, color: c.textMuted, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
-            isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: c.textMuted, size: 20,
+            isObscure
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            color: c.textMuted,
+            size: 20,
           ),
           onPressed: onToggle,
         ),
-        filled:    true,
+        filled: true,
         fillColor: c.bgCard,
         errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
         border: OutlineInputBorder(

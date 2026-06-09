@@ -809,324 +809,332 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             : null,
         title: Text(_formTitle, style: TextStyle(color: c.textPrimary)),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.providerType != null) ...[
-              TypeBadge(isOficio: _isOficio),
-              const SizedBox(height: 14),
-            ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.providerType != null) ...[
+                TypeBadge(isOficio: _isOficio),
+                const SizedBox(height: 14),
+              ],
 
-            Text(
-              'Cuéntanos sobre tu servicio',
-              style: TextStyle(
-                color: c.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              Text(
+                'Cuéntanos sobre tu servicio',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formSubtitle,
-              style: TextStyle(color: c.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-
-            // ── INFORMACIÓN BÁSICA ───────────────────
-            const FormSectionHeader(label: 'INFORMACIÓN BÁSICA'),
-            const SizedBox(height: 12),
-
-            FormFieldTile(
-              controller: _businessNameController,
-              label: _isOficio
-                  ? 'Nombre del profesional *'
-                  : 'Nombre del negocio *',
-              hint: _isOficio
-                  ? 'Ej: Juan Electricista'
-                  : 'Ej: Restaurante El Sabor',
-              icon: _isOficio
-                  ? Icons.handyman_outlined
-                  : Icons.storefront_outlined,
-            ),
-            const SizedBox(height: 14),
-
-            if (_isOficio) ...[
-              FormFieldTile(
-                controller: _dniController,
-                label: 'DNI del titular (opcional)',
-                hint: '12345678',
-                icon: Icons.badge_outlined,
-                keyboardType: TextInputType.number,
-                maxLength: 8,
-              ),
-              const SizedBox(height: 14),
-            ],
-
-            if (!_isOficio) ...[
-              FormFieldTile(
-                controller: _rucController,
-                label: 'RUC (opcional)',
-                hint: '20123456789',
-                icon: Icons.receipt_long_outlined,
-                keyboardType: TextInputType.number,
-                maxLength: 11,
-              ),
-              const SizedBox(height: 14),
-              // Nombre Comercial y Razón Social se eliminaron: el backend los
-              // toma de SUNAT durante la validación de identidad, así que
-              // pedirlos aquí era redundante.
-            ],
-
-            PhoneInputSection(
-              onChange: (phone, wap) => setState(() {
-                _phone = phone;
-                _whatsapp = wap ?? '';
-              }),
-            ),
-            const SizedBox(height: 14),
-
-            if (!_isOficio) ...[
-              OnboardingAddressSection(
-                addressController: _addressController,
-                mapsUrlController: _mapsUrlController,
-                showAddressSection: _showAddressSection,
-                gpsLoading: _gpsLoading,
-                gpsPosition: _gpsPosition,
-                onToggleSection: () =>
-                    setState(() => _showAddressSection = !_showAddressSection),
-                onFetchGps: _fetchGpsLocation,
-                onClearGps: () => setState(() {
-                  _gpsPosition = null;
-                  _addressController.clear();
-                }),
-                onParseMapsUrl: _parseMapsUrl,
-              ),
-              const SizedBox(height: 14),
-            ],
-
-            // ── CATEGORÍA / TIPO DE NEGOCIO ──────────
-            FormSectionHeader(
-              label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO',
-            ),
-            const SizedBox(height: 12),
-            OnboardingCategorySection(
-              providerType: widget.providerType,
-              categories: _categories,
-              selected: _selectedCategories,
-              primaryCategoryId: _primaryCategoryId,
-              // Premium puede elegir hasta 6 especialidades; el resto, 3.
-              maxCategories: PlanLimits.specialties(_planChoice),
-              onChanged: (sel, primary) => setState(() {
-                _selectedCategories = sel;
-                _primaryCategoryId = primary;
-              }),
-            ),
-            const SizedBox(height: 24),
-
-            // ── DESCRIPCIÓN ──────────────────────────
-            const FormSectionHeader(label: 'DESCRIPCIÓN'),
-            const SizedBox(height: 12),
-            FormFieldTile(
-              controller: _descriptionController,
-              label: _isOficio ? 'Describe tu servicio' : 'Describe tu negocio',
-              hint: _isOficio
-                  ? 'Experiencia, especialidades, horario de trabajo...'
-                  : 'Qué ofreces, horarios, especialidades...',
-              icon: Icons.description_outlined,
-              maxLines: 4,
-            ),
-            const SizedBox(height: 24),
-
-            // ── DOMICILIO / DELIVERY ─────────────────
-            FormSectionHeader(
-              label: _isOficio
-                  ? 'SERVICIOS A DOMICILIO'
-                  : 'SERVICIO DE DELIVERY',
-            ),
-            const SizedBox(height: 12),
-            OnboardingDeliverySection(
-              isOficio: _isOficio,
-              hasDelivery: _hasDelivery,
-              plenaCoordinacion: _plenaCoordinacion,
-              onDeliveryChanged: (v) => setState(() => _hasDelivery = v),
-              onPlenaChanged: (v) => setState(() => _plenaCoordinacion = v),
-            ),
-            const SizedBox(height: 24),
-
-            if (!_isOficio) ...[
-              CollapsibleSchedule(
-                scheduleJson: _scheduleJson,
-                onSave: (s) => setState(() => _scheduleJson = s),
+              const SizedBox(height: 4),
+              Text(
+                _formSubtitle,
+                style: TextStyle(color: c.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 24),
-            ],
 
-            // ── UBICACIÓN ────────────────────────────
-            FormSectionHeader(
-              label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *',
-            ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () async {
-                final locSection = OnboardingLocationSection(
+              // ── INFORMACIÓN BÁSICA ───────────────────
+              const FormSectionHeader(label: 'INFORMACIÓN BÁSICA'),
+              const SizedBox(height: 12),
+
+              FormFieldTile(
+                controller: _businessNameController,
+                label: _isOficio
+                    ? 'Nombre del profesional *'
+                    : 'Nombre del negocio *',
+                hint: _isOficio
+                    ? 'Ej: Juan Electricista'
+                    : 'Ej: Restaurante El Sabor',
+                icon: _isOficio
+                    ? Icons.handyman_outlined
+                    : Icons.storefront_outlined,
+              ),
+              const SizedBox(height: 14),
+
+              if (_isOficio) ...[
+                FormFieldTile(
+                  controller: _dniController,
+                  label: 'DNI del titular (opcional)',
+                  hint: '12345678',
+                  icon: Icons.badge_outlined,
+                  keyboardType: TextInputType.number,
+                  maxLength: 8,
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              if (!_isOficio) ...[
+                FormFieldTile(
+                  controller: _rucController,
+                  label: 'RUC (opcional)',
+                  hint: '20123456789',
+                  icon: Icons.receipt_long_outlined,
+                  keyboardType: TextInputType.number,
+                  maxLength: 11,
+                ),
+                const SizedBox(height: 14),
+                // Nombre Comercial y Razón Social se eliminaron: el backend los
+                // toma de SUNAT durante la validación de identidad, así que
+                // pedirlos aquí era redundante.
+              ],
+
+              PhoneInputSection(
+                onChange: (phone, wap) => setState(() {
+                  _phone = phone;
+                  _whatsapp = wap ?? '';
+                }),
+              ),
+              const SizedBox(height: 14),
+
+              if (!_isOficio) ...[
+                OnboardingAddressSection(
+                  addressController: _addressController,
+                  mapsUrlController: _mapsUrlController,
+                  showAddressSection: _showAddressSection,
+                  gpsLoading: _gpsLoading,
+                  gpsPosition: _gpsPosition,
+                  onToggleSection: () => setState(
+                    () => _showAddressSection = !_showAddressSection,
+                  ),
+                  onFetchGps: _fetchGpsLocation,
+                  onClearGps: () => setState(() {
+                    _gpsPosition = null;
+                    _addressController.clear();
+                  }),
+                  onParseMapsUrl: _parseMapsUrl,
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // ── CATEGORÍA / TIPO DE NEGOCIO ──────────
+              FormSectionHeader(
+                label: _isOficio ? 'CATEGORÍA DEL SERVICIO' : 'TIPO DE NEGOCIO',
+              ),
+              const SizedBox(height: 12),
+              OnboardingCategorySection(
+                providerType: widget.providerType,
+                categories: _categories,
+                selected: _selectedCategories,
+                primaryCategoryId: _primaryCategoryId,
+                // Premium puede elegir hasta 6 especialidades; el resto, 3.
+                maxCategories: PlanLimits.specialties(_planChoice),
+                onChanged: (sel, primary) => setState(() {
+                  _selectedCategories = sel;
+                  _primaryCategoryId = primary;
+                }),
+              ),
+              const SizedBox(height: 24),
+
+              // ── DESCRIPCIÓN ──────────────────────────
+              const FormSectionHeader(label: 'DESCRIPCIÓN'),
+              const SizedBox(height: 12),
+              FormFieldTile(
+                controller: _descriptionController,
+                label: _isOficio
+                    ? 'Describe tu servicio'
+                    : 'Describe tu negocio',
+                hint: _isOficio
+                    ? 'Experiencia, especialidades, horario de trabajo...'
+                    : 'Qué ofreces, horarios, especialidades...',
+                icon: Icons.description_outlined,
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+
+              // ── DOMICILIO / DELIVERY ─────────────────
+              FormSectionHeader(
+                label: _isOficio
+                    ? 'SERVICIOS A DOMICILIO'
+                    : 'SERVICIO DE DELIVERY',
+              ),
+              const SizedBox(height: 12),
+              OnboardingDeliverySection(
+                isOficio: _isOficio,
+                hasDelivery: _hasDelivery,
+                plenaCoordinacion: _plenaCoordinacion,
+                onDeliveryChanged: (v) => setState(() => _hasDelivery = v),
+                onPlenaChanged: (v) => setState(() => _plenaCoordinacion = v),
+              ),
+              const SizedBox(height: 24),
+
+              if (!_isOficio) ...[
+                CollapsibleSchedule(
+                  scheduleJson: _scheduleJson,
+                  onSave: (s) => setState(() => _scheduleJson = s),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // ── UBICACIÓN ────────────────────────────
+              FormSectionHeader(
+                label: _isOficio ? 'TU UBICACIÓN (opcional)' : 'TU UBICACIÓN *',
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () async {
+                  final locSection = OnboardingLocationSection(
+                    department: _department,
+                    province: _province,
+                    district: _district,
+                  );
+                  final result = await locSection.showPicker(context);
+                  if (result != null && mounted) {
+                    setState(() {
+                      _department = result.department;
+                      _province = result.province;
+                      _district = result.district;
+                    });
+                  }
+                },
+                child: OnboardingLocationSection(
                   department: _department,
                   province: _province,
                   district: _district,
-                );
-                final result = await locSection.showPicker(context);
-                if (result != null && mounted) {
-                  setState(() {
-                    _department = result.department;
-                    _province = result.province;
-                    _district = result.district;
-                  });
-                }
-              },
-              child: OnboardingLocationSection(
-                department: _department,
-                province: _province,
-                district: _district,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ── REDES SOCIALES ──────────────────────
-            OnboardingSocialSection(
-              websiteCtrl: _websiteCtrl,
-              instagramCtrl: _instagramCtrl,
-              tiktokCtrl: _tiktokCtrl,
-              facebookCtrl: _facebookCtrl,
-              linkedinCtrl: _linkedinCtrl,
-              twitterCtrl: _twitterCtrl,
-              telegramCtrl: _telegramCtrl,
-              whatsappBizCtrl: _whatsappBizCtrl,
-              isNegocio: !_isOficio,
-            ),
-            const SizedBox(height: 24),
-
-            // ── FOTOS ───────────────────────────────
-            const FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
-            const SizedBox(height: 12),
-            OnboardingPhotoSection(
-              photos: _photos,
-              maxPhotos: _maxPhotos,
-              onPickPhoto: _pickPhoto,
-              onRemovePhoto: _removePhoto,
-              onReorderPhotos: _reorderPhotos,
-            ),
-            const SizedBox(height: 32),
-
-            // ── CÓDIGO REFERIDO ─────────────────────
-            const FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                color: c.bgInput,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.25),
                 ),
               ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.card_giftcard_rounded,
-                    color: AppColors.primary,
-                    size: 20,
+              const SizedBox(height: 24),
+
+              // ── REDES SOCIALES ──────────────────────
+              OnboardingSocialSection(
+                websiteCtrl: _websiteCtrl,
+                instagramCtrl: _instagramCtrl,
+                tiktokCtrl: _tiktokCtrl,
+                facebookCtrl: _facebookCtrl,
+                linkedinCtrl: _linkedinCtrl,
+                twitterCtrl: _twitterCtrl,
+                telegramCtrl: _telegramCtrl,
+                whatsappBizCtrl: _whatsappBizCtrl,
+                isNegocio: !_isOficio,
+              ),
+              const SizedBox(height: 24),
+
+              // ── FOTOS ───────────────────────────────
+              const FormSectionHeader(label: 'FOTOS DEL SERVICIO'),
+              const SizedBox(height: 12),
+              OnboardingPhotoSection(
+                photos: _photos,
+                maxPhotos: _maxPhotos,
+                onPickPhoto: _pickPhoto,
+                onRemovePhoto: _removePhoto,
+                onReorderPhotos: _reorderPhotos,
+              ),
+              const SizedBox(height: 32),
+
+              // ── CÓDIGO REFERIDO ─────────────────────
+              const FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: c.bgInput,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.25),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: _referralCodeCtrl,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Ej: ALEX1234',
-                        hintStyle: TextStyle(color: c.textMuted),
-                      ),
-                      style: TextStyle(
-                        color: c.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.card_giftcard_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _referralCodeCtrl,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Ej: ALEX1234',
+                          hintStyle: TextStyle(color: c.textMuted),
+                        ),
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 6, left: 4),
-              child: Text(
-                'Si alguien te invitó, ingresa su código aquí. Recibirás 5 monedas al ser aprobado.',
-                style: TextStyle(color: c.textMuted, fontSize: 11),
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // ── PLAN DE SUSCRIPCIÓN ─────────────────
-            const FormSectionHeader(label: 'PLAN DE SUSCRIPCIÓN'),
-            const SizedBox(height: 8),
-            _buildPlanSection(c),
-            const SizedBox(height: 32),
-
-            // ── BOTONES DE ACCIÓN ───────────────────
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _onSubmitPressed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: c.bgCard,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  ],
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        _acquirePremium
-                            ? 'Continuar al pago Premium'
-                            : (_isOficio
-                                  ? 'Registrarme como profesional'
-                                  : 'Registrarme como negocio'),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: TextButton(
-                onPressed: () {
-                  if (widget.isStandalone) {
-                    Navigator.of(context).pop();
-                  } else {
-                    context.read<AuthProvider>().completeOnboarding(
-                      role: 'USUARIO',
-                    );
-                  }
-                },
+              Padding(
+                padding: const EdgeInsets.only(top: 6, left: 4),
                 child: Text(
-                  'Completar después',
-                  style: TextStyle(color: c.textMuted),
+                  'Si alguien te invitó, ingresa su código aquí. Recibirás 5 monedas al ser aprobado.',
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 28),
+
+              // ── PLAN DE SUSCRIPCIÓN ─────────────────
+              const FormSectionHeader(label: 'PLAN DE SUSCRIPCIÓN'),
+              const SizedBox(height: 8),
+              _buildPlanSection(c),
+              const SizedBox(height: 32),
+
+              // ── BOTONES DE ACCIÓN ───────────────────
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _onSubmitPressed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: c.bgCard,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          _acquirePremium
+                              ? 'Continuar al pago Premium'
+                              : (_isOficio
+                                    ? 'Registrarme como profesional'
+                                    : 'Registrarme como negocio'),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    if (widget.isStandalone) {
+                      Navigator.of(context).pop();
+                    } else {
+                      context.read<AuthProvider>().completeOnboarding(
+                        role: 'USUARIO',
+                      );
+                    }
+                  },
+                  child: Text(
+                    'Completar después',
+                    style: TextStyle(color: c.textMuted),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

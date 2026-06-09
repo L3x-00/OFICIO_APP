@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_app_update/in_app_update.dart';
@@ -53,14 +54,24 @@ Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  // B-3: registrar el handler ANTES de runApp y antes de cualquier
-  // listener de foreground. FlutterFire requiere que sea top-level.
+
+  // B-3: registrar el handler ANTES de runApp
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   FcmService.setNavigatorKey(_navigatorKey);
 
+  // ✅ NUEVO: Forzar Edge-to-Edge y eliminar estilos de barras obsoletos
+  // Esto le dice a Flutter que dibuje debajo de las barras del sistema,
+  // apagando los colores manuales (la causa de la advertencia de Play Console).
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  // Desactivar cualquier color manual de barras que Flutter intente poner.
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+      statusBarColor: Colors.transparent,
+    ),
+  );
+
   // ── Providers raíz inicializados antes de runApp ───────────
-  // Necesitamos `AuthProvider.initialize()` resuelto antes de construir
-  // el router, porque éste lee el `navigationState` para el `redirect`.
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();
 
@@ -70,7 +81,6 @@ void main() async {
 
   final router = createRouter(authProvider: auth, navigatorKey: _navigatorKey);
 
-  // DSN configurado en build con --dart-define=SENTRY_DSN=https://...
   const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 
   await SentryFlutter.init(
