@@ -37,14 +37,23 @@ class ActionButtons extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.35),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 18),
               SizedBox(width: 7),
-              Text('Ir a mi panel', style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700)),
+              Text(
+                'Ir a mi panel',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
         ),
@@ -52,32 +61,47 @@ class ActionButtons extends StatelessWidget {
     }
 
     // Plan gating: GRATIS sólo expone el chat interno; ESTANDAR y PREMIUM
-    // muestran chat + WhatsApp + llamada.
+    // muestran chat + WhatsApp + llamada. Los toggles de privacidad del
+    // proveedor (showWhatsapp/showPhone) ocultan el botón aunque el plan lo
+    // permita — la seguridad manda sobre el plan.
     final paid = isPaidPlan(provider.subscriptionPlan);
+    final showWa = paid && provider.showWhatsapp;
+    final showCall = paid && provider.showPhone;
 
     return Row(
       children: [
-        Expanded(child: IconActionButton(
-          icon: Icons.forum_rounded,
-          color: AppColors.amber,
-          onTap: onChat,
-        )),
-        if (paid) ...[
+        Expanded(
+          child: IconActionButton(
+            icon: Icons.forum_rounded,
+            color: AppColors.amber,
+            onTap: onChat,
+          ),
+        ),
+        if (showWa) ...[
           const SizedBox(width: 8),
-          Expanded(child: IconActionButton(
-            svgAsset: 'assets/icons/whatsapp.svg',
-            color: AppColors.whatsapp,
-            onTap: () => CardContactActions.openWhatsApp(context, provider),
-          )),
+          Expanded(
+            child: IconActionButton(
+              svgAsset: 'assets/icons/whatsapp.svg',
+              color: AppColors.whatsapp,
+              onTap: () => CardContactActions.openWhatsApp(context, provider),
+            ),
+          ),
+        ],
+        if (showCall) ...[
           const SizedBox(width: 8),
-          Expanded(child: IconActionButton(
-            icon: Icons.call_rounded,
-            color: AppColors.call,
-            onTap: () => CardContactActions.makeCall(context, provider),
-          )),
+          Expanded(
+            child: IconActionButton(
+              icon: Icons.call_rounded,
+              color: AppColors.call,
+              onTap: () => CardContactActions.makeCall(context, provider),
+            ),
+          ),
         ],
         const SizedBox(width: 8),
-        FavoriteButton(isFavorite: provider.isFavorite, onToggle: onFavoriteToggle),
+        FavoriteButton(
+          isFavorite: provider.isFavorite,
+          onToggle: onFavoriteToggle,
+        ),
       ],
     );
   }
@@ -133,9 +157,15 @@ class FavoriteButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isFavorite ? AppColors.favorite.withValues(alpha: 0.15) : c.bgInput,
+          color: isFavorite
+              ? AppColors.favorite.withValues(alpha: 0.15)
+              : c.bgInput,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isFavorite ? AppColors.favorite.withValues(alpha: 0.4) : c.border),
+          border: Border.all(
+            color: isFavorite
+                ? AppColors.favorite.withValues(alpha: 0.4)
+                : c.border,
+          ),
         ),
         child: Icon(
           isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
@@ -166,7 +196,8 @@ class CompactActionBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 30, height: 30,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(8),

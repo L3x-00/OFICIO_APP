@@ -264,6 +264,44 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
+  /// Toggles de privacidad (showPhone / showWhatsapp / showExactLocation).
+  /// Independientes del plan. Optimistic update con revert si el servidor
+  /// falla. [field] debe ser uno de los tres nombres exactos.
+  Future<bool> setPrivacyToggle(String field, bool value) async {
+    if (_profile == null) return false;
+    final p = _profile!;
+    final prev = switch (field) {
+      'showPhone' => p.showPhone,
+      'showWhatsapp' => p.showWhatsapp,
+      'showExactLocation' => p.showExactLocation,
+      _ => true,
+    };
+
+    DashboardProfileModel apply(bool v) => switch (field) {
+      'showPhone' => p.copyWith(showPhone: v),
+      'showWhatsapp' => p.copyWith(showWhatsapp: v),
+      'showExactLocation' => p.copyWith(showExactLocation: v),
+      _ => p,
+    };
+
+    _profile = apply(value);
+    notifyListeners();
+    try {
+      await _repo.updateMyProfile(
+        showPhone: field == 'showPhone' ? value : null,
+        showWhatsapp: field == 'showWhatsapp' ? value : null,
+        showExactLocation: field == 'showExactLocation' ? value : null,
+        type: _currentProviderType,
+      );
+      return true;
+    } catch (e) {
+      _profile = apply(prev);
+      _error = _formatError(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> setAvailability(String status) async {
     final prev = _profile?.availability;
     // Optimistic update

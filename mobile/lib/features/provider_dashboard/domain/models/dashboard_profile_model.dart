@@ -5,11 +5,12 @@ class ProfileCategory {
 
   const ProfileCategory({required this.id, required this.name, this.slug});
 
-  factory ProfileCategory.fromJson(Map<String, dynamic> json) => ProfileCategory(
-    id:   json['id'] as int,
-    name: json['name'] as String,
-    slug: json['slug'] as String?,
-  );
+  factory ProfileCategory.fromJson(Map<String, dynamic> json) =>
+      ProfileCategory(
+        id: json['id'] as int,
+        name: json['name'] as String,
+        slug: json['slug'] as String?,
+      );
 }
 
 /// Modelo del perfil de proveedor para el panel de control
@@ -25,6 +26,7 @@ class DashboardProfileModel {
   final String availability; // DISPONIBLE | OCUPADO | CON_DEMORA
   final bool isVerified;
   final bool hasCleanRecord;
+
   /// Validación de confianza aprobada por el admin — junto con
   /// averageRating >= 3 habilita postular en subastas.
   final bool isTrusted;
@@ -54,6 +56,12 @@ class DashboardProfileModel {
   final String? twitterX;
   final String? telegram;
   final String? whatsappBiz;
+
+  // ── Toggles de privacidad (independientes del plan) ──────
+  // El proveedor decide qué exponer en su perfil público.
+  final bool showPhone;
+  final bool showWhatsapp;
+  final bool showExactLocation;
 
   const DashboardProfileModel({
     required this.id,
@@ -86,51 +94,67 @@ class DashboardProfileModel {
     this.twitterX,
     this.telegram,
     this.whatsappBiz,
+    this.showPhone = true,
+    this.showWhatsapp = true,
+    this.showExactLocation = true,
   });
 
   bool get isPaused => availability == 'OCUPADO';
 
   factory DashboardProfileModel.fromJson(Map<String, dynamic> json) {
     return DashboardProfileModel(
-      id:            json['id'] as int,
-      businessName:  json['businessName'] as String? ?? '',
-      description:   json['description'] as String?,
-      phone:         json['phone'] as String? ?? '',
-      whatsapp:      json['whatsapp'] as String?,
-      address:       json['address'] as String?,
+      id: json['id'] as int,
+      businessName: json['businessName'] as String? ?? '',
+      description: json['description'] as String?,
+      phone: json['phone'] as String? ?? '',
+      whatsapp: json['whatsapp'] as String?,
+      address: json['address'] as String?,
       averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
-      totalReviews:  json['totalReviews'] as int? ?? 0,
-      availability:  json['availability'] as String? ?? 'DISPONIBLE',
-      isVerified:    json['isVerified'] as bool? ?? false,
+      totalReviews: json['totalReviews'] as int? ?? 0,
+      availability: json['availability'] as String? ?? 'DISPONIBLE',
+      isVerified: json['isVerified'] as bool? ?? false,
       hasCleanRecord: json['hasCleanRecord'] as bool? ?? false,
-      isTrusted:     json['isTrusted'] as bool? ?? false,
-      type:           json['type'] as String? ?? 'OFICIO',
+      isTrusted: json['isTrusted'] as bool? ?? false,
+      type: json['type'] as String? ?? 'OFICIO',
       hasHomeService: json['hasHomeService'] as bool? ?? false,
       // El backend (`provider-profile/me`) anida la categoría como
       // `category: { id, name, slug }`. Como fallback aceptamos también
       // `categoryId` plano en la raíz por si una respuesta lo trae así.
-      categoryId:    _firstCategoryId(json),
-      categoryName:  _firstCategoryName(json),
-      categories:    (json['providerCategories'] as List?)
-                       ?.map((pc) => ProfileCategory.fromJson(pc['category'] as Map<String, dynamic>))
-                       .toList() ?? [],
-      localityName:  json['locality']?['name'] as String?,
-      images:        (json['images'] as List?)
-                       ?.map((img) => ProfileImage.fromJson(img as Map<String, dynamic>))
-                       .toList() ?? [],
-      subscription:  json['subscription'] != null
-                       ? SubscriptionInfo.fromJson(json['subscription'] as Map<String, dynamic>)
-                       : null,
-      scheduleJson:  json['scheduleJson'] as Map<String, dynamic>?,
+      categoryId: _firstCategoryId(json),
+      categoryName: _firstCategoryName(json),
+      categories:
+          (json['providerCategories'] as List?)
+              ?.map(
+                (pc) => ProfileCategory.fromJson(
+                  pc['category'] as Map<String, dynamic>,
+                ),
+              )
+              .toList() ??
+          [],
+      localityName: json['locality']?['name'] as String?,
+      images:
+          (json['images'] as List?)
+              ?.map((img) => ProfileImage.fromJson(img as Map<String, dynamic>))
+              .toList() ??
+          [],
+      subscription: json['subscription'] != null
+          ? SubscriptionInfo.fromJson(
+              json['subscription'] as Map<String, dynamic>,
+            )
+          : null,
+      scheduleJson: json['scheduleJson'] as Map<String, dynamic>?,
       totalFavorites: json['totalFavorites'] as int? ?? 0,
-      website:        json['website']     as String?,
-      instagram:      json['instagram']   as String?,
-      tiktok:         json['tiktok']      as String?,
-      facebook:       json['facebook']    as String?,
-      linkedin:       json['linkedin']    as String?,
-      twitterX:       json['twitterX']    as String?,
-      telegram:       json['telegram']    as String?,
-      whatsappBiz:    json['whatsappBiz'] as String?,
+      website: json['website'] as String?,
+      instagram: json['instagram'] as String?,
+      tiktok: json['tiktok'] as String?,
+      facebook: json['facebook'] as String?,
+      linkedin: json['linkedin'] as String?,
+      twitterX: json['twitterX'] as String?,
+      telegram: json['telegram'] as String?,
+      whatsappBiz: json['whatsappBiz'] as String?,
+      showPhone: json['showPhone'] as bool? ?? true,
+      showWhatsapp: json['showWhatsapp'] as bool? ?? true,
+      showExactLocation: json['showExactLocation'] as bool? ?? true,
     );
   }
 
@@ -146,46 +170,66 @@ class DashboardProfileModel {
     Map<String, dynamic>? scheduleJson,
     // Para los social fields pasamos `Object?` con sentinel — un `null`
     // explícito significa "limpiar", `undefined` significa "no tocar".
-    Object? website     = _kSentinel,
-    Object? instagram   = _kSentinel,
-    Object? tiktok      = _kSentinel,
-    Object? facebook    = _kSentinel,
-    Object? linkedin    = _kSentinel,
-    Object? twitterX    = _kSentinel,
-    Object? telegram    = _kSentinel,
+    Object? website = _kSentinel,
+    Object? instagram = _kSentinel,
+    Object? tiktok = _kSentinel,
+    Object? facebook = _kSentinel,
+    Object? linkedin = _kSentinel,
+    Object? twitterX = _kSentinel,
+    Object? telegram = _kSentinel,
     Object? whatsappBiz = _kSentinel,
+    bool? showPhone,
+    bool? showWhatsapp,
+    bool? showExactLocation,
   }) {
     return DashboardProfileModel(
-      id:             id,
-      businessName:   businessName    ?? this.businessName,
-      description:    description     ?? this.description,
-      phone:          phone           ?? this.phone,
-      whatsapp:       whatsapp        ?? this.whatsapp,
-      address:        address         ?? this.address,
-      averageRating:  averageRating,
-      totalReviews:   totalReviews,
-      availability:   availability    ?? this.availability,
-      isVerified:     isVerified,
+      id: id,
+      businessName: businessName ?? this.businessName,
+      description: description ?? this.description,
+      phone: phone ?? this.phone,
+      whatsapp: whatsapp ?? this.whatsapp,
+      address: address ?? this.address,
+      averageRating: averageRating,
+      totalReviews: totalReviews,
+      availability: availability ?? this.availability,
+      isVerified: isVerified,
       hasCleanRecord: hasCleanRecord,
-      isTrusted:      isTrusted,
-      type:           type,
-      hasHomeService: hasHomeService  ?? this.hasHomeService,
-      categoryId:     categoryId,
-      categoryName:   categoryName,
-      categories:     categories,
-      localityName:   localityName,
-      images:         images          ?? this.images,
-      subscription:   subscription,
-      scheduleJson:   scheduleJson    ?? this.scheduleJson,
+      isTrusted: isTrusted,
+      type: type,
+      hasHomeService: hasHomeService ?? this.hasHomeService,
+      categoryId: categoryId,
+      categoryName: categoryName,
+      categories: categories,
+      localityName: localityName,
+      images: images ?? this.images,
+      subscription: subscription,
+      scheduleJson: scheduleJson ?? this.scheduleJson,
       totalFavorites: totalFavorites,
-      website:     identical(website,     _kSentinel) ? this.website     : website     as String?,
-      instagram:   identical(instagram,   _kSentinel) ? this.instagram   : instagram   as String?,
-      tiktok:      identical(tiktok,      _kSentinel) ? this.tiktok      : tiktok      as String?,
-      facebook:    identical(facebook,    _kSentinel) ? this.facebook    : facebook    as String?,
-      linkedin:    identical(linkedin,    _kSentinel) ? this.linkedin    : linkedin    as String?,
-      twitterX:    identical(twitterX,    _kSentinel) ? this.twitterX    : twitterX    as String?,
-      telegram:    identical(telegram,    _kSentinel) ? this.telegram    : telegram    as String?,
-      whatsappBiz: identical(whatsappBiz, _kSentinel) ? this.whatsappBiz : whatsappBiz as String?,
+      website: identical(website, _kSentinel)
+          ? this.website
+          : website as String?,
+      instagram: identical(instagram, _kSentinel)
+          ? this.instagram
+          : instagram as String?,
+      tiktok: identical(tiktok, _kSentinel) ? this.tiktok : tiktok as String?,
+      facebook: identical(facebook, _kSentinel)
+          ? this.facebook
+          : facebook as String?,
+      linkedin: identical(linkedin, _kSentinel)
+          ? this.linkedin
+          : linkedin as String?,
+      twitterX: identical(twitterX, _kSentinel)
+          ? this.twitterX
+          : twitterX as String?,
+      telegram: identical(telegram, _kSentinel)
+          ? this.telegram
+          : telegram as String?,
+      whatsappBiz: identical(whatsappBiz, _kSentinel)
+          ? this.whatsappBiz
+          : whatsappBiz as String?,
+      showPhone: showPhone ?? this.showPhone,
+      showWhatsapp: showWhatsapp ?? this.showWhatsapp,
+      showExactLocation: showExactLocation ?? this.showExactLocation,
     );
   }
 
@@ -230,10 +274,7 @@ class ProfileImage {
   const ProfileImage({required this.id, required this.url});
 
   factory ProfileImage.fromJson(Map<String, dynamic> json) {
-    return ProfileImage(
-      id:  json['id'] as int,
-      url: json['url'] as String,
-    );
+    return ProfileImage(id: json['id'] as int, url: json['url'] as String);
   }
 }
 
@@ -250,9 +291,9 @@ class SubscriptionInfo {
 
   // Backend usa enum Prisma SubscriptionStatus con valores en español:
   // ACTIVA, VENCIDA, CANCELADA, GRACIA
-  bool get isActive  => status == 'ACTIVA' || status == 'GRACIA';
+  bool get isActive => status == 'ACTIVA' || status == 'GRACIA';
   bool get isExpired => status == 'VENCIDA' || status == 'CANCELADA';
-  bool get isGrace   => status == 'GRACIA';
+  bool get isGrace => status == 'GRACIA';
 
   /// true si vence en ≤3 días (aviso temprano al usuario)
   bool get isExpiringSoon {
@@ -268,19 +309,22 @@ class SubscriptionInfo {
 
   String get planLabel {
     switch (plan) {
-      case 'ESTANDAR':  return 'Estándar';
-      case 'PREMIUM':   return 'Premium';
-      default:          return 'Gratis';
+      case 'ESTANDAR':
+        return 'Estándar';
+      case 'PREMIUM':
+        return 'Premium';
+      default:
+        return 'Gratis';
     }
   }
 
   factory SubscriptionInfo.fromJson(Map<String, dynamic> json) {
     return SubscriptionInfo(
-      plan:    json['plan'] as String? ?? 'GRATIS',
-      status:  json['status'] as String? ?? 'GRACIA',
+      plan: json['plan'] as String? ?? 'GRATIS',
+      status: json['status'] as String? ?? 'GRACIA',
       endDate: json['endDate'] is String
-                 ? DateTime.tryParse(json['endDate'] as String)
-                 : null,
+          ? DateTime.tryParse(json['endDate'] as String)
+          : null,
     );
   }
 }
@@ -289,6 +333,7 @@ class SubscriptionInfo {
 class DashboardAnalytics {
   final int whatsappClicks;
   final int callClicks;
+
   /// Vistas de la tarjeta del proveedor. Antes el panel mostraba siempre 0
   /// porque ignorábamos este conteo aunque el backend ya recibía los
   /// eventos `view` desde `ProviderDetailSheet`.
@@ -308,12 +353,14 @@ class DashboardAnalytics {
     final summary = json['summary'] as Map<String, dynamic>? ?? {};
     return DashboardAnalytics(
       whatsappClicks: summary['whatsappClicks'] as int? ?? 0,
-      callClicks:     summary['callClicks'] as int? ?? 0,
-      views:          summary['views']          as int? ?? 0,
-      totalClicks:    summary['totalClicks']    as int? ?? 0,
-      dailyClicks:    (json['dailyClicks'] as List?)
-                        ?.map((e) => DailyClickEntry.fromJson(e as Map<String, dynamic>))
-                        .toList() ?? [],
+      callClicks: summary['callClicks'] as int? ?? 0,
+      views: summary['views'] as int? ?? 0,
+      totalClicks: summary['totalClicks'] as int? ?? 0,
+      dailyClicks:
+          (json['dailyClicks'] as List?)
+              ?.map((e) => DailyClickEntry.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 }
@@ -333,9 +380,9 @@ class DailyClickEntry {
 
   factory DailyClickEntry.fromJson(Map<String, dynamic> json) {
     return DailyClickEntry(
-      date:     json['date'] as String,
+      date: json['date'] as String,
       whatsapp: json['whatsapp'] as int? ?? 0,
-      calls:    json['calls'] as int? ?? 0,
+      calls: json['calls'] as int? ?? 0,
     );
   }
 }

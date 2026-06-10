@@ -178,7 +178,7 @@ class ServiceCardMosaic extends StatelessWidget {
                               color: AppColors.amber,
                               onTap: onChat,
                             ),
-                            if (isPaidPlan(plan)) ...[
+                            if (isPaidPlan(plan) && provider.showWhatsapp) ...[
                               const SizedBox(width: 5),
                               _GridContactBtn(
                                 svgAsset: 'assets/icons/whatsapp.svg',
@@ -188,6 +188,8 @@ class ServiceCardMosaic extends StatelessWidget {
                                   provider,
                                 ),
                               ),
+                            ],
+                            if (isPaidPlan(plan) && provider.showPhone) ...[
                               const SizedBox(width: 5),
                               _GridContactBtn(
                                 icon: Icons.call_rounded,

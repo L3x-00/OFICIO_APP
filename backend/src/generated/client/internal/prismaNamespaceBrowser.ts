@@ -242,6 +242,9 @@ export const ProviderScalarFieldEnum = {
   twitterX: 'twitterX',
   website: 'website',
   whatsappBiz: 'whatsappBiz',
+  showPhone: 'showPhone',
+  showWhatsapp: 'showWhatsapp',
+  showExactLocation: 'showExactLocation',
   slug: 'slug',
   slugEditedAt: 'slugEditedAt'
 } as const

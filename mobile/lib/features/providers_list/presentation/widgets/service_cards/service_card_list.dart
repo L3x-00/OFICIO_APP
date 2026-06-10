@@ -161,7 +161,9 @@ class ServiceCardList extends StatelessWidget {
                       // WhatsApp + llamada incluso en la vista lista (incluyendo
                       // favoritos), para que la conversión no muera por falta de un
                       // CTA visible.
-                      if (!isOwnCard && isPaidPlan(plan)) ...[
+                      if (!isOwnCard &&
+                          isPaidPlan(plan) &&
+                          provider.showWhatsapp) ...[
                         _MiniContactBtn(
                           svgAsset: 'assets/icons/whatsapp.svg',
                           color: AppColors.whatsapp,
@@ -171,6 +173,10 @@ class ServiceCardList extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
+                      ],
+                      if (!isOwnCard &&
+                          isPaidPlan(plan) &&
+                          provider.showPhone) ...[
                         _MiniContactBtn(
                           icon: Icons.call_rounded,
                           color: AppColors.call,
