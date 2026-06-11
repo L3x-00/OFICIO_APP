@@ -29,6 +29,7 @@ jest.mock('@google/genai', () => ({
 }));
 
 import { AiAssistantService } from '../../../src/ai-assistant/ai-assistant.service.js';
+import { matchAdminMetric } from '../../../src/ai-assistant/ai-assistant.helpers.js';
 import type {
   AiCaller,
   AiHistoryTurn,
@@ -227,9 +228,9 @@ describe('AiAssistantService — router determinístico admin', () => {
   });
 
   it('matchAdminMetric: cobertura de intenciones soportadas', () => {
-    const { service } = makeService();
-    const match = (s: string): string | null =>
-      (service as any).matchAdminMetric(s);
+    // matchAdminMetric se extrajo a ai-assistant.helpers.ts (refactor de
+    // mantenibilidad); misma lógica, nueva ubicación.
+    const match = (s: string): string | null => matchAdminMetric(s);
 
     // platform_stats
     expect(match('usuarios')).toBe('platform_stats');

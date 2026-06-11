@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { createHash } from 'node:crypto';
 import * as Sentry from '@sentry/nestjs';
 import { GoogleGenAI, FunctionCallingConfigMode } from '@google/genai';
 import type {
@@ -13,18 +12,28 @@ import type {
   GenerateContentResponse,
 } from '@google/genai';
 
+import {
+  type AdminMetric,
+  asString,
+  captureSearchProviders,
+  classifyIntent,
+  dedupeProviders,
+  formatPendingApprovals,
+  formatPlatformStats,
+  formatTopProviders,
+  isGeminiOverloaded,
+  matchAdminMetric,
+  respCacheKey,
+  secondsUntilPeruMidnight,
+  shouldFallback,
+} from './ai-assistant.helpers.js';
 import { AiCircuitBreakerService } from './ai-circuit-breaker.service.js';
 import { AiSanitizerService } from './ai-sanitizer.service.js';
 import { AiGuardrailsService } from './ai-guardrails.service.js';
 import { AiFeatureFlagService } from './ai-feature-flag.service.js';
 import { AiKnowledgeService } from './ai-knowledge.service.js';
 import { AiDataAccessService } from './ai-data-access.service.js';
-import type {
-  ProviderCardDto,
-  PlatformStatsDto,
-  TopProviderDto,
-  PendingApprovalsDto,
-} from './ai-data-access.service.js';
+import type { ProviderCardDto } from './ai-data-access.service.js';
 import { AiConversationService } from './ai-conversation.service.js';
 import { AiQuotaService } from './ai-quota.service.js';
 import {
@@ -42,21 +51,17 @@ import type {
   AiCaller,
   AiChatResult,
   AiHistoryTurn,
-  AiIntent,
   AiRequestMeta,
   AiUserRole,
 } from './ai-assistant.types.js';
 import {
   AI_MODEL,
-  AI_QUERY_STOPWORDS,
   ANALYTICS_COUNTER_TTL_MS,
   CACHE_TTL_FAQ_MS,
   CACHE_TTL_SEARCH_MS,
   DAILY_LIMIT_BY_ROLE,
   DAILY_LIMIT_FALLBACK,
   DEFAULT_GLOBAL_DAILY_LIMIT,
-  FAQ_KEYWORDS,
-  FINANCIAL_KEYWORDS,
   FORCED_REPHRASE_MESSAGE,
   GEMINI_TIMEOUT_MS,
   GEN_MAX_OUTPUT_TOKENS,
@@ -65,18 +70,10 @@ import {
   HISTORY_MAX_CHARS,
   HISTORY_MAX_MESSAGES,
   MAX_TOOL_ROUNDS,
-  RESP_CACHE_PREFIX,
-  SEARCH_KEYWORDS,
   geminiErrorsKey,
   peruDayKey,
   userDailyKey,
 } from './ai-assistant.constants.js';
-
-/**
- * Métricas administrativas que el router determinístico resuelve sin IA,
- * mapeadas 1:1 con las tools admin (`get_platform_stats`, etc.).
- */
-type AdminMetric = 'platform_stats' | 'pending_approvals' | 'top_providers';
 
 /**
  * Payload del caché de respuestas: el texto + (si la consulta fue una búsqueda
@@ -109,9 +106,6 @@ export class AiAssistantService {
   private readonly logger = new Logger(AiAssistantService.name);
   private client: GoogleGenAI | null = null;
   private clientInitTried = false;
-
-  /** Stopwords del caché semántico, como Set para lookup O(1). */
-  private static readonly STOPWORDS = new Set<string>(AI_QUERY_STOPWORDS);
 
   constructor(
     private readonly config: ConfigService,
@@ -191,7 +185,7 @@ export class AiAssistantService {
       reqMeta.appContext,
     );
     if (persona === AiPersonaType.ADMIN) {
-      const metric = this.matchAdminMetric(message);
+      const metric = matchAdminMetric(message);
       if (metric) {
         const reply = await this.answerAdminMetric(metric);
         if (reply) {
@@ -301,12 +295,12 @@ export class AiAssistantService {
     // ── Caché inteligente (Fase 4) ──────────────────────────────
     // Solo cacheamos preguntas autónomas (sin historial previo) de tipo
     // FAQ o búsqueda. Las financieras hacen BYPASS. En sandbox NO se cachea.
-    const intent = this.classifyIntent(san.cleaned);
+    const intent = classifyIntent(san.cleaned);
     const cacheable =
       !sandbox &&
       recovered.length === 0 &&
       (intent === 'faq' || intent === 'search');
-    const cacheKey = this.respCacheKey(promptVersion, caller.role, san.cleaned);
+    const cacheKey = respCacheKey(promptVersion, caller.role, san.cleaned);
 
     if (cacheable) {
       const hit = await this.cacheGet(cacheKey);
@@ -372,7 +366,7 @@ export class AiAssistantService {
       // >15s / 5xx / ECONNRESET) y si OpenRouter está configurado. Reutiliza
       // persona, system prompt, historial y tools → function-calling idéntico.
       const fb =
-        this.shouldFallback(err) && this.openrouter?.isConfigured()
+        shouldFallback(err) && this.openrouter?.isConfigured()
           ? await this.tryOpenRouter(
               caller,
               san.cleaned,
@@ -386,7 +380,7 @@ export class AiAssistantService {
       if (!fb) {
         return blocked(
           'circuit',
-          this.isGeminiOverloaded(err)
+          isGeminiOverloaded(err)
             ? 'Gemini está con mucha demanda en este momento. Por favor, intenta de nuevo en un par de minutos.'
             : 'El asistente tuvo un problema. Intenta de nuevo en unos momentos.',
         );
@@ -412,7 +406,7 @@ export class AiAssistantService {
     }
 
     // Proveedores encontrados → tarjetas navegables (dedupe por id).
-    const providers = this.dedupeProviders(providerSink);
+    const providers = dedupeProviders(providerSink);
 
     // Memoria persistente (best-effort, NO bloquea la respuesta): rubros
     // buscados + proveedores vistos + intención. Solo CLIENT/PROVIDER.
@@ -468,54 +462,8 @@ export class AiAssistantService {
   }
 
   // ── Caché inteligente (Fase 4) ──────────────────────────────
-
-  /**
-   * Clasifica la intención por palabras clave para decidir la política de
-   * caché. Prioridad: FINANCIAL (bypass) → SEARCH (5 min) → FAQ (24 h) →
-   * other (no cachea).
-   */
-  private classifyIntent(message: string): AiIntent {
-    const m = message.toLowerCase();
-    const has = (kw: readonly string[]): boolean =>
-      kw.some((k) => m.includes(k));
-
-    if (has(FINANCIAL_KEYWORDS)) return 'financial';
-    if (has(SEARCH_KEYWORDS)) return 'search';
-    if (has(FAQ_KEYWORDS)) return 'faq';
-    return 'other';
-  }
-
-  /**
-   * Clave de caché SEMÁNTICA: prefijo + versión + rol + hash de la forma
-   * CANÓNICA del mensaje. Consultas equivalentes ("electricista en Huancayo",
-   * "electricistas en Huancayo", "busco un electricista en Huancayo") colapsan
-   * a la misma clava → reutilizan la respuesta cacheada.
-   */
-  private respCacheKey(version: string, role: string, message: string): string {
-    const canonical = this.semanticCanonical(message);
-    const hash = createHash('sha1').update(canonical).digest('hex');
-    return `${RESP_CACHE_PREFIX}${version}:${role}:${hash}`;
-  }
-
-  /**
-   * Forma canónica para el caché semántico: normaliza (minúsculas, sin
-   * acentos), tokeniza, descarta stopwords de consulta, singulariza plurales
-   * comunes y ordena los tokens. El orden de palabras y los plurales dejan de
-   * importar → "busco un electricista" ≡ "electricistas".
-   */
-  private semanticCanonical(message: string): string {
-    const tokens = this.normalizeText(message)
-      .split(/[^a-z0-9]+/)
-      .filter((t) => t.length > 0 && !AiAssistantService.STOPWORDS.has(t))
-      .map((t) => this.singularize(t))
-      .filter((t) => t.length > 0);
-    return Array.from(new Set(tokens)).sort().join(' ');
-  }
-
-  /** Singulariza plurales del dominio (vocal+'s'): electricistas → electricista. */
-  private singularize(t: string): string {
-    return t.length > 3 && t.endsWith('s') ? t.slice(0, -1) : t;
-  }
+  // (classifyIntent / respCacheKey / semanticCanonical viven en
+  //  ai-assistant.helpers.ts — funciones puras extraídas por mantenibilidad.)
 
   /**
    * Lee la caché de respuesta. Devuelve el payload (texto + providers) o null.
@@ -651,13 +599,13 @@ export class AiAssistantService {
         const result = await this.executeTool(caller, activeNames, call);
         // Captura proveedores para el cliente + devuelve la versión SIN
         // contacto que ve el modelo (privacidad intacta).
-        const modelResult = this.captureSearchProviders(
+        const modelResult = captureSearchProviders(
           call.name,
           result,
           providerSink,
         );
         if (call.name === 'search_providers') {
-          const cat = this.asString(call.args?.category);
+          const cat = asString(call.args?.category);
           if (cat) categorySink.push(cat);
         }
         // [AI-AUDIT TEMPORAL] Resultado devuelto por cada tool (truncado).
@@ -735,26 +683,24 @@ export class AiAssistantService {
         case 'search_providers':
           return {
             providers: await this.data.searchProvidersSafe(
-              this.asString(args.category),
-              this.asString(args.department),
-              this.asString(args.province),
-              this.asString(args.district),
+              asString(args.category),
+              asString(args.department),
+              asString(args.province),
+              asString(args.district),
             ),
           };
         case 'search_categories':
           return {
             categories: await this.data.searchCategoriesSafe(
-              this.asString(args.query),
+              asString(args.query),
             ),
           };
         case 'search_offers':
           return {
-            offers: await this.data.searchOffersSafe(
-              this.asString(args.category),
-            ),
+            offers: await this.data.searchOffersSafe(asString(args.category)),
           };
         case 'explain_feature': {
-          const feature = this.asString(args.feature) ?? '';
+          const feature = asString(args.feature) ?? '';
           const entry = await this.data.explainFeatureSafe(feature);
           return entry ? { feature: entry } : { error: 'Tema no encontrado' };
         }
@@ -806,160 +752,10 @@ export class AiAssistantService {
     }
   }
 
-  /** Coerción segura de un arg desconocido a string no vacío. */
-  private asString(v: unknown): string | undefined {
-    return typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined;
-  }
-
-  /**
-   * Si la tool ejecutada fue `search_providers`, acumula sus proveedores en
-   * `sink` (para exponerlos al CLIENTE como tarjetas) y devuelve una copia
-   * SIN datos de contacto para que la vea el MODELO — preservando la barrera
-   * de privacidad de la Regla 2 (el modelo nunca recibe teléfonos). Para
-   * cualquier otra tool, devuelve el resultado intacto.
-   */
-  private captureSearchProviders(
-    name: string | undefined,
-    result: Record<string, unknown>,
-    sink: ProviderCardDto[],
-  ): Record<string, unknown> {
-    if (name !== 'search_providers') return result;
-    const providers = result.providers;
-    if (!Array.isArray(providers)) return result;
-
-    sink.push(...(providers as ProviderCardDto[]));
-
-    const modelSafe = (providers as ProviderCardDto[]).map((p) => {
-      const clone: Partial<ProviderCardDto> = { ...p };
-      delete clone.phone;
-      delete clone.whatsapp;
-      return clone;
-    });
-    return { providers: modelSafe };
-  }
-
-  /** Deduplica proveedores por id conservando el orden (ranking del query). */
-  private dedupeProviders(list: ProviderCardDto[]): ProviderCardDto[] {
-    const seen = new Set<number>();
-    const out: ProviderCardDto[] = [];
-    for (const p of list) {
-      if (seen.has(p.id)) continue;
-      seen.add(p.id);
-      out.push(p);
-    }
-    return out;
-  }
-
-  // ── Router determinístico de métricas admin (sin IA) ──────────
-
-  /** Minúsculas + sin acentos + espacios colapsados (match robusto). */
-  private normalizeText(s: string): string {
-    return s
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/\p{Diacritic}/gu, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  /**
-   * Clasifica el mensaje contra las métricas admin conocidas. Devuelve la
-   * métrica si hay match claro, o null para delegar en la IA. El orden va de
-   * lo más específico (ranking) a lo más general (KPIs).
-   */
-  private matchAdminMetric(message: string): AdminMetric | null {
-    const m = this.normalizeText(message);
-    if (m.length === 0) return null;
-    const has = (...kw: string[]): boolean => kw.some((k) => m.includes(k));
-
-    // 1) Ranking / movimiento de proveedores.
-    if (
-      (has('top', 'mejor', 'destacad', 'ranking') &&
-        has('proveedor', 'negocio')) ||
-      has(
-        'mas movimiento',
-        'mayor movimiento',
-        'mas trafico',
-        'mas activ',
-        'mas visto',
-        'mas contactad',
-      )
-    ) {
-      return 'top_providers';
-    }
-
-    // 2) Colas de aprobación / moderación.
-    if (
-      has(
-        'aprobacion',
-        'por aprobar',
-        'falta aprobar',
-        'falta revisar',
-        'falta verificar',
-        'por verificar',
-        'verificaciones pendientes',
-        'moderar',
-        'moderacion',
-        'cola de',
-        'en cola',
-        'solicitudes pendientes',
-        'validaciones pendientes',
-      ) ||
-      (has('pendiente') &&
-        has(
-          'aprob',
-          'solicitud',
-          'verific',
-          'moder',
-          'cola',
-          'revisar',
-          'trust',
-        ))
-    ) {
-      return 'pending_approvals';
-    }
-
-    // 3) KPIs de plataforma (usuarios, proveedores, registros, ingresos).
-    if (
-      has(
-        'cuantos usuario',
-        'cuantas usuario',
-        'cantidad de usuario',
-        'numero de usuario',
-        'total de usuario',
-        'usuarios registrado',
-        'cuantos proveedor',
-        'cantidad de proveedor',
-        'numero de proveedor',
-        'total de proveedor',
-        'proveedores activo',
-        'proveedores aprobado',
-        'proveedores registrado',
-        'cuantos negocio',
-        'cuantos registro',
-        'registros nuevo',
-        'nuevos registro',
-        'crecimiento',
-        'ingreso',
-        'facturacion',
-        'cuanto factur',
-        'metricas',
-        'estadisticas',
-        'kpi',
-        'estado de la plataforma',
-        'estado general',
-      ) ||
-      m === 'usuarios' ||
-      m === 'proveedores' ||
-      m === 'proveedores activos' ||
-      m === 'cantidad de usuarios' ||
-      m === 'cantidad de proveedores'
-    ) {
-      return 'platform_stats';
-    }
-
-    return null;
-  }
+  // (asString / captureSearchProviders / dedupeProviders / normalizeText /
+  //  matchAdminMetric viven en ai-assistant.helpers.ts — funciones puras
+  //  extraídas por mantenibilidad; la barrera de privacidad de la Regla 2
+  //  se preserva en captureSearchProviders sin cambios.)
 
   /**
    * Ejecuta la consulta de la métrica y formatea la respuesta en markdown.
@@ -970,15 +766,13 @@ export class AiAssistantService {
     try {
       switch (metric) {
         case 'platform_stats':
-          return this.formatPlatformStats(
-            await this.data.getPlatformStatsSafe(),
-          );
+          return formatPlatformStats(await this.data.getPlatformStatsSafe());
         case 'pending_approvals':
-          return this.formatPendingApprovals(
+          return formatPendingApprovals(
             await this.data.getPendingApprovalsSafe(),
           );
         case 'top_providers':
-          return this.formatTopProviders(await this.data.getTopProvidersSafe());
+          return formatTopProviders(await this.data.getTopProvidersSafe());
       }
     } catch (e) {
       this.logger.warn(
@@ -990,65 +784,8 @@ export class AiAssistantService {
     }
   }
 
-  /** OFICIO → 'Profesional', NEGOCIO → 'Negocio'. */
-  private providerTypeLabel(type: string): string {
-    return type === 'NEGOCIO' ? 'Negocio' : 'Profesional';
-  }
-
-  private formatPlatformStats(s: PlatformStatsDto): string {
-    const trend =
-      s.newUsersThisWeek > s.newUsersLastWeek
-        ? '📈 en alza'
-        : s.newUsersThisWeek < s.newUsersLastWeek
-          ? '📉 a la baja'
-          : 'estable';
-    const revenue = Number(s.monthlyRevenue).toFixed(2);
-    return [
-      '**📊 Estado de la plataforma** _(en tiempo real, sin IA)_',
-      '',
-      `- **Usuarios:** ${s.totalUsers} · hoy +${s.newUsersToday} · últimos 7 días +${s.newUsersThisWeek} (semana previa ${s.newUsersLastWeek}, ${trend})`,
-      `- **Proveedores:** ${s.totalProviders} · ${s.approvedProviders} aprobados · ${s.pendingProviders} pendientes`,
-      `- **Ingresos del mes:** S/ ${revenue}`,
-    ].join('\n');
-  }
-
-  private formatPendingApprovals(p: PendingApprovalsDto): string {
-    if (p.totalProviders === 0 && p.totalTrustValidations === 0) {
-      return '✅ **No hay nada pendiente.** Todas las aprobaciones y validaciones están al día.';
-    }
-    const lines = [
-      '**🗂️ Aprobaciones pendientes** _(en tiempo real, sin IA)_',
-      '',
-      `- **Proveedores por verificar:** ${p.totalProviders}`,
-      `- **Validaciones de confianza:** ${p.totalTrustValidations}`,
-    ];
-    if (p.providers.length > 0) {
-      lines.push('', '_Proveedores más antiguos en cola:_');
-      for (const it of p.providers) {
-        lines.push(
-          `- ${it.businessName} (${this.providerTypeLabel(it.type)}) — desde ${it.since}`,
-        );
-      }
-    }
-    return lines.join('\n');
-  }
-
-  private formatTopProviders(list: TopProviderDto[]): string {
-    if (list.length === 0) {
-      return 'Aún no hay datos de movimiento de proveedores para rankear.';
-    }
-    const lines = [
-      '**🏆 Proveedores con más movimiento** _(en tiempo real, sin IA)_',
-      '',
-    ];
-    list.forEach((p, i) => {
-      const mov = p.movement > 0 ? ` · ${p.movement} interacciones` : '';
-      lines.push(
-        `${i + 1}. **${p.businessName}** (${this.providerTypeLabel(p.type)}) — ⭐ ${p.averageRating.toFixed(1)} (${p.totalReviews} reseñas)${mov}`,
-      );
-    });
-    return lines.join('\n');
-  }
+  // (providerTypeLabel y los formatters de métricas admin viven en
+  //  ai-assistant.helpers.ts.)
 
   /**
    * Persiste el turno (user + model) de una respuesta determinística para que
@@ -1095,67 +832,7 @@ export class AiAssistantService {
     }
   }
 
-  /**
-   * Detecta saturación de Gemini (HTTP 503 / status UNAVAILABLE / overloaded)
-   * para responder con un mensaje específico en vez del genérico.
-   */
-  private isGeminiOverloaded(err: unknown): boolean {
-    const e = err as { status?: unknown; code?: unknown };
-    if (e?.status === 503 || e?.code === 503 || e?.status === 'UNAVAILABLE') {
-      return true;
-    }
-    const msg = (
-      err instanceof Error ? err.message : String(err)
-    ).toLowerCase();
-    return (
-      msg.includes('503') ||
-      msg.includes('unavailable') ||
-      msg.includes('overloaded') ||
-      msg.includes('high demand')
-    );
-  }
-
-  /**
-   * Decide si un fallo de Gemini es TRANSITORIO y, por tanto, candidato a
-   * reintentar con OpenRouter. Cubre: quota/rate-limit (HTTP 429,
-   * RESOURCE_EXHAUSTED), saturación (503/UNAVAILABLE/overloaded), timeout
-   * (>15s → "Gemini timeout") y cortes de red (ECONNRESET/ETIMEDOUT/5xx).
-   *
-   * NO incluye errores de configuración/programación (4xx ≠ 429), que
-   * reintentar no arreglaría.
-   */
-  private shouldFallback(err: unknown): boolean {
-    if (this.isGeminiOverloaded(err)) return true;
-
-    const e = err as { status?: unknown; code?: unknown };
-    const status = e?.status ?? e?.code;
-    if (status === 429 || status === 500 || status === 503) return true;
-    if (
-      status === 'RESOURCE_EXHAUSTED' ||
-      status === 'UNAVAILABLE' ||
-      status === 'ECONNRESET' ||
-      status === 'ETIMEDOUT'
-    ) {
-      return true;
-    }
-
-    const msg = (
-      err instanceof Error ? err.message : String(err)
-    ).toLowerCase();
-    return (
-      msg.includes('429') ||
-      msg.includes('resource_exhausted') ||
-      msg.includes('quota') ||
-      msg.includes('rate limit') ||
-      msg.includes('rate-limit') ||
-      msg.includes('ratelimit') ||
-      msg.includes('timeout') ||
-      msg.includes('timed out') ||
-      msg.includes('econnreset') ||
-      msg.includes('etimedout') ||
-      msg.includes('socket hang up')
-    );
-  }
+  // (isGeminiOverloaded / shouldFallback viven en ai-assistant.helpers.ts.)
 
   /**
    * Ejecuta el FALLBACK a OpenRouter reutilizando el material del request:
@@ -1192,11 +869,11 @@ export class AiAssistantService {
         runTool: async (call) => {
           const result = await this.executeTool(caller, activeNames, call);
           if (call.name === 'search_providers') {
-            const cat = this.asString(call.args?.category);
+            const cat = asString(call.args?.category);
             if (cat) categorySink.push(cat);
           }
           // Mismo sink + stripping de contacto que el camino Gemini.
-          return this.captureSearchProviders(call.name, result, providerSink);
+          return captureSearchProviders(call.name, result, providerSink);
         },
       });
 
@@ -1446,7 +1123,7 @@ export class AiAssistantService {
   ): Promise<{ allowed: boolean; global: boolean }> {
     if (sandbox) return { allowed: true, global: false };
 
-    const ttlMs = this.secondsUntilPeruMidnight() * 1000;
+    const ttlMs = secondsUntilPeruMidnight() * 1000;
 
     // 1. Presupuesto GLOBAL (ADMIN exento) — INCR atómico + verificación.
     if (caller.role !== 'ADMIN') {
@@ -1520,13 +1197,5 @@ export class AiAssistantService {
     return Number.isFinite(n) && n > 0 ? n : DEFAULT_GLOBAL_DAILY_LIMIT;
   }
 
-  /** Segundos hasta la próxima medianoche de Perú (UTC-5). Mínimo 60. */
-  private secondsUntilPeruMidnight(): number {
-    const offsetMs = 5 * 60 * 60 * 1000; // UTC-5
-    const nowPeru = Date.now() - offsetMs;
-    const dayMs = 24 * 60 * 60 * 1000;
-    const sinceMidnight = ((nowPeru % dayMs) + dayMs) % dayMs;
-    const remainingMs = dayMs - sinceMidnight;
-    return Math.max(60, Math.ceil(remainingMs / 1000));
-  }
+  // (secondsUntilPeruMidnight vive en ai-assistant.helpers.ts.)
 }

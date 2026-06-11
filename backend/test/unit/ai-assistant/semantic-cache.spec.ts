@@ -29,6 +29,7 @@ jest.mock('@google/genai', () => ({
 }));
 
 import { AiAssistantService } from '../../../src/ai-assistant/ai-assistant.service.js';
+import { semanticCanonical } from '../../../src/ai-assistant/ai-assistant.helpers.js';
 import type {
   AiCaller,
   AiHistoryTurn,
@@ -115,8 +116,9 @@ describe('AiAssistantService — caché semántico', () => {
   beforeEach(() => mockGenerateContent.mockReset());
 
   it('semanticCanonical: variantes equivalentes → misma clave', () => {
-    const { service } = makeService();
-    const canon = (s: string): string => (service as any).semanticCanonical(s);
+    // semanticCanonical se extrajo a ai-assistant.helpers.ts (refactor de
+    // mantenibilidad); misma lógica, nueva ubicación.
+    const canon = (s: string): string => semanticCanonical(s);
 
     const expected = 'electricista huancayo';
     expect(canon('electricista en Huancayo')).toBe(expected);
