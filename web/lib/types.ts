@@ -95,6 +95,19 @@ export interface Review {
   user?: { firstName: string; lastName: string; avatarUrl?: string };
 }
 
+/**
+ * Perfil público mínimo de un usuario (cliente). El backend recorta a
+ * primer nombre + primer apellido por seguridad. Lo ve el proveedor al tocar
+ * la foto del usuario en una reseña o chat.
+ */
+export interface PublicUserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string | null;
+  createdAt: string;
+}
+
 export interface Category {
   id: number;
   name: string;

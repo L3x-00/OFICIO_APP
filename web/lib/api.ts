@@ -1,7 +1,7 @@
 "use client";
 
 import { getAccessToken, getRefreshToken, clearSession, saveSession } from "./auth";
-import { Analytics, LoginResponse, Offer, Opportunity, Provider, ProviderImage, Review, User } from "./types";
+import { Analytics, LoginResponse, Offer, Opportunity, Provider, ProviderImage, PublicUserProfile, Review, User } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://oficio-backend.onrender.com";
 
@@ -553,6 +553,15 @@ export const api = {
     await apiFetch("/provider-profile/me/notifications/read-all", {
       method: "PATCH",
     });
+  },
+
+  /**
+   * Perfil público mínimo de un usuario (primer nombre, primer apellido,
+   * avatar, fecha de registro). Lo usa el proveedor al tocar la foto del
+   * usuario en una reseña o chat. Requiere sesión.
+   */
+  async getPublicUserProfile(userId: number): Promise<PublicUserProfile> {
+    return apiFetch<PublicUserProfile>(`/users/${userId}/public`);
   },
 
   async getUserProfile(): Promise<User> {

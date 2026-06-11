@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/permission_service.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
+import '../../../../shared/widgets/user_profile_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/reviews_repository.dart';
 import '../../domain/models/review_model.dart';
@@ -424,22 +425,30 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundColor: c.bgInput,
-          backgroundImage: widget.review.user?.avatarUrl != null
-              ? NetworkImage(widget.review.user!.avatarUrl!)
-              : null,
-          child: widget.review.user?.avatarUrl == null
-              ? Text(
-                  widget.review.user?.initial ?? '?',
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                )
-              : null,
+        GestureDetector(
+          onTap: () => showUserProfileSheet(
+            context,
+            userId: widget.review.userId,
+            seedName: widget.review.user?.fullName,
+            seedAvatarUrl: widget.review.user?.avatarUrl,
+          ),
+          child: CircleAvatar(
+            radius: 22,
+            backgroundColor: c.bgInput,
+            backgroundImage: widget.review.user?.avatarUrl != null
+                ? NetworkImage(widget.review.user!.avatarUrl!)
+                : null,
+            child: widget.review.user?.avatarUrl == null
+                ? Text(
+                    widget.review.user?.initial ?? '?',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  )
+                : null,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -571,22 +580,30 @@ class _ReviewDetailSheetState extends State<ReviewDetailSheet> {
             : MainAxisAlignment.start,
         children: [
           if (!isMe) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: c.bgInput,
-              backgroundImage: reply.user?.avatarUrl != null
-                  ? NetworkImage(reply.user!.avatarUrl!)
-                  : null,
-              child: reply.user?.avatarUrl == null
-                  ? Text(
-                      reply.user?.initial ?? '?',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : null,
+            GestureDetector(
+              onTap: () => showUserProfileSheet(
+                context,
+                userId: reply.userId,
+                seedName: reply.user?.fullName,
+                seedAvatarUrl: reply.user?.avatarUrl,
+              ),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: c.bgInput,
+                backgroundImage: reply.user?.avatarUrl != null
+                    ? NetworkImage(reply.user!.avatarUrl!)
+                    : null,
+                child: reply.user?.avatarUrl == null
+                    ? Text(
+                        reply.user?.initial ?? '?',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : null,
+              ),
             ),
             const SizedBox(width: 8),
           ],

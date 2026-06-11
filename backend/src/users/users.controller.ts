@@ -4,6 +4,8 @@ import {
   Patch,
   Delete,
   Body,
+  Param,
+  ParseIntPipe,
   UseGuards,
   Request,
   UseInterceptors,
@@ -38,6 +40,17 @@ export class UsersController {
   @Get('my-provider-status')
   getMyProviderStatus(@Request() req: AuthenticatedRequest) {
     return this.usersService.getMyProviderStatus(req.user.userId);
+  }
+
+  // GET /users/:id/public
+  // Perfil público mínimo de un usuario (primer nombre, primer apellido,
+  // avatar, fecha de registro). Lo usa el proveedor al tocar la foto del
+  // usuario en una reseña o chat. Requiere sesión; declarado DESPUÉS de las
+  // rutas estáticas (`me`, `my-provider-status`) para no eclipsarlas.
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/public')
+  getPublicProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getPublicProfile(id);
   }
 
   // PATCH /users/profile

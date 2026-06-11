@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useCountUp } from '@/lib/hooks';
 import { useProfileType } from '@/lib/profile-type-context';
+import { UserAvatarButton } from '@/components/user-profile-modal';
 import type { Provider, Analytics, Review } from '@/lib/types';
 
 // ========== ANIMACIONES TIPADAS CORRECTAMENTE ==========
@@ -216,7 +217,6 @@ export default function PanelHomePage() {
                   .filter(Boolean)
                   .join(' ')
                   .trim() || 'Cliente';
-                const initial = (r.user?.firstName?.charAt(0) || 'C').toUpperCase();
                 return (
                   <motion.div
                     key={r.id}
@@ -224,17 +224,12 @@ export default function PanelHomePage() {
                     custom={i}
                     className="flex items-start gap-3 border-b border-white/10 pb-4 last:border-0 last:pb-0"
                   >
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-light text-white font-bold text-xs flex items-center justify-center ring-1 ring-primary/30">
-                      {r.user?.avatarUrl ? (
-                        <img
-                          src={r.user.avatarUrl}
-                          alt={fullName}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        initial
-                      )}
-                    </div>
+                    <UserAvatarButton
+                      userId={r.userId}
+                      name={fullName}
+                      avatarUrl={r.user?.avatarUrl}
+                      className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-light text-white font-bold text-xs flex items-center justify-center ring-1 ring-primary/30"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-1">
                         <span className="text-white text-sm font-semibold truncate max-w-full">

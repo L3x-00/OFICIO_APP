@@ -129,6 +129,35 @@ export class UsersService {
     return user;
   }
 
+  // ── PERFIL PÚBLICO MÍNIMO ────────────────────────────────
+  // Lo consume el proveedor al tocar la foto del usuario (reseña o chat).
+  // Por seguridad SOLO exponemos primer nombre, primer apellido, avatar y
+  // fecha de registro — nada de email, teléfono, ubicación ni nombres
+  // completos. El recorte al primer token se hace aquí para que la API
+  // jamás devuelva más de lo necesario.
+  async getPublicProfile(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        createdAt: true,
+      },
+    });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const firstToken = (s: string | null | undefined): string =>
+      (s ?? '').trim().split(/\s+/)[0] ?? '';
+    return {
+      id: user.id,
+      firstName: firstToken(user.firstName),
+      lastName: firstToken(user.lastName),
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
+    };
+  }
+
   // ── ACTUALIZAR PERFIL ────────────────────────────────────
   async updateProfile(
     userId: number,

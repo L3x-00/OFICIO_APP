@@ -8,6 +8,7 @@ import { api, type ChatMessage, type ChatRoomSummary } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { getUser } from '@/lib/auth';
 import ChatRoomsList from '@/components/chat/chat-rooms-list';
+import { UserAvatarButton } from '@/components/user-profile-modal';
 import { useProfileTypeOptional } from '@/lib/profile-type-context';
 
 /**
@@ -143,16 +144,20 @@ export default function ChatRoomPage({
           >
             <ArrowLeft size={20} />
           </button>
-          <div className="w-9 h-9 rounded-full bg-white/5 flex-shrink-0 flex items-center justify-center overflow-hidden">
-            {clientAvatar ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={clientAvatar} alt="" className="w-full h-full object-cover" />
-            ) : (
+          {room ? (
+            <UserAvatarButton
+              userId={room.clientId}
+              name={clientName}
+              avatarUrl={clientAvatar}
+              className="w-9 h-9 rounded-full bg-gradient-primary flex-shrink-0 flex items-center justify-center overflow-hidden text-white text-sm font-bold"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-white/5 flex-shrink-0 flex items-center justify-center overflow-hidden">
               <div className="w-full h-full bg-gradient-primary flex items-center justify-center text-white text-sm font-bold">
                 {clientInitial}
               </div>
-            )}
-          </div>
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h1 className="text-white font-display font-semibold truncate text-sm sm:text-base">
               {clientName}

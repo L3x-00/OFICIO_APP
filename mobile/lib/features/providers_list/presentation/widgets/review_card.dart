@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../shared/widgets/user_profile_sheet.dart';
 import '../../domain/models/review_model.dart';
 import '../sheets/review_detail_sheet.dart';
 
@@ -21,10 +22,8 @@ class ReviewCard extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => ReviewDetailSheet(
-        review: review,
-        providerUserId: providerUserId,
-      ),
+      builder: (_) =>
+          ReviewDetailSheet(review: review, providerUserId: providerUserId),
     );
   }
 
@@ -46,21 +45,29 @@ class ReviewCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: c.bgInput,
-                  backgroundImage: review.user?.avatarUrl != null
-                      ? NetworkImage(review.user!.avatarUrl!)
-                      : null,
-                  child: review.user?.avatarUrl == null
-                      ? Text(
-                          review.user?.initial ?? '?',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
+                GestureDetector(
+                  onTap: () => showUserProfileSheet(
+                    context,
+                    userId: review.userId,
+                    seedName: review.user?.fullName,
+                    seedAvatarUrl: review.user?.avatarUrl,
+                  ),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: c.bgInput,
+                    backgroundImage: review.user?.avatarUrl != null
+                        ? NetworkImage(review.user!.avatarUrl!)
+                        : null,
+                    child: review.user?.avatarUrl == null
+                        ? Text(
+                            review.user?.initial ?? '?',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -77,8 +84,10 @@ class ReviewCard extends StatelessWidget {
                       ),
                       RatingBarIndicator(
                         rating: review.rating.toDouble(),
-                        itemBuilder: (_, _) =>
-                            const Icon(Icons.star_rounded, color: AppColors.star),
+                        itemBuilder: (_, _) => const Icon(
+                          Icons.star_rounded,
+                          color: AppColors.star,
+                        ),
                         itemCount: 5,
                         itemSize: 14,
                       ),

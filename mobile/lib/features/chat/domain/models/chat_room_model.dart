@@ -37,34 +37,46 @@ class ChatRoomSummary {
   PartyDisplay otherParty(int currentUserId) {
     if (currentUserId == clientId) {
       return PartyDisplay(
-        title:     provider.businessName,
-        subtitle:  null,
+        title: provider.businessName,
+        subtitle: null,
         avatarUrl: provider.coverUrl,
         isProvider: true,
+        userId: provider.userId,
       );
     }
     return PartyDisplay(
-      title:     '${client.firstName} ${client.lastName}'.trim(),
-      subtitle:  null,
+      title: '${client.firstName} ${client.lastName}'.trim(),
+      subtitle: null,
       avatarUrl: client.avatarUrl,
       isProvider: false,
+      userId: clientId,
     );
   }
 
   factory ChatRoomSummary.fromJson(Map<String, dynamic> json) {
-    final client   = ClientPreview.fromJson(json['client']   as Map<String, dynamic>);
-    final provider = ProviderPreview.fromJson(json['provider'] as Map<String, dynamic>);
+    final client = ClientPreview.fromJson(
+      json['client'] as Map<String, dynamic>,
+    );
+    final provider = ProviderPreview.fromJson(
+      json['provider'] as Map<String, dynamic>,
+    );
     final lastMsgJson = json['lastMessage'] as Map<String, dynamic>?;
     return ChatRoomSummary(
-      id:             (json['id']         as num).toInt(),
-      clientId:       (json['clientId']   as num).toInt(),
-      providerId:     (json['providerId'] as num).toInt(),
-      createdAt:      DateTime.tryParse(json['createdAt']      as String? ?? '') ?? DateTime.now(),
-      client:         client,
-      provider:       provider,
-      lastMessage:    lastMsgJson != null ? ChatMessageModel.fromJson(lastMsgJson) : null,
-      lastActivityAt: DateTime.tryParse(json['lastActivityAt'] as String? ?? '') ?? DateTime.now(),
-      unreadCount:    (json['unreadCount'] as num?)?.toInt() ?? 0,
+      id: (json['id'] as num).toInt(),
+      clientId: (json['clientId'] as num).toInt(),
+      providerId: (json['providerId'] as num).toInt(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      client: client,
+      provider: provider,
+      lastMessage: lastMsgJson != null
+          ? ChatMessageModel.fromJson(lastMsgJson)
+          : null,
+      lastActivityAt:
+          DateTime.tryParse(json['lastActivityAt'] as String? ?? '') ??
+          DateTime.now(),
+      unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -74,15 +86,15 @@ class ChatRoomSummary {
     int? unreadCount,
   }) {
     return ChatRoomSummary(
-      id:             id,
-      clientId:       clientId,
-      providerId:     providerId,
-      createdAt:      createdAt,
-      client:         client,
-      provider:       provider,
-      lastMessage:    lastMessage    ?? this.lastMessage,
+      id: id,
+      clientId: clientId,
+      providerId: providerId,
+      createdAt: createdAt,
+      client: client,
+      provider: provider,
+      lastMessage: lastMessage ?? this.lastMessage,
       lastActivityAt: lastActivityAt ?? this.lastActivityAt,
-      unreadCount:    unreadCount    ?? this.unreadCount,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 }
@@ -102,16 +114,17 @@ class ClientPreview {
 
   factory ClientPreview.fromJson(Map<String, dynamic> json) {
     return ClientPreview(
-      id:        (json['id'] as num).toInt(),
-      firstName: json['firstName']  as String? ?? '',
-      lastName:  json['lastName']   as String? ?? '',
-      avatarUrl: json['avatarUrl']  as String?,
+      id: (json['id'] as num).toInt(),
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
+      avatarUrl: json['avatarUrl'] as String?,
     );
   }
 }
 
 class ProviderPreview {
   final int id;
+
   /// User.id del dueño de este perfil de proveedor — necesario para resolver
   /// quién es la "otra parte" en un chat sin ambigüedad.
   final int userId;
@@ -131,10 +144,10 @@ class ProviderPreview {
         ? (imgs.first as Map<String, dynamic>)['url'] as String?
         : null;
     return ProviderPreview(
-      id:           (json['id']     as num).toInt(),
-      userId:       (json['userId'] as num).toInt(),
+      id: (json['id'] as num).toInt(),
+      userId: (json['userId'] as num).toInt(),
       businessName: json['businessName'] as String? ?? '',
-      coverUrl:     coverUrl,
+      coverUrl: coverUrl,
     );
   }
 }
@@ -146,10 +159,16 @@ class PartyDisplay {
   final String? avatarUrl;
   final bool isProvider;
 
+  /// User.id de la contraparte. Para un cliente es su id directo; para un
+  /// proveedor, el `userId` dueño del perfil. Permite abrir el perfil
+  /// público al tocar el avatar.
+  final int? userId;
+
   const PartyDisplay({
     required this.title,
     this.subtitle,
     this.avatarUrl,
     required this.isProvider,
+    this.userId,
   });
 }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
+import 'package:mobile/shared/widgets/user_profile_sheet.dart';
 import '../../domain/models/chat_message_model.dart';
 import '../../domain/models/chat_room_model.dart';
 import '../providers/chat_provider.dart';
@@ -13,14 +14,17 @@ import '../providers/chat_provider.dart';
 /// como leídos en lugar de incrementar el badge).
 class ChatScreen extends StatefulWidget {
   final int roomId;
+
   /// Nombre del otro participante a mostrar mientras `chat.rooms` no
   /// tiene aún la sala cacheada (chat recién creado desde la pantalla
   /// principal). Antes el AppBar mostraba "Conversación" / "..." sin
   /// info, viéndose roto hasta que el inbox se cargaba.
   final String? seedTitle;
+
   /// URL del avatar a mostrar en el header mientras la sala no está
   /// cacheada. Opcional — si null, cae al fallback de iniciales.
   final String? seedAvatarUrl;
+
   /// Mensaje predeterminado que precarga el input al abrir el chat —
   /// usado por "Consultar precio" desde el detalle de un servicio.
   final String? initialDraft;
@@ -40,9 +44,11 @@ class _ChatScreenState extends State<ChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   bool _sending = false;
+
   /// Cuando el usuario se desplaza hacia arriba para leer historial,
   /// dejamos de hacer auto-scroll forzoso al llegar mensajes nuevos.
   bool _autoStickToBottom = true;
+
   /// Evita disparar `loadMoreHistory` repetidamente mientras está cargando.
   bool _loadingMoreThrottle = false;
 
@@ -145,9 +151,9 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
     try {
       await context.read<ChatProvider>().sendMessage(
-            roomId: widget.roomId,
-            content: text,
-          );
+        roomId: widget.roomId,
+        content: text,
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -203,11 +209,14 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: messages.isEmpty
                 ? (loadingHistory
-                    ? const Center(child: CircularProgressIndicator())
-                    : _EmptyConversation(c: c))
+                      ? const Center(child: CircularProgressIndicator())
+                      : _EmptyConversation(c: c))
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     itemCount: itemCount,
                     itemBuilder: (_, i) {
                       if (extra == 1 && i == 0) {
@@ -215,7 +224,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Center(
                             child: SizedBox(
-                              width: 20, height: 20,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
@@ -244,16 +254,16 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   ChatRoomSummary _placeholderRoom() => ChatRoomSummary(
-        id: 0,
-        clientId: 0,
-        providerId: 0,
-        createdAt: DateTime.now(),
-        client: const ClientPreview(id: 0, firstName: '', lastName: ''),
-        provider: const ProviderPreview(id: 0, userId: 0, businessName: ''),
-        lastMessage: null,
-        lastActivityAt: DateTime.now(),
-        unreadCount: 0,
-      );
+    id: 0,
+    clientId: 0,
+    providerId: 0,
+    createdAt: DateTime.now(),
+    client: const ClientPreview(id: 0, firstName: '', lastName: ''),
+    provider: const ProviderPreview(id: 0, userId: 0, businessName: ''),
+    lastMessage: null,
+    lastActivityAt: DateTime.now(),
+    unreadCount: 0,
+  );
 }
 
 // ── Header con avatar y nombre ───────────────────────────────
@@ -266,26 +276,41 @@ class _ChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasUrl = other.avatarUrl != null && other.avatarUrl!.isNotEmpty;
+    // Solo el proveedor (que ve a un cliente) puede abrir el perfil público.
+    final canOpenProfile = !other.isProvider && other.userId != null;
+    final avatar = Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
+        border: Border.all(color: c.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: hasUrl
+          ? AppNetworkImage(
+              url: other.avatarUrl!,
+              width: 36,
+              height: 36,
+              fit: BoxFit.cover,
+              placeholder: _initialFallback(),
+              errorWidget: _initialFallback(),
+            )
+          : _initialFallback(),
+    );
     return Row(
       children: [
-        Container(
-          width: 36, height: 36,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-            border: Border.all(color: c.border),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: hasUrl
-              ? AppNetworkImage(
-                  url: other.avatarUrl!,
-                  width: 36, height: 36,
-                  fit: BoxFit.cover,
-                  placeholder: _initialFallback(),
-                  errorWidget: _initialFallback(),
-                )
-              : _initialFallback(),
-        ),
+        canOpenProfile
+            ? GestureDetector(
+                onTap: () => showUserProfileSheet(
+                  context,
+                  userId: other.userId!,
+                  seedName: other.title,
+                  seedAvatarUrl: other.avatarUrl,
+                ),
+                child: avatar,
+              )
+            : avatar,
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -382,14 +407,14 @@ class _MessageBubble extends StatelessWidget {
     // Cambio: Texto del emisor oscuro para contraste
     final fg = mine ? Colors.black87 : c.textPrimary;
     // Cambio: Hora del emisor en gris oscuro
-    final timeColor = mine
-        ? Colors.grey.shade600
-        : c.textMuted;
+    final timeColor = mine ? Colors.grey.shade600 : c.textMuted;
 
     final bubble = Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
-        mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: mine
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           Flexible(
             child: ConstrainedBox(
@@ -407,9 +432,9 @@ class _MessageBubble extends StatelessWidget {
                         : (mine ? Colors.grey.shade300 : c.border),
                   ),
                   borderRadius: BorderRadius.only(
-                    topLeft:     radius,
-                    topRight:    radius,
-                    bottomLeft:  mine ? radius : smallRadius,
+                    topLeft: radius,
+                    topRight: radius,
+                    bottomLeft: mine ? radius : smallRadius,
                     bottomRight: mine ? smallRadius : radius,
                   ),
                 ),
@@ -425,8 +450,9 @@ class _MessageBubble extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          failed ? 'No enviado · toca para reintentar'
-                                 : _hhmm(message.createdAt),
+                          failed
+                              ? 'No enviado · toca para reintentar'
+                              : _hhmm(message.createdAt),
                           style: TextStyle(
                             color: failed ? Colors.red.shade400 : timeColor,
                             fontSize: 10.5,
@@ -451,9 +477,10 @@ class _MessageBubble extends StatelessWidget {
     // Mensaje fallido → tocar para reintentar el envío.
     if (failed && message.clientTempId != null) {
       return GestureDetector(
-        onTap: () => context
-            .read<ChatProvider>()
-            .retryMessage(roomId, message.clientTempId!),
+        onTap: () => context.read<ChatProvider>().retryMessage(
+          roomId,
+          message.clientTempId!,
+        ),
         child: bubble,
       );
     }
@@ -476,7 +503,7 @@ class _StatusIcon extends StatelessWidget {
           Icons.access_time_rounded,
           size: 12,
           // Cambio: Gris oscuro sobre blanco
-          color: Colors.grey.shade600, 
+          color: Colors.grey.shade600,
         );
       case MessageStatus.sent:
       case MessageStatus.delivered:
@@ -484,7 +511,7 @@ class _StatusIcon extends StatelessWidget {
           Icons.check_rounded,
           size: 14,
           // Cambio: Gris oscuro sobre blanco
-          color: Colors.grey.shade600, 
+          color: Colors.grey.shade600,
         );
       case MessageStatus.read:
         // Doble check azul brillante (estilo WhatsApp sobre blanco)
@@ -539,7 +566,10 @@ class _Composer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(color: c.border),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
                 child: TextField(
                   controller: controller,
                   maxLines: 5,
@@ -561,11 +591,10 @@ class _Composer extends StatelessWidget {
               onTap: sending ? null : onSend,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 140),
-                width: 44, height: 44,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: sending
-                      ? c.bgInput
-                      : AppColors.primary,
+                  color: sending ? c.bgInput : AppColors.primary,
                   shape: BoxShape.circle,
                   boxShadow: sending
                       ? null
@@ -585,7 +614,11 @@ class _Composer extends StatelessWidget {
                           valueColor: AlwaysStoppedAnimation(Colors.white),
                         ),
                       )
-                    : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                    : const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
               ),
             ),
           ],
@@ -613,13 +646,21 @@ class _EmptyConversation extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Inicia la conversación',
-              style: TextStyle(color: c.textPrimary, fontSize: 15, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               'Sé claro con lo que necesitas. Recuerda: solo texto.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: c.textSecondary, fontSize: 12.5, height: 1.4),
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 12.5,
+                height: 1.4,
+              ),
             ),
           ],
         ),
