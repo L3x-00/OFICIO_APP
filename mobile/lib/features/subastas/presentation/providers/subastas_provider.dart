@@ -25,6 +25,11 @@ class SubastasProvider extends ChangeNotifier {
   bool _submitting = false;
   bool get submitting => _submitting;
 
+  /// chatRoomId devuelto por la última aceptación de oferta — para redirigir
+  /// al chat tras adjudicar. Null si no hubo sala o la aceptación falló.
+  int? _lastChatRoomId;
+  int? get lastAcceptedChatRoomId => _lastChatRoomId;
+
   // ── CLIENTE: Cargar mis solicitudes ──────────────────────────
   Future<void> loadMyRequests() async {
     _state = SubastasState.loading;
@@ -98,25 +103,34 @@ class SubastasProvider extends ChangeNotifier {
     final result = await _repo.acceptOffer(offerId);
 
     _submitting = false;
-    if (result.isSuccess) {
-      // Actualizar estado local: la solicitud se cierra
-      _myRequests = _myRequests.map((r) {
-        if (r.id != requestId) return r;
-        final updatedOffers = r.offers.map((o) {
-          if (o.id == offerId) return _offerWithStatus(o, OfferStatus.accepted);
-          if (o.status == OfferStatus.pending)
-            return _offerWithStatus(o, OfferStatus.rejected);
-          return o;
+    _lastChatRoomId = null;
+    result.when(
+      success: (data) {
+        // chatRoomId que el backend creó/vinculó al adjudicar → para navegar.
+        _lastChatRoomId = (data['chatRoomId'] as num?)?.toInt();
+        // Estado local optimista: oferta elegida ACCEPTED, demás REJECTED.
+        _myRequests = _myRequests.map((r) {
+          if (r.id != requestId) return r;
+          final updatedOffers = r.offers.map((o) {
+            if (o.id == offerId) {
+              return _offerWithStatus(o, OfferStatus.accepted);
+            }
+            if (o.status == OfferStatus.pending) {
+              return _offerWithStatus(o, OfferStatus.rejected);
+            }
+            return o;
+          }).toList();
+          return _requestWithStatus(
+            r,
+            ServiceRequestStatus.closed,
+            updatedOffers,
+          );
         }).toList();
-        return _requestWithStatus(
-          r,
-          ServiceRequestStatus.closed,
-          updatedOffers,
-        );
-      }).toList();
-    } else {
-      _error = result.errorMessage;
-    }
+      },
+      failure: (e) {
+        _error = e.message;
+      },
+    );
     notifyListeners();
     return result.isSuccess;
   }

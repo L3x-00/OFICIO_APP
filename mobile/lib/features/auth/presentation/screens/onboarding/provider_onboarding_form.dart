@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
@@ -54,7 +56,14 @@ class ProviderOnboardingForm extends StatefulWidget {
   State<ProviderOnboardingForm> createState() => _ProviderOnboardingFormState();
 }
 
-class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
+class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+    with WidgetsBindingObserver {
+  // Valores semilla para `PhoneInputSection` (initialData o borrador
+  // restaurado). NO se actualizan con cada tecla — solo cambian al restaurar,
+  // y la `key` del widget cuelga de ellos para forzar un único re-init.
+  String _phoneSeed = '';
+  String _whatsappSeed = '';
+
   // ── Controllers ─────────────────────────────────────────
   final _businessNameController = TextEditingController();
   final _dniController = TextEditingController();
@@ -121,6 +130,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
   @override
   void initState() {
     super.initState();
+    // Observa el ciclo de vida para guardar el borrador cuando la app pasa a
+    // segundo plano (p. ej. el usuario sale a la cámara/galería).
+    WidgetsBinding.instance.addObserver(this);
     _loadCategories();
     // Plan preseleccionado en la pantalla "Únete" (tarjeta Premium).
     _acquirePremium = widget.selectedPlan == 'PREMIUM';
@@ -187,11 +199,17 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
             .toList();
         _primaryCategoryId = _selectedCategories.first.id;
       }
+      _phoneSeed = _phone;
+      _whatsappSeed = _whatsapp;
+    } else {
+      // Sin datos explícitos: intenta restaurar un borrador previo.
+      _restoreDraft();
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _businessNameController.dispose();
     _dniController.dispose();
     _rucController.dispose();
@@ -208,6 +226,133 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
     _telegramCtrl.dispose();
     _whatsappBizCtrl.dispose();
     super.dispose();
+  }
+
+  // ── Persistencia de borrador (FASE 4.2) ──────────────────
+  // Si el usuario sale a tomar una foto o el SO mata la Activity por memoria,
+  // los datos del formulario se restauran al volver. NO se persisten las fotos
+  // (son re-elegibles); sí todo el texto y selecciones.
+  String get _draftKey => 'onboarding_draft_${widget.providerType ?? 'OFICIO'}';
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _saveDraft();
+    }
+  }
+
+  Map<String, dynamic> _draftSnapshot() => {
+    'businessName': _businessNameController.text,
+    'dni': _dniController.text,
+    'ruc': _rucController.text,
+    'description': _descriptionController.text,
+    'address': _addressController.text,
+    'mapsUrl': _mapsUrlController.text,
+    'referralCode': _referralCodeCtrl.text,
+    'website': _websiteCtrl.text,
+    'instagram': _instagramCtrl.text,
+    'tiktok': _tiktokCtrl.text,
+    'facebook': _facebookCtrl.text,
+    'linkedin': _linkedinCtrl.text,
+    'twitterX': _twitterCtrl.text,
+    'telegram': _telegramCtrl.text,
+    'whatsappBiz': _whatsappBizCtrl.text,
+    'phone': _phone,
+    'whatsapp': _whatsapp,
+    'hasDelivery': _hasDelivery,
+    'plenaCoordinacion': _plenaCoordinacion,
+    'acquirePremium': _acquirePremium,
+    'department': _department,
+    'province': _province,
+    'district': _district,
+    'scheduleJson': _scheduleJson,
+    'primaryCategoryId': _primaryCategoryId,
+    'categories': _selectedCategories
+        .map((e) => {'id': e.id, 'name': e.name, 'parentName': e.parentName})
+        .toList(),
+  };
+
+  bool get _draftHasContent =>
+      _businessNameController.text.trim().isNotEmpty ||
+      _descriptionController.text.trim().isNotEmpty ||
+      _phone.isNotEmpty ||
+      _selectedCategories.isNotEmpty;
+
+  Future<void> _saveDraft() async {
+    if (!_draftHasContent) return; // no persistimos un form vacío
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_draftKey, jsonEncode(_draftSnapshot()));
+    } catch (_) {
+      // best-effort: un fallo de disco no debe romper el flujo
+    }
+  }
+
+  Future<void> _restoreDraft() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_draftKey);
+      if (raw == null || raw.isEmpty || !mounted) return;
+      final d = jsonDecode(raw) as Map<String, dynamic>;
+
+      _businessNameController.text = (d['businessName'] as String?) ?? '';
+      _dniController.text = (d['dni'] as String?) ?? '';
+      _rucController.text = (d['ruc'] as String?) ?? '';
+      _descriptionController.text = (d['description'] as String?) ?? '';
+      _addressController.text = (d['address'] as String?) ?? '';
+      _mapsUrlController.text = (d['mapsUrl'] as String?) ?? '';
+      _referralCodeCtrl.text = (d['referralCode'] as String?) ?? '';
+      _websiteCtrl.text = (d['website'] as String?) ?? '';
+      _instagramCtrl.text = (d['instagram'] as String?) ?? '';
+      _tiktokCtrl.text = (d['tiktok'] as String?) ?? '';
+      _facebookCtrl.text = (d['facebook'] as String?) ?? '';
+      _linkedinCtrl.text = (d['linkedin'] as String?) ?? '';
+      _twitterCtrl.text = (d['twitterX'] as String?) ?? '';
+      _telegramCtrl.text = (d['telegram'] as String?) ?? '';
+      _whatsappBizCtrl.text = (d['whatsappBiz'] as String?) ?? '';
+
+      final restoredCats = ((d['categories'] as List?) ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (c) => CategorySelectionResult(
+              id: (c['id'] as num).toInt(),
+              name: (c['name'] as String?) ?? '',
+              parentName: (c['parentName'] as String?) ?? '',
+            ),
+          )
+          .toList();
+
+      setState(() {
+        _phone = (d['phone'] as String?) ?? '';
+        _whatsapp = (d['whatsapp'] as String?) ?? '';
+        _phoneSeed = _phone;
+        _whatsappSeed = _whatsapp;
+        _hasDelivery = (d['hasDelivery'] as bool?) ?? false;
+        _plenaCoordinacion = (d['plenaCoordinacion'] as bool?) ?? false;
+        _acquirePremium = (d['acquirePremium'] as bool?) ?? _acquirePremium;
+        _department = d['department'] as String?;
+        _province = d['province'] as String?;
+        _district = d['district'] as String?;
+        if (d['scheduleJson'] is Map) {
+          _scheduleJson = Map<String, dynamic>.from(d['scheduleJson'] as Map);
+        }
+        _primaryCategoryId = (d['primaryCategoryId'] as num?)?.toInt();
+        _selectedCategories = restoredCats;
+      });
+
+      _showSnack('Recuperamos los datos que habías ingresado.');
+    } catch (_) {
+      // Borrador corrupto → se ignora.
+    }
+  }
+
+  Future<void> _clearDraft() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_draftKey);
+    } catch (_) {}
   }
 
   // ── Data Loaders & Helpers ───────────────────────────────
@@ -308,6 +453,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
 
   Future<void> _pickPhoto() async {
     if (_photos.length >= _maxPhotos) return;
+    // Guarda el borrador ANTES de salir a la galería/cámara: en Android el SO
+    // puede matar la Activity mientras el picker está en primer plano.
+    await _saveDraft();
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -502,6 +650,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
       _showSnack(auth.error ?? 'Error al crear el perfil', isError: true);
       return false;
     }
+    // Registro exitoso → el borrador ya no hace falta.
+    await _clearDraft();
     return true;
   }
 
@@ -881,6 +1031,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               ],
 
               PhoneInputSection(
+                // La key cuelga de los seeds (initialData/borrador): solo
+                // cambia al restaurar, forzando un único re-init con el valor
+                // recuperado sin perder el estado interno al teclear.
+                key: ValueKey('phone-$_phoneSeed-$_whatsappSeed'),
+                initialPhone: _phoneSeed.isEmpty ? null : _phoneSeed,
+                initialWhatsapp: _whatsappSeed.isEmpty ? null : _whatsappSeed,
                 onChange: (phone, wap) => setState(() {
                   _phone = phone;
                   _whatsapp = wap ?? '';
@@ -1119,6 +1275,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm> {
               Center(
                 child: TextButton(
                   onPressed: () {
+                    // Abandono explícito → descartamos el borrador.
+                    _clearDraft();
                     if (widget.isStandalone) {
                       Navigator.of(context).pop();
                     } else {

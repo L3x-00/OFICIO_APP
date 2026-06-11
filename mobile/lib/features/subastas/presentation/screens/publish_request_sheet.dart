@@ -819,12 +819,17 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     if (n.contains('cerraj')) return Icons.lock_outline_rounded;
     if (n.contains('techo') || n.contains('teja')) return Icons.roofing_rounded;
     if (n.contains('jardin')) return Icons.grass_rounded;
-    if (n.contains('comput') || n.contains('tecno'))
+    if (n.contains('comput') || n.contains('tecno')) {
       return Icons.computer_rounded;
-    if (n.contains('albaÑil') || n.contains('albanil') || n.contains('constru'))
+    }
+    if (n.contains('albaÑil') ||
+        n.contains('albanil') ||
+        n.contains('constru')) {
       return Icons.construction_rounded;
-    if (n.contains('mecani') || n.contains('auto'))
+    }
+    if (n.contains('mecani') || n.contains('auto')) {
       return Icons.car_repair_rounded;
+    }
     if (n.contains('mudanz')) return Icons.local_shipping_rounded;
     return Icons.handyman_rounded;
   }

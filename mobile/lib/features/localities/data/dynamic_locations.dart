@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../core/constants/peru_locations.dart';
+import '../../../core/services/local_cache_service.dart';
 import '../domain/locality_extra.dart';
 import 'localities_repository.dart';
 
@@ -15,19 +17,25 @@ class DynamicLocations extends ChangeNotifier {
   static final DynamicLocations instance = DynamicLocations._();
 
   final LocalitiesRepository _repo = LocalitiesRepository();
+  final LocalCacheService _cache = LocalCacheService();
+
+  /// Clave del caché local de localidades extra (Offline-First).
+  static const String _cacheKey = 'cache_locality_extras';
 
   /// Departamentos extra (no presentes en `PeruLocations.departments`).
   final List<String> _extraDepts = [];
+
   /// Provincias extra por departamento — sólo las que se sumaron por
   /// encima del catálogo estático para ese departamento.
   final Map<String, List<String>> _extraProvs = {};
+
   /// Distritos extra por provincia.
   final Map<String, List<String>> _extraDists = {};
 
   bool _synced = false;
   bool _loading = false;
 
-  bool get isSynced  => _synced;
+  bool get isSynced => _synced;
   bool get isLoading => _loading;
 
   /// Catálogo combinado: estático primero, luego los extras al final
@@ -71,23 +79,88 @@ class DynamicLocations extends ChangeNotifier {
     if (_synced && !force) return;
     _loading = true;
     try {
-      final extras = await _repo.getExtras();
-      _extraDepts.clear();
-      _extraProvs.clear();
-      _extraDists.clear();
-      for (final e in extras) {
-        _ingestExtra(e);
+      // 1. CACHE-FIRST: si hay caché válido (≤12h), úsalo YA (la app vuela).
+      final cached = await _cache.getData<List<LocalityExtra>>(
+        _cacheKey,
+        _extrasFromMap,
+        maxAge: const Duration(hours: 12),
+      );
+      if (cached != null) {
+        _applyExtras(cached);
+        _synced = true;
+        notifyListeners();
+        // 2. Stale-while-revalidate: refresca en 2º plano SIN notificar
+        //    (evita parpadeos). El próximo arranque verá lo más reciente.
+        unawaited(_revalidateExtras());
+        return;
       }
+
+      // 3. MISS: red. Si responde, cachea y notifica (data vino de red).
+      final extras = await _repo.getExtras();
+      await _cache.setData<List<LocalityExtra>>(
+        _cacheKey,
+        extras,
+        _extrasToMap,
+      );
+      _applyExtras(extras);
       _synced = true;
       notifyListeners();
     } catch (e) {
-      debugPrint('[DynamicLocations] sync error: $e');
-      // No bloqueamos la app si falla: el catálogo estático sigue siendo
-      // funcional. Se reintenta en el siguiente arranque o llamada explícita.
+      // 4. Sin internet (o parse) → contingencia: caché EXPIRADO si existe.
+      final stale = await _cache.getData<List<LocalityExtra>>(
+        _cacheKey,
+        _extrasFromMap,
+        maxAge: const Duration(days: 3650),
+      );
+      if (stale != null) {
+        _applyExtras(stale);
+        _synced = true;
+        notifyListeners();
+      } else {
+        debugPrint('[DynamicLocations] sync error (sin caché): $e');
+        // El catálogo estático (peru_locations.dart) sigue funcional.
+      }
     } finally {
       _loading = false;
     }
   }
+
+  /// Refresco silencioso del caché en segundo plano: actualiza caché +
+  /// memoria SIN `notifyListeners()` (no provoca rebuilds → sin flickering).
+  Future<void> _revalidateExtras() async {
+    try {
+      final extras = await _repo.getExtras();
+      await _cache.setData<List<LocalityExtra>>(
+        _cacheKey,
+        extras,
+        _extrasToMap,
+      );
+      _applyExtras(extras); // silencioso: los getters ya devuelven lo nuevo
+    } catch (_) {
+      // Mantiene lo que ya estaba si la red falla.
+    }
+  }
+
+  /// Reemplaza los extras en memoria a partir de una lista (cache o red).
+  void _applyExtras(List<LocalityExtra> extras) {
+    _extraDepts.clear();
+    _extraProvs.clear();
+    _extraDists.clear();
+    for (final e in extras) {
+      _ingestExtra(e);
+    }
+  }
+
+  static List<LocalityExtra> _extrasFromMap(Map<String, dynamic> m) =>
+      ((m['items'] as List?) ?? const [])
+          .map(
+            (e) => LocalityExtra.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList();
+
+  static Map<String, dynamic> _extrasToMap(List<LocalityExtra> list) => {
+    'items': list.map((e) => e.toJson()).toList(),
+  };
 
   /// Llama al endpoint suggest del backend con la ubicación detectada
   /// por GPS. Devuelve la fila guardada (puede ser una existente). Si la
@@ -100,8 +173,8 @@ class DynamicLocations extends ChangeNotifier {
   }) async {
     final created = await _repo.suggest(
       department: department,
-      province:   province,
-      district:   district,
+      province: province,
+      district: district,
     );
     _ingestExtra(created);
     notifyListeners();
@@ -139,7 +212,8 @@ class DynamicLocations extends ChangeNotifier {
   }
 
   String? findProvinceCanonical(String? department, String? input) {
-    if (department == null || input == null || input.trim().isEmpty) return null;
+    if (department == null || input == null || input.trim().isEmpty)
+      return null;
     final target = _norm(input);
     for (final p in provincesOf(department)) {
       if (_norm(p) == target) return p;

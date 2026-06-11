@@ -9,13 +9,13 @@ import '../../../../features/localities/data/dynamic_locations.dart';
 import '../providers/providers_provider.dart';
 import 'filter/filter_availability_section.dart';
 import 'filter/filter_bottom_buttons.dart';
-import 'filter/filter_category_section.dart';
+// import 'filter/filter_category_section.dart'; // 👈 ELIMINADO
 import 'filter/filter_location_section.dart';
 import 'filter/filter_section_label.dart';
 import 'filter/filter_sort_section.dart';
 import 'filter/filter_verification_section.dart';
 
-/// Hoja de filtros avanzados — categorías, disponibilidad, verificación,
+/// Hoja de filtros avanzados — disponibilidad, verificación,
 /// orden y ubicación estructurada (jerarquía peruana).
 ///
 /// El sheet orquesta los widgets extraídos de `filter/`. El estado local
@@ -31,13 +31,9 @@ class FilterSheet extends StatefulWidget {
 
 class _FilterSheetState extends State<FilterSheet> {
   late String? _availability;
-  late bool    _verifiedOnly;
+  late bool _verifiedOnly;
   late String? _sortBy;
   late final TextEditingController _locationCtrl;
-
-  // Categoría (estado local del sheet)
-  String? _sheetParentSlug;
-  String? _sheetCategory;
 
   // Ubicación estructurada (jerarquía Perú). Preload desde AuthProvider.user
   // en initState — si el usuario tiene un department/province/district en su
@@ -50,19 +46,17 @@ class _FilterSheetState extends State<FilterSheet> {
   @override
   void initState() {
     super.initState();
-    _availability      = widget.prov.selectedAvailability;
-    _verifiedOnly      = widget.prov.verifiedOnly;
-    _sortBy            = widget.prov.sortBy;
-    _locationCtrl      = TextEditingController(text: widget.prov.location);
-    _sheetParentSlug   = widget.prov.expandedParentSlug;
-    _sheetCategory     = widget.prov.selectedCategory;
+    _availability = widget.prov.selectedAvailability;
+    _verifiedOnly = widget.prov.verifiedOnly;
+    _sortBy = widget.prov.sortBy;
+    _locationCtrl = TextEditingController(text: widget.prov.location);
 
     // Preload de la ubicación del usuario: si ya tiene filtro estructurado
     // en el provider, usamos ese. Si no, caemos al perfil registrado.
     final auth = context.read<AuthProvider>();
     _dept = widget.prov.department ?? auth.user?.department;
-    _prov = widget.prov.province   ?? auth.user?.province;
-    _dist = widget.prov.district   ?? auth.user?.district;
+    _prov = widget.prov.province ?? auth.user?.province;
+    _dist = widget.prov.district ?? auth.user?.district;
     // Sanea: si el dept del usuario no está en el catálogo local, lo
     // descartamos para no mostrar opciones inválidas.
     _dept = _sanitizeDept(widget.prov.department) ?? widget.prov.department;
@@ -88,26 +82,24 @@ class _FilterSheetState extends State<FilterSheet> {
 
   void _apply() {
     widget.prov.applyFilters(
-      availability:   _availability,
-      verifiedOnly:   _verifiedOnly,
-      sortBy:         _sortBy,
-      location:       _locationCtrl.text.trim(),
-      category:       _sheetCategory,
-      parentCategory: _sheetCategory == null ? _sheetParentSlug : null,
-      department:     _dept,
-      province:       _prov,
-      district:       _dist,
+      availability: _availability,
+      verifiedOnly: _verifiedOnly,
+      sortBy: _sortBy,
+      location: _locationCtrl.text.trim(),
+      category: null, // 👈 Forzamos a null
+      parentCategory: null, // 👈 Forzamos a null
+      department: _dept,
+      province: _prov,
+      district: _dist,
     );
     Navigator.pop(context);
   }
 
   void _clear() {
     setState(() {
-      _availability    = null;
-      _verifiedOnly    = true;
-      _sortBy          = null;
-      _sheetParentSlug = null;
-      _sheetCategory   = null;
+      _availability = null;
+      _verifiedOnly = true;
+      _sortBy = null;
       _locationCtrl.clear();
       _dept = null;
       _prov = null;
@@ -118,11 +110,9 @@ class _FilterSheetState extends State<FilterSheet> {
   }
 
   bool get _hasLocalChanges =>
-      _availability    != widget.prov.selectedAvailability ||
-      _verifiedOnly    != widget.prov.verifiedOnly ||
-      _sortBy          != widget.prov.sortBy ||
-      _sheetCategory   != widget.prov.selectedCategory ||
-      _sheetParentSlug != widget.prov.expandedParentSlug ||
+      _availability != widget.prov.selectedAvailability ||
+      _verifiedOnly != widget.prov.verifiedOnly ||
+      _sortBy != widget.prov.sortBy ||
       _locationCtrl.text.trim() != widget.prov.location ||
       _dept != widget.prov.department ||
       _prov != widget.prov.province ||
@@ -152,10 +142,16 @@ class _FilterSheetState extends State<FilterSheet> {
       }
 
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
-      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
+      final geo = await GeocodingService.reverseGeocode(
+        pos.latitude,
+        pos.longitude,
+        force: true,
+      );
       if (!mounted) return;
 
       if (geo == null || geo.department == null) {
@@ -184,9 +180,9 @@ class _FilterSheetState extends State<FilterSheet> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _gpsLoading = false);
     }
@@ -210,54 +206,41 @@ class _FilterSheetState extends State<FilterSheet> {
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(
-                left: 20, right: 20, top: 20,
+                left: 20,
+                right: 20,
+                top: 20,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // CATEGORÍA
-                  const SectionLabel(label: 'CATEGORÍA'),
-                  const SizedBox(height: 10),
-                  CategorySheetSection(
-                    categories:      widget.prov.categories,
-                    selectedParent:  _sheetParentSlug,
-                    selectedLeaf:    _sheetCategory,
-                    onParentTap:     (slug) => setState(() {
-                      _sheetParentSlug = _sheetParentSlug == slug ? null : slug;
-                      _sheetCategory   = null;
-                    }),
-                    onLeafTap:       (slug) => setState(() {
-                      _sheetCategory = _sheetCategory == slug ? null : slug;
-                    }),
-                  ),
-                  const SizedBox(height: 20),
+                  // CATEGORÍA ELIMINADA ✅
 
                   // DISPONIBILIDAD
                   AvailabilitySection(
                     availability: _availability,
-                    onChanged:    (v) => setState(() => _availability = v),
+                    onChanged: (v) => setState(() => _availability = v),
                   ),
 
                   // VERIFICACIÓN
                   VerificationSection(
                     verifiedOnly: _verifiedOnly,
-                    onChanged:    (v) => setState(() => _verifiedOnly = v),
+                    onChanged: (v) => setState(() => _verifiedOnly = v),
                   ),
 
                   // ORDEN
                   SortBySection(
-                    sortBy:    _sortBy,
+                    sortBy: _sortBy,
                     onChanged: (v) => setState(() => _sortBy = v),
                   ),
 
                   // UBICACIÓN
                   LocationSection(
-                    department:  _dept,
-                    province:    _prov,
-                    district:    _dist,
-                    gpsLoading:  _gpsLoading,
-                    onUseGps:    _useMyGps,
+                    department: _dept,
+                    province: _prov,
+                    district: _dist,
+                    gpsLoading: _gpsLoading,
+                    onUseGps: _useMyGps,
                     onDepartmentChanged: (v) => setState(() {
                       _dept = v;
                       _prov = null;
@@ -269,11 +252,6 @@ class _FilterSheetState extends State<FilterSheet> {
                     }),
                     onDistrictChanged: (v) => setState(() => _dist = v),
                     onExpandToDepartment: () {
-                      // "Ampliar búsqueda": mantiene el DEPARTAMENTO y
-                      // quita provincia/distrito + el texto de dirección.
-                      // El backend interpreta "solo departamento" como
-                      // modo ampliado → NEGOCIOS del departamento +
-                      // PROFESIONALES de todo el Perú.
                       setState(() {
                         _prov = null;
                         _dist = null;
@@ -288,8 +266,8 @@ class _FilterSheetState extends State<FilterSheet> {
             ),
           ),
           FilterBottomButtons(
-            onClear:    _clear,
-            onApply:    _apply,
+            onClear: _clear,
+            onApply: _apply,
             hasChanges: _hasLocalChanges,
           ),
         ],
@@ -304,7 +282,8 @@ class _FilterSheetState extends State<FilterSheet> {
         children: [
           Center(
             child: Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: c.textMuted.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
@@ -322,18 +301,24 @@ class _FilterSheetState extends State<FilterSheet> {
                   Text(
                     'Filtros avanzados',
                     style: TextStyle(
-                        color: c.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
+                      color: c.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
               TextButton.icon(
                 onPressed: _clear,
-                icon: const Icon(Icons.refresh_rounded,
-                    size: 16, color: AppColors.primary),
-                label: const Text('Limpiar',
-                    style: TextStyle(color: AppColors.primary, fontSize: 13)),
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                label: const Text(
+                  'Limpiar',
+                  style: TextStyle(color: AppColors.primary, fontSize: 13),
+                ),
               ),
             ],
           ),
@@ -350,8 +335,10 @@ class _FilterSheetState extends State<FilterSheet> {
         hintText: 'Dirección (opcional): Jr. Lima, Av…',
         hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
         prefixIcon: const Icon(
-            Icons.location_on_outlined,
-            color: AppColors.amber, size: 20),
+          Icons.location_on_outlined,
+          color: AppColors.amber,
+          size: 20,
+        ),
         filled: true,
         fillColor: c.bgCard,
         border: OutlineInputBorder(
@@ -360,8 +347,7 @@ class _FilterSheetState extends State<FilterSheet> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-              color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
       onChanged: (_) => setState(() {}),

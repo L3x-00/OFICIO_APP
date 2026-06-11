@@ -1,4 +1,4 @@
-enum ServiceRequestStatus { open, closed, expired, cancelled }
+enum ServiceRequestStatus { open, closed, awarded, expired, cancelled }
 
 enum OfferStatus { pending, accepted, rejected, withdrawn }
 
@@ -87,6 +87,11 @@ class ServiceRequestModel {
     switch (s.toUpperCase()) {
       case 'CLOSED':
         return ServiceRequestStatus.closed;
+      // AWARDED (y ASSIGNED como alias) = oferta aceptada / adjudicada. Antes
+      // caía al default 'open' → las adjudicadas se colaban en "Activas".
+      case 'AWARDED':
+      case 'ASSIGNED':
+        return ServiceRequestStatus.awarded;
       case 'EXPIRED':
         return ServiceRequestStatus.expired;
       case 'CANCELLED':

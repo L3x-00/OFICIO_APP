@@ -208,6 +208,10 @@ class _RequestsList extends StatelessWidget {
   return switch (r.status) {
     ServiceRequestStatus.open => ('Buscando proveedor', AppColors.amber),
     ServiceRequestStatus.closed => ('Buscando proveedor', AppColors.amber),
+    ServiceRequestStatus.awarded => (
+      'Proveedor seleccionado',
+      AppColors.available,
+    ),
     ServiceRequestStatus.expired => ('Solicitud vencida', AppColors.textMuted),
     ServiceRequestStatus.cancelled => ('Cancelada', AppColors.textMuted),
   };

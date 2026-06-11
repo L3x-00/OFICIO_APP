@@ -5,8 +5,8 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
 import '../../domain/models/service_request_model.dart';
 import '../providers/subastas_provider.dart';
-import '../widgets/submit_offer_sheet.dart';
 import '../widgets/request_detail_sheet.dart';
+import '../widgets/submit_offer_sheet.dart';
 
 class OportunidadesTab extends StatefulWidget {
   const OportunidadesTab({super.key});
@@ -321,148 +321,189 @@ class _OpportunityCard extends StatelessWidget {
     final minsLeft = left.inMinutes.remainder(60);
     final urgent = hoursLeft < 3;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: c.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: urgent
-              ? AppColors.busy.withValues(alpha: 0.4)
-              : AppColors.amber.withValues(alpha: 0.25),
+    return GestureDetector(
+      onTap: () => _openDetail(context),
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: urgent
+                ? AppColors.busy.withValues(alpha: 0.4)
+                : AppColors.amber.withValues(alpha: 0.25),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Top row: category + countdown ──────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.amber.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    opp.categoryName,
-                    style: const TextStyle(
-                      color: AppColors.amber,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                _CountdownBadge(
-                  hours: hoursLeft,
-                  mins: minsLeft,
-                  urgent: urgent,
-                ),
-              ],
-            ),
-          ),
-
-          // ── Photo + description ─────────────────────────────
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (opp.photoUrl != null) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      opp.photoUrl!,
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                ] else ...[
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Top row: category + countdown ──────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              child: Row(
+                children: [
                   Container(
-                    width: 72,
-                    height: 72,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: AppColors.amber.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.amber.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Icon(
-                      Icons.handyman_rounded,
-                      color: AppColors.amber,
-                      size: 30,
+                    child: Text(
+                      opp.categoryName,
+                      style: const TextStyle(
+                        color: AppColors.amber,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const Spacer(),
+                  _CountdownBadge(
+                    hours: hoursLeft,
+                    mins: minsLeft,
+                    urgent: urgent,
+                  ),
                 ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        opp.description,
-                        style: TextStyle(
-                          color: c.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: [
-                          if (opp.distanceKm != null)
-                            _MetaChip(
-                              icon: Icons.place_rounded,
-                              label:
-                                  'A ${opp.distanceKm!.toStringAsFixed(1)} km',
-                              color: AppColors.primary,
-                            ),
-                          if (opp.district != null)
-                            _MetaChip(
-                              icon: Icons.location_city_rounded,
-                              label: opp.district!,
-                              color: AppColors.textMuted,
-                            ),
-                          if (opp.budgetMin != null || opp.budgetMax != null)
-                            _MetaChip(
-                              icon: Icons.payments_rounded,
-                              label: _budgetLabel(opp.budgetMin, opp.budgetMax),
-                              color: AppColors.available,
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Footer: según el estado de MI postulación ───────
-          Container(
-            decoration: BoxDecoration(
-              color: c.bg.withValues(alpha: 0.4),
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(15),
               ),
             ),
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-            child: opp.hasOffered
-                ? _offeredFooter(context)
-                : _availableFooter(context),
-          ),
-        ],
+
+            // ── Photo + description ─────────────────────────────
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (opp.photoUrl != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        opp.photoUrl!,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ] else ...[
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: AppColors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.handyman_rounded,
+                        color: AppColors.amber,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          opp.description,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            if (opp.distanceKm != null)
+                              _MetaChip(
+                                icon: Icons.place_rounded,
+                                label:
+                                    'A ${opp.distanceKm!.toStringAsFixed(1)} km',
+                                color: AppColors.primary,
+                              ),
+                            if (opp.district != null)
+                              _MetaChip(
+                                icon: Icons.location_city_rounded,
+                                label: opp.district!,
+                                color: AppColors.textMuted,
+                              ),
+                            if (opp.budgetMin != null || opp.budgetMax != null)
+                              _MetaChip(
+                                icon: Icons.payments_rounded,
+                                label: _budgetLabel(
+                                  opp.budgetMin,
+                                  opp.budgetMax,
+                                ),
+                                color: AppColors.available,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Footer: según el estado de MI postulación ───────
+            Container(
+              decoration: BoxDecoration(
+                color: c.bg.withValues(alpha: 0.4),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(15),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+              child: opp.hasOffered
+                  ? _offeredFooter(context)
+                  : _availableFooter(context),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  /// Abre el detalle completo de la oportunidad (sin dead-end: sheet con
+  /// botón de cierre). Mismo componente que usa el cliente.
+  void _openDetail(BuildContext context) {
+    final opp = opportunity;
+    final (label, color) = _detailStatus(context, opp);
+    RequestDetailSheet.show(
+      context,
+      categoryName: opp.categoryName,
+      description: opp.description,
+      statusLabel: label,
+      statusColor: color,
+      photoUrl: opp.photoUrl,
+      locationLabel: opp.district,
+      budgetMin: opp.budgetMin,
+      budgetMax: opp.budgetMax,
+      expiresAt: opp.expiresAt,
+    );
+  }
+
+  /// Etiqueta + color del estado para el detalle (coherente con la lista).
+  (String, Color) _detailStatus(BuildContext context, OpportunityModel opp) {
+    final c = context.colors;
+    final status = opp.myOfferStatus;
+    if (status != null) {
+      return switch (status) {
+        OfferStatus.pending => ('Oferta enviada', AppColors.primary),
+        OfferStatus.accepted => ('Oferta aceptada', AppColors.available),
+        OfferStatus.withdrawn => ('Oferta cancelada', AppColors.busy),
+        OfferStatus.rejected => ('No seleccionada', c.textMuted),
+      };
+    }
+    if (opp.isFull) return ('Cupo lleno', c.textMuted);
+    return ('Disponible', AppColors.amber);
   }
 
   /// Footer cuando el proveedor YA postuló: badge de estado (+ Cancelar si

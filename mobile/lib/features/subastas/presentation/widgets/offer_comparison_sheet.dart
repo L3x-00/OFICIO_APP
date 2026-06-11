@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
@@ -115,24 +116,33 @@ class OfferComparisonSheet extends StatelessWidget {
                       );
                       if (confirm != true || !context.mounted) return;
                       final subastas = context.read<SubastasProvider>();
+                      // Capturamos router + messenger ANTES del await/pop para
+                      // no usar un context desactivado tras cerrar el sheet.
+                      final router = GoRouter.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
                       final ok = await subastas.acceptOffer(
                         pendingOffers[i].id,
                         request.id,
                       );
                       if (!context.mounted) return;
                       if (ok) {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        final roomId = subastas.lastAcceptedChatRoomId;
+                        Navigator.of(context).pop(); // cierra el sheet
+                        // Redirige al chat para coordinar el servicio.
+                        if (roomId != null) router.push('/chat/$roomId');
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
-                              '¡Oferta aceptada! ${pendingOffers[i].providerName} fue notificado.',
+                              roomId != null
+                                  ? '¡Oferta aceptada! Abriendo el chat con ${pendingOffers[i].providerName}…'
+                                  : '¡Oferta aceptada! ${pendingOffers[i].providerName} fue notificado.',
                             ),
                             backgroundColor: AppColors.available,
                           ),
                         );
                       } else {
                         // Antes un fallo era silencioso ("no sucede nada").
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               subastas.error ??

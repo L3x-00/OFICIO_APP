@@ -29,6 +29,14 @@ class FcmService {
 
   final Dio _dio = DioClient.instance.dio;
 
+  /// Guard de idempotencia para los listeners de streams de FCM. `initialize()`
+  /// se re-invoca en cada login (el flag de main.dart se resetea al logout),
+  /// pero los `.listen()` sobre los streams del singleton deben registrarse
+  /// UNA sola vez para toda la vida de la app — si no, cada ciclo login/logout
+  /// apilaba 3 suscripciones más y cada notificación se procesaba N veces
+  /// (duplicados + fuga de memoria).
+  bool _streamsAttached = false;
+
   /// Callback ejecutado cuando el usuario TOCA la notificación
   /// (background o terminated). Se setea desde `main.dart` para navegar.
   static void Function(RemoteMessage)? onMessageTap;
@@ -54,30 +62,37 @@ class FcmService {
     debugPrint('[FCM] Token: $token');
     if (token != null) await _sendTokenToBackend(token);
 
-    messaging.onTokenRefresh.listen((newToken) {
-      debugPrint('[FCM] Token refrescado: $newToken');
-      _sendTokenToBackend(newToken);
-    });
+    // Los listeners de streams se registran UNA sola vez (idempotencia): en
+    // re-logins `initialize()` re-envía el token (arriba) pero NO vuelve a
+    // suscribirse, evitando handlers apilados y notificaciones duplicadas.
+    if (!_streamsAttached) {
+      _streamsAttached = true;
 
-    // Foreground: solo delegamos al callback para que el provider
-    // inyecte la notif en la lista. El SnackBar fue ELIMINADO porque
-    // el WebSocket ya inserta la misma notif en _items (más rápido)
-    // y el badge se actualiza — el SnackBar duplicaba visualmente
-    // lo que el user veía en el tab Alertas (issue B-1 del audit).
-    FirebaseMessaging.onMessage.listen((message) {
-      debugPrint('[FCM] foreground: ${message.notification?.title}');
-      onForegroundMessage?.call(message);
-    });
+      messaging.onTokenRefresh.listen((newToken) {
+        debugPrint('[FCM] Token refrescado: $newToken');
+        _sendTokenToBackend(newToken);
+      });
 
-    // Background tap: el usuario abrió desde la bandeja del sistema.
-    // NO llamamos a onForegroundMessage acá — la notif ya está
-    // persistida en el backend y loadHistory() la traerá con su id
-    // real. Inyectarla acá con id sintético causa DUPLICADO en la
-    // lista de Alertas (issue B-7 del audit).
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      debugPrint('[FCM] tap (background): ${message.data}');
-      onMessageTap?.call(message);
-    });
+      // Foreground: solo delegamos al callback para que el provider
+      // inyecte la notif en la lista. El SnackBar fue ELIMINADO porque
+      // el WebSocket ya inserta la misma notif en _items (más rápido)
+      // y el badge se actualiza — el SnackBar duplicaba visualmente
+      // lo que el user veía en el tab Alertas (issue B-1 del audit).
+      FirebaseMessaging.onMessage.listen((message) {
+        debugPrint('[FCM] foreground: ${message.notification?.title}');
+        onForegroundMessage?.call(message);
+      });
+
+      // Background tap: el usuario abrió desde la bandeja del sistema.
+      // NO llamamos a onForegroundMessage acá — la notif ya está
+      // persistida en el backend y loadHistory() la traerá con su id
+      // real. Inyectarla acá con id sintético causa DUPLICADO en la
+      // lista de Alertas (issue B-7 del audit).
+      FirebaseMessaging.onMessageOpenedApp.listen((message) {
+        debugPrint('[FCM] tap (background): ${message.data}');
+        onMessageTap?.call(message);
+      });
+    }
 
     // Terminated: app abierta desde notificación. Mismo razonamiento
     // que en background tap — solo navegamos, NO inyectamos.
