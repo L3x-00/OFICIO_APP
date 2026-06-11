@@ -3910,6 +3910,7 @@ export const YapePaymentScalarFieldEnum = {
   providerId: 'providerId',
   plan: 'plan',
   amount: 'amount',
+  uploadedAmount: 'uploadedAmount',
   voucherUrl: 'voucherUrl',
   verificationCode: 'verificationCode',
   note: 'note',

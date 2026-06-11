@@ -13,9 +13,14 @@ export class SubmitYapeDto {
   @IsNotEmpty()
   plan: string;
 
+  // Solo informativo: lo que el usuario declara haber pagado. El backend
+  // NO lo usa para la lógica de negocio — el monto real lo fija el servidor
+  // desde el catálogo de precios (anti-tampering). Opcional para no romper
+  // ni forzar al frontend.
+  @IsOptional()
   @IsNumber()
-  @Min(1)
-  amount: number;
+  @Min(0)
+  amount?: number;
 
   @IsString()
   @IsNotEmpty()

@@ -30,6 +30,7 @@ export type YapePaymentAvgAggregateOutputType = {
   id: number | null
   providerId: number | null
   amount: number | null
+  uploadedAmount: number | null
   reviewedByAdminId: number | null
 }
 
@@ -37,6 +38,7 @@ export type YapePaymentSumAggregateOutputType = {
   id: number | null
   providerId: number | null
   amount: number | null
+  uploadedAmount: number | null
   reviewedByAdminId: number | null
 }
 
@@ -45,6 +47,7 @@ export type YapePaymentMinAggregateOutputType = {
   providerId: number | null
   plan: $Enums.SubscriptionPlan | null
   amount: number | null
+  uploadedAmount: number | null
   voucherUrl: string | null
   verificationCode: string | null
   note: string | null
@@ -61,6 +64,7 @@ export type YapePaymentMaxAggregateOutputType = {
   providerId: number | null
   plan: $Enums.SubscriptionPlan | null
   amount: number | null
+  uploadedAmount: number | null
   voucherUrl: string | null
   verificationCode: string | null
   note: string | null
@@ -77,6 +81,7 @@ export type YapePaymentCountAggregateOutputType = {
   providerId: number
   plan: number
   amount: number
+  uploadedAmount: number
   voucherUrl: number
   verificationCode: number
   note: number
@@ -94,6 +99,7 @@ export type YapePaymentAvgAggregateInputType = {
   id?: true
   providerId?: true
   amount?: true
+  uploadedAmount?: true
   reviewedByAdminId?: true
 }
 
@@ -101,6 +107,7 @@ export type YapePaymentSumAggregateInputType = {
   id?: true
   providerId?: true
   amount?: true
+  uploadedAmount?: true
   reviewedByAdminId?: true
 }
 
@@ -109,6 +116,7 @@ export type YapePaymentMinAggregateInputType = {
   providerId?: true
   plan?: true
   amount?: true
+  uploadedAmount?: true
   voucherUrl?: true
   verificationCode?: true
   note?: true
@@ -125,6 +133,7 @@ export type YapePaymentMaxAggregateInputType = {
   providerId?: true
   plan?: true
   amount?: true
+  uploadedAmount?: true
   voucherUrl?: true
   verificationCode?: true
   note?: true
@@ -141,6 +150,7 @@ export type YapePaymentCountAggregateInputType = {
   providerId?: true
   plan?: true
   amount?: true
+  uploadedAmount?: true
   voucherUrl?: true
   verificationCode?: true
   note?: true
@@ -244,6 +254,7 @@ export type YapePaymentGroupByOutputType = {
   providerId: number
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount: number | null
   voucherUrl: string
   verificationCode: string
   note: string | null
@@ -283,6 +294,7 @@ export type YapePaymentWhereInput = {
   providerId?: Prisma.IntFilter<"YapePayment"> | number
   plan?: Prisma.EnumSubscriptionPlanFilter<"YapePayment"> | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFilter<"YapePayment"> | number
+  uploadedAmount?: Prisma.FloatNullableFilter<"YapePayment"> | number | null
   voucherUrl?: Prisma.StringFilter<"YapePayment"> | string
   verificationCode?: Prisma.StringFilter<"YapePayment"> | string
   note?: Prisma.StringNullableFilter<"YapePayment"> | string | null
@@ -300,6 +312,7 @@ export type YapePaymentOrderByWithRelationInput = {
   providerId?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   voucherUrl?: Prisma.SortOrder
   verificationCode?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -320,6 +333,7 @@ export type YapePaymentWhereUniqueInput = Prisma.AtLeast<{
   providerId?: Prisma.IntFilter<"YapePayment"> | number
   plan?: Prisma.EnumSubscriptionPlanFilter<"YapePayment"> | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFilter<"YapePayment"> | number
+  uploadedAmount?: Prisma.FloatNullableFilter<"YapePayment"> | number | null
   voucherUrl?: Prisma.StringFilter<"YapePayment"> | string
   verificationCode?: Prisma.StringFilter<"YapePayment"> | string
   note?: Prisma.StringNullableFilter<"YapePayment"> | string | null
@@ -337,6 +351,7 @@ export type YapePaymentOrderByWithAggregationInput = {
   providerId?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   voucherUrl?: Prisma.SortOrder
   verificationCode?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -361,6 +376,7 @@ export type YapePaymentScalarWhereWithAggregatesInput = {
   providerId?: Prisma.IntWithAggregatesFilter<"YapePayment"> | number
   plan?: Prisma.EnumSubscriptionPlanWithAggregatesFilter<"YapePayment"> | $Enums.SubscriptionPlan
   amount?: Prisma.FloatWithAggregatesFilter<"YapePayment"> | number
+  uploadedAmount?: Prisma.FloatNullableWithAggregatesFilter<"YapePayment"> | number | null
   voucherUrl?: Prisma.StringWithAggregatesFilter<"YapePayment"> | string
   verificationCode?: Prisma.StringWithAggregatesFilter<"YapePayment"> | string
   note?: Prisma.StringNullableWithAggregatesFilter<"YapePayment"> | string | null
@@ -375,6 +391,7 @@ export type YapePaymentScalarWhereWithAggregatesInput = {
 export type YapePaymentCreateInput = {
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount?: number | null
   voucherUrl: string
   verificationCode: string
   note?: string | null
@@ -392,6 +409,7 @@ export type YapePaymentUncheckedCreateInput = {
   providerId: number
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount?: number | null
   voucherUrl: string
   verificationCode: string
   note?: string | null
@@ -406,6 +424,7 @@ export type YapePaymentUncheckedCreateInput = {
 export type YapePaymentUpdateInput = {
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -423,6 +442,7 @@ export type YapePaymentUncheckedUpdateInput = {
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -439,6 +459,7 @@ export type YapePaymentCreateManyInput = {
   providerId: number
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount?: number | null
   voucherUrl: string
   verificationCode: string
   note?: string | null
@@ -453,6 +474,7 @@ export type YapePaymentCreateManyInput = {
 export type YapePaymentUpdateManyMutationInput = {
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -469,6 +491,7 @@ export type YapePaymentUncheckedUpdateManyInput = {
   providerId?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -495,6 +518,7 @@ export type YapePaymentCountOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrder
   voucherUrl?: Prisma.SortOrder
   verificationCode?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -510,6 +534,7 @@ export type YapePaymentAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
 }
 
@@ -518,6 +543,7 @@ export type YapePaymentMaxOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrder
   voucherUrl?: Prisma.SortOrder
   verificationCode?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -534,6 +560,7 @@ export type YapePaymentMinOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   plan?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrder
   voucherUrl?: Prisma.SortOrder
   verificationCode?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -549,6 +576,7 @@ export type YapePaymentSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   providerId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  uploadedAmount?: Prisma.SortOrder
   reviewedByAdminId?: Prisma.SortOrder
 }
 
@@ -601,6 +629,7 @@ export type EnumYapePaymentStatusFieldUpdateOperationsInput = {
 export type YapePaymentCreateWithoutProviderInput = {
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount?: number | null
   voucherUrl: string
   verificationCode: string
   note?: string | null
@@ -616,6 +645,7 @@ export type YapePaymentUncheckedCreateWithoutProviderInput = {
   id?: number
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount?: number | null
   voucherUrl: string
   verificationCode: string
   note?: string | null
@@ -661,6 +691,7 @@ export type YapePaymentScalarWhereInput = {
   providerId?: Prisma.IntFilter<"YapePayment"> | number
   plan?: Prisma.EnumSubscriptionPlanFilter<"YapePayment"> | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFilter<"YapePayment"> | number
+  uploadedAmount?: Prisma.FloatNullableFilter<"YapePayment"> | number | null
   voucherUrl?: Prisma.StringFilter<"YapePayment"> | string
   verificationCode?: Prisma.StringFilter<"YapePayment"> | string
   note?: Prisma.StringNullableFilter<"YapePayment"> | string | null
@@ -676,6 +707,7 @@ export type YapePaymentCreateManyProviderInput = {
   id?: number
   plan: $Enums.SubscriptionPlan
   amount: number
+  uploadedAmount?: number | null
   voucherUrl: string
   verificationCode: string
   note?: string | null
@@ -690,6 +722,7 @@ export type YapePaymentCreateManyProviderInput = {
 export type YapePaymentUpdateWithoutProviderInput = {
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -705,6 +738,7 @@ export type YapePaymentUncheckedUpdateWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -720,6 +754,7 @@ export type YapePaymentUncheckedUpdateManyWithoutProviderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   plan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  uploadedAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   voucherUrl?: Prisma.StringFieldUpdateOperationsInput | string
   verificationCode?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -738,6 +773,7 @@ export type YapePaymentSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   providerId?: boolean
   plan?: boolean
   amount?: boolean
+  uploadedAmount?: boolean
   voucherUrl?: boolean
   verificationCode?: boolean
   note?: boolean
@@ -755,6 +791,7 @@ export type YapePaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   providerId?: boolean
   plan?: boolean
   amount?: boolean
+  uploadedAmount?: boolean
   voucherUrl?: boolean
   verificationCode?: boolean
   note?: boolean
@@ -772,6 +809,7 @@ export type YapePaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   providerId?: boolean
   plan?: boolean
   amount?: boolean
+  uploadedAmount?: boolean
   voucherUrl?: boolean
   verificationCode?: boolean
   note?: boolean
@@ -789,6 +827,7 @@ export type YapePaymentSelectScalar = {
   providerId?: boolean
   plan?: boolean
   amount?: boolean
+  uploadedAmount?: boolean
   voucherUrl?: boolean
   verificationCode?: boolean
   note?: boolean
@@ -800,7 +839,7 @@ export type YapePaymentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type YapePaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "plan" | "amount" | "voucherUrl" | "verificationCode" | "note" | "status" | "rejectionReason" | "reviewedByAdminId" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["yapePayment"]>
+export type YapePaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "plan" | "amount" | "uploadedAmount" | "voucherUrl" | "verificationCode" | "note" | "status" | "rejectionReason" | "reviewedByAdminId" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["yapePayment"]>
 export type YapePaymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   provider?: boolean | Prisma.ProviderDefaultArgs<ExtArgs>
 }
@@ -820,7 +859,17 @@ export type $YapePaymentPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: number
     providerId: number
     plan: $Enums.SubscriptionPlan
+    /**
+     * Monto OFICIAL del plan en soles, fijado SERVER-SIDE desde el catálogo
+     * (anti-tampering). Es el valor que usa la activación de la suscripción.
+     */
     amount: number
+    /**
+     * Monto que el usuario DECLARÓ en la app (puede diferir si intentó hacer
+     * trampa o si Yape le cobró comisión). Solo informativo para que el admin
+     * detecte discrepancias. NO se usa para activar el plan.
+     */
+    uploadedAmount: number | null
     voucherUrl: string
     verificationCode: string
     note: string | null
@@ -1258,6 +1307,7 @@ export interface YapePaymentFieldRefs {
   readonly providerId: Prisma.FieldRef<"YapePayment", 'Int'>
   readonly plan: Prisma.FieldRef<"YapePayment", 'SubscriptionPlan'>
   readonly amount: Prisma.FieldRef<"YapePayment", 'Float'>
+  readonly uploadedAmount: Prisma.FieldRef<"YapePayment", 'Float'>
   readonly voucherUrl: Prisma.FieldRef<"YapePayment", 'String'>
   readonly verificationCode: Prisma.FieldRef<"YapePayment", 'String'>
   readonly note: Prisma.FieldRef<"YapePayment", 'String'>

@@ -528,7 +528,13 @@ model YapePayment {
   id                Int               @id @default(autoincrement())
   providerId        Int
   plan              SubscriptionPlan
+  /// Monto OFICIAL del plan en soles, fijado SERVER-SIDE desde el catálogo
+  /// (anti-tampering). Es el valor que usa la activación de la suscripción.
   amount            Float
+  /// Monto que el usuario DECLARÓ en la app (puede diferir si intentó hacer
+  /// trampa o si Yape le cobró comisión). Solo informativo para que el admin
+  /// detecte discrepancias. NO se usa para activar el plan.
+  uploadedAmount    Float?
   voucherUrl        String
   verificationCode  String
   note              String?

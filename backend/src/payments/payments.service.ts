@@ -25,6 +25,17 @@ const PLAN_PRIORITY: Record<string, number> = {
   GRATIS: 3,
 };
 
+/**
+ * Precios OFICIALES de los planes en soles (PEN). Fuente de verdad
+ * SERVER-SIDE para el flujo Yape manual: el monto del pago lo define el
+ * servidor, NUNCA el cliente (anti-tampering). El flujo MercadoPago tiene su
+ * propia validación de monto (MercadoPagoService) y no usa este mapa.
+ */
+const PLAN_PRICES_PEN: Record<string, number> = {
+  ESTANDAR: 19.9,
+  PREMIUM: 39.9,
+};
+
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
@@ -96,6 +107,14 @@ export class PaymentsService {
     if (!provider)
       throw new ForbiddenException('No tienes un perfil de proveedor');
 
+    // ANTI-TAMPERING: el monto lo fija el SERVIDOR desde el catálogo, NO el
+    // cliente. `dto.amount` (lo que el usuario escribió en la app) se guarda
+    // solo como referencia para que el admin detecte discrepancias; el monto
+    // real con el que se activará el plan es `realPrice`.
+    const realPrice = PLAN_PRICES_PEN[dto.plan];
+    if (realPrice === undefined)
+      throw new BadRequestException('Plan no válido');
+
     // Limitar a 1 pago PENDING por proveedor a la vez
     const pending = await this.prisma.yapePayment.findFirst({
       where: { providerId: provider.id, status: YapePaymentStatus.PENDING },
@@ -109,24 +128,25 @@ export class PaymentsService {
       data: {
         providerId: provider.id,
         plan: dto.plan as any,
-        amount: dto.amount,
+        amount: realPrice, // monto oficial, server-side
+        uploadedAmount: dto.amount ?? null, // lo declarado por el usuario
         voucherUrl: dto.voucherUrl,
         verificationCode: dto.verificationCode,
         note: dto.note,
       },
     });
 
-    // Notificar al admin: broadcast notification + adminEvent
+    // Notificar al admin con el monto OFICIAL (no el declarado por el cliente).
     this.events.emitNotification({
       type: 'NEW_YAPE_PAYMENT',
       title: 'Nuevo pago Yape',
-      body: `Plan ${dto.plan} · S/ ${dto.amount.toFixed(2)}`,
+      body: `Plan ${dto.plan} · S/ ${realPrice.toFixed(2)}`,
       targetRole: 'ADMIN',
     });
     this.events.emitAdminEvent('NEW_YAPE_PAYMENT', {
       paymentId: payment.id,
       plan: dto.plan,
-      amount: dto.amount,
+      amount: realPrice,
     });
 
     return payment;
@@ -148,7 +168,7 @@ export class PaymentsService {
 
   // ── ADMIN: listar pagos ──────────────────────────────────────
   async adminList(status?: string) {
-    return this.prisma.yapePayment.findMany({
+    const payments = await this.prisma.yapePayment.findMany({
       where: status ? { status: status as any } : {},
       orderBy: { createdAt: 'desc' },
       include: {
@@ -164,6 +184,18 @@ export class PaymentsService {
           },
         },
       },
+    });
+
+    // Enriquecemos cada fila para que el admin compare el monto OFICIAL
+    // (`expectedAmount`) contra lo que el usuario declaró (`uploadedAmount`).
+    // `isAmountMismatch` permite resaltar en rojo las filas sospechosas.
+    return payments.map((p) => {
+      const expectedAmount = PLAN_PRICES_PEN[p.plan] ?? p.amount;
+      const uploadedAmount = p.uploadedAmount ?? null;
+      const isAmountMismatch =
+        uploadedAmount != null &&
+        Math.abs(uploadedAmount - expectedAmount) > 0.01;
+      return { ...p, expectedAmount, uploadedAmount, isAmountMismatch };
     });
   }
 
