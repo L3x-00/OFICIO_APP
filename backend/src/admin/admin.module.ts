@@ -5,6 +5,7 @@ import { AdminCategoriesService } from './services/admin-categories.service.js';
 import { AdminDashboardService } from './services/admin-dashboard.service.js';
 import { AdminTrustService } from './services/admin-trust.service.js';
 import { AdminPaymentsService } from './services/admin-payments.service.js';
+import { AdminReportsService } from './services/admin-reports.service.js';
 import { AdminController } from './admin.controller.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -29,6 +30,7 @@ import { LocalitiesModule } from '../localities/localities.module.js';
     AdminDashboardService,
     AdminTrustService,
     AdminPaymentsService,
+    AdminReportsService,
     RolesGuard,
   ],
 })
