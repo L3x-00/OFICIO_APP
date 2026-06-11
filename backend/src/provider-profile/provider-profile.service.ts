@@ -114,6 +114,12 @@ export class ProviderProfileService {
       twitterX?: string | null;
       telegram?: string | null;
       whatsappBiz?: string | null;
+      // Toggles de privacidad (independientes del plan). Aunque se tipan como
+      // boolean, en runtime pueden llegar como "true"/"false" (body es `any`);
+      // se normalizan más abajo antes de pasar a Prisma.
+      showPhone?: boolean;
+      showWhatsapp?: boolean;
+      showExactLocation?: boolean;
       // Edición de categorías desde el panel del proveedor. El primer
       // id de la lista se marca como `isPrimary: true`. Si no se envía
       // (undefined), las categorías no se tocan.
@@ -123,6 +129,19 @@ export class ProviderProfileService {
   ) {
     const provider = await this.findProviderByUser(userId, type);
     const { categoryIds, ...scalarData } = data;
+
+    // Normaliza los toggles de privacidad a booleanos REALES (el cliente
+    // puede enviarlos como "true"/"false"). Prisma exige Boolean.
+    const sd = scalarData as Record<string, unknown>;
+    for (const f of [
+      'showPhone',
+      'showWhatsapp',
+      'showExactLocation',
+    ] as const) {
+      if (sd[f] !== undefined) {
+        sd[f] = typeof sd[f] === 'string' ? sd[f] === 'true' : Boolean(sd[f]);
+      }
+    }
 
     // Si vienen categorías, reescribimos la relación M:N entera dentro
     // de una transacción: delete + createMany. El isPrimary va por

@@ -19,8 +19,24 @@ bool isPaidPlan(String plan) => plan == 'PREMIUM' || plan == 'ESTANDAR';
 // (localityProvince/localityDistrict). Nominatim solo se usa para resolver
 // la "Dirección" exacta cuando no está guardada (ver ProviderAddressText).
 
+/// "Departamento, Provincia" (ej. "Junín, Huancayo") — ubicación GRUESA que
+/// se muestra cuando el proveedor desactivó `showExactLocation`. Nunca expone
+/// distrito ni dirección. Null si no hay datos.
+String? departmentProvinceLabel(ProviderModel p) {
+  final dep = p.localityDepartment?.trim();
+  final prov = p.localityProvince?.trim();
+  final parts = <String>[
+    if (dep != null && dep.isNotEmpty) dep,
+    if (prov != null && prov.isNotEmpty) prov,
+  ];
+  return parts.isEmpty ? null : parts.join(', ');
+}
+
 /// "Provincia, Distrito" (ej. "Huancayo, Chilca"). Null si no hay datos.
+/// Si el proveedor ocultó su ubicación exacta, colapsa a "Departamento,
+/// Provincia" (privacidad = derecho, independiente del plan).
 String? provinceDistrictLabel(ProviderModel p) {
+  if (!p.showExactLocation) return departmentProvinceLabel(p);
   final prov = p.localityProvince?.trim();
   final dist = p.localityDistrict?.trim();
   final parts = <String>[
@@ -31,7 +47,10 @@ String? provinceDistrictLabel(ProviderModel p) {
 }
 
 /// "Distrito, Provincia" — orden usado en la cuadrícula (Mosaic).
+/// Igual que arriba: colapsa a "Departamento, Provincia" si `showExactLocation`
+/// está desactivado.
 String? districtProvinceLabel(ProviderModel p) {
+  if (!p.showExactLocation) return departmentProvinceLabel(p);
   final prov = p.localityProvince?.trim();
   final dist = p.localityDistrict?.trim();
   final parts = <String>[

@@ -5,7 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_theme_colors.dart';
-import '../../../../shared/widgets/phone_input_section.dart' show formatForWhatsApp;
+import '../../../../shared/widgets/phone_input_section.dart'
+    show formatForWhatsApp;
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
@@ -16,7 +17,8 @@ import '../../domain/models/provider_model.dart';
 import '../../domain/models/review_model.dart';
 import '../sheets/recommend_modal.dart';
 import 'create_review_sheet.dart';
-import 'package:flutter_svg/flutter_svg.dart';  
+import 'package:flutter_svg/flutter_svg.dart';
+
 /// Barra fija inferior con los botones de contacto (chat / WhatsApp / llamada)
 /// + botón de reseña. Si es la tarjeta del propio dueño muestra "Ir a mi panel".
 ///
@@ -29,6 +31,7 @@ class ProviderContactBar extends StatelessWidget {
   final ReviewModel? myReview;
   final bool isRecommended;
   final ProvidersRepository repo;
+
   /// true si el usuario ya interactuó con el proveedor (chat, llamada o
   /// subasta) y por tanto puede dejar una reseña.
   final bool canReview;
@@ -52,7 +55,7 @@ class ProviderContactBar extends StatelessWidget {
   Future<void> _openWhatsApp() async {
     // Tracking analítico — fire-and-forget; nunca debe bloquear la apertura.
     unawaited(repo.trackEvent(provider.id, 'whatsapp_click'));
-    final raw    = provider.whatsapp ?? provider.phone;
+    final raw = provider.whatsapp ?? provider.phone;
     final number = formatForWhatsApp(raw).replaceAll(RegExp(r'[\s\-\(\)]'), '');
     final message = Uri.encodeComponent(
       AppStrings.whatsappMessage(provider.businessName),
@@ -84,23 +87,23 @@ class ProviderContactBar extends StatelessWidget {
     final chat = context.read<ChatProvider>();
     try {
       final roomId = await chat.openRoom(
-        clientId:   auth.user!.id,
+        clientId: auth.user!.id,
         providerId: provider.id,
       );
       if (!context.mounted) return;
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => ChatScreen(roomId: roomId),
-      ));
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => ChatScreen(roomId: roomId)));
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo abrir el chat: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('No se pudo abrir el chat: $e')));
     }
   }
 
   void _showLoginRequired(BuildContext context) {
-    final c       = context.colors;
+    final c = context.colors;
     // Capturamos el rootNavigator ANTES del pop. Con go_router en el shell,
     // hacer Navigator.pop(context) sobre el context del árbol cierra la
     // ruta padre y deja el diálogo colgado — usamos `dialogCtx` para el
@@ -111,10 +114,18 @@ class ProviderContactBar extends StatelessWidget {
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Inicia sesión para continuar',
-            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17)),
-        content: Text('Necesitas una cuenta para realizar esta acción.',
-            style: TextStyle(color: c.textSecondary, height: 1.5)),
+        title: Text(
+          'Inicia sesión para continuar',
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
+        ),
+        content: Text(
+          'Necesitas una cuenta para realizar esta acción.',
+          style: TextStyle(color: c.textSecondary, height: 1.5),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(),
@@ -123,16 +134,23 @@ class ProviderContactBar extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogCtx).pop();
-              rootNav.push(MaterialPageRoute(
-                builder: (_) => const LoginScreen(initialMode: AuthMode.login),
-              ));
+              rootNav.push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const LoginScreen(initialMode: AuthMode.login),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Iniciar sesión / Registrarme',
-                style: TextStyle(color: Colors.white, fontSize: 12)),
+            child: const Text(
+              'Iniciar sesión / Registrarme',
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
           ),
         ],
       ),
@@ -141,7 +159,10 @@ class ProviderContactBar extends StatelessWidget {
 
   Future<void> _onReviewButton(BuildContext context) async {
     final auth = context.read<AuthProvider>();
-    if (auth.user == null) { _showLoginRequired(context); return; }
+    if (auth.user == null) {
+      _showLoginRequired(context);
+      return;
+    }
     final userId = auth.user!.id;
     final existing = myReview;
 
@@ -149,10 +170,10 @@ class ProviderContactBar extends StatelessWidget {
       // ── EDITAR reseña existente ──────────────
       final updated = await CreateReviewSheet.show(
         context,
-        providerId:           provider.id,
-        providerName:         provider.businessName,
-        userId:               userId,
-        existingReview:       existing,
+        providerId: provider.id,
+        providerName: provider.businessName,
+        userId: userId,
+        existingReview: existing,
         initiallyRecommended: isRecommended,
       );
       if (updated == true && context.mounted) {
@@ -162,9 +183,9 @@ class ProviderContactBar extends StatelessWidget {
       // ── CREAR nueva reseña ───────────────────
       final created = await CreateReviewSheet.show(
         context,
-        providerId:   provider.id,
+        providerId: provider.id,
         providerName: provider.businessName,
-        userId:       userId,
+        userId: userId,
       );
       if (created == true && context.mounted) {
         await onReloadReviews();
@@ -173,8 +194,8 @@ class ProviderContactBar extends StatelessWidget {
         await RecommendModal.show(
           context,
           providerId: provider.id,
-          userId:     userId,
-          repo:       repo,
+          userId: userId,
+          repo: repo,
         );
         // Refresca de nuevo tras la recomendación para que
         // `totalRecommendations` quede al día en la tarjeta.
@@ -224,16 +245,26 @@ class ProviderContactBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.dashboard_rounded, color: AppColors.primary, size: 20),
+                    Icon(
+                      Icons.dashboard_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Ir a mi panel',
-                      style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -251,16 +282,23 @@ class ProviderContactBar extends StatelessWidget {
                     onTap: () => _openInternalChat(context),
                   ),
                 ),
-                if (provider.subscriptionPlan == 'PREMIUM' ||
-                    provider.subscriptionPlan == 'ESTANDAR') ...[
+                // Plan paga + toggle de privacidad: el proveedor puede ocultar
+                // WhatsApp/llamada aunque su plan los permita (privacidad > plan).
+                if ((provider.subscriptionPlan == 'PREMIUM' ||
+                        provider.subscriptionPlan == 'ESTANDAR') &&
+                    provider.showWhatsapp) ...[
                   const SizedBox(width: 10),
                   Expanded(
                     child: _BigIconButton(
-                          svgAsset: 'assets/icons/whatsapp.svg',
-                          color: AppColors.whatsapp,
-                          onTap: _openWhatsApp,
-                        ),
+                      svgAsset: 'assets/icons/whatsapp.svg',
+                      color: AppColors.whatsapp,
+                      onTap: _openWhatsApp,
+                    ),
                   ),
+                ],
+                if ((provider.subscriptionPlan == 'PREMIUM' ||
+                        provider.subscriptionPlan == 'ESTANDAR') &&
+                    provider.showPhone) ...[
                   const SizedBox(width: 10),
                   Expanded(
                     child: _BigIconButton(
@@ -286,10 +324,14 @@ class ProviderContactBar extends StatelessWidget {
                   myReview != null ? Icons.edit_rounded : Icons.star_rounded,
                   size: 18,
                 ),
-                label: Text(myReview != null ? 'Editar mi reseña' : 'Dejar una reseña'),
+                label: Text(
+                  myReview != null ? 'Editar mi reseña' : 'Dejar una reseña',
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.star,
-                  side: BorderSide(color: AppColors.star.withValues(alpha: 0.4)),
+                  side: BorderSide(
+                    color: AppColors.star.withValues(alpha: 0.4),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -315,8 +357,9 @@ class ProviderContactBar extends StatelessWidget {
 
 class _BigIconButton extends StatefulWidget {
   final IconData? icon;
-  final String? svgAsset;   // ← nuevo: ruta del SVG
+  final String? svgAsset; // ← nuevo: ruta del SVG
   final Color color;
+
   /// `FutureOr<void>` para soportar tanto handlers sync (`_makeCall`) como
   /// async (`_openInternalChat`). El widget bloquea taps adicionales
   /// hasta que el handler complete + un debounce de 600ms — sin esto,

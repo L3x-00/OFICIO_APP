@@ -90,6 +90,9 @@ export type ProviderMinAggregateOutputType = {
   twitterX: string | null
   website: string | null
   whatsappBiz: string | null
+  showPhone: boolean | null
+  showWhatsapp: boolean | null
+  showExactLocation: boolean | null
   slug: string | null
   slugEditedAt: Date | null
 }
@@ -134,6 +137,9 @@ export type ProviderMaxAggregateOutputType = {
   twitterX: string | null
   website: string | null
   whatsappBiz: string | null
+  showPhone: boolean | null
+  showWhatsapp: boolean | null
+  showExactLocation: boolean | null
   slug: string | null
   slugEditedAt: Date | null
 }
@@ -179,6 +185,9 @@ export type ProviderCountAggregateOutputType = {
   twitterX: number
   website: number
   whatsappBiz: number
+  showPhone: number
+  showWhatsapp: number
+  showExactLocation: number
   slug: number
   slugEditedAt: number
   _all: number
@@ -249,6 +258,9 @@ export type ProviderMinAggregateInputType = {
   twitterX?: true
   website?: true
   whatsappBiz?: true
+  showPhone?: true
+  showWhatsapp?: true
+  showExactLocation?: true
   slug?: true
   slugEditedAt?: true
 }
@@ -293,6 +305,9 @@ export type ProviderMaxAggregateInputType = {
   twitterX?: true
   website?: true
   whatsappBiz?: true
+  showPhone?: true
+  showWhatsapp?: true
+  showExactLocation?: true
   slug?: true
   slugEditedAt?: true
 }
@@ -338,6 +353,9 @@ export type ProviderCountAggregateInputType = {
   twitterX?: true
   website?: true
   whatsappBiz?: true
+  showPhone?: true
+  showWhatsapp?: true
+  showExactLocation?: true
   slug?: true
   slugEditedAt?: true
   _all?: true
@@ -470,6 +488,9 @@ export type ProviderGroupByOutputType = {
   twitterX: string | null
   website: string | null
   whatsappBiz: string | null
+  showPhone: boolean
+  showWhatsapp: boolean
+  showExactLocation: boolean
   slug: string | null
   slugEditedAt: Date | null
   _count: ProviderCountAggregateOutputType | null
@@ -538,6 +559,9 @@ export type ProviderWhereInput = {
   twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
   website?: Prisma.StringNullableFilter<"Provider"> | string | null
   whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
+  showPhone?: Prisma.BoolFilter<"Provider"> | boolean
+  showWhatsapp?: Prisma.BoolFilter<"Provider"> | boolean
+  showExactLocation?: Prisma.BoolFilter<"Provider"> | boolean
   slug?: Prisma.StringNullableFilter<"Provider"> | string | null
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   notifications?: Prisma.AdminNotificationListRelationFilter
@@ -604,6 +628,9 @@ export type ProviderOrderByWithRelationInput = {
   twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
+  showPhone?: Prisma.SortOrder
+  showWhatsapp?: Prisma.SortOrder
+  showExactLocation?: Prisma.SortOrder
   slug?: Prisma.SortOrderInput | Prisma.SortOrder
   slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notifications?: Prisma.AdminNotificationOrderByRelationAggregateInput
@@ -675,6 +702,9 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
   website?: Prisma.StringNullableFilter<"Provider"> | string | null
   whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
+  showPhone?: Prisma.BoolFilter<"Provider"> | boolean
+  showWhatsapp?: Prisma.BoolFilter<"Provider"> | boolean
+  showExactLocation?: Prisma.BoolFilter<"Provider"> | boolean
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   notifications?: Prisma.AdminNotificationListRelationFilter
   chatsAsProvider?: Prisma.ChatRoomListRelationFilter
@@ -740,6 +770,9 @@ export type ProviderOrderByWithAggregationInput = {
   twitterX?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   whatsappBiz?: Prisma.SortOrderInput | Prisma.SortOrder
+  showPhone?: Prisma.SortOrder
+  showWhatsapp?: Prisma.SortOrder
+  showExactLocation?: Prisma.SortOrder
   slug?: Prisma.SortOrderInput | Prisma.SortOrder
   slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProviderCountOrderByAggregateInput
@@ -793,6 +826,9 @@ export type ProviderScalarWhereWithAggregatesInput = {
   twitterX?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   website?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   whatsappBiz?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
+  showPhone?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  showWhatsapp?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
+  showExactLocation?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   slug?: Prisma.StringNullableWithAggregatesFilter<"Provider"> | string | null
   slugEditedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Provider"> | Date | string | null
 }
@@ -835,6 +871,9 @@ export type ProviderCreateInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -901,6 +940,9 @@ export type ProviderUncheckedCreateInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -962,6 +1004,9 @@ export type ProviderUpdateInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -1028,6 +1073,9 @@ export type ProviderUncheckedUpdateInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -1092,6 +1140,9 @@ export type ProviderCreateManyInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
 }
@@ -1134,6 +1185,9 @@ export type ProviderUpdateManyMutationInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -1179,6 +1233,9 @@ export type ProviderUncheckedUpdateManyInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -1244,6 +1301,9 @@ export type ProviderCountOrderByAggregateInput = {
   twitterX?: Prisma.SortOrder
   website?: Prisma.SortOrder
   whatsappBiz?: Prisma.SortOrder
+  showPhone?: Prisma.SortOrder
+  showWhatsapp?: Prisma.SortOrder
+  showExactLocation?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   slugEditedAt?: Prisma.SortOrder
 }
@@ -1300,6 +1360,9 @@ export type ProviderMaxOrderByAggregateInput = {
   twitterX?: Prisma.SortOrder
   website?: Prisma.SortOrder
   whatsappBiz?: Prisma.SortOrder
+  showPhone?: Prisma.SortOrder
+  showWhatsapp?: Prisma.SortOrder
+  showExactLocation?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   slugEditedAt?: Prisma.SortOrder
 }
@@ -1344,6 +1407,9 @@ export type ProviderMinOrderByAggregateInput = {
   twitterX?: Prisma.SortOrder
   website?: Prisma.SortOrder
   whatsappBiz?: Prisma.SortOrder
+  showPhone?: Prisma.SortOrder
+  showWhatsapp?: Prisma.SortOrder
+  showExactLocation?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   slugEditedAt?: Prisma.SortOrder
 }
@@ -1789,6 +1855,9 @@ export type ProviderCreateWithoutUserInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -1853,6 +1922,9 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -1946,6 +2018,9 @@ export type ProviderScalarWhereInput = {
   twitterX?: Prisma.StringNullableFilter<"Provider"> | string | null
   website?: Prisma.StringNullableFilter<"Provider"> | string | null
   whatsappBiz?: Prisma.StringNullableFilter<"Provider"> | string | null
+  showPhone?: Prisma.BoolFilter<"Provider"> | boolean
+  showWhatsapp?: Prisma.BoolFilter<"Provider"> | boolean
+  showExactLocation?: Prisma.BoolFilter<"Provider"> | boolean
   slug?: Prisma.StringNullableFilter<"Provider"> | string | null
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
 }
@@ -1988,6 +2063,9 @@ export type ProviderCreateWithoutLocalityInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -2052,6 +2130,9 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -2139,6 +2220,9 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -2204,6 +2288,9 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -2280,6 +2367,9 @@ export type ProviderUpdateWithoutProviderCategoriesInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -2345,6 +2435,9 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -2405,6 +2498,9 @@ export type ProviderCreateWithoutImagesInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -2470,6 +2566,9 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -2546,6 +2645,9 @@ export type ProviderUpdateWithoutImagesInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -2611,6 +2713,9 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -2671,6 +2776,9 @@ export type ProviderCreateWithoutSubscriptionInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -2736,6 +2844,9 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -2812,6 +2923,9 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -2877,6 +2991,9 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -2937,6 +3054,9 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -3002,6 +3122,9 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -3078,6 +3201,9 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -3143,6 +3269,9 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -3203,6 +3332,9 @@ export type ProviderCreateWithoutReviewsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -3268,6 +3400,9 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -3344,6 +3479,9 @@ export type ProviderUpdateWithoutReviewsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -3409,6 +3547,9 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -3469,6 +3610,9 @@ export type ProviderCreateWithoutFavoritesInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -3534,6 +3678,9 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -3610,6 +3757,9 @@ export type ProviderUpdateWithoutFavoritesInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -3675,6 +3825,9 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -3735,6 +3888,9 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -3800,6 +3956,9 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -3876,6 +4035,9 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -3941,6 +4103,9 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -4001,6 +4166,9 @@ export type ProviderCreateWithoutAnalyticsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -4066,6 +4234,9 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -4142,6 +4313,9 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -4207,6 +4381,9 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -4267,6 +4444,9 @@ export type ProviderCreateWithoutNotificationsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
@@ -4332,6 +4512,9 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
@@ -4408,6 +4591,9 @@ export type ProviderUpdateWithoutNotificationsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
@@ -4473,6 +4659,9 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
@@ -4533,6 +4722,9 @@ export type ProviderCreateWithoutRecommendationsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -4598,6 +4790,9 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -4674,6 +4869,9 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -4739,6 +4937,9 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -4799,6 +5000,9 @@ export type ProviderCreateWithoutReportsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -4864,6 +5068,9 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -4940,6 +5147,9 @@ export type ProviderUpdateWithoutReportsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -5005,6 +5215,9 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -5065,6 +5278,9 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -5130,6 +5346,9 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -5206,6 +5425,9 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -5271,6 +5493,9 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -5331,6 +5556,9 @@ export type ProviderCreateWithoutOffersInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -5396,6 +5624,9 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -5472,6 +5703,9 @@ export type ProviderUpdateWithoutOffersInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -5537,6 +5771,9 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -5597,6 +5834,9 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -5662,6 +5902,9 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -5738,6 +5981,9 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -5803,6 +6049,9 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -5863,6 +6112,9 @@ export type ProviderCreateWithoutReferralReceivedInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -5928,6 +6180,9 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -6004,6 +6259,9 @@ export type ProviderUpdateWithoutReferralReceivedInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -6069,6 +6327,9 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -6129,6 +6390,9 @@ export type ProviderCreateWithoutReferralRewardsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -6194,6 +6458,9 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -6270,6 +6537,9 @@ export type ProviderUpdateWithoutReferralRewardsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -6335,6 +6605,9 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -6395,6 +6668,9 @@ export type ProviderCreateWithoutChatsAsProviderInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -6460,6 +6736,9 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -6536,6 +6815,9 @@ export type ProviderUpdateWithoutChatsAsProviderInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -6601,6 +6883,9 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -6661,6 +6946,9 @@ export type ProviderCreateWithoutOfferPostsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -6726,6 +7014,9 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -6802,6 +7093,9 @@ export type ProviderUpdateWithoutOfferPostsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -6867,6 +7161,9 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -6927,6 +7224,9 @@ export type ProviderCreateWithoutAiMemoryInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
@@ -6992,6 +7292,9 @@ export type ProviderUncheckedCreateWithoutAiMemoryInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
@@ -7068,6 +7371,9 @@ export type ProviderUpdateWithoutAiMemoryInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -7133,6 +7439,9 @@ export type ProviderUncheckedUpdateWithoutAiMemoryInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -7195,6 +7504,9 @@ export type ProviderCreateManyUserInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
 }
@@ -7237,6 +7549,9 @@ export type ProviderUpdateWithoutUserInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -7301,6 +7616,9 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -7364,6 +7682,9 @@ export type ProviderUncheckedUpdateManyWithoutUserInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -7408,6 +7729,9 @@ export type ProviderCreateManyLocalityInput = {
   twitterX?: string | null
   website?: string | null
   whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
 }
@@ -7450,6 +7774,9 @@ export type ProviderUpdateWithoutLocalityInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
@@ -7514,6 +7841,9 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
@@ -7577,6 +7907,9 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -7788,6 +8121,9 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   twitterX?: boolean
   website?: boolean
   whatsappBiz?: boolean
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: boolean
   slugEditedAt?: boolean
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
@@ -7855,6 +8191,9 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   twitterX?: boolean
   website?: boolean
   whatsappBiz?: boolean
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: boolean
   slugEditedAt?: boolean
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -7902,6 +8241,9 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   twitterX?: boolean
   website?: boolean
   whatsappBiz?: boolean
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: boolean
   slugEditedAt?: boolean
   locality?: boolean | Prisma.LocalityDefaultArgs<ExtArgs>
@@ -7949,11 +8291,14 @@ export type ProviderSelectScalar = {
   twitterX?: boolean
   website?: boolean
   whatsappBiz?: boolean
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
   slug?: boolean
   slugEditedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "createdAt" | "updatedAt" | "dni" | "hasDelivery" | "hasHomeService" | "isTrusted" | "nombreComercial" | "planPriority" | "plenaCoordinacion" | "razonSocial" | "ruc" | "totalRecommendations" | "trustStatus" | "facebook" | "instagram" | "linkedin" | "telegram" | "tiktok" | "twitterX" | "website" | "whatsappBiz" | "slug" | "slugEditedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "createdAt" | "updatedAt" | "dni" | "hasDelivery" | "hasHomeService" | "isTrusted" | "nombreComercial" | "planPriority" | "plenaCoordinacion" | "razonSocial" | "ruc" | "totalRecommendations" | "trustStatus" | "facebook" | "instagram" | "linkedin" | "telegram" | "tiktok" | "twitterX" | "website" | "whatsappBiz" | "showPhone" | "showWhatsapp" | "showExactLocation" | "slug" | "slugEditedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
   chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
@@ -8053,6 +8398,13 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     twitterX: string | null
     website: string | null
     whatsappBiz: string | null
+    /**
+     * Toggles de privacidad — INDEPENDIENTES del plan. El proveedor decide
+     * qué exponer en su perfil público (seguridad = derecho, no privilegio).
+     */
+    showPhone: boolean
+    showWhatsapp: boolean
+    showExactLocation: boolean
     slug: string | null
     slugEditedAt: Date | null
   }, ExtArgs["result"]["provider"]>
@@ -8539,6 +8891,9 @@ export interface ProviderFieldRefs {
   readonly twitterX: Prisma.FieldRef<"Provider", 'String'>
   readonly website: Prisma.FieldRef<"Provider", 'String'>
   readonly whatsappBiz: Prisma.FieldRef<"Provider", 'String'>
+  readonly showPhone: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly showWhatsapp: Prisma.FieldRef<"Provider", 'Boolean'>
+  readonly showExactLocation: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly slug: Prisma.FieldRef<"Provider", 'String'>
   readonly slugEditedAt: Prisma.FieldRef<"Provider", 'DateTime'>
 }

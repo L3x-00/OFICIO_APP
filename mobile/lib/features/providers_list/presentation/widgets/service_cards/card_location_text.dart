@@ -70,6 +70,12 @@ class _ProviderAddressTextState extends State<ProviderAddressText> {
   /// build posterior los usa. El geocoding usa setState al completar.
   void _resolve() {
     final p = widget.provider;
+    // Privacidad: si ocultó su ubicación exacta, jamás mostramos dirección ni
+    // geocodificamos coords — solo "Departamento, Provincia" (o nada).
+    if (!p.showExactLocation) {
+      _text = departmentProvinceLabel(p);
+      return;
+    }
     final addr = p.address?.trim();
     if (addr != null && addr.isNotEmpty) {
       _text = addr;

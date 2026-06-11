@@ -38,6 +38,10 @@ export class UsersService {
         plenaCoordinacion: true,
         scheduleJson: true,
         address: true,
+        // Toggles de privacidad → el panel los lee para mostrar su estado.
+        showPhone: true,
+        showWhatsapp: true,
+        showExactLocation: true,
         providerCategories: {
           select: {
             category: {

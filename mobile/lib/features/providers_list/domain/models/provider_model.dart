@@ -80,6 +80,14 @@ class ProviderModel {
   final String? telegram;
   final String? whatsappBiz;
 
+  // ── Toggles de privacidad (independientes del plan) ──────
+  // Si el proveedor los desactiva, la tarjeta/detalle ocultan el dato
+  // aunque el plan permita exponerlo. Default true → registros previos
+  // (sin el campo en el JSON) se comportan como antes.
+  final bool showPhone;
+  final bool showWhatsapp;
+  final bool showExactLocation;
+
   const ProviderModel({
     required this.id,
     this.slug,
@@ -125,6 +133,9 @@ class ProviderModel {
     this.twitterX,
     this.telegram,
     this.whatsappBiz,
+    this.showPhone = true,
+    this.showWhatsapp = true,
+    this.showExactLocation = true,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -176,6 +187,9 @@ class ProviderModel {
       twitterX: json['twitterX'] as String?,
       telegram: json['telegram'] as String?,
       whatsappBiz: json['whatsappBiz'] as String?,
+      showPhone: json['showPhone'] as bool? ?? true,
+      showWhatsapp: json['showWhatsapp'] as bool? ?? true,
+      showExactLocation: json['showExactLocation'] as bool? ?? true,
     );
   }
 
@@ -185,6 +199,17 @@ class ProviderModel {
   ///     una segunda línea, la dirección si existe.
   /// Retorna null si no hay datos suficientes (locality vacío).
   String? get locationLabel {
+    // Privacidad: si el proveedor ocultó su ubicación exacta, nunca exponemos
+    // distrito — colapsamos a "Departamento, Provincia" (independiente del plan).
+    if (!showExactLocation) {
+      final dep = localityDepartment?.trim();
+      final prov = localityProvince?.trim();
+      final parts = <String>[
+        if (dep != null && dep.isNotEmpty) dep.toUpperCase(),
+        if (prov != null && prov.isNotEmpty) prov,
+      ];
+      return parts.isEmpty ? null : parts.join(', ');
+    }
     if (type == ProviderType.oficio) {
       final d = localityDistrict?.trim();
       return (d == null || d.isEmpty) ? null : d;
@@ -357,6 +382,9 @@ class ProviderModel {
       twitterX: twitterX,
       telegram: telegram,
       whatsappBiz: whatsappBiz,
+      showPhone: showPhone,
+      showWhatsapp: showWhatsapp,
+      showExactLocation: showExactLocation,
     );
   }
 }

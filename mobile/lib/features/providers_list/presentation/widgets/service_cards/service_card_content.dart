@@ -267,7 +267,7 @@ class ServiceCardContent extends StatelessWidget {
                             color: AppColors.amber,
                             onTap: onChat,
                           ),
-                          if (isPaidPlan(plan)) ...[
+                          if (isPaidPlan(plan) && provider.showWhatsapp) ...[
                             const SizedBox(width: 6),
                             CompactActionBtn(
                               svgAsset: 'assets/icons/whatsapp.svg',
@@ -277,6 +277,8 @@ class ServiceCardContent extends StatelessWidget {
                                 provider,
                               ),
                             ),
+                          ],
+                          if (isPaidPlan(plan) && provider.showPhone) ...[
                             const SizedBox(width: 6),
                             CompactActionBtn(
                               icon: Icons.call_rounded,

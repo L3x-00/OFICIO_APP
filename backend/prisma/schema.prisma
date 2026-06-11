@@ -185,6 +185,11 @@ model Provider {
   twitterX             String?
   website              String?
   whatsappBiz          String?
+  /// Toggles de privacidad — INDEPENDIENTES del plan. El proveedor decide
+  /// qué exponer en su perfil público (seguridad = derecho, no privilegio).
+  showPhone            Boolean                   @default(true)
+  showWhatsapp         Boolean                   @default(true)
+  showExactLocation    Boolean                   @default(true)
   slug                 String?                   @unique
   slugEditedAt         DateTime?
   location_geog        Unsupported("geography")?

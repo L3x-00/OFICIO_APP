@@ -8,11 +8,13 @@ import '../providers/dashboard_provider.dart';
 import '../widgets/settings/home_service_toggle.dart';
 import '../widgets/settings/legal_sheet.dart';
 import '../widgets/settings/logout_button.dart';
+import '../widgets/settings/privacy_section.dart';
 import '../widgets/settings/profile_header.dart';
 import '../widgets/settings/settings_components.dart';
 import '../widgets/settings/settings_dialogs.dart';
 import '../widgets/settings/subscription_section.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 /// Tab "Configuración" del panel del proveedor.
 ///
 /// Orquesta el [CustomScrollView] con todas las secciones (Cuenta,
@@ -24,11 +26,10 @@ class PanelSettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     final c = context.colors;
-    final auth    = context.watch<AuthProvider>();
-    final dash    = context.watch<DashboardProvider>();
-    final theme   = context.watch<ThemeProvider>();
+    final auth = context.watch<AuthProvider>();
+    final dash = context.watch<DashboardProvider>();
+    final theme = context.watch<ThemeProvider>();
     final profile = dash.profile;
 
     return Scaffold(
@@ -40,7 +41,10 @@ class PanelSettingsTab extends StatelessWidget {
             pinned: true,
             title: Text(
               'Configuración',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -77,10 +81,16 @@ class PanelSettingsTab extends StatelessWidget {
                         label: profile?.type == 'NEGOCIO'
                             ? 'Eliminar perfil de negocio'
                             : 'Eliminar perfil profesional',
-                        subtitle: auth.hasOficioProfile && auth.hasNegocioProfile
+                        subtitle:
+                            auth.hasOficioProfile && auth.hasNegocioProfile
                             ? 'Solo elimina este perfil, el otro se mantiene'
                             : 'Pasarás a ser cliente al eliminar este perfil',
-                        onTap: () => showDeleteProfileDialog(context, dash, auth, profile?.type),
+                        onTap: () => showDeleteProfileDialog(
+                          context,
+                          dash,
+                          auth,
+                          profile?.type,
+                        ),
                       ),
                     ],
                   ),
@@ -92,7 +102,8 @@ class PanelSettingsTab extends StatelessWidget {
                       SettingsTile(
                         icon: Icons.monetization_on_rounded,
                         label: 'Referidos y monedas',
-                        subtitle: 'Invita profesionales y canjea monedas por planes o servicios',
+                        subtitle:
+                            'Invita profesionales y canjea monedas por planes o servicios',
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const ReferralScreen(),
@@ -168,6 +179,15 @@ class PanelSettingsTab extends StatelessWidget {
                     ],
                   ),
 
+                  if (profile != null)
+                    SettingsSection(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'Privacidad y seguridad',
+                      children: [
+                        PrivacyTogglesSection(profile: profile, dash: dash),
+                      ],
+                    ),
+
                   SettingsSection(
                     icon: Icons.shield_outlined,
                     title: 'Legal y privacidad',
@@ -177,7 +197,7 @@ class PanelSettingsTab extends StatelessWidget {
                         label: 'Política de privacidad',
                         onTap: () => LegalSheet.show(
                           context,
-                          type:    profile?.type ?? 'OFICIO',
+                          type: profile?.type ?? 'OFICIO',
                           section: LegalSection.privacy,
                         ),
                       ),
@@ -186,7 +206,7 @@ class PanelSettingsTab extends StatelessWidget {
                         label: 'Términos y condiciones',
                         onTap: () => LegalSheet.show(
                           context,
-                          type:    profile?.type ?? 'OFICIO',
+                          type: profile?.type ?? 'OFICIO',
                           section: LegalSection.terms,
                         ),
                       ),
@@ -202,7 +222,7 @@ class PanelSettingsTab extends StatelessWidget {
                         label: 'Centro de ayuda',
                         onTap: () => LegalSheet.show(
                           context,
-                          type:    profile?.type ?? 'OFICIO',
+                          type: profile?.type ?? 'OFICIO',
                           section: LegalSection.help,
                         ),
                       ),

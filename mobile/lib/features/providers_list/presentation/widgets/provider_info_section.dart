@@ -286,8 +286,9 @@ class ProviderContactInfo extends StatelessWidget {
     }
 
     // Teléfono de contacto — el backend lo envía vacío para proveedores
-    // de plan gratis (anti-burla); en ese caso ocultamos la fila.
-    if (p.phone.isNotEmpty) {
+    // de plan gratis (anti-burla); en ese caso ocultamos la fila. El toggle
+    // `showPhone` del proveedor también lo oculta (privacidad > plan).
+    if (p.showPhone && p.phone.isNotEmpty) {
       rows.add(
         InfoChip(
           icon: Icons.phone_outlined,
@@ -298,8 +299,9 @@ class ProviderContactInfo extends StatelessWidget {
       );
     }
 
-    // Dirección (negocios o quienes la tengan)
-    if (p.address != null && p.address!.isNotEmpty) {
+    // Dirección (negocios o quienes la tengan) — oculta si el proveedor
+    // desactivó su ubicación exacta.
+    if (p.showExactLocation && p.address != null && p.address!.isNotEmpty) {
       rows.add(
         InfoChip(
           icon: Icons.location_on_outlined,
@@ -465,9 +467,16 @@ class ProviderLocationSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final hasCoords = provider.latitude != null && provider.longitude != null;
+    // Privacidad: si el proveedor ocultó su ubicación exacta, NO mostramos
+    // dirección, "Cómo llegar" ni el mapa (el pin revela las coordenadas
+    // exactas). Solo queda la línea gruesa "Departamento, Provincia".
+    final exact = provider.showExactLocation;
+    final hasCoords =
+        exact && provider.latitude != null && provider.longitude != null;
     final hasAddressTarget =
-        (provider.address != null && provider.address!.isNotEmpty) || hasCoords;
+        exact &&
+        ((provider.address != null && provider.address!.isNotEmpty) ||
+            (provider.latitude != null && provider.longitude != null));
     final locationLine = provinceDistrictLabel(provider);
 
     return Column(

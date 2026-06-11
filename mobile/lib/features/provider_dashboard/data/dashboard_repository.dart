@@ -29,6 +29,10 @@ class DashboardRepository {
     String? address,
     Map<String, dynamic>? scheduleJson,
     bool? hasHomeService,
+    // Toggles de privacidad (independientes del plan).
+    bool? showPhone,
+    bool? showWhatsapp,
+    bool? showExactLocation,
     String? type,
     // ── Redes sociales ───────────────────────────────────────
     // Mapeo: oficio = todas; negocio = whatsappBiz, website, tiktok,
@@ -56,6 +60,9 @@ class DashboardRepository {
       'address': ?address,
       'scheduleJson': ?scheduleJson,
       'hasHomeService': ?hasHomeService,
+      'showPhone': ?showPhone,
+      'showWhatsapp': ?showWhatsapp,
+      'showExactLocation': ?showExactLocation,
       // String vacío => limpiar valor en backend (DTO acepta null/'').
       'website': ?website,
       'instagram': ?instagram,
