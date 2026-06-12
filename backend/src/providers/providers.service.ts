@@ -292,6 +292,104 @@ export class ProvidersService {
     };
   }
 
+  // ── HOME AGRUPADA (carruseles por categoría padre) ───────
+  /**
+   * Devuelve las top categorías PADRE con más proveedores aprobados/visibles
+   * y, dentro de cada una, los primeros proveedores ordenados por prioridad de
+   * plan (PREMIUM > ESTANDAR > GRATIS). Alimenta los carruseles del home móvil
+   * sin tocar la paginación de `findAll`.
+   */
+  async getFeaturedGrouped() {
+    const VISIBLE_APPROVED = {
+      isVisible: true,
+      verificationStatus: 'APROBADO' as const,
+    };
+
+    // 1. Conteo de proveedores aprobados/visibles por categoría (hoja).
+    const counts = await this.prisma.providerCategory.groupBy({
+      by: ['categoryId'],
+      where: { provider: VISIBLE_APPROVED },
+      _count: { providerId: true },
+    });
+    const countByCat = new Map<number, number>();
+    for (const c of counts) countByCat.set(c.categoryId, c._count.providerId);
+
+    // 2. Categorías padre + sus hijas (para mapear los conteos al padre).
+    const parents = await this.prisma.category.findMany({
+      where: { parentId: null, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        iconUrl: true,
+        children: { where: { isActive: true }, select: { id: true } },
+      },
+    });
+
+    // 3. Total de proveedores por padre (suma de sus categorías) → ranking.
+    const ranked = parents
+      .map((p) => {
+        const catIds = [p.id, ...p.children.map((c) => c.id)];
+        const total = catIds.reduce(
+          (sum, id) => sum + (countByCat.get(id) ?? 0),
+          0,
+        );
+        return { parent: p, catIds, total };
+      })
+      .filter((r) => r.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 7);
+
+    // 4. Para cada padre top, los primeros 8 proveedores por prioridad de plan.
+    const groups = await Promise.all(
+      ranked.map(async (r) => {
+        const providers = await this.prisma.provider.findMany({
+          where: {
+            ...VISIBLE_APPROVED,
+            providerCategories: { some: { categoryId: { in: r.catIds } } },
+          },
+          include: {
+            providerCategories: {
+              select: {
+                isPrimary: true,
+                category: {
+                  select: { id: true, name: true, slug: true, iconUrl: true },
+                },
+              },
+              orderBy: { isPrimary: 'desc' },
+            },
+            images: { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
+            user: {
+              select: { firstName: true, lastName: true, avatarUrl: true },
+            },
+            locality: {
+              select: {
+                name: true,
+                department: true,
+                province: true,
+                district: true,
+              },
+            },
+            subscription: { select: { plan: true, status: true } },
+          },
+          orderBy: [{ planPriority: 'asc' }, { averageRating: 'desc' }],
+          take: 8,
+        });
+        return {
+          category: {
+            id: r.parent.id,
+            name: r.parent.name,
+            slug: r.parent.slug,
+            iconUrl: r.parent.iconUrl,
+          },
+          providers: providers.map((p) => this.maskContactIfFree(p)),
+        };
+      }),
+    );
+
+    return groups;
+  }
+
   // ── OBTENER un proveedor por ID ──────────────────────────
   async findOne(id: number) {
     const provider = await this.prisma.provider.findUnique({

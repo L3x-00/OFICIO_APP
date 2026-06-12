@@ -74,6 +74,16 @@ export class ProvidersController {
     return this.providersService.getGraceProviders();
   }
 
+  // GET /providers/featured-grouped — home agrupada (carruseles por categoría).
+  // Cache 60s: es una vista de portada, frecuente y de baja mutabilidad.
+  // Ruta estática declarada ANTES de `:id` para que no la capture el param.
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000)
+  @Get('featured-grouped')
+  getFeaturedGrouped() {
+    return this.providersService.getFeaturedGrouped();
+  }
+
   // GET /providers/:id
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
