@@ -9,7 +9,10 @@ import '../../../showcase/showcase_data.dart';
 import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
+import '../widgets/home/home_weekly_chart.dart';
+import '../widgets/home/home_reviews_section.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 class PanelStatsTab extends StatefulWidget {
   /// C-13: providerType del panel actual — pasado desde provider_panel
   /// para alinear con sus hermanos (PanelHomeTab, PanelServicesTab).
@@ -33,7 +36,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
+    final c = context.colors;
     final auth = context.watch<AuthProvider>();
     final dash = context.watch<DashboardProvider>();
     final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
@@ -51,11 +54,14 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
     // → este early-return deja de aplicar → AdminTabShowcase se
     // monta por primera vez y dispara el tour. ✓
     if (!PlanLimits.hasStatsAccess(plan)) {
-      return _StatsUpsellScreen(plan: plan, onNavigateToSettings: widget.onNavigateToSettings);
+      return _StatsUpsellScreen(
+        plan: plan,
+        onNavigateToSettings: widget.onNavigateToSettings,
+      );
     }
 
     final hasChartData = (dash.analytics?.dailyClicks ?? []).isNotEmpty;
-    final statsSteps   = buildAdminStatsSteps(hasChartData: hasChartData);
+    final statsSteps = buildAdminStatsSteps(hasChartData: hasChartData);
     // C-13: providerType del prop del panel (consistente con sus
     // hermanos). El fallback a auth.activeProfileType queda como
     // defensa si el prop llegara null (no debería).
@@ -64,62 +70,92 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         : (auth.activeProfileType ?? 'OFICIO');
 
     return AdminTabShowcase(
-      tab:          AdminTab.stats,
-      userId:       auth.user?.id,
+      tab: AdminTab.stats,
+      userId: auth.user?.id,
       providerType: providerType,
-      isApproved:   dash.profile?.isVerified ?? false,
-      steps:        statsSteps,
+      isApproved: dash.profile?.isVerified ?? false,
+      steps: statsSteps,
       child: Scaffold(
-      backgroundColor: c.bg,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: c.bgCard,
-            pinned: true,
-            title: Text(
-              'Estadísticas',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: AppColors.amber),
-                onPressed: () => context.read<DashboardProvider>().loadDashboard(),
+        backgroundColor: c.bg,
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: c.bgCard,
+              pinned: true,
+              title: Text(
+                'Estadísticas',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              actions: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.refresh_rounded,
+                    color: AppColors.amber,
+                  ),
+                  onPressed: () =>
+                      context.read<DashboardProvider>().loadDashboard(),
+                ),
+              ],
+            ),
+            SliverToBoxAdapter(
+              child: ShowcaseTarget(
+                step: statsSteps.firstWhere(
+                  (s) => s.key == kAdminStatsPeriodKey,
+                ),
+                isLast: isLastAdminStep(kAdminStatsPeriodKey, statsSteps),
+                child: _buildPeriodSelector(),
+              ),
+            ),
+            if (dash.isLoading && dash.analytics == null)
+              const SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.amber),
+                ),
+              )
+            else ...[
+              SliverToBoxAdapter(child: _buildSummaryCards(dash)),
+              SliverToBoxAdapter(
+                child: ShowcaseTarget(
+                  step: statsSteps.firstWhere(
+                    (s) => s.key == kAdminStatsBreakdownKey,
+                  ),
+                  isLast: isLastAdminStep(kAdminStatsBreakdownKey, statsSteps),
+                  child: _buildContactBreakdown(dash),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: ShowcaseTarget(
+                  step: statsSteps.firstWhere(
+                    (s) => s.key == kAdminStatsChartKey,
+                  ),
+                  isLast: isLastAdminStep(kAdminStatsChartKey, statsSteps),
+                  child: _buildDailyChart(dash),
+                ),
+              ),
+              SliverToBoxAdapter(child: _buildProfileInfo(dash)),
+              SliverToBoxAdapter(child: _buildRatingSection(dash)),
+              // Movidos desde Inicio (FASE 2 · #4): "Contactos esta semana"
+              // y "Últimas reseñas" ahora viven en Estadísticas.
+              SliverToBoxAdapter(
+                child: HomeWeeklyChart(
+                  isLoading: dash.isLoading,
+                  analytics: dash.analytics,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: HomeReviewsSection(
+                  isLoading: dash.isLoading,
+                  reviews: dash.reviews,
+                  onViewAll: () {},
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
-          ),
-          SliverToBoxAdapter(
-            child: ShowcaseTarget(
-              step: statsSteps.firstWhere((s) => s.key == kAdminStatsPeriodKey),
-              isLast: isLastAdminStep(kAdminStatsPeriodKey, statsSteps),
-              child: _buildPeriodSelector(),
-            ),
-          ),
-          if (dash.isLoading && dash.analytics == null)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
-            )
-          else ...[
-            SliverToBoxAdapter(child: _buildSummaryCards(dash)),
-            SliverToBoxAdapter(
-              child: ShowcaseTarget(
-                step: statsSteps.firstWhere((s) => s.key == kAdminStatsBreakdownKey),
-                isLast: isLastAdminStep(kAdminStatsBreakdownKey, statsSteps),
-                child: _buildContactBreakdown(dash),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: ShowcaseTarget(
-                step: statsSteps.firstWhere((s) => s.key == kAdminStatsChartKey),
-                isLast: isLastAdminStep(kAdminStatsChartKey, statsSteps),
-                child: _buildDailyChart(dash),
-              ),
-            ),
-            SliverToBoxAdapter(child: _buildProfileInfo(dash)),
-            SliverToBoxAdapter(child: _buildRatingSection(dash)),
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -148,7 +184,10 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: _selectedPeriod == d
                         ? AppColors.amber.withValues(alpha: 0.15)
@@ -163,9 +202,13 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                   child: Text(
                     '$d días',
                     style: TextStyle(
-                      color: _selectedPeriod == d ? AppColors.amber : c.textMuted,
+                      color: _selectedPeriod == d
+                          ? AppColors.amber
+                          : c.textMuted,
                       fontSize: 12,
-                      fontWeight: _selectedPeriod == d ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: _selectedPeriod == d
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -214,10 +257,10 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
 
   Widget _buildContactBreakdown(DashboardProvider dash) {
     final c = context.colors;
-    final wa    = dash.analytics?.whatsappClicks ?? 0;
+    final wa = dash.analytics?.whatsappClicks ?? 0;
     final calls = dash.analytics?.callClicks ?? 0;
     final total = wa + calls;
-    final waPercent   = total > 0 ? wa / total : 0.0;
+    final waPercent = total > 0 ? wa / total : 0.0;
     final callPercent = total > 0 ? calls / total : 0.0;
 
     return Padding(
@@ -295,7 +338,11 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
               Expanded(
                 child: Text(
                   'Aún no hay actividad. Tu crecimiento diario aparecerá aquí.',
-                  style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],
@@ -380,7 +427,10 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(label, style: TextStyle(color: c.textMuted, fontSize: 8)),
+                          Text(
+                            label,
+                            style: TextStyle(color: c.textMuted, fontSize: 8),
+                          ),
                         ],
                       ),
                     ),
@@ -422,22 +472,33 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
               ),
             ),
             const SizedBox(height: 14),
-            _InfoRow(label: 'Categoría', value: profile.categoryName ?? 'Sin categoría'),
-            _InfoRow(label: 'Localidad', value: profile.localityName ?? 'Sin localidad'),
+            _InfoRow(
+              label: 'Categoría',
+              value: profile.categoryName ?? 'Sin categoría',
+            ),
+            _InfoRow(
+              label: 'Localidad',
+              value: profile.localityName ?? 'Sin localidad',
+            ),
             _InfoRow(
               label: 'Fotos',
-              value: '${profile.images.length}/${PlanLimits.photos(profile.subscription?.plan ?? 'GRATIS')}',
+              value:
+                  '${profile.images.length}/${PlanLimits.photos(profile.subscription?.plan ?? 'GRATIS')}',
             ),
             _InfoRow(
               label: 'Verificado',
               value: profile.isVerified ? 'Sí ✓' : 'Pendiente',
-              valueColor: profile.isVerified ? AppColors.available : c.textMuted,
+              valueColor: profile.isVerified
+                  ? AppColors.available
+                  : c.textMuted,
             ),
             if (profile.subscription != null)
               _InfoRow(
                 label: 'Plan',
                 value: profile.subscription!.planLabel,
-                valueColor: profile.subscription!.isActive ? AppColors.amber : AppColors.busy,
+                valueColor: profile.subscription!.isActive
+                    ? AppColors.amber
+                    : AppColors.busy,
               ),
           ],
         ),
@@ -450,7 +511,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
   Widget _buildRatingSection(DashboardProvider dash) {
     final c = context.colors;
     final rating = dash.profile?.averageRating ?? 0.0;
-    final total  = dash.profile?.totalReviews ?? 0;
+    final total = dash.profile?.totalReviews ?? 0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -493,8 +554,8 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                           i < rating.floor()
                               ? Icons.star_rounded
                               : i < rating
-                                  ? Icons.star_half_rounded
-                                  : Icons.star_border_rounded,
+                              ? Icons.star_half_rounded
+                              : Icons.star_border_rounded,
                           color: AppColors.star,
                           size: 22,
                         );
@@ -572,7 +633,14 @@ class _BigStatCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(
+              color: c.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           Text(sublabel, style: TextStyle(color: c.textMuted, fontSize: 11)),
         ],
       ),
@@ -581,8 +649,8 @@ class _BigStatCard extends StatelessWidget {
 }
 
 class _ContactBar extends StatelessWidget {
-  final IconData? icon;       // ← Opcional
-  final String? svgAsset;     // ← Nuevo
+  final IconData? icon; // ← Opcional
+  final String? svgAsset; // ← Nuevo
   final Color color;
   final String label;
   final int count;
@@ -608,7 +676,10 @@ class _ContactBar extends StatelessWidget {
         const SizedBox(width: 8),
         SizedBox(
           width: 60,
-          child: Text(label, style: TextStyle(color: c.textSecondary, fontSize: 13)),
+          child: Text(
+            label,
+            style: TextStyle(color: c.textSecondary, fontSize: 13),
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -667,7 +738,10 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(label, style: TextStyle(color: c.textMuted, fontSize: 13)),
+            child: Text(
+              label,
+              style: TextStyle(color: c.textMuted, fontSize: 13),
+            ),
           ),
           Text(
             value,
@@ -697,7 +771,10 @@ class _StatsUpsellScreen extends StatelessWidget {
       backgroundColor: c.bg,
       appBar: AppBar(
         backgroundColor: c.bgCard,
-        title: Text('Estadísticas', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Estadísticas',
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        ),
         automaticallyImplyLeading: false,
       ),
       body: Center(
@@ -712,43 +789,87 @@ class _StatsUpsellScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.amber.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.amber.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                    color: AppColors.amber.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
-                child: const Icon(Icons.bar_chart_rounded, color: AppColors.amber, size: 44),
+                child: const Icon(
+                  Icons.bar_chart_rounded,
+                  color: AppColors.amber,
+                  size: 44,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
                 'Gestión de visitas',
-                style: TextStyle(color: c.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
                 'Las estadísticas de visitas, contactos y rendimiento de tu perfil están disponibles desde el plan Estándar.',
-                style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.6),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 14,
+                  height: 1.6,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 28),
               // Beneficios de upgrade
-              _UpsellBenefit(icon: Icons.touch_app_rounded,  color: AppColors.primary,  text: 'Cuántas personas contactaron tu perfil'),
-              _UpsellBenefit(svgAsset: 'assets/icons/whatsapp.svg', color: AppColors.whatsapp, text: 'Contactos por WhatsApp vs llamadas'),
-              _UpsellBenefit(icon: Icons.show_chart_rounded, color: AppColors.amber,    text: 'Gráfico diario de actividad'),
-              _UpsellBenefit(icon: Icons.star_rounded,       color: AppColors.star,     text: 'Evolución de calificaciones'),
+              _UpsellBenefit(
+                icon: Icons.touch_app_rounded,
+                color: AppColors.primary,
+                text: 'Cuántas personas contactaron tu perfil',
+              ),
+              _UpsellBenefit(
+                svgAsset: 'assets/icons/whatsapp.svg',
+                color: AppColors.whatsapp,
+                text: 'Contactos por WhatsApp vs llamadas',
+              ),
+              _UpsellBenefit(
+                icon: Icons.show_chart_rounded,
+                color: AppColors.amber,
+                text: 'Gráfico diario de actividad',
+              ),
+              _UpsellBenefit(
+                icon: Icons.star_rounded,
+                color: AppColors.star,
+                text: 'Evolución de calificaciones',
+              ),
               const SizedBox(height: 28),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.amber.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.amber.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.workspace_premium_rounded, color: AppColors.amber, size: 16),
+                    const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: AppColors.amber,
+                      size: 16,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Disponible desde Plan Estándar · S/ 29/mes',
-                      style: TextStyle(color: AppColors.amber, fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: AppColors.amber,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -762,10 +883,15 @@ class _StatsUpsellScreen extends StatelessWidget {
                     backgroundColor: AppColors.amber,
                     foregroundColor: const Color(0xFF3D2B00),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
-                  child: const Text('Ver planes de suscripción', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Ver planes de suscripción',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -777,11 +903,16 @@ class _StatsUpsellScreen extends StatelessWidget {
 }
 
 class _UpsellBenefit extends StatelessWidget {
-  final IconData? icon;       // ← Opcional
-  final String? svgAsset;     // ← Nuevo
+  final IconData? icon; // ← Opcional
+  final String? svgAsset; // ← Nuevo
   final Color color;
   final String text;
-  const _UpsellBenefit({this.icon, this.svgAsset, required this.color, required this.text});
+  const _UpsellBenefit({
+    this.icon,
+    this.svgAsset,
+    required this.color,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -791,8 +922,12 @@ class _UpsellBenefit extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 32, height: 32,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
             child: Center(
               child: svgAsset != null
                   ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
@@ -800,10 +935,14 @@ class _UpsellBenefit extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: TextStyle(color: c.textSecondary, fontSize: 13))),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: c.textSecondary, fontSize: 13),
+            ),
+          ),
         ],
       ),
     );
   }
 }
-
