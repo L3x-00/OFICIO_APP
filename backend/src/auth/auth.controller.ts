@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt.guard.js';
+import { RolesGuard } from './roles.guard.js';
+import { Roles } from './roles.decorator.js';
 import { RegisterUserDto } from './dto/register-user.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterProviderDto } from './dto/register-provider.dto.js';
@@ -84,6 +86,17 @@ export class AuthController {
       dto.token,
       dto.newPassword,
     );
+  }
+
+  // POST /auth/admin-request-reset — el admin dispara un reset para un usuario.
+  // Solo ADMIN. Genera token seguro (1h) y envía el enlace por email; el
+  // usuario crea su propia contraseña. El admin nunca la ve ni la cambia.
+  @Post('admin-request-reset')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.OK)
+  async adminRequestReset(@Body('userId') userId: number) {
+    return this.authService.adminRequestPasswordReset(Number(userId));
   }
 
   // POST /auth/send-otp — genera y envía un código OTP al email del usuario

@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EmailService } from '../../email/email.service.js';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'node:crypto';
 
 /**
  * Gestión de cuenta: recuperación y cambio de contraseña + eliminación
@@ -88,6 +89,49 @@ export class AuthAccountService {
     await this.prisma.refreshToken.deleteMany({ where: { userId: user.id } });
 
     return { message: 'Contraseña restablecida correctamente' };
+  }
+
+  // ── ADMIN: solicitar restablecimiento de contraseña ─────────
+  /// El admin dispara un reset para ayudar a un proveedor que olvidó su
+  /// contraseña, SIN verla ni cambiarla. Genera un token seguro (1h) y envía
+  /// un enlace por Brevo; el proveedor crea su nueva contraseña él mismo
+  /// (reusa el flujo `resetPassword` existente vía ?token=&email=).
+  async adminRequestPasswordReset(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, firstName: true },
+    });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    await this.prisma.refreshToken.create({
+      data: { token: `RESET_${token}`, userId: user.id, expiresAt },
+    });
+
+    const base = (
+      this.config.get<string>('WEB_APP_URL') ??
+      this.config.get<string>('FRONTEND_URL') ??
+      'https://oficioapp.org.pe'
+    ).replace(/\/$/, '');
+    const resetUrl = `${base}/reset-password?token=${token}&email=${encodeURIComponent(user.email)}`;
+
+    try {
+      await this.emailService.sendAdminPasswordResetEmail(
+        user.email,
+        resetUrl,
+        user.firstName,
+      );
+    } catch {
+      this.logger.warn(`No se pudo enviar reset link a ${user.email}`);
+    }
+
+    return {
+      message: 'Enlace de restablecimiento enviado al proveedor',
+      ...(this.config.get('NODE_ENV') !== 'production'
+        ? { _devUrl: resetUrl }
+        : {}),
+    };
   }
 
   // ── SETUP PASSWORD (usuarios sociales sin contraseña propia) ──

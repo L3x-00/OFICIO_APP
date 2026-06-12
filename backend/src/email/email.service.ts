@@ -61,6 +61,50 @@ export class EmailService {
     }
   }
 
+  /**
+   * Email de restablecimiento por ENLACE (flujo iniciado por el admin). A
+   * diferencia del código de 6 dígitos, lleva un link con token seguro para
+   * que el proveedor cambie su contraseña él mismo.
+   */
+  async sendAdminPasswordResetEmail(
+    to: string,
+    resetUrl: string,
+    firstName?: string,
+  ): Promise<void> {
+    if (!this.client) {
+      this.logger.warn(
+        `[EMAIL SKIP] BREVO_API_KEY no configurada. Reset URL para ${to}: ${resetUrl}`,
+      );
+      return;
+    }
+    const hello = firstName ? `Hola ${firstName},` : 'Hola,';
+    try {
+      await this.client.transactionalEmails.sendTransacEmail({
+        sender: { email: this.senderEmail, name: this.senderName },
+        to: [{ email: to }],
+        subject: 'Restablece tu contraseña — Servi',
+        htmlContent: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff;border-radius:12px">
+            <h2 style="color:#1a1a1a;margin-bottom:8px">Restablecer contraseña</h2>
+            <p style="color:#555;margin-bottom:8px">${hello}</p>
+            <p style="color:#555;margin-bottom:24px">El equipo de Servi inició un restablecimiento de contraseña para tu cuenta. Haz clic en el botón para crear una nueva contraseña:</p>
+            <div style="text-align:center;margin-bottom:24px">
+              <a href="${resetUrl}" style="display:inline-block;background:#F97316;color:#fff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:10px">Crear nueva contraseña</a>
+            </div>
+            <p style="color:#888;font-size:13px">Este enlace expira en 1 hora. Si no esperabas este correo, ignóralo: tu contraseña no cambiará.</p>
+            <p style="color:#bbb;font-size:11px;word-break:break-all">Si el botón no funciona, copia este enlace: ${resetUrl}</p>
+          </div>
+        `,
+      });
+      this.logger.log(`Reset link enviado a ${to}`);
+    } catch (error) {
+      this.logger.error(
+        `Error al enviar reset link a ${to}: ${(error as Error).message ?? error}`,
+      );
+      throw new Error(`Error al enviar email: ${(error as Error).message}`);
+    }
+  }
+
   async sendPasswordResetEmail(to: string, code: string): Promise<void> {
     if (!this.client) {
       this.logger.warn(

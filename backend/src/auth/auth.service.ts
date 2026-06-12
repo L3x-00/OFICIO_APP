@@ -172,6 +172,11 @@ export class AuthService {
     return this.account.resetPassword(email, token, newPassword);
   }
 
+  // ── ADMIN: solicitar reset (Facade → AuthAccountService) ──
+  async adminRequestPasswordReset(userId: number) {
+    return this.account.adminRequestPasswordReset(userId);
+  }
+
   // ── SEND OTP (Facade → AuthRegistrationService) ──────────
   async sendOtp(userId: number) {
     return this.registration.sendOtp(userId);
