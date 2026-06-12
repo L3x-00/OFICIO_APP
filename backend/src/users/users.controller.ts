@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Body,
@@ -19,6 +20,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { MinioService } from '../common/minio.service.js';
 import { memOpts } from '../common/multer-image.config.js';
+import { UserReportsService } from '../user-reports/user-reports.service.js';
+import { CreateUserReportDto } from '../user-reports/dto/create-user-report.dto.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @Controller('users')
@@ -26,7 +29,19 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly minio: MinioService,
+    private readonly userReports: UserReportsService,
   ) {}
+
+  // POST /users/report — reportar comportamiento de otro usuario.
+  // reporterId SIEMPRE del JWT (anti-suplantación), nunca del body.
+  @UseGuards(JwtAuthGuard)
+  @Post('report')
+  reportUser(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: CreateUserReportDto,
+  ) {
+    return this.userReports.create(req.user.userId, dto);
+  }
 
   // GET /users/me
   @UseGuards(JwtAuthGuard)

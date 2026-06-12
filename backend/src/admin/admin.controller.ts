@@ -33,6 +33,7 @@ import {
   CreateLocalityDto,
   UpdateLocalityDto,
 } from '../localities/dto/admin-locality.dto.js';
+import { UserReportsService } from '../user-reports/user-reports.service.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -41,7 +42,27 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly localitiesService: LocalitiesService,
+    private readonly userReports: UserReportsService,
   ) {}
+
+  // ── REPORTES DE COMPORTAMIENTO (usuario→usuario) ─────────
+  // GET /admin/user-reports?status=PENDING&page=
+  @Get('user-reports')
+  getUserReports(
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+  ) {
+    return this.userReports.listForAdmin(status, page ? parseInt(page, 10) : 1);
+  }
+
+  // PATCH /admin/user-reports/:id/status  body: { status: 'REVIEWED'|'DISMISSED' }
+  @Patch('user-reports/:id/status')
+  updateUserReportStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: string,
+  ) {
+    return this.userReports.updateStatus(id, status);
+  }
 
   // ── MÉTRICAS Y ANALYTICS ─────────────────────────────────
 

@@ -95,6 +95,12 @@ export type Subscription = Prisma.SubscriptionModel
  */
 export type SubscriptionAuditLog = Prisma.SubscriptionAuditLogModel
 /**
+ * Model UserReport
+ * Reporte de comportamiento de un usuario hacia otro (spam, estafa, acoso).
+ * El admin los revisa y marca REVIEWED/DISMISSED.
+ */
+export type UserReport = Prisma.UserReportModel
+/**
  * Model Payment
  * 
  */

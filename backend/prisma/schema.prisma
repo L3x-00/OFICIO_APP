@@ -56,6 +56,8 @@ model User {
   serviceRequests  ServiceRequest[]
   penalty          UserPenalty?
   aiMemory         AiUserMemory?
+  reportsMade      UserReport[]     @relation("UserReportsMade")
+  reportsReceived  UserReport[]     @relation("UserReportsReceived")
 
   @@index([role, isActive])
   @@index([department, province])
@@ -271,6 +273,38 @@ model SubscriptionAuditLog {
 
   @@index([subscriptionId, changedAt])
   @@map("subscription_audit_log")
+}
+
+/// Reporte de comportamiento de un usuario hacia otro (spam, estafa, acoso).
+/// El admin los revisa y marca REVIEWED/DISMISSED.
+model UserReport {
+  id             Int              @id @default(autoincrement())
+  reporterId     Int
+  reportedUserId Int
+  reason         UserReportReason
+  description    String?
+  status         UserReportStatus @default(PENDING)
+  createdAt      DateTime         @default(now())
+
+  reporter     User @relation("UserReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User @relation("UserReportsReceived", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([reportedUserId])
+  @@map("user_reports")
+}
+
+enum UserReportReason {
+  SPAM
+  SCAM
+  HARASSMENT
+  OTHER
+}
+
+enum UserReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
 }
 
 model Payment {

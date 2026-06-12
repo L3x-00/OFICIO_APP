@@ -61,6 +61,7 @@ export const ModelName = {
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
   SubscriptionAuditLog: 'SubscriptionAuditLog',
+  UserReport: 'UserReport',
   Payment: 'Payment',
   PlanRequest: 'PlanRequest',
   Review: 'Review',
@@ -291,6 +292,19 @@ export const SubscriptionAuditLogScalarFieldEnum = {
 } as const
 
 export type SubscriptionAuditLogScalarFieldEnum = (typeof SubscriptionAuditLogScalarFieldEnum)[keyof typeof SubscriptionAuditLogScalarFieldEnum]
+
+
+export const UserReportScalarFieldEnum = {
+  id: 'id',
+  reporterId: 'reporterId',
+  reportedUserId: 'reportedUserId',
+  reason: 'reason',
+  description: 'description',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type UserReportScalarFieldEnum = (typeof UserReportScalarFieldEnum)[keyof typeof UserReportScalarFieldEnum]
 
 
 export const PaymentScalarFieldEnum = {

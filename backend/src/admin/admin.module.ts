@@ -13,6 +13,7 @@ import { EventsModule } from '../events/events.module.js';
 import { FirebaseModule } from '../firebase/firebase.module.js';
 import { ReferralsModule } from '../referrals/referrals.module.js';
 import { LocalitiesModule } from '../localities/localities.module.js';
+import { UserReportsModule } from '../user-reports/user-reports.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { LocalitiesModule } from '../localities/localities.module.js';
     FirebaseModule,
     ReferralsModule,
     LocalitiesModule,
+    UserReportsModule,
   ],
   controllers: [AdminController],
   providers: [

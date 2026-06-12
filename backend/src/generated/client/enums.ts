@@ -9,6 +9,25 @@
 * 🟢 You can import this file directly.
 */
 
+export const UserReportReason = {
+  SPAM: 'SPAM',
+  SCAM: 'SCAM',
+  HARASSMENT: 'HARASSMENT',
+  OTHER: 'OTHER'
+} as const
+
+export type UserReportReason = (typeof UserReportReason)[keyof typeof UserReportReason]
+
+
+export const UserReportStatus = {
+  PENDING: 'PENDING',
+  REVIEWED: 'REVIEWED',
+  DISMISSED: 'DISMISSED'
+} as const
+
+export type UserReportStatus = (typeof UserReportStatus)[keyof typeof UserReportStatus]
+
+
 export const UserRole = {
   USUARIO: 'USUARIO',
   PROVEEDOR: 'PROVEEDOR',

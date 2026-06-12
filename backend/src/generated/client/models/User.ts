@@ -374,6 +374,8 @@ export type UserWhereInput = {
   serviceRequests?: Prisma.ServiceRequestListRelationFilter
   penalty?: Prisma.XOR<Prisma.UserPenaltyNullableScalarRelationFilter, Prisma.UserPenaltyWhereInput> | null
   aiMemory?: Prisma.XOR<Prisma.AiUserMemoryNullableScalarRelationFilter, Prisma.AiUserMemoryWhereInput> | null
+  reportsMade?: Prisma.UserReportListRelationFilter
+  reportsReceived?: Prisma.UserReportListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -417,6 +419,8 @@ export type UserOrderByWithRelationInput = {
   serviceRequests?: Prisma.ServiceRequestOrderByRelationAggregateInput
   penalty?: Prisma.UserPenaltyOrderByWithRelationInput
   aiMemory?: Prisma.AiUserMemoryOrderByWithRelationInput
+  reportsMade?: Prisma.UserReportOrderByRelationAggregateInput
+  reportsReceived?: Prisma.UserReportOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -463,6 +467,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   serviceRequests?: Prisma.ServiceRequestListRelationFilter
   penalty?: Prisma.XOR<Prisma.UserPenaltyNullableScalarRelationFilter, Prisma.UserPenaltyWhereInput> | null
   aiMemory?: Prisma.XOR<Prisma.AiUserMemoryNullableScalarRelationFilter, Prisma.AiUserMemoryWhereInput> | null
+  reportsMade?: Prisma.UserReportListRelationFilter
+  reportsReceived?: Prisma.UserReportListRelationFilter
 }, "id" | "email" | "phone" | "firebaseUid">
 
 export type UserOrderByWithAggregationInput = {
@@ -563,6 +569,8 @@ export type UserCreateInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -606,6 +614,8 @@ export type UserUncheckedCreateInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUpdateInput = {
@@ -648,6 +658,8 @@ export type UserUpdateInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -691,6 +703,8 @@ export type UserUncheckedUpdateInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -929,6 +943,34 @@ export type UserUpdateOneRequiredWithoutProvidersNestedInput = {
   upsert?: Prisma.UserUpsertWithoutProvidersInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProvidersInput, Prisma.UserUpdateWithoutProvidersInput>, Prisma.UserUncheckedUpdateWithoutProvidersInput>
+}
+
+export type UserCreateNestedOneWithoutReportsMadeInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReportsMadeInput, Prisma.UserUncheckedCreateWithoutReportsMadeInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReportsMadeInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutReportsReceivedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReportsReceivedInput, Prisma.UserUncheckedCreateWithoutReportsReceivedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReportsReceivedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReportsMadeNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReportsMadeInput, Prisma.UserUncheckedCreateWithoutReportsMadeInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReportsMadeInput
+  upsert?: Prisma.UserUpsertWithoutReportsMadeInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReportsMadeInput, Prisma.UserUpdateWithoutReportsMadeInput>, Prisma.UserUncheckedUpdateWithoutReportsMadeInput>
+}
+
+export type UserUpdateOneRequiredWithoutReportsReceivedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReportsReceivedInput, Prisma.UserUncheckedCreateWithoutReportsReceivedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReportsReceivedInput
+  upsert?: Prisma.UserUpsertWithoutReportsReceivedInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReportsReceivedInput, Prisma.UserUpdateWithoutReportsReceivedInput>, Prisma.UserUncheckedUpdateWithoutReportsReceivedInput>
 }
 
 export type UserCreateNestedOneWithoutReviewsInput = {
@@ -1180,6 +1222,8 @@ export type UserCreateWithoutOtpCodesInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutOtpCodesInput = {
@@ -1222,6 +1266,8 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutOtpCodesInput = {
@@ -1279,6 +1325,8 @@ export type UserUpdateWithoutOtpCodesInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOtpCodesInput = {
@@ -1321,6 +1369,8 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -1362,6 +1412,8 @@ export type UserCreateWithoutRefreshTokensInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -1404,6 +1456,8 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -1461,6 +1515,8 @@ export type UserUpdateWithoutRefreshTokensInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -1503,6 +1559,8 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutProvidersInput = {
@@ -1544,6 +1602,8 @@ export type UserCreateWithoutProvidersInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutProvidersInput = {
@@ -1586,6 +1646,8 @@ export type UserUncheckedCreateWithoutProvidersInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutProvidersInput = {
@@ -1643,6 +1705,8 @@ export type UserUpdateWithoutProvidersInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProvidersInput = {
@@ -1685,6 +1749,388 @@ export type UserUncheckedUpdateWithoutProvidersInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
+}
+
+export type UserCreateWithoutReportsMadeInput = {
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  firebaseUid?: string | null
+  isEmailVerified?: boolean
+  fcmToken?: string | null
+  coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
+  lastIp?: string | null
+  lastLoginAt?: Date | string | null
+  chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
+  otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  providers?: Prisma.ProviderCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
+  referralCode?: Prisma.ReferralCodeCreateNestedOneWithoutUserInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
+  referralsSent?: Prisma.ReferralCreateNestedManyWithoutInviterInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
+  penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
+  aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
+}
+
+export type UserUncheckedCreateWithoutReportsMadeInput = {
+  id?: number
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  firebaseUid?: string | null
+  isEmailVerified?: boolean
+  fcmToken?: string | null
+  coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
+  lastIp?: string | null
+  lastLoginAt?: Date | string | null
+  chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
+  otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
+  referralCode?: Prisma.ReferralCodeUncheckedCreateNestedOneWithoutUserInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
+  referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutInviterInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
+  penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
+  aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
+}
+
+export type UserCreateOrConnectWithoutReportsMadeInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReportsMadeInput, Prisma.UserUncheckedCreateWithoutReportsMadeInput>
+}
+
+export type UserCreateWithoutReportsReceivedInput = {
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  firebaseUid?: string | null
+  isEmailVerified?: boolean
+  fcmToken?: string | null
+  coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
+  lastIp?: string | null
+  lastLoginAt?: Date | string | null
+  chatsAsClient?: Prisma.ChatRoomCreateNestedManyWithoutClientInput
+  redemptions?: Prisma.CoinRedemptionCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  offerReports?: Prisma.OfferReportCreateNestedManyWithoutReporterInput
+  otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportCreateNestedManyWithoutUserInput
+  providers?: Prisma.ProviderCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutUserInput
+  referralCode?: Prisma.ReferralCodeCreateNestedOneWithoutUserInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedUserInput
+  referralsSent?: Prisma.ReferralCreateNestedManyWithoutInviterInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
+  penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
+  aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+}
+
+export type UserUncheckedCreateWithoutReportsReceivedInput = {
+  id?: number
+  email: string
+  phone?: string | null
+  passwordHash: string
+  role?: $Enums.UserRole
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  department?: string | null
+  province?: string | null
+  district?: string | null
+  firebaseUid?: string | null
+  isEmailVerified?: boolean
+  fcmToken?: string | null
+  coins?: number
+  hasUsedTrial?: boolean
+  deletedAt?: Date | string | null
+  lastIp?: string | null
+  lastLoginAt?: Date | string | null
+  chatsAsClient?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutClientInput
+  redemptions?: Prisma.CoinRedemptionUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  offerReports?: Prisma.OfferReportUncheckedCreateNestedManyWithoutReporterInput
+  otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
+  platformIssues?: Prisma.PlatformIssueUncheckedCreateNestedManyWithoutUserInput
+  providerReports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutUserInput
+  providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutUserInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutUserInput
+  referralCode?: Prisma.ReferralCodeUncheckedCreateNestedOneWithoutUserInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedUserInput
+  referralsSent?: Prisma.ReferralUncheckedCreateNestedManyWithoutInviterInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
+  penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
+  aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+}
+
+export type UserCreateOrConnectWithoutReportsReceivedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReportsReceivedInput, Prisma.UserUncheckedCreateWithoutReportsReceivedInput>
+}
+
+export type UserUpsertWithoutReportsMadeInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReportsMadeInput, Prisma.UserUncheckedUpdateWithoutReportsMadeInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReportsMadeInput, Prisma.UserUncheckedCreateWithoutReportsMadeInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReportsMadeInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReportsMadeInput, Prisma.UserUncheckedUpdateWithoutReportsMadeInput>
+}
+
+export type UserUpdateWithoutReportsMadeInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
+  otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  providers?: Prisma.ProviderUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
+  referralCode?: Prisma.ReferralCodeUpdateOneWithoutUserNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
+  referralsSent?: Prisma.ReferralUpdateManyWithoutInviterNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
+  penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
+  aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReportsMadeInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
+  otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  providers?: Prisma.ProviderUncheckedUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
+  referralCode?: Prisma.ReferralCodeUncheckedUpdateOneWithoutUserNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
+  referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutInviterNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
+  penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
+  aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
+}
+
+export type UserUpsertWithoutReportsReceivedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReportsReceivedInput, Prisma.UserUncheckedUpdateWithoutReportsReceivedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReportsReceivedInput, Prisma.UserUncheckedCreateWithoutReportsReceivedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReportsReceivedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReportsReceivedInput, Prisma.UserUncheckedUpdateWithoutReportsReceivedInput>
+}
+
+export type UserUpdateWithoutReportsReceivedInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  chatsAsClient?: Prisma.ChatRoomUpdateManyWithoutClientNestedInput
+  redemptions?: Prisma.CoinRedemptionUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  offerReports?: Prisma.OfferReportUpdateManyWithoutReporterNestedInput
+  otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUpdateManyWithoutUserNestedInput
+  providers?: Prisma.ProviderUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutUserNestedInput
+  referralCode?: Prisma.ReferralCodeUpdateOneWithoutUserNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedUserNestedInput
+  referralsSent?: Prisma.ReferralUpdateManyWithoutInviterNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
+  penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
+  aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReportsReceivedInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firebaseUid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fcmToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coins?: Prisma.IntFieldUpdateOperationsInput | number
+  hasUsedTrial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  chatsAsClient?: Prisma.ChatRoomUncheckedUpdateManyWithoutClientNestedInput
+  redemptions?: Prisma.CoinRedemptionUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
+  offerReports?: Prisma.OfferReportUncheckedUpdateManyWithoutReporterNestedInput
+  otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+  platformIssues?: Prisma.PlatformIssueUncheckedUpdateManyWithoutUserNestedInput
+  providerReports?: Prisma.ProviderReportUncheckedUpdateManyWithoutUserNestedInput
+  providers?: Prisma.ProviderUncheckedUpdateManyWithoutUserNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutUserNestedInput
+  referralCode?: Prisma.ReferralCodeUncheckedUpdateOneWithoutUserNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedUserNestedInput
+  referralsSent?: Prisma.ReferralUncheckedUpdateManyWithoutInviterNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  reviewReplies?: Prisma.ReviewReplyUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
+  penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
+  aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
 }
 
 export type UserCreateWithoutReviewsInput = {
@@ -1726,6 +2172,8 @@ export type UserCreateWithoutReviewsInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewsInput = {
@@ -1768,6 +2216,8 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewsInput = {
@@ -1825,6 +2275,8 @@ export type UserUpdateWithoutReviewsInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsInput = {
@@ -1867,6 +2319,8 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutReviewRepliesInput = {
@@ -1908,6 +2362,8 @@ export type UserCreateWithoutReviewRepliesInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewRepliesInput = {
@@ -1950,6 +2406,8 @@ export type UserUncheckedCreateWithoutReviewRepliesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewRepliesInput = {
@@ -2007,6 +2465,8 @@ export type UserUpdateWithoutReviewRepliesInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewRepliesInput = {
@@ -2049,6 +2509,8 @@ export type UserUncheckedUpdateWithoutReviewRepliesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutFavoritesInput = {
@@ -2090,6 +2552,8 @@ export type UserCreateWithoutFavoritesInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutFavoritesInput = {
@@ -2132,6 +2596,8 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutFavoritesInput = {
@@ -2189,6 +2655,8 @@ export type UserUpdateWithoutFavoritesInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFavoritesInput = {
@@ -2231,6 +2699,8 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutRecommendationsInput = {
@@ -2272,6 +2742,8 @@ export type UserCreateWithoutRecommendationsInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutRecommendationsInput = {
@@ -2314,6 +2786,8 @@ export type UserUncheckedCreateWithoutRecommendationsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutRecommendationsInput = {
@@ -2371,6 +2845,8 @@ export type UserUpdateWithoutRecommendationsInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRecommendationsInput = {
@@ -2413,6 +2889,8 @@ export type UserUncheckedUpdateWithoutRecommendationsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutProviderReportsInput = {
@@ -2454,6 +2932,8 @@ export type UserCreateWithoutProviderReportsInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutProviderReportsInput = {
@@ -2496,6 +2976,8 @@ export type UserUncheckedCreateWithoutProviderReportsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutProviderReportsInput = {
@@ -2553,6 +3035,8 @@ export type UserUpdateWithoutProviderReportsInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProviderReportsInput = {
@@ -2595,6 +3079,8 @@ export type UserUncheckedUpdateWithoutProviderReportsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutPlatformIssuesInput = {
@@ -2636,6 +3122,8 @@ export type UserCreateWithoutPlatformIssuesInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutPlatformIssuesInput = {
@@ -2678,6 +3166,8 @@ export type UserUncheckedCreateWithoutPlatformIssuesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutPlatformIssuesInput = {
@@ -2735,6 +3225,8 @@ export type UserUpdateWithoutPlatformIssuesInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
@@ -2777,6 +3269,8 @@ export type UserUncheckedUpdateWithoutPlatformIssuesInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutServiceRequestsInput = {
@@ -2818,6 +3312,8 @@ export type UserCreateWithoutServiceRequestsInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutServiceRequestsInput = {
@@ -2860,6 +3356,8 @@ export type UserUncheckedCreateWithoutServiceRequestsInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutServiceRequestsInput = {
@@ -2917,6 +3415,8 @@ export type UserUpdateWithoutServiceRequestsInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutServiceRequestsInput = {
@@ -2959,6 +3459,8 @@ export type UserUncheckedUpdateWithoutServiceRequestsInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutPenaltyInput = {
@@ -3000,6 +3502,8 @@ export type UserCreateWithoutPenaltyInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutPenaltyInput = {
@@ -3042,6 +3546,8 @@ export type UserUncheckedCreateWithoutPenaltyInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutPenaltyInput = {
@@ -3099,6 +3605,8 @@ export type UserUpdateWithoutPenaltyInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPenaltyInput = {
@@ -3141,6 +3649,8 @@ export type UserUncheckedUpdateWithoutPenaltyInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutReferralCodeInput = {
@@ -3182,6 +3692,8 @@ export type UserCreateWithoutReferralCodeInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutReferralCodeInput = {
@@ -3224,6 +3736,8 @@ export type UserUncheckedCreateWithoutReferralCodeInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutReferralCodeInput = {
@@ -3281,6 +3795,8 @@ export type UserUpdateWithoutReferralCodeInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralCodeInput = {
@@ -3323,6 +3839,8 @@ export type UserUncheckedUpdateWithoutReferralCodeInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutReferralReceivedInput = {
@@ -3364,6 +3882,8 @@ export type UserCreateWithoutReferralReceivedInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutReferralReceivedInput = {
@@ -3406,6 +3926,8 @@ export type UserUncheckedCreateWithoutReferralReceivedInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutReferralReceivedInput = {
@@ -3452,6 +3974,8 @@ export type UserCreateWithoutReferralsSentInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutReferralsSentInput = {
@@ -3494,6 +4018,8 @@ export type UserUncheckedCreateWithoutReferralsSentInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutReferralsSentInput = {
@@ -3551,6 +4077,8 @@ export type UserUpdateWithoutReferralReceivedInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralReceivedInput = {
@@ -3593,6 +4121,8 @@ export type UserUncheckedUpdateWithoutReferralReceivedInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUpsertWithoutReferralsSentInput = {
@@ -3645,6 +4175,8 @@ export type UserUpdateWithoutReferralsSentInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralsSentInput = {
@@ -3687,6 +4219,8 @@ export type UserUncheckedUpdateWithoutReferralsSentInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutRedemptionsInput = {
@@ -3728,6 +4262,8 @@ export type UserCreateWithoutRedemptionsInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutRedemptionsInput = {
@@ -3770,6 +4306,8 @@ export type UserUncheckedCreateWithoutRedemptionsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutRedemptionsInput = {
@@ -3827,6 +4365,8 @@ export type UserUpdateWithoutRedemptionsInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRedemptionsInput = {
@@ -3869,6 +4409,8 @@ export type UserUncheckedUpdateWithoutRedemptionsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutChatsAsClientInput = {
@@ -3910,6 +4452,8 @@ export type UserCreateWithoutChatsAsClientInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutChatsAsClientInput = {
@@ -3952,6 +4496,8 @@ export type UserUncheckedCreateWithoutChatsAsClientInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutChatsAsClientInput = {
@@ -4009,6 +4555,8 @@ export type UserUpdateWithoutChatsAsClientInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChatsAsClientInput = {
@@ -4051,6 +4599,8 @@ export type UserUncheckedUpdateWithoutChatsAsClientInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutOfferReportsInput = {
@@ -4092,6 +4642,8 @@ export type UserCreateWithoutOfferReportsInput = {
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutOfferReportsInput = {
@@ -4134,6 +4686,8 @@ export type UserUncheckedCreateWithoutOfferReportsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
   aiMemory?: Prisma.AiUserMemoryUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutOfferReportsInput = {
@@ -4191,6 +4745,8 @@ export type UserUpdateWithoutOfferReportsInput = {
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOfferReportsInput = {
@@ -4233,6 +4789,8 @@ export type UserUncheckedUpdateWithoutOfferReportsInput = {
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
   aiMemory?: Prisma.AiUserMemoryUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserCreateWithoutAiMemoryInput = {
@@ -4274,6 +4832,8 @@ export type UserCreateWithoutAiMemoryInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   serviceRequests?: Prisma.ServiceRequestCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserUncheckedCreateWithoutAiMemoryInput = {
@@ -4316,6 +4876,8 @@ export type UserUncheckedCreateWithoutAiMemoryInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   serviceRequests?: Prisma.ServiceRequestUncheckedCreateNestedManyWithoutUserInput
   penalty?: Prisma.UserPenaltyUncheckedCreateNestedOneWithoutUserInput
+  reportsMade?: Prisma.UserReportUncheckedCreateNestedManyWithoutReporterInput
+  reportsReceived?: Prisma.UserReportUncheckedCreateNestedManyWithoutReportedUserInput
 }
 
 export type UserCreateOrConnectWithoutAiMemoryInput = {
@@ -4373,6 +4935,8 @@ export type UserUpdateWithoutAiMemoryInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   serviceRequests?: Prisma.ServiceRequestUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUpdateManyWithoutReportedUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAiMemoryInput = {
@@ -4415,6 +4979,8 @@ export type UserUncheckedUpdateWithoutAiMemoryInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   serviceRequests?: Prisma.ServiceRequestUncheckedUpdateManyWithoutUserNestedInput
   penalty?: Prisma.UserPenaltyUncheckedUpdateOneWithoutUserNestedInput
+  reportsMade?: Prisma.UserReportUncheckedUpdateManyWithoutReporterNestedInput
+  reportsReceived?: Prisma.UserReportUncheckedUpdateManyWithoutReportedUserNestedInput
 }
 
 
@@ -4437,6 +5003,8 @@ export type UserCountOutputType = {
   reviewReplies: number
   reviews: number
   serviceRequests: number
+  reportsMade: number
+  reportsReceived: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4454,6 +5022,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reviewReplies?: boolean | UserCountOutputTypeCountReviewRepliesArgs
   reviews?: boolean | UserCountOutputTypeCountReviewsArgs
   serviceRequests?: boolean | UserCountOutputTypeCountServiceRequestsArgs
+  reportsMade?: boolean | UserCountOutputTypeCountReportsMadeArgs
+  reportsReceived?: boolean | UserCountOutputTypeCountReportsReceivedArgs
 }
 
 /**
@@ -4564,6 +5134,20 @@ export type UserCountOutputTypeCountServiceRequestsArgs<ExtArgs extends runtime.
   where?: Prisma.ServiceRequestWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReportsMadeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserReportWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReportsReceivedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserReportWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4606,6 +5190,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   serviceRequests?: boolean | Prisma.User$serviceRequestsArgs<ExtArgs>
   penalty?: boolean | Prisma.User$penaltyArgs<ExtArgs>
   aiMemory?: boolean | Prisma.User$aiMemoryArgs<ExtArgs>
+  reportsMade?: boolean | Prisma.User$reportsMadeArgs<ExtArgs>
+  reportsReceived?: boolean | Prisma.User$reportsReceivedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -4704,6 +5290,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   serviceRequests?: boolean | Prisma.User$serviceRequestsArgs<ExtArgs>
   penalty?: boolean | Prisma.User$penaltyArgs<ExtArgs>
   aiMemory?: boolean | Prisma.User$aiMemoryArgs<ExtArgs>
+  reportsMade?: boolean | Prisma.User$reportsMadeArgs<ExtArgs>
+  reportsReceived?: boolean | Prisma.User$reportsReceivedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -4730,6 +5318,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     serviceRequests: Prisma.$ServiceRequestPayload<ExtArgs>[]
     penalty: Prisma.$UserPenaltyPayload<ExtArgs> | null
     aiMemory: Prisma.$AiUserMemoryPayload<ExtArgs> | null
+    reportsMade: Prisma.$UserReportPayload<ExtArgs>[]
+    reportsReceived: Prisma.$UserReportPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -5177,6 +5767,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   serviceRequests<T extends Prisma.User$serviceRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$serviceRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ServiceRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   penalty<T extends Prisma.User$penaltyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$penaltyArgs<ExtArgs>>): Prisma.Prisma__UserPenaltyClient<runtime.Types.Result.GetResult<Prisma.$UserPenaltyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   aiMemory<T extends Prisma.User$aiMemoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$aiMemoryArgs<ExtArgs>>): Prisma.Prisma__AiUserMemoryClient<runtime.Types.Result.GetResult<Prisma.$AiUserMemoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  reportsMade<T extends Prisma.User$reportsMadeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reportsMadeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reportsReceived<T extends Prisma.User$reportsReceivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reportsReceivedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6030,6 +6622,54 @@ export type User$aiMemoryArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.AiUserMemoryInclude<ExtArgs> | null
   where?: Prisma.AiUserMemoryWhereInput
+}
+
+/**
+ * User.reportsMade
+ */
+export type User$reportsMadeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserReport
+   */
+  select?: Prisma.UserReportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserReport
+   */
+  omit?: Prisma.UserReportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserReportInclude<ExtArgs> | null
+  where?: Prisma.UserReportWhereInput
+  orderBy?: Prisma.UserReportOrderByWithRelationInput | Prisma.UserReportOrderByWithRelationInput[]
+  cursor?: Prisma.UserReportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserReportScalarFieldEnum | Prisma.UserReportScalarFieldEnum[]
+}
+
+/**
+ * User.reportsReceived
+ */
+export type User$reportsReceivedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserReport
+   */
+  select?: Prisma.UserReportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserReport
+   */
+  omit?: Prisma.UserReportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserReportInclude<ExtArgs> | null
+  where?: Prisma.UserReportWhereInput
+  orderBy?: Prisma.UserReportOrderByWithRelationInput | Prisma.UserReportOrderByWithRelationInput[]
+  cursor?: Prisma.UserReportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserReportScalarFieldEnum | Prisma.UserReportScalarFieldEnum[]
 }
 
 /**
