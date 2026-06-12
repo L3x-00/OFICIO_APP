@@ -8,6 +8,7 @@ import WhatsAppButton from '@/components/whatsapp-button';
 import ThemeProvider from '@/components/theme/theme-provider';
 import { Toaster } from 'sonner';
 import FloatingFaqButton from '@/components/floating-faq-button';
+import AiChatWidget from '@/components/ai-chat-widget';
 
 // ── Nueva tipografía nativa (rendimiento óptimo) ──────────
 const jakarta = Plus_Jakarta_Sans({
@@ -103,7 +104,8 @@ export default function RootLayout({
             }}
           />
           <WhatsAppButton />
-          <FloatingFaqButton /> {/* 👈 Nuevo botón flotante de FAQ */}
+          <FloatingFaqButton /> {/* 👈 Botón flotante de FAQ (izquierda) */}
+          <AiChatWidget /> {/* 👈 Chatbot Ofi site-wide (FASE 4 #1) */}
         </ThemeProvider>
       </body>
     </html>

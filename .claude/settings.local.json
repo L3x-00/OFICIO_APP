@@ -63,7 +63,12 @@
       "Bash(ls .env*)",
       "Bash(head -3 .env)",
       "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma generate --schema=prisma/schema.prisma)",
-      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma migrate dev --name add_chat_internal --create-only --schema=prisma/schema.prisma)"
+      "Bash(DATABASE_URL='postgresql://oficio_user:oficio_pass_2025@localhost:5432/oficio_db?schema=public' rtk npx prisma migrate dev --name add_chat_internal --create-only --schema=prisma/schema.prisma)",
+      "Bash(git rev-list *)",
+      "Bash(git checkout *)",
+      "Bash(echo \"BACKEND_TSC_EXIT_$?\")",
+      "Bash(echo \"ADMIN_TSC_EXIT_$?\")",
+      "Bash(grep -rlE \"eslint-disable.*no-explicit-any|/\\\\* eslint-disable \\\\*/\" components/*.tsx)"
     ]
   }
 }

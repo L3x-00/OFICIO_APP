@@ -35,7 +35,7 @@ export default function WhatsAppButton() {
 
   return (
     <motion.div
-      className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[99999]"
+      className="fixed bottom-36 right-4 sm:bottom-24 sm:right-6 z-[99999]"
       onMouseEnter={() => { setIsHovering(true); setShowTooltip(false); }}
       onMouseLeave={() => setIsHovering(false)}
     >
