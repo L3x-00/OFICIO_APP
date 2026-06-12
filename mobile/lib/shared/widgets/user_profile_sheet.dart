@@ -3,6 +3,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/network/dio_client.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
+import 'package:mobile/shared/widgets/user_report_sheet.dart';
 
 /// Perfil público mínimo de un usuario (cliente). Por seguridad el backend
 /// solo expone primer nombre, primer apellido, avatar y fecha de registro.
@@ -243,6 +244,40 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Reportar comportamiento inapropiado (FASE 2 · #3). Cierra el
+            // perfil y abre el sheet de reporte. POST /users/report con JWT.
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final navigator = Navigator.of(context);
+                  navigator.pop();
+                  UserReportSheet.show(
+                    navigator.context,
+                    reportedUserId: widget.userId,
+                    userName: name,
+                  );
+                },
+                icon: const Icon(
+                  Icons.flag_outlined,
+                  size: 18,
+                  color: AppColors.busy,
+                ),
+                label: const Text('Reportar comportamiento inapropiado'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.busy,
+                  side: BorderSide(
+                    color: AppColors.busy.withValues(alpha: 0.5),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ),
           ],
