@@ -47,7 +47,11 @@ describe('AuthService (unit)', () => {
   let config: ConfigMock;
   let events: EventsGatewayMock;
   let cache: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
-  let email: { sendOtpEmail: jest.Mock; sendPasswordResetEmail: jest.Mock };
+  let email: {
+    sendOtpEmail: jest.Mock;
+    sendPasswordResetEmail: jest.Mock;
+    sendWelcomeEmail: jest.Mock;
+  };
   let firebase: { verifyIdToken: jest.Mock };
   let minio: { uploadFile: jest.Mock };
 
@@ -64,6 +68,7 @@ describe('AuthService (unit)', () => {
     email = {
       sendOtpEmail: jest.fn().mockResolvedValue(undefined),
       sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+      sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
     };
     firebase = { verifyIdToken: jest.fn() };
     minio = { uploadFile: jest.fn() };

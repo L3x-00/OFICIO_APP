@@ -14,6 +14,7 @@ import { FirebaseModule } from '../firebase/firebase.module.js';
 import { ReferralsModule } from '../referrals/referrals.module.js';
 import { LocalitiesModule } from '../localities/localities.module.js';
 import { UserReportsModule } from '../user-reports/user-reports.module.js';
+import { EmailModule } from '../email/email.module.js';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UserReportsModule } from '../user-reports/user-reports.module.js';
     ReferralsModule,
     LocalitiesModule,
     UserReportsModule,
+    EmailModule,
   ],
   controllers: [AdminController],
   providers: [

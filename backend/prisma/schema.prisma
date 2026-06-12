@@ -38,6 +38,10 @@ model User {
   deletedAt        DateTime?
   lastIp           String?
   lastLoginAt      DateTime?
+  /// Última vez que se envió el correo "Te extrañamos" (cron de inactividad).
+  /// Evita re-enviarlo a diario: solo se vuelve a enviar si el usuario reactiva
+  /// (lastLoginAt > inactivityEmailSentAt) y vuelve a quedar inactivo.
+  inactivityEmailSentAt DateTime?
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
   redemptions      CoinRedemption[]
   favorites        Favorite[]

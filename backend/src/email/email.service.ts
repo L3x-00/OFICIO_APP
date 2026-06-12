@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BrevoClient } from '@getbrevo/brevo';
+import { baseEmail } from './email-templates.js';
 
 @Injectable()
 export class EmailService {
@@ -136,5 +137,100 @@ export class EmailService {
       );
       throw new Error(`Error al enviar email: ${(error as Error).message}`);
     }
+  }
+
+  /** Envío genérico con la plantilla base. Best-effort: loguea y no lanza. */
+  private async sendBranded(
+    to: string,
+    subject: string,
+    heading: string,
+    bodyHtml: string,
+    cta?: { label: string; url: string },
+  ): Promise<boolean> {
+    if (!this.client) {
+      this.logger.warn(`[EMAIL SKIP] sin BREVO_API_KEY — '${subject}' a ${to}`);
+      return false;
+    }
+    try {
+      await this.client.transactionalEmails.sendTransacEmail({
+        sender: { email: this.senderEmail, name: this.senderName },
+        to: [{ email: to }],
+        subject,
+        htmlContent: baseEmail({ heading, bodyHtml, cta }),
+      });
+      return true;
+    } catch (error) {
+      this.logger.warn(
+        `Email '${subject}' a ${to} falló: ${(error as Error).message ?? error}`,
+      );
+      return false;
+    }
+  }
+
+  /** Correo de bienvenida tras registro/verificación exitosa. */
+  async sendWelcomeEmail(to: string, firstName?: string): Promise<void> {
+    const hello = firstName
+      ? `¡Bienvenido, ${firstName}!`
+      : '¡Bienvenido a Servi!';
+    await this.sendBranded(
+      to,
+      '¡Bienvenido a Servi!',
+      hello,
+      `<p style="color:#555;margin:0 0 14px">Gracias por unirte a <b>Servi</b>, el marketplace de servicios locales del Perú.</p>
+       <p style="color:#555;margin:0 0 6px">Con Servi puedes:</p>
+       <ul style="color:#555;margin:0 0 14px;padding-left:18px">
+         <li>Encontrar profesionales y negocios verificados cerca de ti.</li>
+         <li>Contactarlos por chat, WhatsApp o llamada.</li>
+         <li>Dejar reseñas y descubrir los mejor calificados.</li>
+       </ul>`,
+      { label: 'Abrir Servi', url: 'https://oficioapp.org.pe' },
+    );
+  }
+
+  /** Correo de re-enganche para usuarios inactivos (>30 días). */
+  async sendInactivityEmail(to: string, firstName?: string): Promise<boolean> {
+    const hello = firstName ? `Hola ${firstName},` : 'Hola,';
+    return this.sendBranded(
+      to,
+      'Te extrañamos en Servi 👋',
+      '¡Te extrañamos!',
+      `<p style="color:#555;margin:0 0 14px">${hello}</p>
+       <p style="color:#555;margin:0 0 14px">Hace un tiempo que no te vemos. Nuevos profesionales y negocios se sumaron a Servi cerca de ti — vuelve y descubre quién puede ayudarte hoy.</p>`,
+      { label: 'Volver a Servi', url: 'https://oficioapp.org.pe' },
+    );
+  }
+
+  /**
+   * Correo masivo de broadcast (misma promo que el push del admin). Envía
+   * individualmente en lotes para no exponer destinatarios entre sí ni saturar
+   * la cuota de Brevo. Best-effort: devuelve cuántos se enviaron.
+   */
+  async sendBroadcastEmail(
+    recipients: string[],
+    subject: string,
+    message: string,
+    imageUrl?: string,
+  ): Promise<number> {
+    if (!this.client || recipients.length === 0) return 0;
+    const img = imageUrl
+      ? `<img src="${imageUrl}" alt="" style="width:100%;border-radius:10px;margin:0 0 14px"/>`
+      : '';
+    const bodyHtml = `${img}<p style="color:#555;margin:0;white-space:pre-line">${message}</p>`;
+
+    let sent = 0;
+    const CHUNK = 20;
+    for (let i = 0; i < recipients.length; i += CHUNK) {
+      const slice = recipients.slice(i, i + CHUNK);
+      const results = await Promise.all(
+        slice.map((email) =>
+          this.sendBranded(email, subject, subject, bodyHtml),
+        ),
+      );
+      sent += results.filter(Boolean).length;
+    }
+    this.logger.log(
+      `Broadcast email: ${sent}/${recipients.length} enviados ('${subject}')`,
+    );
+    return sent;
   }
 }

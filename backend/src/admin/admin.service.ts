@@ -22,6 +22,7 @@ import { AdminDashboardService } from './services/admin-dashboard.service.js';
 import { AdminTrustService } from './services/admin-trust.service.js';
 import { AdminPaymentsService } from './services/admin-payments.service.js';
 import { AdminReportsService } from './services/admin-reports.service.js';
+import { EmailService } from '../email/email.service.js';
 import {
   withCategoryAlias as sharedWithCategoryAlias,
   planToPriority as sharedPlanToPriority,
@@ -40,6 +41,7 @@ export class AdminService {
     private trust: AdminTrustService,
     private payments: AdminPaymentsService,
     private reports: AdminReportsService,
+    private email: EmailService,
 
     @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
@@ -917,6 +919,24 @@ export class AdminService {
       imageUrl: cleanImage,
       data: { type: 'BROADCAST' },
     });
+
+    // Además del push, el mismo mensaje por EMAIL a todos los usuarios activos
+    // (Brevo). En background — no bloquea la respuesta al admin (que ya tiene
+    // `enqueued`); el envío masivo puede tardar.
+    void this.prisma.user
+      .findMany({
+        where: { isActive: true, deletedAt: null },
+        select: { email: true },
+      })
+      .then((users) =>
+        this.email.sendBroadcastEmail(
+          users.map((u) => u.email).filter((e): e is string => !!e),
+          cleanTitle,
+          cleanBody,
+          cleanImage ?? undefined,
+        ),
+      )
+      .catch(() => null);
 
     // Persistir un log del broadcast para que aparezca en el panel del
     // admin como "Enviaste una notificación a todos los usuarios: …".

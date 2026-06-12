@@ -550,6 +550,15 @@ export class AuthRegistrationService {
       email: reg.email,
     });
 
+    // Correo de bienvenida (best-effort: no bloquea ni rompe el registro).
+    this.emailService
+      .sendWelcomeEmail(user.email, user.firstName)
+      .catch((err) =>
+        this.logger.warn(
+          `Welcome email a ${user.email} falló: ${err?.message ?? err}`,
+        ),
+      );
+
     return {
       ...tokens,
       verified: true,
