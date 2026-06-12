@@ -166,6 +166,15 @@ class _AiChatViewState extends State<_AiChatView> {
                 },
               ),
             ),
+            // FAQs como sugerencias rápidas DEBAJO de los mensajes previos
+            // (historial ya pintado arriba). Solo cuando Ofi está a la espera
+            // (no cargando y último turno no es del usuario) para no estorbar
+            // mientras conversa. Al tocar, envía la pregunta al backend real.
+            if (!isLoading && messages.isNotEmpty && !messages.last.isUser)
+              _FaqSuggestions(
+                prompts: _faqPrompts(prov.providerType),
+                onTap: (q) => context.read<AiAssistantProvider>().send(q),
+              ),
             _InputBar(
               controller: _controller,
               onSend: _send,
@@ -173,6 +182,93 @@ class _AiChatViewState extends State<_AiChatView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Preguntas frecuentes según el contexto (cliente vs panel proveedor).
+/// A diferencia del modo invitado, aquí se envían al backend real para una
+/// respuesta personalizada.
+List<String> _faqPrompts(String? providerType) {
+  if (providerType != null) {
+    return const [
+      '¿Cómo mejoro mi visibilidad?',
+      '¿Qué incluye mi plan actual?',
+      '¿Cómo consigo más reseñas?',
+      '¿Cómo subo fotos a mi perfil?',
+    ];
+  }
+  return const [
+    '¿Cómo encuentro un buen proveedor?',
+    '¿Cómo funcionan las reseñas?',
+    '¿Cómo contacto a un proveedor?',
+    '¿Qué puedo hacer en Servi?',
+  ];
+}
+
+/// Chips de FAQ mostrados sobre la barra de entrada. Render compacto en Wrap.
+class _FaqSuggestions extends StatelessWidget {
+  final List<String> prompts;
+  final ValueChanged<String> onTap;
+  const _FaqSuggestions({required this.prompts, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      color: c.bg,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.lightbulb_outline_rounded,
+                size: 14,
+                color: c.textMuted,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Preguntas frecuentes',
+                style: TextStyle(color: c.textMuted, fontSize: 11.5),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final q in prompts)
+                GestureDetector(
+                  onTap: () => onTap(q),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color.alphaBlend(
+                        AppColors.amber.withValues(alpha: 0.10),
+                        c.bgCard,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.amber.withValues(alpha: 0.30),
+                      ),
+                    ),
+                    child: Text(
+                      q,
+                      style: TextStyle(color: c.textPrimary, fontSize: 12.5),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
