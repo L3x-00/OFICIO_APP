@@ -288,6 +288,37 @@ class ProvidersProvider extends ChangeNotifier {
     await loadProviders();
   }
 
+  // ── Búsqueda por radio (mapa radar del filtro) ────────────
+  /// Reemplaza la lista por los proveedores dentro del [radiusKm] alrededor
+  /// del punto dado (GET /providers/nearby). No persiste ni toca los filtros
+  /// estructurados: un refresh (pull) o cualquier cambio de filtro vuelve al
+  /// listado normal vía [loadProviders].
+  Future<void> applyNearby({
+    required double latitude,
+    required double longitude,
+    required double radiusKm,
+  }) async {
+    _isLoading = true;
+    _hasError = false;
+    notifyListeners();
+
+    final result = await _repo.getNearby(
+      latitude: latitude,
+      longitude: longitude,
+      radiusKm: radiusKm,
+    );
+    result.when(
+      success: (list) => _providers = list,
+      failure: (e) {
+        _hasError = true;
+        _errorMessage = e.message;
+      },
+    );
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
   // ── Setters individuales ──────────────────────────────────
 
   /// Expande una macrocategoría en la barra de filtros y filtra por ella.

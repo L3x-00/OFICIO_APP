@@ -87,6 +87,39 @@ class ProvidersRepository {
     }
   }
 
+  // ── BÚSQUEDA POR RADIO (mapa radar del filtro) ───────────
+  /// Consume GET /providers/nearby?latitude=&longitude=&radiusKm= (PostGIS).
+  /// Devuelve proveedores dentro del radio ordenados por cercanía (cada uno
+  /// trae `distanceKm`). Sin caché — depende de coords exactas.
+  Future<ApiResult<List<ProviderModel>>> getNearby({
+    required double latitude,
+    required double longitude,
+    required double radiusKm,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/providers/nearby',
+        queryParameters: {
+          'latitude': latitude,
+          'longitude': longitude,
+          'radiusKm': radiusKm,
+        },
+      );
+      final list = (response.data as List)
+          .map((p) => ProviderModel.fromJson(p as Map<String, dynamic>))
+          .toList();
+      return Success(list);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error en la búsqueda por radio'),
+      );
+    } catch (e) {
+      return Failure(ServerException('Error inesperado: ${e.toString()}'));
+    }
+  }
+
   // ── OBTENER detalle de un proveedor ──────────────────────
   Future<ApiResult<ProviderModel>> getProviderDetail(int id) async {
     try {

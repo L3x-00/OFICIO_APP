@@ -11,6 +11,7 @@ import 'filter/filter_availability_section.dart';
 import 'filter/filter_bottom_buttons.dart';
 // import 'filter/filter_category_section.dart'; // 👈 ELIMINADO
 import 'filter/filter_location_section.dart';
+import 'filter/filter_radar_map.dart';
 import 'filter/filter_section_label.dart';
 import 'filter/filter_sort_section.dart';
 import 'filter/filter_verification_section.dart';
@@ -260,6 +261,22 @@ class _FilterSheetState extends State<FilterSheet> {
                       _apply();
                     },
                     addressField: _buildAddressTextField(c),
+                  ),
+
+                  // BÚSQUEDA POR RADIO (mapa radar) — independiente de los
+                  // filtros estructurados: dispara GET /providers/nearby.
+                  FilterRadarMap(
+                    district: _dist,
+                    province: _prov,
+                    department: _dept,
+                    onSearch: (lat, lng, km) {
+                      widget.prov.applyNearby(
+                        latitude: lat,
+                        longitude: lng,
+                        radiusKm: km,
+                      );
+                      Navigator.pop(context);
+                    },
                   ),
                 ],
               ),
