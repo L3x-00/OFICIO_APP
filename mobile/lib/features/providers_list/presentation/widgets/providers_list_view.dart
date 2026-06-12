@@ -13,6 +13,7 @@ import '../../domain/models/provider_model.dart';
 import '../providers/providers_provider.dart';
 import '../screens/provider_detail_screen.dart';
 import '../sheets/filter_sheet.dart';
+import 'featured_carousels.dart';
 import 'login_required_dialog.dart';
 import 'service_card.dart';
 
@@ -397,7 +398,23 @@ class ProvidersListView extends StatelessWidget {
       );
     }
 
-    final slivers = <Widget>[headerSliver];
+    // ── Home Agrupada (FASE 2 · punto 1) ──────────────────────────
+    // En la vista por defecto (sin búsqueda ni categoría seleccionada) los
+    // carruseles `featured-grouped` van ARRIBA, y el listado paginado pasa a
+    // titularse "Explorar más". Al buscar/filtrar por categoría se ocultan y
+    // queda solo la lista filtrada — así no rompen los filtros existentes.
+    final showFeatured =
+        prov.featuredGroups.isNotEmpty &&
+        prov.searchQuery.isEmpty &&
+        prov.selectedCategory == null &&
+        prov.expandedParentSlug == null;
+
+    final slivers = <Widget>[];
+    if (showFeatured) {
+      slivers.add(FeaturedCarousels.sliver(prov.featuredGroups));
+      slivers.add(sectionHeader('Explorar más', all.length));
+    }
+    slivers.add(headerSliver);
     var globalStart = 0;
     for (final (title, items) in sections) {
       slivers.add(sectionHeader(title, items.length));

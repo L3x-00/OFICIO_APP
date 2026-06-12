@@ -65,6 +65,28 @@ class ProvidersRepository {
     }
   }
 
+  // ── HOME AGRUPADA (carruseles por categoría padre) ───────
+  /// Consume GET /providers/featured-grouped: top categorías padre con sus
+  /// primeros proveedores. Alimenta los carruseles del home sin tocar la
+  /// paginación de [getProviders].
+  Future<ApiResult<List<FeaturedGroup>>> getFeaturedGrouped() async {
+    try {
+      final response = await _dio.get('/providers/featured-grouped');
+      final list = (response.data as List)
+          .map((g) => FeaturedGroup.fromJson(g as Map<String, dynamic>))
+          .toList();
+      return Success(list);
+    } on DioException catch (e) {
+      return Failure(
+        e.error is AppException
+            ? e.error as AppException
+            : ServerException(e.message ?? 'Error al cargar el inicio'),
+      );
+    } catch (e) {
+      return Failure(ServerException('Error inesperado: ${e.toString()}'));
+    }
+  }
+
   // ── OBTENER detalle de un proveedor ──────────────────────
   Future<ApiResult<ProviderModel>> getProviderDetail(int id) async {
     try {
@@ -278,6 +300,25 @@ class ProvidersResponse {
       total: json['total'] as int,
       page: json['page'] as int,
       lastPage: json['lastPage'] as int,
+    );
+  }
+}
+
+/// Un grupo del home: una categoría padre + sus proveedores destacados.
+class FeaturedGroup {
+  final CategoryModel category;
+  final List<ProviderModel> providers;
+
+  const FeaturedGroup({required this.category, required this.providers});
+
+  factory FeaturedGroup.fromJson(Map<String, dynamic> json) {
+    return FeaturedGroup(
+      category: CategoryModel.fromJson(
+        json['category'] as Map<String, dynamic>,
+      ),
+      providers: (json['providers'] as List? ?? const [])
+          .map((p) => ProviderModel.fromJson(p as Map<String, dynamic>))
+          .toList(),
     );
   }
 }

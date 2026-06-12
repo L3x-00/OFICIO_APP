@@ -17,6 +17,9 @@ class ProvidersProvider extends ChangeNotifier {
 
   List<ProviderModel> _providers = [];
   List<CategoryModel> _categories = [];
+  // Home agrupada (carruseles por categoría padre) — GET /providers/featured-grouped.
+  List<FeaturedGroup> _featuredGroups = [];
+  bool _featuredLoading = false;
   bool _isLoading = false;
   bool _hasError = false;
   String _errorMessage = '';
@@ -64,6 +67,8 @@ class ProvidersProvider extends ChangeNotifier {
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers => _providers;
   List<CategoryModel> get categories => _categories;
+  List<FeaturedGroup> get featuredGroups => _featuredGroups;
+  bool get featuredLoading => _featuredLoading;
   bool get isLoading => _isLoading;
   bool get hasError => _hasError;
   String get errorMessage => _errorMessage;
@@ -180,7 +185,23 @@ class ProvidersProvider extends ChangeNotifier {
       _province = province;
       _district = district;
     }
-    await Future.wait([loadCategories(), loadProviders(), loadPreferences()]);
+    await Future.wait([
+      loadCategories(),
+      loadProviders(),
+      loadFeatured(),
+      loadPreferences(),
+    ]);
+  }
+
+  // ── Cargar home agrupada (carruseles) ─────────────────────
+  /// Best-effort: si falla, la home cae al listado paginado normal.
+  Future<void> loadFeatured() async {
+    _featuredLoading = true;
+    notifyListeners();
+    final result = await _repo.getFeaturedGrouped();
+    if (result.isSuccess) _featuredGroups = result.data;
+    _featuredLoading = false;
+    notifyListeners();
   }
 
   // ── Cargar categorías ─────────────────────────────────────
