@@ -189,6 +189,15 @@ export const updateProviderSubscription = (id: number, plan: string) =>
     body: JSON.stringify({ plan }),
   });
 
+/// Dispara un reset de contraseña para el dueño del perfil (User.id).
+/// El backend (POST /auth/admin-request-reset, solo ADMIN) genera un token
+/// seguro de 1h y envía el enlace por email; el admin nunca ve la contraseña.
+export const requestProviderPasswordReset = (userId: number) =>
+  fetchApi(`/auth/admin-request-reset`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  });
+
 export const promotePlan = (id: number, plan: 'ESTANDAR' | 'PREMIUM') =>
   fetchApi(`/admin/providers/${id}/subscription`, {
     method: 'PATCH',
@@ -494,6 +503,7 @@ export interface ProvidersResponse {
 export interface Provider {
   averageRating: number;
   id: number;
+  userId?: number;
   businessName: string;
   phone: string;
   whatsapp?: string;
@@ -507,6 +517,20 @@ export interface Provider {
   department?: string;
   province?: string;
   district?: string;
+  // Redes sociales / contacto extendido
+  website?: string;
+  instagram?: string;
+  tiktok?: string;
+  facebook?: string;
+  linkedin?: string;
+  twitterX?: string;
+  telegram?: string;
+  whatsappBiz?: string;
+  // Toggles de privacidad
+  showPhone?: boolean;
+  showWhatsapp?: boolean;
+  showExactLocation?: boolean;
+  images?: { url: string; isCover: boolean }[];
   isTrusted?: boolean;
   trustStatus?: string;
   isVerified: boolean;
@@ -516,8 +540,9 @@ export interface Provider {
   type: string;           // 'OFICIO' | 'NEGOCIO'
   category: { name: string };
   locality: { name: string };
-  user?: { email: string; firstName: string; lastName: string; phone?: string };
+  user?: { id?: number; email: string; firstName: string; lastName: string; phone?: string };
   subscription?: { plan: string; status: string; endDate: string };
+  providerCategories?: { isPrimary?: boolean; category?: { id: number; name?: string } }[];
   createdAt?: string;
 }
 

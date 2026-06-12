@@ -331,6 +331,25 @@ export class AdminService {
       isVerified?: boolean;
       availability?: any; // Usa tu enum AvailabilityStatus
       localityId?: number;
+      // Redes sociales / contacto extendido
+      website?: string;
+      instagram?: string;
+      tiktok?: string;
+      facebook?: string;
+      linkedin?: string;
+      twitterX?: string;
+      telegram?: string;
+      whatsappBiz?: string;
+      // Toggles de privacidad
+      showPhone?: boolean;
+      showWhatsapp?: boolean;
+      showExactLocation?: boolean;
+      // Datos de negocio / identidad
+      dni?: string;
+      ruc?: string;
+      nombreComercial?: string;
+      razonSocial?: string;
+      hasDelivery?: boolean;
       categoryIds?: (number | string)[]; // Especialidades — reemplaza el set
       primaryCategoryId?: number | string; // Especialidad principal (isPrimary)
     },
