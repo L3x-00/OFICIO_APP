@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/profile/contact_us_section.dart';
 import '../widgets/profile/guest_profile_view.dart';
 import '../widgets/profile/profile_avatar_picker.dart';
 import '../widgets/profile/profile_badges.dart';
@@ -55,10 +56,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth  = context.watch<AuthProvider>();
+    final auth = context.watch<AuthProvider>();
     final theme = context.watch<ThemeProvider>();
-    final c     = context.colors;
-    final user  = auth.user;
+    final c = context.colors;
+    final user = auth.user;
 
     if (user == null) return GuestProfileView(theme: theme);
 
@@ -144,7 +145,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               }
                               if (u.avatarUrl != null) {
                                 return AppNetworkImage(
-                                  key: ValueKey('avatar_${u.id}_${u.avatarUrl}'),
+                                  key: ValueKey(
+                                    'avatar_${u.id}_${u.avatarUrl}',
+                                  ),
                                   url: u.avatarUrl!,
                                   fit: BoxFit.cover,
                                   placeholder: const Center(
@@ -153,7 +156,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       strokeWidth: 2,
                                     ),
                                   ),
-                                  errorWidget: InitialsAvatar(name: u.firstName),
+                                  errorWidget: InitialsAvatar(
+                                    name: u.firstName,
+                                  ),
                                 );
                               }
                               return InitialsAvatar(name: u.firstName);
@@ -236,7 +241,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.lock_outline,
                 label: 'Cambiar contraseña',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const ChangePasswordScreen(),
+                  ),
                 ),
               ),
               SectionItem(
@@ -258,7 +265,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // perfil cliente vive en la bandeja del cliente, no
                 // mezcla con los mensajes recibidos como proveedor.
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ChatListScreen(scope: 'client')),
+                  MaterialPageRoute(
+                    builder: (_) => const ChatListScreen(scope: 'client'),
+                  ),
                 ),
               ),
               SectionItem(
@@ -283,12 +292,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     SectionItem(
                       icon: Icons.handyman_rounded,
                       label: 'Panel Profesional',
-                      onTap: () => ProfileNavigationHelper.openProviderPanel(context, 'OFICIO'),
+                      onTap: () => ProfileNavigationHelper.openProviderPanel(
+                        context,
+                        'OFICIO',
+                      ),
                     )
                   else
                     PendingApprovalBanner(
                       providerType: 'OFICIO',
-                      status: auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
+                      status:
+                          auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
                       rejectionReason: auth.rejectionReasonFor('OFICIO'),
                     ),
                   const SizedBox(height: 4),
@@ -298,12 +311,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     SectionItem(
                       icon: Icons.storefront_rounded,
                       label: 'Panel de Negocio',
-                      onTap: () => ProfileNavigationHelper.openProviderPanel(context, 'NEGOCIO'),
+                      onTap: () => ProfileNavigationHelper.openProviderPanel(
+                        context,
+                        'NEGOCIO',
+                      ),
                     )
                   else
                     PendingApprovalBanner(
                       providerType: 'NEGOCIO',
-                      status: auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
+                      status:
+                          auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
                       rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
                     ),
                   const SizedBox(height: 4),
@@ -313,14 +330,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     SectionItem(
                       icon: Icons.storefront_rounded,
                       label: 'Registrar un Negocio',
-                      onTap: () => ProfileNavigationHelper.openAddProfile(context, 'NEGOCIO'),
+                      onTap: () => ProfileNavigationHelper.openAddProfile(
+                        context,
+                        'NEGOCIO',
+                      ),
                       isLast: true,
                     ),
                   if (auth.hasNegocioProfile && !auth.hasOficioProfile)
                     SectionItem(
                       icon: Icons.handyman_rounded,
                       label: 'Ofrecer servicios como Profesional',
-                      onTap: () => ProfileNavigationHelper.openAddProfile(context, 'OFICIO'),
+                      onTap: () => ProfileNavigationHelper.openAddProfile(
+                        context,
+                        'OFICIO',
+                      ),
                       isLast: true,
                     ),
                 ],
@@ -337,14 +360,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SectionItem(
                     icon: Icons.handyman_rounded,
                     label: 'Ser profesional independiente',
-                    onTap: () => ProfileNavigationHelper.openAddProfile(context, 'OFICIO'),
+                    onTap: () => ProfileNavigationHelper.openAddProfile(
+                      context,
+                      'OFICIO',
+                    ),
                     isLast: !auth.canBecomeRole('NEGOCIO'),
                   ),
                 if (auth.canBecomeRole('NEGOCIO'))
                   SectionItem(
                     icon: Icons.storefront_rounded,
                     label: 'Registrar un negocio',
-                    onTap: () => ProfileNavigationHelper.openAddProfile(context, 'NEGOCIO'),
+                    onTap: () => ProfileNavigationHelper.openAddProfile(
+                      context,
+                      'NEGOCIO',
+                    ),
                     isLast: true,
                   ),
               ],
@@ -363,7 +392,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.devices_rounded,
                 label: 'Cuentas guardadas en este dispositivo',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SavedAccountsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const SavedAccountsScreen(),
+                  ),
                 ),
                 isLast: true,
               ),
@@ -383,6 +414,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
+
+          // ── Contáctanos (canales oficiales de soporte) ──────
+          const SizedBox(height: 8),
+          const ContactUsSection(),
 
           const SizedBox(height: 8),
 
