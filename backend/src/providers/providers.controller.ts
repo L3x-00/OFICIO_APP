@@ -84,6 +84,21 @@ export class ProvidersController {
     return this.providersService.getFeaturedGrouped();
   }
 
+  // GET /providers/nearby?latitude=&longitude=&radiusKm= — búsqueda por radio
+  // (PostGIS). Sin caché: depende de coords exactas. Estática, antes de `:id`.
+  @Get('nearby')
+  getNearby(
+    @Query('latitude') latitude: string,
+    @Query('longitude') longitude: string,
+    @Query('radiusKm') radiusKm?: string,
+  ) {
+    return this.providersService.getNearby(
+      parseFloat(latitude),
+      parseFloat(longitude),
+      radiusKm ? parseFloat(radiusKm) : 10,
+    );
+  }
+
   // GET /providers/:id
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {

@@ -390,6 +390,90 @@ export class ProvidersService {
     return groups;
   }
 
+  // ── BÚSQUEDA GEOESPACIAL POR RADIO (PostGIS) ─────────────
+  /**
+   * Proveedores aprobados/visibles dentro de `radiusKm` de (lat,lng), con la
+   * distancia exacta (`distanceKm`). Usa `ST_DWithin` sobre `location_geog`
+   * (geography), que aprovecha el índice GIST `providers_location_geog_gist`
+   * (sin full scan). `radiusKm` se acota a [1, 50].
+   */
+  async getNearby(latitude: number, longitude: number, radiusKm: number) {
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      throw new BadRequestException('Coordenadas inválidas');
+    }
+    const km = Math.min(50, Math.max(1, Number(radiusKm) || 1));
+    const radiusM = km * 1000;
+
+    // 1. IDs + distancia (metros) ordenados por cercanía. ST_DWithin(geography)
+    //    usa el índice GIST; ST_MakePoint recibe (lng, lat).
+    const rows = await this.prisma.$queryRaw<
+      Array<{ id: number; dist_m: number }>
+    >`
+      SELECT id, ST_Distance(location_geog, ST_MakePoint(${longitude}, ${latitude})::geography) AS dist_m
+      FROM providers
+      WHERE "isVisible" = true
+        AND "verificationStatus" = 'APROBADO'
+        AND location_geog IS NOT NULL
+        AND ST_DWithin(location_geog, ST_MakePoint(${longitude}, ${latitude})::geography, ${radiusM})
+      ORDER BY dist_m ASC
+      LIMIT 50
+    `;
+    if (rows.length === 0) return [];
+
+    const distByIdKm = new Map<number, number>();
+    for (const r of rows) {
+      distByIdKm.set(
+        Number(r.id),
+        Math.round((Number(r.dist_m) / 1000) * 10) / 10,
+      );
+    }
+    const ids = rows.map((r) => Number(r.id));
+
+    // 2. Hidratamos el shape de tarjeta completo para esos ids.
+    const providers = await this.prisma.provider.findMany({
+      where: { id: { in: ids } },
+      include: {
+        providerCategories: {
+          select: {
+            isPrimary: true,
+            category: {
+              select: { id: true, name: true, slug: true, iconUrl: true },
+            },
+          },
+          orderBy: { isPrimary: 'desc' },
+        },
+        images: { orderBy: [{ isCover: 'desc' }, { order: 'asc' }] },
+        user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        locality: {
+          select: {
+            name: true,
+            department: true,
+            province: true,
+            district: true,
+          },
+        },
+        subscription: { select: { plan: true, status: true } },
+      },
+    });
+
+    // 3. Re-ordenamos por cercanía (el orden del raw) + adjuntamos distanceKm.
+    const byId = new Map(providers.map((p) => [p.id, p]));
+    return ids
+      .map((id) => byId.get(id))
+      .filter((p): p is NonNullable<typeof p> => p != null)
+      .map((p) => ({
+        ...this.maskContactIfFree(p),
+        distanceKm: distByIdKm.get(p.id) ?? null,
+      }));
+  }
+
   // ── OBTENER un proveedor por ID ──────────────────────────
   async findOne(id: number) {
     const provider = await this.prisma.provider.findUnique({
