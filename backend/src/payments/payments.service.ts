@@ -136,6 +136,19 @@ export class PaymentsService {
       },
     });
 
+    // Persistir en el inbox del admin (FASE 3 #3) — providerId set ⇒ visible
+    // en el panel. Fire-and-forget para no romper el flujo de pago.
+    void this.prisma.adminNotification
+      .create({
+        data: {
+          providerId: provider.id,
+          type: 'YAPE_PAYMENT_SUBMITTED',
+          title: 'Nuevo pago Yape',
+          message: `Plan ${dto.plan} · S/ ${realPrice.toFixed(2)} pendiente de verificación.`,
+        },
+      })
+      .catch(() => {});
+
     // Notificar al admin con el monto OFICIAL (no el declarado por el cliente).
     this.events.emitNotification({
       type: 'NEW_YAPE_PAYMENT',

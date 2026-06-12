@@ -15,9 +15,9 @@ import {
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 
-// Retención de notificaciones: 5 días. Pasado ese plazo se purgan
-// automáticamente (cron diario).
-const NOTIFICATION_RETENTION_DAYS = 5;
+// Retención de notificaciones: 7 días (FASE 3 #3). Pasado ese plazo se purgan
+// automáticamente (cron diario) para ahorrar espacio en Supabase.
+const NOTIFICATION_RETENTION_DAYS = 7;
 
 @Injectable()
 export class ProviderProfileService {

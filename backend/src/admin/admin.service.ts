@@ -706,7 +706,11 @@ export class AdminService {
    */
   private static readonly ADMIN_NOTIF_WHERE: Prisma.AdminNotificationWhereInput =
     {
-      OR: [{ providerId: { not: null } }, { type: 'BROADCAST_LOG' }],
+      OR: [
+        { providerId: { not: null } },
+        // Tipos del sistema dirigidos al admin que NO llevan providerId.
+        { type: { in: ['BROADCAST_LOG', 'REFERRAL_CODE_USED'] } },
+      ],
     };
 
   async getNotifications(page = 1, limit = 20) {

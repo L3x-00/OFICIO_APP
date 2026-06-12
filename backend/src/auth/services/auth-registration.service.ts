@@ -414,6 +414,21 @@ export class AuthRegistrationService {
       return newProvider;
     });
 
+    // Persistir en el inbox del admin (FASE 3 #3) — el realtime de abajo es
+    // efímero; esta fila sobrevive aunque el admin esté offline. providerId
+    // set ⇒ visible en el panel (ADMIN_NOTIF_WHERE). Fire-and-forget: un
+    // fallo del inbox no debe abortar el registro.
+    void this.prisma.adminNotification
+      .create({
+        data: {
+          providerId: provider.id,
+          type: 'NUEVO_PROVEEDOR',
+          title: 'Nuevo proveedor registrado',
+          message: `${data.businessName} se registró como ${data.type === 'OFICIO' ? 'profesional' : 'negocio'} y está pendiente de verificación.`,
+        },
+      })
+      .catch(() => {});
+
     // Notificar a admins que hay un nuevo proveedor pendiente de verificación
     this.eventsGateway.emitNotification({
       type: 'NEW_PROVIDER',

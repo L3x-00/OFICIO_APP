@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle, XCircle, HelpCircle, ShieldOff,
   Bell, BellOff, Loader2, ChevronLeft, ChevronRight, CheckCheck,
-  CreditCard, RefreshCw, AlertCircle, Megaphone,
+  CreditCard, RefreshCw, AlertCircle, Megaphone, UserPlus, Gift,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -13,6 +13,7 @@ import {
   markAllNotificationsRead,
   NotificationItem,
 } from '@/lib/api';
+import { useAdminSocket } from '@/hooks/useAdminSocket';
 import dynamic from 'next/dynamic';
 
 const NotificationDetailModal = dynamic(
@@ -76,6 +77,34 @@ const TYPE_CONFIG: Record<string, { icon: LucideIcon; label: string; color: stri
     color: 'text-purple-400',
     bg: 'bg-purple-500/10',
     border: 'border-purple-500/20',
+  },
+  NUEVO_PROVEEDOR: {
+    icon: UserPlus,
+    label: 'Nuevo proveedor',
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/10',
+    border: 'border-blue-500/20',
+  },
+  YAPE_PAYMENT_SUBMITTED: {
+    icon: CreditCard,
+    label: 'Pago Yape',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
+  },
+  REFERRAL_CODE_USED: {
+    icon: Gift,
+    label: 'Referido',
+    color: 'text-pink-400',
+    bg: 'bg-pink-500/10',
+    border: 'border-pink-500/20',
+  },
+  REFERRAL_ADMIN_APPROVED: {
+    icon: Gift,
+    label: 'Referido aprobado',
+    color: 'text-green-400',
+    bg: 'bg-green-500/10',
+    border: 'border-green-500/20',
   },
 };
 
@@ -156,6 +185,23 @@ export function NotificationsList() {
   }, [page]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Refresco silencioso (sin spinner) de la página actual — lo dispara el
+  // socket admin cuando el backend persiste/emite una nueva notificación
+  // (registro, pago Yape, referido, etc.) → el panel se actualiza en vivo.
+  const refresh = useCallback(async () => {
+    try {
+      const data = await getNotifications(page);
+      setItems(data.data);
+      setTotal(data.total);
+      setLastPage(data.lastPage);
+      setUnreadCount(data.unreadCount);
+    } catch {
+      // Silencioso: el botón "Actualizar" y la próxima navegación reintentan.
+    }
+  }, [page]);
+
+  useAdminSocket(refresh);
 
   const handleMarkRead = async (id: number) => {
     try {

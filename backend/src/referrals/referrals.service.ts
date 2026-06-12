@@ -164,6 +164,24 @@ export class ReferralsService {
       targetUserId: owner.userId,
     });
 
+    // Inbox del admin (FASE 3 #3) — sin providerId, por eso ADMIN_NOTIF_WHERE
+    // incluye el tipo 'REFERRAL_CODE_USED'. Persistencia + realtime al admin.
+    void this.prisma.adminNotification
+      .create({
+        data: {
+          type: 'REFERRAL_CODE_USED',
+          title: 'Código de referido aplicado',
+          message: `Un usuario aplicó el código ${trimmed}. Las monedas se entregarán al aprobarse su perfil.`,
+        },
+      })
+      .catch(() => {});
+    this.events.emitNotification({
+      type: 'REFERRAL_CODE_USED',
+      title: 'Código de referido aplicado',
+      body: `Se aplicó el código ${trimmed}.`,
+      targetRole: 'ADMIN',
+    });
+
     return { success: true, referralId: referral.id };
   }
 
@@ -266,6 +284,17 @@ export class ReferralsService {
       body: `${inviterFullName} ha referido exitosamente a ${invitedName}.`,
       targetRole: 'ADMIN',
     });
+    // Inbox del admin (FASE 3 #3) — providerId set ⇒ visible en el panel.
+    void this.prisma.adminNotification
+      .create({
+        data: {
+          providerId,
+          type: 'REFERRAL_ADMIN_APPROVED',
+          title: 'Nuevo referido aprobado',
+          message: `${inviterFullName} ha referido exitosamente a ${invitedName}.`,
+        },
+      })
+      .catch(() => {});
 
     return updated;
   }
