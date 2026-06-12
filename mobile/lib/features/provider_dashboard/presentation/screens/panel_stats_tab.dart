@@ -11,6 +11,7 @@ import '../providers/dashboard_provider.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 import '../widgets/home/home_weekly_chart.dart';
 import '../widgets/home/home_reviews_section.dart';
+import '../../../providers_list/domain/models/review_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class PanelStatsTab extends StatefulWidget {
@@ -54,9 +55,14 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
     // → este early-return deja de aplicar → AdminTabShowcase se
     // monta por primera vez y dispara el tour. ✓
     if (!PlanLimits.hasStatsAccess(plan)) {
+      // FASE 3 · #4: las "Últimas reseñas" deben verse en TODOS los planes.
+      // Solo las estadísticas avanzadas quedan tras el upsell — por eso el
+      // _StatsUpsellScreen ahora pinta las reseñas arriba del bloqueo.
       return _StatsUpsellScreen(
         plan: plan,
         onNavigateToSettings: widget.onNavigateToSettings,
+        isLoading: dash.isLoading,
+        reviews: dash.reviews,
       );
     }
 
@@ -762,7 +768,15 @@ class _InfoRow extends StatelessWidget {
 class _StatsUpsellScreen extends StatelessWidget {
   final String plan;
   final VoidCallback? onNavigateToSettings;
-  const _StatsUpsellScreen({required this.plan, this.onNavigateToSettings});
+  // FASE 3 · #4: reseñas visibles también en plan GRATIS (sobre el upsell).
+  final bool isLoading;
+  final List<ReviewModel> reviews;
+  const _StatsUpsellScreen({
+    required this.plan,
+    this.onNavigateToSettings,
+    this.isLoading = false,
+    this.reviews = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -777,126 +791,135 @@ class _StatsUpsellScreen extends StatelessWidget {
         ),
         automaticallyImplyLeading: false,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: AppColors.amber.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.amber.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.bar_chart_rounded,
-                  color: AppColors.amber,
-                  size: 44,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Gestión de visitas',
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Las estadísticas de visitas, contactos y rendimiento de tu perfil están disponibles desde el plan Estándar.',
-                style: TextStyle(
-                  color: c.textSecondary,
-                  fontSize: 14,
-                  height: 1.6,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 28),
-              // Beneficios de upgrade
-              _UpsellBenefit(
-                icon: Icons.touch_app_rounded,
-                color: AppColors.primary,
-                text: 'Cuántas personas contactaron tu perfil',
-              ),
-              _UpsellBenefit(
-                svgAsset: 'assets/icons/whatsapp.svg',
-                color: AppColors.whatsapp,
-                text: 'Contactos por WhatsApp vs llamadas',
-              ),
-              _UpsellBenefit(
-                icon: Icons.show_chart_rounded,
-                color: AppColors.amber,
-                text: 'Gráfico diario de actividad',
-              ),
-              _UpsellBenefit(
-                icon: Icons.star_rounded,
-                color: AppColors.star,
-                text: 'Evolución de calificaciones',
-              ),
-              const SizedBox(height: 28),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.amber.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.amber.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.workspace_premium_rounded,
-                      color: AppColors.amber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Disponible desde Plan Estándar · S/ 29/mes',
-                      style: TextStyle(
-                        color: AppColors.amber,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onNavigateToSettings,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    foregroundColor: const Color(0xFF3D2B00),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Ver planes de suscripción',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
+      body: ListView(
+        children: [
+          // Reseñas SIEMPRE visibles (todos los planes).
+          HomeReviewsSection(
+            isLoading: isLoading,
+            reviews: reviews,
+            onViewAll: () {},
           ),
-        ),
+          // Bloque de upsell para el resto de estadísticas avanzadas.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: BoxDecoration(
+                    color: AppColors.amber.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.amber.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.bar_chart_rounded,
+                    color: AppColors.amber,
+                    size: 44,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Gestión de visitas',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Las estadísticas de visitas, contactos y rendimiento de tu perfil están disponibles desde el plan Estándar.',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 14,
+                    height: 1.6,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 28),
+                // Beneficios de upgrade
+                _UpsellBenefit(
+                  icon: Icons.touch_app_rounded,
+                  color: AppColors.primary,
+                  text: 'Cuántas personas contactaron tu perfil',
+                ),
+                _UpsellBenefit(
+                  svgAsset: 'assets/icons/whatsapp.svg',
+                  color: AppColors.whatsapp,
+                  text: 'Contactos por WhatsApp vs llamadas',
+                ),
+                _UpsellBenefit(
+                  icon: Icons.show_chart_rounded,
+                  color: AppColors.amber,
+                  text: 'Gráfico diario de actividad',
+                ),
+                _UpsellBenefit(
+                  icon: Icons.star_rounded,
+                  color: AppColors.star,
+                  text: 'Evolución de calificaciones',
+                ),
+                const SizedBox(height: 28),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.amber.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.amber.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.workspace_premium_rounded,
+                        color: AppColors.amber,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Disponible desde Plan Estándar · S/ 29/mes',
+                        style: TextStyle(
+                          color: AppColors.amber,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: onNavigateToSettings,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.amber,
+                      foregroundColor: const Color(0xFF3D2B00),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Ver planes de suscripción',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
