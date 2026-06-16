@@ -69,9 +69,20 @@ class ProvidersRepository {
   /// Consume GET /providers/featured-grouped: top categorías padre con sus
   /// primeros proveedores. Alimenta los carruseles del home sin tocar la
   /// paginación de [getProviders].
-  Future<ApiResult<List<FeaturedGroup>>> getFeaturedGrouped() async {
+  Future<ApiResult<List<FeaturedGroup>>> getFeaturedGrouped({
+    String? province,
+    String? department,
+  }) async {
     try {
-      final response = await _dio.get('/providers/featured-grouped');
+      final queryParams = <String, dynamic>{
+        if (province != null && province.isNotEmpty) 'province': province,
+        if (department != null && department.isNotEmpty)
+          'department': department,
+      };
+      final response = await _dio.get(
+        '/providers/featured-grouped',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
       final list = (response.data as List)
           .map((g) => FeaturedGroup.fromJson(g as Map<String, dynamic>))
           .toList();

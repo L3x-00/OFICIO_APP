@@ -195,10 +195,14 @@ class ProvidersProvider extends ChangeNotifier {
 
   // ── Cargar home agrupada (carruseles) ─────────────────────
   /// Best-effort: si falla, la home cae al listado paginado normal.
+  /// Pasa province/department para que el backend filtre por zona del usuario.
   Future<void> loadFeatured() async {
     _featuredLoading = true;
     notifyListeners();
-    final result = await _repo.getFeaturedGrouped();
+    final result = await _repo.getFeaturedGrouped(
+      province: _province,
+      department: _department,
+    );
     if (result.isSuccess) _featuredGroups = result.data;
     _featuredLoading = false;
     notifyListeners();
@@ -285,7 +289,7 @@ class ProvidersProvider extends ChangeNotifier {
     // Persist el snapshot del sheet — el chip único del header debe
     // reflejar lo elegido aquí y mantenerlo tras reinicio.
     await _persistLocation();
-    await loadProviders();
+    await Future.wait([loadProviders(), loadFeatured()]);
   }
 
   // ── Búsqueda por radio (mapa radar del filtro) ────────────
@@ -376,7 +380,7 @@ class ProvidersProvider extends ChangeNotifier {
     _province = province;
     _district = district;
     await _persistLocation();
-    await loadProviders();
+    await Future.wait([loadProviders(), loadFeatured()]);
   }
 
   Future<void> setVerifiedOnly(bool value) async {
@@ -412,7 +416,7 @@ class ProvidersProvider extends ChangeNotifier {
     _lastQueriedLat = null;
     _lastQueriedLng = null;
     await _persistLocation();
-    await loadProviders();
+    await Future.wait([loadProviders(), loadFeatured()]);
   }
 
   // ── Actualización GPS en tiempo real ─────────────────────
@@ -454,7 +458,7 @@ class ProvidersProvider extends ChangeNotifier {
     // tras reiniciar la app el umbral de 2 km siga aplicando sobre la
     // última posición conocida (no contra null).
     await _persistLocation();
-    await loadProviders();
+    await Future.wait([loadProviders(), loadFeatured()]);
   }
 
   /// Haversine — retorna distancia en metros entre dos coordenadas.

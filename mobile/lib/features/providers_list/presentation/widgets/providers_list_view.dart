@@ -398,22 +398,33 @@ class ProvidersListView extends StatelessWidget {
       );
     }
 
-    // ── Home Agrupada (FASE 2 · punto 1) ──────────────────────────
-    // En la vista por defecto (sin búsqueda ni categoría seleccionada) los
-    // carruseles `featured-grouped` van ARRIBA, y el listado paginado pasa a
-    // titularse "Explorar más". Al buscar/filtrar por categoría se ocultan y
-    // queda solo la lista filtrada — así no rompen los filtros existentes.
+    // ── Home Agrupada — solo carruseles (punto 1.2) ───────────────
+    // En la vista por defecto (sin búsqueda ni categoría) se muestran
+    // ÚNICAMENTE los carruseles por categoría. "Explorar más" eliminado.
+    // Al buscar/filtrar se ocultan los carruseles y aparece el listado.
     final showFeatured =
         prov.featuredGroups.isNotEmpty &&
         prov.searchQuery.isEmpty &&
         prov.selectedCategory == null &&
         prov.expandedParentSlug == null;
 
-    final slivers = <Widget>[];
     if (showFeatured) {
-      slivers.add(FeaturedCarousels.sliver(prov.featuredGroups));
-      slivers.add(sectionHeader('Explorar más', all.length));
+      return RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          await Future.wait([prov.loadProviders(), prov.loadFeatured()]);
+        },
+        child: CustomScrollView(
+          slivers: [
+            FeaturedCarousels.sliver(prov.featuredGroups),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
+      );
     }
+
+    // Cuando hay búsqueda/filtro activo: listado paginado por secciones.
+    final slivers = <Widget>[];
     slivers.add(headerSliver);
     var globalStart = 0;
     for (final (title, items) in sections) {

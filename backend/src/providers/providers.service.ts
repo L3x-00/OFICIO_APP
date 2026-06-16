@@ -299,10 +299,37 @@ export class ProvidersService {
    * plan (PREMIUM > ESTANDAR > GRATIS). Alimenta los carruseles del home móvil
    * sin tocar la paginación de `findAll`.
    */
-  async getFeaturedGrouped() {
+  async getFeaturedGrouped(opts?: { province?: string; department?: string }) {
+    const { province, department } = opts ?? {};
+
+    // Filtro por localidad (mirrors lógica de findAll, nivel provincia).
+    let localityIds: number[] | null = null;
+    if (province || department) {
+      const norm = (s: string | null | undefined) =>
+        (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+      const nDept = norm(department);
+      const nProv = norm(province);
+      const localities = await this.prisma.locality.findMany({
+        where: { isActive: true },
+        select: { id: true, department: true, province: true },
+      });
+      const matchAt = (d: string, p: string): number[] =>
+        localities
+          .filter(
+            (l) =>
+              (d === '' || norm(l.department) === d) &&
+              (p === '' || norm(l.province) === p),
+          )
+          .map((l) => l.id);
+      let ids = matchAt(nDept, nProv);
+      if (ids.length === 0 && nDept) ids = matchAt(nDept, '');
+      localityIds = ids.length > 0 ? ids : null;
+    }
+
     const VISIBLE_APPROVED = {
       isVisible: true,
       verificationStatus: 'APROBADO' as const,
+      ...(localityIds ? { localityId: { in: localityIds } } : {}),
     };
 
     // 1. Conteo de proveedores aprobados/visibles por categoría (hoja).

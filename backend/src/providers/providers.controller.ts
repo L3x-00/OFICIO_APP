@@ -80,8 +80,11 @@ export class ProvidersController {
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60000)
   @Get('featured-grouped')
-  getFeaturedGrouped() {
-    return this.providersService.getFeaturedGrouped();
+  getFeaturedGrouped(
+    @Query('province') province?: string,
+    @Query('department') department?: string,
+  ) {
+    return this.providersService.getFeaturedGrouped({ province, department });
   }
 
   // GET /providers/nearby?latitude=&longitude=&radiusKm= — búsqueda por radio
