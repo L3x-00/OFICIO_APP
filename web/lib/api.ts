@@ -543,23 +543,51 @@ export const api = {
     });
   },
 
+  /**
+   * Envía el comprobante de Yape — MISMO flujo que el móvil (2 pasos):
+   *   1. Sube la imagen a `POST /upload/payment-voucher` → { url }.
+   *   2. `POST /payments/yape` (JSON) con `voucherUrl` + código de 3 dígitos.
+   * El backend pone el monto real desde su diccionario de precios; queda en
+   * estado PENDIENTE hasta que el admin lo aprueba.
+   */
   async submitYapePayment(payload: {
     plan: string;
     amount: number;
     verificationCode: string;
+    voucherFile: File;
+    providerType?: "OFICIO" | "NEGOCIO";
     note?: string;
-    voucherFile?: File;
   }): Promise<void> {
-    if (payload.voucherFile) {
-      const formData = new FormData();
-      formData.append("file", payload.voucherFile);
-      formData.append("plan", payload.plan);
-      formData.append("amount", payload.amount.toString());
-      formData.append("verificationCode", payload.verificationCode);
-      if (payload.note) formData.append("note", payload.note);
-      return apiUpload("/payments/yape", formData);
-    }
-    return apiFetch("/payments/yape", {
+    const formData = new FormData();
+    formData.append("file", payload.voucherFile);
+    const { url } = await apiUpload<{ url: string }>(
+      "/upload/payment-voucher",
+      formData,
+    );
+    await apiFetch("/payments/yape", {
+      method: "POST",
+      body: JSON.stringify({
+        plan: payload.plan,
+        amount: payload.amount,
+        voucherUrl: url,
+        verificationCode: payload.verificationCode,
+        ...(payload.providerType ? { providerType: payload.providerType } : {}),
+        ...(payload.note ? { note: payload.note } : {}),
+      }),
+    });
+  },
+
+  /**
+   * Crea la preferencia de MercadoPago — MISMO endpoint que el móvil
+   * (`POST /payments/mercadopago/create-preference`). El server fija precio y
+   * descripción; el cliente solo elige plan + perfil. Devuelve `initPoint`
+   * (URL de checkout) para redirigir al usuario a la pasarela.
+   */
+  async createMpPreference(payload: {
+    plan: "ESTANDAR" | "PREMIUM";
+    providerType: "OFICIO" | "NEGOCIO";
+  }): Promise<{ preferenceId: string; initPoint: string }> {
+    return apiFetch("/payments/mercadopago/create-preference", {
       method: "POST",
       body: JSON.stringify(payload),
     });

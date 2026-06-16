@@ -12,6 +12,7 @@ import {
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
 import { getSocket } from '@/lib/socket';
+import { toast } from 'sonner';
 import {
   Home, UserCog, Zap, Briefcase, BarChart3, Settings, Gift, LogOut,
   Wrench, Store, ChevronDown, Check, MessageSquare, User as UserIcon,
@@ -66,13 +67,24 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
     }
 
     const user = getUser();
+    let socket: ReturnType<typeof getSocket> | null = null;
+    // Sincronización en tiempo real (Punto 4): cuando el admin aprueba el pago
+    // (o se activa la suscripción), llega `notification` con PLAN_APROBADO →
+    // avisamos y recargamos para reflejar el plan activo al instante.
+    const onNotif = (n: { type?: string }) => {
+      if (n?.type === 'PLAN_APROBADO') {
+        toast.success('¡Tu plan fue activado!');
+        setTimeout(() => window.location.reload(), 1200);
+      }
+    };
     if (user) {
-      const socket = getSocket();
+      socket = getSocket();
       socket.on('connect', () => {
         if (process.env.NODE_ENV === 'development') {
           console.log('[WS] Conectado al panel');
         }
       });
+      socket.on('notification', onNotif);
     }
 
     setAuthChecked(true);
@@ -81,7 +93,10 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
       updateLastActivity();
     }, 30000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      socket?.off('notification', onNotif);
+    };
   }, [router]);
 
   if (!mounted || !authChecked) {

@@ -13,6 +13,7 @@ import { api, type RegisterProviderPayload, type FeaturedCategory } from '@/lib/
 import { isAuthenticated, saveSession } from '@/lib/auth';
 import { signInWithGoogleIdToken } from '@/lib/firebase';
 import { PERU_DEPARTMENTS, provincesOf, districtsOf } from '@/lib/peru-locations';
+import OnboardingPlansModal from '@/components/onboarding-plans-modal';
 
 type ProviderType = 'OFICIO' | 'NEGOCIO';
 
@@ -165,6 +166,7 @@ function OnboardingForm({ onDone }: { onDone: () => void }) {
 
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPlans, setShowPlans] = useState(false);
 
   const isOficio = type === 'OFICIO';
 
@@ -303,8 +305,9 @@ function OnboardingForm({ onDone }: { onDone: () => void }) {
         }
         if (ok < photos.length) toast.message(`${ok}/${photos.length} fotos subidas`);
       }
-      toast.success('¡Perfil de proveedor creado!');
-      onDone();
+      toast.success('¡Perfil de proveedor creado! Elige tu plan.');
+      // Punto 3: al final del registro se muestra el modal de planes/pagos.
+      setShowPlans(true);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'No se pudo crear el perfil');
     } finally {
@@ -516,6 +519,15 @@ function OnboardingForm({ onDone }: { onDone: () => void }) {
           </div>
         )}
       </div>
+
+      {showPlans && type && (
+        <OnboardingPlansModal
+          isOpen
+          providerType={type}
+          onClose={onDone}
+          onComplete={onDone}
+        />
+      )}
     </div>
   );
 }

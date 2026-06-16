@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, QrCode, CheckCircle, Loader2, ScanLine, CreditCard, FileCheck } from 'lucide-react';
+import { X, Upload, CheckCircle, Loader2, ScanLine, CreditCard, FileCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { yapePaymentSchema } from '@/lib/validators';
@@ -13,6 +14,10 @@ interface Props {
   plan: 'ESTANDAR' | 'PREMIUM';
   planLabel: string;
   amount: number;
+  /** Perfil al que aplicar el pago (cuando el user tiene OFICIO y NEGOCIO). */
+  providerType?: 'OFICIO' | 'NEGOCIO';
+  /** Se llama al cerrar tras enviar el comprobante con éxito. */
+  onSuccess?: () => void;
 }
 
 const STEPS = [
@@ -21,7 +26,7 @@ const STEPS = [
   { icon: FileCheck, label: 'Confirmar' },
 ];
 
-export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amount }: Props) {
+export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amount, providerType, onSuccess }: Props) {
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [verificationCode, setVerificationCode] = useState('');
   const [note, setNote] = useState('');
@@ -52,6 +57,7 @@ export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amo
         verificationCode,
         note,
         voucherFile,
+        providerType,
       });
       setStep('success');
       toast.success('Comprobante enviado. El administrador lo revisará pronto.');
@@ -150,11 +156,17 @@ export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amo
                     </div>
                   </div>
 
-                  {/* QR */}
+                  {/* QR real de la cuenta Yape de Servi */}
                   <div className="text-center">
                     <div className="w-44 h-44 mx-auto glass rounded-2xl p-3 mb-3 shadow-glow-sm">
-                      <div className="w-full h-full bg-white rounded-xl p-2 flex items-center justify-center">
-                        <QrCode className="w-full h-full text-black" />
+                      <div className="w-full h-full bg-white rounded-xl p-1.5 flex items-center justify-center overflow-hidden">
+                        <Image
+                          src="/images/yape/qr.jpeg"
+                          alt="QR Yape de Servi"
+                          width={168}
+                          height={168}
+                          className="w-full h-full object-contain rounded-lg"
+                        />
                       </div>
                     </div>
                     <p className="text-white/50 text-sm">Escanea con tu app Yape</p>
@@ -298,7 +310,7 @@ export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amo
                   Recibirás una notificación cuando esté listo.
                 </p>
                 <button
-                  onClick={handleClose}
+                  onClick={() => { handleClose(); onSuccess?.(); }}
                   className="btn btn-primary press-effect w-full sm:w-auto px-8 py-3 text-sm"
                 >
                   Entendido
