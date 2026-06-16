@@ -20,6 +20,7 @@ class FilterRadarMap extends StatefulWidget {
   final String? district;
   final String? province;
   final String? department;
+  final double initialRadiusKm;
   final void Function(double latitude, double longitude, double radiusKm)
   onSearch;
 
@@ -28,6 +29,7 @@ class FilterRadarMap extends StatefulWidget {
     this.district,
     this.province,
     this.department,
+    this.initialRadiusKm = 5,
     required this.onSearch,
   });
 
@@ -43,13 +45,15 @@ class _FilterRadarMapState extends State<FilterRadarMap>
   static const LatLng _fallback = LatLng(-12.0686, -75.2103);
 
   LatLng _center = _fallback;
-  double _radiusKm = 5;
+  late double _radiusKm;
   bool _locating = false;
   AnimationController? _moveCtrl;
 
   @override
   void initState() {
     super.initState();
+    // Arranca con el radio persistido (UX #2.4) — acotado al rango del slider.
+    _radiusKm = widget.initialRadiusKm.clamp(1, 50).toDouble();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _resolveCenter(useGps: true);
     });
@@ -168,6 +172,12 @@ class _FilterRadarMapState extends State<FilterRadarMap>
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    // Tiles según el tema activo (UX #2.2): claro → CartoDB Voyager,
+    // oscuro → CartoDB Dark Matter. Sigue el ThemeMode real de la app.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tileUrl = isDark
+        ? 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+        : 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,8 +219,7 @@ class _FilterRadarMapState extends State<FilterRadarMap>
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate:
-                          'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                      urlTemplate: tileUrl,
                       userAgentPackageName: 'com.servi.mobile',
                     ),
                     CircleLayer(

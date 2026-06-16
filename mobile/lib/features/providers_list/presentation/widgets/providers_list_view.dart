@@ -68,6 +68,53 @@ class ProvidersListView extends StatelessWidget {
     }
 
     if (prov.providers.isEmpty) {
+      // Radar activo sin resultados: mensaje específico — el usuario debe
+      // saber que el radio es pequeño y puede ampliarlo o ver todos.
+      if (prov.nearbyActive) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.radar_rounded, color: c.textMuted, size: 48),
+                const SizedBox(height: 12),
+                Text(
+                  'Sin servicios dentro de ${prov.nearbyRadiusKm.round()} km',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Amplía el radio de búsqueda o vuelve al listado completo.',
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: prov.loadProviders,
+                  icon: const Icon(
+                    Icons.list_rounded,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
+                  label: const Text(
+                    'Ver todos los servicios',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
       // Empty state distinto cuando la causa es el filtro de ubicación —
       // el usuario debe entender que su zona no tiene proveedores aún
       // y que puede ampliar el área desde aquí mismo.
@@ -404,6 +451,7 @@ class ProvidersListView extends StatelessWidget {
     // Al buscar/filtrar se ocultan los carruseles y aparece el listado.
     final showFeatured =
         prov.featuredGroups.isNotEmpty &&
+        !prov.nearbyActive &&
         prov.searchQuery.isEmpty &&
         prov.selectedCategory == null &&
         prov.expandedParentSlug == null;
@@ -425,6 +473,55 @@ class ProvidersListView extends StatelessWidget {
 
     // Cuando hay búsqueda/filtro activo: listado paginado por secciones.
     final slivers = <Widget>[];
+    // Banner de radar activo: indica el radio y permite volver al listado.
+    if (prov.nearbyActive) {
+      slivers.add(
+        SliverToBoxAdapter(
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.radar_rounded,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Servicios dentro de ${prov.nearbyRadiusKm.round()} km',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: prov.loadProviders,
+                  child: const Text(
+                    'Ver todos',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     slivers.add(headerSliver);
     var globalStart = 0;
     for (final (title, items) in sections) {

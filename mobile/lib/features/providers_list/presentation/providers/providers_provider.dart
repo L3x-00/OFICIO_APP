@@ -64,6 +64,17 @@ class ProvidersProvider extends ChangeNotifier {
   String? _liveDistrict;
   String? get liveDistrict => _liveDistrict;
 
+  // ── Búsqueda por radio (radar) — estado persistente (UX #2.4) ──
+  /// Activo tras una búsqueda por radio (mapa radar). Mientras esté activo,
+  /// la home muestra los resultados del radar en vez de los carruseles. Se
+  /// limpia al volver al listado normal ([loadProviders]) o limpiar filtros.
+  bool _nearbyActive = false;
+  double? _nearbyLat;
+  double? _nearbyLng;
+  double _nearbyRadiusKm = 5;
+  bool get nearbyActive => _nearbyActive;
+  double get nearbyRadiusKm => _nearbyRadiusKm;
+
   // ── Getters ───────────────────────────────────────────────
   List<ProviderModel> get providers => _providers;
   List<CategoryModel> get categories => _categories;
@@ -134,6 +145,11 @@ class ProvidersProvider extends ChangeNotifier {
   static const _kLocDist = 'loc_district';
   static const _kLocLat = 'loc_last_lat';
   static const _kLocLng = 'loc_last_lng';
+  // Estado del radar (búsqueda por radio) persistido entre sesiones.
+  static const _kNearbyActive = 'nearby_active';
+  static const _kNearbyLat = 'nearby_lat';
+  static const _kNearbyLng = 'nearby_lng';
+  static const _kNearbyRadius = 'nearby_radius';
 
   Future<void> _persistLocation() async {
     final prefs = await SharedPreferences.getInstance();
@@ -164,6 +180,28 @@ class ProvidersProvider extends ChangeNotifier {
     _district = prefs.getString(_kLocDist);
     _lastQueriedLat = prefs.getDouble(_kLocLat);
     _lastQueriedLng = prefs.getDouble(_kLocLng);
+    // Radar (búsqueda por radio): se mantiene activo entre sesiones.
+    _nearbyActive = prefs.getBool(_kNearbyActive) ?? false;
+    _nearbyLat = prefs.getDouble(_kNearbyLat);
+    _nearbyLng = prefs.getDouble(_kNearbyLng);
+    _nearbyRadiusKm = prefs.getDouble(_kNearbyRadius) ?? 5;
+    if (_nearbyLat == null || _nearbyLng == null) _nearbyActive = false;
+  }
+
+  /// Persiste el estado del radar. Separado de [_persistLocation] para que el
+  /// orden de llamadas no pise el flag (loadProviders lo limpia DESPUÉS).
+  Future<void> _persistNearby() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNearbyActive, _nearbyActive);
+    if (_nearbyActive && _nearbyLat != null && _nearbyLng != null) {
+      await prefs.setDouble(_kNearbyLat, _nearbyLat!);
+      await prefs.setDouble(_kNearbyLng, _nearbyLng!);
+      await prefs.setDouble(_kNearbyRadius, _nearbyRadiusKm);
+    } else {
+      await prefs.remove(_kNearbyLat);
+      await prefs.remove(_kNearbyLng);
+      await prefs.remove(_kNearbyRadius);
+    }
   }
 
   // ── Carga inicial ─────────────────────────────────────────
@@ -185,9 +223,19 @@ class ProvidersProvider extends ChangeNotifier {
       _province = province;
       _district = district;
     }
+    // Si el radar quedó activo en una sesión previa, restauramos esos
+    // resultados (en vez del listado normal) para que el filtro de radio
+    // persista hasta que el usuario lo cambie o limpie (UX #2.4).
     await Future.wait([
       loadCategories(),
-      loadProviders(),
+      if (_nearbyActive && _nearbyLat != null && _nearbyLng != null)
+        applyNearby(
+          latitude: _nearbyLat!,
+          longitude: _nearbyLng!,
+          radiusKm: _nearbyRadiusKm,
+        )
+      else
+        loadProviders(),
       loadFeatured(),
       loadPreferences(),
     ]);
@@ -220,9 +268,14 @@ class ProvidersProvider extends ChangeNotifier {
 
   // ── Cargar proveedores ────────────────────────────────────
   Future<void> loadProviders() async {
+    // Volver al listado normal desactiva el modo radar. Si estaba activo,
+    // persistimos el cambio para que no resucite al reiniciar la app.
+    final wasNearby = _nearbyActive;
+    _nearbyActive = false;
     _isLoading = true;
     _hasError = false;
     notifyListeners();
+    if (wasNearby) unawaited(_persistNearby());
 
     final result = await _repo.getProviders(
       categorySlug: _selectedCategory,
@@ -304,6 +357,12 @@ class ProvidersProvider extends ChangeNotifier {
   }) async {
     _isLoading = true;
     _hasError = false;
+    // Activa el modo radar: la home mostrará estos resultados (no carruseles)
+    // y el radio queda persistido para sobrevivir navegación/reinicio.
+    _nearbyActive = true;
+    _nearbyLat = latitude;
+    _nearbyLng = longitude;
+    _nearbyRadiusKm = radiusKm;
     notifyListeners();
 
     final result = await _repo.getNearby(
@@ -319,6 +378,7 @@ class ProvidersProvider extends ChangeNotifier {
       },
     );
 
+    await _persistNearby();
     _isLoading = false;
     notifyListeners();
   }

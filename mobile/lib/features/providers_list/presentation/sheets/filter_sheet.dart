@@ -215,6 +215,11 @@ class _FilterSheetState extends State<FilterSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // BÚSQUEDA POR TEXTO/DIRECCIÓN (UX #2.1) — arriba del todo
+                  // para que sea visible y no quede oculta tras el teclado.
+                  _buildAddressTextField(c),
+                  const SizedBox(height: 18),
+
                   // CATEGORÍA ELIMINADA ✅
 
                   // DISPONIBILIDAD
@@ -260,7 +265,6 @@ class _FilterSheetState extends State<FilterSheet> {
                       });
                       _apply();
                     },
-                    addressField: _buildAddressTextField(c),
                   ),
 
                   // BÚSQUEDA POR RADIO (mapa radar) — independiente de los
@@ -269,6 +273,7 @@ class _FilterSheetState extends State<FilterSheet> {
                     district: _dist,
                     province: _prov,
                     department: _dept,
+                    initialRadiusKm: widget.prov.nearbyRadiusKm,
                     onSearch: (lat, lng, km) {
                       widget.prov.applyNearby(
                         latitude: lat,
@@ -348,14 +353,22 @@ class _FilterSheetState extends State<FilterSheet> {
     return TextField(
       controller: _locationCtrl,
       style: TextStyle(color: c.textPrimary),
+      textInputAction: TextInputAction.search,
+      onSubmitted: (_) => _apply(),
       decoration: InputDecoration(
-        hintText: 'Dirección (opcional): Jr. Lima, Av…',
+        hintText: 'Buscar por dirección (Jr. Lima, Av…)',
         hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
         prefixIcon: const Icon(
-          Icons.location_on_outlined,
+          Icons.search_rounded,
           color: AppColors.amber,
           size: 20,
         ),
+        suffixIcon: _locationCtrl.text.isNotEmpty
+            ? IconButton(
+                icon: Icon(Icons.close_rounded, color: c.textMuted, size: 18),
+                onPressed: () => setState(() => _locationCtrl.clear()),
+              )
+            : null,
         filled: true,
         fillColor: c.bgCard,
         border: OutlineInputBorder(

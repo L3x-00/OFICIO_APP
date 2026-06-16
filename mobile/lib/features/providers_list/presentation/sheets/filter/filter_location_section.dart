@@ -18,7 +18,6 @@ class LocationSection extends StatelessWidget {
   final ValueChanged<String?> onProvinceChanged;
   final ValueChanged<String?> onDistrictChanged;
   final VoidCallback onExpandToDepartment;
-  final Widget addressField;
 
   const LocationSection({
     super.key,
@@ -31,7 +30,6 @@ class LocationSection extends StatelessWidget {
     required this.onProvinceChanged,
     required this.onDistrictChanged,
     required this.onExpandToDepartment,
-    required this.addressField,
   });
 
   @override
@@ -82,14 +80,13 @@ class LocationSection extends StatelessWidget {
           },
         ),
         const SizedBox(height: 14),
-        addressField,
-        const SizedBox(height: 14),
         // Banner: ampliar búsqueda a todo el departamento.
         if (department != null)
           ExpandSearchBanner(
             department: department!,
             // true = búsqueda ampliada (solo dept, sin prov/dist)
-            isExpanded: department != null && province == null && district == null,
+            isExpanded:
+                department != null && province == null && district == null,
             onExpand: onExpandToDepartment,
           ),
         const SizedBox(height: 24),
