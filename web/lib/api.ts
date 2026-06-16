@@ -298,6 +298,42 @@ interface SocialLoginResponse {
   isNewUser?: boolean;
 }
 
+// Payload de POST /auth/register/provider — espejo del RegisterProviderDto del
+// backend (mismos nombres/semántica que envía Flutter).
+export interface RegisterProviderPayload {
+  businessName: string;
+  phone: string;
+  type: "OFICIO" | "NEGOCIO";
+  description: string;
+  whatsapp?: string;
+  // OFICIO
+  dni?: string;
+  hasHomeService?: boolean;
+  // NEGOCIO
+  ruc?: string;
+  nombreComercial?: string;
+  razonSocial?: string;
+  hasDelivery?: boolean;
+  plenaCoordinacion?: boolean;
+  // comunes
+  address?: string;
+  categoryIds: number[];
+  primaryCategoryId?: number;
+  department?: string;
+  province?: string;
+  district?: string;
+  scheduleJson?: Record<string, string | null>;
+  // redes sociales
+  website?: string;
+  instagram?: string;
+  tiktok?: string;
+  facebook?: string;
+  linkedin?: string;
+  twitterX?: string;
+  telegram?: string;
+  whatsappBiz?: string;
+}
+
 // Shape REAL que devuelve el backend en /provider-profile/me/analytics.
 // El web ya tenía un `Analytics` UI-friendly (totalViews, dailyData) pero
 // el endpoint responde con `summary` + `dailyClicks` (mismo contrato que
@@ -450,6 +486,20 @@ export const api = {
     return apiFetch<ProviderImage>("/provider-profile/me/images", {
       method: "POST",
       body: JSON.stringify({ url }),
+    });
+  },
+
+  /**
+   * Registra el perfil de proveedor (OFICIO/NEGOCIO) — MISMO endpoint que el
+   * móvil (`POST /auth/register/provider`). Se envía como JSON (igual que
+   * Flutter): el backend ignora la parte multipart si no hay archivos. Las
+   * fotos se suben aparte con `uploadImage` tras crear el perfil.
+   * Requiere sesión (JWT) — `apiFetch` adjunta el token.
+   */
+  async registerProvider(payload: RegisterProviderPayload): Promise<unknown> {
+    return apiFetch("/auth/register/provider", {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
   },
 
