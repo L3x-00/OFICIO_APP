@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/network/dio_client.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/features/providers_list/presentation/widgets/login_required_dialog.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:mobile/shared/widgets/user_report_sheet.dart';
 
@@ -123,6 +126,11 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final auth = context.read<AuthProvider>();
+    // 3.1: no se puede reportar al propio usuario logueado.
+    final isSelf = auth.user != null && auth.user!.id == widget.userId;
+    // 3.2: invitado (sin sesión) → modal bloqueante en vez de reportar.
+    final isGuest = auth.user == null || auth.isGuest;
     final name = _profile?.fullName.isNotEmpty == true
         ? _profile!.fullName
         : (widget.seedName?.trim().isNotEmpty == true
@@ -248,38 +256,50 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
             ),
             const SizedBox(height: 14),
 
-            // Reportar comportamiento inapropiado (FASE 2 · #3). Cierra el
-            // perfil y abre el sheet de reporte. POST /users/report con JWT.
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  final navigator = Navigator.of(context);
-                  navigator.pop();
-                  UserReportSheet.show(
-                    navigator.context,
-                    reportedUserId: widget.userId,
-                    userName: name,
-                  );
-                },
-                icon: const Icon(
-                  Icons.flag_outlined,
-                  size: 18,
-                  color: AppColors.busy,
-                ),
-                label: const Text('Reportar comportamiento inapropiado'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.busy,
-                  side: BorderSide(
-                    color: AppColors.busy.withValues(alpha: 0.5),
+            // Reportar comportamiento inapropiado (FASE 2 · #3). Oculto si es
+            // el propio usuario logueado (3.1). Invitado → modal bloqueante de
+            // login en vez de reportar (3.2). POST /users/report con JWT.
+            if (!isSelf)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    final navigator = Navigator.of(context);
+                    if (isGuest) {
+                      navigator.pop();
+                      showLoginRequiredDialog(
+                        navigator.context,
+                        title: 'Inicia sesión para reportar',
+                        message:
+                            'Regístrate o inicia sesión para realizar esta acción.',
+                      );
+                      return;
+                    }
+                    navigator.pop();
+                    UserReportSheet.show(
+                      navigator.context,
+                      reportedUserId: widget.userId,
+                      userName: name,
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.flag_outlined,
+                    size: 18,
+                    color: AppColors.busy,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  label: const Text('Reportar comportamiento inapropiado'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.busy,
+                    side: BorderSide(
+                      color: AppColors.busy.withValues(alpha: 0.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),

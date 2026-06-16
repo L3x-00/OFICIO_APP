@@ -12,8 +12,13 @@ import '../../../auth/presentation/screens/login_screen.dart';
 /// diálogo colgado. Fix: usar el `dialogCtx` del builder; además
 /// capturamos el rootNavigator ANTES del pop para que la navegación a
 /// /login funcione aunque el context original quede inválido.
-void showLoginRequiredDialog(BuildContext context) {
-  final c       = context.colors;
+void showLoginRequiredDialog(
+  BuildContext context, {
+  String title = 'Inicia sesión para continuar',
+  String message =
+      'Necesitas una cuenta para agregar favoritos y dejar reseñas.',
+}) {
+  final c = context.colors;
   final rootNav = Navigator.of(context, rootNavigator: true);
 
   showDialog(
@@ -21,10 +26,18 @@ void showLoginRequiredDialog(BuildContext context) {
     builder: (dialogCtx) => AlertDialog(
       backgroundColor: c.bgCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('Inicia sesión para continuar',
-          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17)),
-      content: Text('Necesitas una cuenta para agregar favoritos y dejar reseñas.',
-          style: TextStyle(color: c.textSecondary, height: 1.5)),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: c.textPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 17,
+        ),
+      ),
+      content: Text(
+        message,
+        style: TextStyle(color: c.textSecondary, height: 1.5),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogCtx).pop(),
@@ -33,15 +46,23 @@ void showLoginRequiredDialog(BuildContext context) {
         ElevatedButton(
           onPressed: () {
             Navigator.of(dialogCtx).pop();
-            rootNav.push(MaterialPageRoute(
-              builder: (_) => const LoginScreen(initialMode: AuthMode.register),
-            ));
+            rootNav.push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    const LoginScreen(initialMode: AuthMode.register),
+              ),
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          child: const Text('Registrarme', style: TextStyle(color: Colors.white)),
+          child: const Text(
+            'Registrarme',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     ),
