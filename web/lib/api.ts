@@ -231,6 +231,7 @@ export interface FavoriteFromApi {
 /** Shape returned by GET /providers (public listing). */
 export interface PublicProvider {
   id: number;
+  slug?: string;
   businessName: string;
   description?: string;
   phone?: string;
@@ -248,6 +249,24 @@ export interface PublicProvider {
     district?: string;
   };
 }
+
+// Categoría del catálogo (GET /providers/categories) — padre con hijos.
+export interface FeaturedCategory {
+  id: number;
+  name: string;
+  slug: string;
+  iconUrl?: string | null;
+  children?: FeaturedCategory[];
+}
+
+// Grupo de la home agrupada (GET /providers/featured-grouped).
+export interface FeaturedGroup {
+  category: FeaturedCategory;
+  providers: PublicProvider[];
+}
+
+// Proveedor con distancia (GET /providers/nearby).
+export type NearbyProvider = PublicProvider & { distanceKm?: number | null };
 
 // Shape that the backend actually returns on /auth/login — fields are flat,
 // not wrapped in a `user` object. We normalize it here into LoginResponse.
@@ -480,6 +499,70 @@ export const api = {
     if (!res.ok) throw new Error(`Error ${res.status} cargando proveedores`);
     const json = (await res.json()) as { data?: PublicProvider[] } | PublicProvider[];
     return Array.isArray(json) ? json : json.data ?? [];
+  },
+
+  /**
+   * Búsqueda pública de proveedores con filtros (página /buscar).
+   * Endpoint público — fetch directo sin Authorization.
+   */
+  async searchProviders(params: {
+    search?: string;
+    categorySlug?: string;
+    type?: "PROFESSIONAL" | "BUSINESS";
+    sortBy?: "rating" | "reviews" | "availability";
+    limit?: number;
+    page?: number;
+  } = {}): Promise<PublicProvider[]> {
+    const qs = new URLSearchParams();
+    qs.set("limit", String(params.limit ?? 24));
+    qs.set("page", String(params.page ?? 1));
+    if (params.sortBy) qs.set("sortBy", params.sortBy);
+    if (params.search) qs.set("search", params.search);
+    if (params.categorySlug) qs.set("categorySlug", params.categorySlug);
+    if (params.type) qs.set("type", params.type);
+    const res = await fetch(`${API_BASE_URL}/providers?${qs.toString()}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Error ${res.status} buscando proveedores`);
+    const json = (await res.json()) as { data?: PublicProvider[] } | PublicProvider[];
+    return Array.isArray(json) ? json : json.data ?? [];
+  },
+
+  /** Catálogo de categorías (padres + hijos). Público. */
+  async getCategories(forType?: "OFICIO" | "NEGOCIO"): Promise<FeaturedCategory[]> {
+    const qs = forType ? `?type=${forType}` : "";
+    const res = await fetch(`${API_BASE_URL}/providers/categories${qs}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Error ${res.status} cargando categorías`);
+    return (await res.json()) as FeaturedCategory[];
+  },
+
+  /** Home agrupada: top categorías × proveedores destacados. Público. */
+  async getFeaturedGrouped(): Promise<FeaturedGroup[]> {
+    const res = await fetch(`${API_BASE_URL}/providers/featured-grouped`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Error ${res.status} cargando destacados`);
+    return (await res.json()) as FeaturedGroup[];
+  },
+
+  /** Búsqueda por radio (PostGIS). Público. radiusKm 1–50. */
+  async getNearby(
+    latitude: number,
+    longitude: number,
+    radiusKm: number,
+  ): Promise<NearbyProvider[]> {
+    const qs = `?latitude=${latitude}&longitude=${longitude}&radiusKm=${radiusKm}`;
+    const res = await fetch(`${API_BASE_URL}/providers/nearby${qs}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Error ${res.status} en la búsqueda por radio`);
+    return (await res.json()) as NearbyProvider[];
   },
 
   // ── REFERIDOS Y MONEDAS ─────────────────────────────────────
