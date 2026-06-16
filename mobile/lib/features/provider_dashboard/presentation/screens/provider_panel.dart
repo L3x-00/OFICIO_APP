@@ -33,10 +33,34 @@ class ProviderPanel extends StatefulWidget {
 class _ProviderPanelState extends State<ProviderPanel> {
   late int _currentIndex = widget.initialTabIndex;
 
+  // Historial de pestañas para que el back del sistema navegue DENTRO del
+  // panel (regresa a la tab previa / Inicio) en vez de salir del panel (UX #4.1).
+  final List<int> _tabHistory = [];
+
   // Shared mutable state — paused flag visible to all tabs
   bool _isPaused = false;
 
   void _togglePause(bool paused) => setState(() => _isPaused = paused);
+
+  /// Cambia de pestaña recordando la actual en el historial — así el back
+  /// regresa a la pestaña anterior sin abandonar el panel.
+  void _changeTab(int i) {
+    if (i == _currentIndex) return;
+    setState(() {
+      _tabHistory.add(_currentIndex);
+      _currentIndex = i;
+    });
+  }
+
+  /// Maneja el back del sistema: si hay historial de tabs, regresa a la
+  /// anterior; si no pero no estamos en Inicio, va a Inicio; en Inicio sí sale.
+  void _handleBack() {
+    if (_tabHistory.isNotEmpty) {
+      setState(() => _currentIndex = _tabHistory.removeLast());
+    } else if (_currentIndex != 0) {
+      setState(() => _currentIndex = 0);
+    }
+  }
 
   @override
   void initState() {
@@ -60,70 +84,81 @@ class _ProviderPanelState extends State<ProviderPanel> {
     final isNeg = (widget.providerType ?? auth.activeProfileType) == 'NEGOCIO';
 
     return AdminShowcaseWrapper(
-      child: Scaffold(
-        backgroundColor: c.bg,
-        // FAB ámbar de Ofi — abre el chat con el perfil activo como contexto.
-        floatingActionButton: AiAssistantFab(
-          providerType: widget.providerType ?? auth.activeProfileType,
-        ),
-        appBar: _PanelAppBar(
-          activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
-          hasOficio: auth.hasOficioProfile,
-          hasNegocio: auth.hasNegocioProfile,
-          onSwitch: (type) {
-            auth.switchProfile(type);
-            context.read<DashboardProvider>().loadDashboard(providerType: type);
-          },
-          onLogout: () => _confirmLogout(context),
-        ),
-        body: Stack(
-          children: [
-            ChangeNotifierProvider(
-              create: (_) => SubastasProvider(),
-              child: IndexedStack(
-                index: _currentIndex,
-                children: [
-                  PanelHomeTab(
-                    isNegocio: isNeg,
-                    isPaused: _isPaused,
-                    onChangeTab: (i) => setState(() => _currentIndex = i),
-                  ),
-                  PanelProfileTab(
-                    isNegocio: isNeg,
-                    isPaused: _isPaused,
-                    onPauseToggle: _togglePause,
-                  ),
-                  const OportunidadesTab(),
-                  PanelServicesTab(isNegocio: isNeg),
-                  PanelStatsTab(
-                    isNegocio: isNeg,
-                    onNavigateToSettings: () =>
-                        setState(() => _currentIndex = 6),
-                  ),
-                  // scope:'provider' + providerType separa la bandeja
-                  // de cada perfil. Si el user es OFICIO y NEGOCIO a la
-                  // vez, ver mensajes en el panel de NEGOCIO no muestra
-                  // los del panel de OFICIO ni los del rol cliente.
-                  ChatListScreen(
-                    scope: 'provider',
-                    providerType: widget.providerType ?? auth.activeProfileType,
-                  ),
-                  const PanelSettingsTab(),
-                ],
+      child: PopScope(
+        // Solo permitimos salir del panel desde Inicio sin historial; en
+        // cualquier otra tab, el back navega dentro del panel (UX #4.1).
+        canPop: _currentIndex == 0 && _tabHistory.isEmpty,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          _handleBack();
+        },
+        child: Scaffold(
+          backgroundColor: c.bg,
+          // FAB ámbar de Ofi — abre el chat con el perfil activo como contexto.
+          floatingActionButton: AiAssistantFab(
+            providerType: widget.providerType ?? auth.activeProfileType,
+          ),
+          appBar: _PanelAppBar(
+            activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
+            hasOficio: auth.hasOficioProfile,
+            hasNegocio: auth.hasNegocioProfile,
+            onSwitch: (type) {
+              auth.switchProfile(type);
+              context.read<DashboardProvider>().loadDashboard(
+                providerType: type,
+              );
+            },
+            onLogout: () => _confirmLogout(context),
+          ),
+          body: Stack(
+            children: [
+              ChangeNotifierProvider(
+                create: (_) => SubastasProvider(),
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: [
+                    PanelHomeTab(
+                      isNegocio: isNeg,
+                      isPaused: _isPaused,
+                      onChangeTab: _changeTab,
+                    ),
+                    PanelProfileTab(
+                      isNegocio: isNeg,
+                      isPaused: _isPaused,
+                      onPauseToggle: _togglePause,
+                    ),
+                    const OportunidadesTab(),
+                    PanelServicesTab(isNegocio: isNeg),
+                    PanelStatsTab(
+                      isNegocio: isNeg,
+                      onNavigateToSettings: () => _changeTab(6),
+                    ),
+                    // scope:'provider' + providerType separa la bandeja
+                    // de cada perfil. Si el user es OFICIO y NEGOCIO a la
+                    // vez, ver mensajes en el panel de NEGOCIO no muestra
+                    // los del panel de OFICIO ni los del rol cliente.
+                    ChatListScreen(
+                      scope: 'provider',
+                      providerType:
+                          widget.providerType ?? auth.activeProfileType,
+                    ),
+                    const PanelSettingsTab(),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: _PanelBottomNav(
-          currentIndex: _currentIndex,
-          // Cancelar showcase activo ANTES de cambiar de tab — el
-          // tutorial de un tab no debe seguir corriendo en otro.
-          onTap: (i) {
-            AdminTabShowcase.dismissActive(context);
-            setState(() => _currentIndex = i);
-          },
-          isPaused: _isPaused,
-          isNegocio: isNeg,
+            ],
+          ),
+          bottomNavigationBar: _PanelBottomNav(
+            currentIndex: _currentIndex,
+            // Cancelar showcase activo ANTES de cambiar de tab — el
+            // tutorial de un tab no debe seguir corriendo en otro.
+            onTap: (i) {
+              AdminTabShowcase.dismissActive(context);
+              _changeTab(i);
+            },
+            isPaused: _isPaused,
+            isNegocio: isNeg,
+          ),
         ),
       ),
     );
