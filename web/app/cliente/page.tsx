@@ -13,6 +13,7 @@ import {
   Briefcase,
   Store,
   LogOut,
+  Globe,
   Sparkles,
   Bell,
   Settings,
@@ -71,6 +72,9 @@ function ClienteContent() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ClientSection>(initialTab);
+  // FASE 4 #3: si el usuario ya tiene perfil de proveedor, ocultamos el CTA
+  // de "Regístrate como profesional/negocio" y mostramos acceso al panel.
+  const [hasProvider, setHasProvider] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +92,14 @@ function ClienteContent() {
         setFavorites((favsRaw as unknown as FavoriteItem[]) ?? []);
         setNotifications(notifs.data ?? []);
         setUnreadCount(notifs.unreadCount ?? 0);
+
+        // Estado de proveedor (best-effort, no bloquea el resto del panel).
+        api
+          .getMyProviderStatus()
+          .then((s) => {
+            if (!cancelled) setHasProvider(s.hasProvider);
+          })
+          .catch(() => {});
       } catch {
         if (!cancelled) toast.error('Error al cargar tus datos');
       } finally {
@@ -150,16 +162,26 @@ function ClienteContent() {
               Mi Panel
             </h1>
           </div>
-          <button
-            onClick={() => {
-              clearSession();
-              router.push('/');
-            }}
-            className="flex items-center gap-2 text-white/40 hover:text-rose-400 text-[13px] font-display font-medium transition-colors"
-          >
-            <LogOut size={16} strokeWidth={1.75} />
-            <span className="hidden sm:inline">Cerrar sesión</span>
-          </button>
+          <div className="flex items-center gap-4">
+            {/* Volver al sitio web SIN cerrar sesión (FASE 4 #3). */}
+            <button
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2 text-white/40 hover:text-white text-[13px] font-display font-medium transition-colors"
+            >
+              <Globe size={16} strokeWidth={1.75} />
+              <span className="hidden sm:inline">Volver al sitio web</span>
+            </button>
+            <button
+              onClick={() => {
+                clearSession();
+                router.push('/');
+              }}
+              className="flex items-center gap-2 text-white/40 hover:text-rose-400 text-[13px] font-display font-medium transition-colors"
+            >
+              <LogOut size={16} strokeWidth={1.75} />
+              <span className="hidden sm:inline">Cerrar sesión</span>
+            </button>
+          </div>
         </motion.div>
 
         {/* Perfil */}
@@ -269,27 +291,55 @@ function ClienteContent() {
           </div>
 
           <div className="relative">
-            <div className="chip-eyebrow mb-5 mx-auto">
-              <Sparkles size={12} strokeWidth={1.75} />
-              Hazte profesional
-            </div>
-            <h2 className="font-display font-bold tracking-tightest text-white text-[24px] sm:text-[28px] leading-snug mb-3">
-              ¿Quieres ofrecer tus servicios en{' '}
-              <span className="text-gradient">Servi</span>?
-            </h2>
-            <p className="text-white/50 text-[14.5px] mb-7 max-w-md mx-auto leading-relaxed">
-              Regístrate como profesional o negocio y empieza a recibir clientes desde hoy.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-primary press-effect">
-                <Briefcase size={15} />
-                Registrarme como Profesional
-              </a>
-              <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-ghost press-effect">
-                <Store size={15} />
-                Registrar mi Negocio
-              </a>
-            </div>
+            {hasProvider ? (
+              <>
+                <div className="chip-eyebrow mb-5 mx-auto">
+                  <Sparkles size={12} strokeWidth={1.75} />
+                  Ya eres proveedor
+                </div>
+                <h2 className="font-display font-bold tracking-tightest text-white text-[24px] sm:text-[28px] leading-snug mb-3">
+                  Gestiona tu actividad en{' '}
+                  <span className="text-gradient">Servi</span>
+                </h2>
+                <p className="text-white/50 text-[14.5px] mb-7 max-w-md mx-auto leading-relaxed">
+                  Ya tienes un perfil de proveedor. Entra a tu panel para ver tus
+                  estadísticas, mensajes y oportunidades.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <button
+                    onClick={() => router.push('/panel')}
+                    className="btn btn-primary press-effect"
+                  >
+                    <Briefcase size={15} />
+                    Ir a mi panel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="chip-eyebrow mb-5 mx-auto">
+                  <Sparkles size={12} strokeWidth={1.75} />
+                  Hazte profesional
+                </div>
+                <h2 className="font-display font-bold tracking-tightest text-white text-[24px] sm:text-[28px] leading-snug mb-3">
+                  ¿Quieres ofrecer tus servicios en{' '}
+                  <span className="text-gradient">Servi</span>?
+                </h2>
+                <p className="text-white/50 text-[14.5px] mb-7 max-w-md mx-auto leading-relaxed">
+                  Regístrate como profesional o negocio y empieza a recibir clientes desde hoy.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-primary press-effect">
+                    <Briefcase size={15} />
+                    Registrarme como Profesional
+                  </a>
+                  <a href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="btn btn-ghost press-effect">
+                    <Store size={15} />
+                    Registrar mi Negocio
+                  </a>
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       </div>

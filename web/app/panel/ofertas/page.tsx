@@ -39,7 +39,14 @@ export default function PanelOfertasPage() {
     async function load() {
       try {
         const data = await api.getOpportunities();
-        setOpportunities(data);
+        // FASE 4 #3: salvaguarda en frontend — nunca mostrar subastas
+        // expiradas/cerradas aunque el backend las devolviera por cache.
+        const now = Date.now();
+        setOpportunities(
+          data.filter(
+            (o) => o.status === 'OPEN' && new Date(o.expiresAt).getTime() > now,
+          ),
+        );
       } catch {
         toast.error('Error al cargar oportunidades');
       } finally {

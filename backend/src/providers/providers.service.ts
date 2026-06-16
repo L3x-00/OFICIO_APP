@@ -532,9 +532,30 @@ export class ProvidersService {
   // permitidos de AnalyticEvent — el cast a `any` aquí solo
   // satisface al type checker porque Prisma ahora exige el enum.
   async trackEvent(providerId: number, eventType: string, userId?: number) {
-    return this.prisma.providerAnalytic.create({
+    const created = await this.prisma.providerAnalytic.create({
       data: { providerId, eventType: eventType as any, userId },
     });
+
+    // FASE 4 #3: avisa al dueño del provider en tiempo real para que sus
+    // contadores (WhatsApp/Llamadas/Vistas) suban sin recargar. Best-effort:
+    // resolver el dueño no debe romper el tracking si falla.
+    try {
+      const owner = await this.prisma.provider.findUnique({
+        where: { id: providerId },
+        select: { userId: true, type: true },
+      });
+      if (owner?.userId) {
+        this.events.emitProviderAnalytics(owner.userId, {
+          providerId,
+          eventType,
+          providerType: owner.type,
+        });
+      }
+    } catch {
+      /* el evento ya quedó registrado en BD */
+    }
+
+    return created;
   }
 
   // ── RECOMENDAR PROVEEDOR ─────────────────────────────────

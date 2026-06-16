@@ -24,6 +24,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useProfileType } from '@/lib/profile-type-context';
+import { getSocket } from '@/lib/socket';
 import type { Analytics } from '@/lib/types';
 
 const PREMIUM_PERKS = [
@@ -79,6 +80,33 @@ export default function PanelEstadisticasPage() {
     load();
     return () => { cancelled = true; };
   }, [range, activeType]);
+
+  // FASE 4 #3: contadores en vivo. El backend emite `providerAnalytics` al
+  // dueño cada vez que alguien hace click/visita; incrementamos sin recargar.
+  useEffect(() => {
+    const socket = getSocket();
+    const onAnalytics = (p: { eventType?: string; providerType?: string }) => {
+      // Si el evento trae tipo de perfil y hay uno activo, respétalo.
+      if (p.providerType && activeType && p.providerType !== activeType) return;
+      setAnalytics((prev) => {
+        if (!prev) return prev;
+        switch (p.eventType) {
+          case 'view':
+            return { ...prev, totalViews: prev.totalViews + 1 };
+          case 'whatsapp_click':
+            return { ...prev, totalWhatsappClicks: prev.totalWhatsappClicks + 1 };
+          case 'call_click':
+            return { ...prev, totalCallClicks: prev.totalCallClicks + 1 };
+          default:
+            return prev;
+        }
+      });
+    };
+    socket.on('providerAnalytics', onAnalytics);
+    return () => {
+      socket.off('providerAnalytics', onAnalytics);
+    };
+  }, [activeType]);
 
   if (loading) {
     return (

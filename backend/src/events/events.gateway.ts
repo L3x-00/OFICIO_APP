@@ -239,6 +239,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Analítica en vivo: notifica al dueño del provider cada vez que alguien
+   * registra un evento (whatsapp_click | call_click | view) para que los
+   * contadores del panel suban en tiempo real (FASE 4 #3). Se emite solo a
+   * la sala del usuario dueño.
+   */
+  emitProviderAnalytics(
+    userId: number,
+    payload: { providerId: number; eventType: string; providerType?: string },
+  ) {
+    this.server.to(`user_${userId}`).emit('providerAnalytics', payload);
+  }
+
+  /**
    * Evento broadcast para el panel de administración. Solo los sockets
    * unidos a la sala 'admin' lo reciben (admins autenticados).
    */

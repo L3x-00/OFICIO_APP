@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ChevronDown,
   LogOut,
+  Globe,
   Store,
   Wrench,
   LayoutDashboard,
@@ -180,6 +181,15 @@ export default function Sidebar() {
             </div>
           </div>
         )}
+        {/* Volver al sitio web SIN cerrar sesión (FASE 4 #3). */}
+        <Link
+          href="/"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}
+          title={collapsed ? 'Volver al sitio web' : undefined}
+        >
+          <Globe size={20} className="flex-shrink-0" />
+          {!collapsed && <span>Volver al sitio web</span>}
+        </Link>
         <button
           onClick={handleLogout}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}
