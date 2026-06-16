@@ -293,16 +293,26 @@ export class AiAssistantService {
     }
 
     // ── Caché inteligente (Fase 4) ──────────────────────────────
-    // Solo cacheamos preguntas autónomas (sin historial previo) de tipo
-    // FAQ o búsqueda. Las financieras hacen BYPASS. En sandbox NO se cachea.
+    // Las financieras hacen BYPASS. En sandbox NO se cachea.
+    //
+    // LECTURA: las FAQ son canónicas (respuesta independiente del contexto)
+    // → se sirven de caché SIEMPRE, incluso a mitad de conversación. Esto
+    // arregla la latencia: antes, en cuanto había historial, toda FAQ pegaba
+    // a la IA. La búsqueda sí exige consulta autónoma (depende del contexto).
+    //
+    // ESCRITURA: solo guardamos respuestas "limpias" generadas SIN historial
+    // → la caché nunca se contamina con respuestas dependientes del contexto.
     const intent = classifyIntent(san.cleaned);
-    const cacheable =
+    const isCanonicalIntent = intent === 'faq' || intent === 'search';
+    const cacheableRead =
       !sandbox &&
-      recovered.length === 0 &&
-      (intent === 'faq' || intent === 'search');
+      isCanonicalIntent &&
+      (intent === 'faq' || recovered.length === 0);
+    const cacheableWrite =
+      !sandbox && isCanonicalIntent && recovered.length === 0;
     const cacheKey = respCacheKey(promptVersion, caller.role, san.cleaned);
 
-    if (cacheable) {
+    if (cacheableRead) {
       const hit = await this.cacheGet(cacheKey);
       if (hit) {
         this.logger.log(`[AI-CACHE] hit (${intent}) → respuesta sin IA`);
@@ -430,7 +440,7 @@ export class AiAssistantService {
     // búsqueda repetida ("electricista en Huancayo") devuelve la respuesta Y
     // las tarjetas sin tocar la IA. TTL corto en búsquedas (frescura) vs 24h
     // en FAQ (estables).
-    if (cacheable && !guarded.toxic) {
+    if (cacheableWrite && !guarded.toxic) {
       const ttl = intent === 'faq' ? CACHE_TTL_FAQ_MS : CACHE_TTL_SEARCH_MS;
       const payload: CachedResponse = {
         reply: guarded.safe,
