@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Star, MapPin, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Star, MapPin, ShieldCheck, ExternalLink, Home, Clock, Smartphone } from 'lucide-react';
+import Footer from '@/components/footer';
 
 // SSR puro, sin caché — un cambio en el perfil debe verse al refrescar
 // el preview de WhatsApp/Facebook.
@@ -21,7 +22,9 @@ interface PublicProfile {
   isVerified: boolean;
   isTrusted: boolean;
   hasHomeService: boolean;
+  hasDelivery?: boolean;
   coverUrl: string | null;
+  images?: Array<{ url: string; isCover?: boolean; order?: number }>;
   categories: Array<{ name: string; slug: string }>;
   locality?: {
     name?: string;
@@ -30,6 +33,7 @@ interface PublicProfile {
     district?: string;
   } | null;
   plan: string;
+  schedule?: Record<string, unknown> | null;
   contact: {
     phone?: string | null;
     whatsapp?: string | null;
@@ -37,7 +41,55 @@ interface PublicProfile {
     instagram?: string | null;
     tiktok?: string | null;
     facebook?: string | null;
+    linkedin?: string | null;
+    telegram?: string | null;
+    twitterX?: string | null;
+    whatsappBiz?: string | null;
   };
+}
+
+interface ServiceItem {
+  id?: string;
+  name: string;
+  description?: string;
+  price?: number;
+  unit?: string;
+  imageUrl?: string;
+}
+
+// Días de atención en orden, con su etiqueta visible.
+const SCHEDULE_DAYS: Array<[string, string]> = [
+  ['lun', 'Lunes'],
+  ['mar', 'Martes'],
+  ['mie', 'Miércoles'],
+  ['jue', 'Jueves'],
+  ['vie', 'Viernes'],
+  ['sab', 'Sábado'],
+  ['dom', 'Domingo'],
+];
+
+// Redes a renderizar: campo de contacto → svg + prefijo de URL.
+const SOCIAL_DEFS: Array<{
+  key: keyof PublicProfile['contact'];
+  icon: string;
+  label: string;
+  prefix: string;
+}> = [
+  { key: 'whatsapp', icon: 'whatsapp.svg', label: 'WhatsApp', prefix: 'https://wa.me/' },
+  { key: 'instagram', icon: 'instagram.svg', label: 'Instagram', prefix: 'https://instagram.com/' },
+  { key: 'tiktok', icon: 'tiktok.svg', label: 'TikTok', prefix: 'https://tiktok.com/@' },
+  { key: 'facebook', icon: 'facebook.svg', label: 'Facebook', prefix: 'https://facebook.com/' },
+  { key: 'linkedin', icon: 'linkedin.svg', label: 'LinkedIn', prefix: 'https://linkedin.com/in/' },
+  { key: 'telegram', icon: 'telegram.svg', label: 'Telegram', prefix: 'https://t.me/' },
+  { key: 'twitterX', icon: 'twitterx.svg', label: 'X', prefix: 'https://x.com/' },
+  { key: 'website', icon: 'website.svg', label: 'Sitio web', prefix: 'https://' },
+];
+
+function buildSocialUrl(prefix: string, value: string): string {
+  const v = value.trim();
+  if (v.startsWith('http://') || v.startsWith('https://')) return v;
+  if (prefix === 'https://wa.me/') return prefix + v.replace(/\D/g, '');
+  return prefix + v.replace(/^@/, '');
 }
 
 async function fetchProfile(slug: string): Promise<PublicProfile | null> {
@@ -101,7 +153,30 @@ export default async function PublicProfilePage(
     .filter(Boolean)
     .join(' · ');
 
+  // Esquema URI ya registrado en el AndroidManifest (host `p`).
   const deepLink = `oficioapp://p/${profile.slug}`;
+
+  const sched = profile.schedule ?? null;
+  const services: ServiceItem[] = Array.isArray(
+    (sched as { services?: unknown } | null)?.services,
+  )
+    ? ((sched as { services?: ServiceItem[] }).services ?? [])
+    : [];
+  const scheduleRows = SCHEDULE_DAYS.map(([k, label]) => ({
+    label,
+    value: typeof sched?.[k] === 'string' ? (sched[k] as string) : null,
+  })).filter((r) => r.value);
+  const socials = SOCIAL_DEFS.map((s) => ({
+    ...s,
+    value: profile.contact[s.key],
+  })).filter((s) => s.value && String(s.value).trim());
+  const gallery = (profile.images ?? []).filter((i) => i.url);
+
+  const priceLabel = (s: ServiceItem) => {
+    if (s.price == null) return 'Consultar precio';
+    const n = s.price % 1 === 0 ? `S/ ${s.price}` : `S/ ${s.price.toFixed(2)}`;
+    return s.unit ? `${n} ${s.unit}` : n;
+  };
 
   return (
     <div style={{
@@ -125,10 +200,21 @@ export default async function PublicProfilePage(
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontWeight: 700,
         }}>O</div>
-        <Link href="https://oficioapp.org.pe" style={{
+        <Link href="/" style={{
           color: '#F97316', textDecoration: 'none', fontWeight: 600, fontSize: 16,
         }}>
           Servi
+        </Link>
+        {/* Ir a Inicio (FASE 4 #4) */}
+        <Link href="/" style={{
+          marginLeft: 'auto',
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          color: '#D1D5DB', textDecoration: 'none', fontSize: 13, fontWeight: 600,
+          padding: '8px 14px', borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.12)',
+          background: 'rgba(255,255,255,0.04)',
+        }}>
+          <Home size={14} /> Ir a Inicio
         </Link>
       </header>
 
@@ -258,6 +344,130 @@ export default async function PublicProfilePage(
           </div>
         </div>
 
+        {/* Redes y contacto */}
+        {socials.length > 0 && (
+          <section style={sectionCard}>
+            <h2 style={sectionTitle}>Redes y contacto</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {socials.map((s) => (
+                <a
+                  key={s.key as string}
+                  href={buildSocialUrl(s.prefix, String(s.value))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  style={{
+                    width: 44, height: 44, borderRadius: 12,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/images/social/${s.icon}`} alt={s.label} width={22} height={22} />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Galería */}
+        {gallery.length > 1 && (
+          <section style={sectionCard}>
+            <h2 style={sectionTitle}>Galería</h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+              gap: 8,
+            }}>
+              {gallery.map((img, i) => (
+                <div
+                  key={i}
+                  style={{
+                    aspectRatio: '1 / 1', borderRadius: 12, overflow: 'hidden',
+                    backgroundImage: `url(${img.url})`,
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Servicios / Productos */}
+        {services.length > 0 && (
+          <section style={sectionCard}>
+            <h2 style={sectionTitle}>
+              {profile.type === 'NEGOCIO' ? 'Productos' : 'Servicios'}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {services.map((s, i) => (
+                <div
+                  key={s.id ?? i}
+                  style={{
+                    display: 'flex', gap: 12, alignItems: 'center', padding: 10,
+                    borderRadius: 12, background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                >
+                  {s.imageUrl && (
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 10, flexShrink: 0,
+                      backgroundImage: `url(${s.imageUrl})`,
+                      backgroundSize: 'cover', backgroundPosition: 'center',
+                    }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{s.name}</p>
+                    {s.description && (
+                      <p style={{ margin: '2px 0 0', color: '#9CA3AF', fontSize: 12.5 }}>
+                        {s.description}
+                      </p>
+                    )}
+                  </div>
+                  <span style={{ color: '#FB923C', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {priceLabel(s)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Horarios de atención */}
+        {scheduleRows.length > 0 && (
+          <section style={sectionCard}>
+            <h2 style={{ ...sectionTitle, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Clock size={16} /> Horarios de atención
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {scheduleRows.map((r) => {
+                const closed = r.value!.toLowerCase().includes('cerrado');
+                return (
+                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#D1D5DB' }}>
+                    <span>{r.label}</span>
+                    <span style={{ color: closed ? '#9CA3AF' : '#fff', fontWeight: 600 }}>{r.value}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Abrir en la App (CTA prominente, útil en móvil) */}
+        <a
+          href={deepLink}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            marginTop: 16, padding: '13px', borderRadius: 14,
+            background: '#F97316', color: '#000', fontWeight: 700, fontSize: 14,
+            textDecoration: 'none',
+          }}
+        >
+          <Smartphone size={16} /> Abrir en la App
+        </a>
+
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#6B7280' }}>
           ¿Quieres aparecer aquí?{' '}
           <Link href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" style={{ color: '#F97316' }}>
@@ -265,9 +475,27 @@ export default async function PublicProfilePage(
           </Link>
         </p>
       </main>
+
+      {/* Footer profesional reutilizado del sitio */}
+      <Footer />
     </div>
   );
 }
+
+const sectionCard = {
+  background: 'linear-gradient(180deg, #1A1A1F 0%, #131318 100%)',
+  borderRadius: 20,
+  border: '1px solid rgba(255,255,255,0.08)',
+  padding: '20px 22px',
+  marginTop: 16,
+} as const;
+
+const sectionTitle = {
+  fontSize: 16,
+  fontWeight: 700,
+  margin: '0 0 14px',
+  color: '#fff',
+} as const;
 
 function ctaPrimary(color: string) {
   return {

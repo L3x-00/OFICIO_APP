@@ -113,10 +113,14 @@ export class PublicProfileController implements OnModuleInit {
         instagram: true,
         tiktok: true,
         facebook: true,
+        linkedin: true,
+        telegram: true,
+        twitterX: true,
+        whatsappBiz: true,
+        scheduleJson: true,
         images: {
-          where: { isCover: true },
-          select: { url: true },
-          take: 1,
+          select: { url: true, isCover: true, order: true },
+          orderBy: [{ isCover: 'desc' }, { order: 'asc' }],
         },
         providerCategories: {
           select: { category: { select: { name: true, slug: true } } },
@@ -160,6 +164,11 @@ export class PublicProfileController implements OnModuleInit {
 
     const cover = provider.images[0]?.url ?? null;
     const categories = provider.providerCategories.map((pc) => pc.category);
+    // scheduleJson guarda { lun..dom: "8:00-18:00"|"Cerrado", services: [...] }.
+    const schedule = (provider.scheduleJson ?? null) as Record<
+      string,
+      unknown
+    > | null;
 
     // Reshape para SSR-friendly. Omite IDs internos del frontend público.
     return {
@@ -176,9 +185,12 @@ export class PublicProfileController implements OnModuleInit {
       hasDelivery: provider.hasDelivery,
       plenaCoordinacion: provider.plenaCoordinacion,
       coverUrl: cover,
+      images: provider.images,
       categories,
       locality: provider.locality,
       plan: provider.subscription?.plan ?? 'GRATIS',
+      // Horarios + servicios/productos viven en scheduleJson (perfil público).
+      schedule,
       // Datos de contacto solo para abrir WhatsApp / llamada desde la
       // tarjeta web — no exponemos el id numérico ni el email.
       contact: {
@@ -188,6 +200,10 @@ export class PublicProfileController implements OnModuleInit {
         instagram: provider.instagram,
         tiktok: provider.tiktok,
         facebook: provider.facebook,
+        linkedin: provider.linkedin,
+        telegram: provider.telegram,
+        twitterX: provider.twitterX,
+        whatsappBiz: provider.whatsappBiz,
       },
     };
   }
