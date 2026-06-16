@@ -403,7 +403,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       // Limpia el flag local de "pago en revisión" — el plan acaba de
       // aprobarse, así que los CTAs deben rehabilitarse al instante.
       dash.clearPendingPaymentPlan();
-      dash.loadDashboard(providerType: auth.activeProfileType);
+      dash.loadDashboard(providerType: auth.activeProfileType, force: true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _showPlanActivationCarousel(payload);
@@ -456,6 +456,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       if (remaining != null) {
         context.read<DashboardProvider>().loadDashboard(
           providerType: remaining,
+          force: true,
         );
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {

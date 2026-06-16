@@ -71,7 +71,11 @@ class _ProviderPanelState extends State<ProviderPanel> {
       if (widget.providerType != null) {
         auth.switchProfile(widget.providerType!);
       }
-      context.read<DashboardProvider>().loadDashboard(
+      final dash = context.read<DashboardProvider>();
+      // Limpia la caché del dashboard al cerrar sesión (independencia de
+      // cuentas) — requisito del stale-while-revalidate de loadDashboard.
+      dash.attachAuth(auth);
+      dash.loadDashboard(
         providerType: widget.providerType ?? auth.activeProfileType,
       );
     });

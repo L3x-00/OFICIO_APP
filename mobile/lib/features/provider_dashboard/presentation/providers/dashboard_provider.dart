@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/dashboard_repository.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 import '../../domain/models/service_item_model.dart';
+import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/providers_list/domain/models/review_model.dart';
 import '../../../../features/payments/data/payments_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -27,6 +28,11 @@ class DashboardProvider extends ChangeNotifier {
   bool _isUploadingPhoto = false;
   String? _currentProviderType;
 
+  // AuthProvider global para limpiar la caché del dashboard al cerrar sesión
+  // (independencia de cuentas): sin esto, el stale-while-revalidate podría
+  // mostrar brevemente el perfil del usuario anterior al reabrir el panel.
+  AuthProvider? _auth;
+
   /// Plan del último YapePayment en estado PENDIENTE (revisión admin
   /// pendiente). Si está set, las tarjetas de plan se deshabilitan y
   /// muestran "Revisión pendiente" en lugar de los CTAs de upgrade.
@@ -50,13 +56,29 @@ class DashboardProvider extends ChangeNotifier {
   // ── CARGA INICIAL ────────────────────────────────────────
 
   /// [providerType] 'OFICIO' | 'NEGOCIO' — si es null, carga el primer perfil.
-  Future<void> loadDashboard({String? providerType}) async {
+  ///
+  /// Stale-while-revalidate (UX #6.1): si ya hay datos cargados del MISMO
+  /// perfil y no se [force], se muestran al instante y el refresco corre en
+  /// segundo plano SIN spinner — reabrir el panel ya no "recarga todo desde
+  /// cero". [force] = true recarga visible (cambios materiales: plan aprobado,
+  /// perfil eliminado).
+  Future<void> loadDashboard({String? providerType, bool force = false}) async {
     if (_status == DashboardStatus.loading) return;
 
+    // ¿Tenemos ya datos válidos del mismo perfil? (se evalúa con el tipo
+    // ANTES de reasignarlo). En modo silencioso no tocamos el spinner.
+    final sameProfileLoaded =
+        _status == DashboardStatus.loaded &&
+        _currentProviderType == providerType &&
+        _profile != null;
+    final silent = sameProfileLoaded && !force;
+
     _currentProviderType = providerType;
-    _status = DashboardStatus.loading;
-    _error = null;
-    notifyListeners();
+    if (!silent) {
+      _status = DashboardStatus.loading;
+      _error = null;
+      notifyListeners();
+    }
 
     try {
       final results = await Future.wait([
@@ -90,8 +112,12 @@ class DashboardProvider extends ChangeNotifier {
       // Cargar notificaciones silenciosamente
       _loadNotificationsSilent();
     } catch (e) {
-      _status = DashboardStatus.error;
-      _error = _formatError(e);
+      // En modo silencioso conservamos los datos previos válidos: un fallo
+      // del refresco en 2º plano no debe tumbar la vista a pantalla de error.
+      if (!silent) {
+        _status = DashboardStatus.error;
+        _error = _formatError(e);
+      }
     }
 
     notifyListeners();
@@ -443,6 +469,42 @@ class DashboardProvider extends ChangeNotifier {
     _error = null;
     _uploadError = null;
     notifyListeners();
+  }
+
+  // ── Independencia de cuentas ──────────────────────────────
+  /// Conecta el [AuthProvider] global para descartar la caché del dashboard
+  /// al cerrar sesión. Idempotente. Llamar al montar el panel.
+  void attachAuth(AuthProvider auth) {
+    if (identical(_auth, auth)) return;
+    _auth?.removeListener(_onAuthChanged);
+    _auth = auth;
+    _auth!.addListener(_onAuthChanged);
+  }
+
+  void _onAuthChanged() {
+    if (_auth != null && !_auth!.isAuthenticated) _clearAll();
+  }
+
+  /// Resetea todo el estado (logout / cambio de cuenta) — evita que el
+  /// stale-while-revalidate muestre datos del usuario anterior.
+  void _clearAll() {
+    _profile = null;
+    _analytics = null;
+    _reviews = [];
+    _services = [];
+    _notifications = [];
+    _unreadNotifications = 0;
+    _status = DashboardStatus.idle;
+    _error = null;
+    _currentProviderType = null;
+    _pendingPaymentPlan = null;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _auth?.removeListener(_onAuthChanged);
+    super.dispose();
   }
 
   // ── HELPERS ───────────────────────────────────────────────
