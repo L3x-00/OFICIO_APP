@@ -106,6 +106,23 @@ export const broadcastNotification = (data: {
     body: JSON.stringify(data),
   });
 
+// ── CORREO MASIVO (solo email, segmentable) ───────────────
+// Envía un correo (Brevo) a la audiencia elegida. El backend resuelve los
+// destinatarios por rol, responde con `recipients` (cantidad) y el envío
+// real corre en background.
+export type EmailAudience = 'ALL' | 'CLIENTS' | 'PROVIDERS';
+
+export const broadcastEmail = (data: {
+  subject: string;
+  message: string;
+  audience?: EmailAudience;
+  imageUrl?: string;
+}) =>
+  fetchApi<{ recipients: number }>('/admin/emails/broadcast', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
 /// Sube una imagen a MinIO via /upload/broadcast-image. Devuelve la
 /// URL pública para usar como `imageUrl` del broadcast. Usa FormData →
 /// fetch directo (no `fetchApi`) porque ese helper fuerza JSON.

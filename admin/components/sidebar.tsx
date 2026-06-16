@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Star, BarChart2,
   Tag, Zap, Bell, FileBarChart, ChevronRight,
   Activity, Gift, Coins, MessageSquare, Tag as TagIcon,
-  ShieldCheck, UsersRound, MapPin, Bot,
+  ShieldCheck, UsersRound, MapPin, Bot, Mail,
 } from 'lucide-react';
 
 // Sidebar reorganizada en torno a flujos: las páginas duales
@@ -46,6 +46,7 @@ const navGroups = [
       { href: '/operations/payments', label: 'Pagos y Solicitudes',       icon: Activity },
       { href: '/notifications',       label: 'Notificaciones',            icon: Bell },
       { href: '/broadcast',           label: 'Broadcast push',            icon: Bell },
+      { href: '/emails',              label: 'Enviar correos',            icon: Mail },
     ],
   },
   {

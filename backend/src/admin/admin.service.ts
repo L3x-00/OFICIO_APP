@@ -982,4 +982,71 @@ export class AdminService {
 
     return result;
   }
+
+  // ── CORREO MASIVO (solo email, segmentable) ───────────────
+  //
+  // A diferencia del broadcast push, esto envía ÚNICAMENTE correo (Brevo) y
+  // permite segmentar la audiencia. Resuelve los destinatarios por rol, lanza
+  // el envío en background (puede tardar con listas grandes) y devuelve
+  // `{ recipients }` al instante para que el panel no espere el envío 1:1.
+  async broadcastEmail(
+    subject: string,
+    message: string,
+    audience: 'ALL' | 'CLIENTS' | 'PROVIDERS' = 'ALL',
+    imageUrl?: string,
+  ): Promise<{ recipients: number }> {
+    if (!subject?.trim()) {
+      throw new BadRequestException('El asunto es obligatorio');
+    }
+    if (!message?.trim()) {
+      throw new BadRequestException('El mensaje es obligatorio');
+    }
+    const cleanSubject = subject.trim();
+    const cleanBody = message.trim();
+    const cleanImage = imageUrl?.trim() || undefined;
+
+    // Segmentación por rol. Nunca incluimos ADMIN en correos promocionales.
+    const roleFilter: Prisma.UserWhereInput =
+      audience === 'CLIENTS'
+        ? { role: 'USUARIO' }
+        : audience === 'PROVIDERS'
+          ? { role: 'PROVEEDOR' }
+          : { role: { in: ['USUARIO', 'PROVEEDOR'] } };
+
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true, deletedAt: null, ...roleFilter },
+      select: { email: true },
+    });
+    const recipients = users
+      .map((u) => u.email)
+      .filter((e): e is string => !!e);
+
+    // Envío en background (best-effort) — no bloquea la respuesta al admin.
+    void this.email
+      .sendBroadcastEmail(recipients, cleanSubject, cleanBody, cleanImage)
+      .catch(() => null);
+
+    // Log para el panel del admin (reusa BROADCAST_LOG; el título distingue
+    // que fue un correo). Fire-and-forget.
+    const audienceLabel =
+      audience === 'CLIENTS'
+        ? 'los clientes'
+        : audience === 'PROVIDERS'
+          ? 'los proveedores'
+          : 'todos los usuarios';
+    this.prisma.adminNotification
+      .create({
+        data: {
+          providerId: null,
+          targetUserId: null,
+          type: 'BROADCAST_LOG',
+          title: `Enviaste un correo a ${audienceLabel}: ${cleanSubject}`,
+          message: cleanBody,
+          isRead: false,
+        },
+      })
+      .catch(() => null);
+
+    return { recipients: recipients.length };
+  }
 }

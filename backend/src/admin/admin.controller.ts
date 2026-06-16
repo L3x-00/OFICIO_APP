@@ -28,6 +28,7 @@ import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto.js';
+import { BroadcastEmailDto } from './dto/broadcast-email.dto.js';
 import { LocalitiesService } from '../localities/localities.service.js';
 import {
   CreateLocalityDto,
@@ -423,6 +424,20 @@ export class AdminController {
     return this.adminService.broadcastNotification(
       body.title,
       body.message,
+      body.imageUrl,
+    );
+  }
+
+  // ── CORREO MASIVO (solo email, segmentable) ───────────────
+  // Envía un correo (Brevo) a la audiencia elegida (todos/clientes/
+  // proveedores). Responde con { recipients } y el envío corre en background.
+  @Post('emails/broadcast')
+  @HttpCode(HttpStatus.ACCEPTED)
+  broadcastEmail(@Body() body: BroadcastEmailDto) {
+    return this.adminService.broadcastEmail(
+      body.subject,
+      body.message,
+      body.audience ?? 'ALL',
       body.imageUrl,
     );
   }
