@@ -285,6 +285,19 @@ interface FlatLoginResponse {
   district?: string;
 }
 
+// Shape que devuelve /auth/social-login — tokens + campos planos del usuario,
+// pero SIN userId/role (esos se resuelven con /users/me). Igual que el móvil.
+interface SocialLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  avatarUrl?: string;
+  isNewUser?: boolean;
+}
+
 // Shape REAL que devuelve el backend en /provider-profile/me/analytics.
 // El web ya tenía un `Analytics` UI-friendly (totalViews, dailyData) pero
 // el endpoint responde con `summary` + `dailyClicks` (mismo contrato que
@@ -349,6 +362,68 @@ export const api = {
       accessToken:  raw.accessToken,
       refreshToken: raw.refreshToken,
       user:         buildUserFromFlat(raw, email),
+    };
+  },
+
+  /**
+   * Login social (Google) — mismo endpoint que el móvil. Recibe un *Firebase
+   * ID token* (obtenido con Firebase Auth Web) y lo canjea por los JWT de
+   * Servi. El backend (`POST /auth/social-login`) devuelve los tokens + campos
+   * planos del usuario PERO sin `userId`/`role`; por eso resolvemos el perfil
+   * completo con `/users/me` (usando el access token recién emitido) para
+   * armar el `User` que necesita la sesión. Devuelve también `isNewUser`.
+   */
+  async socialLogin(
+    idToken: string,
+  ): Promise<LoginResponse & { isNewUser: boolean }> {
+    const raw = await apiFetch<SocialLoginResponse>("/auth/social-login", {
+      method: "POST",
+      body: JSON.stringify({ idToken }),
+    });
+
+    // Perfil completo (role/id/ubicación) con el token recién emitido. Header
+    // explícito porque la sesión aún no se guardó en localStorage.
+    let user: User;
+    try {
+      const me = await fetch(`${API_BASE_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${raw.accessToken}` },
+      });
+      const m = (me.ok ? await me.json() : {}) as Partial<User>;
+      user = {
+        id:             m.id ?? 0,
+        email:          m.email ?? raw.email ?? "",
+        role:           m.role ?? "USUARIO",
+        firstName:      m.firstName ?? raw.firstName ?? "",
+        lastName:       m.lastName ?? raw.lastName ?? "",
+        phone:          m.phone ?? raw.phone,
+        avatarUrl:      m.avatarUrl ?? raw.avatarUrl,
+        department:     m.department,
+        province:       m.province,
+        district:       m.district,
+        isActive:       m.isActive ?? true,
+        isEmailVerified: m.isEmailVerified ?? true,
+        fullName:       m.fullName,
+      };
+    } catch {
+      // Si /users/me falla, caemos a los campos planos del social-login.
+      user = {
+        id:             0,
+        email:          raw.email ?? "",
+        role:           "USUARIO",
+        firstName:      raw.firstName ?? "",
+        lastName:       raw.lastName ?? "",
+        phone:          raw.phone,
+        avatarUrl:      raw.avatarUrl,
+        isActive:       true,
+        isEmailVerified: true,
+      };
+    }
+
+    return {
+      accessToken:  raw.accessToken,
+      refreshToken: raw.refreshToken,
+      user,
+      isNewUser:    raw.isNewUser ?? false,
     };
   },
 

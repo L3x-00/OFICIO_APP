@@ -8,6 +8,7 @@ import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, ShieldCheck, Loader2 } fro
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { saveSession, getRedirectPath, getUser } from '@/lib/auth';
+import { signInWithGoogleIdToken } from '@/lib/firebase';
 import { loginSchema } from '@/lib/validators';
 import type { LoginFormData } from '@/lib/validators';
 
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<LoginFormData>>({});
   const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
@@ -50,6 +52,64 @@ export default function LoginPage() {
     setTimeout(() => setShake(false), 420);
   };
 
+  // Redirección post-login compartida por email/password y Google: ADMIN va al
+  // panel admin externo; el resto a /panel (proveedor) o /cliente según rol +
+  // estado de proveedor (mismo criterio que el móvil).
+  const routeAfterLogin = async (accessToken: string, sessionEmail: string) => {
+    const sessionUser = getUser();
+    if (!sessionUser || !sessionUser.role) {
+      toast.error('No se pudo cargar tu perfil. Vuelve a iniciar sesión.');
+      return;
+    }
+    if (sessionUser.role === 'ADMIN') {
+      window.location.href = `${ADMIN_PANEL_URL}?email=${encodeURIComponent(sessionEmail)}`;
+      return;
+    }
+    let hasProvider = false;
+    try {
+      const res = await fetch(`${API_BASE}/users/my-provider-status`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        const status = await res.json();
+        hasProvider = status.hasProvider === true;
+      }
+    } catch {
+      /* continue with role logic */
+    }
+    window.location.href = getRedirectPath(sessionUser, hasProvider);
+  };
+
+  // Login social con Google (Punto 1). Firebase Auth Web → Firebase ID token →
+  // POST /auth/social-login (mismo endpoint que Flutter).
+  const handleGoogle = async () => {
+    if (loading || googleLoading || isLocked) return;
+    setGoogleLoading(true);
+    setErrors({});
+    try {
+      const idToken = await signInWithGoogleIdToken();
+      const data = await api.socialLogin(idToken);
+      saveSession(data);
+      toast.success(data.isNewUser ? '¡Cuenta creada!' : '¡Bienvenido de nuevo!');
+      await routeAfterLogin(data.accessToken, data.user.email);
+    } catch (err: unknown) {
+      // El usuario cerró/canceló el popup → no es un error que mostrar.
+      const code = (err as { code?: string })?.code;
+      if (
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request' ||
+        code === 'auth/user-cancelled'
+      ) {
+        return;
+      }
+      const message =
+        err instanceof Error ? err.message : 'No se pudo iniciar sesión con Google';
+      toast.error(message);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -73,32 +133,7 @@ export default function LoginPage() {
       const data = await api.login(email, password);
       saveSession(data);
       toast.success('¡Bienvenido de nuevo!');
-
-      const sessionUser = data.user ?? getUser();
-      if (!sessionUser || !sessionUser.role) {
-        toast.error('No se pudo cargar tu perfil. Vuelve a iniciar sesión.');
-        return;
-      }
-
-      if (sessionUser.role === 'ADMIN') {
-        window.location.href = `${ADMIN_PANEL_URL}?email=${encodeURIComponent(email)}`;
-        return;
-      }
-
-      let hasProvider = false;
-      try {
-        const res = await fetch(`${API_BASE}/users/my-provider-status`, {
-          headers: { Authorization: `Bearer ${data.accessToken}` },
-        });
-        if (res.ok) {
-          const status = await res.json();
-          hasProvider = status.hasProvider === true;
-        }
-      } catch {
-        /* continue with role logic */
-      }
-
-      window.location.href = getRedirectPath(sessionUser, hasProvider);
+      await routeAfterLogin(data.accessToken, email);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error al iniciar sesión';
       toast.error(message);
@@ -250,6 +285,33 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {/* Divisor */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-white/30 text-[11px] uppercase tracking-[0.16em]">o</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+
+        {/* Continuar con Google (Firebase Auth Web → /auth/social-login) */}
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={loading || googleLoading || isLocked}
+          className="w-full h-12 flex items-center justify-center gap-3 rounded-xl bg-white text-[#1f1f1f] font-semibold text-[14px] hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {googleLoading ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" />
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.583-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" />
+              <path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" />
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.166 6.656 3.58 9 3.58z" />
+            </svg>
+          )}
+          {googleLoading ? 'Conectando…' : 'Continuar con Google'}
+        </button>
 
         <div className="mt-7 pt-5 border-t border-white/5 text-center">
           <p className="text-white/40 text-[12.5px] mb-3">
