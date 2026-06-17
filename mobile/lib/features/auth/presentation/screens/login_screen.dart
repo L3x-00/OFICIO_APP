@@ -9,7 +9,7 @@ import '../widgets/social_login_button.dart';
 import '../../../../core/social_auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'otp_verification_screen.dart';
-import 'package:mobile/core/constants/legal_content.dart';
+import 'package:mobile/features/provider_dashboard/presentation/widgets/settings/legal_content.dart';
 
 enum AuthMode { login, register }
 
@@ -628,7 +628,7 @@ class _TermsCheckbox extends StatelessWidget {
                       onTap: () => _openLegalModal(
                         context,
                         'Términos y Condiciones',
-                        kTermsCliente, 
+                        kTermsCliente,
                       ),
                       child: const Text(
                         'Términos y Condiciones',
@@ -652,7 +652,7 @@ class _TermsCheckbox extends StatelessWidget {
                       onTap: () => _openLegalModal(
                         context,
                         'Política de Privacidad',
-                        kPrivacyCliente, 
+                        kPrivacyCliente,
                       ),
                       child: const Text(
                         'Política de Privacidad',

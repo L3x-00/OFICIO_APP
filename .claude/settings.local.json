@@ -68,7 +68,12 @@
       "Bash(git checkout *)",
       "Bash(echo \"BACKEND_TSC_EXIT_$?\")",
       "Bash(echo \"ADMIN_TSC_EXIT_$?\")",
-      "Bash(grep -rlE \"eslint-disable.*no-explicit-any|/\\\\* eslint-disable \\\\*/\" components/*.tsx)"
+      "Bash(grep -rlE \"eslint-disable.*no-explicit-any|/\\\\* eslint-disable \\\\*/\" components/*.tsx)",
+      "Bash(grep \"\\\\.dart$\")",
+      "Bash(dart format *)",
+      "Bash(awk '/^enum \\(UserRole|Role\\)/{f=1} f{print} /^}/{if\\(f\\) f=0}' prisma/schema.prisma)",
+      "Bash(awk '/async socialLogin\\\\\\(/{f=1} f{print NR\": \"$0} /^  }/{if\\(f\\){c++; if\\(c>=1 && /^  }$/\\) {print \"---END---\"; exit}}}' src/auth/auth.service.ts)",
+      "Bash(awk '/register\\\\/provider|registerProvider|FormData/{f=1} f{print NR\": \"$0} f&&/^  }/{c++; if\\(c>2\\) exit}' lib/features/auth/data/auth_repository.dart)"
     ]
   }
 }
