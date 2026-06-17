@@ -9,6 +9,7 @@ import '../widgets/social_login_button.dart';
 import '../../../../core/social_auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'otp_verification_screen.dart';
+import 'package:mobile/core/constants/legal_content.dart';
 
 enum AuthMode { login, register }
 
@@ -576,12 +577,13 @@ class _TermsCheckbox extends StatelessWidget {
 
   const _TermsCheckbox({required this.value, required this.onChanged});
 
-  void _openTerms(BuildContext context) {
+  // Modificado: Ahora recibe el título y el contenido dinámicamente
+  void _openLegalModal(BuildContext context, String title, String content) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const _TermsModal(),
+      builder: (_) => _TermsModal(title: title, content: content),
     );
   }
 
@@ -622,7 +624,12 @@ class _TermsCheckbox extends StatelessWidget {
                     alignment: PlaceholderAlignment.baseline,
                     baseline: TextBaseline.alphabetic,
                     child: GestureDetector(
-                      onTap: () => _openTerms(context),
+                      // 👉 Llama al modal con los TÉRMINOS DEL CLIENTE
+                      onTap: () => _openLegalModal(
+                        context,
+                        'Términos y Condiciones',
+                        kTermsCliente, 
+                      ),
                       child: const Text(
                         'Términos y Condiciones',
                         style: TextStyle(
@@ -641,7 +648,12 @@ class _TermsCheckbox extends StatelessWidget {
                     alignment: PlaceholderAlignment.baseline,
                     baseline: TextBaseline.alphabetic,
                     child: GestureDetector(
-                      onTap: () => _openTerms(context),
+                      // 👉 Llama al modal con la PRIVACIDAD DEL CLIENTE
+                      onTap: () => _openLegalModal(
+                        context,
+                        'Política de Privacidad',
+                        kPrivacyCliente, 
+                      ),
                       child: const Text(
                         'Política de Privacidad',
                         style: TextStyle(
@@ -669,48 +681,11 @@ class _TermsCheckbox extends StatelessWidget {
 // ── Modal de Términos y Condiciones ──────────────────────────
 
 class _TermsModal extends StatelessWidget {
-  const _TermsModal();
+  final String title;
+  final String content;
 
-  // ══════════════════════════════════════════════════════════
-  // TEXTO DE TÉRMINOS Y CONDICIONES
-  // Pega aquí el contenido completo cuando esté listo.
-  // ══════════════════════════════════════════════════════════
-  static const String _termsText = '''
-TÉRMINOS Y CONDICIONES DE USO — Servi
-
-Bienvenido a Servi. Antes de utilizar nuestra plataforma, lea detenidamente estos Términos y Condiciones. Al marcar el check de aceptación durante el registro, usted declara haber leído, comprendido y aceptado quedar vinculado legalmente por este documento.
-
-1. NATURALEZA DEL SERVICIO: DIRECTORIO INTERMEDIARIO
-Servi funciona exclusivamente como una plataforma de centralización de información y "puente" de contacto.
-No somos agencia de empleos: No contratamos ni seleccionamos al personal.
-No somos pasarela de servicios: La negociación de precios, condiciones de trabajo y pagos por los servicios o productos ofrecidos por los Proveedores se realizan fuera de la aplicación, directamente vía WhatsApp, teléfono o de forma presencial.
-Exención de comisión: Servi no cobra comisiones por los contratos celebrados entre Usuarios y Proveedores.
-2. DESLINDE DE RESPONSABILIDAD (CLÁUSULA DE INDEMNIDAD)
-El Usuario acepta que el uso de la aplicación es bajo su propia cuenta y riesgo.
-Suplantación y Fraude: Dado que ningún sistema de validación digital es infalible al 100%, Servi no se hace responsable por fraudes, suplantaciones de identidad o actos ilícitos cometidos por terceros.
-Calidad del Servicio: No garantizamos la calidad, puntualidad o idoneidad del servicio prestado por el Proveedor. Cualquier reclamo por daños y perjuicios derivados de un mal servicio debe dirigirse directamente al Proveedor contratado.
-3. SISTEMA DE VERIFICACIÓN Y INSIGNIA "CONFIABLE"
-La insignia "Confiable" es una herramienta de filtrado basada en una validación superficial de datos públicos (SUNAT, consultas RUC/DNI).
-Limitación de la Insignia: La insignia no constituye una garantía absoluta de honestidad o pericia profesional. Es solo una indicación de que el Proveedor ha cumplido con entregar la documentación solicitada.
-Revocación: Servi se reserva el derecho de retirar la insignia "Confiable" de forma inmediata si se recibe un reporte fundamentado o se detectan irregularidades, notificando al Proveedor el motivo de la revocación.
-4. PROTECCIÓN DE DATOS PERSONALES (LEY N° 29733)
-De conformidad con la legislación peruana, el Usuario autoriza expresamente a Servi a:
-Recolección Sensible: Almacenar fotos del DNI (ambas caras), selfies de validación biométrica y datos de ubicación (GPS) con el fin exclusivo de prevenir el fraude y gestionar el sistema de confianza.
-Finalidad: Los datos se utilizarán para validar la identidad del Proveedor. En caso de estafa reportada, Servi podrá facilitar estos datos a las autoridades competentes para coadyuvar en investigaciones externas.
-Derechos ARCO: El Usuario puede solicitar el acceso, rectificación, cancelación u oposición de sus datos escribiendo al canal oficial de soporte de la App.
-5. PLANES DE SUSCRIPCIÓN Y REEMBOLSOS
-El acceso a planes Estándar o Premium se rige por las siguientes reglas:
-Plazo de Arrepentimiento: El Proveedor tiene hasta 5 días calendario tras la compra para solicitar un reembolso total, siempre que fundamente la eliminación de su cuenta.
-Baneo por Mal Comportamiento: Si un Proveedor es expulsado por reportes de fraude o faltas éticas, se aplicará un reembolso parcial proporcional al tiempo no utilizado, descontando gastos administrativos, salvo que la falta sea grave, en cuyo caso se podrá denegar el reembolso para cubrir gastos de mediación.
-Pasarela: Los pagos se procesan a través de Culqi, bajo sus propios términos de seguridad.
-6. CONTENIDO Y RESEÑA
-Moderación: Servi no edita ni elimina reseñas arbitrariamente. Sin embargo, podrá ocultar reseñas de la vista pública bajo un proceso de mediación si existe un conflicto de intereses o si el profesional demuestra que factores externos ajenos a su labor afectaron el resultado.
-Gestión de Prestigio: El acceso a servicios de mediación o gestión de reseñas negativas podrá estar sujeto a planes de pago específicos, entendidos como un servicio de soporte administrativo y no como una alteración fraudulenta del ranking.
-Uso de Imágenes: El Usuario otorga a Servi una licencia gratuita, no exclusiva y mundial para utilizar las fotos de perfil, logotipos y fotos de trabajos subidos a la App con fines de publicidad y marketing de la plataforma.
-
-Última actualización: 23 de abril de 2026
-''';
-  // ══════════════════════════════════════════════════════════
+  // Modificado: Ahora requiere título y contenido por parámetro
+  const _TermsModal({required this.title, required this.content});
 
   @override
   Widget build(BuildContext context) {
@@ -746,7 +721,7 @@ Uso de Imágenes: El Usuario otorga a Servi una licencia gratuita, no exclusiva 
                 children: [
                   Expanded(
                     child: Text(
-                      'Términos y Condiciones',
+                      title, // 👉 Título dinámico
                       style: TextStyle(
                         color: c.textPrimary,
                         fontSize: 18,
@@ -770,7 +745,7 @@ Uso de Imágenes: El Usuario otorga a Servi una licencia gratuita, no exclusiva 
                 controller: scrollController,
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
                 child: Text(
-                  _termsText,
+                  content, // 👉 Contenido dinámico
                   style: TextStyle(
                     color: c.textSecondary,
                     fontSize: 13,
