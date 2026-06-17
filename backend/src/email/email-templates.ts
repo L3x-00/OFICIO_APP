@@ -10,7 +10,7 @@ const PLAY_STORE_URL =
   process.env.PLAY_STORE_URL ??
   'https://play.google.com/store/apps/details?id=com.oficioapp.mobile';
 const SUPPORT_WHATSAPP =
-  process.env.SUPPORT_WHATSAPP_URL ?? 'https://wa.me/51999999999';
+  process.env.SUPPORT_WHATSAPP_URL ?? 'https://wa.me/51930759515';
 const SOCIAL = {
   tiktok: process.env.SOCIAL_TIKTOK_URL ?? 'https://www.tiktok.com/@ofiapp.pe',
   facebook:
