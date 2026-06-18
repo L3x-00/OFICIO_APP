@@ -4,11 +4,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 
 /// Vista previa (mock) del perfil que el usuario tendrá según el tipo
-/// seleccionado: foto de portada, avatar + nombre + badge verificado,
-/// miniaturas (solo NEGOCIO) y botones de contacto.
-///
-/// [isOficio] cambia los colores de acento (azul para OFICIO, morado para
-/// NEGOCIO), los placeholders de texto y oculta las miniaturas en OFICIO.
+/// seleccionado. Mejorado con productos/servicios, ubicación y métricas.
 class ProfilePreviewMock extends StatelessWidget {
   final bool isOficio;
   const ProfilePreviewMock({super.key, required this.isOficio});
@@ -20,11 +16,24 @@ class ProfilePreviewMock extends StatelessWidget {
         ? [const Color(0xFF00C6FF), const Color(0xFF0072FF)]
         : [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)];
 
+    // Datos de ejemplo según el tipo
+    final String sectionTitle = isOficio ? 'Servicios' : 'Productos';
+    final List<String> mockItems = isOficio
+        ? ['Instalación', 'Reparación', 'Mantenimiento']
+        : ['Plato 1', 'Plato 2', 'Plato 3'];
+
     return Container(
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,18 +126,24 @@ class ProfilePreviewMock extends StatelessWidget {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 3),
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.verified.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: AppColors.verified.withValues(alpha: 0.3)),
+                          color: AppColors.verified.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.verified_rounded,
-                              color: AppColors.verified, size: 12),
+                          Icon(
+                            Icons.verified_rounded,
+                            color: AppColors.verified,
+                            size: 12,
+                          ),
                           SizedBox(width: 3),
                           Text(
                             'Verificado',
@@ -143,105 +158,219 @@ class ProfilePreviewMock extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                // Miniaturas de fotos (solo para negocios, 3 slots)
-                if (!isOficio) ...[
-                  const SizedBox(height: 10),
-                  Row(
-                    children: List.generate(
-                      3,
-                      (i) => Expanded(
-                        child: Container(
-                          height: 50,
-                          margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
-                          decoration: BoxDecoration(
-                            color: c.bgInput,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.06)),
+                // 3 Fotos de presentación
+                const SizedBox(height: 10),
+                Row(
+                  children: List.generate(
+                    3,
+                    (i) => Expanded(
+                      child: Container(
+                        height: 50,
+                        margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
+                        decoration: BoxDecoration(
+                          color: c.bgInput,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.06),
                           ),
-                          child: Center(
-                            child: Icon(
-                              Icons.image_rounded,
-                              color: c.textMuted.withValues(alpha: 0.4),
-                              size: 18,
-                            ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.image_rounded,
+                            color: c.textMuted.withValues(alpha: 0.4),
+                            size: 18,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Center(
-                    child: Text(
-                      'Tus fotos aparecen en la tarjeta del negocio',
-                      style: TextStyle(
-                          color: c.textMuted, fontSize: 10),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-
-                // Botones de contacto mock
+                ),
+                // Ubicación
                 const SizedBox(height: 10),
                 Row(
                   children: [
+                    Icon(
+                      Icons.location_on_rounded,
+                      size: 12,
+                      color: c.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Tu distrito, Tu provincia',
+                      style: TextStyle(color: c.textMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
+
+                // Botones de contacto mock (WhatsApp, Mensaje y Llamar)
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    // Botón WhatsApp
                     Expanded(
+                      flex: 2,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
                           color: AppColors.whatsapp.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppColors.whatsapp.withValues(alpha: 0.25)),
+                            color: AppColors.whatsapp.withValues(alpha: 0.25),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SvgPicture.asset('assets/icons/whatsapp.svg',
-                                width: 14, height: 14),
+                            SvgPicture.asset(
+                              'assets/icons/whatsapp.svg',
+                              width: 14,
+                              height: 14,
+                            ),
                             const SizedBox(width: 4),
                             const Text(
                               'WhatsApp',
                               style: TextStyle(
-                                  color: AppColors.whatsapp,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700),
+                                color: AppColors.whatsapp,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.call.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: AppColors.call.withValues(alpha: 0.25)),
+                    // Botón Mensaje (Amarillo)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFFFC107,
+                          ).withValues(alpha: 0.25),
                         ),
-                        child: const Row(
+                      ),
+                      child: const Icon(
+                        Icons.chat_bubble_rounded,
+                        color: Color(0xFFFFC107),
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Botón Llamar
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.call.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.call.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.call_rounded,
+                        color: AppColors.call,
+                        size: 16,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Mini-sección de Productos o Servicios
+                const SizedBox(height: 16),
+                Text(
+                  sectionTitle.toUpperCase(),
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: List.generate(
+                    3,
+                    (i) => Expanded(
+                      child: Container(
+                        height: 60,
+                        margin: EdgeInsets.only(right: i < 2 ? 8 : 0),
+                        decoration: BoxDecoration(
+                          color: c.bgInput,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.06),
+                          ),
+                        ),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.call_rounded,
-                                color: AppColors.call, size: 14),
-                            SizedBox(width: 4),
+                            Icon(
+                              isOficio
+                                  ? Icons.handyman_rounded
+                                  : Icons.fastfood_rounded,
+                              color: accentColors[0].withValues(alpha: 0.6),
+                              size: 18,
+                            ),
+                            const SizedBox(height: 4),
                             Text(
-                              'Llamar',
-                              style: TextStyle(
-                                  color: AppColors.call,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700),
+                              mockItems[i],
+                              style: TextStyle(color: c.textMuted, fontSize: 9),
                             ),
                           ],
                         ),
                       ),
                     ),
+                  ),
+                ),
+
+                // Reseñas y Recomendaciones
+                const SizedBox(height: 12),
+                Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Estrellas de reseñas
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Colors.amber,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '4.9 (120 reseñas)',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Recomendaciones (Likes)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.thumb_up_rounded,
+                          color: c.textSecondary,
+                          size: 13,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '95% recomienda',
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
               ],
             ),
           ),

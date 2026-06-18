@@ -101,7 +101,7 @@ class JoinUsInitialView extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Miles de personas en tu zona buscan exactamente lo que tú ofreces. '
-                  'Únete a Servi gratis los primeros 2 meses.',
+                  'Únete a Servi gratis y haz crecer tu negocio o tu carrera profesional.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: c.textSecondary,
@@ -128,7 +128,7 @@ class JoinUsInitialView extends StatelessWidget {
 
           ...kJoinUsBenefits.map(
             (b) => BenefitRow(
-              icon: b['icon'] as IconData?,       // ← Cambiar a opcional (añadir ?)
+              icon: b['icon'] as IconData?, // ← Cambiar a opcional (añadir ?)
               svgAsset: b['svgAsset'] as String?, // ← Añadir esta línea
               title: b['title'] as String,
               subtitle: b['subtitle'] as String,
@@ -144,7 +144,7 @@ class JoinUsInitialView extends StatelessWidget {
               Expanded(
                 child: StatCard(
                   value: '100%',
-                  label: 'Gratis\n2 meses',
+                  label: 'Gratis\n por siempre',
                   color: AppColors.available,
                 ),
               ),
@@ -171,18 +171,38 @@ class JoinUsInitialView extends StatelessWidget {
           // Opciones de tipo — reactivas al estado de aprobación en tiempo real
           Consumer<AuthProvider>(
             builder: (_, auth, _) {
-              final canOficio  = !auth.isAuthenticated || auth.canBecomeRole('OFICIO');
-              final canNegocio = !auth.isAuthenticated || auth.canBecomeRole('NEGOCIO');
+              final canOficio =
+                  !auth.isAuthenticated || auth.canBecomeRole('OFICIO');
+              final canNegocio =
+                  !auth.isAuthenticated || auth.canBecomeRole('NEGOCIO');
 
-              final oficioStatus  = auth.verificationStatusFor('OFICIO');
+              final oficioStatus = auth.verificationStatusFor('OFICIO');
               final negocioStatus = auth.verificationStatusFor('NEGOCIO');
 
-              final hasPendingOficio   = auth.isAuthenticated && !canOficio  && oficioStatus  == 'PENDIENTE';
-              final hasPendingNegocio  = auth.isAuthenticated && !canNegocio && negocioStatus == 'PENDIENTE';
-              final hasApprovedOficio  = auth.isAuthenticated && !canOficio  && oficioStatus  == 'APROBADO';
-              final hasApprovedNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'APROBADO';
-              final hasRejectedOficio  = auth.isAuthenticated && !canOficio  && oficioStatus  == 'RECHAZADO';
-              final hasRejectedNegocio = auth.isAuthenticated && !canNegocio && negocioStatus == 'RECHAZADO';
+              final hasPendingOficio =
+                  auth.isAuthenticated &&
+                  !canOficio &&
+                  oficioStatus == 'PENDIENTE';
+              final hasPendingNegocio =
+                  auth.isAuthenticated &&
+                  !canNegocio &&
+                  negocioStatus == 'PENDIENTE';
+              final hasApprovedOficio =
+                  auth.isAuthenticated &&
+                  !canOficio &&
+                  oficioStatus == 'APROBADO';
+              final hasApprovedNegocio =
+                  auth.isAuthenticated &&
+                  !canNegocio &&
+                  negocioStatus == 'APROBADO';
+              final hasRejectedOficio =
+                  auth.isAuthenticated &&
+                  !canOficio &&
+                  oficioStatus == 'RECHAZADO';
+              final hasRejectedNegocio =
+                  auth.isAuthenticated &&
+                  !canNegocio &&
+                  negocioStatus == 'RECHAZADO';
 
               // Ambos aprobados → botón único de panel con selección
               if (hasApprovedOficio && hasApprovedNegocio) {
@@ -201,17 +221,25 @@ class JoinUsInitialView extends StatelessWidget {
                         ],
                       ),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF1E88E5).withValues(alpha: 0.35)),
+                      border: Border.all(
+                        color: const Color(0xFF1E88E5).withValues(alpha: 0.35),
+                      ),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E88E5).withValues(alpha: 0.15),
+                            color: const Color(
+                              0xFF1E88E5,
+                            ).withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.dashboard_rounded, color: Color(0xFF1E88E5), size: 22),
+                          child: const Icon(
+                            Icons.dashboard_rounded,
+                            color: Color(0xFF1E88E5),
+                            size: 22,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -229,21 +257,34 @@ class JoinUsInitialView extends StatelessWidget {
                               const SizedBox(height: 2),
                               Text(
                                 'Tienes perfil de Profesional y Negocio activos',
-                                style: TextStyle(color: c.textMuted, fontSize: 12),
+                                style: TextStyle(
+                                  color: c.textMuted,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF1E88E5), size: 14),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Color(0xFF1E88E5),
+                          size: 14,
+                        ),
                       ],
                     ),
                   ),
                 );
               }
 
-              final hasAnyItem = canOficio || canNegocio || hasPendingOficio ||
-                  hasPendingNegocio || hasApprovedOficio || hasApprovedNegocio ||
-                  hasRejectedOficio || hasRejectedNegocio;
+              final hasAnyItem =
+                  canOficio ||
+                  canNegocio ||
+                  hasPendingOficio ||
+                  hasPendingNegocio ||
+                  hasApprovedOficio ||
+                  hasApprovedNegocio ||
+                  hasRejectedOficio ||
+                  hasRejectedNegocio;
 
               if (!hasAnyItem) return const SizedBox.shrink();
 
@@ -268,7 +309,8 @@ class JoinUsInitialView extends StatelessWidget {
                     TypeCard(
                       icon: Icons.handyman_rounded,
                       title: 'Soy un profesional independiente',
-                      subtitle: 'Tu habilidad + nuestra plataforma = más clientes.\nElectricista, gasfitero, pintor, carpintero…',
+                      subtitle:
+                          'Tu habilidad + nuestra plataforma = más clientes.\nElectricista, gasfitero, pintor, carpintero…',
                       tag: 'OFICIO',
                       gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
                       onTap: () => onSelectType('OFICIO'),
@@ -278,7 +320,8 @@ class JoinUsInitialView extends StatelessWidget {
                   if (hasPendingOficio) ...[
                     const PendingBanner(
                       icon: Icons.handyman_rounded,
-                      label: 'Tu perfil de Profesional está esperando aprobación del administrador.',
+                      label:
+                          'Tu perfil de Profesional está esperando aprobación del administrador.',
                     ),
                     const SizedBox(height: 14),
                   ],
@@ -303,13 +346,15 @@ class JoinUsInitialView extends StatelessWidget {
                         Navigator.pop(context);
                         // rootNavigator: el form de registro sale del
                         // shell del cliente para no mostrar bottom nav.
-                        Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
-                          builder: (_) => ProviderOnboardingForm(
-                            providerType: 'OFICIO',
-                            isStandalone: true,
-                            initialData: auth.providerDataFor('OFICIO'),
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProviderOnboardingForm(
+                              providerType: 'OFICIO',
+                              isStandalone: true,
+                              initialData: auth.providerDataFor('OFICIO'),
+                            ),
                           ),
-                        ));
+                        );
                       },
                     ),
                     const SizedBox(height: 14),
@@ -320,7 +365,8 @@ class JoinUsInitialView extends StatelessWidget {
                     TypeCard(
                       icon: Icons.storefront_rounded,
                       title: 'Tengo un negocio establecido',
-                      subtitle: 'Crece con la confianza de tu comunidad.\nRestaurante, peluquería, ferretería, taller…',
+                      subtitle:
+                          'Crece con la confianza de tu comunidad.\nRestaurante, peluquería, ferretería, taller…',
                       tag: 'NEGOCIO',
                       gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
                       onTap: () => onSelectType('NEGOCIO'),
@@ -329,7 +375,8 @@ class JoinUsInitialView extends StatelessWidget {
                   if (hasPendingNegocio)
                     const PendingBanner(
                       icon: Icons.storefront_rounded,
-                      label: 'Tu negocio está esperando aprobación del administrador.',
+                      label:
+                          'Tu negocio está esperando aprobación del administrador.',
                     ),
                   if (hasApprovedNegocio)
                     ApprovedProfileBanner(
@@ -351,13 +398,15 @@ class JoinUsInitialView extends StatelessWidget {
                         Navigator.pop(context);
                         // rootNavigator: el form de registro sale del
                         // shell del cliente para no mostrar bottom nav.
-                        Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
-                          builder: (_) => ProviderOnboardingForm(
-                            providerType: 'NEGOCIO',
-                            isStandalone: true,
-                            initialData: auth.providerDataFor('NEGOCIO'),
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProviderOnboardingForm(
+                              providerType: 'NEGOCIO',
+                              isStandalone: true,
+                              initialData: auth.providerDataFor('NEGOCIO'),
+                            ),
                           ),
-                        ));
+                        );
                       },
                     ),
                   ],
@@ -400,9 +449,8 @@ class JoinUsInitialView extends StatelessWidget {
                       // cliente para no dejar visible la bottom nav.
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
-                          builder: (_) => const LoginScreen(
-                            initialMode: AuthMode.register,
-                          ),
+                          builder: (_) =>
+                              const LoginScreen(initialMode: AuthMode.register),
                         ),
                       );
                     },
@@ -419,7 +467,9 @@ class JoinUsInitialView extends StatelessWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: AppColors.available.withValues(alpha: 0.12),
+                              color: AppColors.available.withValues(
+                                alpha: 0.12,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(

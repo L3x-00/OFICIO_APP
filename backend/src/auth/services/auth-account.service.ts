@@ -65,14 +65,20 @@ export class AuthAccountService {
   // ── RESET PASSWORD ───────────────────────────────────────
   async resetPassword(email: string, token: string, newPassword: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new UnauthorizedException('Token inválido o expirado');
+    if (!user) throw new UnauthorizedException('Código incorrecto');
 
     const stored = await this.prisma.refreshToken.findUnique({
       where: { token: `RESET_${token}` },
     });
 
-    if (!stored || stored.userId !== user.id || stored.expiresAt < new Date()) {
-      throw new UnauthorizedException('Token inválido o expirado');
+    // 1. Si el token no existe o no pertenece a este usuario → Código incorrecto
+    if (!stored || stored.userId !== user.id) {
+      throw new UnauthorizedException('Código incorrecto');
+    }
+
+    // 2. Si el token sí existe y pertenece al usuario, pero ya venció → Código expirado
+    if (stored.expiresAt < new Date()) {
+      throw new UnauthorizedException('El código ha expirado');
     }
 
     // Consumir el token de reset

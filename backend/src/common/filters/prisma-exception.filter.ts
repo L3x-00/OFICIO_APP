@@ -34,7 +34,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
           (e.meta?.target as string[] | undefined)?.join(', ') ?? 'campo';
         return {
           status: HttpStatus.CONFLICT,
-          message: `Ya existe un registro con ese ${fields}`,
+          message: `Ya hay un registro con ese ${fields}`,
         };
       }
       case 'P2025':

@@ -14,19 +14,75 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  void _showSuccessDialog() {
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
+    }
+    super.dispose();
+  }
+
+  String get _fullCode => _controllers.map((c) => c.text).join();
+
+  bool get _isComplete => _fullCode.length == 6;
+
+  Future<void> _verify() async {
+    if (!_isComplete) return;
+
+    final authProvider = context.read<AuthProvider>();
+    // Capturamos el navegador RAÍZ antes del await.
+    // Esto evita que pierda el contexto si el router nos saca de esta pantalla.
+    final rootNav = Navigator.of(context, rootNavigator: true);
+
+    final success = await authProvider.verifyOtp(_fullCode);
+
+    if (success) {
+      // Mostramos el modal sobre el navegador raíz para que no se pierda
+      // si el router redirige automáticamente a la elección de rol.
+      _showSuccessDialog(rootNav);
+    } else {
+      // Si falló, mostramos el error que guardó el provider
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error ?? 'Código incorrecto'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      // Limpiar los cuadritos para reintentar
+      for (var controller in _controllers) {
+        controller.clear();
+      }
+      _focusNodes[0].requestFocus();
+    }
+  }
+
+  void _showSuccessDialog(NavigatorState navigator) {
     showDialog(
-      context: context,
+      context: navigator.context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.green, size: 80),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.green,
+              size: 80,
+            ),
             const SizedBox(height: 20),
             const Text(
-              '¡Cuenta Verificada!',
+              'Código verificado',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -39,18 +95,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Limpiar todo el stack al root: _AppRoot mostrará OnboardingScreen
-                  // automáticamente porque _needsOnboarding=true.
-                  // No usar pushReplacement — eso apila una segunda OnboardingScreen
-                  // encima de LoginScreen y congela la app después del rol.
-                  Navigator.of(ctx, rootNavigator: true)
-                      .popUntil((route) => route.isFirst);
+                  // Solo cerramos el modal. El router ya habrá navegado
+                  // a la pantalla de elección de rol por debajo.
+                  Navigator.of(ctx).pop();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Continuar', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Siguiente',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -58,48 +116,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       ),
     );
   }
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
-
-  @override
-  void dispose() {
-    for (final c in _controllers) { c.dispose(); }
-    for (final f in _focusNodes) { f.dispose(); }
-    super.dispose();
-  }
-
-  String get _fullCode =>
-      _controllers.map((c) => c.text).join();
-
-  bool get _isComplete => _fullCode.length == 6;
-
-  Future<void> _verify() async {
-  if (!_isComplete) return;
-
-  final authProvider = context.read<AuthProvider>();
-  final success = await authProvider.verifyOtp(_fullCode); // _fullCode es el string de 6 dígitos
-
-  if (!mounted) return;
-
-  if (success) {
-    // Si el backend dijo OK, mostramos el modal de éxito
-    _showSuccessDialog();
-  } else {
-    // Si falló, mostramos el error que guardó el provider
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(authProvider.error ?? 'Código incorrecto'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    // Opcional: limpiar los cuadritos para reintentar
-    for (var controller in _controllers) {
-      controller.clear();
-    }
-    _focusNodes[0].requestFocus();
-  }
-}
 
   Future<void> _resend() async {
     final auth = context.read<AuthProvider>();
@@ -107,15 +123,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok
-            ? 'Código reenviado al email registrado'
-            : (auth.error ?? 'Error al reenviar')),
+        content: Text(
+          ok
+              ? 'Código reenviado al email registrado'
+              : (auth.error ?? 'Error al reenviar'),
+        ),
         backgroundColor: ok ? AppColors.available : AppColors.busy,
         duration: const Duration(seconds: 3),
       ),
     );
     if (ok) {
-      for (final c in _controllers) { c.clear(); }
+      for (final c in _controllers) {
+        c.clear();
+      }
       _focusNodes.first.requestFocus();
     }
   }
@@ -131,9 +151,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c         = context.colors;
+    final c = context.colors;
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
-    final email     = context.select<AuthProvider, String>((a) => a.pendingEmail ?? a.user?.email ?? '');
+    final email = context.select<AuthProvider, String>(
+      (a) => a.pendingEmail ?? a.user?.email ?? '',
+    );
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -194,7 +216,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ),
                   children: [
                     const TextSpan(
-                        text: 'Hemos enviado un código de 6 dígitos a '),
+                      text: 'Hemos enviado un código de 6 dígitos a ',
+                    ),
                     TextSpan(
                       text: email,
                       style: const TextStyle(
@@ -211,11 +234,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               // ── Campos OTP ─────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (i) => _OtpBox(
-                  controller: _controllers[i],
-                  focusNode: _focusNodes[i],
-                  onChanged: (v) => _onDigitInput(v, i),
-                )),
+                children: List.generate(
+                  6,
+                  (i) => _OtpBox(
+                    controller: _controllers[i],
+                    focusNode: _focusNodes[i],
+                    onChanged: (v) => _onDigitInput(v, i),
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -258,10 +284,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   onTap: isLoading ? null : _resend,
                   child: RichText(
                     text: TextSpan(
-                      style: TextStyle(
-                        color: c.textMuted,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: c.textMuted, fontSize: 14),
                       children: const [
                         TextSpan(text: '¿No recibiste el código? '),
                         TextSpan(

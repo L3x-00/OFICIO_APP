@@ -41,9 +41,11 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     super.dispose();
   }
 
-  /// Vuelve SIEMPRE al Home (nunca cierra la app), sin importar cómo se
-  /// llegó a esta ruta top-level.
-  void _goHome() => context.go('/');
+  // 👇 CAMBIO 1: Renombrado y modificado para volver a la pantalla anterior
+  /// Vuelve a la pantalla anterior (ej. Perfil). Si no hay historial, va al Home.
+  void _goBack() => Navigator.of(context).canPop()
+      ? Navigator.of(context).pop()
+      : context.go('/');
 
   @override
   Widget build(BuildContext context) {
@@ -56,10 +58,11 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
         .toList();
 
     return PopScope(
-      // El back (sistema o AppBar) SIEMPRE va al Home, nunca sale de la app.
-      canPop: false,
+      // El back del sistema respeta la pila de navegación.
+      canPop: true, // 👈 CAMBIO 2: Permitir que el sistema haga "pop" normal
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _goHome();
+        // 👇 CAMBIO 3: Usar _goBack en lugar de _goHome
+        if (!didPop) _goBack();
       },
       child: Scaffold(
         backgroundColor: c.bg,
@@ -77,8 +80,8 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: _goHome,
-            tooltip: 'Inicio',
+            onPressed: _goBack, // 👈 CAMBIO 4: Usar _goBack en la flecha
+            tooltip: 'Volver',
           ),
           title: Text(
             'Mis solicitudes',
