@@ -64,6 +64,8 @@ export type ServiceRequestMinAggregateOutputType = {
   department: string | null
   province: string | null
   district: string | null
+  clientPhone: string | null
+  clientWhatsapp: string | null
   status: $Enums.ServiceRequestStatus | null
   maxOffers: number | null
   notifyRadiusKm: number | null
@@ -86,6 +88,8 @@ export type ServiceRequestMaxAggregateOutputType = {
   department: string | null
   province: string | null
   district: string | null
+  clientPhone: string | null
+  clientWhatsapp: string | null
   status: $Enums.ServiceRequestStatus | null
   maxOffers: number | null
   notifyRadiusKm: number | null
@@ -108,6 +112,8 @@ export type ServiceRequestCountAggregateOutputType = {
   department: number
   province: number
   district: number
+  clientPhone: number
+  clientWhatsapp: number
   status: number
   maxOffers: number
   notifyRadiusKm: number
@@ -156,6 +162,8 @@ export type ServiceRequestMinAggregateInputType = {
   department?: true
   province?: true
   district?: true
+  clientPhone?: true
+  clientWhatsapp?: true
   status?: true
   maxOffers?: true
   notifyRadiusKm?: true
@@ -178,6 +186,8 @@ export type ServiceRequestMaxAggregateInputType = {
   department?: true
   province?: true
   district?: true
+  clientPhone?: true
+  clientWhatsapp?: true
   status?: true
   maxOffers?: true
   notifyRadiusKm?: true
@@ -200,6 +210,8 @@ export type ServiceRequestCountAggregateInputType = {
   department?: true
   province?: true
   district?: true
+  clientPhone?: true
+  clientWhatsapp?: true
   status?: true
   maxOffers?: true
   notifyRadiusKm?: true
@@ -309,6 +321,8 @@ export type ServiceRequestGroupByOutputType = {
   department: string | null
   province: string | null
   district: string | null
+  clientPhone: string | null
+  clientWhatsapp: string | null
   status: $Enums.ServiceRequestStatus
   maxOffers: number
   notifyRadiusKm: number
@@ -354,6 +368,8 @@ export type ServiceRequestWhereInput = {
   department?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   province?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   district?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
+  clientPhone?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
+  clientWhatsapp?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   status?: Prisma.EnumServiceRequestStatusFilter<"ServiceRequest"> | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFilter<"ServiceRequest"> | number
   notifyRadiusKm?: Prisma.FloatFilter<"ServiceRequest"> | number
@@ -379,6 +395,8 @@ export type ServiceRequestOrderByWithRelationInput = {
   department?: Prisma.SortOrderInput | Prisma.SortOrder
   province?: Prisma.SortOrderInput | Prisma.SortOrder
   district?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientWhatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   maxOffers?: Prisma.SortOrder
   notifyRadiusKm?: Prisma.SortOrder
@@ -407,6 +425,8 @@ export type ServiceRequestWhereUniqueInput = Prisma.AtLeast<{
   department?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   province?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   district?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
+  clientPhone?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
+  clientWhatsapp?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   status?: Prisma.EnumServiceRequestStatusFilter<"ServiceRequest"> | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFilter<"ServiceRequest"> | number
   notifyRadiusKm?: Prisma.FloatFilter<"ServiceRequest"> | number
@@ -432,6 +452,8 @@ export type ServiceRequestOrderByWithAggregationInput = {
   department?: Prisma.SortOrderInput | Prisma.SortOrder
   province?: Prisma.SortOrderInput | Prisma.SortOrder
   district?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  clientWhatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   maxOffers?: Prisma.SortOrder
   notifyRadiusKm?: Prisma.SortOrder
@@ -462,6 +484,8 @@ export type ServiceRequestScalarWhereWithAggregatesInput = {
   department?: Prisma.StringNullableWithAggregatesFilter<"ServiceRequest"> | string | null
   province?: Prisma.StringNullableWithAggregatesFilter<"ServiceRequest"> | string | null
   district?: Prisma.StringNullableWithAggregatesFilter<"ServiceRequest"> | string | null
+  clientPhone?: Prisma.StringNullableWithAggregatesFilter<"ServiceRequest"> | string | null
+  clientWhatsapp?: Prisma.StringNullableWithAggregatesFilter<"ServiceRequest"> | string | null
   status?: Prisma.EnumServiceRequestStatusWithAggregatesFilter<"ServiceRequest"> | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntWithAggregatesFilter<"ServiceRequest"> | number
   notifyRadiusKm?: Prisma.FloatWithAggregatesFilter<"ServiceRequest"> | number
@@ -481,6 +505,8 @@ export type ServiceRequestCreateInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -506,6 +532,8 @@ export type ServiceRequestUncheckedCreateInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -526,6 +554,8 @@ export type ServiceRequestUpdateInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -551,6 +581,8 @@ export type ServiceRequestUncheckedUpdateInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -574,6 +606,8 @@ export type ServiceRequestCreateManyInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -593,6 +627,8 @@ export type ServiceRequestUpdateManyMutationInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -615,6 +651,8 @@ export type ServiceRequestUncheckedUpdateManyInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -647,6 +685,8 @@ export type ServiceRequestCountOrderByAggregateInput = {
   department?: Prisma.SortOrder
   province?: Prisma.SortOrder
   district?: Prisma.SortOrder
+  clientPhone?: Prisma.SortOrder
+  clientWhatsapp?: Prisma.SortOrder
   status?: Prisma.SortOrder
   maxOffers?: Prisma.SortOrder
   notifyRadiusKm?: Prisma.SortOrder
@@ -681,6 +721,8 @@ export type ServiceRequestMaxOrderByAggregateInput = {
   department?: Prisma.SortOrder
   province?: Prisma.SortOrder
   district?: Prisma.SortOrder
+  clientPhone?: Prisma.SortOrder
+  clientWhatsapp?: Prisma.SortOrder
   status?: Prisma.SortOrder
   maxOffers?: Prisma.SortOrder
   notifyRadiusKm?: Prisma.SortOrder
@@ -703,6 +745,8 @@ export type ServiceRequestMinOrderByAggregateInput = {
   department?: Prisma.SortOrder
   province?: Prisma.SortOrder
   district?: Prisma.SortOrder
+  clientPhone?: Prisma.SortOrder
+  clientWhatsapp?: Prisma.SortOrder
   status?: Prisma.SortOrder
   maxOffers?: Prisma.SortOrder
   notifyRadiusKm?: Prisma.SortOrder
@@ -841,6 +885,8 @@ export type ServiceRequestCreateWithoutUserInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -864,6 +910,8 @@ export type ServiceRequestUncheckedCreateWithoutUserInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -916,6 +964,8 @@ export type ServiceRequestScalarWhereInput = {
   department?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   province?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   district?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
+  clientPhone?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
+  clientWhatsapp?: Prisma.StringNullableFilter<"ServiceRequest"> | string | null
   status?: Prisma.EnumServiceRequestStatusFilter<"ServiceRequest"> | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFilter<"ServiceRequest"> | number
   notifyRadiusKm?: Prisma.FloatFilter<"ServiceRequest"> | number
@@ -935,6 +985,8 @@ export type ServiceRequestCreateWithoutCategoryInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -958,6 +1010,8 @@ export type ServiceRequestUncheckedCreateWithoutCategoryInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -1004,6 +1058,8 @@ export type ServiceRequestCreateWithoutOffersInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -1028,6 +1084,8 @@ export type ServiceRequestUncheckedCreateWithoutOffersInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -1063,6 +1121,8 @@ export type ServiceRequestUpdateWithoutOffersInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1087,6 +1147,8 @@ export type ServiceRequestUncheckedUpdateWithoutOffersInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1108,6 +1170,8 @@ export type ServiceRequestCreateManyUserInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -1127,6 +1191,8 @@ export type ServiceRequestUpdateWithoutUserInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1150,6 +1216,8 @@ export type ServiceRequestUncheckedUpdateWithoutUserInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1172,6 +1240,8 @@ export type ServiceRequestUncheckedUpdateManyWithoutUserInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1193,6 +1263,8 @@ export type ServiceRequestCreateManyCategoryInput = {
   department?: string | null
   province?: string | null
   district?: string | null
+  clientPhone?: string | null
+  clientWhatsapp?: string | null
   status?: $Enums.ServiceRequestStatus
   maxOffers?: number
   notifyRadiusKm?: number
@@ -1212,6 +1284,8 @@ export type ServiceRequestUpdateWithoutCategoryInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1235,6 +1309,8 @@ export type ServiceRequestUncheckedUpdateWithoutCategoryInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1257,6 +1333,8 @@ export type ServiceRequestUncheckedUpdateManyWithoutCategoryInput = {
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clientWhatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumServiceRequestStatusFieldUpdateOperationsInput | $Enums.ServiceRequestStatus
   maxOffers?: Prisma.IntFieldUpdateOperationsInput | number
   notifyRadiusKm?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1310,6 +1388,8 @@ export type ServiceRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   department?: boolean
   province?: boolean
   district?: boolean
+  clientPhone?: boolean
+  clientWhatsapp?: boolean
   status?: boolean
   maxOffers?: boolean
   notifyRadiusKm?: boolean
@@ -1336,6 +1416,8 @@ export type ServiceRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   department?: boolean
   province?: boolean
   district?: boolean
+  clientPhone?: boolean
+  clientWhatsapp?: boolean
   status?: boolean
   maxOffers?: boolean
   notifyRadiusKm?: boolean
@@ -1360,6 +1442,8 @@ export type ServiceRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   department?: boolean
   province?: boolean
   district?: boolean
+  clientPhone?: boolean
+  clientWhatsapp?: boolean
   status?: boolean
   maxOffers?: boolean
   notifyRadiusKm?: boolean
@@ -1384,6 +1468,8 @@ export type ServiceRequestSelectScalar = {
   department?: boolean
   province?: boolean
   district?: boolean
+  clientPhone?: boolean
+  clientWhatsapp?: boolean
   status?: boolean
   maxOffers?: boolean
   notifyRadiusKm?: boolean
@@ -1392,7 +1478,7 @@ export type ServiceRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ServiceRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "categoryId" | "description" | "photoUrl" | "budgetMin" | "budgetMax" | "desiredDate" | "latitude" | "longitude" | "department" | "province" | "district" | "status" | "maxOffers" | "notifyRadiusKm" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["serviceRequest"]>
+export type ServiceRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "categoryId" | "description" | "photoUrl" | "budgetMin" | "budgetMax" | "desiredDate" | "latitude" | "longitude" | "department" | "province" | "district" | "clientPhone" | "clientWhatsapp" | "status" | "maxOffers" | "notifyRadiusKm" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["serviceRequest"]>
 export type ServiceRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   offers?: boolean | Prisma.ServiceRequest$offersArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
@@ -1429,6 +1515,8 @@ export type $ServiceRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     department: string | null
     province: string | null
     district: string | null
+    clientPhone: string | null
+    clientWhatsapp: string | null
     status: $Enums.ServiceRequestStatus
     maxOffers: number
     notifyRadiusKm: number
@@ -1874,6 +1962,8 @@ export interface ServiceRequestFieldRefs {
   readonly department: Prisma.FieldRef<"ServiceRequest", 'String'>
   readonly province: Prisma.FieldRef<"ServiceRequest", 'String'>
   readonly district: Prisma.FieldRef<"ServiceRequest", 'String'>
+  readonly clientPhone: Prisma.FieldRef<"ServiceRequest", 'String'>
+  readonly clientWhatsapp: Prisma.FieldRef<"ServiceRequest", 'String'>
   readonly status: Prisma.FieldRef<"ServiceRequest", 'ServiceRequestStatus'>
   readonly maxOffers: Prisma.FieldRef<"ServiceRequest", 'Int'>
   readonly notifyRadiusKm: Prisma.FieldRef<"ServiceRequest", 'Float'>

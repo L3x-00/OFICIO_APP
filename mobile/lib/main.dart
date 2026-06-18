@@ -461,7 +461,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _showProviderDeletionDialog(deletion);
+        _tryShowProviderDeletion(deletion);
       });
     }
   }
@@ -507,12 +507,20 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   }
 
   /// Dialog informativo cuando el admin elimina el perfil del user.
-  /// Se monta sobre cualquier pantalla via _navigatorKey. El user
-  /// solo tiene "Entendido" como acción — el backend ya hizo el delete
-  /// y el sync local ya actualizó la UI (botón "Ir a mi panel" se
-  /// volvió "Quiero ser parte" en tiempo real).
-  void _showProviderDeletionDialog(ProviderDeletionPayload deletion) {
-    final navCtx = _navigatorKey.currentContext;
+  /// Se monta sobre cualquier pantalla via _navigatorKey. Reintenta hasta
+  /// 30 frames (~500ms) esperando al navigator — antes era una llamada
+  /// directa: si `navCtx` estaba null 1-2 frames (router en transición),
+  /// el dialog NUNCA aparecía. Ahora espera igual que el de aprobación.
+  Future<void> _tryShowProviderDeletion(
+    ProviderDeletionPayload deletion,
+  ) async {
+    BuildContext? navCtx;
+    for (var i = 0; i < 30; i++) {
+      navCtx = _navigatorKey.currentContext;
+      if (navCtx != null && navCtx.mounted) break;
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      if (!mounted) return;
+    }
     if (navCtx == null || !navCtx.mounted) return;
     showProviderDeletionDialog(navCtx, deletion);
   }

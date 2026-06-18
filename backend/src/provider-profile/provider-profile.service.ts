@@ -282,16 +282,33 @@ export class ProviderProfileService {
           }
         : baseWhere;
 
-    const [notifications, unreadCount] = await Promise.all([
+    const [rawNotifications, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
         where,
         orderBy: { sentAt: 'desc' },
-        take: 50,
+        take: 100,
       }),
       this.prisma.adminNotification.count({
         where: { ...where, isRead: false },
       }),
     ]);
+
+    // Agrupar notificaciones de chat (pedido del user): cada chat muestra
+    // SOLO su mensaje más reciente, no una notif por cada mensaje. Como
+    // AdminNotification no guarda chatRoomId, agrupamos por `title` —que para
+    // CHAT_MESSAGE es el remitente enmascarado, equivalente a un chat 1:1—.
+    // El resto de tipos pasa sin agrupar. (Ordenado sentAt desc → el primero
+    // por título es el más reciente.)
+    const seenChat = new Set<string>();
+    const notifications: typeof rawNotifications = [];
+    for (const n of rawNotifications) {
+      if (n.type === 'CHAT_MESSAGE') {
+        if (seenChat.has(n.title)) continue;
+        seenChat.add(n.title);
+      }
+      notifications.push(n);
+      if (notifications.length >= 50) break;
+    }
 
     return { data: notifications, unreadCount };
   }

@@ -73,7 +73,13 @@
       "Bash(dart format *)",
       "Bash(awk '/^enum \\(UserRole|Role\\)/{f=1} f{print} /^}/{if\\(f\\) f=0}' prisma/schema.prisma)",
       "Bash(awk '/async socialLogin\\\\\\(/{f=1} f{print NR\": \"$0} /^  }/{if\\(f\\){c++; if\\(c>=1 && /^  }$/\\) {print \"---END---\"; exit}}}' src/auth/auth.service.ts)",
-      "Bash(awk '/register\\\\/provider|registerProvider|FormData/{f=1} f{print NR\": \"$0} f&&/^  }/{c++; if\\(c>2\\) exit}' lib/features/auth/data/auth_repository.dart)"
+      "Bash(awk '/register\\\\/provider|registerProvider|FormData/{f=1} f{print NR\": \"$0} f&&/^  }/{c++; if\\(c>2\\) exit}' lib/features/auth/data/auth_repository.dart)",
+      "Bash(grep -E \"\\\\.\\(dart\\)$\")",
+      "Bash(awk '/Future.*forgotPassword|forgotPassword\\\\\\(/{f=1} f{print NR\": \"$0} f&&/^  }/{c++; if\\(c>=1 && /^  }$/\\){exit}}' lib/features/auth/data/auth_repository.dart)",
+      "Bash(awk '/model AdminNotification/{f=1} f{print} /^}/{if\\(f\\){exit}}' prisma/schema.prisma)",
+      "Bash(awk '/model ServiceRequest/{f=1} f{print} /^}/{if\\(f\\){exit}}' prisma/schema.prisma)",
+      "Bash(awk '/enum OfferStatus/{f=1} f{print} /^}/{if\\(f\\)exit}' prisma/schema.prisma)",
+      "Bash(DATABASE_URL=\"postgresql://u:p@localhost:5432/db?schema=public\" DIRECT_URL=\"postgresql://u:p@localhost:5432/db?schema=public\" npx prisma generate)"
     ]
   }
 }

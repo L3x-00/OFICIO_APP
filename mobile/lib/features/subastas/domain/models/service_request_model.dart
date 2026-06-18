@@ -111,6 +111,10 @@ class OfferModel {
   final int providerTotalReviews;
   final bool providerIsTrusted;
   final String? providerAvatarUrl;
+  // Contacto del proveedor — el backend solo lo envía (no null) en la oferta
+  // ACEPTADA. Sirve para que el cliente contacte al proveedor que eligió.
+  final String? providerPhone;
+  final String? providerWhatsapp;
   final double price;
   final String message;
   final OfferStatus status;
@@ -125,11 +129,15 @@ class OfferModel {
     required this.providerTotalReviews,
     required this.providerIsTrusted,
     this.providerAvatarUrl,
+    this.providerPhone,
+    this.providerWhatsapp,
     required this.price,
     required this.message,
     required this.status,
     required this.createdAt,
   });
+
+  bool get isAccepted => status == OfferStatus.accepted;
 
   factory OfferModel.fromJson(Map<String, dynamic> json) {
     final provider = json['provider'] as Map<String, dynamic>?;
@@ -146,6 +154,8 @@ class OfferModel {
       providerAvatarUrl:
           user?['avatarUrl'] as String? ??
           (images?.isNotEmpty == true ? images!.first['url'] as String? : null),
+      providerPhone: provider?['phone'] as String?,
+      providerWhatsapp: provider?['whatsapp'] as String?,
       price: (json['price'] as num).toDouble(),
       message: json['message'] as String,
       status: statusFromString(json['status'] as String? ?? 'PENDING'),
@@ -182,6 +192,10 @@ class OpportunityModel {
   final double? budgetMax;
   final String? clientFirstName;
   final String? district;
+  // Contacto del cliente — el backend solo lo envía (no null) cuando la
+  // oferta de ESTE proveedor fue ACEPTADA. Permite concretar el trabajo.
+  final String? clientPhone;
+  final String? clientWhatsapp;
   final double? distanceKm;
   final int offersCount;
   final int maxOffers;
@@ -207,6 +221,8 @@ class OpportunityModel {
     this.budgetMax,
     this.clientFirstName,
     this.district,
+    this.clientPhone,
+    this.clientWhatsapp,
     this.distanceKm,
     required this.offersCount,
     required this.maxOffers,
@@ -238,6 +254,8 @@ class OpportunityModel {
       budgetMax: (json['budgetMax'] as num?)?.toDouble(),
       clientFirstName: user?['firstName'] as String?,
       district: user?['district'] as String?,
+      clientPhone: json['clientPhone'] as String?,
+      clientWhatsapp: json['clientWhatsapp'] as String?,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       offersCount: json['offersCount'] as int? ?? 0,
       maxOffers: json['maxOffers'] as int? ?? 5,

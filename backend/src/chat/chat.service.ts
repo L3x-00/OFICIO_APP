@@ -77,6 +77,11 @@ export class ChatService {
       where = { OR: [{ clientId: userId }, { provider: { userId } }] };
     }
 
+    // Solo salas con AL MENOS un mensaje — evita "chats fantasma" (salas
+    // creadas al abrir el chat pero sin interacción real). El bug: el
+    // proveedor veía conversaciones con las que nunca interactuó.
+    where.messages = { some: {} };
+
     const rooms = await this.prisma.chatRoom.findMany({
       where,
       include: {
@@ -183,9 +188,13 @@ export class ChatService {
       }),
     ]);
 
-    const senderName =
-      `${sender?.firstName ?? ''} ${sender?.lastName ?? ''}`.trim() ||
-      'Alguien';
+    // Privacidad (pedido del user): NO exponer el nombre completo del
+    // remitente en la notificación. Mostrar solo el primer nombre + las
+    // primeras 4 letras del primer apellido. "Juan Pérez" → "Juan Pére.".
+    const firstName = (sender?.firstName ?? '').trim().split(/\s+/)[0] ?? '';
+    const firstSurname = (sender?.lastName ?? '').trim().split(/\s+/)[0] ?? '';
+    const maskedSurname = firstSurname ? `${firstSurname.slice(0, 4)}.` : '';
+    const senderName = `${firstName} ${maskedSurname}`.trim() || 'Alguien';
     // Texto solicitado por el user: "Tienes un nuevo mensaje de: X"
     const notifTitle = `Tienes un nuevo mensaje de: ${senderName}`;
     const senderAvatar = sender?.avatarUrl ?? null;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../provider_dashboard/presentation/providers/dashboard_provider.dart';
@@ -445,6 +446,35 @@ class _OpportunityCard extends StatelessWidget {
                               ),
                           ],
                         ),
+                        // Contacto del cliente — solo cuando ESTE proveedor
+                        // ganó (oferta aceptada). Permite concretar el trabajo.
+                        if (opp.myOfferStatus == OfferStatus.accepted &&
+                            (opp.clientPhone != null ||
+                                opp.clientWhatsapp != null)) ...[
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              if (opp.clientWhatsapp != null)
+                                _OppContactBtn(
+                                  icon: Icons.chat_rounded,
+                                  label: 'WhatsApp',
+                                  color: AppColors.whatsapp,
+                                  onTap: () =>
+                                      _openWhatsApp(opp.clientWhatsapp!),
+                                ),
+                              if (opp.clientWhatsapp != null &&
+                                  opp.clientPhone != null)
+                                const SizedBox(width: 8),
+                              if (opp.clientPhone != null)
+                                _OppContactBtn(
+                                  icon: Icons.call_rounded,
+                                  label: 'Llamar',
+                                  color: AppColors.call,
+                                  onTap: () => _openTel(opp.clientPhone!),
+                                ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -469,6 +499,19 @@ class _OpportunityCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static Future<void> _openWhatsApp(String raw) async {
+    final number = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    await launchUrl(
+      Uri.parse('https://wa.me/$number'),
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
+  static Future<void> _openTel(String raw) async {
+    final uri = Uri.parse('tel:$raw');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
   /// Abre el detalle completo de la oportunidad (sin dead-end: sheet con
@@ -829,6 +872,39 @@ class _EmptyOpportunities extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Botón compacto de contacto del cliente (WhatsApp / Llamar) para el
+/// proveedor que ganó la subasta.
+class _OppContactBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _OppContactBtn({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 16, color: color),
+        label: Text(label, style: TextStyle(color: color, fontSize: 13)),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: color.withValues(alpha: 0.4)),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
     );

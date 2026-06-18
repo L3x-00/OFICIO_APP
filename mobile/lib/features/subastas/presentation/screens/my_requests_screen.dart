@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/service_request_model.dart';
@@ -41,11 +42,24 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     super.dispose();
   }
 
-  // 👇 CAMBIO 1: Renombrado y modificado para volver a la pantalla anterior
-  /// Vuelve a la pantalla anterior (ej. Perfil). Si no hay historial, va al Home.
-  void _goBack() => Navigator.of(context).canPop()
-      ? Navigator.of(context).pop()
-      : context.go('/');
+  /// Vuelve a la pantalla anterior respetando AMBOS contextos de navegación:
+  /// abierto con Navigator.push (ej. Perfil) → Navigator.pop; abierto con
+  /// GoRouter push → router.pop; si se llegó con go() (sin pila) → Home.
+  /// Antes solo checaba Navigator.canPop() y, al venir de GoRouter, ese
+  /// canPop era false → saltaba a Home o no respondía.
+  void _goBack() {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
+      return;
+    }
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+      return;
+    }
+    context.go('/');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -592,7 +606,77 @@ class _SelectedProviderBlock extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+          // Contacto del proveedor elegido — el backend solo lo envía en la
+          // oferta aceptada. Permite que el cliente lo contacte.
+          if (offer.providerWhatsapp != null ||
+              offer.providerPhone != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (offer.providerWhatsapp != null)
+                  Expanded(
+                    child: _ContactBtn(
+                      icon: Icons.chat_rounded,
+                      label: 'WhatsApp',
+                      color: AppColors.whatsapp,
+                      onTap: () => _openWhatsApp(offer.providerWhatsapp!),
+                    ),
+                  ),
+                if (offer.providerWhatsapp != null &&
+                    offer.providerPhone != null)
+                  const SizedBox(width: 8),
+                if (offer.providerPhone != null)
+                  Expanded(
+                    child: _ContactBtn(
+                      icon: Icons.call_rounded,
+                      label: 'Llamar',
+                      color: AppColors.call,
+                      onTap: () => _openTel(offer.providerPhone!),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  static Future<void> _openWhatsApp(String raw) async {
+    final number = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    final uri = Uri.parse('https://wa.me/$number');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  static Future<void> _openTel(String raw) async {
+    final uri = Uri.parse('tel:$raw');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+}
+
+/// Botón compacto de contacto (WhatsApp / Llamar) del proveedor elegido.
+class _ContactBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ContactBtn({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 16, color: color),
+      label: Text(label, style: TextStyle(color: color, fontSize: 13)),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: color.withValues(alpha: 0.4)),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

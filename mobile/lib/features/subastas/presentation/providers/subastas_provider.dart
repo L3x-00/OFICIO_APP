@@ -63,6 +63,8 @@ class SubastasProvider extends ChangeNotifier {
     String? department,
     String? province,
     String? district,
+    String? phone,
+    String? whatsapp,
   }) async {
     _submitting = true;
     _error = null;
@@ -80,6 +82,8 @@ class SubastasProvider extends ChangeNotifier {
       department: department,
       province: province,
       district: district,
+      phone: phone,
+      whatsapp: whatsapp,
     );
 
     _submitting = false;

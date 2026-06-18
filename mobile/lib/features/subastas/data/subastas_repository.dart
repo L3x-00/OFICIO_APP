@@ -8,7 +8,9 @@ class SubastasRepository {
   final Dio _dio = DioClient.instance.dio;
 
   AppException _handleDio(DioException e, String fallback) =>
-      e.error is AppException ? e.error as AppException : ServerException(e.message ?? fallback);
+      e.error is AppException
+      ? e.error as AppException
+      : ServerException(e.message ?? fallback);
 
   // ── CLIENTE ───────────────────────────────────────────────────
 
@@ -24,22 +26,31 @@ class SubastasRepository {
     String? department,
     String? province,
     String? district,
+    String? phone,
+    String? whatsapp,
   }) async {
     try {
-      final res = await _dio.post('/subastas/requests', data: {
-        'categoryId': categoryId,
-        'description': description,
-        'photoUrl': ?photoUrl,
-        'budgetMin': ?budgetMin,
-        'budgetMax': ?budgetMax,
-        if (desiredDate != null) 'desiredDate': desiredDate.toIso8601String(),
-        'latitude': ?latitude,
-        'longitude': ?longitude,
-        'department': ?department,
-        'province': ?province,
-        'district': ?district,
-      });
-      return Success(ServiceRequestModel.fromJson(res.data as Map<String, dynamic>));
+      final res = await _dio.post(
+        '/subastas/requests',
+        data: {
+          'categoryId': categoryId,
+          'description': description,
+          'photoUrl': ?photoUrl,
+          'budgetMin': ?budgetMin,
+          'budgetMax': ?budgetMax,
+          if (desiredDate != null) 'desiredDate': desiredDate.toIso8601String(),
+          'latitude': ?latitude,
+          'longitude': ?longitude,
+          'department': ?department,
+          'province': ?province,
+          'district': ?district,
+          'phone': ?phone,
+          'whatsapp': ?whatsapp,
+        },
+      );
+      return Success(
+        ServiceRequestModel.fromJson(res.data as Map<String, dynamic>),
+      );
     } on DioException catch (e) {
       return Failure(_handleDio(e, 'Error al publicar solicitud'));
     }
@@ -52,12 +63,15 @@ class SubastasRepository {
   ///
   /// Es defensivo: si en algún momento el backend volviera a devolver una
   /// lista plana, también se mapea correctamente.
-  Future<ApiResult<List<ServiceRequestModel>>> getMyRequests({int page = 1, int limit = 50}) async {
+  Future<ApiResult<List<ServiceRequestModel>>> getMyRequests({
+    int page = 1,
+    int limit = 50,
+  }) async {
     try {
-      final res = await _dio.get('/subastas/requests/mine', queryParameters: {
-        'page':  page,
-        'limit': limit,
-      });
+      final res = await _dio.get(
+        '/subastas/requests/mine',
+        queryParameters: {'page': page, 'limit': limit},
+      );
       final body = res.data;
       final List rawList = body is Map<String, dynamic>
           ? (body['data'] as List? ?? const [])
@@ -73,7 +87,10 @@ class SubastasRepository {
 
   Future<ApiResult<Map<String, dynamic>>> acceptOffer(int offerId) async {
     try {
-      final res = await _dio.post('/subastas/requests/accept', data: {'offerId': offerId});
+      final res = await _dio.post(
+        '/subastas/requests/accept',
+        data: {'offerId': offerId},
+      );
       return Success(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       return Failure(_handleDio(e, 'Error al aceptar oferta'));
@@ -114,11 +131,14 @@ class SubastasRepository {
     required String message,
   }) async {
     try {
-      final res = await _dio.post('/subastas/offers', data: {
-        'serviceRequestId': serviceRequestId,
-        'price': price,
-        'message': message,
-      });
+      final res = await _dio.post(
+        '/subastas/offers',
+        data: {
+          'serviceRequestId': serviceRequestId,
+          'price': price,
+          'message': message,
+        },
+      );
       return Success(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       return Failure(_handleDio(e, 'Error al enviar oferta'));
@@ -140,11 +160,14 @@ class SubastasRepository {
     required double longitude,
   }) async {
     try {
-      final res = await _dio.post('/subastas/offers/arrived', data: {
-        'offerId': offerId,
-        'latitude': latitude,
-        'longitude': longitude,
-      });
+      final res = await _dio.post(
+        '/subastas/offers/arrived',
+        data: {
+          'offerId': offerId,
+          'latitude': latitude,
+          'longitude': longitude,
+        },
+      );
       return Success(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       return Failure(_handleDio(e, 'Error al marcar llegada'));

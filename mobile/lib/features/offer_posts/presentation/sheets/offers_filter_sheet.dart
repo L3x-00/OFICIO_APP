@@ -40,6 +40,8 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
   String? _dept;
   String? _prov;
   String? _dist;
+  // Búsqueda de categorías: reemplaza la lista larguísima por filtrado en vivo.
+  String _catQuery = '';
 
   @override
   void initState() {
@@ -54,9 +56,9 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
   void _apply() {
     context.read<PublicOffersProvider>().applyAdvanced(
       categorySlugs: _selectedSlugs.toList(),
-      department:    _dept,
-      province:      _prov,
-      district:      _dist,
+      department: _dept,
+      province: _prov,
+      district: _dist,
     );
     Navigator.of(context).pop();
   }
@@ -67,6 +69,7 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
       _dept = null;
       _prov = null;
       _dist = null;
+      _catQuery = '';
     });
   }
 
@@ -88,7 +91,9 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(
-                left: 20, right: 20, top: 20,
+                left: 20,
+                right: 20,
+                top: 20,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
               child: Column(
@@ -116,7 +121,8 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
         children: [
           Center(
             child: Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: c.textMuted.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
@@ -129,21 +135,33 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.tune_rounded, color: AppColors.amber, size: 20),
+                  const Icon(
+                    Icons.tune_rounded,
+                    color: AppColors.amber,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
-                  Text('Filtrar ofertas',
-                      style: TextStyle(
-                          color: c.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    'Filtrar ofertas',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               TextButton.icon(
                 onPressed: _clear,
-                icon: const Icon(Icons.refresh_rounded,
-                    size: 16, color: AppColors.amber),
-                label: const Text('Limpiar',
-                    style: TextStyle(color: AppColors.amber, fontSize: 13)),
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  size: 16,
+                  color: AppColors.amber,
+                ),
+                label: const Text(
+                  'Limpiar',
+                  style: TextStyle(color: AppColors.amber, fontSize: 13),
+                ),
               ),
             ],
           ),
@@ -164,8 +182,12 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
           listenable: DynamicLocations.instance,
           builder: (_, _) {
             final dyn = DynamicLocations.instance;
-            final provList = _dept == null ? const <String>[] : dyn.provincesOf(_dept!);
-            final distList = _prov == null ? const <String>[] : dyn.districtsOf(_prov!);
+            final provList = _dept == null
+                ? const <String>[]
+                : dyn.provincesOf(_dept!);
+            final distList = _prov == null
+                ? const <String>[]
+                : dyn.districtsOf(_prov!);
             return Column(
               children: [
                 _LocationDropdown(
@@ -224,47 +246,90 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
           ],
         ),
         const SizedBox(height: 10),
-        for (final parent in roots) ...[
-          Text(
-            parent.name,
-            style: TextStyle(
-              color: AppColors.amber,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
+        // Buscador — antes se listaban TODAS las categorías (pantalla muy
+        // larga); ahora se filtran por lo que escribe el usuario.
+        TextField(
+          onChanged: (v) => setState(() => _catQuery = v),
+          style: TextStyle(color: c.textPrimary, fontSize: 13),
+          decoration: InputDecoration(
+            hintText: 'Buscar categoría…',
+            hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: c.textMuted,
+              size: 18,
+            ),
+            isDense: true,
+            filled: true,
+            fillColor: c.bgCard,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
           ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [
-              // Chip del propio padre — útil para "Hogar" como categoría general.
-              _CategoryChip(
-                label: parent.name,
-                selected: _selectedSlugs.contains(parent.slug),
-                onTap: () => setState(() {
-                  if (!_selectedSlugs.add(parent.slug)) {
-                    _selectedSlugs.remove(parent.slug);
-                  }
-                }),
-              ),
-              for (final child in parent.children)
-                _CategoryChip(
-                  label: child.name,
-                  selected: _selectedSlugs.contains(child.slug),
-                  onTap: () => setState(() {
-                    if (!_selectedSlugs.add(child.slug)) {
-                      _selectedSlugs.remove(child.slug);
-                    }
-                  }),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-        ],
+        ),
+        const SizedBox(height: 12),
+        ..._buildFilteredCategories(c, roots),
       ],
     );
+  }
+
+  Widget _catChip(String label, String slug) => _CategoryChip(
+    label: label,
+    selected: _selectedSlugs.contains(slug),
+    onTap: () => setState(() {
+      if (!_selectedSlugs.add(slug)) _selectedSlugs.remove(slug);
+    }),
+  );
+
+  /// Bloques de categorías que coinciden con `_catQuery` (insensible a
+  /// mayúsculas). Con query vacío muestra todo; si nada coincide, un aviso.
+  List<Widget> _buildFilteredCategories(
+    AppThemeColors c,
+    List<CategoryModel> roots,
+  ) {
+    final q = _catQuery.trim().toLowerCase();
+    bool matches(String s) => q.isEmpty || s.toLowerCase().contains(q);
+
+    final blocks = <Widget>[];
+    for (final parent in roots) {
+      final parentMatches = matches(parent.name);
+      final kids = parent.children.where((ch) => matches(ch.name)).toList();
+      if (!parentMatches && kids.isEmpty) continue;
+      blocks.add(
+        Text(
+          parent.name,
+          style: TextStyle(
+            color: AppColors.amber,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
+      blocks.add(const SizedBox(height: 6));
+      blocks.add(
+        Wrap(
+          spacing: 7,
+          runSpacing: 7,
+          children: [
+            if (parentMatches || q.isEmpty) _catChip(parent.name, parent.slug),
+            for (final child in (q.isEmpty ? parent.children : kids))
+              _catChip(child.name, child.slug),
+          ],
+        ),
+      );
+      blocks.add(const SizedBox(height: 14));
+    }
+    if (blocks.isEmpty) {
+      blocks.add(
+        Text(
+          'Sin categorías que coincidan',
+          style: TextStyle(color: c.textMuted, fontSize: 13),
+        ),
+      );
+    }
+    return blocks;
   }
 
   // ── Footer ───────────────────────────────────────────────
@@ -272,7 +337,9 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
     final selectedCount = _selectedSlugs.length;
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20, 12, 20,
+        20,
+        12,
+        20,
         MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
@@ -289,12 +356,16 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 side: BorderSide(color: c.border),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-              child: Text('Limpiar',
-                  style: TextStyle(
-                      color: c.textSecondary,
-                      fontWeight: FontWeight.w600)),
+              child: Text(
+                'Limpiar',
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -307,7 +378,8 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 0,
               ),
               child: Row(
@@ -320,7 +392,9 @@ class _OffersFilterSheetState extends State<OffersFilterSheet> {
                         ? 'Aplicar ($selectedCount)'
                         : 'Aplicar filtros',
                     style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.bold),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -373,9 +447,7 @@ class _CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.amber : c.bgCard,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? AppColors.amber : c.border,
-          ),
+          border: Border.all(color: selected ? AppColors.amber : c.border),
         ),
         child: Text(
           label,
@@ -427,8 +499,11 @@ class _LocationDropdown extends StatelessWidget {
             dropdownColor: c.bgCard,
             hint: Row(
               children: [
-                const Icon(Icons.location_on_outlined,
-                    color: AppColors.amber, size: 18),
+                const Icon(
+                  Icons.location_on_outlined,
+                  color: AppColors.amber,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   enabled ? label : 'Selecciona el nivel anterior',
@@ -437,30 +512,37 @@ class _LocationDropdown extends StatelessWidget {
               ],
             ),
             selectedItemBuilder: (_) => items
-                .map((it) => Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined,
-                            color: AppColors.amber, size: 18),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            it,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: c.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
+                .map(
+                  (it) => Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        color: AppColors.amber,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          it,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    ))
+                      ),
+                    ],
+                  ),
+                )
                 .toList(),
             items: items
-                .map((it) => DropdownMenuItem<String>(
-                      value: it,
-                      child: Text(it, style: TextStyle(color: c.textPrimary)),
-                    ))
+                .map(
+                  (it) => DropdownMenuItem<String>(
+                    value: it,
+                    child: Text(it, style: TextStyle(color: c.textPrimary)),
+                  ),
+                )
                 .toList(),
             onChanged: enabled ? onChanged : null,
           ),

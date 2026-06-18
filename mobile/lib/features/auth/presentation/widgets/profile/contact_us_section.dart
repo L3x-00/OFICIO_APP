@@ -100,9 +100,9 @@ class ContactUsSection extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.85, // Ajusta el alto/ancho de los chips
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.2, // Ajusta el alto/ancho de los chips
             ),
             itemCount: channels.length,
             itemBuilder: (context, index) {
@@ -156,8 +156,8 @@ class _ChannelGridItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Ícono SVG original con sus propios colores
-          SvgPicture.asset(channel.svg, width: 32, height: 32),
-          const SizedBox(height: 8),
+          SvgPicture.asset(channel.svg, width: 24, height: 24),
+          const SizedBox(height: 4),
           // Etiqueta corta
           Text(
             channel.label,

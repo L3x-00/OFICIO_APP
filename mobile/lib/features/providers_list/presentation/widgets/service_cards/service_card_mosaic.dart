@@ -14,6 +14,9 @@ class ServiceCardMosaic extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isOwnCard;
   final VoidCallback? onChat;
+  // Favorito: el botón reapareció en el tile mosaico (se perdió al pasar a
+  // cuadros pequeños). El estado visual sale de `provider.isFavorite`.
+  final VoidCallback? onFavoriteToggle;
 
   const ServiceCardMosaic({
     super.key,
@@ -21,6 +24,7 @@ class ServiceCardMosaic extends StatelessWidget {
     this.onTap,
     this.isOwnCard = false,
     this.onChat,
+    this.onFavoriteToggle,
   });
 
   @override
@@ -172,6 +176,16 @@ class ServiceCardMosaic extends StatelessWidget {
                         children: [
                           _MosaicStatusBadge(provider: provider),
                           if (!isOwnCard) ...[
+                            if (onFavoriteToggle != null) ...[
+                              const SizedBox(width: 8),
+                              _GridContactBtn(
+                                icon: provider.isFavorite
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                color: AppColors.busy,
+                                onTap: onFavoriteToggle,
+                              ),
+                            ],
                             const SizedBox(width: 8),
                             _GridContactBtn(
                               icon: Icons.forum_rounded,

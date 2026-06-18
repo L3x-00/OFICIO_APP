@@ -36,7 +36,6 @@ import 'router_notifier.dart';
 final GlobalKey<NavigatorState> kProfileBranchNavKey =
     GlobalKey<NavigatorState>();
 
-
 // ── Rutas públicas (no requieren autenticación) ─────────────
 const _publicPaths = <String>{
   '/welcome',
@@ -46,9 +45,13 @@ const _publicPaths = <String>{
 };
 
 bool _isAuthRoute(String loc) =>
-    loc == '/welcome' || loc == '/login' || loc == '/forgot-password' || loc == '/reset-password';
+    loc == '/welcome' ||
+    loc == '/login' ||
+    loc == '/forgot-password' ||
+    loc == '/reset-password';
 
-bool _isPublic(String loc) => _publicPaths.any((p) => loc == p || loc.startsWith('$p?'));
+bool _isPublic(String loc) =>
+    _publicPaths.any((p) => loc == p || loc.startsWith('$p?'));
 
 /// Construye el [GoRouter] de la app.
 ///
@@ -94,7 +97,10 @@ GoRouter createRouter({
       }
 
       // Autenticado o invitado → si está en una pantalla de auth, mandarlo al home
-      if (_isAuthRoute(loc) || loc == '/splash' || loc == '/otp' || loc == '/onboarding') {
+      if (_isAuthRoute(loc) ||
+          loc == '/splash' ||
+          loc == '/otp' ||
+          loc == '/onboarding') {
         return '/';
       }
 
@@ -102,15 +108,12 @@ GoRouter createRouter({
     },
     routes: [
       // ── Pantalla de splash (estado loading) ─────────────────
-      GoRoute(
-        path: '/splash',
-        builder: (_, _) => const SplashScreen(),
-      ),
+      GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
 
       // ── Rutas públicas (auth) ───────────────────────────────
       GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
-      GoRoute(path: '/login',   builder: (_, _) => const LoginScreen()),
-      GoRoute(path: '/otp',     builder: (_, _) => const OtpVerificationScreen()),
+      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/otp', builder: (_, _) => const OtpVerificationScreen()),
       GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
       GoRoute(
         path: '/register-provider',
@@ -119,7 +122,10 @@ GoRouter createRouter({
           return ProviderOnboardingForm(providerType: type, isStandalone: true);
         },
       ),
-      GoRoute(path: '/forgot-password', builder: (_, _) => const ForgotPasswordScreen()),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (_, _) => const ForgotPasswordScreen(),
+      ),
       GoRoute(
         path: '/reset-password',
         builder: (_, state) {
@@ -139,8 +145,11 @@ GoRouter createRouter({
       // scope:'client' aísla la bandeja del cliente — un user con
       // doble perfil (OFICIO+NEGOCIO) no ve aquí mensajes recibidos
       // como proveedor; esos viven en el panel respectivo.
-      GoRoute(path: '/chats',         builder: (_, _) => const ChatListScreen(scope: 'client')),
-      GoRoute(path: '/referrals',     builder: (_, _) => const ReferralScreen()),
+      GoRoute(
+        path: '/chats',
+        builder: (_, _) => const ChatListScreen(scope: 'client'),
+      ),
+      GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
       GoRoute(
         path: '/my-requests',
         builder: (_, _) => ChangeNotifierProvider(
@@ -148,8 +157,14 @@ GoRouter createRouter({
           child: const MyRequestsScreen(),
         ),
       ),
-      GoRoute(path: '/edit-profile',    builder: (_, _) => const EditProfileScreen()),
-      GoRoute(path: '/change-password', builder: (_, _) => const ChangePasswordScreen()),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (_, _) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (_, _) => const ChangePasswordScreen(),
+      ),
       GoRoute(
         path: '/trust-validation',
         builder: (_, state) {
@@ -161,7 +176,10 @@ GoRouter createRouter({
         path: '/provider-panel',
         builder: (_, state) {
           final type = state.uri.queryParameters['type'] ?? 'OFICIO';
-          return ProviderPanel(providerType: type);
+          // `tab` permite abrir el panel en una pestaña concreta (ej. 2 =
+          // Oportunidades) al llegar desde una notificación del proveedor.
+          final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '');
+          return ProviderPanel(providerType: type, initialTabIndex: tab ?? 0);
         },
       ),
 
@@ -177,7 +195,9 @@ GoRouter createRouter({
           final provider = state.extra as ProviderModel?;
           if (provider == null) {
             return const Scaffold(
-              body: Center(child: Text('Proveedor no disponible — abre desde la app.')),
+              body: Center(
+                child: Text('Proveedor no disponible — abre desde la app.'),
+              ),
             );
           }
           return Scaffold(body: ProviderDetailSheet(provider: provider));
@@ -186,30 +206,42 @@ GoRouter createRouter({
 
       // ── Shell con bottom navigation (5 tabs) ────────────────
       StatefulShellRoute.indexedStack(
-        builder: (_, _, navigationShell) => AppShell(navigationShell: navigationShell),
+        builder: (_, _, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
         branches: [
           // Tab 0 — Explorar
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/', builder: (_, _) => const ProvidersScreen()),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/', builder: (_, _) => const ProvidersScreen()),
+            ],
+          ),
           // Tab 1 — Favoritos
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/favorites',
-              builder: (_, _) {
-                final userId = authProvider.user?.id;
-                return FavoritesScreen(userId: userId);
-              },
-            ),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                builder: (_, _) {
+                  final userId = authProvider.user?.id;
+                  return FavoritesScreen(userId: userId);
+                },
+              ),
+            ],
+          ),
           // Tab 2 — Ofertas
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/offers', builder: (_, _) => const OffersScreen()),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/offers', builder: (_, _) => const OffersScreen()),
+            ],
+          ),
           // Tab 3 — Alertas
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/alerts', builder: (_, _) => const NotificationsScreen()),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/alerts',
+                builder: (_, _) => const NotificationsScreen(),
+              ),
+            ],
+          ),
           // Tab 4 — Perfil
           // navigatorKey expone el NavigatorState del branch — AppShell
           // lo usa para pop sub-pages (Mis mensajes, Mis solicitudes,
@@ -219,7 +251,10 @@ GoRouter createRouter({
           StatefulShellBranch(
             navigatorKey: kProfileBranchNavKey,
             routes: [
-              GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
+              GoRoute(
+                path: '/profile',
+                builder: (_, _) => const ProfileScreen(),
+              ),
             ],
           ),
         ],
@@ -231,24 +266,24 @@ GoRouter createRouter({
 // ── Helpers de path por tab — útil para navegación desde código ──
 class AppRoutes {
   const AppRoutes._();
-  static const String home       = '/';
-  static const String favorites  = '/favorites';
-  static const String offers     = '/offers';
-  static const String alerts     = '/alerts';
-  static const String profile    = '/profile';
-  static const String welcome    = '/welcome';
-  static const String login      = '/login';
-  static const String otp        = '/otp';
+  static const String home = '/';
+  static const String favorites = '/favorites';
+  static const String offers = '/offers';
+  static const String alerts = '/alerts';
+  static const String profile = '/profile';
+  static const String welcome = '/welcome';
+  static const String login = '/login';
+  static const String otp = '/otp';
   static const String onboarding = '/onboarding';
-  static const String chats      = '/chats';
-  static const String referrals  = '/referrals';
+  static const String chats = '/chats';
+  static const String referrals = '/referrals';
   static const String myRequests = '/my-requests';
 
   // Tabs index — útil para mantener compatibilidad con código viejo
   // que decide qué tab activar por índice.
-  static const int tabExplorar  = 0;
+  static const int tabExplorar = 0;
   static const int tabFavoritos = 1;
-  static const int tabOfertas   = 2;
-  static const int tabAlertas   = 3;
-  static const int tabPerfil    = 4;
+  static const int tabOfertas = 2;
+  static const int tabAlertas = 3;
+  static const int tabPerfil = 4;
 }

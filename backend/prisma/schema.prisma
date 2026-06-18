@@ -519,6 +519,10 @@ model ServiceRequest {
   department     String?
   province       String?
   district       String?
+  // Contacto del cliente — solo se expone al proveedor cuya oferta fue
+  // ACEPTADA (privacidad). Nullable para retrocompat con solicitudes viejas.
+  clientPhone    String?
+  clientWhatsapp String?
   status         ServiceRequestStatus      @default(OPEN)
   maxOffers      Int                       @default(5)
   notifyRadiusKm Float                     @default(5)

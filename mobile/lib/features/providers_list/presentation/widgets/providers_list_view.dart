@@ -350,6 +350,7 @@ class ProvidersListView extends StatelessWidget {
           isOwnCard: isOwnCard,
           onTap: () => ProviderDetailSheet.show(context, p),
           onChat: isOwnCard ? null : openChat,
+          onFavoriteToggle: isOwnCard ? null : handleFav,
         ),
         _ => ServiceCardDefault(
           provider: p,

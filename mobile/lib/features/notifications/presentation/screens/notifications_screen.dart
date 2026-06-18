@@ -405,11 +405,19 @@ class _NotificationTile extends StatelessWidget {
           label: 'Ir al chat',
           route: roomId != null ? '/chat/$roomId' : '/chats',
         );
+      // Cliente: llegó una oferta a SU solicitud → "Mis Solicitudes".
       case 'NEW_OFFER':
+        return const _NotifAction(label: 'Ver detalles', route: '/my-requests');
+      // Proveedor: nueva necesidad disponible o su oferta fue aceptada →
+      // panel del proveedor en la pestaña Oportunidades (índice 2). Antes
+      // iba a '/my-requests' (pantalla del cliente) y mostraba lo equivocado.
       case 'OFFER_ACCEPTED':
       case 'OFERTA_ACEPTADA':
       case 'NUEVA_OPORTUNIDAD':
-        return const _NotifAction(label: 'Ver detalles', route: '/my-requests');
+        return const _NotifAction(
+          label: 'Ver oportunidad',
+          route: '/provider-panel?tab=2',
+        );
       case 'NEW_REVIEW':
       case 'REVIEW_REPLY':
         return const _NotifAction(label: 'Ver reseña', route: '/profile');

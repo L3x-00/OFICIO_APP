@@ -29,7 +29,12 @@ export class AuthAccountService {
   // ── FORGOT PASSWORD ─────────────────────────────────────
   // Siempre responde con éxito (no revela si el email existe)
   async forgotPassword(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    // Búsqueda case-insensitive: los usuarios sociales (Google) guardan el
+    // email con el casing que devuelve Firebase; si el usuario lo tipea
+    // distinto, un findUnique exacto no matchearía y nunca recibiría el código.
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
 
     if (user) {
       // Generar token de 6 dígitos numérico y guardarlo como refreshToken temporal
@@ -64,7 +69,10 @@ export class AuthAccountService {
 
   // ── RESET PASSWORD ───────────────────────────────────────
   async resetPassword(email: string, token: string, newPassword: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    // Mismo criterio case-insensitive que forgotPassword (usuarios sociales).
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
     if (!user) throw new UnauthorizedException('Código incorrecto');
 
     const stored = await this.prisma.refreshToken.findUnique({

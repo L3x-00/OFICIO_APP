@@ -72,6 +72,8 @@ export class SubastasService {
         department: dto.department,
         province: dto.province,
         district: dto.district,
+        clientPhone: dto.phone,
+        clientWhatsapp: dto.whatsapp,
         expiresAt,
         maxOffers: MAX_OFFERS,
         notifyRadiusKm: 5,
@@ -164,6 +166,8 @@ export class SubastasService {
                 select: {
                   id: true,
                   businessName: true,
+                  phone: true,
+                  whatsapp: true,
                   averageRating: true,
                   totalReviews: true,
                   isTrusted: true,
@@ -185,8 +189,24 @@ export class SubastasService {
       this.prisma.serviceRequest.count({ where: { userId } }),
     ]);
 
+    // El contacto del proveedor (phone/whatsapp) se revela al cliente SOLO en
+    // la oferta ACEPTADA — antes de elegir no se expone (privacidad). El chat
+    // sigue disponible siempre.
+    const shaped = data.map((req) => ({
+      ...req,
+      offers: req.offers.map((o) => ({
+        ...o,
+        provider: {
+          ...o.provider,
+          phone: o.status === OfferStatus.ACCEPTED ? o.provider.phone : null,
+          whatsapp:
+            o.status === OfferStatus.ACCEPTED ? o.provider.whatsapp : null,
+        },
+      })),
+    }));
+
     return {
-      data,
+      data: shaped,
       total,
       page: safePage,
       lastPage: Math.max(1, Math.ceil(total / safeLimit)),
@@ -241,12 +261,19 @@ export class SubastasService {
             status: ServiceRequestStatus.OPEN,
             expiresAt: { gt: new Date() },
           },
-          // (b) Donde el proveedor YA postuló — NO desaparecen; muestran el
-          //     estado de su oferta (enviada / aceptada / cancelada). Acotado
-          //     a una ventana reciente para no crecer sin límite.
+          // (b) Donde el proveedor YA postuló — muestran el estado de su
+          //     oferta (enviada / aceptada). Solo VIGENTES: las vencidas ya no
+          //     deben aparecer en oportunidades (limpieza pedida por el user).
           {
             offers: { some: { providerId } },
             createdAt: { gt: appliedSince },
+            expiresAt: { gt: new Date() },
+          },
+          // (c) Donde el proveedor GANÓ (oferta ACEPTADA) — se mantienen
+          //     aunque hayan vencido, para que conserve el contacto del
+          //     cliente y pueda concretar el trabajo.
+          {
+            offers: { some: { providerId, status: OfferStatus.ACCEPTED } },
           },
         ],
       },
@@ -266,8 +293,13 @@ export class SubastasService {
     // Calcular distancia (si el proveedor tiene coordenadas)
     return requests.map((req) => {
       const myOffer = req.offers[0] ?? null;
+      // Privacidad: el contacto del cliente SOLO se revela al proveedor cuya
+      // oferta fue ACEPTADA. Para el resto va null (aunque el scalar venga en req).
+      const won = myOffer?.status === OfferStatus.ACCEPTED;
       return {
         ...req,
+        clientPhone: won ? req.clientPhone : null,
+        clientWhatsapp: won ? req.clientWhatsapp : null,
         canParticipate,
         blockedFromOffering,
         // Estado de MI postulación (null si aún no oferté).

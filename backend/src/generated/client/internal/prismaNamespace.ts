@@ -3966,6 +3966,8 @@ export const ServiceRequestScalarFieldEnum = {
   department: 'department',
   province: 'province',
   district: 'district',
+  clientPhone: 'clientPhone',
+  clientWhatsapp: 'clientWhatsapp',
   status: 'status',
   maxOffers: 'maxOffers',
   notifyRadiusKm: 'notifyRadiusKm',

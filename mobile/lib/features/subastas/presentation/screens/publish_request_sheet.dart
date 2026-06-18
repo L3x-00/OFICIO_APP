@@ -38,6 +38,13 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
   final _descCtrl = TextEditingController();
   final _budgetMinCtrl = TextEditingController();
   final _budgetMaxCtrl = TextEditingController();
+  // Contacto obligatorio del cliente (se muestra solo al proveedor elegido).
+  final _phoneCtrl = TextEditingController();
+  final _whatsappCtrl = TextEditingController();
+  bool _sameWhatsapp = true;
+  // Búsqueda de categorías: reemplaza el deslizar tedioso por filtrado en vivo.
+  final _catSearchCtrl = TextEditingController();
+  String _catQuery = '';
   final _repo = ProvidersRepository();
 
   int? _selectedCategoryId;
@@ -68,6 +75,9 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
     _descCtrl.dispose();
     _budgetMinCtrl.dispose();
     _budgetMaxCtrl.dispose();
+    _phoneCtrl.dispose();
+    _whatsappCtrl.dispose();
+    _catSearchCtrl.dispose();
     super.dispose();
   }
 
@@ -154,6 +164,13 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
         );
         return;
       }
+      // Contacto obligatorio — el proveedor elegido necesita cómo ubicarte.
+      final phone = _phoneCtrl.text.trim();
+      if (phone.length < 6) {
+        context.showWarningSnack('Ingresa un teléfono de contacto válido.');
+        return;
+      }
+      final whatsapp = _sameWhatsapp ? phone : _whatsappCtrl.text.trim();
 
       // Leer ubicación del usuario para enriquecer la solicitud
       final authUser = context.read<AuthProvider>().user;
@@ -189,6 +206,8 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
         department: authUser?.department,
         province: authUser?.province,
         district: authUser?.district,
+        phone: phone,
+        whatsapp: whatsapp,
       );
 
       if (!mounted) return;
@@ -380,69 +399,126 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                           style: TextStyle(color: c.textMuted, fontSize: 13),
                         ),
                       )
-                    else
-                      SizedBox(
-                        height: 82,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _categories.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) {
-                            final cat = _categories[i];
-                            final selected = cat.id == _selectedCategoryId;
-                            return GestureDetector(
-                              onTap: () =>
-                                  setState(() => _selectedCategoryId = cat.id),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                width: 72,
-                                decoration: BoxDecoration(
-                                  color: selected
-                                      ? AppColors.primary.withValues(
-                                          alpha: 0.18,
-                                        )
-                                      : c.bgCard,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: selected
-                                        ? AppColors.primary
-                                        : c.border,
-                                    width: selected ? 1.5 : 1,
+                    else ...[
+                      // Buscador de categorías — reemplaza el deslizar tedioso.
+                      TextField(
+                        controller: _catSearchCtrl,
+                        onChanged: (v) => setState(() => _catQuery = v),
+                        style: TextStyle(color: c.textPrimary, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Buscar categoría…',
+                          hintStyle: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 13,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: c.textMuted,
+                            size: 18,
+                          ),
+                          isDense: true,
+                          filled: true,
+                          fillColor: c.bgCard,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Builder(
+                        builder: (_) {
+                          final q = _catQuery.trim().toLowerCase();
+                          final filtered = q.isEmpty
+                              ? _categories
+                              : _categories
+                                    .where(
+                                      (cat) =>
+                                          cat.name.toLowerCase().contains(q),
+                                    )
+                                    .toList();
+                          if (filtered.isEmpty) {
+                            return SizedBox(
+                              height: 60,
+                              child: Center(
+                                child: Text(
+                                  'Sin categorías que coincidan',
+                                  style: TextStyle(
+                                    color: c.textMuted,
+                                    fontSize: 13,
                                   ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      _catIcon(cat.name),
-                                      color: selected
-                                          ? AppColors.primary
-                                          : c.textMuted,
-                                      size: 22,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      cat.name,
-                                      style: TextStyle(
-                                        color: selected
-                                            ? AppColors.primary
-                                            : c.textMuted,
-                                        fontSize: 9.5,
-                                        fontWeight: selected
-                                            ? FontWeight.w700
-                                            : FontWeight.w400,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
                                 ),
                               ),
                             );
-                          },
-                        ),
+                          }
+                          return SizedBox(
+                            height: 82,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(width: 8),
+                              itemBuilder: (_, i) {
+                                final cat = filtered[i];
+                                final selected = cat.id == _selectedCategoryId;
+                                return GestureDetector(
+                                  onTap: () => setState(
+                                    () => _selectedCategoryId = cat.id,
+                                  ),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    width: 72,
+                                    decoration: BoxDecoration(
+                                      color: selected
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.18,
+                                            )
+                                          : c.bgCard,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: selected
+                                            ? AppColors.primary
+                                            : c.border,
+                                        width: selected ? 1.5 : 1,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          _catIcon(cat.name),
+                                          color: selected
+                                              ? AppColors.primary
+                                              : c.textMuted,
+                                          size: 22,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          cat.name,
+                                          style: TextStyle(
+                                            color: selected
+                                                ? AppColors.primary
+                                                : c.textMuted,
+                                            fontSize: 9.5,
+                                            fontWeight: selected
+                                                ? FontWeight.w700
+                                                : FontWeight.w400,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
                       ),
+                    ],
 
                     const SizedBox(height: 20),
 
@@ -570,6 +646,69 @@ class _PublishRequestSheetState extends State<PublishRequestSheet> {
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Contacto (obligatorio) ─────────────────
+                    Text(
+                      'Tu contacto *',
+                      style: TextStyle(
+                        color: c.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Solo se mostrará al proveedor que elijas.',
+                      style: TextStyle(color: c.textMuted, fontSize: 11),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _phoneCtrl,
+                      style: TextStyle(color: c.textPrimary),
+                      keyboardType: TextInputType.phone,
+                      decoration: _inputDeco(c, 'Teléfono (ej. 999 888 777)'),
+                    ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () =>
+                          setState(() => _sameWhatsapp = !_sameWhatsapp),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _sameWhatsapp
+                                  ? Icons.check_box_rounded
+                                  : Icons.check_box_outline_blank_rounded,
+                              color: _sameWhatsapp
+                                  ? AppColors.primary
+                                  : c.textMuted,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Mi WhatsApp es el mismo número',
+                              style: TextStyle(
+                                color: c.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (!_sameWhatsapp) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _whatsappCtrl,
+                        style: TextStyle(color: c.textPrimary),
+                        keyboardType: TextInputType.phone,
+                        decoration: _inputDeco(c, 'WhatsApp'),
+                      ),
+                    ],
 
                     const SizedBox(height: 20),
 

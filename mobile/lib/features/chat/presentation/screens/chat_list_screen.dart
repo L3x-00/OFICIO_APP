@@ -18,6 +18,7 @@ class ChatListScreen extends StatefulWidget {
   /// `client` para la tab del cliente, `provider` para el panel del
   /// proveedor. null = compat (todo).
   final String? scope;
+
   /// `OFICIO` o `NEGOCIO` cuando scope = provider, para separar las
   /// bandejas de cada perfil del mismo usuario.
   final String? providerType;
@@ -40,10 +41,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final chat = context.read<ChatProvider>();
-      chat.setScope(
-        scope:        widget.scope,
-        providerType: widget.providerType,
-      );
+      chat.setScope(scope: widget.scope, providerType: widget.providerType);
       chat.loadRooms();
     });
   }
@@ -58,7 +56,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         context.read<ChatProvider>().setScope(
-          scope:        widget.scope,
+          scope: widget.scope,
           providerType: widget.providerType,
         );
       });
@@ -74,7 +72,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
       appBar: AppBar(
         backgroundColor: c.bg,
         elevation: 0,
-        title: const Text('Mensajes', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Mensajes',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         foregroundColor: c.textPrimary,
       ),
       body: Consumer<ChatProvider>(
@@ -93,13 +94,20 @@ class _ChatListScreenState extends State<ChatListScreen> {
               padding: const EdgeInsets.symmetric(vertical: 6),
               itemCount: chat.rooms.length,
               separatorBuilder: (_, _) => Divider(
-                color: c.border, height: 1, indent: 76, endIndent: 12,
+                color: c.border,
+                height: 1,
+                indent: 76,
+                endIndent: 12,
               ),
               itemBuilder: (_, i) {
                 final room = chat.rooms[i];
                 final myId = chat.currentUserId ?? -1;
                 final other = room.otherParty(myId);
                 return _ChatRoomTile(
+                  // Key estable por sala → Flutter reutiliza el widget (y su
+                  // avatar cacheado) al volver a entrar a Mensajes en vez de
+                  // reconstruirlo y recargar la imagen cada vez.
+                  key: ValueKey(room.id),
                   c: c,
                   room: room,
                   other: other,
@@ -115,11 +123,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   Future<void> _openRoom(ChatRoomSummary room) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ChatScreen(roomId: room.id),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => ChatScreen(roomId: room.id)));
   }
 }
 
@@ -131,6 +137,7 @@ class _ChatRoomTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ChatRoomTile({
+    super.key,
     required this.c,
     required this.room,
     required this.other,
@@ -177,7 +184,9 @@ class _ChatRoomTile extends StatelessWidget {
                         style: TextStyle(
                           color: hasUnread ? AppColors.primary : c.textMuted,
                           fontSize: 11,
-                          fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: hasUnread
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                       ),
                     ],
@@ -195,14 +204,19 @@ class _ChatRoomTile extends StatelessWidget {
                           style: TextStyle(
                             color: hasUnread ? c.textPrimary : c.textMuted,
                             fontSize: 13,
-                            fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight: hasUnread
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                       ),
                       if (hasUnread) ...[
                         const SizedBox(width: 8),
                         Container(
-                          constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+                          constraints: const BoxConstraints(
+                            minWidth: 22,
+                            minHeight: 22,
+                          ),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
                           decoration: BoxDecoration(
                             color: AppColors.busy,
@@ -210,7 +224,9 @@ class _ChatRoomTile extends StatelessWidget {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            room.unreadCount > 99 ? '99+' : '${room.unreadCount}',
+                            room.unreadCount > 99
+                                ? '99+'
+                                : '${room.unreadCount}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -260,7 +276,8 @@ class _Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasUrl = party.avatarUrl != null && party.avatarUrl!.isNotEmpty;
     return Container(
-      width: 52, height: 52,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.15),
         shape: BoxShape.circle,
@@ -270,7 +287,8 @@ class _Avatar extends StatelessWidget {
       child: hasUrl
           ? AppNetworkImage(
               url: party.avatarUrl!,
-              width: 52, height: 52,
+              width: 52,
+              height: 52,
               fit: BoxFit.cover,
               placeholder: _initialsFallback(),
               errorWidget: _initialsFallback(),
@@ -307,23 +325,36 @@ class _EmptyInbox extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 76, height: 76,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary, size: 34),
+              child: Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppColors.primary,
+                size: 34,
+              ),
             ),
             const SizedBox(height: 18),
             Text(
               'Aún no tienes conversaciones',
-              style: TextStyle(color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               'Cuando inicies un chat con un proveedor o un cliente, aparecerá aquí.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4),
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
           ],
         ),
