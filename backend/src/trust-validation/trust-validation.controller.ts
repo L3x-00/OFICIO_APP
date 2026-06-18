@@ -82,8 +82,8 @@ export class TrustValidationController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
-  approve(@Param('id', ParseIntPipe) id: number) {
-    return this.service.approveRequest(id);
+  approve(@Param('id') id: string) {
+    return this.service.approveRequest(id); // Esto fallará porque el servicio espera un 'number', no un 'string'
   }
 
   // PATCH /trust-validation/admin/:id/reject
