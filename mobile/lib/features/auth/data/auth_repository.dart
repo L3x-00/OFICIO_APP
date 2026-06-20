@@ -17,36 +17,36 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
-        'email':    email,
-        'password': password,
-      });
+      final response = await _dio.post(
+        '/auth/login',
+        data: {'email': email, 'password': password},
+      );
 
       final data = response.data as Map<String, dynamic>;
-      final accessToken  = data['accessToken']  as String;
+      final accessToken = data['accessToken'] as String;
       final refreshToken = data['refreshToken'] as String;
 
       // Construir modelo de usuario desde la respuesta
       final user = UserModel(
-        id:        data['userId'] as int,
-        email:     email,
+        id: data['userId'] as int,
+        email: email,
         firstName: data['firstName'] as String? ?? '',
-        lastName:  data['lastName']  as String? ?? '',
-        role:      data['role']      as String? ?? 'USUARIO',
+        lastName: data['lastName'] as String? ?? '',
+        role: data['role'] as String? ?? 'USUARIO',
         avatarUrl: data['avatarUrl'] as String?,
-        phone:     data['phone']     as String?,
+        phone: data['phone'] as String?,
       );
 
       // Guardar en almacenamiento seguro
       await AuthLocalStorage.saveSession(
-        accessToken:  accessToken,
+        accessToken: accessToken,
         refreshToken: refreshToken,
-        user:         user,
+        user: user,
       );
 
       // Inyectar tokens en el cliente HTTP
       DioClient.instance.setTokens(
-        accessToken:  accessToken,
+        accessToken: accessToken,
         refreshToken: refreshToken,
       );
 
@@ -66,20 +66,20 @@ class AuthRepository {
       final response = await _dio.get('/users/me');
       final data = response.data as Map<String, dynamic>;
       final user = UserModel(
-        id:         data['id']        as int,
-        email:      data['email']     as String,
-        firstName:  data['firstName'] as String? ?? '',
-        lastName:   data['lastName']  as String? ?? '',
-        role:       data['role']      as String? ?? 'USUARIO',
-        avatarUrl:  data['avatarUrl'] as String?,
-        phone:      data['phone']     as String?,
+        id: data['id'] as int,
+        email: data['email'] as String,
+        firstName: data['firstName'] as String? ?? '',
+        lastName: data['lastName'] as String? ?? '',
+        role: data['role'] as String? ?? 'USUARIO',
+        avatarUrl: data['avatarUrl'] as String?,
+        phone: data['phone'] as String?,
         department: data['department'] as String?,
-        province:   data['province']   as String?,
-        district:   data['district']   as String?,
+        province: data['province'] as String?,
+        district: data['district'] as String?,
         // coins viene del backend y se usa en el header. Antes no se
         // parseaba → quedaba en 0 incluso tras recibir monedas por
         // referido, hasta que el user volvía a loguearse.
-        coins:      (data['coins'] as num?)?.toInt() ?? 0,
+        coins: (data['coins'] as num?)?.toInt() ?? 0,
       );
       return Success(user);
     } on DioException catch (e) {
@@ -92,28 +92,37 @@ class AuthRepository {
   }
 
   // ── SOCIAL LOGIN (Firebase idToken) ──────────────────────
-  Future<ApiResult<({UserModel user, bool isNewUser})>> socialLogin(String idToken) async {
+  Future<ApiResult<({UserModel user, bool isNewUser})>> socialLogin(
+    String idToken,
+  ) async {
     try {
-      final response = await _dio.post('/auth/social-login', data: {'idToken': idToken});
+      final response = await _dio.post(
+        '/auth/social-login',
+        data: {'idToken': idToken},
+      );
       final data = response.data as Map<String, dynamic>;
 
+      // Defensivo: antes era `data['userId'] as int`, que lanzaba TypeError
+      // cuando el backend no enviaba userId → la sesión social NUNCA se
+      // guardaba (al reabrir la app: "no has iniciado sesión"). El backend
+      // ya lo envía; el fallback evita el crash durante el redeploy.
       final user = UserModel(
-        id:        data['userId'] as int,
-        email:     data['email']     as String? ?? '',
+        id: (data['userId'] as num?)?.toInt() ?? 0,
+        email: data['email'] as String? ?? '',
         firstName: data['firstName'] as String? ?? '',
-        lastName:  data['lastName']  as String? ?? '',
-        role:      data['role']      as String? ?? 'USUARIO',
+        lastName: data['lastName'] as String? ?? '',
+        role: data['role'] as String? ?? 'USUARIO',
         avatarUrl: data['avatarUrl'] as String?,
-        phone:     data['phone']     as String?,
+        phone: data['phone'] as String?,
       );
 
       await AuthLocalStorage.saveSession(
-        accessToken:  data['accessToken']  as String,
+        accessToken: data['accessToken'] as String,
         refreshToken: data['refreshToken'] as String,
-        user:         user,
+        user: user,
       );
       DioClient.instance.setTokens(
-        accessToken:  data['accessToken']  as String,
+        accessToken: data['accessToken'] as String,
         refreshToken: data['refreshToken'] as String,
       );
 
@@ -138,13 +147,16 @@ class AuthRepository {
     String? phone,
   }) async {
     try {
-      final response = await _dio.post('/auth/register', data: {
-        'email':     email,
-        'password':  password,
-        'firstName': firstName,
-        'lastName':  lastName,
-        'phone': ?phone,
-      });
+      final response = await _dio.post(
+        '/auth/register',
+        data: {
+          'email': email,
+          'password': password,
+          'firstName': firstName,
+          'lastName': lastName,
+          'phone': ?phone,
+        },
+      );
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       return Failure(
@@ -173,13 +185,16 @@ class AuthRepository {
     // comunes
     String? description,
     String? address,
+
     /// Lista de ids de categoría a asociar al proveedor. Backend espera el
     /// nombre plural `categoryIds` (la versión singular `categoryId` se
     /// rechaza por `forbidNonWhitelisted`).
     List<int>? categoryIds,
+
     /// Especialidad principal (isPrimary) — debe estar dentro de categoryIds.
     int? primaryCategoryId,
     int? localityId,
+
     /// Ubicación administrativa — el backend resuelve la localidad real.
     String? department,
     String? province,
@@ -196,38 +211,47 @@ class AuthRepository {
     String? whatsappBiz,
   }) async {
     try {
-      final response = await _dio.post('/auth/register/provider', data: {
-        'businessName': businessName,
-        'phone':        phone,
-        'type':         type,
-        if (whatsapp != null && whatsapp.isNotEmpty) 'whatsapp': whatsapp,
-        if (dni != null && dni.isNotEmpty) 'dni': dni,
-        if (ruc != null && ruc.isNotEmpty) 'ruc': ruc,
-        if (nombreComercial != null && nombreComercial.isNotEmpty) 'nombreComercial': nombreComercial,
-        if (razonSocial != null && razonSocial.isNotEmpty) 'razonSocial': razonSocial,
-        if (type == 'NEGOCIO') 'hasDelivery': hasDelivery,
-        // plenaCoordinacion ya NO está condicionado a hasDelivery —
-        // son features independientes que el user marca por separado.
-        if (type == 'NEGOCIO') 'plenaCoordinacion': plenaCoordinacion,
-        if (type == 'OFICIO') 'hasHomeService': hasHomeService,
-        if (description != null && description.isNotEmpty) 'description': description,
-        if (address != null && address.isNotEmpty) 'address': address,
-        if (categoryIds != null && categoryIds.isNotEmpty) 'categoryIds': categoryIds,
-        'primaryCategoryId': ?primaryCategoryId,
-        'localityId': ?localityId,
-        if (department != null && department.isNotEmpty) 'department': department,
-        if (province != null && province.isNotEmpty) 'province': province,
-        if (district != null && district.isNotEmpty) 'district': district,
-        if (scheduleJson != null && scheduleJson.isNotEmpty) 'scheduleJson': scheduleJson,
-        'website':     ?website,
-        'instagram':   ?instagram,
-        'tiktok':      ?tiktok,
-        'facebook':    ?facebook,
-        'linkedin':    ?linkedin,
-        'twitterX':    ?twitterX,
-        'telegram':    ?telegram,
-        'whatsappBiz': ?whatsappBiz,
-      });
+      final response = await _dio.post(
+        '/auth/register/provider',
+        data: {
+          'businessName': businessName,
+          'phone': phone,
+          'type': type,
+          if (whatsapp != null && whatsapp.isNotEmpty) 'whatsapp': whatsapp,
+          if (dni != null && dni.isNotEmpty) 'dni': dni,
+          if (ruc != null && ruc.isNotEmpty) 'ruc': ruc,
+          if (nombreComercial != null && nombreComercial.isNotEmpty)
+            'nombreComercial': nombreComercial,
+          if (razonSocial != null && razonSocial.isNotEmpty)
+            'razonSocial': razonSocial,
+          if (type == 'NEGOCIO') 'hasDelivery': hasDelivery,
+          // plenaCoordinacion ya NO está condicionado a hasDelivery —
+          // son features independientes que el user marca por separado.
+          if (type == 'NEGOCIO') 'plenaCoordinacion': plenaCoordinacion,
+          if (type == 'OFICIO') 'hasHomeService': hasHomeService,
+          if (description != null && description.isNotEmpty)
+            'description': description,
+          if (address != null && address.isNotEmpty) 'address': address,
+          if (categoryIds != null && categoryIds.isNotEmpty)
+            'categoryIds': categoryIds,
+          'primaryCategoryId': ?primaryCategoryId,
+          'localityId': ?localityId,
+          if (department != null && department.isNotEmpty)
+            'department': department,
+          if (province != null && province.isNotEmpty) 'province': province,
+          if (district != null && district.isNotEmpty) 'district': district,
+          if (scheduleJson != null && scheduleJson.isNotEmpty)
+            'scheduleJson': scheduleJson,
+          'website': ?website,
+          'instagram': ?instagram,
+          'tiktok': ?tiktok,
+          'facebook': ?facebook,
+          'linkedin': ?linkedin,
+          'twitterX': ?twitterX,
+          'telegram': ?telegram,
+          'whatsappBiz': ?whatsappBiz,
+        },
+      );
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       return Failure(
@@ -244,13 +268,13 @@ class AuthRepository {
       final hasSession = await AuthLocalStorage.hasSession();
       if (!hasSession) return null;
 
-      final accessToken  = await AuthLocalStorage.getAccessToken();
+      final accessToken = await AuthLocalStorage.getAccessToken();
       final refreshToken = await AuthLocalStorage.getRefreshToken();
-      final user         = await AuthLocalStorage.getUser();
+      final user = await AuthLocalStorage.getUser();
 
       if (accessToken != null && refreshToken != null) {
         DioClient.instance.setTokens(
-          accessToken:  accessToken,
+          accessToken: accessToken,
           refreshToken: refreshToken,
         );
       }
@@ -268,7 +292,7 @@ class AuthRepository {
     try {
       // Inyectar tokens primero para que las llamadas autenticadas funcionen
       DioClient.instance.setTokens(
-        accessToken:  account.accessToken,
+        accessToken: account.accessToken,
         refreshToken: account.refreshToken,
       );
 
@@ -278,29 +302,29 @@ class AuthRepository {
         final response = await _dio.get('/users/me');
         final data = response.data as Map<String, dynamic>;
         user = UserModel(
-          id:        data['id']        as int,
-          email:     data['email']     as String,
+          id: data['id'] as int,
+          email: data['email'] as String,
           firstName: data['firstName'] as String? ?? account.firstName,
-          lastName:  data['lastName']  as String? ?? account.lastName,
-          role:      data['role']      as String? ?? 'USUARIO',
+          lastName: data['lastName'] as String? ?? account.lastName,
+          role: data['role'] as String? ?? 'USUARIO',
           avatarUrl: data['avatarUrl'] as String?,
-          phone:     data['phone']     as String?,
+          phone: data['phone'] as String?,
         );
       } catch (_) {
         // Si el backend no responde, usar datos locales como fallback
         user = UserModel(
-          id:        account.userId,
-          email:     account.email,
+          id: account.userId,
+          email: account.email,
           firstName: account.firstName,
-          lastName:  account.lastName,
-          role:      'USUARIO',
+          lastName: account.lastName,
+          role: 'USUARIO',
         );
       }
 
       await AuthLocalStorage.saveSession(
-        accessToken:  account.accessToken,
+        accessToken: account.accessToken,
         refreshToken: account.refreshToken,
-        user:         user,
+        user: user,
       );
 
       return Success(user);
@@ -319,7 +343,9 @@ class AuthRepository {
       return Failure(
         e.error is AppException
             ? e.error as AppException
-            : ServerException(e.message ?? 'Error al obtener estado del proveedor'),
+            : ServerException(
+                e.message ?? 'Error al obtener estado del proveedor',
+              ),
       );
     }
   }
@@ -334,14 +360,17 @@ class AuthRepository {
     String? district,
   }) async {
     try {
-      final response = await _dio.patch('/users/profile', data: {
-        'firstName':  ?firstName,
-        'lastName':   ?lastName,
-        'phone':      ?phone,
-        'department': ?department,
-        'province':   ?province,
-        'district':   ?district,
-      });
+      final response = await _dio.patch(
+        '/users/profile',
+        data: {
+          'firstName': ?firstName,
+          'lastName': ?lastName,
+          'phone': ?phone,
+          'department': ?department,
+          'province': ?province,
+          'district': ?district,
+        },
+      );
       final data = response.data as Map<String, dynamic>;
       final user = UserModel.fromJson({...data, 'id': data['id']});
       return Success(user);
@@ -368,7 +397,8 @@ class AuthRepository {
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
-      final avatarUrl = (response.data as Map<String, dynamic>)['avatarUrl'] as String;
+      final avatarUrl =
+          (response.data as Map<String, dynamic>)['avatarUrl'] as String;
       return Success(avatarUrl);
     } on DioException catch (e) {
       return Failure(
@@ -382,10 +412,12 @@ class AuthRepository {
   // ── SETUP PASSWORD (usuarios sociales sin password propia) ──
   Future<ApiResult<String>> setupPassword(String newPassword) async {
     try {
-      final response = await _dio.post('/auth/setup-password', data: {
-        'newPassword': newPassword,
-      });
-      final msg = (response.data as Map<String, dynamic>)['message'] as String? ?? 'OK';
+      final response = await _dio.post(
+        '/auth/setup-password',
+        data: {'newPassword': newPassword},
+      );
+      final msg =
+          (response.data as Map<String, dynamic>)['message'] as String? ?? 'OK';
       return Success(msg);
     } on DioException catch (e) {
       return Failure(
@@ -402,10 +434,10 @@ class AuthRepository {
     required String newPassword,
   }) async {
     try {
-      final response = await _dio.patch('/users/change-password', data: {
-        'currentPassword': currentPassword,
-        'newPassword':     newPassword,
-      });
+      final response = await _dio.patch(
+        '/users/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
       final msg = (response.data as Map<String, dynamic>)['message'] as String;
       return Success(msg);
     } on DioException catch (e) {
@@ -420,7 +452,10 @@ class AuthRepository {
   // ── OLVIDÉ MI CONTRASEÑA ───────────────────────────────────
   Future<ApiResult<Map<String, dynamic>>> forgotPassword(String email) async {
     try {
-      final response = await _dio.post('/auth/forgot-password', data: {'email': email});
+      final response = await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       return Failure(
@@ -438,18 +473,19 @@ class AuthRepository {
     required String newPassword,
   }) async {
     try {
-      final response = await _dio.post('/auth/reset-password', data: {
-        'email':       email,
-        'token':       token,
-        'newPassword': newPassword,
-      });
+      final response = await _dio.post(
+        '/auth/reset-password',
+        data: {'email': email, 'token': token, 'newPassword': newPassword},
+      );
       final msg = (response.data as Map<String, dynamic>)['message'] as String;
       return Success(msg);
     } on DioException catch (e) {
       return Failure(
         e.error is AppException
             ? e.error as AppException
-            : ServerException(e.message ?? 'Error al restablecer la contraseña'),
+            : ServerException(
+                e.message ?? 'Error al restablecer la contraseña',
+              ),
       );
     }
   }
@@ -457,7 +493,10 @@ class AuthRepository {
   // ── ENVIAR OTP ────────────────────────────────────────────
   Future<ApiResult<Map<String, dynamic>>> sendOtp(int userId) async {
     try {
-      final response = await _dio.post('/auth/send-otp', data: {'userId': userId});
+      final response = await _dio.post(
+        '/auth/send-otp',
+        data: {'userId': userId},
+      );
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       return Failure(
@@ -476,32 +515,32 @@ class AuthRepository {
     required String code,
   }) async {
     try {
-      final response = await _dio.post('/auth/verify-otp', data: {
-        'pendingId': pendingId,
-        'code':      code,
-      });
+      final response = await _dio.post(
+        '/auth/verify-otp',
+        data: {'pendingId': pendingId, 'code': code},
+      );
 
-      final data         = response.data as Map<String, dynamic>;
-      final accessToken  = data['accessToken']  as String;
+      final data = response.data as Map<String, dynamic>;
+      final accessToken = data['accessToken'] as String;
       final refreshToken = data['refreshToken'] as String;
 
       final user = UserModel(
-        id:        data['userId']    as int,
-        email:     data['email']     as String? ?? '',
+        id: data['userId'] as int,
+        email: data['email'] as String? ?? '',
         firstName: data['firstName'] as String? ?? '',
-        lastName:  data['lastName']  as String? ?? '',
-        role:      data['role']      as String? ?? 'USUARIO',
-        phone:     data['phone']     as String?,
+        lastName: data['lastName'] as String? ?? '',
+        role: data['role'] as String? ?? 'USUARIO',
+        phone: data['phone'] as String?,
         avatarUrl: data['avatarUrl'] as String?,
       );
 
       await AuthLocalStorage.saveSession(
-        accessToken:  accessToken,
+        accessToken: accessToken,
         refreshToken: refreshToken,
-        user:         user,
+        user: user,
       );
       DioClient.instance.setTokens(
-        accessToken:  accessToken,
+        accessToken: accessToken,
         refreshToken: refreshToken,
       );
 
@@ -518,7 +557,10 @@ class AuthRepository {
   // ── REENVIAR OTP (registro pendiente) ─────────────────────
   Future<ApiResult<Map<String, dynamic>>> resendOtp(String pendingId) async {
     try {
-      final response = await _dio.post('/auth/resend-otp', data: {'pendingId': pendingId});
+      final response = await _dio.post(
+        '/auth/resend-otp',
+        data: {'pendingId': pendingId},
+      );
       return Success(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       return Failure(
@@ -540,28 +582,36 @@ class AuthRepository {
         return Failure(ServerException('No hay refresh token almacenado'));
       }
 
-      final response = await _dio.post('/auth/refresh', data: {
-        'refreshToken': storedRefresh,
-      });
+      final response = await _dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': storedRefresh},
+      );
 
       final data = response.data as Map<String, dynamic>;
-      final accessToken  = data['accessToken']  as String;
+      final accessToken = data['accessToken'] as String;
       final refreshToken = data['refreshToken'] as String;
-      final role         = data['role']         as String? ?? 'USUARIO';
+      final role = data['role'] as String? ?? 'USUARIO';
 
       // Restaurar usuario local con el nuevo rol y guardar sesión completa
       final current = await AuthLocalStorage.getUser();
-      final updated = current?.copyWith(role: role) ??
-          UserModel(id: data['userId'] as int, email: '', firstName: '', lastName: '', role: role);
+      final updated =
+          current?.copyWith(role: role) ??
+          UserModel(
+            id: data['userId'] as int,
+            email: '',
+            firstName: '',
+            lastName: '',
+            role: role,
+          );
 
       DioClient.instance.setTokens(
-        accessToken:  accessToken,
+        accessToken: accessToken,
         refreshToken: refreshToken,
       );
       await AuthLocalStorage.saveSession(
-        accessToken:  accessToken,
+        accessToken: accessToken,
         refreshToken: refreshToken,
-        user:         updated,
+        user: updated,
       );
 
       return Success(updated);

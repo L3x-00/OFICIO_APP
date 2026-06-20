@@ -290,6 +290,12 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     return {
       ...tokens,
+      // userId + role son OBLIGATORIOS para los clientes: el móvil arma el
+      // UserModel con `data['userId']` (un cast a int que CRASHEABA cuando
+      // faltaba → la sesión social nunca se guardaba y al reabrir la app
+      // aparecía "no has iniciado sesión"). Mismo shape que /login y /verify-otp.
+      userId: user.id,
+      role: user.role,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,

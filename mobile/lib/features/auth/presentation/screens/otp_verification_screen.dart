@@ -46,9 +46,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final success = await authProvider.verifyOtp(_fullCode);
 
     if (success) {
-      // Mostramos el modal sobre el navegador raíz para que no se pierda
-      // si el router redirige automáticamente a la elección de rol.
-      _showSuccessDialog(rootNav);
+      // Mostramos un OVERLAY (no una ruta del Navigator) sobre el navegador
+      // raíz. Antes era un showDialog: al cambiar el estado de auth, GoRouter
+      // redirigía a /onboarding y LIMPIABA las rutas imperativas → el modal
+      // "Código verificado" aparecía un instante y se ocultaba solo. El
+      // overlay no es una ruta, así que sobrevive a la redirección y espera
+      // a que el usuario pulse "Siguiente".
+      _showSuccessOverlay(rootNav);
     } else {
       // Si falló, mostramos el error que guardó el provider
       if (!mounted) return;
@@ -66,55 +70,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
-  void _showSuccessDialog(NavigatorState navigator) {
-    showDialog(
-      context: navigator.context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              color: Colors.green,
-              size: 80,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Código verificado',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Tu correo ha sido validado correctamente.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Solo cerramos el modal. El router ya habrá navegado
-                  // a la pantalla de elección de rol por debajo.
-                  Navigator.of(ctx).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Siguiente',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  /// Muestra la confirmación como OverlayEntry sobre el overlay del navegador
+  /// raíz. Sobrevive a la redirección de GoRouter a /onboarding (la pantalla
+  /// de rol queda debajo). Se cierra solo al pulsar "Siguiente".
+  void _showSuccessOverlay(NavigatorState rootNav) {
+    final overlay = rootNav.overlay;
+    if (overlay == null) return;
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => _OtpSuccessOverlay(onNext: () => entry.remove()),
     );
+    overlay.insert(entry);
   }
 
   Future<void> _resend() async {
@@ -352,6 +318,80 @@ class _OtpBox extends StatelessWidget {
           ),
         ),
         onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+/// Overlay de éxito de verificación OTP. No es una ruta del Navigator, por lo
+/// que la redirección de GoRouter a /onboarding no lo descarta: se queda
+/// visible hasta que el usuario pulsa "Siguiente".
+class _OtpSuccessOverlay extends StatelessWidget {
+  final VoidCallback onNext;
+  const _OtpSuccessOverlay({required this.onNext});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black54,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 360),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.green,
+                  size: 80,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Código verificado',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Tu correo ha sido validado correctamente.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Siguiente',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
