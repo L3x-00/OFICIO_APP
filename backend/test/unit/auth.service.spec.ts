@@ -434,6 +434,37 @@ describe('AuthService (unit)', () => {
       );
     });
 
+    // REGRESIÓN (Plan D): la respuesta plana DEBE incluir userId + role, igual
+    // que /login y /verify-otp. El móvil arma el UserModel con data['userId']
+    // (cast a int) y data['role']. Si alguien borra esos campos, la sesión
+    // social deja de persistir ("no has iniciado sesión" al reabrir) — este
+    // test falla antes de que eso llegue a producción.
+    it('REGRESIÓN: la respuesta incluye userId y role (shape consistente)', async () => {
+      firebase.verifyIdToken.mockResolvedValue({
+        uid: 'fbuid-shape',
+        email: 'shape@example.com',
+        name: 'Shape Test',
+      });
+      prisma.user.findFirst.mockResolvedValue(null);
+      const created = socialUserFixture({
+        id: 321,
+        email: 'shape@example.com',
+        role: 'USUARIO',
+      });
+      prisma.user.create.mockResolvedValue(created);
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      const result = (await service.socialLogin('token')) as Record<
+        string,
+        unknown
+      >;
+
+      expect(result).toHaveProperty('userId', 321);
+      expect(result).toHaveProperty('role', 'USUARIO');
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+    });
+
     it('vincula firebaseUid (NO bloquea) si el email existe sin firebaseUid', async () => {
       // Cuenta creada por email/password, o social cuyo firebaseUid se limpió.
       // Firebase ya verificó el correo → se vincula y loguea, no se bloquea.

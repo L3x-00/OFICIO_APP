@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
@@ -190,6 +191,19 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (!mounted) return;
       if (ok) {
+        // En modo REGISTRO, si la cuenta YA existía (no es nueva), NO es un
+        // registro: avisamos con un diálogo claro y cerramos la sesión recién
+        // creada, en vez de aparentar que se registró o quedar "a medias".
+        // `socialAccountNeedsPassword` == isNewUser (true solo para cuentas
+        // recién creadas por login social).
+        final accountAlreadyExisted = !auth.socialAccountNeedsPassword;
+        if (_mode == AuthMode.register && accountAlreadyExisted) {
+          final rootNav = Navigator.of(context, rootNavigator: true);
+          // Overlay PRIMERO (cubre la transición del router); luego logout.
+          _showAccountExistsOverlay(rootNav);
+          await auth.logout();
+          return;
+        }
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
         final error = auth.error ?? 'Error en inicio de sesión social';
@@ -205,6 +219,25 @@ class _LoginScreenState extends State<LoginScreen>
       // evita setState sobre un widget desmontado.
       if (mounted) setState(() => _socialBusy = false);
     }
+  }
+
+  /// Diálogo "cuenta ya registrada" como OverlayEntry sobre el navegador raíz
+  /// (no es una ruta → sobrevive a la redirección del router tras el logout).
+  void _showAccountExistsOverlay(NavigatorState rootNav) {
+    final overlay = rootNav.overlay;
+    if (overlay == null) return;
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => _AccountExistsOverlay(
+        onAccept: () => entry.remove(),
+        onLogin: () {
+          entry.remove();
+          // El logout dejó al router en /welcome; abrimos la pantalla de login.
+          GoRouter.of(rootNav.context).go('/login');
+        },
+      ),
+    );
+    overlay.insert(entry);
   }
 
   @override
@@ -862,6 +895,103 @@ class _ToggleVisibilityButton extends StatelessWidget {
         size: 20,
       ),
       onPressed: onToggle,
+    );
+  }
+}
+
+/// Overlay "cuenta ya registrada" mostrado cuando alguien intenta REGISTRARSE
+/// con Google usando un correo que ya tiene cuenta. No es una ruta del
+/// Navigator → sobrevive a la redirección del router. "Iniciar sesión" lleva a
+/// la pantalla de login; "Aceptar" solo cierra el aviso.
+class _AccountExistsOverlay extends StatelessWidget {
+  final VoidCallback onAccept;
+  final VoidCallback onLogin;
+  const _AccountExistsOverlay({required this.onAccept, required this.onLogin});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black54,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 380),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.busy.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.error_outline_rounded,
+                    color: AppColors.busy,
+                    size: 34,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Cuenta ya registrada',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Ya hay una cuenta registrada con este correo. Por favor '
+                  'intenta con otro, o inicia sesión con tu cuenta.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: onLogin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Iniciar sesión',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: onAccept,
+                    child: const Text(
+                      'Aceptar',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
