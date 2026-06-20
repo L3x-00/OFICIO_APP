@@ -434,20 +434,34 @@ describe('AuthService (unit)', () => {
       );
     });
 
-    it('lanza ConflictException si el email pertenece a una cuenta MANUAL (sin firebaseUid)', async () => {
+    it('vincula firebaseUid (NO bloquea) si el email existe sin firebaseUid', async () => {
+      // Cuenta creada por email/password, o social cuyo firebaseUid se limpió.
+      // Firebase ya verificó el correo → se vincula y loguea, no se bloquea.
       firebase.verifyIdToken.mockResolvedValue({
         uid: 'fbuid-2',
         email: 'manual@example.com',
+        picture: 'https://pic',
       });
-      prisma.user.findFirst.mockResolvedValue(
-        userFixture({
-          email: 'manual@example.com',
-          firebaseUid: null,
-          isActive: true,
+      const existing = userFixture({
+        id: 77,
+        email: 'manual@example.com',
+        firebaseUid: null,
+        isActive: true,
+      });
+      prisma.user.findFirst.mockResolvedValue(existing);
+      prisma.user.update.mockResolvedValue({ ...existing, firebaseUid: 'fbuid-2' });
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      const result = await service.socialLogin('any-token');
+
+      expect(result.isNewUser).toBe(false);
+      expect(result.userId).toBe(existing.id);
+      expect(prisma.user.create).not.toHaveBeenCalled();
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: existing.id },
+          data: expect.objectContaining({ firebaseUid: 'fbuid-2' }),
         }),
-      );
-      await expect(service.socialLogin('any-token')).rejects.toThrow(
-        ConflictException,
       );
     });
 

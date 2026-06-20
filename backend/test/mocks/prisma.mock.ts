@@ -45,6 +45,22 @@ export type PrismaMock = {
   $disconnect: jest.Mock;
 };
 
+/// Métodos de MUTACIÓN: muchos servicios los usan en fire-and-forget
+/// (`void prisma.x.create(...).catch(() => {})`). Si el mock devolviera
+/// `undefined`, el `.catch()` crashearía el test con "Cannot read properties
+/// of undefined (reading 'catch')". Por eso por defecto resuelven a undefined
+/// (una Promise) — los tests que necesiten un valor lo sobreescriben con
+/// `mockResolvedValue(...)`.
+const MUTATION_METHODS = [
+  'create',
+  'createMany',
+  'update',
+  'updateMany',
+  'upsert',
+  'delete',
+  'deleteMany',
+] as const;
+
 /** Genera un set estándar de métodos delegados de Prisma como `jest.fn`. */
 function modelMock() {
   return {
@@ -53,13 +69,13 @@ function modelMock() {
     findFirst: jest.fn(),
     findFirstOrThrow: jest.fn(),
     findMany: jest.fn(),
-    create: jest.fn(),
-    createMany: jest.fn(),
-    update: jest.fn(),
-    updateMany: jest.fn(),
-    upsert: jest.fn(),
-    delete: jest.fn(),
-    deleteMany: jest.fn(),
+    create: jest.fn().mockResolvedValue(undefined),
+    createMany: jest.fn().mockResolvedValue(undefined),
+    update: jest.fn().mockResolvedValue(undefined),
+    updateMany: jest.fn().mockResolvedValue(undefined),
+    upsert: jest.fn().mockResolvedValue(undefined),
+    delete: jest.fn().mockResolvedValue(undefined),
+    deleteMany: jest.fn().mockResolvedValue(undefined),
     count: jest.fn(),
     aggregate: jest.fn(),
     groupBy: jest.fn(),
@@ -113,9 +129,15 @@ export function resetPrismaMock(prisma: PrismaMock) {
   for (const key of Object.keys(prisma) as (keyof PrismaMock)[]) {
     const val = (prisma as any)[key];
     if (val && typeof val === 'object') {
-      for (const fn of Object.values(val)) {
+      for (const [fnName, fn] of Object.entries(val)) {
         if (typeof fn === 'function' && 'mockReset' in fn) {
           (fn as jest.Mock).mockReset();
+          // Restaurar el default resuelto de las mutaciones — sin esto, tras
+          // `mockReset` volverían a devolver undefined y los fire-and-forget
+          // `.catch()` crashearían.
+          if ((MUTATION_METHODS as readonly string[]).includes(fnName)) {
+            (fn as jest.Mock).mockResolvedValue(undefined);
+          }
         }
       }
     } else if (typeof val === 'function' && 'mockReset' in val) {

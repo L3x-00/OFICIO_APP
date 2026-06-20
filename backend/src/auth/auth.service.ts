@@ -1,7 +1,6 @@
 import {
   Injectable,
   UnauthorizedException,
-  ConflictException,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
@@ -204,9 +203,18 @@ export class AuthService {
       );
     }
 
-    // Buscar usuario por firebaseUid (login recurrente) o email (vinculación)
+    // Buscar usuario por firebaseUid (login recurrente) o email (vinculación).
+    // El email va case-insensitive: los proveedores sociales pueden devolver
+    // el correo con casing distinto entre sesiones; un match exacto fallaría,
+    // intentaría CREAR y reventaría con P2002 ("ya hay un registro con ese
+    // correo") bloqueando el re-login con la misma cuenta de Google.
     let user = await this.prisma.user.findFirst({
-      where: { OR: [{ firebaseUid: uid }, { email }] },
+      where: {
+        OR: [
+          { firebaseUid: uid },
+          { email: { equals: email, mode: 'insensitive' } },
+        ],
+      },
     });
 
     let isNewUser = false;
@@ -268,10 +276,21 @@ export class AuthService {
         },
       });
     } else if (!user.firebaseUid) {
-      // Email ya registrado con contraseña — no vincular, bloquear
-      throw new ConflictException(
-        'Ya tienes una cuenta con este correo. Inicia sesión con tu correo y contraseña, o regístrate con otro correo.',
-      );
+      // El correo ya existe pero SIN firebaseUid — cuenta creada por
+      // email/password, o un usuario social cuyo firebaseUid se limpió
+      // (deleteAccount / re-registro). Firebase YA verificó que esta persona
+      // controla el correo (y el registro email/password también exige OTP),
+      // así que VINCULAMOS el firebaseUid en vez de bloquear. Antes lanzaba
+      // ConflictException y el usuario quedaba sin poder volver a entrar con
+      // Google ("ya hay un registro con ese correo").
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          firebaseUid: uid,
+          isEmailVerified: true,
+          avatarUrl: user.avatarUrl ?? picture ?? null,
+        },
+      });
     }
 
     // Log de IP + timestamp para auditoría y mapa de calor (geo-stats).
