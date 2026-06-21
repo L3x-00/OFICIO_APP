@@ -16,20 +16,21 @@ class TrustValidationFormScreen extends StatefulWidget {
   const TrustValidationFormScreen({super.key, required this.providerType});
 
   @override
-  State<TrustValidationFormScreen> createState() => _TrustValidationFormScreenState();
+  State<TrustValidationFormScreen> createState() =>
+      _TrustValidationFormScreenState();
 }
 
 class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
-  final _repo   = TrustValidationRepository();
+  final _repo = TrustValidationRepository();
   final _picker = ImagePicker();
 
   // Text controllers
-  final _dniNumberCtrl      = TextEditingController();
-  final _dniFirstNameCtrl   = TextEditingController();
-  final _dniLastNameCtrl    = TextEditingController();
-  final _dniAddressCtrl     = TextEditingController();
-  final _rucCtrl            = TextEditingController();
-  final _bizAddressCtrl     = TextEditingController();
+  final _dniNumberCtrl = TextEditingController();
+  final _dniFirstNameCtrl = TextEditingController();
+  final _dniLastNameCtrl = TextEditingController();
+  final _dniAddressCtrl = TextEditingController();
+  final _rucCtrl = TextEditingController();
+  final _bizAddressCtrl = TextEditingController();
 
   // Photo files
   File? _dniPhotoFront;
@@ -41,6 +42,29 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
   bool _isLoading = false;
 
   bool get _isNegocio => widget.providerType == 'NEGOCIO';
+
+  @override
+  void initState() {
+    super.initState();
+    // Prefill de revalidación: si el proveedor fue rechazado y vuelve a
+    // validar, mostramos los datos que ya tenía (DNI/RUC/dirección del perfil
+    // + nombre del usuario) para que EDITE en vez de arrancar de cero. Las
+    // fotos sí se vuelven a tomar (cámara obligatoria, no se pueden recuperar).
+    final auth = context.read<AuthProvider>();
+    final data = auth.providerDataFor(widget.providerType);
+    final user = auth.user;
+    if (data != null) {
+      _dniNumberCtrl.text = (data['dni'] as String?) ?? '';
+      _rucCtrl.text = (data['ruc'] as String?) ?? '';
+      final addr = (data['address'] as String?) ?? '';
+      _dniAddressCtrl.text = addr;
+      _bizAddressCtrl.text = addr;
+    }
+    if (user != null) {
+      _dniFirstNameCtrl.text = user.firstName;
+      _dniLastNameCtrl.text = user.lastName;
+    }
+  }
 
   @override
   void dispose() {
@@ -63,22 +87,36 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
     final file = File(xfile.path);
     setState(() {
       switch (slot) {
-        case 'dniPhotoFront': _dniPhotoFront  = file; break;
-        case 'dniPhotoBack':  _dniPhotoBack   = file; break;
-        case 'selfieWithDni': _selfieWithDni  = file; break;
-        case 'businessPhoto': _businessPhoto  = file; break;
-        case 'businessPhoto2': _businessPhoto2  = file; break;
+        case 'dniPhotoFront':
+          _dniPhotoFront = file;
+          break;
+        case 'dniPhotoBack':
+          _dniPhotoBack = file;
+          break;
+        case 'selfieWithDni':
+          _selfieWithDni = file;
+          break;
+        case 'businessPhoto':
+          _businessPhoto = file;
+          break;
+        case 'businessPhoto2':
+          _businessPhoto2 = file;
+          break;
       }
     });
   }
 
   bool get _canSubmit {
-    final textOk = _dniNumberCtrl.text.trim().length == 8 &&
+    final textOk =
+        _dniNumberCtrl.text.trim().length == 8 &&
         _dniFirstNameCtrl.text.trim().isNotEmpty &&
         _dniLastNameCtrl.text.trim().isNotEmpty &&
         _dniAddressCtrl.text.trim().isNotEmpty;
     if (!textOk) return false;
-    if (_dniPhotoFront == null || _dniPhotoBack == null || _selfieWithDni == null) return false;
+    if (_dniPhotoFront == null ||
+        _dniPhotoBack == null ||
+        _selfieWithDni == null)
+      return false;
     if (_isNegocio) {
       if (_rucCtrl.text.trim().length < 11) return false;
       if (_bizAddressCtrl.text.trim().isEmpty) return false;
@@ -94,16 +132,16 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
     final result = await _repo.submitRequest(
       providerType: widget.providerType,
       fields: {
-        'dniNumber':      _dniNumberCtrl.text.trim(),
-        'dniFirstName':   _dniFirstNameCtrl.text.trim(),
-        'dniLastName':    _dniLastNameCtrl.text.trim(),
-        'dniAddress':     _dniAddressCtrl.text.trim(),
-        if (_isNegocio) 'rucNumber':      _rucCtrl.text.trim(),
+        'dniNumber': _dniNumberCtrl.text.trim(),
+        'dniFirstName': _dniFirstNameCtrl.text.trim(),
+        'dniLastName': _dniLastNameCtrl.text.trim(),
+        'dniAddress': _dniAddressCtrl.text.trim(),
+        if (_isNegocio) 'rucNumber': _rucCtrl.text.trim(),
         if (_isNegocio) 'businessAddress': _bizAddressCtrl.text.trim(),
       },
       photos: {
         'dniPhotoFront': _dniPhotoFront,
-        'dniPhotoBack':  _dniPhotoBack,
+        'dniPhotoBack': _dniPhotoBack,
         'selfieWithDni': _selfieWithDni,
         if (_isNegocio) 'businessPhoto': _businessPhoto,
         if (_isNegocio) 'businessPhoto2': _businessPhoto2,
@@ -138,23 +176,36 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 72, height: 72,
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
                   color: AppColors.available.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.verified_rounded, color: AppColors.available, size: 38),
+                child: Icon(
+                  Icons.verified_rounded,
+                  color: AppColors.available,
+                  size: 38,
+                ),
               ),
               const SizedBox(height: 20),
               Text(
                 'Formulario enviado',
-                style: TextStyle(color: c.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
               Text(
                 'Formulario rellenado correctamente.\nEspera mientras validamos tus datos.\nNuestro equipo revisará la información en las próximas horas.',
-                style: TextStyle(color: c.textSecondary, fontSize: 14, height: 1.5),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -169,9 +220,14 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('Ir al inicio', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  child: const Text(
+                    'Ir al inicio',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
                 ),
               ),
             ],
@@ -197,7 +253,14 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
       appBar: AppBar(
         backgroundColor: c.bg,
         elevation: 0,
-        title: Text(title, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 17)),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: c.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
@@ -213,21 +276,43 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
           // ── Sección: Datos del DNI ─────────────────────────
           _SectionHeader(title: 'Datos del DNI', icon: Icons.badge_rounded),
           const SizedBox(height: 14),
-          _Field(ctrl: _dniNumberCtrl, label: 'Número de DNI', hint: '12345678',
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
+          _Field(
+            ctrl: _dniNumberCtrl,
+            label: 'Número de DNI',
+            hint: '12345678',
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(8),
+            ],
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
-          _Field(ctrl: _dniFirstNameCtrl, label: 'Nombre (como aparece en el DNI)', hint: 'JUAN CARLOS'),
+          _Field(
+            ctrl: _dniFirstNameCtrl,
+            label: 'Nombre (como aparece en el DNI)',
+            hint: 'JUAN CARLOS',
+          ),
           const SizedBox(height: 12),
-          _Field(ctrl: _dniLastNameCtrl, label: 'Apellidos (como aparece en el DNI)', hint: 'PÉREZ QUISPE'),
+          _Field(
+            ctrl: _dniLastNameCtrl,
+            label: 'Apellidos (como aparece en el DNI)',
+            hint: 'PÉREZ QUISPE',
+          ),
           const SizedBox(height: 12),
-          _Field(ctrl: _dniAddressCtrl, label: 'Dirección registrada en el DNI', hint: 'Jr. Los Álamos 123, El Tambo', maxLines: 2),
+          _Field(
+            ctrl: _dniAddressCtrl,
+            label: 'Dirección registrada en el DNI',
+            hint: 'Jr. Los Álamos 123, El Tambo',
+            maxLines: 2,
+          ),
 
           const SizedBox(height: 24),
 
           // ── Sección: Fotos del DNI ─────────────────────────
-          _SectionHeader(title: 'Fotos del DNI (solo cámara)', icon: Icons.camera_alt_rounded),
+          _SectionHeader(
+            title: 'Fotos del DNI (solo cámara)',
+            icon: Icons.camera_alt_rounded,
+          ),
           const SizedBox(height: 8),
           _CameraHint(),
           const SizedBox(height: 14),
@@ -254,16 +339,33 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
 
           if (_isNegocio) ...[
             const SizedBox(height: 24),
-            _SectionHeader(title: 'Datos del Negocio', icon: Icons.storefront_rounded),
+            _SectionHeader(
+              title: 'Datos del Negocio',
+              icon: Icons.storefront_rounded,
+            ),
             const SizedBox(height: 14),
-            _Field(ctrl: _rucCtrl, label: 'RUC del negocio', hint: '20123456789',
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(11)],
+            _Field(
+              ctrl: _rucCtrl,
+              label: 'RUC del negocio',
+              hint: '20123456789',
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(11),
+              ],
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
-            _Field(ctrl: _bizAddressCtrl, label: 'Dirección física del establecimiento', hint: 'Av. Principal 456, Huancayo', maxLines: 2),
+            _Field(
+              ctrl: _bizAddressCtrl,
+              label: 'Dirección física del establecimiento',
+              hint: 'Av. Principal 456, Huancayo',
+              maxLines: 2,
+            ),
             const SizedBox(height: 24),
-            _SectionHeader(title: 'Fotos del Negocio', icon: Icons.photo_camera_rounded),
+            _SectionHeader(
+              title: 'Fotos del Negocio',
+              icon: Icons.photo_camera_rounded,
+            ),
             const SizedBox(height: 14),
             _PhotoCapture(
               label: 'Foto del frente del local',
@@ -291,11 +393,26 @@ class _TrustValidationFormScreenState extends State<TrustValidationFormScreen> {
                 disabledBackgroundColor: c.bgCard,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               child: _isLoading
-                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Enviar solicitud de validación', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Enviar solicitud de validación',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 40),
@@ -330,14 +447,24 @@ class _InfoBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('¿Por qué validamos tu identidad?',
-                  style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(
+                  '¿Por qué validamos tu identidad?',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   isNegocio
-                    ? 'Verificamos que tu negocio sea real y confiable. Tus datos se comparan con la información de registro para garantizar la seguridad de nuestros clientes.'
-                    : 'Verificamos tu identidad para garantizar que eres un profesional real. Tus datos del DNI se comparan con la información que registraste.',
-                  style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.5),
+                      ? 'Verificamos que tu negocio sea real y confiable. Tus datos se comparan con la información de registro para garantizar la seguridad de nuestros clientes.'
+                      : 'Verificamos tu identidad para garantizar que eres un profesional real. Tus datos del DNI se comparan con la información que registraste.',
+                  style: TextStyle(
+                    color: c.textSecondary,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -360,7 +487,14 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Icon(icon, color: AppColors.primary, size: 18),
         const SizedBox(width: 8),
-        Text(title, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w700, fontSize: 15)),
+        Text(
+          title,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
       ],
     );
   }
@@ -408,7 +542,14 @@ class _Field extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: TextStyle(
+            color: c.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: ctrl,
@@ -431,9 +572,15 @@ class _Field extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
           ),
         ),
       ],
@@ -467,74 +614,116 @@ class _PhotoCapture extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: captured
-              ? const Color(0xFF10B981).withValues(alpha: 0.5)
-              : c.border,
+                ? const Color(0xFF10B981).withValues(alpha: 0.5)
+                : c.border,
             width: captured ? 1.5 : 1,
           ),
         ),
         child: captured
-          ? Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(13),
-                  child: Image.file(file!, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
-                ),
-                Positioned(
-                  top: 8, right: 8,
-                  child: GestureDetector(
-                    onTap: onCapture,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(8),
+            ? Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: Image.file(
+                      file!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: onCapture,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ),
-                      child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 8, left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.check_rounded, color: Colors.white, size: 12),
-                        const SizedBox(width: 4),
-                        Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-                      ],
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: c.textMuted, size: 22),
-                const SizedBox(width: 12),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(Icons.camera_alt_rounded, size: 12, color: AppColors.primary),
-                        const SizedBox(width: 4),
-                        Text('Tomar foto', style: TextStyle(color: AppColors.primary, fontSize: 12)),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: c.textMuted, size: 22),
+                  const SizedBox(width: 12),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: c.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 12,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Tomar foto',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
       ),
     );
   }

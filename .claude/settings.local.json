@@ -79,7 +79,15 @@
       "Bash(awk '/model AdminNotification/{f=1} f{print} /^}/{if\\(f\\){exit}}' prisma/schema.prisma)",
       "Bash(awk '/model ServiceRequest/{f=1} f{print} /^}/{if\\(f\\){exit}}' prisma/schema.prisma)",
       "Bash(awk '/enum OfferStatus/{f=1} f{print} /^}/{if\\(f\\)exit}' prisma/schema.prisma)",
-      "Bash(DATABASE_URL=\"postgresql://u:p@localhost:5432/db?schema=public\" DIRECT_URL=\"postgresql://u:p@localhost:5432/db?schema=public\" npx prisma generate)"
+      "Bash(DATABASE_URL=\"postgresql://u:p@localhost:5432/db?schema=public\" DIRECT_URL=\"postgresql://u:p@localhost:5432/db?schema=public\" npx prisma generate)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "PowerShell(node backend/node_modules/typescript/bin/tsc -p backend/tsconfig.json --noEmit)",
+      "Bash(xargs basename -a)",
+      "PowerShell(node C:\\\\Users\\\\Usuario\\\\oficio_app\\\\backend\\\\node_modules\\\\typescript\\\\bin\\\\tsc -p C:\\\\Users\\\\Usuario\\\\oficio_app\\\\backend\\\\tsconfig.json --noEmit)",
+      "Bash(git log *)",
+      "Bash(grep -n '$transaction' backend/src/users/users.service.ts backend/src/provider-profile/provider-profile.service.ts backend/src/subastas/subastas.service.ts backend/src/admin/services/admin-trust.service.ts backend/src/payments/payments.service.ts backend/src/admin/admin.service.ts backend/src/referrals/referrals.service.ts backend/src/auth/services/auth-registration.service.ts backend/src/admin/services/admin-payments.service.ts backend/src/reviews/reviews.service.ts)",
+      "Bash(grep -A 15 '$transaction\\(async \\(tx\\)' backend/src/users/users.service.ts)",
+      "PowerShell(Set-Location C:\\\\Users\\\\Usuario\\\\oficio_app\\\\backend; npm run test:cov 2>&1 | Select-String -Pattern \"Tests:|Test Suites:|coverage threshold|All files|does not meet\" | Select-Object -First 10; Write-Output \"EXIT=$LASTEXITCODE\")"
     ]
   }
 }

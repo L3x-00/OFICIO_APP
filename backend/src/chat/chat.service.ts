@@ -255,6 +255,13 @@ export class ChatService {
             body: message.content,
             targetUserId: receiverUserId,
             avatarUrl: senderAvatar ?? undefined,
+            // Deep-link: sin chatRoomId el inbox in-app caía a la lista de
+            // chats vacía en vez de abrir el hilo del remitente. Mismo dato
+            // que ya viaja en el push FCM (arriba).
+            chatRoomId: message.chatRoomId,
+            messageId: message.id,
+            senderId: message.senderId,
+            senderName,
           });
         } catch (e) {
           this.logger.warn(`ws emit falló: ${(e as Error)?.message}`);

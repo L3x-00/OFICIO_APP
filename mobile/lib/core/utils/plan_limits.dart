@@ -4,25 +4,28 @@ class PlanLimits {
   PlanLimits._();
 
   // ── Fotos del perfil ─────────────────────────────────────
+  // GRATIS = 2 fotos visibles públicamente (debe coincidir con el backend
+  // PHOTO_LIMITS / providers.service). Las fotos extra del proveedor NO se
+  // borran: se muestran con candado en su panel y se ocultan al público.
   static int photos(String plan) => switch (plan.toUpperCase()) {
-        'PREMIUM'  => 10,
-        'ESTANDAR' => 6,
-        _          => 3, // GRATIS
-      };
+    'PREMIUM' => 10,
+    'ESTANDAR' => 6,
+    _ => 2, // GRATIS
+  };
 
   // ── Servicios (OFICIO) ───────────────────────────────────
   static int services(String plan) => switch (plan.toUpperCase()) {
-        'PREMIUM'  => 999,
-        'ESTANDAR' => 6,
-        _          => 1, // GRATIS
-      };
+    'PREMIUM' => 999,
+    'ESTANDAR' => 6,
+    _ => 1, // GRATIS
+  };
 
   // ── Productos (NEGOCIO) ──────────────────────────────────
   static int products(String plan) => switch (plan.toUpperCase()) {
-        'PREMIUM'  => 999,
-        'ESTANDAR' => 6,
-        _          => 3, // GRATIS
-      };
+    'PREMIUM' => 999,
+    'ESTANDAR' => 6,
+    _ => 3, // GRATIS
+  };
 
   /// Máx. ítems para el tipo de perfil dado.
   static int items(String plan, {required bool isNegocio}) =>
@@ -31,51 +34,52 @@ class PlanLimits {
   // ── Especialidades / categorías del proveedor ────────────
   /// Premium puede ofrecer hasta 6 especialidades; el resto, 3.
   static int specialties(String plan) => switch (plan.toUpperCase()) {
-        'PREMIUM' => 6,
-        _         => 3, // GRATIS / ESTANDAR
-      };
+    'PREMIUM' => 6,
+    _ => 3, // GRATIS / ESTANDAR
+  };
 
   // ── Ofertas activas (OfferPost) ──────────────────────────
   static int offers(String plan) => switch (plan.toUpperCase()) {
-        'PREMIUM'  => 8,
-        'ESTANDAR' => 4,
-        _          => 1, // GRATIS
-      };
+    'PREMIUM' => 8,
+    'ESTANDAR' => 4,
+    _ => 1, // GRATIS
+  };
 
   static int offerDurationHours(String plan) => switch (plan.toUpperCase()) {
-        'PREMIUM'  => 72,
-        'ESTANDAR' => 24,
-        _          => 12,
-      };
+    'PREMIUM' => 72,
+    'ESTANDAR' => 24,
+    _ => 12,
+  };
 
   static bool canPublishOffer(String plan, int activeOffers) =>
       activeOffers < offers(plan);
 
   // ── Fotos por producto (NEGOCIO) ─────────────────────────
   /// GRATIS no puede subir foto por producto; ESTANDAR/PREMIUM sí.
-  static bool hasProductPhotos(String plan) =>
-      plan.toUpperCase() != 'GRATIS';
+  static bool hasProductPhotos(String plan) => plan.toUpperCase() != 'GRATIS';
 
   // ── Estadísticas / Gestión de visitas ────────────────────
-  static bool hasStatsAccess(String plan) =>
-      plan.toUpperCase() != 'GRATIS';
+  static bool hasStatsAccess(String plan) => plan.toUpperCase() != 'GRATIS';
 
   // ── Helpers booleanos ────────────────────────────────────
   static bool canAddPhoto(String plan, int currentCount) =>
       currentCount < photos(plan);
 
-  static bool canAddItem(String plan, int currentCount,
-          {required bool isNegocio}) =>
-      currentCount < items(plan, isNegocio: isNegocio);
+  static bool canAddItem(
+    String plan,
+    int currentCount, {
+    required bool isNegocio,
+  }) => currentCount < items(plan, isNegocio: isNegocio);
 
   // ── Etiquetas legibles ───────────────────────────────────
-  static String photosLabel(String plan) =>
-      '${photos(plan)} fotos';
+  static String photosLabel(String plan) => '${photos(plan)} fotos';
 
   static String itemsLabel(String plan, {required bool isNegocio}) {
     final n = items(plan, isNegocio: isNegocio);
     final noun = isNegocio ? 'producto' : 'servicio';
-    return n >= 999 ? '${noun}s ilimitados' : '$n ${n == 1 ? noun : '${noun}s'}';
+    return n >= 999
+        ? '${noun}s ilimitados'
+        : '$n ${n == 1 ? noun : '${noun}s'}';
   }
 
   static String statsLabel(String plan) =>
@@ -83,8 +87,8 @@ class PlanLimits {
 
   /// Devuelve la etiqueta del siguiente plan (para CTAs de upgrade).
   static String nextPlan(String plan) => switch (plan.toUpperCase()) {
-        'GRATIS'   => 'Estándar',
-        'ESTANDAR' => 'Premium',
-        _          => 'Premium',
-      };
+    'GRATIS' => 'Estándar',
+    'ESTANDAR' => 'Premium',
+    _ => 'Premium',
+  };
 }

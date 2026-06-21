@@ -18,6 +18,7 @@ class SocketService {
   final List<void Function(Map<String, dynamic>)> _notificationListeners = [];
   final List<void Function(Map<String, dynamic>)> _chatMessageListeners = [];
   final List<void Function(Map<String, dynamic>)> _chatReadListeners = [];
+  final List<void Function(Map<String, dynamic>)> _availabilityListeners = [];
 
   SocketService._internal();
 
@@ -75,7 +76,9 @@ class SocketService {
         if (userId == null) return;
 
         // Copiar la lista antes de iterar para evitar errores de modificación concurrente
-        for (final listener in List<void Function(int)>.from(_deactivationListeners)) {
+        for (final listener in List<void Function(int)>.from(
+          _deactivationListeners,
+        )) {
           listener(userId);
         }
       } catch (e) {
@@ -87,7 +90,9 @@ class SocketService {
     _socket!.on('notification', (data) {
       try {
         final map = Map<String, dynamic>.from(data as Map);
-        for (final listener in List<void Function(Map<String, dynamic>)>.from(_notificationListeners)) {
+        for (final listener in List<void Function(Map<String, dynamic>)>.from(
+          _notificationListeners,
+        )) {
           listener(map);
         }
       } catch (e) {
@@ -99,7 +104,9 @@ class SocketService {
     _socket!.on('newChatMessage', (data) {
       try {
         final map = Map<String, dynamic>.from(data as Map);
-        for (final listener in List<void Function(Map<String, dynamic>)>.from(_chatMessageListeners)) {
+        for (final listener in List<void Function(Map<String, dynamic>)>.from(
+          _chatMessageListeners,
+        )) {
           listener(map);
         }
       } catch (e) {
@@ -107,11 +114,28 @@ class SocketService {
       }
     });
 
+    // Evento: un proveedor cambió su disponibilidad (DISPONIBLE/OCUPADO).
+    // La lista pública y el panel del proveedor actualizan el badge en vivo.
+    _socket!.on('providerAvailabilityChanged', (data) {
+      try {
+        final map = Map<String, dynamic>.from(data as Map);
+        for (final listener in List<void Function(Map<String, dynamic>)>.from(
+          _availabilityListeners,
+        )) {
+          listener(map);
+        }
+      } catch (e) {
+        debugPrint('[Socket] Error procesando providerAvailabilityChanged: $e');
+      }
+    });
+
     // Evento: la otra parte leyó la conversación → actualizar dobles checks
     _socket!.on('chatMessagesRead', (data) {
       try {
         final map = Map<String, dynamic>.from(data as Map);
-        for (final listener in List<void Function(Map<String, dynamic>)>.from(_chatReadListeners)) {
+        for (final listener in List<void Function(Map<String, dynamic>)>.from(
+          _chatReadListeners,
+        )) {
           listener(map);
         }
       } catch (e) {
@@ -150,7 +174,9 @@ class SocketService {
     }
   }
 
-  void removeNotificationListener(void Function(Map<String, dynamic>) listener) {
+  void removeNotificationListener(
+    void Function(Map<String, dynamic>) listener,
+  ) {
     _notificationListeners.remove(listener);
   }
 
@@ -174,12 +200,25 @@ class SocketService {
     _chatReadListeners.remove(listener);
   }
 
+  void addAvailabilityListener(void Function(Map<String, dynamic>) listener) {
+    if (!_availabilityListeners.contains(listener)) {
+      _availabilityListeners.add(listener);
+    }
+  }
+
+  void removeAvailabilityListener(
+    void Function(Map<String, dynamic>) listener,
+  ) {
+    _availabilityListeners.remove(listener);
+  }
+
   // ── Desconectar (logout) ───────────────────────────────────
   void disconnect() {
     _deactivationListeners.clear();
     _notificationListeners.clear();
     _chatMessageListeners.clear();
     _chatReadListeners.clear();
+    _availabilityListeners.clear();
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;

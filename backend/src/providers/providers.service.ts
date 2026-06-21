@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { MinioService } from '../common/minio.service.js';
 
 @Injectable()
 export class ProvidersService {
@@ -201,9 +202,11 @@ export class ProvidersService {
       averageRating: 'desc',
     };
     if (sortBy === 'reviews') {
-      // "Mejores reseñas": solo proveedores con ≥ 3.5 estrellas
-      where.averageRating = { gte: 3.5 };
-      secondaryOrder = { averageRating: 'desc' };
+      // "Más reseñas": ordena por CANTIDAD de reseñas (totalReviews), no por
+      // calificación. Antes filtraba averageRating ≥ 3.5 + ordenaba por
+      // averageRating, así que ignoraba el criterio de cantidad y recortaba
+      // resultados. Ahora muestra TODOS ordenados por número de reseñas.
+      secondaryOrder = { totalReviews: 'desc' };
     } else if (sortBy === 'availability') {
       secondaryOrder = { availability: 'asc' };
     } else if (sortBy === 'rating') {
@@ -258,7 +261,7 @@ export class ProvidersService {
     ]);
 
     return {
-      data: providers.map((p) => this.maskContactIfFree(p)),
+      data: providers.map((p) => this._thumbImages(this.maskContactIfFree(p))),
       total,
       page,
       lastPage: Math.ceil(total / limit),
@@ -273,12 +276,30 @@ export class ProvidersService {
    * (endpoint /provider-profile/me, que no pasa por aquí).
    */
 
+  /// LISTADOS: cambia las URLs de imágenes por su thumbnail del CDN (más
+  /// liviano). No-op si la URL no es del CDN público (legacy/firmada). Se usa
+  /// SOLO en listas; el detalle (findOne, perfil público) sirve alta calidad.
+  private _thumbImages(p: any): any {
+    if (!p || !Array.isArray(p.images)) return p;
+    return {
+      ...p,
+      images: p.images.map((img: any) =>
+        img?.url ? { ...img, url: MinioService.publicThumbUrl(img.url) } : img,
+      ),
+    };
+  }
+
   private maskContactIfFree(p: any): any {
     if (!p) return p;
     const plan = p.subscription?.plan;
     if (plan === 'ESTANDAR' || plan === 'PREMIUM') return p;
+    // Plan GRATIS (o sin suscripción vigente): además de enmascarar el
+    // contacto, limitamos las fotos VISIBLES a 2 en lectura. Las imágenes
+    // ya vienen ordenadas (isCover desc, order asc), así que slice(0,2)
+    // conserva la portada. No se borra nada en BD.
     return {
       ...p,
+      images: Array.isArray(p.images) ? p.images.slice(0, 2) : p.images,
       phone: '',
       whatsapp: null,
       website: null,
@@ -409,7 +430,9 @@ export class ProvidersService {
             slug: r.parent.slug,
             iconUrl: r.parent.iconUrl,
           },
-          providers: providers.map((p) => this.maskContactIfFree(p)),
+          providers: providers.map((p) =>
+            this._thumbImages(this.maskContactIfFree(p)),
+          ),
         };
       }),
     );
@@ -496,7 +519,7 @@ export class ProvidersService {
       .map((id) => byId.get(id))
       .filter((p): p is NonNullable<typeof p> => p != null)
       .map((p) => ({
-        ...this.maskContactIfFree(p),
+        ...this._thumbImages(this.maskContactIfFree(p)),
         distanceKm: distByIdKm.get(p.id) ?? null,
       }));
   }

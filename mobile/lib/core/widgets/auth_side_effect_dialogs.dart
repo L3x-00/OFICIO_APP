@@ -576,6 +576,102 @@ void showTrustRejectionDetailDialog(
   );
 }
 
+/// Modal "Solicitud rechazada" — el admin rechazó la solicitud de subida de
+/// plan (pago Yape no verificado, etc.). Muestra el motivo del admin.
+void showPlanRejectionDialog(
+  BuildContext context,
+  PlanRejectionPayload payload,
+) {
+  final c = context.colors;
+  const accent = Color(0xFFEF4444);
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withValues(alpha: 0.7),
+    builder: (ctx) => Dialog(
+      backgroundColor: c.bgCard,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.receipt_long_rounded,
+                color: accent,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Solicitud rechazada',
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Tu solicitud de plan no pudo ser aprobada.',
+              style: TextStyle(color: c.textSecondary, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: accent.withValues(alpha: 0.25)),
+              ),
+              child: Text(
+                payload.reason.isNotEmpty
+                    ? payload.reason
+                    : 'No se especificó un motivo. Contacta a soporte.',
+                style: const TextStyle(
+                  color: accent,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                ),
+                child: const Text(
+                  'Entendido',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 void showDeactivationDialog(BuildContext context) {
   final c = context.colors;
   showDialog(

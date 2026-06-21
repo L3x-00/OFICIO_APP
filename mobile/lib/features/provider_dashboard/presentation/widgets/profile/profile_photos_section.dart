@@ -117,9 +117,13 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
     final profile = widget.profile;
     final images = profile?.images ?? [];
     final plan = profile?.subscription?.plan ?? 'GRATIS';
+    // Límite PÚBLICO del plan: las fotos por encima de este índice se ven en
+    // el panel del proveedor con candado (no se muestran al público). Subir
+    // de plan las desbloquea sin tener que re-subirlas.
     final maxFotos = PlanLimits.photos(plan);
     final canAdd = PlanLimits.canAddPhoto(plan, images.length);
-    // Espaciadores: slots vacíos hasta completar la fila visual (max 4 slots visibles)
+    // Espaciadores: solo cuando el proveedor tiene MENOS fotos que el límite
+    // del plan (para no dejar huecos cuando ya hay fotos bloqueadas de sobra).
     final visibleSlots = maxFotos.clamp(0, 4);
     final emptySlots = (visibleSlots - images.length - (canAdd ? 1 : 0)).clamp(
       0,
@@ -185,14 +189,16 @@ class _ProfilePhotosSectionState extends State<ProfilePhotosSection> {
           spacing: 0, // los tiles ya traen margin right: 8
           runSpacing: 8,
           children: [
-            ...images
-                .take(maxFotos)
-                .map(
-                  (img) => PhotoTile(
-                    url: img.url,
-                    onDelete: () => _confirmDeletePhoto(img),
-                  ),
-                ),
+            // Mostramos TODAS las fotos que subió el proveedor (antes se
+            // recortaban con .take(maxFotos) y "desaparecían"). Las que
+            // superan el límite del plan se ven con candado.
+            ...images.asMap().entries.map(
+              (e) => PhotoTile(
+                url: e.value.url,
+                locked: e.key >= maxFotos,
+                onDelete: () => _confirmDeletePhoto(e.value),
+              ),
+            ),
             if (canAdd) AddPhotoTile(onTap: _pickPhoto),
             ...List.generate(emptySlots, (_) => const EmptyPhotoTile()),
           ],
@@ -215,7 +221,16 @@ class PhotoTile extends StatelessWidget {
   final String url;
   final VoidCallback onDelete;
 
-  const PhotoTile({super.key, required this.url, required this.onDelete});
+  /// Foto que excede el límite del plan: visible en el panel del proveedor
+  /// pero oculta al público. Se renderiza atenuada con un candado.
+  final bool locked;
+
+  const PhotoTile({
+    super.key,
+    required this.url,
+    required this.onDelete,
+    this.locked = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -231,10 +246,20 @@ class PhotoTile extends StatelessWidget {
           image: NetworkImage(url),
           fit: BoxFit.cover,
           onError: (_, _) {},
+          colorFilter: locked
+              ? ColorFilter.mode(
+                  Colors.black.withValues(alpha: 0.5),
+                  BlendMode.darken,
+                )
+              : null,
         ),
       ),
       child: Stack(
         children: [
+          if (locked)
+            const Center(
+              child: Icon(Icons.lock_rounded, color: Colors.white, size: 26),
+            ),
           Positioned(
             top: 4,
             right: 4,

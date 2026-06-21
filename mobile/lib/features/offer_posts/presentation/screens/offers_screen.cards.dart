@@ -242,16 +242,32 @@ class _OfferCard extends StatelessWidget {
                           ),
                         ),
                       const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: () => _showReportSheet(context, offer.id),
-                        icon: Icon(
-                          Icons.flag_outlined,
-                          size: 18,
-                          color: c.textMuted,
-                        ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: 18,
+                      Builder(
+                        builder: (ctx) {
+                          final isReported = ctx
+                              .watch<PublicOffersProvider>()
+                              .isOfferReported(offer.id);
+                          return IconButton(
+                            onPressed: isReported
+                                ? null
+                                : () => _showReportSheet(ctx, offer.id),
+                            icon: Icon(
+                              isReported
+                                  ? Icons.flag_rounded
+                                  : Icons.flag_outlined,
+                              size: 18,
+                              color: isReported
+                                  ? c.textMuted.withValues(alpha: 0.4)
+                                  : c.textMuted,
+                            ),
+                            tooltip: isReported
+                                ? 'Ya reportaste esta oferta'
+                                : 'Reportar oferta',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            splashRadius: 18,
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -317,14 +333,77 @@ class _OfferCard extends StatelessWidget {
                 ),
                 onTap: () async {
                   Navigator.pop(context);
-                  await context.read<PublicOffersProvider>().reportOffer(
-                    offerId,
-                    reasons[i],
-                  );
-                  if (context.mounted) {
+                  try {
+                    final res = await context
+                        .read<PublicOffersProvider>()
+                        .reportOffer(offerId, reasons[i]);
+                    if (!context.mounted) return;
+                    if (res.already) {
+                      // 409: ya lo había reportado → toast + botón off.
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Ya habías reportado esta oferta'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    } else if (res.ok) {
+                      await showDialog<void>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: ctx.colors.bgCard,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          icon: const Icon(
+                            Icons.verified_rounded,
+                            color: AppColors.primary,
+                            size: 52,
+                          ),
+                          title: Text(
+                            'Reporte enviado',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: ctx.colors.textPrimary,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          content: Text(
+                            'Gracias por ayudar a la comunidad a hacer un '
+                            'lugar mejor para todos',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: ctx.colors.textSecondary,
+                              fontSize: 13,
+                              height: 1.5,
+                            ),
+                          ),
+                          actions: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Entendido'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  } catch (_) {
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Reporte enviado. Gracias.'),
+                        content: Text(
+                          'No se pudo enviar el reporte. Intenta de nuevo.',
+                        ),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );

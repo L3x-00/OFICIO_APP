@@ -395,16 +395,22 @@ export class SubastasService {
     );
 
     // Notificaciones FUERA de la transacción para no alargar el lock.
+    // `type: 'NEW_OFFER'` se mantiene: el móvil ya lo enruta a la pantalla
+    // "Mis solicitudes" (main.dart → router.push('/my-requests')). Solo
+    // ajustamos el título al texto de negocio pedido.
     this.events.emitNotification({
       type: 'NEW_OFFER',
-      title: '¡Nueva oferta recibida!',
+      title: 'Nueva postulación para tu necesidad',
       body: `${offer.provider.businessName} ofreció S/ ${dto.price.toFixed(2)}`,
       targetUserId: requestUserId,
+      // Deep-link: el inbox in-app abre "Mis solicitudes" con el detalle de
+      // ESTA solicitud (sus postulaciones). Mismo dato que el push FCM.
+      requestId: dto.serviceRequestId,
     });
 
     this.push.sendToUser(
       requestUserId,
-      '¡Nueva oferta recibida!',
+      'Nueva postulación para tu necesidad',
       `${offer.provider.businessName} ofreció S/ ${dto.price.toFixed(2)}`,
       { type: 'NEW_OFFER', requestId: String(dto.serviceRequestId) },
     );
@@ -611,16 +617,20 @@ export class SubastasService {
       try {
         const hadOffers = req.offers.length > 0;
 
-        await this.prisma.$transaction([
-          this.prisma.serviceRequest.update({
+        // Transacción interactiva con awaits SECUENCIALes (no la forma
+        // array/batch): evita que las dos queries se solapen en la misma
+        // conexión del pool — origen del warning pg "client is already
+        // executing a query". Mismo efecto atómico, sin concurrencia.
+        await this.prisma.$transaction(async (tx) => {
+          await tx.serviceRequest.update({
             where: { id: req.id },
             data: { status: ServiceRequestStatus.EXPIRED },
-          }),
-          this.prisma.offer.updateMany({
+          });
+          await tx.offer.updateMany({
             where: { serviceRequestId: req.id, status: OfferStatus.PENDING },
             data: { status: OfferStatus.REJECTED },
-          }),
-        ]);
+          });
+        });
 
         if (hadOffers) {
           await this._incrementNoPick(req.userId);

@@ -197,21 +197,8 @@ class ServiceCardList extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                           ),
-                          if (!isOwnCard) ...[
-                            const SizedBox(height: 10),
-                            GestureDetector(
-                              onTap: onFavoriteToggle,
-                              child: Icon(
-                                provider.isFavorite
-                                    ? Icons.favorite_rounded
-                                    : Icons.favorite_border_rounded,
-                                color: provider.isFavorite
-                                    ? AppColors.favorite
-                                    : c.textMuted,
-                                size: 18,
-                              ),
-                            ),
-                          ],
+                          // Favorito removido de las tarjetas — vive solo en
+                          // el modal de detalle del proveedor.
                         ],
                       ),
                     ],

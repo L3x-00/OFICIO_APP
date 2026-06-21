@@ -97,11 +97,8 @@ class ActionButtons extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(width: 8),
-        FavoriteButton(
-          isFavorite: provider.isFavorite,
-          onToggle: onFavoriteToggle,
-        ),
+        // Favorito removido de las tarjetas — ahora vive solo en el modal de
+        // detalle del proveedor. `onFavoriteToggle` se conserva por compat.
       ],
     );
   }

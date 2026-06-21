@@ -26,6 +26,7 @@ class OfferFormSheet extends StatefulWidget {
   final OfferPostsProvider offersProvider;
   final String plan;
   final bool isNegocio;
+
   /// Si viene, el sheet abre en modo EDICIÓN — pre-llena campos y
   /// muestra un switch para resetear la duración de la oferta.
   final OfferPostModel? existing;
@@ -49,18 +50,29 @@ class OfferFormSheet extends StatefulWidget {
     final type = isNegocio ? 'NEGOCIO' : 'OFICIO';
 
     // ── Gate 1: Trust — solo proveedores validados publican ofertas ──
-    final trustStatus = context.read<AuthProvider>().providerDataFor(type)?['trustStatus'] as String? ?? 'NONE';
+    final trustStatus =
+        context.read<AuthProvider>().providerDataFor(type)?['trustStatus']
+            as String? ??
+        'NONE';
     if (trustStatus != 'APPROVED') {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           backgroundColor: c.bgCard,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: [
               const Icon(Icons.lock_rounded, color: AppColors.amber, size: 20),
               const SizedBox(width: 8),
-              Text('Perfil sin validar', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+              Text(
+                'Perfil sin validar',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           content: Text(
@@ -77,11 +89,17 @@ class OfferFormSheet extends StatefulWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => TrustValidationFormScreen(providerType: type)),
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        TrustValidationFormScreen(providerType: type),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber),
-              child: const Text('Validar mis datos', style: TextStyle(color: Colors.black)),
+              child: const Text(
+                'Validar mis datos',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ],
         ),
@@ -91,24 +109,38 @@ class OfferFormSheet extends StatefulWidget {
 
     // ── Gate 2: Plan Limit — máximo de ofertas activas según plan ──
     final activeCount = offersProvider.activeOffers.length;
-    final maxOffers   = PlanLimits.offers(plan);
+    final maxOffers = PlanLimits.offers(plan);
     if (!PlanLimits.canPublishOffer(plan, activeCount)) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           backgroundColor: c.bgCard,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Límite alcanzado', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Límite alcanzado',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+          ),
           content: Text(
             'Tu plan $plan permite $maxOffers oferta(s) activa(s) a la vez.\nSube de plan para publicar más.',
             style: TextStyle(color: c.textSecondary),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text('Cerrar', style: TextStyle(color: c.textMuted))),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cerrar', style: TextStyle(color: c.textMuted)),
+            ),
             ElevatedButton(
-              onPressed: () { Navigator.pop(context); PlanSelectorSheet.show(context); },
+              onPressed: () {
+                Navigator.pop(context);
+                PlanSelectorSheet.show(context);
+              },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.amber),
-              child: const Text('Ver planes', style: TextStyle(color: Colors.black)),
+              child: const Text(
+                'Ver planes',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ],
         ),
@@ -121,7 +153,9 @@ class OfferFormSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: c.bgCard,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => OfferFormSheet(
         offersProvider: offersProvider,
         plan: plan,
@@ -137,15 +171,29 @@ class OfferFormSheet extends StatefulWidget {
 
 class _OfferFormSheetState extends State<OfferFormSheet> {
   final _titleCtrl = TextEditingController();
-  final _descCtrl  = TextEditingController();
+  final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   String? _pickedPath;
+
   /// Switch del modo edición: si está marcado al guardar, backend
   /// resetea expiresAt al tope del plan (no se puede modificar el
   /// tiempo de otra manera).
   bool _resetDuration = false;
 
+  /// Duración (horas) elegida para la oferta en modo CREATE. Arranca en el
+  /// tope del plan; el backend la limita a ese tope. `late` para poder leer
+  /// `widget.plan` en el inicializador.
+  late int _durationHours = PlanLimits.offerDurationHours(widget.plan);
+
   bool get _isEdit => widget.existing != null;
+
+  /// Opciones de duración ≤ tope del plan, garantizando incluir el tope.
+  List<int> get _durationOptions {
+    final maxH = PlanLimits.offerDurationHours(widget.plan);
+    final opts = const [6, 12, 24, 48, 72].where((h) => h <= maxH).toList();
+    if (!opts.contains(maxH)) opts.add(maxH);
+    return opts;
+  }
 
   @override
   void initState() {
@@ -153,7 +201,7 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     final ex = widget.existing;
     if (ex != null) {
       _titleCtrl.text = ex.title;
-      _descCtrl.text  = ex.description;
+      _descCtrl.text = ex.description;
       _priceCtrl.text = ex.price != null ? ex.price!.toStringAsFixed(0) : '';
     }
   }
@@ -168,7 +216,10 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
 
   Future<void> _pickPhoto() async {
     final picker = ImagePicker();
-    final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 75);
+    final img = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 75,
+    );
     if (img != null) setState(() => _pickedPath = img.path);
   }
 
@@ -178,7 +229,9 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
       return;
     }
     if (_descCtrl.text.trim().length < 10) {
-      context.showErrorSnack('La descripción debe tener al menos 10 caracteres.');
+      context.showErrorSnack(
+        'La descripción debe tener al menos 10 caracteres.',
+      );
       return;
     }
 
@@ -198,11 +251,17 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
       if (!mounted) return;
       if (ok) {
         nav.pop();
-        messenger.showSnackBar(const SnackBar(content: Text('Oferta actualizada')));
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Oferta actualizada')),
+        );
       } else {
-        messenger.showSnackBar(SnackBar(
-          content: Text(widget.offersProvider.error ?? 'No se pudo actualizar la oferta'),
-        ));
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.offersProvider.error ?? 'No se pudo actualizar la oferta',
+            ),
+          ),
+        );
       }
       return;
     }
@@ -215,15 +274,20 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
       price: double.tryParse(_priceCtrl.text.trim()),
       photoPath: _pickedPath,
       type: type,
+      durationHours: _durationHours,
     );
     if (!mounted) return;
     if (ok) {
       nav.pop();
       messenger.showSnackBar(const SnackBar(content: Text('Oferta publicada')));
     } else {
-      messenger.showSnackBar(SnackBar(
-        content: Text(widget.offersProvider.error ?? 'No se pudo publicar la oferta'),
-      ));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.offersProvider.error ?? 'No se pudo publicar la oferta',
+          ),
+        ),
+      );
     }
   }
 
@@ -233,7 +297,9 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     final hours = PlanLimits.offerDurationHours(widget.plan);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -243,22 +309,49 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 20),
+                  Icon(
+                    Icons.local_offer_rounded,
+                    color: AppColors.amber,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
-                  Text(_isEdit ? 'Editar oferta' : 'Publicar Oferta',
-                      style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    _isEdit ? 'Editar oferta' : 'Publicar Oferta',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-                    child: Text('${hours}h vigencia', style: const TextStyle(color: AppColors.amber, fontSize: 11, fontWeight: FontWeight.w600)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.amber.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${_isEdit ? hours : _durationHours}h vigencia',
+                      style: const TextStyle(
+                        color: AppColors.amber,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -266,42 +359,122 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
               Text(
                 _isEdit
                     ? 'Tu oferta expira: ${widget.existing!.timeLeftLabel}'
-                    : 'La oferta expirará automáticamente en $hours horas.',
+                    : 'La oferta expirará automáticamente en $_durationHours horas.',
                 style: TextStyle(color: c.textMuted, fontSize: 12),
               ),
               const SizedBox(height: 20),
-              ServiceFormField(controller: _titleCtrl, label: 'Título de la oferta *', hint: 'Ej: 20% off en instalaciones eléctricas'),
+              ServiceFormField(
+                controller: _titleCtrl,
+                label: 'Título de la oferta *',
+                hint: 'Ej: 20% off en instalaciones eléctricas',
+              ),
               const SizedBox(height: 12),
-              ServiceFormField(controller: _descCtrl, label: 'Descripción *', hint: 'Detalla qué incluye la oferta', maxLines: 3),
+              ServiceFormField(
+                controller: _descCtrl,
+                label: 'Descripción *',
+                hint: 'Detalla qué incluye la oferta',
+                maxLines: 3,
+              ),
               const SizedBox(height: 12),
               // ── Categorías del perfil (read-only) ─────
-              Builder(builder: (bCtx) {
-                final cats = bCtx.read<DashboardProvider>().profile?.categories ?? [];
-                if (cats.isEmpty) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Categorías de la oferta', style: TextStyle(color: c.textSecondary, fontSize: 12)),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: cats.map((cat) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.amber.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
-                        ),
-                        child: Text(cat.name, style: const TextStyle(color: AppColors.amber, fontSize: 12, fontWeight: FontWeight.w600)),
-                      )).toList(),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                );
-              }),
-              ServiceFormField(controller: _priceCtrl, label: 'Precio (opcional)', hint: 'Ej: 80', keyboardType: TextInputType.number),
+              Builder(
+                builder: (bCtx) {
+                  final cats =
+                      bCtx.read<DashboardProvider>().profile?.categories ?? [];
+                  if (cats.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Categorías de la oferta',
+                        style: TextStyle(color: c.textSecondary, fontSize: 12),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: cats
+                            .map(
+                              (cat) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.amber.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppColors.amber.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  cat.name,
+                                  style: const TextStyle(
+                                    color: AppColors.amber,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  );
+                },
+              ),
+              ServiceFormField(
+                controller: _priceCtrl,
+                label: 'Precio (opcional)',
+                hint: 'Ej: 80',
+                keyboardType: TextInputType.number,
+              ),
               const SizedBox(height: 12),
+              // ── Duración de la oferta (solo al crear) ──
+              if (!_isEdit) ...[
+                Text(
+                  'Tiempo de duración de la oferta',
+                  style: TextStyle(color: c.textSecondary, fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _durationOptions.map((h) {
+                    final sel = _durationHours == h;
+                    return ChoiceChip(
+                      label: Text(
+                        h % 24 == 0 ? '${h ~/ 24} día(s)' : '${h}h',
+                        style: TextStyle(
+                          color: sel ? Colors.black : c.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      selected: sel,
+                      onSelected: (_) => setState(() => _durationHours = h),
+                      backgroundColor: c.bgInput,
+                      selectedColor: AppColors.amber,
+                      showCheckmark: false,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: sel ? AppColors.amber : c.border,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Máximo según tu plan ${widget.plan}: ${PlanLimits.offerDurationHours(widget.plan)}h.',
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+              ],
               // Foto opcional
               GestureDetector(
                 onTap: _pickPhoto,
@@ -310,20 +483,50 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                   decoration: BoxDecoration(
                     color: c.bgInput,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _pickedPath != null ? AppColors.amber : Colors.white.withValues(alpha: 0.08)),
+                    border: Border.all(
+                      color: _pickedPath != null
+                          ? AppColors.amber
+                          : Colors.white.withValues(alpha: 0.08),
+                    ),
                   ),
                   child: Center(
                     child: _pickedPath != null
-                        ? Row(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.check_circle_rounded, color: AppColors.amber, size: 18),
-                            const SizedBox(width: 6),
-                            Text('Foto seleccionada', style: TextStyle(color: AppColors.amber, fontSize: 13)),
-                          ])
-                        : Row(mainAxisSize: MainAxisSize.min, children: [
-                            Icon(Icons.add_photo_alternate_rounded, color: c.textMuted, size: 20),
-                            const SizedBox(width: 6),
-                            Text('Añadir foto (opcional)', style: TextStyle(color: c.textMuted, fontSize: 13)),
-                          ]),
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.amber,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Foto seleccionada',
+                                style: TextStyle(
+                                  color: AppColors.amber,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.add_photo_alternate_rounded,
+                                color: c.textMuted,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Añadir foto (opcional)',
+                                style: TextStyle(
+                                  color: c.textMuted,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),
@@ -337,7 +540,11 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                   dense: true,
                   title: Text(
                     'Reiniciar tiempo de vigencia',
-                    style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   subtitle: Text(
                     'Vuelve a contar las $hours horas desde ahora.',
@@ -360,13 +567,26 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.amber,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                       child: busy
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : Text(
                               _isEdit ? 'Guardar cambios' : 'Publicar oferta',
-                              style: const TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                     ),
                   );

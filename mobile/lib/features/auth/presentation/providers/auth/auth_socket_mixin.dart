@@ -69,23 +69,38 @@ mixin AuthSocketMixin on ChangeNotifier {
 
     final type = payload['type'] as String?;
 
-    if (type == 'PLAN_APROBADO' || type == 'PLAN_RECHAZADO') {
+    if (type == 'PLAN_APROBADO' ||
+        type == 'PLAN_RECHAZADO' ||
+        type == 'PLAN_CANCELADO') {
       final targetProfileType = payload['targetProfileType'] as String?;
-      if (targetProfileType != null && targetProfileType != _activeProfileType) return;
+      if (targetProfileType != null && targetProfileType != _activeProfileType)
+        return;
+      // PLAN_CANCELADO solo refresca el estado (sin modal): _syncProviderStatus
+      // re-sincroniza y el dashboard re-consulta /provider-profile/me → plan
+      // GRATIS al instante. Solo PLAN_APROBADO encola el modal de promoción.
       _syncProviderStatus().then((_) {
         if (type == 'PLAN_APROBADO') {
           // Backend ahora envía `plan` explícito (ESTANDAR/PREMIUM).
           // Mantenemos el regex como fallback para payloads legacy o
           // FCM background con shape distinto.
           final explicit = (payload['plan'] as String?)?.toUpperCase();
-          final rawBody  = payload['body'] as String? ?? '';
-          final match    = RegExp(r'[Pp]lan (\w+)').firstMatch(rawBody);
-          final planName = explicit
-              ?? match?.group(1)?.toUpperCase()
-              ?? 'ESTANDAR';
+          final rawBody = payload['body'] as String? ?? '';
+          final match = RegExp(r'[Pp]lan (\w+)').firstMatch(rawBody);
+          final planName =
+              explicit ?? match?.group(1)?.toUpperCase() ?? 'ESTANDAR';
           _pendingPlanPromotion = PlanActivationPayload(
             plan: planName,
             title: payload['title'] as String? ?? '¡Plan activado!',
+          );
+        } else if (type == 'PLAN_RECHAZADO') {
+          // Solicitud de plan rechazada → modal "Solicitud rechazada" con el
+          // motivo del admin (viaja en el body del evento).
+          (this as dynamic).setPendingPlanRejection(
+            PlanRejectionPayload(
+              reason:
+                  payload['body'] as String? ??
+                  'Tu solicitud de plan no pudo ser aprobada.',
+            ),
           );
         }
         notifyListeners();
@@ -120,16 +135,18 @@ mixin AuthSocketMixin on ChangeNotifier {
       // 2. Encolar el payload con motivo para que _AuthSideEffects
       //    muestre el dialog explicativo encima de cualquier pantalla.
       _syncProviderStatus().then((_) {
-        final profileType  = (payload['targetProfileType'] as String?) ?? 'OFICIO';
-        final reason       = (payload['reason'] as String?)
-                          ?? (payload['body'] as String?)
-                          ?? 'Decisión del administrador.';
+        final profileType =
+            (payload['targetProfileType'] as String?) ?? 'OFICIO';
+        final reason =
+            (payload['reason'] as String?) ??
+            (payload['body'] as String?) ??
+            'Decisión del administrador.';
         final businessName = (payload['businessName'] as String?) ?? '';
         (this as dynamic).setPendingProviderDeletion(
           ProviderDeletionPayload(
-            profileType:  profileType,
+            profileType: profileType,
             businessName: businessName,
-            reason:       reason,
+            reason: reason,
           ),
         );
       });
@@ -138,9 +155,9 @@ mixin AuthSocketMixin on ChangeNotifier {
 
     // Eventos que modifican el balance de monedas del user — refresh
     // del perfil para que el contador del header se actualice en vivo.
-    if (type == 'REFERRAL_APPROVED'
-        || type == 'REFERRAL_WELCOME'
-        || type == 'COINS_AWARDED') {
+    if (type == 'REFERRAL_APPROVED' ||
+        type == 'REFERRAL_WELCOME' ||
+        type == 'COINS_AWARDED') {
       (this as dynamic).refreshCurrentUser();
       return;
     }
@@ -150,9 +167,10 @@ mixin AuthSocketMixin on ChangeNotifier {
       // logout — el user tendrá que re-registrarse desde cero (cliente
       // y proveedor por igual). main.dart escucha pendingUserDeletion
       // y muestra el dialog antes del logout.
-      final reason = (payload['reason'] as String?)
-                  ?? (payload['body'] as String?)
-                  ?? 'Decisión del administrador.';
+      final reason =
+          (payload['reason'] as String?) ??
+          (payload['body'] as String?) ??
+          'Decisión del administrador.';
       (this as dynamic).setPendingUserDeletion(
         UserDeletionPayload(reason: reason),
       );

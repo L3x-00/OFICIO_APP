@@ -336,6 +336,7 @@ class ProviderModel {
     bool? isFavorite,
     List<Map<String, dynamic>>? reviews,
     List<ServiceItem>? services,
+    AvailabilityStatus? availability,
   }) {
     return ProviderModel(
       id: id,
@@ -347,7 +348,7 @@ class ProviderModel {
       whatsapp: whatsapp,
       averageRating: averageRating,
       totalReviews: totalReviews,
-      availability: availability,
+      availability: availability ?? this.availability,
       isVerified: isVerified,
       hasCleanRecord: hasCleanRecord,
       type: type,

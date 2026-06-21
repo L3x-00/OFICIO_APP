@@ -11,7 +11,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 const _kPlanPrices = {'ESTANDAR': 19.90, 'PREMIUM': 39.90};
 
 const _kPlanFeatures = {
-  'GRATIS': ['3 fotos', '3 servicios', 'Listado básico'],
+  'GRATIS': ['2 fotos', '3 servicios', 'Listado básico'],
   'ESTANDAR': [
     '6 fotos',
     '15 servicios',

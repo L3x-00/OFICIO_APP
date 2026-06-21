@@ -152,10 +152,17 @@ GoRouter createRouter({
       GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
       GoRoute(
         path: '/my-requests',
-        builder: (_, _) => ChangeNotifierProvider(
-          create: (_) => SubastasProvider(),
-          child: const MyRequestsScreen(),
-        ),
+        builder: (_, state) {
+          // ?requestId=<id> llega del deep-link de "Nueva postulación":
+          // la pantalla abre el comparador de postulaciones de esa solicitud.
+          final requestId = int.tryParse(
+            state.uri.queryParameters['requestId'] ?? '',
+          );
+          return ChangeNotifierProvider(
+            create: (_) => SubastasProvider(),
+            child: MyRequestsScreen(autoOpenRequestId: requestId),
+          );
+        },
       ),
       GoRoute(
         path: '/edit-profile',

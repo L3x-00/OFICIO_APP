@@ -28,6 +28,8 @@ export type PrismaMock = {
   coinRedemption: ReturnType<typeof modelMock>;
   serviceRequest: ReturnType<typeof modelMock>;
   offer: ReturnType<typeof modelMock>;
+  offerPost: ReturnType<typeof modelMock>;
+  offerReport: ReturnType<typeof modelMock>;
   userPenalty: ReturnType<typeof modelMock>;
   adminNotification: ReturnType<typeof modelMock>;
   chatRoom: ReturnType<typeof modelMock>;
@@ -94,6 +96,8 @@ export function createPrismaMock(): PrismaMock {
     coinRedemption: modelMock(),
     serviceRequest: modelMock(),
     offer: modelMock(),
+    offerPost: modelMock(),
+    offerReport: modelMock(),
     userPenalty: modelMock(),
     adminNotification: modelMock(),
     chatRoom: modelMock(),

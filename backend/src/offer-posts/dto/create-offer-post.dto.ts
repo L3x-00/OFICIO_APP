@@ -25,6 +25,15 @@ export class CreateOfferPostDto {
   @IsNumber()
   @IsPositive()
   price?: number;
+
+  /// Duración elegida por el proveedor (horas). El service la limita al
+  /// máximo del plan vigente (GRATIS 12h / ESTANDAR 24h / PREMIUM 72h). Si
+  /// no viene, se usa el tope del plan (comportamiento previo).
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @IsPositive()
+  durationHours?: number;
 }
 
 /// DTO de edición — todos los campos opcionales. Si `resetDuration` es

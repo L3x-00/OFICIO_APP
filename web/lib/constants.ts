@@ -211,7 +211,7 @@ import {
           accent: 'orange',
           screenshot: 'Comparativa de planes Gratis, Estándar y Premium',
           subSteps: [
-            'Gratis: 3 servicios/productos, 3 fotos',
+            'Gratis: 3 servicios/productos, 2 fotos',
             'Estándar: 6 servicios/productos, 6 fotos, estadísticas',
             'Premium: ilimitado, máxima visibilidad, estadísticas avanzadas',
           ],

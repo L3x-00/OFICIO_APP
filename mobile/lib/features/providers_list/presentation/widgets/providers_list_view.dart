@@ -9,6 +9,7 @@ import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 import '../../../showcase/showcase_data.dart';
 import '../../../showcase/showcase_overlay.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/models/provider_model.dart';
 import '../providers/providers_provider.dart';
 import '../screens/provider_detail_screen.dart';
@@ -41,8 +42,11 @@ class ProvidersListView extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
 
     if (prov.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      // Skeleton shimmer en vez de spinner: feedback visual inmediato con la
+      // forma de las tarjetas reales mientras llega la data.
+      return SkeletonList(
+        count: 6,
+        itemBuilder: (_) => const ProviderCardSkeleton(),
       );
     }
 
@@ -455,7 +459,14 @@ class ProvidersListView extends StatelessWidget {
         !prov.nearbyActive &&
         prov.searchQuery.isEmpty &&
         prov.selectedCategory == null &&
-        prov.expandedParentSlug == null;
+        prov.expandedParentSlug == null &&
+        // Los carruseles featured NO respetan el filtro de tipo ni el orden
+        // avanzado. Si el usuario eligió Profesionales/Negocios o un sortBy
+        // (ej. "más reseñas"), ocultamos los carruseles y mostramos la lista
+        // filtrada — antes seguían visibles y parecía que el filtro no hacía
+        // nada (salían ambos tipos / sin ordenar).
+        prov.selectedType == null &&
+        (prov.sortBy == null || prov.sortBy == 'rating');
 
     if (showFeatured) {
       return RefreshIndicator(

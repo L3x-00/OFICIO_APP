@@ -11,6 +11,10 @@ Pattern: [thing] [action] [reason]. [next step].
 - **Goal-Driven**: Loop until success criteria are met. Test-first when possible.
 
 ---
+## Contexto Estructural con Graphify
+Antes de modificar archivos críticos o para entender dependencias entre backend, mobile, web y admin, consulta el grafo en `graphify-out/`. Utiliza el comando `graphify query` o lee `graphify-out/GRAPH_REPORT.md` para evitar leer archivos uno por uno y ahorrar tokens.
+
+---
 # Servi — Guía de Desarrollo Optimizado
 
 **Última actualización**: 2026-04-09

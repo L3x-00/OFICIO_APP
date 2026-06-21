@@ -302,12 +302,18 @@ export class AdminTrustService {
     if (!provider.isVerified)
       throw new BadRequestException('Este proveedor no está verificado');
 
-    const [updated] = await Promise.all([
-      this.prisma.provider.update({
+    // Antes: Promise.all([update, create]) — dos queries disparadas en
+    // paralelo. Las serializamos dentro de una transacción interactiva
+    // (await secuencial) para (a) garantizar atomicidad update+notif y
+    // (b) no solapar queries en la misma conexión (warning de pg
+    // "client is already executing a query"). Mismo patrón que
+    // approveVerification / rejectVerification.
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const updatedProvider = await tx.provider.update({
         where: { id },
         data: { isVerified: false, verificationStatus: 'PENDIENTE' },
-      }),
-      this.prisma.adminNotification.create({
+      });
+      await tx.adminNotification.create({
         data: {
           providerId: id,
           type: 'VERIFICACION_REVOCADA',
@@ -317,8 +323,9 @@ export class AdminTrustService {
           targetProfileType: provider.type,
           targetUserId: provider.userId,
         },
-      }),
-    ]);
+      });
+      return updatedProvider;
+    });
 
     // Invalidar caché y notificar — el proveedor ya no aparecerá en la app
     await clearProvidersCache(this.cacheManager);

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../domain/models/service_request_model.dart';
 import '../providers/subastas_provider.dart';
 import '../widgets/offer_comparison_sheet.dart';
@@ -12,7 +13,11 @@ import '../widgets/trust_badge.dart';
 import 'publish_request_sheet.dart';
 
 class MyRequestsScreen extends StatefulWidget {
-  const MyRequestsScreen({super.key});
+  /// Si viene de un push "Nueva postulación" (deep-link), trae el id de la
+  /// solicitud a la que llegó la oferta — la pantalla abre su comparador de
+  /// postulaciones automáticamente al cargar. null = navegación normal.
+  final int? autoOpenRequestId;
+  const MyRequestsScreen({super.key, this.autoOpenRequestId});
 
   @override
   State<MyRequestsScreen> createState() => _MyRequestsScreenState();
@@ -31,8 +36,25 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SubastasProvider>().loadMyRequests();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prov = context.read<SubastasProvider>();
+      await prov.loadMyRequests();
+      if (!mounted) return;
+      // Deep-link desde push "Nueva postulación": abre el comparador de
+      // postulaciones de la solicitud indicada. Si no se encuentra (ej.
+      // eliminada), no hace nada y queda la lista normal.
+      final id = widget.autoOpenRequestId;
+      if (id == null) return;
+      ServiceRequestModel? target;
+      for (final r in prov.myRequests) {
+        if (r.id == id) {
+          target = r;
+          break;
+        }
+      }
+      if (target != null && mounted) {
+        OfferComparisonSheet.show(context, target);
+      }
     });
   }
 
@@ -184,8 +206,10 @@ class _RequestsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     if (loading && items.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return SkeletonList(
+        count: 4,
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+        itemBuilder: (_) => const OfferCardSkeleton(),
       );
     }
     if (items.isEmpty) {

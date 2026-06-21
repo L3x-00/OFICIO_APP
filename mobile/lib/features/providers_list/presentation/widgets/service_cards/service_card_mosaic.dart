@@ -176,16 +176,8 @@ class ServiceCardMosaic extends StatelessWidget {
                         children: [
                           _MosaicStatusBadge(provider: provider),
                           if (!isOwnCard) ...[
-                            if (onFavoriteToggle != null) ...[
-                              const SizedBox(width: 8),
-                              _GridContactBtn(
-                                icon: provider.isFavorite
-                                    ? Icons.favorite_rounded
-                                    : Icons.favorite_border_rounded,
-                                color: AppColors.busy,
-                                onTap: onFavoriteToggle,
-                              ),
-                            ],
+                            // Favorito removido de las tarjetas — vive solo en
+                            // el modal de detalle del proveedor.
                             const SizedBox(width: 8),
                             _GridContactBtn(
                               icon: Icons.forum_rounded,

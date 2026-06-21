@@ -59,8 +59,8 @@ class OnboardingDeliverySection extends StatelessWidget {
           value: plenaCoordinacion,
           onChanged: onPlenaChanged,
           icon: Icons.handshake_rounded,
-          label: 'Entrego pedidos a domicilio',
-          subtitle: 'Coordino detalles con el cliente antes del envío',
+          label: 'Servicio a domicilio',
+          subtitle: 'Ofrezco servicios a dommicilio',
         ),
       ],
     );
@@ -91,8 +91,17 @@ class OnboardingDeliverySection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w500)),
-                Text(subtitle, style: TextStyle(color: c.textMuted, fontSize: 12)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: c.textMuted, fontSize: 12),
+                ),
               ],
             ),
           ),

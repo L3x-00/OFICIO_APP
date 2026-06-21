@@ -59,7 +59,7 @@ class ProviderHeader extends StatelessWidget {
       if (provider.type == ProviderType.negocio && provider.plenaCoordinacion)
         _badge(
           icon: Icons.handshake_rounded,
-          label: 'Coordinamos entrega',
+          label: 'Servicio a domicilio',
           color: const Color(0xFF60A5FA),
         ),
     ];

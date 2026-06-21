@@ -83,11 +83,11 @@ class AuthProvider extends ChangeNotifier
   String? _providerVerificationStatus; // 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
   // Estado y motivo de rechazo por tipo de perfil.
   @override
-  final Map<String, String>               _verificationStatusByType = {};
+  final Map<String, String> _verificationStatusByType = {};
   @override
-  final Map<String, String>               _rejectionReasonByType    = {};
+  final Map<String, String> _rejectionReasonByType = {};
   @override
-  final Map<String, Map<String, dynamic>> _providerDataByType       = {};
+  final Map<String, Map<String, dynamic>> _providerDataByType = {};
 
   /// Cuando el admin recién aprueba un perfil, guardamos aquí el
   /// `providerId` + displayName para que la pantalla principal (no el
@@ -97,7 +97,8 @@ class AuthProvider extends ChangeNotifier
   /// SharedPreferences.
   @override
   ProviderApprovalPayload? _pendingProviderApproval;
-  ProviderApprovalPayload? get pendingProviderApproval => _pendingProviderApproval;
+  ProviderApprovalPayload? get pendingProviderApproval =>
+      _pendingProviderApproval;
 
   void clearPendingProviderApproval() {
     _pendingProviderApproval = null;
@@ -106,18 +107,20 @@ class AuthProvider extends ChangeNotifier
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _user != null && !_needsOnboarding && !_needsEmailVerification;
+  bool get isAuthenticated =>
+      _user != null && !_needsOnboarding && !_needsEmailVerification;
   bool get isGuest => _isGuest;
   bool get needsOnboarding => _needsOnboarding;
   bool get needsEmailVerification => _needsEmailVerification;
   bool get isInitialized => _isInitialized;
   String? get error => _error;
 
-  Set<String> get providerProfiles           => Set.unmodifiable(_providerProfiles);
-  String?     get activeProfileType          => _activeProfileType;
-  String?     get providerVerificationStatus => _providerVerificationStatus;
-  bool get hasOficioProfile  => _providerProfiles.contains('OFICIO');
+  Set<String> get providerProfiles => Set.unmodifiable(_providerProfiles);
+  String? get activeProfileType => _activeProfileType;
+  String? get providerVerificationStatus => _providerVerificationStatus;
+  bool get hasOficioProfile => _providerProfiles.contains('OFICIO');
   bool get hasNegocioProfile => _providerProfiles.contains('NEGOCIO');
+
   /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO.
   bool get hasApprovedProvider =>
       _verificationStatusByType.values.any((s) => s == 'APROBADO');
@@ -129,7 +132,15 @@ class AuthProvider extends ChangeNotifier
   String? rejectionReasonFor(String type) => _rejectionReasonByType[type];
 
   /// Devuelve los datos completos del perfil de proveedor para pre-llenar el formulario.
-  Map<String, dynamic>? providerDataFor(String type) => _providerDataByType[type];
+  Map<String, dynamic>? providerDataFor(String type) =>
+      _providerDataByType[type];
+
+  /// Plan REAL del proveedor según el backend (`/users/my-provider-status`),
+  /// disponible apenas se restaura la sesión al reabrir la app. 'GRATIS' si
+  /// no hay perfil/plan. Útil para bloquear funciones premium de inmediato
+  /// sin esperar a que cargue el dashboard.
+  String planFor(String type) =>
+      (_providerDataByType[type]?['plan'] as String?) ?? 'GRATIS';
 
   /// Refresca el estado del proveedor desde el servidor (útil post-validación).
   Future<void> refreshProviderStatus() async {
@@ -140,8 +151,12 @@ class AuthProvider extends ChangeNotifier
   /// Elimina la cuenta del usuario en cascada y hace logout local.
   Future<bool> deleteAccount() async {
     try {
-      SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
-      SocketService.instance.removeNotificationListener(_handleRemoteNotification);
+      SocketService.instance.removeDeactivationListener(
+        _handleRemoteDeactivation,
+      );
+      SocketService.instance.removeNotificationListener(
+        _handleRemoteNotification,
+      );
       SocketService.instance.disconnect();
       await _repo.deleteAccount();
       _user = null;
@@ -181,7 +196,8 @@ class AuthProvider extends ChangeNotifier
   /// en `/otp`.
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
-    if (_needsEmailVerification) return AppNavigationState.needsEmailVerification;
+    if (_needsEmailVerification)
+      return AppNavigationState.needsEmailVerification;
     if (_user == null && _isGuest) return AppNavigationState.guest;
     if (_user == null) return AppNavigationState.unauthenticated;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
@@ -207,6 +223,9 @@ class AuthProvider extends ChangeNotifier
       // encolamos el welcome modal — el gate de SharedPreferences
       // evita re-mostrarlo si el usuario ya lo vio.
       _enqueueProviderWelcomeIfNeeded();
+      // Cold-start: si un perfil quedó RECHAZADO (validación de datos),
+      // encola el modal "Datos no validados" para que aparezca al abrir.
+      _enqueueTrustRejectionIfNeeded();
       _connectSocketForUser(_user!.id);
       // Sincroniza el balance de monedas al abrir la app. `restoreSession`
       // trae los `coins` guardados (viejos); si el usuario recibió monedas
@@ -245,12 +264,12 @@ class AuthProvider extends ChangeNotifier
       success: (fresh) {
         if (_user != null) {
           _user = _user!.copyWith(
-            coins:     fresh.coins,
+            coins: fresh.coins,
             avatarUrl: fresh.avatarUrl,
-            phone:     fresh.phone,
+            phone: fresh.phone,
             department: fresh.department,
-            province:   fresh.province,
-            district:   fresh.district,
+            province: fresh.province,
+            district: fresh.district,
           );
           notifyListeners();
         }
@@ -264,6 +283,11 @@ class AuthProvider extends ChangeNotifier
   TrustRejectionPayload? _pendingTrustRejection;
   TrustRejectionPayload? get pendingTrustRejection => _pendingTrustRejection;
 
+  void setPendingTrustRejection(TrustRejectionPayload payload) {
+    _pendingTrustRejection = payload;
+    notifyListeners();
+  }
+
   void clearTrustRejection() {
     _pendingTrustRejection = null;
     notifyListeners();
@@ -273,7 +297,8 @@ class AuthProvider extends ChangeNotifier
   // Set por el handler PROVIDER_DELETED del socket. _AuthSideEffects
   // lo consume para mostrar el dialog con el motivo del admin.
   ProviderDeletionPayload? _pendingProviderDeletion;
-  ProviderDeletionPayload? get pendingProviderDeletion => _pendingProviderDeletion;
+  ProviderDeletionPayload? get pendingProviderDeletion =>
+      _pendingProviderDeletion;
 
   /// Llamado por el socket mixin cuando llega PROVIDER_DELETED.
   void setPendingProviderDeletion(ProviderDeletionPayload payload) {
@@ -325,14 +350,42 @@ class AuthProvider extends ChangeNotifier
   PlanActivationPayload? _pendingPlanPromotion;
   PlanActivationPayload? get pendingPlanPromotion => _pendingPlanPromotion;
 
+  /// Encola el carrusel de beneficios de plan. Lo usa el tap de push
+  /// PLAN_APROBADO (cold-start/background) para que _AuthSideEffects lo
+  /// muestre, igual que el socket en vivo.
+  void setPendingPlanPromotion(PlanActivationPayload payload) {
+    _pendingPlanPromotion = payload;
+    notifyListeners();
+  }
+
   void clearPlanPromotion() {
     _pendingPlanPromotion = null;
     notifyListeners();
   }
 
+  // ── Plan rejection overlay (solicitud de plan rechazada) ──
+  // Set por el handler PLAN_RECHAZADO del socket o por el cold-start sync.
+  // _AuthSideEffects lo consume para mostrar "Solicitud rechazada" + motivo.
+  PlanRejectionPayload? _pendingPlanRejection;
+  PlanRejectionPayload? get pendingPlanRejection => _pendingPlanRejection;
+
+  void setPendingPlanRejection(PlanRejectionPayload payload) {
+    _pendingPlanRejection = payload;
+    notifyListeners();
+  }
+
+  void clearPlanRejection() {
+    _pendingPlanRejection = null;
+    notifyListeners();
+  }
+
   // ── Login / Logout ─────────────────────────────────────────
 
-  Future<bool> login(String email, String password, {bool rememberSession = false}) async {
+  Future<bool> login(
+    String email,
+    String password, {
+    bool rememberSession = false,
+  }) async {
     _isGuest = false;
     _isLoading = true;
     _error = null;
@@ -361,17 +414,19 @@ class AuthProvider extends ChangeNotifier
 
     // Guardar cuenta si el usuario lo solicitó.
     if (result.isSuccess && rememberSession && _user != null) {
-      final accessToken  = await AuthLocalStorage.getAccessToken();
+      final accessToken = await AuthLocalStorage.getAccessToken();
       final refreshToken = await AuthLocalStorage.getRefreshToken();
       if (accessToken != null && refreshToken != null) {
-        final saveResult = await SavedAccountsStorage.addOrUpdate(SavedAccount(
-          userId:       _user!.id,
-          email:        email,
-          firstName:    _user!.firstName,
-          lastName:     _user!.lastName,
-          accessToken:  accessToken,
-          refreshToken: refreshToken,
-        ));
+        final saveResult = await SavedAccountsStorage.addOrUpdate(
+          SavedAccount(
+            userId: _user!.id,
+            email: email,
+            firstName: _user!.firstName,
+            lastName: _user!.lastName,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          ),
+        );
         if (saveResult == SaveAccountResult.limitReached) {
           _savedAccountLimitReached = true;
         }
@@ -545,8 +600,12 @@ class AuthProvider extends ChangeNotifier
   @override
   Future<void> logout() async {
     // Desregistrar listeners antes de limpiar _user para evitar doble trigger.
-    SocketService.instance.removeDeactivationListener(_handleRemoteDeactivation);
-    SocketService.instance.removeNotificationListener(_handleRemoteNotification);
+    SocketService.instance.removeDeactivationListener(
+      _handleRemoteDeactivation,
+    );
+    SocketService.instance.removeNotificationListener(
+      _handleRemoteNotification,
+    );
     SocketService.instance.disconnect();
 
     // Limpiar token FCM (backend + Firebase) ANTES de invalidar el
@@ -588,23 +647,25 @@ class AuthProvider extends ChangeNotifier
 
     final result = await _repo.updateProfile(
       department: department,
-      province:   province,
-      district:   district,
+      province: province,
+      district: district,
     );
 
     result.when(
       success: (userData) {
         _user = _user?.copyWith(
           department: department,
-          province:   province,
-          district:   district,
+          province: province,
+          district: district,
         );
         // Persistir cambio en almacenamiento local.
         AuthLocalStorage.getAccessToken().then((at) async {
           final rt = await AuthLocalStorage.getRefreshToken();
           if (at != null && rt != null && _user != null) {
             await AuthLocalStorage.saveSession(
-              accessToken: at, refreshToken: rt, user: _user!,
+              accessToken: at,
+              refreshToken: rt,
+              user: _user!,
             );
           }
         });
@@ -661,23 +722,27 @@ class AuthProvider extends ChangeNotifier
   }
 
   /// Actualiza nombre, apellido y/o teléfono del usuario.
-  Future<bool> updateProfile({String? firstName, String? lastName, String? phone}) async {
+  Future<bool> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     final result = await _repo.updateProfile(
       firstName: firstName,
-      lastName:  lastName,
-      phone:     phone,
+      lastName: lastName,
+      phone: phone,
     );
 
     result.when(
       success: (updated) {
         _user = _user?.copyWith(
           firstName: updated.firstName,
-          lastName:  updated.lastName,
-          phone:     updated.phone,
+          lastName: updated.lastName,
+          phone: updated.phone,
         );
         // Persistir cambios localmente.
         if (_user != null) {
@@ -685,7 +750,9 @@ class AuthProvider extends ChangeNotifier
             final rt = await AuthLocalStorage.getRefreshToken();
             if (at != null && rt != null) {
               await AuthLocalStorage.saveSession(
-                accessToken: at, refreshToken: rt, user: _user!,
+                accessToken: at,
+                refreshToken: rt,
+                user: _user!,
               );
             }
           });
@@ -715,7 +782,9 @@ class AuthProvider extends ChangeNotifier
             final rt = await AuthLocalStorage.getRefreshToken();
             if (at != null && rt != null) {
               await AuthLocalStorage.saveSession(
-                accessToken: at, refreshToken: rt, user: _user!,
+                accessToken: at,
+                refreshToken: rt,
+                user: _user!,
               );
             }
           });
@@ -740,13 +809,10 @@ class AuthProvider extends ChangeNotifier
 
     final result = await _repo.changePassword(
       currentPassword: currentPassword,
-      newPassword:     newPassword,
+      newPassword: newPassword,
     );
 
-    result.when(
-      success: (_) {},
-      failure: (e) => _error = e.message,
-    );
+    result.when(success: (_) {}, failure: (e) => _error = e.message);
 
     _isLoading = false;
     notifyListeners();

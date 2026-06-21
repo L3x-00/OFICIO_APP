@@ -40,7 +40,7 @@ class _JoinUsTypeDetailState extends State<JoinUsTypeDetail> {
       features: [
         'Apareces en búsquedas',
         'Foto de perfil',
-        'Hasta 3 fotos del servicio',
+        'Hasta 2 fotos del servicio',
         'Panel administrador',
       ],
       isHighlighted: false,

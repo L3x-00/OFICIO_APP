@@ -69,16 +69,18 @@ export class PaymentsService {
     });
     if (expired.length === 0) return;
 
-    await this.prisma.$transaction([
-      this.prisma.subscription.updateMany({
+    // Interactiva con awaits secuenciales (no array/batch): evita solapar
+    // queries en la misma conexión del pool (warning pg). Cron horario.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.subscription.updateMany({
         where: { id: { in: expired.map((s) => s.id) } },
         data: { plan: 'GRATIS', status: 'VENCIDA' },
-      }),
-      this.prisma.provider.updateMany({
+      });
+      await tx.provider.updateMany({
         where: { id: { in: expired.map((s) => s.providerId) } },
         data: { planPriority: PLAN_PRIORITY.GRATIS },
-      }),
-    ]);
+      });
+    });
     this.logger.log(
       `[subs-cron] ${expired.length} suscripciones expiradas → GRATIS`,
     );
@@ -325,6 +327,7 @@ export class PaymentsService {
       where: { userId, isVisible: true },
       select: {
         id: true,
+        userId: true,
         businessName: true,
         type: true,
         subscription: { select: { id: true, plan: true, status: true } },
@@ -340,7 +343,11 @@ export class PaymentsService {
       !provider.subscription ||
       !['ACTIVA', 'GRACIA'].includes(provider.subscription.status)
     ) {
-      throw new BadRequestException('No tienes un plan activo que cancelar');
+      // IDEMPOTENCIA: el plan ya está cancelado/vencido → el objetivo del
+      // usuario (estar en GRATIS) ya se cumplió. Devolvemos 200 OK en vez de
+      // lanzar 400, para no crashear el móvil si reintenta la cancelación o
+      // si su estado local quedó desincronizado.
+      return { success: true, alreadyCancelled: true };
     }
 
     // El usuario inicia su propia cancelación: registramos su userId en
@@ -371,6 +378,20 @@ export class PaymentsService {
       providerId: provider.id,
       businessName: provider.businessName,
       plan: provider.subscription.plan,
+    });
+
+    // Avisar al PROPIO proveedor para que el móvil refresque su plan a GRATIS
+    // en tiempo real: el dashboard escucha PLAN_CANCELADO y re-consulta
+    // /provider-profile/me (que ya devuelve subscription fresco de BD, sin
+    // caché). Sin esto, seguía mostrando el plan anterior hasta refresh manual.
+    // PLAN_CANCELADO está en el _skipPersist del gateway → señal transitoria,
+    // no contamina el inbox del proveedor.
+    this.events.emitNotification({
+      type: 'PLAN_CANCELADO',
+      title: 'Plan cancelado',
+      body: `Tu plan ${planLabel} fue cancelado. Ahora estás en el plan Gratis.`,
+      targetUserId: provider.userId,
+      targetProfileType: provider.type,
     });
 
     return { success: true };

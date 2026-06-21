@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/network/socket_service.dart';
 import '../../../../core/services/geocoding_service.dart';
+import '../../../../shared/widgets/app_network_image.dart';
 import '../../../localities/data/dynamic_locations.dart';
 import '../../data/providers_repository.dart';
 import '../../domain/models/provider_model.dart';
@@ -14,6 +16,41 @@ enum ViewMode { lista, detalles, mosaicos, contenido }
 /// Estado global de la lista de proveedores
 class ProvidersProvider extends ChangeNotifier {
   final ProvidersRepository _repo = ProvidersRepository();
+
+  ProvidersProvider() {
+    // Realtime: cuando un proveedor cambia su disponibilidad, el backend
+    // emite `providerAvailabilityChanged`. Actualizamos el badge en la lista
+    // y en los carruseles sin recargar (incluye la tarjeta del propio
+    // proveedor en su pantalla principal).
+    SocketService.instance.addAvailabilityListener(_onAvailabilityChanged);
+  }
+
+  void _onAvailabilityChanged(Map<String, dynamic> data) {
+    final rawId = data['providerId'];
+    final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
+    if (id == null) return;
+    final status = AvailabilityStatus.fromString(
+      data['availability']?.toString() ?? 'DISPONIBLE',
+    );
+    var changed = false;
+    for (var i = 0; i < _providers.length; i++) {
+      if (_providers[i].id == id) {
+        _providers[i] = _providers[i].copyWith(availability: status);
+        changed = true;
+      }
+    }
+    for (final group in _featuredGroups) {
+      for (var i = 0; i < group.providers.length; i++) {
+        if (group.providers[i].id == id) {
+          group.providers[i] = group.providers[i].copyWith(
+            availability: status,
+          );
+          changed = true;
+        }
+      }
+    }
+    if (changed) notifyListeners();
+  }
 
   List<ProviderModel> _providers = [];
   List<CategoryModel> _categories = [];
@@ -254,6 +291,26 @@ class ProvidersProvider extends ChangeNotifier {
     if (result.isSuccess) _featuredGroups = result.data;
     _featuredLoading = false;
     notifyListeners();
+  }
+
+  /// Pre-carga las portadas de los primeros proveedores destacados al caché
+  /// (mismo cacheKey estable del render) para que el Home pinte instantáneo
+  /// al entrar — clave en invitado con caché frío. Best-effort, no bloquea.
+  /// Recibe el [context] del screen porque precacheImage lo requiere.
+  Future<void> precacheFeaturedCovers(
+    BuildContext context, {
+    int max = 8,
+  }) async {
+    var count = 0;
+    for (final group in _featuredGroups) {
+      for (final p in group.providers) {
+        final url = p.coverImageUrl;
+        if (url == null || url.isEmpty) continue;
+        if (!context.mounted) return;
+        AppNetworkImage.precache(url, context);
+        if (++count >= max) return;
+      }
+    }
   }
 
   // ── Cargar categorías ─────────────────────────────────────
@@ -781,6 +838,7 @@ class ProvidersProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    SocketService.instance.removeAvailabilityListener(_onAvailabilityChanged);
     _gpsSub?.cancel();
     super.dispose();
   }

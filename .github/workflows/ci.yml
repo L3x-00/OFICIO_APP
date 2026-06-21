@@ -14,6 +14,17 @@
 # Variables de entorno secretas reales (FCM, Brevo, MercadoPago) NO van
 # aquí — para CI usamos credenciales test inocuas y guards de scope que
 # detectan NODE_ENV=test para deshabilitar llamadas externas.
+#
+# ⚠️ BLOQUEO DE PRs (acción manual una sola vez en GitHub):
+#   Para que un PR que ROMPE tests NO se pueda mergear, hay que activar
+#   Branch Protection en el repo:
+#     Settings → Branches → Add rule → Branch name pattern: main
+#       ☑ Require status checks to pass before merging
+#         → seleccionar: "Backend (NestJS + Prisma)", "Mobile (Flutter ...)",
+#           "Admin (Next.js)"
+#       ☑ Require branches to be up to date before merging
+#   Sin esto, el CI corre y marca rojo, pero GitHub igual permite el merge.
+#   (También se puede via gh: `gh api -X PUT repos/:owner/:repo/branches/main/protection ...`)
 
 name: CI / OficioApp
 
@@ -180,9 +191,13 @@ jobs:
       #
       # 1. Unit (CJS) — mockean PrismaService, no tocan la BD.
       #    Cubre validaciones de lógica pura: race conditions
-      #    simuladas con P2002, guards de auth, idempotencia.
-      - name: Unit tests (CJS)
-        run: npm run test
+      #    simuladas con P2002, guards de auth, idempotencia, gating de
+      #    fotos por plan, thumbnails CDN, cancelPlan idempotente, etc.
+      #    `test:cov` activa --coverage → ENFORCE del coverageThreshold
+      #    de package.json (ratchet: el merge falla si la cobertura unit
+      #    cae por debajo del piso). Bloquea regresiones de blindaje.
+      - name: Unit tests + coverage gate (CJS)
+        run: npm run test:cov
 
       # 2. Integration + Migrations (ESM con NODE_OPTIONS=
       #    --experimental-vm-modules, manejado por el script).
@@ -247,8 +262,22 @@ jobs:
       - name: Flutter test + coverage
         # `--coverage` produce coverage/lcov.info para el artifact.
         # `--reporter=expanded` da output verboso útil cuando un test
-        # falla en CI sin terminal interactiva.
+        # falla en CI sin terminal interactiva. Si CUALQUIER test falla,
+        # este step falla y bloquea el job (y el deploy-gate).
         run: flutter test --coverage --reporter=expanded
+
+      # Ratchet de cobertura móvil: falla si la cobertura de líneas cae
+      # por debajo del piso. La app es UI-heavy; la LÓGICA (providers,
+      # repos, models, cacheKey, planes) sí está cubierta. El piso protege
+      # contra borrar tests o agregar lógica sin cubrir.
+      - name: Coverage gate (líneas >= 9%)
+        run: |
+          DA=$(grep -h '^DA:' coverage/lcov.info)
+          total=$(printf '%s\n' "$DA" | wc -l)
+          hit=$(printf '%s\n' "$DA" | awk -F, '$2+0>0' | wc -l)
+          pct=$(awk "BEGIN{printf \"%.1f\", ($hit/$total)*100}")
+          echo "Cobertura de líneas: $pct% ($hit/$total)"
+          awk "BEGIN{exit !($pct+0 >= 9.0)}" || { echo "::error::Cobertura $pct% < piso 9%"; exit 1; }
 
       - name: Upload coverage report
         if: always()

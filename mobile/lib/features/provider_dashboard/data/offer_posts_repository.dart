@@ -21,11 +21,13 @@ class OfferPostsRepository {
     double? price,
     String? photoPath,
     String? type,
+    int? durationHours,
   }) async {
     final data = FormData.fromMap({
       'title': title,
       'description': description,
       if (price != null) 'price': price.toString(),
+      if (durationHours != null) 'durationHours': durationHours.toString(),
       if (photoPath != null)
         'photo': await MultipartFile.fromFile(photoPath, filename: 'offer.jpg'),
     });

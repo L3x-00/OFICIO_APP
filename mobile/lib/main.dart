@@ -28,6 +28,7 @@ import 'features/provider_dashboard/presentation/providers/dashboard_provider.da
 import 'features/provider_dashboard/presentation/providers/offer_posts_provider.dart';
 import 'features/providers_list/presentation/providers/providers_provider.dart';
 import 'features/showcase/showcase_manager.dart';
+import 'dart:math';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -373,6 +374,19 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       });
     }
 
+    // ── Solicitud de plan rechazada ───────────────────────────
+    // Disparado por PLAN_RECHAZADO (socket en vivo o cold-start sync). Muestra
+    // el modal "Solicitud rechazada" con el motivo del admin sobre cualquier
+    // pantalla al abrir la app.
+    if (auth.pendingPlanRejection != null && mounted) {
+      final rejection = auth.pendingPlanRejection!;
+      auth.clearPlanRejection();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showPlanRejectionDialog(context, rejection);
+      });
+    }
+
     // ── Aprobación de perfil de proveedor (modal en home) ─────
     // Se dispara cuando el admin aprueba el perfil — el carrusel de
     // bienvenida + plan ESTANDAR de cortesía aparece en la pantalla
@@ -540,33 +554,18 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     if (navCtx == null || !navCtx.mounted) return;
     if (!mounted) return;
     context.read<AuthProvider>().clearTrustApproval();
+
     final isNegocio = payload.profileType == 'NEGOCIO';
     final namePart = payload.businessName.isEmpty
         ? ''
         : ' "${payload.businessName}"';
+
     await showDialog<void>(
       context: navCtx,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(
-          Icons.verified_user_rounded,
-          color: Colors.green,
-          size: 44,
-        ),
-        title: const Text('¡Validación aprobada!', textAlign: TextAlign.center),
-        content: Text(
-          'Los datos de tu perfil${isNegocio ? " de negocio" : " profesional"}$namePart '
-          'han sido validados. Ya apareces como "Confiable" para tus clientes.',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Entendido'),
-          ),
-        ],
-      ),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (ctx) =>
+          _TrustApprovalDialog(isNegocio: isNegocio, namePart: namePart),
     );
   }
 
@@ -705,6 +704,16 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       // imageUrl viaja en data (broadcast del admin) — sin esto el
       // modal re-abierto desde Alertas perdía la foto.
       'imageUrl': _imageUrlFromMessage(message),
+      // Metadata de deep-linking del push: sin reenviarla, el tile de Alertas
+      // perdía el destino (CHAT_MESSAGE → lista vacía, NEW_OFFER → sin
+      // requestId). AppNotification._extractActionData solo copia estas keys.
+      'chatRoomId': message.data['chatRoomId'],
+      'roomId': message.data['roomId'],
+      'requestId': message.data['requestId'],
+      'offerId': message.data['offerId'],
+      'providerId': message.data['providerId'],
+      'reviewId': message.data['reviewId'],
+      'senderAvatarUrl': message.data['senderAvatarUrl'],
     });
     // B-4: pasamos targetUserId para que el provider lo valide
     // contra el user actual — defensa contra cross-contaminación
@@ -769,10 +778,27 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         // y _onAuthChanged lo muestra sobre la pantalla actual.
         context.read<AuthProvider>().refreshProviderStatus();
         widget.router.go('/profile');
+      case 'PLAN_APROBADO':
+        // Cold-start desde push (app en background/terminada): el socket NO
+        // recibió PLAN_APROBADO en vivo, así que el carrusel de beneficios
+        // nunca se encoló. Lo encolamos aquí (igual que PROVIDER_APPROVED /
+        // TRUST_APPROVED) para que _AuthSideEffects lo muestre sobre la
+        // pantalla actual. Sin esto solo navegaba a /profile sin carrusel.
+        final planAuth = context.read<AuthProvider>();
+        final approvedPlan =
+            (message.data['plan'] as String?)?.toUpperCase() ?? 'ESTANDAR';
+        planAuth.setPendingPlanPromotion(
+          PlanActivationPayload(
+            plan: approvedPlan,
+            title: message.data['title'] as String? ?? '¡Plan activado!',
+          ),
+        );
+        planAuth.refreshProviderStatus();
+        widget.router.go('/profile');
       case 'NEW_REVIEW':
       case 'PROVIDER_REJECTED':
-      case 'PLAN_APROBADO':
       case 'PLAN_RECHAZADO':
+      case 'PLAN_CANCELADO':
         widget.router.go('/profile');
       case 'TRUST_APPROVED':
         // Al abrir desde push, encolamos el payload para que
@@ -787,7 +813,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         );
       case 'NEW_OFFER':
         widget.router.go('/');
-        widget.router.push('/my-requests');
+        // Deep-link a la solicitud específica que recibió la postulación.
+        final reqId = message.data['requestId'];
+        widget.router.push(
+          reqId != null ? '/my-requests?requestId=$reqId' : '/my-requests',
+        );
       case 'OFFER_ACCEPTED':
         widget.router.go('/');
         widget.router.push('/provider-panel');
@@ -816,4 +846,228 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
 
   @override
   Widget build(BuildContext context) => widget.child;
+}
+
+/// Diálogo de validación aprobada con fondo verde sutil y animación de confeti.
+class _TrustApprovalDialog extends StatefulWidget {
+  final bool isNegocio;
+  final String namePart;
+
+  const _TrustApprovalDialog({required this.isNegocio, required this.namePart});
+
+  @override
+  State<_TrustApprovalDialog> createState() => _TrustApprovalDialogState();
+}
+
+class _TrustApprovalDialogState extends State<_TrustApprovalDialog>
+    with TickerProviderStateMixin {
+  late AnimationController _confettiController;
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    // Controlador del confeti (infinite loop)
+    _confettiController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 4000),
+    )..repeat();
+
+    // Controlador del icono (rebote elástico)
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _scaleAnimation = CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.elasticOut,
+    );
+
+    // Dispara el rebote justo al abrir
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scaleController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Verdes amigables adaptativos
+    final backgroundColor = isDark
+        ? const Color(0xFF1B3329) // Verde muy oscuro y sutil para modo oscuro
+        : const Color(0xFFE8F5E9); // Verde claro pastel para modo claro
+    final accentColor = isDark
+        ? const Color(0xFF66BB6A) // Verde brillante para oscuro
+        : const Color(0xFF2E7D32); // Verde profundo para claro
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip
+            .none, // Permite que el confeti caiga fuera de los límites del dialog
+        children: [
+          // Capa de Confeti (al fondo)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _ConfettiPainter(_confettiController),
+              ),
+            ),
+          ),
+
+          // Capa del Contenido (Tarjeta principal)
+          Container(
+            width: double.maxFinite,
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: accentColor.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icono con animación de rebote (elasticOut)
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.verified_user_rounded,
+                      color: accentColor,
+                      size: 48,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Título
+                Text(
+                  '¡Validación aprobada!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Mensaje
+                Text(
+                  'Los datos de tu perfil${widget.isNegocio ? " de negocio" : " profesional"}${widget.namePart} '
+                  'han sido validados. Ya apareces como "Confiable" para tus clientes.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                // Botón
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Entendido',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Pintor personalizado para generar el efecto de confeti/serpentinas cayendo.
+class _ConfettiPainter extends CustomPainter {
+  final Animation<double> animation;
+  _ConfettiPainter(this.animation) : super(repaint: animation);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final random = Random(42); // Seed fijo para que las posiciones no salten
+    final colors = [
+      Colors.green,
+      Colors.teal,
+      Colors.lightGreen,
+      Colors.cyan,
+      Colors.yellow,
+      Colors.pink,
+      Colors.orange,
+    ];
+
+    for (int i = 0; i < 50; i++) {
+      final x = random.nextDouble() * size.width;
+      final startY = -size.height * random.nextDouble();
+      final speed = 0.5 + random.nextDouble() * 1.5;
+
+      // Calcula la posición Y en bucle infinito
+      final y =
+          (startY + animation.value * size.height * speed) %
+              (size.height * 1.2) -
+          20;
+
+      final paint = Paint()..color = colors[random.nextInt(colors.length)];
+      final rectWidth = 6.0 + random.nextDouble() * 6;
+      final rectHeight = 3.0 + random.nextDouble() * 3;
+
+      canvas.save();
+      canvas.translate(x, y);
+      // Rota las serpentinas mientras caen
+      canvas.rotate(animation.value * 10 * random.nextDouble() + i);
+      canvas.drawRect(
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: rectWidth,
+          height: rectHeight,
+        ),
+        paint,
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

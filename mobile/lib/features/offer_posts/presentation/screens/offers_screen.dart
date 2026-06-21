@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../shared/widgets/app_network_image.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 import '../../../subastas/domain/models/service_request_model.dart';
 import '../../../subastas/presentation/providers/subastas_provider.dart';
 import '../../domain/models/public_offer_model.dart';
@@ -227,9 +228,16 @@ class _OffersScreenState extends State<OffersScreen>
         ),
       ),
       if (prov.isLoading && listOffers.isEmpty)
-        const SliverFillRemaining(
-          child: Center(
-            child: CircularProgressIndicator(color: AppColors.amber),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (_, _) => const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: OfferCardSkeleton(),
+              ),
+              childCount: 5,
+            ),
           ),
         )
       else if (listOffers.isEmpty)

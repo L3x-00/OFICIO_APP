@@ -151,7 +151,12 @@ class DashboardProvider extends ChangeNotifier {
       final pending = result.data
           .where((p) => p.status.toUpperCase() == 'PENDING')
           .toList();
-      _pendingPaymentPlan = pending.isEmpty ? null : pending.first.plan;
+      final next = pending.isEmpty ? null : pending.first.plan;
+      // Guard: solo notificar si el valor REALMENTE cambió. Este método corre
+      // en cada loadDashboard (incl. refresh silencioso por tab-switch); sin
+      // el guard reconstruía la sección de planes aunque nada cambiara.
+      if (next == _pendingPaymentPlan) return;
+      _pendingPaymentPlan = next;
       notifyListeners();
     } catch (_) {}
   }

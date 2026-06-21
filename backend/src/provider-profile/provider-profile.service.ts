@@ -215,11 +215,20 @@ export class ProviderProfileService {
   ) {
     const provider = await this.findProviderByUser(userId, type);
 
-    return this.prisma.provider.update({
+    const updated = await this.prisma.provider.update({
       where: { id: provider.id },
       data: { availability },
       select: { id: true, availability: true },
     });
+
+    // Realtime: la lista pública y el propio panel actualizan el badge de
+    // disponibilidad sin recargar. Broadcast — el cliente filtra por id.
+    this.events.emitProviderAvailabilityChanged({
+      providerId: updated.id,
+      availability: updated.availability,
+    });
+
+    return updated;
   }
 
   // ── NOTIFICACIONES DEL PROVEEDOR ─────────────────────────
@@ -247,7 +256,14 @@ export class ProviderProfileService {
     });
     const providerIds = providers.map((p) => p.id);
     const or: Prisma.AdminNotificationWhereInput[] = [{ targetUserId: userId }];
-    if (providerIds.length > 0) or.push({ providerId: { in: providerIds } });
+    // El branch por providerId DEBE exigir targetUserId no-nulo: las notifs
+    // admin-only sobre el proveedor (NUEVO_PROVEEDOR, YAPE_PAYMENT_SUBMITTED,
+    // OFFER_REPORT) llevan providerId pero targetUserId=null y son para el
+    // panel admin, NO para el inbox del proveedor. Las dirigidas al proveedor
+    // (APROBADO, NUEVA_OPORTUNIDAD, PLAN_APROBADO, etc.) siempre setean
+    // targetUserId, así que siguen visibles.
+    if (providerIds.length > 0)
+      or.push({ providerId: { in: providerIds }, targetUserId: { not: null } });
     return { OR: or };
   }
 
@@ -362,10 +378,13 @@ export class ProviderProfileService {
 
   /**
    * Límite máximo de fotos por plan de suscripción del proveedor.
-   * GRATIS=3, ESTANDAR=6, PREMIUM=10.
+   * GRATIS=2, ESTANDAR=6, PREMIUM=10. El mismo límite gobierna la LECTURA
+   * pública (providers.service.maskContactIfFree / perfil público): si un
+   * proveedor baja de plan, las fotos extra NO se borran de la BD, solo se
+   * ocultan en la lectura y reaparecen si vuelve a subir de plan.
    */
   private static readonly PHOTO_LIMITS: Record<string, number> = {
-    GRATIS: 3,
+    GRATIS: 2,
     ESTANDAR: 6,
     PREMIUM: 10,
   };

@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/social_media_row.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../data/providers_repository.dart';
 import '../../data/reviews_repository.dart';
 import '../../domain/models/provider_model.dart';
@@ -312,7 +313,22 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                     ProviderGallery(
                       images: _allImages,
                       accent: _accent,
-                      trailingAction: _ShareFab(onTap: () => _shareProfile(p)),
+                      // El botón de favorito vive AQUÍ (modal de detalle), ya
+                      // no en las tarjetas de las listas principales. Solo se
+                      // muestra a usuarios logueados que NO son el dueño.
+                      trailingAction: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!_isOwnCard) ...[
+                            _FavFab(
+                              isFavorite: _provider.isFavorite,
+                              onTap: _toggleFavorite,
+                            ),
+                            const SizedBox(width: 10),
+                          ],
+                          _ShareFab(onTap: () => _shareProfile(p)),
+                        ],
+                      ),
                     ),
 
                   Padding(
@@ -648,6 +664,38 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       ),
     );
   }
+
+  // ─── Favorito (solo en el modal de detalle) ──────────────
+  Future<void> _toggleFavorite() async {
+    final auth = context.read<AuthProvider>();
+    if (auth.user == null) {
+      _showLoginRequired();
+      return;
+    }
+    final fav = context.read<FavoritesProvider>();
+    final adding = !_provider.isFavorite;
+    // Optimista: refleja el cambio al instante y revierte si el backend falla.
+    setState(() => _provider = _provider.copyWith(isFavorite: adding));
+    final ok = await fav.toggle(_provider.id);
+    if (!mounted) return;
+    if (!ok) {
+      setState(() => _provider = _provider.copyWith(isFavorite: !adding));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(fav.error ?? 'No se pudo actualizar el favorito'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(adding ? 'Añadido a favoritos' : 'Quitado de favoritos'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }
 
 /// FAB compacto para compartir el perfil — se monta como overlay en la
@@ -668,6 +716,34 @@ class _ShareFab extends StatelessWidget {
         child: const Padding(
           padding: EdgeInsets.all(10),
           child: Icon(Icons.ios_share_rounded, color: Colors.white, size: 20),
+        ),
+      ),
+    );
+  }
+}
+
+/// FAB de favorito — overlay en la galería del detalle. Espejo de [_ShareFab]
+/// con el corazón relleno/contorno según el estado.
+class _FavFab extends StatelessWidget {
+  final bool isFavorite;
+  final VoidCallback onTap;
+  const _FavFab({required this.isFavorite, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.55),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(
+            isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            color: isFavorite ? AppColors.favorite : Colors.white,
+            size: 20,
+          ),
         ),
       ),
     );

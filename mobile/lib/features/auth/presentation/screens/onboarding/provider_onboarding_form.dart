@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -541,10 +542,46 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
     final success = await _performProviderRegistration();
     if (!success) return;
 
-    await _handlePhotoUploads();
-    if (!mounted) return;
+    // PREMIUM con pago: flujo bloqueante (sube fotos + refresh + va a pago).
+    // No mostramos el modal de éxito aquí, así que mantenemos el orden previo.
+    if (goToPayment) {
+      await _handlePhotoUploads();
+      if (!mounted) return;
+      await _processFinalSteps(goToPayment);
+      return;
+    }
 
-    await _processFinalSteps(goToPayment);
+    // Estándar/Gratis: el backend YA devolvió 200 → mostramos el modal de
+    // éxito DE INMEDIATO. Las fotos, el referido y el refresh del estado
+    // corren en segundo plano para no demorar la confirmación al proveedor.
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    final auth = context.read<AuthProvider>();
+    _showSuccessDialog();
+    unawaited(_finishRegistrationInBackground(auth));
+  }
+
+  /// Tareas post-registro que NO deben bloquear el modal de éxito. Recibe el
+  /// [auth] capturado mientras el widget estaba montado (evita usar `context`
+  /// tras un eventual pop del formulario al aceptar el modal).
+  Future<void> _finishRegistrationInBackground(AuthProvider auth) async {
+    final refCode = _referralCodeCtrl.text.trim();
+    if (refCode.isNotEmpty) {
+      try {
+        await ReferralsRepository().applyCode(refCode);
+      } catch (_) {
+        // Código ya usado / inválido — no debe romper el registro.
+      }
+    }
+    await _handlePhotoUploads();
+    await auth.refreshProviderStatus();
+    if (_hasAdminLocation) {
+      auth.updateLocation(
+        department: _department!,
+        province: _province!,
+        district: _district!,
+      );
+    }
   }
 
   Future<bool> _performProviderRegistration() async {

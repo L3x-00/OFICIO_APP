@@ -37,6 +37,14 @@ export interface NotificationPayload {
   /** Avatar del remitente — usado por CHAT_MESSAGE para reemplazar el
    * icono genérico del inbox con la foto del usuario que envía. */
   avatarUrl?: string;
+  /** Metadata de deep-linking — el inbox in-app la usa para abrir el
+   * destino correcto al tocar la notif (mismo shape que el `data` del push
+   * FCM). CHAT_MESSAGE necesita chatRoomId; NEW_OFFER necesita requestId. */
+  chatRoomId?: number | string;
+  messageId?: number | string;
+  senderId?: number | string;
+  senderName?: string;
+  requestId?: number | string;
 }
 
 interface SocketUser {
@@ -187,6 +195,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     isVerified: boolean;
   }) {
     this.server.emit('providerStatusChanged', data);
+  }
+
+  /**
+   * Disponibilidad de un proveedor cambió (DISPONIBLE/OCUPADO/...). Broadcast
+   * para que la lista pública y el propio panel del proveedor actualicen el
+   * badge/color de estado en vivo, sin recargar la pantalla.
+   */
+  emitProviderAvailabilityChanged(data: {
+    providerId: number;
+    availability: string;
+  }) {
+    this.server.emit('providerAvailabilityChanged', data);
   }
 
   /**

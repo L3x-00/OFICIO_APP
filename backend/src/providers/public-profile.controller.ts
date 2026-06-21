@@ -162,7 +162,15 @@ export class PublicProfileController implements OnModuleInit {
       provider.slug = generated;
     }
 
-    const cover = provider.images[0]?.url ?? null;
+    // Fotos visibles según plan: GRATIS=2, ESTANDAR=6, PREMIUM=10. Las
+    // extra NO se borran de la BD — solo se ocultan en la lectura pública
+    // y reaparecen si el proveedor sube de plan. Las imágenes ya vienen
+    // ordenadas (isCover desc), así que el slice conserva la portada.
+    const plan = provider.subscription?.plan ?? 'GRATIS';
+    const photoLimit = plan === 'PREMIUM' ? 10 : plan === 'ESTANDAR' ? 6 : 2;
+    const visibleImages = provider.images.slice(0, photoLimit);
+
+    const cover = visibleImages[0]?.url ?? null;
     const categories = provider.providerCategories.map((pc) => pc.category);
     // scheduleJson guarda { lun..dom: "8:00-18:00"|"Cerrado", services: [...] }.
     const schedule = (provider.scheduleJson ?? null) as Record<
@@ -185,7 +193,7 @@ export class PublicProfileController implements OnModuleInit {
       hasDelivery: provider.hasDelivery,
       plenaCoordinacion: provider.plenaCoordinacion,
       coverUrl: cover,
-      images: provider.images,
+      images: visibleImages,
       categories,
       locality: provider.locality,
       plan: provider.subscription?.plan ?? 'GRATIS',

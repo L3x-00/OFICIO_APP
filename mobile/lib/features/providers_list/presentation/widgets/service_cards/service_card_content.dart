@@ -289,16 +289,8 @@ class ServiceCardContent extends StatelessWidget {
                               ),
                             ),
                           ],
-                          const SizedBox(width: 6),
-                          CompactActionBtn(
-                            icon: provider.isFavorite
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            color: provider.isFavorite
-                                ? AppColors.favorite
-                                : c.textMuted,
-                            onTap: onFavoriteToggle,
-                          ),
+                          // Favorito removido de las tarjetas — vive solo en
+                          // el modal de detalle del proveedor.
                         ],
                       ),
                   ],

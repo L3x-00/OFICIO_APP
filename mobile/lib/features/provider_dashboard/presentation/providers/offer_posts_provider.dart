@@ -8,14 +8,14 @@ class OfferPostsProvider extends ChangeNotifier {
   final _repo = OfferPostsRepository();
 
   List<OfferPostModel> _offers = [];
-  OfferPostsStatus     _status = OfferPostsStatus.idle;
-  String?              _error;
-  bool                 _isSubmitting = false;
+  OfferPostsStatus _status = OfferPostsStatus.idle;
+  String? _error;
+  bool _isSubmitting = false;
 
-  List<OfferPostModel> get offers      => List.unmodifiable(_offers);
-  OfferPostsStatus     get status      => _status;
-  String?              get error       => _error;
-  bool                 get isSubmitting => _isSubmitting;
+  List<OfferPostModel> get offers => List.unmodifiable(_offers);
+  OfferPostsStatus get status => _status;
+  String? get error => _error;
+  bool get isSubmitting => _isSubmitting;
 
   List<OfferPostModel> get activeOffers =>
       _offers.where((o) => o.isActive && !o.isExpired).toList();
@@ -39,6 +39,7 @@ class OfferPostsProvider extends ChangeNotifier {
     double? price,
     String? photoPath,
     String? type,
+    int? durationHours,
   }) async {
     _isSubmitting = true;
     notifyListeners();
@@ -49,6 +50,7 @@ class OfferPostsProvider extends ChangeNotifier {
         price: price,
         photoPath: photoPath,
         type: type,
+        durationHours: durationHours,
       );
       _offers.insert(0, offer);
       _isSubmitting = false;

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,12 +21,64 @@ const String _kTiktokHandle = 'ofiapp.pe';
 const String _kInstagramHandle = 'ofiapp.pe';
 const String _kFacebookHandle = 'ofiapp.pe';
 
-/// Sección "Contáctanos" al final del perfil del cliente.
+/// Sección "Contáctanos" colapsable al final del perfil del cliente.
 ///
-/// Muestra los canales oficiales con sus iconos SVG propios, sin contenedores
-/// ni fondos que alteren el diseño original de los iconos.
-class ContactUsSection extends StatelessWidget {
+/// Inicia expandida y se colapsa automáticamente a los 2 segundos.
+/// Al tocar el encabezado se expande/colapsa con animación suave
+/// y stagger en los íconos.
+class ContactUsSection extends StatefulWidget {
   const ContactUsSection({super.key});
+
+  @override
+  State<ContactUsSection> createState() => _ContactUsSectionState();
+}
+
+class _ContactUsSectionState extends State<ContactUsSection>
+    with SingleTickerProviderStateMixin {
+  bool _isExpanded = true;
+  late AnimationController _controller;
+  late Animation<double> _arrowRotation;
+  Timer? _autoCollapseTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _arrowRotation = Tween<double>(
+      begin: 0,
+      end: math.pi / 2,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    // Inicia expandido
+    _controller.forward();
+
+    // Auto-colapsa tras 2 segundos (se cancela si el usuario toca antes)
+    _autoCollapseTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) _collapse();
+    });
+  }
+
+  void _toggle() {
+    _autoCollapseTimer?.cancel();
+    setState(() => _isExpanded = !_isExpanded);
+    _isExpanded ? _controller.forward() : _controller.reverse();
+  }
+
+  void _collapse() {
+    if (!_isExpanded) return;
+    setState(() => _isExpanded = false);
+    _controller.reverse();
+  }
+
+  @override
+  void dispose() {
+    _autoCollapseTimer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,45 +123,92 @@ class ContactUsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.support_agent_rounded,
-                color: Color(0xFFFFB347),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Contáctanos',
-                style: TextStyle(
-                  color: c.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+          // ── Cabecera colapsable ─────────────────────────────
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _toggle,
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.support_agent_rounded,
+                      color: Color(0xFFFFB347),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Contáctanos',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    RotationTransition(
+                      turns: _arrowRotation,
+                      child: Icon(
+                        Icons.chevron_right,
+                        color: c.textMuted,
+                        size: 22,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '¿Dudas o problemas? Escríbenos por cualquiera de estos canales.',
-            style: TextStyle(color: c.textMuted, fontSize: 12, height: 1.4),
-          ),
-          const SizedBox(height: 16),
-
-          // ── Cuadrícula compacta (3 columnas) ───────────────────
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.2, // Ajusta el alto/ancho de los chips
             ),
-            itemCount: channels.length,
-            itemBuilder: (context, index) {
-              return _ChannelGridItem(channel: channels[index]);
-            },
+          ),
+
+          // ── Contenido colapsable con stagger ────────────────
+          SizeTransition(
+            sizeFactor: _controller,
+            axisAlignment: -1.0, // Se revela desde arriba
+            child: ClipRect(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FadeTransition(
+                      opacity: _controller,
+                      child: Text(
+                        '¿Dudas o problemas? Escríbenos por cualquiera'
+                        ' de estos canales.',
+                        style: TextStyle(
+                          color: c.textMuted,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 1.2,
+                          ),
+                      itemCount: channels.length,
+                      itemBuilder: (context, index) {
+                        return _StaggeredGridItem(
+                          channel: channels[index],
+                          animation: _controller,
+                          index: index,
+                          totalItems: channels.length,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -115,6 +216,7 @@ class ContactUsSection extends StatelessWidget {
   }
 }
 
+// ── Modelo interno ────────────────────────────────────────────
 class _Channel {
   final String svg;
   final String label;
@@ -122,6 +224,67 @@ class _Channel {
   const _Channel({required this.svg, required this.label, required this.url});
 }
 
+// ── Ítem de grilla con aparición escalonada ───────────────────
+class _StaggeredGridItem extends StatefulWidget {
+  final _Channel channel;
+  final Animation<double> animation;
+  final int index;
+  final int totalItems;
+
+  const _StaggeredGridItem({
+    required this.channel,
+    required this.animation,
+    required this.index,
+    required this.totalItems,
+  });
+
+  @override
+  State<_StaggeredGridItem> createState() => _StaggeredGridItemState();
+}
+
+class _StaggeredGridItemState extends State<_StaggeredGridItem> {
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Cada ítem arranca un poco después del anterior
+    const staggerFraction = 0.07;
+    const intervalSpan = 0.45;
+    final start = (widget.index * staggerFraction).clamp(0.0, 0.8);
+    final end = (start + intervalSpan).clamp(start + 0.15, 1.0);
+
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: widget.animation,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      ),
+    );
+
+    _slideAnim = Tween<Offset>(begin: const Offset(0, -0.25), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: widget.animation,
+            curve: Interval(start, end, curve: Curves.easeOutCubic),
+          ),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: SlideTransition(
+        position: _slideAnim,
+        child: _ChannelGridItem(channel: widget.channel),
+      ),
+    );
+  }
+}
+
+// ── Ítem base (sin cambios funcionales) ──────────────────────
 class _ChannelGridItem extends StatelessWidget {
   final _Channel channel;
   const _ChannelGridItem({required this.channel});
@@ -155,10 +318,8 @@ class _ChannelGridItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Ícono SVG original con sus propios colores
           SvgPicture.asset(channel.svg, width: 24, height: 24),
           const SizedBox(height: 4),
-          // Etiqueta corta
           Text(
             channel.label,
             style: TextStyle(

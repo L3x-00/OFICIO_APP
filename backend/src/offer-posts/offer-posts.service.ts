@@ -193,8 +193,18 @@ export class OfferPostsService {
       );
     }
 
+    // Duración: el proveedor puede elegirla, pero NUNCA por encima del tope
+    // del plan (anti-abuso). Sin valor → tope del plan (comportamiento previo).
+    const requestedHours = dto.durationHours;
+    const hours =
+      requestedHours != null
+        ? Math.min(
+            Math.max(1, Math.round(requestedHours)),
+            limits.durationHours,
+          )
+        : limits.durationHours;
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + limits.durationHours);
+    expiresAt.setHours(expiresAt.getHours() + hours);
 
     const offer = await this.prisma.offerPost.create({
       data: {
@@ -340,7 +350,25 @@ export class OfferPostsService {
       this.prisma.offerPost.count({ where }),
     ]);
 
-    return { data: offers, total, page, lastPage: Math.ceil(total / limit) };
+    // LISTADO: servir thumbnails (CDN) en vez de la imagen completa para
+    // aligerar la carga. No-op si la URL no es del CDN público (legacy).
+    const data = offers.map((o) => ({
+      ...o,
+      photoUrl: o.photoUrl
+        ? MinioService.publicThumbUrl(o.photoUrl)
+        : o.photoUrl,
+      provider: o.provider
+        ? {
+            ...o.provider,
+            images: o.provider.images?.map((img) => ({
+              ...img,
+              url: MinioService.publicThumbUrl(img.url),
+            })),
+          }
+        : o.provider,
+    }));
+
+    return { data, total, page, lastPage: Math.ceil(total / limit) };
   }
 
   /**
@@ -396,10 +424,31 @@ export class OfferPostsService {
       throw new NotFoundException('Oferta no encontrada');
 
     try {
-      return await this.prisma.offerReport.create({
+      const report = await this.prisma.offerReport.create({
         data: { offerPostId: offerId, reporterId: userId, reason },
       });
+
+      // Visibilidad en el panel admin: persistimos una notif con
+      // providerId (ADMIN_NOTIF_WHERE la incluye → aparece en el bell del
+      // admin, además de /admin/offer-reports) y SIN targetUserId, para
+      // que NO se filtre al inbox del proveedor reportado. Fire-and-forget:
+      // un fallo del inbox no debe tumbar el reporte ya guardado.
+      void this.prisma.adminNotification
+        .create({
+          data: {
+            providerId: offer.providerId,
+            type: 'OFFER_REPORT',
+            title: 'Oferta reportada',
+            message: `Un usuario reportó la oferta "${offer.title}" (motivo: ${reason}).`,
+          },
+        })
+        .catch(() => {});
+
+      return report;
     } catch (e: any) {
+      // Reporte duplicado (unique offerPostId+reporterId) → 409 Conflict
+      // limpio, NO 500. El filtro global de Prisma solo captura errores
+      // que escapan; acá lo mapeamos explícito con el mensaje de negocio.
       if (e?.code === 'P2002')
         throw new ConflictException('Ya reportaste esta oferta');
       throw e;

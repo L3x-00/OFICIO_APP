@@ -7,12 +7,12 @@
 
 /// Estado de navegación del usuario.
 enum AppNavigationState {
-  loading,                // Verificando sesión guardada
-  unauthenticated,        // Sin sesión
-  guest,                  // Navega como invitado (sin cuenta)
+  loading, // Verificando sesión guardada
+  unauthenticated, // Sin sesión
+  guest, // Navega como invitado (sin cuenta)
   needsEmailVerification, // Registrado pero email no verificado
-  needsOnboarding,        // Email verificado pero sin elegir rol
-  authenticated,          // Listo para usar la app
+  needsOnboarding, // Email verificado pero sin elegir rol
+  authenticated, // Listo para usar la app
 }
 
 /// Payload del evento "TRUST rechazado" (validación de identidad).
@@ -32,10 +32,15 @@ class TrustRejectionPayload {
 class PlanActivationPayload {
   final String plan;
   final String title;
-  const PlanActivationPayload({
-    required this.plan,
-    required this.title,
-  });
+  const PlanActivationPayload({required this.plan, required this.title});
+}
+
+/// Payload del evento "solicitud de plan rechazada" — _AuthSideEffects lo
+/// consume para mostrar un modal "Solicitud rechazada" con el motivo del
+/// admin, sobre cualquier pantalla al abrir la app o en tiempo real.
+class PlanRejectionPayload {
+  final String reason;
+  const PlanRejectionPayload({required this.reason});
 }
 
 /// Payload del evento "perfil eliminado" cuando el admin borra el
@@ -45,8 +50,10 @@ class PlanActivationPayload {
 class ProviderDeletionPayload {
   /// 'OFICIO' o 'NEGOCIO' — qué perfil del user fue eliminado.
   final String profileType;
+
   /// Nombre que tenía el perfil para mostrarlo en el dialog.
   final String businessName;
+
   /// Motivo del admin (puede ser fallback genérico).
   final String reason;
   const ProviderDeletionPayload({
@@ -62,6 +69,7 @@ class ProviderDeletionPayload {
 class TrustApprovalPayload {
   /// 'OFICIO' o 'NEGOCIO' — qué perfil fue validado.
   final String profileType;
+
   /// Nombre del perfil para personalizar el mensaje.
   final String businessName;
   const TrustApprovalPayload({
@@ -76,7 +84,7 @@ class TrustApprovalPayload {
 class UserDeletionPayload {
   /// Motivo escrito por el admin en el panel.
   final String reason;
-  const UserDeletionPayload({ required this.reason });
+  const UserDeletionPayload({required this.reason});
 }
 
 /// Payload del evento "perfil aprobado" cuando el admin acepta la
@@ -87,8 +95,10 @@ class ProviderApprovalPayload {
   /// id del Provider aprobado — clave para el flag "ya visto"
   /// persistido en SharedPreferences por `WelcomeProviderPlanModal`.
   final int providerId;
+
   /// businessName a saludar en la primera diapositiva del carrusel.
   final String displayName;
+
   /// 'OFICIO' o 'NEGOCIO' — solo para tracking; el carrusel actual
   /// es genérico.
   final String type;

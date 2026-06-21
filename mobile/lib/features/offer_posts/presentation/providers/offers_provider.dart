@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../data/offers_repository.dart';
 import '../../domain/models/public_offer_model.dart';
 
@@ -17,15 +19,15 @@ class PublicOffersProvider extends ChangeNotifier {
   final _repo = OffersRepository();
 
   List<PublicOfferModel> _offers = [];
-  bool   _isLoading  = false;
-  bool   _hasMore    = true;
-  int    _page       = 1;
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _page = 1;
 
-  String?       _providerType;
-  List<String>  _categorySlugs = const [];
-  String?       _department;
-  String?       _province;
-  String?       _district;
+  String? _providerType;
+  List<String> _categorySlugs = const [];
+  String? _department;
+  String? _province;
+  String? _district;
 
   /// Offer ids del propio user que él decidió ocultar del listado público
   /// (para evitar verse confundido al encontrar su propia oferta).
@@ -35,6 +37,33 @@ class PublicOffersProvider extends ChangeNotifier {
   static const _hiddenKey = 'hidden_offer_ids';
 
   Set<int> get hiddenOwnOfferIds => Set.unmodifiable(_hiddenOwnOfferIds);
+
+  /// Offer ids que el user ya reportó — el botón "reportar" de esas ofertas
+  /// queda deshabilitado y sobrevive reinicios (SharedPreferences). Se agrega
+  /// tanto en un reporte exitoso como en un 409 (ya reportado).
+  final Set<int> _reportedOfferIds = <int>{};
+  bool _reportedLoaded = false;
+  static const _reportedKey = 'reported_offer_ids';
+
+  bool isOfferReported(int offerId) => _reportedOfferIds.contains(offerId);
+
+  Future<void> _loadReportedIds() async {
+    if (_reportedLoaded) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_reportedKey) ?? const [];
+    _reportedOfferIds
+      ..clear()
+      ..addAll(raw.map(int.tryParse).whereType<int>());
+    _reportedLoaded = true;
+  }
+
+  Future<void> _persistReportedIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _reportedKey,
+      _reportedOfferIds.map((e) => e.toString()).toList(),
+    );
+  }
 
   Future<void> _loadHiddenIds() async {
     if (_hiddenLoaded) return;
@@ -69,13 +98,15 @@ class PublicOffersProvider extends ChangeNotifier {
   }
 
   /// Devuelve las ofertas filtrando las que el user marcó como ocultas.
-  List<PublicOfferModel> get visibleOffers =>
-      List.unmodifiable(_offers.where((o) => !_hiddenOwnOfferIds.contains(o.id)));
+  List<PublicOfferModel> get visibleOffers => List.unmodifiable(
+    _offers.where((o) => !_hiddenOwnOfferIds.contains(o.id)),
+  );
 
   /// Las ofertas del propio usuario (provider) — para la sección
   /// "Mis Ofertas". El call-site pasa los providerIds del auth.
-  List<PublicOfferModel> ownOffers(Set<int> myProviderIds) =>
-      List.unmodifiable(_offers.where((o) => myProviderIds.contains(o.provider.id)));
+  List<PublicOfferModel> ownOffers(Set<int> myProviderIds) => List.unmodifiable(
+    _offers.where((o) => myProviderIds.contains(o.provider.id)),
+  );
 
   /// Quita una oferta de la lista en memoria — usado tras eliminarla
   /// desde el detalle para que desaparezca del listado al instante.
@@ -84,14 +115,14 @@ class PublicOffersProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<PublicOfferModel> get offers       => List.unmodifiable(_offers);
-  bool                   get isLoading    => _isLoading;
-  bool                   get hasMore      => _hasMore;
-  String?                get providerType => _providerType;
-  List<String>           get categorySlugs => List.unmodifiable(_categorySlugs);
-  String?                get department   => _department;
-  String?                get province     => _province;
-  String?                get district     => _district;
+  List<PublicOfferModel> get offers => List.unmodifiable(_offers);
+  bool get isLoading => _isLoading;
+  bool get hasMore => _hasMore;
+  String? get providerType => _providerType;
+  List<String> get categorySlugs => List.unmodifiable(_categorySlugs);
+  String? get department => _department;
+  String? get province => _province;
+  String? get district => _district;
 
   /// True cuando el usuario tiene al menos un filtro avanzado activo. El
   /// pill de tipo no cuenta — sirve para mostrar el badge "punto" sobre el
@@ -99,18 +130,14 @@ class PublicOffersProvider extends ChangeNotifier {
   bool get hasAdvancedFilters =>
       _categorySlugs.isNotEmpty ||
       _department != null ||
-      _province   != null ||
-      _district   != null;
+      _province != null ||
+      _district != null;
 
   /// Carga inicial con la ubicación del usuario. Resetea la paginación.
-  Future<void> load({
-    String? department,
-    String? province,
-    String? district,
-  }) {
+  Future<void> load({String? department, String? province, String? district}) {
     _department = department;
-    _province   = province;
-    _district   = district;
+    _province = province;
+    _district = district;
     return _fetch(reset: true);
   }
 
@@ -134,30 +161,33 @@ class PublicOffersProvider extends ChangeNotifier {
     String? district,
   }) {
     _categorySlugs = List.unmodifiable(categorySlugs);
-    _department    = department;
-    _province      = province;
-    _district      = district;
+    _department = department;
+    _province = province;
+    _district = district;
     return _fetch(reset: true);
   }
 
   /// Limpia todos los filtros avanzados. No toca [providerType].
   Future<void> clearAdvanced() {
     _categorySlugs = const [];
-    _department    = null;
-    _province      = null;
-    _district      = null;
+    _department = null;
+    _province = null;
+    _district = null;
     return _fetch(reset: true);
   }
 
   Future<void> _fetch({required bool reset}) async {
     if (reset) {
-      _offers  = [];
-      _page    = 1;
+      _offers = [];
+      _page = 1;
       _hasMore = true;
     }
     // Cargamos el set de ocultos en paralelo al primer fetch — usado
     // por `visibleOffers` para filtrar el listado en la UI.
     if (!_hiddenLoaded) await _loadHiddenIds();
+    // Idem para los reportados: así el botón "reportar" ya nace deshabilitado
+    // para las ofertas que el user reportó en sesiones anteriores.
+    if (!_reportedLoaded) await _loadReportedIds();
 
     _isLoading = true;
     notifyListeners();
@@ -165,11 +195,11 @@ class PublicOffersProvider extends ChangeNotifier {
     try {
       final result = await _repo.getOffers(
         categorySlugs: _categorySlugs,
-        providerType:  _providerType,
-        department:    _department,
-        province:      _province,
-        district:      _district,
-        page:  _page,
+        providerType: _providerType,
+        department: _department,
+        province: _province,
+        district: _district,
+        page: _page,
         limit: 20,
       );
       _offers.addAll(result.data);
@@ -183,7 +213,30 @@ class PublicOffersProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> reportOffer(int offerId, String reason) async {
-    await _repo.reportOffer(offerId, reason);
+  /// Reporta una oferta. Devuelve `(ok, already)`:
+  ///   - ok=true            → reporte registrado (mostrar dialog de gracias).
+  ///   - already=true       → backend respondió 409 (ya reportado): toast.
+  /// En ambos casos la oferta queda marcada como reportada (botón off).
+  /// Re-lanza cualquier otro error para que la UI muestre el toast genérico.
+  Future<({bool ok, bool already})> reportOffer(
+    int offerId,
+    String reason,
+  ) async {
+    await _loadReportedIds();
+    try {
+      await _repo.reportOffer(offerId, reason);
+      _reportedOfferIds.add(offerId);
+      await _persistReportedIds();
+      notifyListeners();
+      return (ok: true, already: false);
+    } on DioException catch (e) {
+      if (e.error is ConflictException || e.response?.statusCode == 409) {
+        _reportedOfferIds.add(offerId);
+        await _persistReportedIds();
+        notifyListeners();
+        return (ok: false, already: true);
+      }
+      rethrow;
+    }
   }
 }

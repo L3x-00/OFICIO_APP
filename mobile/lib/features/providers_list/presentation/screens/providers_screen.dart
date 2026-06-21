@@ -55,11 +55,17 @@ class _ProvidersViewState extends State<_ProvidersView>
       if (!mounted) return;
       final user = context.read<AuthProvider>().user;
       final prov = context.read<ProvidersProvider>();
-      prov.init(
-        department: user?.department,
-        province: user?.province,
-        district: user?.district,
-      );
+      prov
+          .init(
+            department: user?.department,
+            province: user?.province,
+            district: user?.district,
+          )
+          .then((_) {
+            // Pre-carga las portadas del Home apenas llegan los destacados, para
+            // que la primera pintura sea instantánea (clave en invitado).
+            if (mounted) prov.precacheFeaturedCovers(context);
+          });
       // Trae las localidades extras (USER/ADMIN) del backend para que los
       // dropdowns del filter y el chip de ubicación las muestren además
       // del catálogo estático. No bloquea: si falla, el catálogo seguido

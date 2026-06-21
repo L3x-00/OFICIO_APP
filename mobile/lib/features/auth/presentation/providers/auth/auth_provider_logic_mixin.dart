@@ -45,13 +45,16 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     // comunes
     String? description,
     String? address,
+
     /// Una o más categorías asociadas al proveedor. El backend valida
     /// el arreglo bajo el nombre `categoryIds`; mantenemos esa forma
     /// desde el provider para evitar transforms espurios en el
     /// repositorio.
     List<int>? categoryIds,
+
     /// Especialidad principal (isPrimary) — debe estar dentro de categoryIds.
     int? primaryCategoryId,
+
     /// Ubicación administrativa — el backend resuelve la localidad real.
     String? department,
     String? province,
@@ -72,33 +75,33 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     notifyListeners();
 
     final result = await _repo.registerProvider(
-      businessName:     businessName,
-      phone:            phone,
-      type:             type,
-      whatsapp:         whatsapp,
-      dni:              dni,
-      ruc:              ruc,
-      nombreComercial:  nombreComercial,
-      razonSocial:      razonSocial,
-      hasDelivery:      hasDelivery,
+      businessName: businessName,
+      phone: phone,
+      type: type,
+      whatsapp: whatsapp,
+      dni: dni,
+      ruc: ruc,
+      nombreComercial: nombreComercial,
+      razonSocial: razonSocial,
+      hasDelivery: hasDelivery,
       plenaCoordinacion: plenaCoordinacion,
-      hasHomeService:   hasHomeService,
-      description:      description,
-      address:          address,
-      categoryIds:      categoryIds,
+      hasHomeService: hasHomeService,
+      description: description,
+      address: address,
+      categoryIds: categoryIds,
       primaryCategoryId: primaryCategoryId,
-      department:       department,
-      province:         province,
-      district:         district,
-      scheduleJson:     scheduleJson,
-      website:          website,
-      instagram:        instagram,
-      tiktok:           tiktok,
-      facebook:         facebook,
-      linkedin:         linkedin,
-      twitterX:         twitterX,
-      telegram:         telegram,
-      whatsappBiz:      whatsappBiz,
+      department: department,
+      province: province,
+      district: district,
+      scheduleJson: scheduleJson,
+      website: website,
+      instagram: instagram,
+      tiktok: tiktok,
+      facebook: facebook,
+      linkedin: linkedin,
+      twitterX: twitterX,
+      telegram: telegram,
+      whatsappBiz: whatsappBiz,
     );
 
     result.when(
@@ -174,8 +177,8 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
       final rawType = profile['type'] as String? ?? 'OFICIO';
       final internalType = switch (rawType) {
         'PROFESSIONAL' => 'OFICIO',
-        'BUSINESS'     => 'NEGOCIO',
-        _              => rawType,
+        'BUSINESS' => 'NEGOCIO',
+        _ => rawType,
       };
       _providerProfiles.add(internalType);
       _activeProfileType ??= internalType;
@@ -195,16 +198,20 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
       // Si fue rechazado, extraer el motivo de la primera notificación
       // RECHAZADO. El mensaje viene con prefijo "Motivo: " desde el admin.
       if (status == 'RECHAZADO') {
-        final notifications = profile['pendingNotifications'] as List<dynamic>? ?? [];
+        final notifications =
+            profile['pendingNotifications'] as List<dynamic>? ?? [];
         final rejectionNotif = notifications.firstWhere(
           (n) => (n as Map<String, dynamic>)['type'] == 'RECHAZADO',
           orElse: () => null,
         );
         if (rejectionNotif != null) {
-          final msg = (rejectionNotif as Map<String, dynamic>)['message'] as String? ?? '';
+          final msg =
+              (rejectionNotif as Map<String, dynamic>)['message'] as String? ??
+              '';
           final idx = msg.indexOf('Motivo: ');
-          _rejectionReasonByType[internalType] =
-              idx >= 0 ? msg.substring(idx + 8) : msg;
+          _rejectionReasonByType[internalType] = idx >= 0
+              ? msg.substring(idx + 8)
+              : msg;
         }
       }
     }
@@ -221,6 +228,26 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     if (_user!.role != expectedRole) {
       _user = _user!.copyWith(role: expectedRole);
     }
+  }
+
+  /// Cold-start: si algún perfil quedó RECHAZADO en la validación de datos,
+  /// encola el modal "Datos no validados" con el motivo del admin para que
+  /// aparezca al abrir la app (aunque el rechazo haya ocurrido offline). Se
+  /// llama solo desde `initialize()` → una vez por arranque (no spammea).
+  void _enqueueTrustRejectionIfNeeded() {
+    String? rejectedType;
+    for (final e in _verificationStatusByType.entries) {
+      if (e.value == 'RECHAZADO') {
+        rejectedType = e.key;
+        break;
+      }
+    }
+    if (rejectedType == null) return;
+    final reason = _rejectionReasonByType[rejectedType];
+    if (reason == null || reason.isEmpty) return;
+    (this as dynamic).setPendingTrustRejection(
+      TrustRejectionPayload(reason: reason, profileType: rejectedType),
+    );
   }
 
   /// Si tras la sincronización hay un perfil de proveedor APROBADO,
@@ -242,9 +269,9 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     if (id is! int) return;
     final name = (data['businessName'] as String?) ?? _user?.firstName ?? '';
     _pendingProviderApproval = ProviderApprovalPayload(
-      providerId:  id,
+      providerId: id,
       displayName: name,
-      type:        type,
+      type: type,
     );
   }
 }

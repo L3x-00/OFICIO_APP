@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
@@ -56,7 +57,11 @@ export class UsersService {
           },
         },
         notifications: {
-          where: { isRead: false },
+          // Solo notificaciones DIRIGIDAS a este usuario (targetUserId). Las
+          // notifs admin-only sobre el proveedor (NUEVO_PROVEEDOR, pagos Yape,
+          // OFFER_REPORT) llevan providerId pero targetUserId=null y NO deben
+          // aparecer en el inbox del propio proveedor.
+          where: { isRead: false, targetUserId: userId },
           select: { id: true, type: true, message: true, sentAt: true },
           orderBy: { sentAt: 'desc' },
           take: 5,
@@ -66,6 +71,12 @@ export class UsersService {
           select: { rejectionReason: true, reviewedAt: true },
           orderBy: { reviewedAt: 'desc' },
           take: 1,
+        },
+        // Plan vigente — SIEMPRE fresco desde BD (sin caché). El móvil lo lee
+        // en restoreSession/_syncProviderStatus al reabrir la app, así bloquea
+        // funciones premium de inmediato si el plan venció o se canceló.
+        subscription: {
+          select: { plan: true, status: true, endDate: true },
         },
       },
     });
@@ -105,6 +116,11 @@ export class UsersService {
           parentName: pc.category.parent?.name ?? null,
         })),
         pendingNotifications: p.notifications,
+        // Plan real (GRATIS si no hay suscripción activa). El móvil lo guarda
+        // en providerDataByType y gatea premium con este valor al reabrir.
+        plan: p.subscription?.plan ?? 'GRATIS',
+        subscriptionStatus: p.subscription?.status ?? null,
+        subscriptionEndDate: p.subscription?.endDate ?? null,
       })),
     };
   }
@@ -127,6 +143,19 @@ export class UsersService {
         // coins se incluye para que el contador de monedas del header
         // de la pantalla principal se actualice tras un referral.
         coins: true,
+        // Plan vigente de cada perfil de proveedor — SIEMPRE fresco desde
+        // BD (este endpoint no usa caché). Tras cancelar/vencer un plan, el
+        // móvil que lea /users/me ve el plan real (GRATIS), evitando que
+        // siga mostrando ESTANDAR/PREMIUM al reiniciar sesión.
+        providers: {
+          select: {
+            id: true,
+            type: true,
+            subscription: {
+              select: { plan: true, status: true, endDate: true },
+            },
+          },
+        },
       },
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
@@ -174,30 +203,43 @@ export class UsersService {
       district?: string;
     },
   ) {
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(data.firstName !== undefined && { firstName: data.firstName }),
-        ...(data.lastName !== undefined && { lastName: data.lastName }),
-        ...(data.phone !== undefined && { phone: data.phone }),
-        ...(data.department !== undefined && { department: data.department }),
-        ...(data.province !== undefined && { province: data.province }),
-        ...(data.district !== undefined && { district: data.district }),
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        avatarUrl: true,
-        role: true,
-        department: true,
-        province: true,
-        district: true,
-      },
-    });
-    return user;
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(data.firstName !== undefined && { firstName: data.firstName }),
+          ...(data.lastName !== undefined && { lastName: data.lastName }),
+          ...(data.phone !== undefined && { phone: data.phone }),
+          ...(data.department !== undefined && { department: data.department }),
+          ...(data.province !== undefined && { province: data.province }),
+          ...(data.district !== undefined && { district: data.district }),
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          avatarUrl: true,
+          role: true,
+          department: true,
+          province: true,
+          district: true,
+        },
+      });
+      return user;
+    } catch (e: any) {
+      // phone es @unique: si otro usuario ya lo tiene, Prisma lanza P2002.
+      // Lo mapeamos a un 409 Conflict con mensaje claro (en vez del genérico
+      // del filtro global "Ya hay un registro con ese phone").
+      if (
+        e?.code === 'P2002' &&
+        (e?.meta?.target as string[] | undefined)?.includes('phone')
+      ) {
+        throw new ConflictException('El número de teléfono ya está en uso');
+      }
+      throw e;
+    }
   }
 
   // ── ACTUALIZAR FOTO DE PERFIL ────────────────────────────

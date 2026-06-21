@@ -100,7 +100,7 @@ export default function PanelAjustesPage() {
       icon: Package,
       iconColor: 'text-white/50',
       iconBg: 'bg-white/5',
-      benefits: ['3 fotos en la galería', '1 servicio/producto', 'Perfil básico'],
+      benefits: ['2 fotos en la galería', '1 servicio/producto', 'Perfil básico'],
       isCurrent: currentPlan === 'GRATIS',
     },
     {
