@@ -250,6 +250,20 @@ export class AuthService {
         body: `${firstName} ${lastName} (${email}) se registró mediante login social.`,
         targetRole: 'ADMIN',
       });
+      // PERSISTIR en el inbox del admin. El emit de arriba es efímero
+      // (realtime); sin esta fila el registro con Google se veía en el feed
+      // del dashboard pero NO quedaba guardado en el historial. providerId
+      // null → aparece por el whitelist de type en ADMIN_NOTIF_WHERE.
+      void this.prisma.adminNotification
+        .create({
+          data: {
+            providerId: null,
+            type: 'NEW_USER_VERIFIED',
+            title: 'Nuevo usuario (Google)',
+            message: `${firstName} ${lastName} (${email}) se registró con Google y está activo.`,
+          },
+        })
+        .catch(() => {});
     } else if (!user.isActive) {
       if (user.deletedAt == null) {
         // Inactiva sin deletedAt = suspendida por el admin → bloquear.

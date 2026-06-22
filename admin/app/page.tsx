@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import {
   Users, Star, ShieldCheck, MessageCircle,
   Phone, AlertTriangle, TrendingUp, UserCheck,
@@ -14,46 +16,11 @@ import { getDashboardMetrics, getGraceProviders } from '@/lib/api';
 import type { DashboardMetrics, GraceProvider } from '@/lib/api';
 import { useAdminRealtime } from '@/lib/use-admin-realtime';
 
-function SectionHeader({
-  title,
-  subtitle,
-  count,
-  countAlert,
-  action,
-}: {
-  title: string;
-  subtitle?: string;
-  count?: number;
-  countAlert?: boolean;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h2>
-          {count !== undefined && count > 0 && (
-            <span style={{
-              padding: '2px 8px',
-              borderRadius: '99px',
-              fontSize: '11px',
-              fontWeight: 700,
-              background: countAlert ? 'rgba(239,68,68,0.12)' : 'rgba(249,115,22,0.12)',
-              border: `1px solid ${countAlert ? 'rgba(239,68,68,0.25)' : 'rgba(249,115,22,0.25)'}`,
-              color: countAlert ? '#F87171' : '#FB923C',
-            }}>
-              {count}
-            </span>
-          )}
-        </div>
-        {subtitle && (
-          <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '2px' }}>{subtitle}</p>
-        )}
-      </div>
-      {action}
-    </div>
-  );
-}
+// Drill-down del card "Vencen en 7 días" — lazy (solo carga al abrirlo).
+const ExpiringProvidersModal = dynamic(
+  () => import('@/components/expiring-providers-modal').then((m) => m.ExpiringProvidersModal),
+  { ssr: false },
+);
 
 export default function DashboardPage() {
   const [metrics, setMetrics]           = useState<DashboardMetrics | null>(null);
@@ -63,6 +30,12 @@ export default function DashboardPage() {
   const [refreshing, setRefreshing]     = useState(false);
   const [lastUpdated, setLastUpdated]   = useState<Date | null>(null);
   const [liveAlert, setLiveAlert]       = useState<string | null>(null);
+  const [showExpiring, setShowExpiring] = useState(false);
+  const router = useRouter();
+
+  // Scroll suave a la sección de proveedores en gracia (drill-down del card).
+  const scrollToGrace = () =>
+    document.getElementById('grace-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   function handlePendingAction() {
     setMetrics(m => m ? { ...m, pendingVerifications: Math.max(0, m.pendingVerifications - 1) } : m);
@@ -77,8 +50,8 @@ export default function DashboardPage() {
       setMetrics(m);
       setGraceProviders(gp);
       setLastUpdated(new Date());
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar el dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar el dashboard');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -287,6 +260,7 @@ export default function DashboardPage() {
           subtitle={`de ${metrics.totalProviders} totales`}
           icon={Users}
           color="blue"
+          onClick={() => router.push('/providers')}
         />
         <MetricCard
           title="Periodo de gracia"
@@ -294,6 +268,7 @@ export default function DashboardPage() {
           subtitle="proveedores freemium"
           icon={TrendingUp}
           color="purple"
+          onClick={scrollToGrace}
         />
         <MetricCard
           title="Vencen en 7 días"
@@ -302,12 +277,14 @@ export default function DashboardPage() {
           icon={AlertTriangle}
           color="orange"
           alert={metrics.providersExpiringSoon > 0}
+          onClick={() => setShowExpiring(true)}
         />
         <MetricCard
           title="Usuarios registrados"
           value={metrics.totalUsers}
           icon={UserCheck}
           color="green"
+          onClick={() => router.push('/users')}
         />
       </div>
 
@@ -318,6 +295,7 @@ export default function DashboardPage() {
           value={metrics.totalReviews}
           icon={Star}
           color="orange"
+          onClick={() => router.push('/reviews')}
         />
         <MetricCard
           title="Verificaciones pendientes"
@@ -326,18 +304,21 @@ export default function DashboardPage() {
           icon={ShieldCheck}
           color="red"
           alert={metrics.pendingVerifications > 0}
+          onClick={() => router.push('/verification')}
         />
         <MetricCard
           title="Clics WhatsApp (mes)"
           value={metrics.whatsappClicks}
           icon={MessageCircle}
           color="green"
+          onClick={() => router.push('/analytics')}
         />
         <MetricCard
           title="Clics llamadas (mes)"
           value={metrics.callClicks}
           icon={Phone}
           color="blue"
+          onClick={() => router.push('/analytics')}
         />
       </div>
 
@@ -398,11 +379,12 @@ export default function DashboardPage() {
       <ReferralsWidget />
 
       {/* Grace providers */}
-      <div style={{
+      <div id="grace-section" style={{
         background: 'var(--surface-2)',
         border: '1px solid var(--border-default)',
         borderRadius: '18px',
         overflow: 'hidden',
+        scrollMarginTop: '80px',
       }}>
         <div style={{
           padding: '20px 24px',
@@ -435,6 +417,11 @@ export default function DashboardPage() {
           <GraceProvidersTable providers={graceProviders} />
         </div>
       </div>
+
+      {/* Drill-down: proveedores por vencer + acción de recordatorio/push */}
+      {showExpiring && (
+        <ExpiringProvidersModal onClose={() => setShowExpiring(false)} />
+      )}
 
       {/* Componente visual de alerta en tiempo real */}
       {liveAlert && (

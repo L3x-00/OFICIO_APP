@@ -130,20 +130,32 @@ export class AiAnalyticsService {
     }
   }
 
-  /** Consultas de usuario más frecuentes (agrupadas por contenido). */
+  /**
+   * Consultas de usuario más frecuentes.
+   *
+   * Antes agrupaba por `content` EXACTO: "¿Cuánto cuesta?", "cuanto cuesta"
+   * y "Cuánto cuesta " contaban como 3 consultas distintas (count=1 cada
+   * una) → la lista parecía un log crudo y "no agrupaba". Ahora normaliza
+   * en SQL (minúsculas + colapso de espacios + recorte de signos ¿¡?!.,)
+   * antes de agrupar, y muestra como etiqueta el original más reciente.
+   */
   async getTopQueries(limit = 10): Promise<AiTopQueryDto[]> {
     const take = Math.min(Math.max(limit, 1), 50);
     try {
-      const grouped = await this.prisma.aiMessage.groupBy({
-        by: ['content'],
-        where: { role: 'user', flagged: false },
-        _count: { content: true },
-        orderBy: { _count: { content: 'desc' } },
-        take,
-      });
-      return grouped.map((g) => ({
-        query: this.truncate(g.content, 140),
-        count: g._count.content,
+      const rows = await this.prisma.$queryRaw<
+        Array<{ query: string; count: bigint | number }>
+      >(Prisma.sql`
+        SELECT (array_agg(content ORDER BY "createdAt" DESC))[1] AS query,
+               count(*)                                          AS count
+        FROM ai_messages
+        WHERE role = 'user' AND flagged = false
+        GROUP BY lower(btrim(regexp_replace(content, '\\s+', ' ', 'g'), ' ¿¡?!.,'))
+        ORDER BY count DESC
+        LIMIT ${take}
+      `);
+      return rows.map((r) => ({
+        query: this.truncate(r.query, 140),
+        count: Number(r.count),
       }));
     } catch (e) {
       this.logger.warn(`getTopQueries falló: ${(e as Error)?.message ?? e}`);
@@ -213,19 +225,42 @@ export class AiAnalyticsService {
   /**
    * Uso diario (preguntas + tokens) de los últimos `days` días, agrupado
    * por día en horario de Perú. Raw SQL parametrizado (regla 3): el único
-   * valor dinámico (`cutoff`) viaja como bind param.
+   * valor dinámico (`days`) viaja como bind param.
+   *
+   * BACKFILL: `generate_series` produce TODOS los días de la ventana y se
+   * hace LEFT JOIN con los conteos reales → la serie siempre trae `days`
+   * puntos (con ceros donde no hubo actividad). Antes la query solo
+   * devolvía días CON mensajes: con uso reciente y disperso la gráfica
+   * quedaba con 1 punto (línea invisible) y parecía "sin reporte".
    */
   private async dailyTimeline(days: number): Promise<AiUsagePoint[]> {
-    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const rows = await this.prisma.$queryRaw<TimelineRow[]>(Prisma.sql`
-      SELECT
-        to_char(date_trunc('day', "createdAt" AT TIME ZONE 'America/Lima'), 'YYYY-MM-DD') AS day,
-        count(*) FILTER (WHERE role = 'user')          AS questions,
-        coalesce(sum("tokensUsed"), 0)                 AS tokens
-      FROM ai_messages
-      WHERE "createdAt" >= ${cutoff}
-      GROUP BY 1
-      ORDER BY 1 ASC
+      WITH bounds AS (
+        SELECT date_trunc('day', (now() AT TIME ZONE 'America/Lima')) AS today
+      ),
+      series AS (
+        SELECT generate_series(
+                 (SELECT today FROM bounds) - (${days - 1}::int * interval '1 day'),
+                 (SELECT today FROM bounds),
+                 interval '1 day'
+               ) AS day
+      ),
+      usage AS (
+        SELECT date_trunc('day', "createdAt" AT TIME ZONE 'America/Lima') AS day,
+               count(*) FILTER (WHERE role = 'user') AS questions,
+               coalesce(sum("tokensUsed"), 0)        AS tokens
+        FROM ai_messages
+        WHERE "createdAt" >= (
+          (SELECT today FROM bounds) - (${days - 1}::int * interval '1 day')
+        ) AT TIME ZONE 'America/Lima'
+        GROUP BY 1
+      )
+      SELECT to_char(s.day, 'YYYY-MM-DD')      AS day,
+             coalesce(u.questions, 0)          AS questions,
+             coalesce(u.tokens, 0)             AS tokens
+      FROM series s
+      LEFT JOIN usage u ON u.day = s.day
+      ORDER BY s.day ASC
     `);
     return rows.map((r) => ({
       day: r.day,

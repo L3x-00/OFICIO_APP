@@ -106,6 +106,20 @@ const TYPE_CONFIG: Record<string, { icon: LucideIcon; label: string; color: stri
     bg: 'bg-green-500/10',
     border: 'border-green-500/20',
   },
+  NEW_USER_VERIFIED: {
+    icon: UserPlus,
+    label: 'Nuevo usuario',
+    color: 'text-green-400',
+    bg: 'bg-green-500/10',
+    border: 'border-green-500/20',
+  },
+  USER_PENDING: {
+    icon: UserPlus,
+    label: 'Registro en proceso',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
+  },
 };
 
 /**

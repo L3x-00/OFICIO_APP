@@ -1,7 +1,7 @@
 'use client';
 
 import { X, CheckCircle, XCircle, HelpCircle, ShieldOff, Building2,
-  Calendar, MessageSquare, Megaphone,
+  Calendar, MessageSquare, Megaphone, UserPlus, Gift, Clock, Bell,
   type LucideIcon } from 'lucide-react';
 import { NotificationItem, markNotificationRead } from '@/lib/api';
 
@@ -11,10 +11,23 @@ interface Props {
   onRead: (id: number) => void;
 }
 
-const TYPE_CONFIG: Record<
+type TypeCfg = { icon: LucideIcon; label: string; color: string; bg: string; border: string; description: string };
+
+// Fallback para cualquier `type` no mapeado (evita crash si el backend
+// envía un type nuevo antes de que el frontend lo conozca).
+const DEFAULT_TYPE_CFG: TypeCfg = {
+  icon: Bell,
+  label: 'Notificación',
+  color: 'text-gray-300',
+  bg: 'bg-white/5',
+  border: 'border-white/10',
+  description: 'Notificación del sistema.',
+};
+
+const TYPE_CONFIG: Partial<Record<
   NotificationItem['type'],
-  { icon: LucideIcon; label: string; color: string; bg: string; border: string; description: string }
-> = {
+  TypeCfg
+>> = {
   APROBADO: {
     icon: CheckCircle,
     label: 'Perfil Aprobado',
@@ -79,6 +92,54 @@ const TYPE_CONFIG: Record<
     border: 'border-purple-500/25',
     description: 'Push masiva que enviaste a todos los usuarios.',
   },
+  NEW_USER_VERIFIED: {
+    icon: UserPlus,
+    label: 'Nuevo usuario',
+    color: 'text-green-400',
+    bg: 'bg-green-500/10',
+    border: 'border-green-500/25',
+    description: 'Un usuario completó el registro y verificó su email.',
+  },
+  USER_PENDING: {
+    icon: Clock,
+    label: 'Registro en proceso',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/25',
+    description: 'Un usuario está completando la verificación de su email.',
+  },
+  REFERRAL_CODE_USED: {
+    icon: Gift,
+    label: 'Código de referido usado',
+    color: 'text-pink-400',
+    bg: 'bg-pink-500/10',
+    border: 'border-pink-500/25',
+    description: 'Un usuario aplicó un código de referido al registrarse.',
+  },
+  REFERRAL_ADMIN_APPROVED: {
+    icon: Gift,
+    label: 'Referido aprobado',
+    color: 'text-green-400',
+    bg: 'bg-green-500/10',
+    border: 'border-green-500/25',
+    description: 'Una recompensa por referido fue aprobada.',
+  },
+  EXPIRY_REMINDER: {
+    icon: Clock,
+    label: 'Recordatorio de vencimiento',
+    color: 'text-orange-400',
+    bg: 'bg-orange-500/10',
+    border: 'border-orange-500/25',
+    description: 'Recordatorio enviado a un proveedor por vencimiento de plan.',
+  },
+  ADMIN_MESSAGE: {
+    icon: Bell,
+    label: 'Mensaje del administrador',
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/10',
+    border: 'border-blue-500/25',
+    description: 'Mensaje directo enviado a un proveedor desde el panel.',
+  },
 };
 
 function fmt(iso: string) {
@@ -91,7 +152,7 @@ function fmt(iso: string) {
 export function NotificationDetailModal({ notification, onClose, onRead }: Props) {
   if (!notification) return null;
 
-  const cfg = TYPE_CONFIG[notification.type];
+  const cfg = TYPE_CONFIG[notification.type] ?? DEFAULT_TYPE_CFG;
   const Icon = cfg.icon;
 
   const handleMarkRead = async () => {

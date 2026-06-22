@@ -257,6 +257,58 @@ export class AdminDashboardService {
     }));
   }
 
+  // ── PROVEEDORES POR VENCER (drill-down del card "Vencen en 7 días") ──
+  //
+  // MISMO filtro que `providersExpiringSoon` en getDashboardMetrics
+  // (status GRACIA, endDate dentro de los próximos 7 días) → el conteo
+  // del card coincide con el largo de esta lista. Incluye `userId` para
+  // que el admin pueda dispararle un recordatorio/push directo.
+  async getExpiringProviders() {
+    const now = new Date();
+    const in7 = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const subs = await this.prisma.subscription.findMany({
+      where: { status: 'GRACIA', endDate: { gte: now, lte: in7 } },
+      include: {
+        provider: {
+          select: {
+            id: true,
+            userId: true,
+            businessName: true,
+            type: true,
+            locality: { select: { name: true } },
+            providerCategories: {
+              select: { category: { select: { name: true } } },
+            },
+            user: { select: { firstName: true, lastName: true, phone: true } },
+          },
+        },
+      },
+      orderBy: { endDate: 'asc' },
+    });
+
+    return subs
+      .filter((s) => s.provider)
+      .map((sub) => {
+        const p = sub.provider;
+        return {
+          providerId: p.id,
+          userId: p.userId,
+          businessName: p.businessName,
+          type: p.type,
+          ownerName:
+            `${p.user?.firstName ?? ''} ${p.user?.lastName ?? ''}`.trim(),
+          phone: p.user?.phone ?? null,
+          locality: p.locality?.name ?? null,
+          category: p.providerCategories?.[0]?.category?.name ?? null,
+          plan: sub.plan,
+          endDate: sub.endDate.toISOString(),
+          daysLeft: Math.ceil(
+            (sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+          ),
+        };
+      });
+  }
+
   // ── ANALYTICS ─────────────────────────────────────────────
   async getAnalytics(days = 30) {
     const since = new Date();

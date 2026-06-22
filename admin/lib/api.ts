@@ -150,6 +150,35 @@ export const getDashboardMetrics = () =>
 export const getGraceProviders = () =>
   fetchApi<GraceProvider[]>('/admin/grace-providers');
 
+// ── DRILL-DOWN: proveedores por vencer (card "Vencen en 7 días") ──
+export interface ExpiringProvider {
+  providerId: number;
+  userId: number;
+  businessName: string;
+  type: string;
+  ownerName: string;
+  phone: string | null;
+  locality: string | null;
+  category: string | null;
+  plan: string;
+  endDate: string;
+  daysLeft: number;
+}
+
+export const getExpiringProviders = () =>
+  fetchApi<ExpiringProvider[]>('/admin/expiring-providers');
+
+// Envía una notif 1:1 a un proveedor (realtime + push + persistida en su
+// inbox). `kind` distingue recordatorio de vencimiento de un mensaje libre.
+export const notifyProvider = (
+  providerId: number,
+  data: { title: string; message: string; kind?: 'EXPIRY_REMINDER' | 'ADMIN_MESSAGE' },
+) =>
+  fetchApi<{ success: true; providerId: number; userId: number }>(
+    `/admin/providers/${providerId}/notify`,
+    { method: 'POST', body: JSON.stringify(data) },
+  );
+
 // En admin/lib/api.ts
 export const getAnalytics = (days: number = 30) => {
   const params = new URLSearchParams({ days: String(days) });
@@ -654,7 +683,16 @@ export interface NotificationItem {
     | 'PLAN_APROBADO'
     | 'PLAN_RECHAZADO'
     | 'PLAN_SOLICITADO'
-    | 'BROADCAST_LOG';
+    | 'BROADCAST_LOG'
+    // Eventos de usuario (sin provider). Se persisten y aparecen en el
+    // historial vía el whitelist de type en ADMIN_NOTIF_WHERE.
+    | 'NEW_USER_VERIFIED'
+    | 'USER_PENDING'
+    | 'REFERRAL_CODE_USED'
+    | 'REFERRAL_ADMIN_APPROVED'
+    // Notifs 1:1 a un proveedor disparadas desde el dashboard.
+    | 'EXPIRY_REMINDER'
+    | 'ADMIN_MESSAGE';
   title?: string;
   message: string;
   isRead: boolean;

@@ -29,6 +29,7 @@ import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto.js';
 import { BroadcastEmailDto } from './dto/broadcast-email.dto.js';
+import { NotifyProviderDto } from './dto/notify-provider.dto.js';
 import { LocalitiesService } from '../localities/localities.service.js';
 import {
   CreateLocalityDto,
@@ -75,6 +76,13 @@ export class AdminController {
   @Get('grace-providers')
   getGraceProviders() {
     return this.adminService.getGraceProviders();
+  }
+
+  // Drill-down del card "Vencen en 7 días": lista de proveedores por
+  // vencer (mismo filtro que la métrica) con userId para recordatorios.
+  @Get('expiring-providers')
+  getExpiringProviders() {
+    return this.adminService.getExpiringProviders();
   }
 
   @Get('analytics')
@@ -425,6 +433,24 @@ export class AdminController {
       body.title,
       body.message,
       body.imageUrl,
+    );
+  }
+
+  // ── NOTIFICACIÓN A UN PROVEEDOR (drill-down del dashboard) ─
+  // Envía una notif 1:1 a un proveedor (realtime + push + persistida en
+  // su inbox). Usado por "enviar recordatorio de vencimiento" / "enviar
+  // notificación" sobre un proveedor por vencer.
+  @Post('providers/:id/notify')
+  @HttpCode(HttpStatus.ACCEPTED)
+  notifyProvider(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: NotifyProviderDto,
+  ) {
+    return this.adminService.notifyProvider(
+      id,
+      body.title,
+      body.message,
+      body.kind ?? 'ADMIN_MESSAGE',
     );
   }
 

@@ -83,6 +83,10 @@ export class AdminService {
     return this.dashboard.getGraceProviders();
   }
 
+  async getExpiringProviders() {
+    return this.dashboard.getExpiringProviders();
+  }
+
   async getAnalytics(days = 30) {
     return this.dashboard.getAnalytics(days);
   }
@@ -709,7 +713,19 @@ export class AdminService {
       OR: [
         { providerId: { not: null } },
         // Tipos del sistema dirigidos al admin que NO llevan providerId.
-        { type: { in: ['BROADCAST_LOG', 'REFERRAL_CODE_USED'] } },
+        // NEW_USER_VERIFIED / USER_PENDING son eventos de USUARIO (sin
+        // proveedor) que antes solo se veían en el feed realtime y NO se
+        // guardaban — ahora se persisten y aparecen en el historial.
+        {
+          type: {
+            in: [
+              'BROADCAST_LOG',
+              'REFERRAL_CODE_USED',
+              'NEW_USER_VERIFIED',
+              'USER_PENDING',
+            ],
+          },
+        },
       ],
     };
 
@@ -981,6 +997,50 @@ export class AdminService {
       .catch(() => null);
 
     return result;
+  }
+
+  // ── NOTIFICACIÓN A UN PROVEEDOR (drill-down del dashboard) ──
+  //
+  // Envía una notificación a UN proveedor concreto desde el panel
+  // (p. ej. "recordatorio de vencimiento" sobre un proveedor por vencer).
+  // Funciona EXACTAMENTE como el broadcast pero 1:1:
+  //   • emitNotification con targetUserId → realtime al socket del usuario
+  //     Y persistido en su inbox (emitNotification persiste si hay
+  //     targetUserId y el type no está en _skipPersist).
+  //   • push.sendToUser → cubre la app en background/terminated (FCM).
+  async notifyProvider(
+    providerId: number,
+    title: string,
+    message: string,
+    kind: 'EXPIRY_REMINDER' | 'ADMIN_MESSAGE' = 'ADMIN_MESSAGE',
+  ): Promise<{ success: true; providerId: number; userId: number }> {
+    const cleanTitle = title?.trim();
+    const cleanBody = message?.trim();
+    if (!cleanTitle) throw new BadRequestException('El título es obligatorio');
+    if (!cleanBody) throw new BadRequestException('El mensaje es obligatorio');
+
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: providerId },
+      select: { id: true, userId: true, businessName: true, type: true },
+    });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+
+    const type =
+      kind === 'EXPIRY_REMINDER' ? 'EXPIRY_REMINDER' : 'ADMIN_MESSAGE';
+
+    // Realtime + persistencia en el inbox del proveedor.
+    this.eventsGateway.emitNotification({
+      type,
+      title: cleanTitle,
+      body: cleanBody,
+      targetUserId: provider.userId,
+      targetProfileType: provider.type,
+    });
+
+    // Push (app en background/terminated).
+    this.push.sendToUser(provider.userId, cleanTitle, cleanBody, { type });
+
+    return { success: true, providerId: provider.id, userId: provider.userId };
   }
 
   // ── CORREO MASIVO (solo email, segmentable) ───────────────

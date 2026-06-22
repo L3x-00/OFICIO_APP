@@ -10,6 +10,8 @@ interface MetricCardProps {
   alert?: boolean;
   trend?: number;
   trendLabel?: string;
+  /** Si se pasa, la tarjeta es clicable (drill-down) y muestra un hint "Ver". */
+  onClick?: () => void;
 }
 
 const colorConfig = {
@@ -30,12 +32,18 @@ export function MetricCard({
   alert = false,
   trend,
   trendLabel,
+  onClick,
 }: MetricCardProps) {
   const cfg = colorConfig[color];
   const isPositiveTrend = trend !== undefined && trend >= 0;
+  const clickable = typeof onClick === 'function';
 
   return (
     <div
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick!(); } } : undefined}
       style={{
         background: 'var(--surface-2)',
         border: `1px solid ${alert ? 'rgba(239,68,68,0.25)' : cfg.border}`,
@@ -45,7 +53,7 @@ export function MetricCard({
         overflow: 'hidden',
         transition: 'all 0.2s ease',
         boxShadow: alert ? '0 4px 20px rgba(239,68,68,0.1)' : cfg.glow,
-        cursor: 'default',
+        cursor: clickable ? 'pointer' : 'default',
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
@@ -140,6 +148,21 @@ export function MetricCard({
       {(subtitle || trendLabel) && (
         <p style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
           {trendLabel || subtitle}
+        </p>
+      )}
+
+      {/* Hint de drill-down */}
+      {clickable && (
+        <p style={{
+          fontSize: '11px',
+          fontWeight: 600,
+          color: cfg.icon,
+          marginTop: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}>
+          Ver detalle →
         </p>
       )}
     </div>

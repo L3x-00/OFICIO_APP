@@ -153,6 +153,18 @@ export class AuthRegistrationService {
       body: `${data.firstName} ${data.lastName} (${data.email}) está completando la verificación de email.`,
       targetRole: 'ADMIN',
     });
+    // Persistir para que el registro en proceso (y los abandonados que nunca
+    // verifican) queden en el historial del admin, no solo en el feed vivo.
+    void this.prisma.adminNotification
+      .create({
+        data: {
+          providerId: null,
+          type: 'USER_PENDING',
+          title: 'Registro en proceso',
+          message: `${data.firstName} ${data.lastName} (${data.email}) está completando la verificación de email.`,
+        },
+      })
+      .catch(() => {});
     this.eventsGateway.emitAdminEvent('USER_PENDING', {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -564,6 +576,18 @@ export class AuthRegistrationService {
       lastName: reg.lastName,
       email: reg.email,
     });
+    // Persistir en el inbox del admin (el emit es efímero). providerId null
+    // → aparece por el whitelist de type en ADMIN_NOTIF_WHERE.
+    void this.prisma.adminNotification
+      .create({
+        data: {
+          providerId: null,
+          type: 'NEW_USER_VERIFIED',
+          title: 'Usuario registrado',
+          message: `${reg.firstName} ${reg.lastName} (${reg.email}) completó la verificación y está activo.`,
+        },
+      })
+      .catch(() => {});
 
     // Correo de bienvenida (best-effort: no bloquea ni rompe el registro).
     this.emailService

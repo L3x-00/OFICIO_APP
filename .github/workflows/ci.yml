@@ -333,6 +333,15 @@ jobs:
       - name: TypeScript — type check
         run: npm run type-check
 
+      # Tests unit + componente (Vitest + React Testing Library). Cubren
+      # el dashboard interactivo (MetricCard clicable), el drill-down de
+      # vencimientos (ExpiringProvidersModal → notifyProvider en tiempo
+      # real), el fallback del detalle de notificaciones (no crashea con
+      # types nuevos) y los wrappers de la API admin. Si CUALQUIER test
+      # falla, el job (y el deploy-gate) se bloquean.
+      - name: Unit + component tests (Vitest)
+        run: npm run test
+
       - name: Build (next build)
         run: npm run build
 

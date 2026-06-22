@@ -77,6 +77,16 @@ function breakerTone(state: string): 'success' | 'warning' | 'danger' {
   return 'success';
 }
 
+// Etiqueta humana del estado del breaker. CLOSED es el estado SANO
+// (circuito cerrado = la corriente fluye = IA operativa) pero "closed"
+// se lee como "apagado" → lo traducimos para el admin.
+function breakerLabel(state: string | undefined): string {
+  if (state === 'OPEN') return 'Cortado';
+  if (state === 'HALF_OPEN') return 'Recuperando';
+  if (state === 'CLOSED') return 'Operativo';
+  return '—';
+}
+
 export default function AiAnalyticsContent() {
   const [summary, setSummary] = useState<AiSummary | null>(null);
   const [topQueries, setTopQueries] = useState<AiTopQuery[]>([]);
@@ -211,12 +221,16 @@ export default function AiAnalyticsContent() {
           subtitle={`${security?.jailbreakTotal ?? 0} en total`}
         />
         <MetricCard
-          title="Circuit Breaker"
-          value={cb?.state ?? '—'}
+          title="Estado del asistente"
+          value={breakerLabel(cb?.state)}
           icon={Zap}
-          color="orange"
+          color={cb?.state === 'OPEN' ? 'red' : cb?.state === 'HALF_OPEN' ? 'orange' : 'green'}
           alert={cb?.isOpen ?? false}
-          subtitle={`${security?.breakerOpensToday ?? 0} aperturas hoy · ${security?.geminiErrorsToday ?? 0} errores`}
+          subtitle={
+            cb?.state === 'CLOSED'
+              ? 'IA operativa · sin cortes'
+              : `${security?.breakerOpensToday ?? 0} aperturas hoy · ${security?.geminiErrorsToday ?? 0} errores`
+          }
         />
       </div>
 
@@ -286,7 +300,7 @@ export default function AiAnalyticsContent() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
               <EventButton onClick={() => setDrawerEvent('breaker')}>
                 <Badge tone={breakerTone(cb?.state ?? 'CLOSED')}>
-                  <Zap size={11} /> Breaker: {cb?.state ?? '—'}
+                  <Zap size={11} /> Asistente: {breakerLabel(cb?.state)}
                 </Badge>
               </EventButton>
               <EventButton onClick={() => setDrawerEvent('errors')}>
@@ -436,7 +450,7 @@ function SecurityEventDrawer({
           {event === 'breaker' && (
             <>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Badge tone={breakerTone(cb.state)}>Estado: {cb.state}</Badge>
+                <Badge tone={breakerTone(cb.state)}>Estado: {breakerLabel(cb.state)} ({cb.state})</Badge>
                 <Badge tone={cb.fails > 0 ? 'warning' : 'neutral'}>{cb.fails} fallos consecutivos</Badge>
               </div>
               <DrawerRow label="Aperturas hoy" value={String(data.breakerOpensToday)} />
@@ -454,7 +468,7 @@ function SecurityEventDrawer({
           {event === 'errors' && (
             <>
               <Badge tone={data.geminiErrorsToday > 0 ? 'warning' : 'neutral'}>{data.geminiErrorsToday} errores hoy</Badge>
-              <DrawerRow label="Estado del breaker" value={cb.state} />
+              <DrawerRow label="Estado del asistente" value={`${breakerLabel(cb.state)} (${cb.state})`} />
               <DrawerRow label="Aperturas del breaker hoy" value={String(data.breakerOpensToday)} />
               <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
                 Contador diario de errores de la API de Gemini (timeouts, 5xx, cuota). El detalle por error no se persiste en BD — solo el contador en Redis y la traza completa en Sentry. Si los errores disparan el breaker, lo verás reflejado en su estado.

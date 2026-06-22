@@ -87,7 +87,11 @@
       "Bash(git log *)",
       "Bash(grep -n '$transaction' backend/src/users/users.service.ts backend/src/provider-profile/provider-profile.service.ts backend/src/subastas/subastas.service.ts backend/src/admin/services/admin-trust.service.ts backend/src/payments/payments.service.ts backend/src/admin/admin.service.ts backend/src/referrals/referrals.service.ts backend/src/auth/services/auth-registration.service.ts backend/src/admin/services/admin-payments.service.ts backend/src/reviews/reviews.service.ts)",
       "Bash(grep -A 15 '$transaction\\(async \\(tx\\)' backend/src/users/users.service.ts)",
-      "PowerShell(Set-Location C:\\\\Users\\\\Usuario\\\\oficio_app\\\\backend; npm run test:cov 2>&1 | Select-String -Pattern \"Tests:|Test Suites:|coverage threshold|All files|does not meet\" | Select-Object -First 10; Write-Output \"EXIT=$LASTEXITCODE\")"
+      "PowerShell(Set-Location C:\\\\Users\\\\Usuario\\\\oficio_app\\\\backend; npm run test:cov 2>&1 | Select-String -Pattern \"Tests:|Test Suites:|coverage threshold|All files|does not meet\" | Select-Object -First 10; Write-Output \"EXIT=$LASTEXITCODE\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('SCRIPTS:'\\); [print\\(' ',k,'=',v\\) for k,v in d.get\\('scripts',{}\\).items\\(\\)]; print\\('DEV DEPS:'\\); [print\\(' ',k\\) for k in d.get\\('devDependencies',{}\\)]; print\\('NEXT:', d.get\\('dependencies',{}\\).get\\('next'\\)\\); print\\('REACT:', d.get\\('dependencies',{}\\).get\\('react'\\)\\)\")",
+      "Bash(npx vitest *)",
+      "Bash(ls test/unit/admin* test/unit/**/admin*)",
+      "Bash(find test *)"
     ]
   }
 }

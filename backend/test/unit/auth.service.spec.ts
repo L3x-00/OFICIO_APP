@@ -241,6 +241,16 @@ describe('AuthService (unit)', () => {
       expect(events.emitNotification).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'USER_PENDING', targetRole: 'ADMIN' }),
       );
+      // REGRESIÓN (notif rota): además del emit efímero, persistir el registro
+      // en proceso en el historial del admin (providerId:null → whitelist).
+      expect(prisma.adminNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'USER_PENDING',
+            providerId: null,
+          }),
+        }),
+      );
       // OTP se envía por email (fire-and-forget)
       expect(email.sendOtpEmail).toHaveBeenCalledWith(
         baseDto.email,
@@ -367,6 +377,18 @@ describe('AuthService (unit)', () => {
           targetRole: 'ADMIN',
         }),
       );
+      // REGRESIÓN (notif rota): el emit de arriba es EFÍMERO. Sin esta fila
+      // persistida el registro se veía en el feed del dashboard pero NO
+      // quedaba en el historial del admin. providerId:null → aparece por el
+      // whitelist de `type` en ADMIN_NOTIF_WHERE.
+      expect(prisma.adminNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'NEW_USER_VERIFIED',
+            providerId: null,
+          }),
+        }),
+      );
     });
 
     it('reactiva cuenta soft-deleted en vez de crear duplicada', async () => {
@@ -430,6 +452,17 @@ describe('AuthService (unit)', () => {
         expect.objectContaining({
           type: 'NEW_USER_VERIFIED',
           targetRole: 'ADMIN',
+        }),
+      );
+      // REGRESIÓN (notif rota): el registro con Google se veía en el feed del
+      // dashboard pero NO se guardaba. Debe persistir adminNotification con
+      // providerId:null (visible vía whitelist de type en ADMIN_NOTIF_WHERE).
+      expect(prisma.adminNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'NEW_USER_VERIFIED',
+            providerId: null,
+          }),
         }),
       );
     });
