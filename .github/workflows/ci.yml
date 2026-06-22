@@ -253,11 +253,13 @@ jobs:
       - name: Dart format (info only — no fatal en Fase 1)
         run: dart format --output=none --set-exit-if-changed lib || echo "::warning::Hay archivos sin formatear; se hará fatal en Fase 4."
 
-      # `--fatal-warnings` mantiene errores+warnings fatales pero deja
-      # pasar los infos pre-existentes. Cuando Fase 4 limpie los infos,
-      # subimos a `--fatal-infos`.
+      # `--fatal-warnings --no-fatal-infos`: errores y warnings son fatales
+      # (bloquean), pero los infos pre-existentes (p. ej.
+      # curly_braces_in_flow_control_structures) NO. Sin `--no-fatal-infos`
+      # este SDK trataba los infos como fatales y tumbaba el job. Cuando Fase 4
+      # limpie los infos, quitamos `--no-fatal-infos` (o subimos a --fatal-infos).
       - name: Flutter analyze
-        run: flutter analyze --fatal-warnings
+        run: flutter analyze --fatal-warnings --no-fatal-infos
 
       - name: Flutter test + coverage
         # `--coverage` produce coverage/lcov.info para el artifact.

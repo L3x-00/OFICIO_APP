@@ -42,6 +42,9 @@ function buildAuthService(prisma: PrismaService) {
   const email = {
     sendOtpEmail: jest.fn().mockResolvedValue(undefined),
     sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+    // verifyOtp dispara el correo de bienvenida (fire-and-forget). Sin este
+    // método el doble revienta con "sendWelcomeEmail is not a function".
+    sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
   };
   const firebase = { verifyIdToken: jest.fn().mockResolvedValue(undefined) };
   const minio = { uploadFile: jest.fn().mockResolvedValue('') };
