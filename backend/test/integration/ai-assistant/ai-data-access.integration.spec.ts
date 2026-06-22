@@ -70,9 +70,11 @@ describe('AiDataAccessService (integration, BD real)', () => {
     expect(dto).toHaveProperty('averageRating', 4.5);
     // Sin PostGIS → distanceKm es null:
     expect(dto.distanceKm).toBeNull();
-    // NUNCA expone campos crudos de la entidad Prisma:
-    expect(dto).not.toHaveProperty('phone');
-    expect(dto).not.toHaveProperty('whatsapp');
+    // phone/whatsapp SE EXPONEN pero ENMASCARADOS por plan (anti-burla): el
+    // proveedor de prueba no tiene plan de pago → phone '' y whatsapp null.
+    expect(dto.phone).toBe('');
+    expect(dto.whatsapp).toBeNull();
+    // email/userId (campos crudos de la entidad Prisma) NUNCA se exponen.
     expect(dto).not.toHaveProperty('email');
     expect(dto).not.toHaveProperty('userId');
   });

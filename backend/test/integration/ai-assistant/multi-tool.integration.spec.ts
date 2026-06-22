@@ -334,14 +334,17 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
     );
 
     expect(res.meta.blocked).toBe(false);
-    // La tool admin se ejecutó: la persona ADMIN la tiene activa.
+    // La métrica admin 'top_providers' la resuelve el ROUTER DETERMINÍSTICO
+    // (sin IA): consulta getTopProvidersSafe y formatea la respuesta desde BD.
+    // Gemini NO se invoca (ni para function-calling ni para reinyección),
+    // aunque el mock tenga respuestas encoladas → ahorra cuota y funciona con
+    // Gemini caído.
+    expect(res.meta.deterministic).toBe(true);
     expect(topSpy).toHaveBeenCalledTimes(1);
-    // Devolvió datos REALES (movimiento = 3) y se reinyectaron a Gemini.
-    const reinjected = JSON.stringify(
-      mockGenerateContent.mock.calls[1][0].contents,
-    );
-    expect(reinjected).toContain('get_top_providers');
-    expect(reinjected).toContain('Proveedor Movido');
-    expect(reinjected).toContain('"movement":3');
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    // La respuesta trae datos REALES: el proveedor con más movimiento
+    // (2 vistas + 1 clic = 3 interacciones).
+    expect(res.reply).toContain('Proveedor Movido');
+    expect(res.reply).toContain('3 interacciones');
   });
 });

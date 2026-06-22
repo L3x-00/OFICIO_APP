@@ -35,7 +35,13 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 process.env.REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 process.env.REDIS_PORT = process.env.REDIS_PORT || '6379';
 process.env.REDIS_TLS = process.env.REDIS_TLS || 'false';
-process.env.REDIS_PASSWORD = process.env.REDIS_PASSWORD || 'redis_pass_2025';
+// `??` (NO `||`): el CI levanta Redis SIN password y exporta
+// `REDIS_PASSWORD=''` (string vacío). Con `||` el vacío es falsy y se
+// reemplazaba por `redis_pass_2025` → AiQuotaService mandaba AUTH a un
+// Redis sin auth → "ERR AUTH <password> called without any password
+// configured". Con `??` solo aplica el default del docker-compose local
+// cuando la var está REALMENTE ausente (undefined), respetando el '' del CI.
+process.env.REDIS_PASSWORD = process.env.REDIS_PASSWORD ?? 'redis_pass_2025';
 
 // Servicios externos deshabilitados en test — los stubs no llaman a la
 // red real pero algunos clients fallan en boot si la env var falta.
