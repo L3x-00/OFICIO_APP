@@ -24,6 +24,7 @@ import { Test } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
+import { Redis } from 'ioredis';
 
 import { AppModule } from '../../src/app.module.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -51,6 +52,28 @@ describe('App (e2e)', () => {
 
     prisma = moduleFixture.get(PrismaService);
     await truncateAll(prisma);
+
+    // Reset del ThrottlerGuard: su storage es Redis COMPARTIDO entre archivos
+    // E2E (jest --runInBand corre ai-assistant.e2e ANTES, en el mismo proceso
+    // y la misma ventana de 60s). Esos requests consumían el presupuesto de
+    // /auth/login (limit 5) → el login real de este archivo recibía 429 en vez
+    // de 200/201. Limpiamos el Redis de test para arrancar con presupuesto
+    // fresco y aislar este archivo. El throttler test (ráfaga a /health) sigue
+    // disparando 429 por su cuenta (80 > limit 60). Best-effort.
+    const redis = new Redis({
+      host: process.env.REDIS_HOST,
+      port: Number.parseInt(process.env.REDIS_PORT || '6379', 10),
+      password: process.env.REDIS_PASSWORD || undefined,
+      maxRetriesPerRequest: 1,
+      lazyConnect: false,
+    });
+    try {
+      await redis.flushdb();
+    } catch {
+      /* si Redis no responde, el guard es fail-open; no bloqueamos el E2E */
+    } finally {
+      await redis.quit().catch(() => undefined);
+    }
   }, 60_000);
 
   afterAll(async () => {
