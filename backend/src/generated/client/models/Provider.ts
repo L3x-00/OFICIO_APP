@@ -156,6 +156,7 @@ export type ProviderCountAggregateOutputType = {
   latitude: number
   longitude: number
   scheduleJson: number
+  appointmentSchedule: number
   availability: number
   isVisible: number
   verificationStatus: number
@@ -324,6 +325,7 @@ export type ProviderCountAggregateInputType = {
   latitude?: true
   longitude?: true
   scheduleJson?: true
+  appointmentSchedule?: true
   availability?: true
   isVisible?: true
   verificationStatus?: true
@@ -459,6 +461,7 @@ export type ProviderGroupByOutputType = {
   latitude: number | null
   longitude: number | null
   scheduleJson: runtime.JsonValue | null
+  appointmentSchedule: runtime.JsonValue | null
   availability: $Enums.AvailabilityStatus
   isVisible: boolean
   verificationStatus: $Enums.VerificationStatus
@@ -530,6 +533,7 @@ export type ProviderWhereInput = {
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
+  appointmentSchedule?: Prisma.JsonNullableFilter<"Provider">
   availability?: Prisma.EnumAvailabilityStatusFilter<"Provider"> | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFilter<"Provider"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
@@ -565,6 +569,7 @@ export type ProviderWhereInput = {
   slug?: Prisma.StringNullableFilter<"Provider"> | string | null
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   notifications?: Prisma.AdminNotificationListRelationFilter
+  appointments?: Prisma.AppointmentListRelationFilter
   chatsAsProvider?: Prisma.ChatRoomListRelationFilter
   favorites?: Prisma.FavoriteListRelationFilter
   offerPosts?: Prisma.OfferPostListRelationFilter
@@ -599,6 +604,7 @@ export type ProviderOrderByWithRelationInput = {
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
   longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleJson?: Prisma.SortOrderInput | Prisma.SortOrder
+  appointmentSchedule?: Prisma.SortOrderInput | Prisma.SortOrder
   availability?: Prisma.SortOrder
   isVisible?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -634,6 +640,7 @@ export type ProviderOrderByWithRelationInput = {
   slug?: Prisma.SortOrderInput | Prisma.SortOrder
   slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notifications?: Prisma.AdminNotificationOrderByRelationAggregateInput
+  appointments?: Prisma.AppointmentOrderByRelationAggregateInput
   chatsAsProvider?: Prisma.ChatRoomOrderByRelationAggregateInput
   favorites?: Prisma.FavoriteOrderByRelationAggregateInput
   offerPosts?: Prisma.OfferPostOrderByRelationAggregateInput
@@ -673,6 +680,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
+  appointmentSchedule?: Prisma.JsonNullableFilter<"Provider">
   availability?: Prisma.EnumAvailabilityStatusFilter<"Provider"> | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFilter<"Provider"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
@@ -707,6 +715,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   showExactLocation?: Prisma.BoolFilter<"Provider"> | boolean
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   notifications?: Prisma.AdminNotificationListRelationFilter
+  appointments?: Prisma.AppointmentListRelationFilter
   chatsAsProvider?: Prisma.ChatRoomListRelationFilter
   favorites?: Prisma.FavoriteListRelationFilter
   offerPosts?: Prisma.OfferPostListRelationFilter
@@ -741,6 +750,7 @@ export type ProviderOrderByWithAggregationInput = {
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
   longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleJson?: Prisma.SortOrderInput | Prisma.SortOrder
+  appointmentSchedule?: Prisma.SortOrderInput | Prisma.SortOrder
   availability?: Prisma.SortOrder
   isVisible?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -797,6 +807,7 @@ export type ProviderScalarWhereWithAggregatesInput = {
   latitude?: Prisma.FloatNullableWithAggregatesFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableWithAggregatesFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableWithAggregatesFilter<"Provider">
+  appointmentSchedule?: Prisma.JsonNullableWithAggregatesFilter<"Provider">
   availability?: Prisma.EnumAvailabilityStatusWithAggregatesFilter<"Provider"> | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolWithAggregatesFilter<"Provider"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusWithAggregatesFilter<"Provider"> | $Enums.VerificationStatus
@@ -843,6 +854,7 @@ export type ProviderCreateInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -877,6 +889,7 @@ export type ProviderCreateInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -911,6 +924,7 @@ export type ProviderUncheckedCreateInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -946,6 +960,7 @@ export type ProviderUncheckedCreateInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -976,6 +991,7 @@ export type ProviderUpdateInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1010,6 +1026,7 @@ export type ProviderUpdateInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -1044,6 +1061,7 @@ export type ProviderUncheckedUpdateInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1079,6 +1097,7 @@ export type ProviderUncheckedUpdateInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -1111,6 +1130,7 @@ export type ProviderCreateManyInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1157,6 +1177,7 @@ export type ProviderUpdateManyMutationInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1204,6 +1225,7 @@ export type ProviderUncheckedUpdateManyInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1272,6 +1294,7 @@ export type ProviderCountOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
   scheduleJson?: Prisma.SortOrder
+  appointmentSchedule?: Prisma.SortOrder
   availability?: Prisma.SortOrder
   isVisible?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -1513,6 +1536,20 @@ export type ProviderUncheckedUpdateManyWithoutLocalityNestedInput = {
   update?: Prisma.ProviderUpdateWithWhereUniqueWithoutLocalityInput | Prisma.ProviderUpdateWithWhereUniqueWithoutLocalityInput[]
   updateMany?: Prisma.ProviderUpdateManyWithWhereWithoutLocalityInput | Prisma.ProviderUpdateManyWithWhereWithoutLocalityInput[]
   deleteMany?: Prisma.ProviderScalarWhereInput | Prisma.ProviderScalarWhereInput[]
+}
+
+export type ProviderCreateNestedOneWithoutAppointmentsInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutAppointmentsInput, Prisma.ProviderUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutAppointmentsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+}
+
+export type ProviderUpdateOneRequiredWithoutAppointmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutAppointmentsInput, Prisma.ProviderUncheckedCreateWithoutAppointmentsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutAppointmentsInput
+  upsert?: Prisma.ProviderUpsertWithoutAppointmentsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutAppointmentsInput, Prisma.ProviderUpdateWithoutAppointmentsInput>, Prisma.ProviderUncheckedUpdateWithoutAppointmentsInput>
 }
 
 export type ProviderCreateNestedOneWithoutProviderCategoriesInput = {
@@ -1827,6 +1864,7 @@ export type ProviderCreateWithoutUserInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1861,6 +1899,7 @@ export type ProviderCreateWithoutUserInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -1893,6 +1932,7 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1928,6 +1968,7 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -1989,6 +2030,7 @@ export type ProviderScalarWhereInput = {
   latitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Provider"> | number | null
   scheduleJson?: Prisma.JsonNullableFilter<"Provider">
+  appointmentSchedule?: Prisma.JsonNullableFilter<"Provider">
   availability?: Prisma.EnumAvailabilityStatusFilter<"Provider"> | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFilter<"Provider"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"Provider"> | $Enums.VerificationStatus
@@ -2035,6 +2077,7 @@ export type ProviderCreateWithoutLocalityInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2069,6 +2112,7 @@ export type ProviderCreateWithoutLocalityInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2102,6 +2146,7 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2136,6 +2181,7 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2182,7 +2228,7 @@ export type ProviderUpdateManyWithWhereWithoutLocalityInput = {
   data: Prisma.XOR<Prisma.ProviderUpdateManyMutationInput, Prisma.ProviderUncheckedUpdateManyWithoutLocalityInput>
 }
 
-export type ProviderCreateWithoutProviderCategoriesInput = {
+export type ProviderCreateWithoutAppointmentsInput = {
   type?: $Enums.ProviderType
   businessName: string
   description?: string | null
@@ -2192,6 +2238,7 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2232,6 +2279,7 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
   planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
   analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
   images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
   reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
   locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
@@ -2247,7 +2295,7 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
 }
 
-export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
+export type ProviderUncheckedCreateWithoutAppointmentsInput = {
   id?: number
   userId: number
   type?: $Enums.ProviderType
@@ -2259,6 +2307,7 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2294,6 +2343,293 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderCreateOrConnectWithoutAppointmentsInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutAppointmentsInput, Prisma.ProviderUncheckedCreateWithoutAppointmentsInput>
+}
+
+export type ProviderUpsertWithoutAppointmentsInput = {
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutAppointmentsInput, Prisma.ProviderUncheckedUpdateWithoutAppointmentsInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutAppointmentsInput, Prisma.ProviderUncheckedCreateWithoutAppointmentsInput>
+  where?: Prisma.ProviderWhereInput
+}
+
+export type ProviderUpdateToOneWithWhereWithoutAppointmentsInput = {
+  where?: Prisma.ProviderWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateWithoutAppointmentsInput, Prisma.ProviderUncheckedUpdateWithoutAppointmentsInput>
+}
+
+export type ProviderUpdateWithoutAppointmentsInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutAppointmentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderCreateWithoutProviderCategoriesInput = {
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
+  id?: number
+  userId: number
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  localityId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2339,6 +2675,7 @@ export type ProviderUpdateWithoutProviderCategoriesInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2373,6 +2710,7 @@ export type ProviderUpdateWithoutProviderCategoriesInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -2406,6 +2744,7 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2441,6 +2780,7 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -2470,6 +2810,7 @@ export type ProviderCreateWithoutImagesInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2504,6 +2845,7 @@ export type ProviderCreateWithoutImagesInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2537,6 +2879,7 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2572,6 +2915,7 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2617,6 +2961,7 @@ export type ProviderUpdateWithoutImagesInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2651,6 +2996,7 @@ export type ProviderUpdateWithoutImagesInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -2684,6 +3030,7 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2719,6 +3066,7 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -2748,6 +3096,7 @@ export type ProviderCreateWithoutSubscriptionInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2782,6 +3131,7 @@ export type ProviderCreateWithoutSubscriptionInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2815,6 +3165,7 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2850,6 +3201,7 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2895,6 +3247,7 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2929,6 +3282,7 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -2962,6 +3316,7 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2997,6 +3352,7 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3026,6 +3382,7 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3060,6 +3417,7 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -3093,6 +3451,7 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3128,6 +3487,7 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -3173,6 +3533,7 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3207,6 +3568,7 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -3240,6 +3602,7 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3275,6 +3638,7 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3304,6 +3668,7 @@ export type ProviderCreateWithoutReviewsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3338,6 +3703,7 @@ export type ProviderCreateWithoutReviewsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -3371,6 +3737,7 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3406,6 +3773,7 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -3451,6 +3819,7 @@ export type ProviderUpdateWithoutReviewsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3485,6 +3854,7 @@ export type ProviderUpdateWithoutReviewsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -3518,6 +3888,7 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3553,6 +3924,7 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3582,6 +3954,7 @@ export type ProviderCreateWithoutFavoritesInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3616,6 +3989,7 @@ export type ProviderCreateWithoutFavoritesInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
@@ -3649,6 +4023,7 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3684,6 +4059,7 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
@@ -3729,6 +4105,7 @@ export type ProviderUpdateWithoutFavoritesInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3763,6 +4140,7 @@ export type ProviderUpdateWithoutFavoritesInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
@@ -3796,6 +4174,7 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3831,6 +4210,7 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
@@ -3860,6 +4240,7 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3894,6 +4275,7 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -3927,6 +4309,7 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3962,6 +4345,7 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4007,6 +4391,7 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4041,6 +4426,7 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -4074,6 +4460,7 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4109,6 +4496,7 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -4138,6 +4526,7 @@ export type ProviderCreateWithoutAnalyticsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4172,6 +4561,7 @@ export type ProviderCreateWithoutAnalyticsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -4205,6 +4595,7 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4240,6 +4631,7 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4285,6 +4677,7 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4319,6 +4712,7 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -4352,6 +4746,7 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4387,6 +4782,7 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -4416,6 +4812,7 @@ export type ProviderCreateWithoutNotificationsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4449,6 +4846,7 @@ export type ProviderCreateWithoutNotificationsInput = {
   showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -4483,6 +4881,7 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4517,6 +4916,7 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   showExactLocation?: boolean
   slug?: string | null
   slugEditedAt?: Date | string | null
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4563,6 +4963,7 @@ export type ProviderUpdateWithoutNotificationsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4596,6 +4997,7 @@ export type ProviderUpdateWithoutNotificationsInput = {
   showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -4630,6 +5032,7 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4664,6 +5067,7 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -4694,6 +5098,7 @@ export type ProviderCreateWithoutRecommendationsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4728,6 +5133,7 @@ export type ProviderCreateWithoutRecommendationsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -4761,6 +5167,7 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4796,6 +5203,7 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4841,6 +5249,7 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4875,6 +5284,7 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -4908,6 +5318,7 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4943,6 +5354,7 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -4972,6 +5384,7 @@ export type ProviderCreateWithoutReportsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5006,6 +5419,7 @@ export type ProviderCreateWithoutReportsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5039,6 +5453,7 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5074,6 +5489,7 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5119,6 +5535,7 @@ export type ProviderUpdateWithoutReportsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5153,6 +5570,7 @@ export type ProviderUpdateWithoutReportsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5186,6 +5604,7 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5221,6 +5640,7 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5250,6 +5670,7 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5284,6 +5705,7 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5317,6 +5739,7 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5352,6 +5775,7 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5397,6 +5821,7 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5431,6 +5856,7 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5464,6 +5890,7 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5499,6 +5926,7 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5528,6 +5956,7 @@ export type ProviderCreateWithoutOffersInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5562,6 +5991,7 @@ export type ProviderCreateWithoutOffersInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5595,6 +6025,7 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5630,6 +6061,7 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5675,6 +6107,7 @@ export type ProviderUpdateWithoutOffersInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5709,6 +6142,7 @@ export type ProviderUpdateWithoutOffersInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5742,6 +6176,7 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5777,6 +6212,7 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5806,6 +6242,7 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5840,6 +6277,7 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5873,6 +6311,7 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -5908,6 +6347,7 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5953,6 +6393,7 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -5987,6 +6428,7 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -6020,6 +6462,7 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6055,6 +6498,7 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -6084,6 +6528,7 @@ export type ProviderCreateWithoutReferralReceivedInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6118,6 +6563,7 @@ export type ProviderCreateWithoutReferralReceivedInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -6151,6 +6597,7 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6186,6 +6633,7 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -6231,6 +6679,7 @@ export type ProviderUpdateWithoutReferralReceivedInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6265,6 +6714,7 @@ export type ProviderUpdateWithoutReferralReceivedInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -6298,6 +6748,7 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6333,6 +6784,7 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -6362,6 +6814,7 @@ export type ProviderCreateWithoutReferralRewardsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6396,6 +6849,7 @@ export type ProviderCreateWithoutReferralRewardsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -6429,6 +6883,7 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6464,6 +6919,7 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -6509,6 +6965,7 @@ export type ProviderUpdateWithoutReferralRewardsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6543,6 +7000,7 @@ export type ProviderUpdateWithoutReferralRewardsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -6576,6 +7034,7 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6611,6 +7070,7 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -6640,6 +7100,7 @@ export type ProviderCreateWithoutChatsAsProviderInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6674,6 +7135,7 @@ export type ProviderCreateWithoutChatsAsProviderInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
@@ -6707,6 +7169,7 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6742,6 +7205,7 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
@@ -6787,6 +7251,7 @@ export type ProviderUpdateWithoutChatsAsProviderInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6821,6 +7286,7 @@ export type ProviderUpdateWithoutChatsAsProviderInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
@@ -6854,6 +7320,7 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -6889,6 +7356,7 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
@@ -6918,6 +7386,7 @@ export type ProviderCreateWithoutOfferPostsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -6952,6 +7421,7 @@ export type ProviderCreateWithoutOfferPostsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
@@ -6985,6 +7455,7 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -7020,6 +7491,7 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
@@ -7065,6 +7537,7 @@ export type ProviderUpdateWithoutOfferPostsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7099,6 +7572,7 @@ export type ProviderUpdateWithoutOfferPostsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
@@ -7132,6 +7606,7 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7167,6 +7642,7 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
@@ -7196,6 +7672,7 @@ export type ProviderCreateWithoutAiMemoryInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -7230,6 +7707,7 @@ export type ProviderCreateWithoutAiMemoryInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -7263,6 +7741,7 @@ export type ProviderUncheckedCreateWithoutAiMemoryInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -7298,6 +7777,7 @@ export type ProviderUncheckedCreateWithoutAiMemoryInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -7343,6 +7823,7 @@ export type ProviderUpdateWithoutAiMemoryInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7377,6 +7858,7 @@ export type ProviderUpdateWithoutAiMemoryInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -7410,6 +7892,7 @@ export type ProviderUncheckedUpdateWithoutAiMemoryInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7445,6 +7928,7 @@ export type ProviderUncheckedUpdateWithoutAiMemoryInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -7475,6 +7959,7 @@ export type ProviderCreateManyUserInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -7521,6 +8006,7 @@ export type ProviderUpdateWithoutUserInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7555,6 +8041,7 @@ export type ProviderUpdateWithoutUserInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -7587,6 +8074,7 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7622,6 +8110,7 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -7653,6 +8142,7 @@ export type ProviderUncheckedUpdateManyWithoutUserInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7701,6 +8191,7 @@ export type ProviderCreateManyLocalityInput = {
   latitude?: number | null
   longitude?: number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: $Enums.AvailabilityStatus
   isVisible?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -7746,6 +8237,7 @@ export type ProviderUpdateWithoutLocalityInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7780,6 +8272,7 @@ export type ProviderUpdateWithoutLocalityInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -7813,6 +8306,7 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7847,6 +8341,7 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -7879,6 +8374,7 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
   isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -7921,6 +8417,7 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
 
 export type ProviderCountOutputType = {
   notifications: number
+  appointments: number
   chatsAsProvider: number
   favorites: number
   offerPosts: number
@@ -7940,6 +8437,7 @@ export type ProviderCountOutputType = {
 
 export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | ProviderCountOutputTypeCountNotificationsArgs
+  appointments?: boolean | ProviderCountOutputTypeCountAppointmentsArgs
   chatsAsProvider?: boolean | ProviderCountOutputTypeCountChatsAsProviderArgs
   favorites?: boolean | ProviderCountOutputTypeCountFavoritesArgs
   offerPosts?: boolean | ProviderCountOutputTypeCountOfferPostsArgs
@@ -7972,6 +8470,13 @@ export type ProviderCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Ext
  */
 export type ProviderCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AdminNotificationWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountAppointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AppointmentWhereInput
 }
 
 /**
@@ -8092,6 +8597,7 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
+  appointmentSchedule?: boolean
   availability?: boolean
   isVisible?: boolean
   verificationStatus?: boolean
@@ -8127,6 +8633,7 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   slug?: boolean
   slugEditedAt?: boolean
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
+  appointments?: boolean | Prisma.Provider$appointmentsArgs<ExtArgs>
   chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
   favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
   offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
@@ -8162,6 +8669,7 @@ export type ProviderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
+  appointmentSchedule?: boolean
   availability?: boolean
   isVisible?: boolean
   verificationStatus?: boolean
@@ -8212,6 +8720,7 @@ export type ProviderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
+  appointmentSchedule?: boolean
   availability?: boolean
   isVisible?: boolean
   verificationStatus?: boolean
@@ -8262,6 +8771,7 @@ export type ProviderSelectScalar = {
   latitude?: boolean
   longitude?: boolean
   scheduleJson?: boolean
+  appointmentSchedule?: boolean
   availability?: boolean
   isVisible?: boolean
   verificationStatus?: boolean
@@ -8298,9 +8808,10 @@ export type ProviderSelectScalar = {
   slugEditedAt?: boolean
 }
 
-export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "createdAt" | "updatedAt" | "dni" | "hasDelivery" | "hasHomeService" | "isTrusted" | "nombreComercial" | "planPriority" | "plenaCoordinacion" | "razonSocial" | "ruc" | "totalRecommendations" | "trustStatus" | "facebook" | "instagram" | "linkedin" | "telegram" | "tiktok" | "twitterX" | "website" | "whatsappBiz" | "showPhone" | "showWhatsapp" | "showExactLocation" | "slug" | "slugEditedAt", ExtArgs["result"]["provider"]>
+export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "businessName" | "description" | "phone" | "whatsapp" | "address" | "latitude" | "longitude" | "scheduleJson" | "appointmentSchedule" | "availability" | "isVisible" | "verificationStatus" | "isVerified" | "hasCleanRecord" | "averageRating" | "totalReviews" | "localityId" | "createdAt" | "updatedAt" | "dni" | "hasDelivery" | "hasHomeService" | "isTrusted" | "nombreComercial" | "planPriority" | "plenaCoordinacion" | "razonSocial" | "ruc" | "totalRecommendations" | "trustStatus" | "facebook" | "instagram" | "linkedin" | "telegram" | "tiktok" | "twitterX" | "website" | "whatsappBiz" | "showPhone" | "showWhatsapp" | "showExactLocation" | "slug" | "slugEditedAt", ExtArgs["result"]["provider"]>
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
+  appointments?: boolean | Prisma.Provider$appointmentsArgs<ExtArgs>
   chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
   favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
   offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
@@ -8336,6 +8847,7 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   name: "Provider"
   objects: {
     notifications: Prisma.$AdminNotificationPayload<ExtArgs>[]
+    appointments: Prisma.$AppointmentPayload<ExtArgs>[]
     chatsAsProvider: Prisma.$ChatRoomPayload<ExtArgs>[]
     favorites: Prisma.$FavoritePayload<ExtArgs>[]
     offerPosts: Prisma.$OfferPostPayload<ExtArgs>[]
@@ -8369,6 +8881,12 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     latitude: number | null
     longitude: number | null
     scheduleJson: runtime.JsonValue | null
+    /**
+     * Horario semanal para AGENDA DE CITAS (distinto de scheduleJson, que es
+     * el horario de atención general). Formato:
+     * { "lun": "8:00-12:00,14:00-18:00", "mar": "...", ... }
+     */
+    appointmentSchedule: runtime.JsonValue | null
     availability: $Enums.AvailabilityStatus
     isVisible: boolean
     verificationStatus: $Enums.VerificationStatus
@@ -8802,6 +9320,7 @@ readonly fields: ProviderFieldRefs;
 export interface Prisma__ProviderClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   notifications<T extends Prisma.Provider$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  appointments<T extends Prisma.Provider$appointmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatsAsProvider<T extends Prisma.Provider$chatsAsProviderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$chatsAsProviderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatRoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   favorites<T extends Prisma.Provider$favoritesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   offerPosts<T extends Prisma.Provider$offerPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$offerPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8862,6 +9381,7 @@ export interface ProviderFieldRefs {
   readonly latitude: Prisma.FieldRef<"Provider", 'Float'>
   readonly longitude: Prisma.FieldRef<"Provider", 'Float'>
   readonly scheduleJson: Prisma.FieldRef<"Provider", 'Json'>
+  readonly appointmentSchedule: Prisma.FieldRef<"Provider", 'Json'>
   readonly availability: Prisma.FieldRef<"Provider", 'AvailabilityStatus'>
   readonly isVisible: Prisma.FieldRef<"Provider", 'Boolean'>
   readonly verificationStatus: Prisma.FieldRef<"Provider", 'VerificationStatus'>
@@ -9318,6 +9838,30 @@ export type Provider$notificationsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.AdminNotificationScalarFieldEnum | Prisma.AdminNotificationScalarFieldEnum[]
+}
+
+/**
+ * Provider.appointments
+ */
+export type Provider$appointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Appointment
+   */
+  select?: Prisma.AppointmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Appointment
+   */
+  omit?: Prisma.AppointmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AppointmentInclude<ExtArgs> | null
+  where?: Prisma.AppointmentWhereInput
+  orderBy?: Prisma.AppointmentOrderByWithRelationInput | Prisma.AppointmentOrderByWithRelationInput[]
+  cursor?: Prisma.AppointmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AppointmentScalarFieldEnum | Prisma.AppointmentScalarFieldEnum[]
 }
 
 /**

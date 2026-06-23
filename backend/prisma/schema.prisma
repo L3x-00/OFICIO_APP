@@ -42,6 +42,7 @@ model User {
   /// Evita re-enviarlo a diario: solo se vuelve a enviar si el usuario reactiva
   /// (lastLoginAt > inactivityEmailSentAt) y vuelve a quedar inactivo.
   inactivityEmailSentAt DateTime?
+  appointments     Appointment[]
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
   redemptions      CoinRedemption[]
   favorites        Favorite[]
@@ -121,6 +122,10 @@ model Category {
   parentId            Int?
   isActive            Boolean             @default(true)
   forType             String?
+  /// Funcionalidades especiales habilitadas para la categoría:
+  /// ["agenda","carta_digital","catalogo","cotizacion"]. Las hijas heredan
+  /// del padre si su array está vacío. Default [] = sin funcionalidades.
+  features            Json?               @default("[]")
   parent              Category?           @relation("SubCategories", fields: [parentId], references: [id])
   children            Category[]          @relation("SubCategories")
   offerPostCategories OfferPostCategory[]
@@ -128,6 +133,30 @@ model Category {
   serviceRequests     ServiceRequest[]
 
   @@map("categories")
+}
+
+/// Cita agendada entre un cliente y un proveedor (módulo Agenda).
+/// Solo disponible para proveedores cuyas categorías incluyen el feature
+/// "agenda". El límite de citas activas/mes depende del plan del proveedor.
+model Appointment {
+  id             Int       @id @default(autoincrement())
+  providerId     Int
+  userId         Int
+  date           DateTime
+  status         String    @default("PENDIENTE") // PENDIENTE | CONFIRMADA | RECHAZADA | CANCELADA | COMPLETADA
+  description    String?
+  /// Marca cuándo se envió el recordatorio 24h (idempotencia del cron).
+  reminderSentAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, date])
+  @@index([userId])
+  @@index([status, date])
+  @@map("appointments")
 }
 
 /// Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
@@ -162,6 +191,10 @@ model Provider {
   latitude             Float?
   longitude            Float?
   scheduleJson         Json?
+  /// Horario semanal para AGENDA DE CITAS (distinto de scheduleJson, que es
+  /// el horario de atención general). Formato:
+  /// { "lun": "8:00-12:00,14:00-18:00", "mar": "...", ... }
+  appointmentSchedule  Json?
   availability         AvailabilityStatus        @default(DISPONIBLE)
   isVisible            Boolean                   @default(true)
   verificationStatus   VerificationStatus        @default(PENDIENTE)
@@ -201,6 +234,7 @@ model Provider {
   location_geog        Unsupported("geography")?
   search_tsv           Unsupported("tsvector")?
   notifications        AdminNotification[]
+  appointments         Appointment[]
   chatsAsProvider      ChatRoom[]                @relation("ProviderChats")
   favorites            Favorite[]
   offerPosts           OfferPost[]
