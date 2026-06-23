@@ -570,6 +570,8 @@ export type ProviderWhereInput = {
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   notifications?: Prisma.AdminNotificationListRelationFilter
   appointments?: Prisma.AppointmentListRelationFilter
+  menuItems?: Prisma.MenuItemListRelationFilter
+  catalogProducts?: Prisma.CatalogProductListRelationFilter
   chatsAsProvider?: Prisma.ChatRoomListRelationFilter
   favorites?: Prisma.FavoriteListRelationFilter
   offerPosts?: Prisma.OfferPostListRelationFilter
@@ -641,6 +643,8 @@ export type ProviderOrderByWithRelationInput = {
   slugEditedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notifications?: Prisma.AdminNotificationOrderByRelationAggregateInput
   appointments?: Prisma.AppointmentOrderByRelationAggregateInput
+  menuItems?: Prisma.MenuItemOrderByRelationAggregateInput
+  catalogProducts?: Prisma.CatalogProductOrderByRelationAggregateInput
   chatsAsProvider?: Prisma.ChatRoomOrderByRelationAggregateInput
   favorites?: Prisma.FavoriteOrderByRelationAggregateInput
   offerPosts?: Prisma.OfferPostOrderByRelationAggregateInput
@@ -716,6 +720,8 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   slugEditedAt?: Prisma.DateTimeNullableFilter<"Provider"> | Date | string | null
   notifications?: Prisma.AdminNotificationListRelationFilter
   appointments?: Prisma.AppointmentListRelationFilter
+  menuItems?: Prisma.MenuItemListRelationFilter
+  catalogProducts?: Prisma.CatalogProductListRelationFilter
   chatsAsProvider?: Prisma.ChatRoomListRelationFilter
   favorites?: Prisma.FavoriteListRelationFilter
   offerPosts?: Prisma.OfferPostListRelationFilter
@@ -890,6 +896,8 @@ export type ProviderCreateInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -961,6 +969,8 @@ export type ProviderUncheckedCreateInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -1027,6 +1037,8 @@ export type ProviderUpdateInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -1098,6 +1110,8 @@ export type ProviderUncheckedUpdateInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -1552,6 +1566,34 @@ export type ProviderUpdateOneRequiredWithoutAppointmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutAppointmentsInput, Prisma.ProviderUpdateWithoutAppointmentsInput>, Prisma.ProviderUncheckedUpdateWithoutAppointmentsInput>
 }
 
+export type ProviderCreateNestedOneWithoutMenuItemsInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutMenuItemsInput, Prisma.ProviderUncheckedCreateWithoutMenuItemsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutMenuItemsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+}
+
+export type ProviderUpdateOneRequiredWithoutMenuItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutMenuItemsInput, Prisma.ProviderUncheckedCreateWithoutMenuItemsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutMenuItemsInput
+  upsert?: Prisma.ProviderUpsertWithoutMenuItemsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutMenuItemsInput, Prisma.ProviderUpdateWithoutMenuItemsInput>, Prisma.ProviderUncheckedUpdateWithoutMenuItemsInput>
+}
+
+export type ProviderCreateNestedOneWithoutCatalogProductsInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutCatalogProductsInput, Prisma.ProviderUncheckedCreateWithoutCatalogProductsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutCatalogProductsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+}
+
+export type ProviderUpdateOneRequiredWithoutCatalogProductsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutCatalogProductsInput, Prisma.ProviderUncheckedCreateWithoutCatalogProductsInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutCatalogProductsInput
+  upsert?: Prisma.ProviderUpsertWithoutCatalogProductsInput
+  connect?: Prisma.ProviderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutCatalogProductsInput, Prisma.ProviderUpdateWithoutCatalogProductsInput>, Prisma.ProviderUncheckedUpdateWithoutCatalogProductsInput>
+}
+
 export type ProviderCreateNestedOneWithoutProviderCategoriesInput = {
   create?: Prisma.XOR<Prisma.ProviderCreateWithoutProviderCategoriesInput, Prisma.ProviderUncheckedCreateWithoutProviderCategoriesInput>
   connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutProviderCategoriesInput
@@ -1570,28 +1612,12 @@ export type EnumProviderTypeFieldUpdateOperationsInput = {
   set?: $Enums.ProviderType
 }
 
-export type NullableFloatFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type EnumAvailabilityStatusFieldUpdateOperationsInput = {
   set?: $Enums.AvailabilityStatus
 }
 
 export type EnumVerificationStatusFieldUpdateOperationsInput = {
   set?: $Enums.VerificationStatus
-}
-
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
 }
 
 export type EnumTrustStatusFieldUpdateOperationsInput = {
@@ -1900,6 +1926,8 @@ export type ProviderCreateWithoutUserInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -1969,6 +1997,8 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2113,6 +2143,8 @@ export type ProviderCreateWithoutLocalityInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2182,6 +2214,8 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2273,6 +2307,8 @@ export type ProviderCreateWithoutAppointmentsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2343,6 +2379,8 @@ export type ProviderUncheckedCreateWithoutAppointmentsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2424,6 +2462,8 @@ export type ProviderUpdateWithoutAppointmentsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -2494,6 +2534,596 @@ export type ProviderUncheckedUpdateWithoutAppointmentsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderCreateWithoutMenuItemsInput = {
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderUncheckedCreateWithoutMenuItemsInput = {
+  id?: number
+  userId: number
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  localityId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderCreateOrConnectWithoutMenuItemsInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutMenuItemsInput, Prisma.ProviderUncheckedCreateWithoutMenuItemsInput>
+}
+
+export type ProviderUpsertWithoutMenuItemsInput = {
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutMenuItemsInput, Prisma.ProviderUncheckedUpdateWithoutMenuItemsInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutMenuItemsInput, Prisma.ProviderUncheckedCreateWithoutMenuItemsInput>
+  where?: Prisma.ProviderWhereInput
+}
+
+export type ProviderUpdateToOneWithWhereWithoutMenuItemsInput = {
+  where?: Prisma.ProviderWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateWithoutMenuItemsInput, Prisma.ProviderUncheckedUpdateWithoutMenuItemsInput>
+}
+
+export type ProviderUpdateWithoutMenuItemsInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutMenuItemsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderCreateWithoutCatalogProductsInput = {
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderUncheckedCreateWithoutCatalogProductsInput = {
+  id?: number
+  userId: number
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  localityId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderCreateOrConnectWithoutCatalogProductsInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutCatalogProductsInput, Prisma.ProviderUncheckedCreateWithoutCatalogProductsInput>
+}
+
+export type ProviderUpsertWithoutCatalogProductsInput = {
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutCatalogProductsInput, Prisma.ProviderUncheckedUpdateWithoutCatalogProductsInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutCatalogProductsInput, Prisma.ProviderUncheckedCreateWithoutCatalogProductsInput>
+  where?: Prisma.ProviderWhereInput
+}
+
+export type ProviderUpdateToOneWithWhereWithoutCatalogProductsInput = {
+  where?: Prisma.ProviderWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateWithoutCatalogProductsInput, Prisma.ProviderUncheckedUpdateWithoutCatalogProductsInput>
+}
+
+export type ProviderUpdateWithoutCatalogProductsInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutCatalogProductsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -2560,6 +3190,8 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2630,6 +3262,8 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2711,6 +3345,8 @@ export type ProviderUpdateWithoutProviderCategoriesInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -2781,6 +3417,8 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -2846,6 +3484,8 @@ export type ProviderCreateWithoutImagesInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -2916,6 +3556,8 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -2997,6 +3639,8 @@ export type ProviderUpdateWithoutImagesInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -3067,6 +3711,8 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3132,6 +3778,8 @@ export type ProviderCreateWithoutSubscriptionInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -3202,6 +3850,8 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -3283,6 +3933,8 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -3353,6 +4005,8 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3418,6 +4072,8 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -3488,6 +4144,8 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -3569,6 +4227,8 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -3639,6 +4299,8 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3704,6 +4366,8 @@ export type ProviderCreateWithoutReviewsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -3774,6 +4438,8 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -3855,6 +4521,8 @@ export type ProviderUpdateWithoutReviewsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -3925,6 +4593,8 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -3990,6 +4660,8 @@ export type ProviderCreateWithoutFavoritesInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
@@ -4060,6 +4732,8 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
@@ -4141,6 +4815,8 @@ export type ProviderUpdateWithoutFavoritesInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
@@ -4211,6 +4887,8 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
@@ -4276,6 +4954,8 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -4346,6 +5026,8 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4427,6 +5109,8 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -4497,6 +5181,8 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -4562,6 +5248,8 @@ export type ProviderCreateWithoutAnalyticsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -4632,6 +5320,8 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4713,6 +5403,8 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -4783,6 +5475,8 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -4847,6 +5541,8 @@ export type ProviderCreateWithoutNotificationsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -4917,6 +5613,8 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   slug?: string | null
   slugEditedAt?: Date | string | null
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -4998,6 +5696,8 @@ export type ProviderUpdateWithoutNotificationsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5068,6 +5768,8 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5134,6 +5836,8 @@ export type ProviderCreateWithoutRecommendationsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5204,6 +5908,8 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5285,6 +5991,8 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5355,6 +6063,8 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5420,6 +6130,8 @@ export type ProviderCreateWithoutReportsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5490,6 +6202,8 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5571,6 +6285,8 @@ export type ProviderUpdateWithoutReportsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5641,6 +6357,8 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5706,6 +6424,8 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -5776,6 +6496,8 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -5857,6 +6579,8 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -5927,6 +6651,8 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -5992,6 +6718,8 @@ export type ProviderCreateWithoutOffersInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -6062,6 +6790,8 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -6143,6 +6873,8 @@ export type ProviderUpdateWithoutOffersInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -6213,6 +6945,8 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -6278,6 +7012,8 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -6348,6 +7084,8 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -6429,6 +7167,8 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -6499,6 +7239,8 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -6564,6 +7306,8 @@ export type ProviderCreateWithoutReferralReceivedInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -6634,6 +7378,8 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -6715,6 +7461,8 @@ export type ProviderUpdateWithoutReferralReceivedInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -6785,6 +7533,8 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -6850,6 +7600,8 @@ export type ProviderCreateWithoutReferralRewardsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -6920,6 +7672,8 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -7001,6 +7755,8 @@ export type ProviderUpdateWithoutReferralRewardsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -7071,6 +7827,8 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -7136,6 +7894,8 @@ export type ProviderCreateWithoutChatsAsProviderInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
@@ -7206,6 +7966,8 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
@@ -7287,6 +8049,8 @@ export type ProviderUpdateWithoutChatsAsProviderInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
@@ -7357,6 +8121,8 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
@@ -7422,6 +8188,8 @@ export type ProviderCreateWithoutOfferPostsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
@@ -7492,6 +8260,8 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
@@ -7573,6 +8343,8 @@ export type ProviderUpdateWithoutOfferPostsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
@@ -7643,6 +8415,8 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
@@ -7708,6 +8482,8 @@ export type ProviderCreateWithoutAiMemoryInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
@@ -7778,6 +8554,8 @@ export type ProviderUncheckedCreateWithoutAiMemoryInput = {
   slugEditedAt?: Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
   appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
   offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
@@ -7859,6 +8637,8 @@ export type ProviderUpdateWithoutAiMemoryInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -7929,6 +8709,8 @@ export type ProviderUncheckedUpdateWithoutAiMemoryInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -8042,6 +8824,8 @@ export type ProviderUpdateWithoutUserInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -8111,6 +8895,8 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -8273,6 +9059,8 @@ export type ProviderUpdateWithoutLocalityInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
@@ -8342,6 +9130,8 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
   appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
   chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
   offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
@@ -8418,6 +9208,8 @@ export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
 export type ProviderCountOutputType = {
   notifications: number
   appointments: number
+  menuItems: number
+  catalogProducts: number
   chatsAsProvider: number
   favorites: number
   offerPosts: number
@@ -8438,6 +9230,8 @@ export type ProviderCountOutputType = {
 export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | ProviderCountOutputTypeCountNotificationsArgs
   appointments?: boolean | ProviderCountOutputTypeCountAppointmentsArgs
+  menuItems?: boolean | ProviderCountOutputTypeCountMenuItemsArgs
+  catalogProducts?: boolean | ProviderCountOutputTypeCountCatalogProductsArgs
   chatsAsProvider?: boolean | ProviderCountOutputTypeCountChatsAsProviderArgs
   favorites?: boolean | ProviderCountOutputTypeCountFavoritesArgs
   offerPosts?: boolean | ProviderCountOutputTypeCountOfferPostsArgs
@@ -8477,6 +9271,20 @@ export type ProviderCountOutputTypeCountNotificationsArgs<ExtArgs extends runtim
  */
 export type ProviderCountOutputTypeCountAppointmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AppointmentWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountMenuItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MenuItemWhereInput
+}
+
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountCatalogProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CatalogProductWhereInput
 }
 
 /**
@@ -8634,6 +9442,8 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   slugEditedAt?: boolean
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
   appointments?: boolean | Prisma.Provider$appointmentsArgs<ExtArgs>
+  menuItems?: boolean | Prisma.Provider$menuItemsArgs<ExtArgs>
+  catalogProducts?: boolean | Prisma.Provider$catalogProductsArgs<ExtArgs>
   chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
   favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
   offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
@@ -8812,6 +9622,8 @@ export type ProviderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | Prisma.Provider$notificationsArgs<ExtArgs>
   appointments?: boolean | Prisma.Provider$appointmentsArgs<ExtArgs>
+  menuItems?: boolean | Prisma.Provider$menuItemsArgs<ExtArgs>
+  catalogProducts?: boolean | Prisma.Provider$catalogProductsArgs<ExtArgs>
   chatsAsProvider?: boolean | Prisma.Provider$chatsAsProviderArgs<ExtArgs>
   favorites?: boolean | Prisma.Provider$favoritesArgs<ExtArgs>
   offerPosts?: boolean | Prisma.Provider$offerPostsArgs<ExtArgs>
@@ -8848,6 +9660,8 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     notifications: Prisma.$AdminNotificationPayload<ExtArgs>[]
     appointments: Prisma.$AppointmentPayload<ExtArgs>[]
+    menuItems: Prisma.$MenuItemPayload<ExtArgs>[]
+    catalogProducts: Prisma.$CatalogProductPayload<ExtArgs>[]
     chatsAsProvider: Prisma.$ChatRoomPayload<ExtArgs>[]
     favorites: Prisma.$FavoritePayload<ExtArgs>[]
     offerPosts: Prisma.$OfferPostPayload<ExtArgs>[]
@@ -9321,6 +10135,8 @@ export interface Prisma__ProviderClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   notifications<T extends Prisma.Provider$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   appointments<T extends Prisma.Provider$appointmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  menuItems<T extends Prisma.Provider$menuItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$menuItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MenuItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  catalogProducts<T extends Prisma.Provider$catalogProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$catalogProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CatalogProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatsAsProvider<T extends Prisma.Provider$chatsAsProviderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$chatsAsProviderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatRoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   favorites<T extends Prisma.Provider$favoritesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   offerPosts<T extends Prisma.Provider$offerPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$offerPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfferPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9862,6 +10678,54 @@ export type Provider$appointmentsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.AppointmentScalarFieldEnum | Prisma.AppointmentScalarFieldEnum[]
+}
+
+/**
+ * Provider.menuItems
+ */
+export type Provider$menuItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MenuItem
+   */
+  select?: Prisma.MenuItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MenuItem
+   */
+  omit?: Prisma.MenuItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MenuItemInclude<ExtArgs> | null
+  where?: Prisma.MenuItemWhereInput
+  orderBy?: Prisma.MenuItemOrderByWithRelationInput | Prisma.MenuItemOrderByWithRelationInput[]
+  cursor?: Prisma.MenuItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MenuItemScalarFieldEnum | Prisma.MenuItemScalarFieldEnum[]
+}
+
+/**
+ * Provider.catalogProducts
+ */
+export type Provider$catalogProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CatalogProduct
+   */
+  select?: Prisma.CatalogProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CatalogProduct
+   */
+  omit?: Prisma.CatalogProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CatalogProductInclude<ExtArgs> | null
+  where?: Prisma.CatalogProductWhereInput
+  orderBy?: Prisma.CatalogProductOrderByWithRelationInput | Prisma.CatalogProductOrderByWithRelationInput[]
+  cursor?: Prisma.CatalogProductWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CatalogProductScalarFieldEnum | Prisma.CatalogProductScalarFieldEnum[]
 }
 
 /**

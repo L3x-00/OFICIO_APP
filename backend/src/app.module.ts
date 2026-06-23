@@ -32,6 +32,8 @@ import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js'
 import { AiAssistantModule } from './ai-assistant/ai-assistant.module.js';
 import { ProviderFeaturesModule } from './common/provider-features.module.js';
 import { AppointmentsModule } from './appointments/appointments.module.js';
+import { MenuModule } from './menu/menu.module.js';
+import { CatalogModule } from './catalog/catalog.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -137,6 +139,9 @@ import { AppointmentsModule } from './appointments/appointments.module.js';
     // Funcionalidades por categoría (feature-gating) + Agenda de citas.
     ProviderFeaturesModule,
     AppointmentsModule,
+    // Carta Digital + Catálogo de productos.
+    MenuModule,
+    CatalogModule,
   ],
   controllers: [AppController],
   providers: [
