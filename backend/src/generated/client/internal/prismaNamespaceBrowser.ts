@@ -56,6 +56,7 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   Locality: 'Locality',
   Category: 'Category',
+  Appointment: 'Appointment',
   ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
@@ -187,10 +188,26 @@ export const CategoryScalarFieldEnum = {
   iconUrl: 'iconUrl',
   parentId: 'parentId',
   isActive: 'isActive',
-  forType: 'forType'
+  forType: 'forType',
+  features: 'features'
 } as const
 
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
+export const AppointmentScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  userId: 'userId',
+  date: 'date',
+  status: 'status',
+  description: 'description',
+  reminderSentAt: 'reminderSentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
 
 
 export const ProviderCategoryScalarFieldEnum = {
@@ -215,6 +232,7 @@ export const ProviderScalarFieldEnum = {
   latitude: 'latitude',
   longitude: 'longitude',
   scheduleJson: 'scheduleJson',
+  appointmentSchedule: 'appointmentSchedule',
   availability: 'availability',
   isVisible: 'isVisible',
   verificationStatus: 'verificationStatus',

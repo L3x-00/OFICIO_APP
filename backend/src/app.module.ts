@@ -30,6 +30,8 @@ import { LocalitiesModule } from './localities/localities.module.js';
 import { OfferPostsModule } from './offer-posts/offer-posts.module.js';
 import { MercadoPagoModule } from './payments/mercadopago/mercadopago.module.js';
 import { AiAssistantModule } from './ai-assistant/ai-assistant.module.js';
+import { ProviderFeaturesModule } from './common/provider-features.module.js';
+import { AppointmentsModule } from './appointments/appointments.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -132,6 +134,9 @@ import { AiAssistantModule } from './ai-assistant/ai-assistant.module.js';
     MercadoPagoModule,
     // "Ofi" — asistente IA. Aislado: si falla, el resto de Servi sigue.
     AiAssistantModule,
+    // Funcionalidades por categoría (feature-gating) + Agenda de citas.
+    ProviderFeaturesModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [

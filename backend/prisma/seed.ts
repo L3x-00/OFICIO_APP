@@ -173,20 +173,20 @@ async function main() {
   console.log('🔨 Creando Sectores y Especialidades OFICIO...');
 
   const oficioParents: Record<string, number> = {};
-  const oficioParentDefs = [
-    { name: 'Hogar y Construcción',   slug: 'of-hogar' },
-    { name: 'Tecnología',             slug: 'of-tecnologia' },
-    { name: 'Salud y Bienestar',      slug: 'of-salud' },
-    { name: 'Educación',              slug: 'of-educacion' },
-    { name: 'Transporte y Mudanzas',  slug: 'of-transporte' },
-    { name: 'Servicios Personales',   slug: 'of-servicios' },
-    { name: 'Ingeniería y Diseño',    slug: 'of-ingenieria' },
-    { name: 'Mecánica y Automotriz',  slug: 'of-automotriz' },
-    { name: 'Legal y Financiero',     slug: 'of-legal' },
+  const oficioParentDefs: Array<{ name: string; slug: string; features?: string[] }> = [
+    { name: 'Hogar y Construcción',   slug: 'of-hogar',      features: ['cotizacion'] },
+    { name: 'Tecnología',             slug: 'of-tecnologia', features: ['cotizacion'] },
+    { name: 'Salud y Bienestar',      slug: 'of-salud',      features: ['agenda'] },
+    { name: 'Educación',              slug: 'of-educacion',  features: ['agenda'] },
+    { name: 'Transporte y Mudanzas',  slug: 'of-transporte', features: ['agenda'] },
+    { name: 'Servicios Personales',   slug: 'of-servicios',  features: ['agenda'] },
+    { name: 'Ingeniería y Diseño',    slug: 'of-ingenieria', features: ['cotizacion'] },
+    { name: 'Mecánica y Automotriz',  slug: 'of-automotriz', features: ['agenda'] },
+    { name: 'Legal y Financiero',     slug: 'of-legal',      features: ['cotizacion'] },
   ];
 
   for (const p of oficioParentDefs) {
-    const c = await prisma.category.create({ data: { name: p.name, slug: p.slug, forType: 'OFICIO' } });
+    const c = await prisma.category.create({ data: { name: p.name, slug: p.slug, forType: 'OFICIO', features: p.features ?? [] } });
     oficioParents[p.slug] = c.id;
   }
 
@@ -253,18 +253,18 @@ async function main() {
   console.log('🏪 Creando Sectores y Especialidades NEGOCIO...');
 
   const negocioParents: Record<string, number> = {};
-  const negocioParentDefs = [
-    { name: 'Alimentación y Gastronomía',      slug: 'neg-alimentacion' },
-    { name: 'Tiendas y Retail',                slug: 'neg-retail' },
-    { name: 'Belleza y Estética',              slug: 'neg-belleza' },
+  const negocioParentDefs: Array<{ name: string; slug: string; features?: string[] }> = [
+    { name: 'Alimentación y Gastronomía',      slug: 'neg-alimentacion', features: ['carta_digital'] },
+    { name: 'Tiendas y Retail',                slug: 'neg-retail',       features: ['catalogo'] },
+    { name: 'Belleza y Estética',              slug: 'neg-belleza',      features: ['agenda'] },
     { name: 'Tecnología y Electrónica',        slug: 'neg-tecnologia' },
-    { name: 'Salud y Farmacia',                slug: 'neg-salud' },
+    { name: 'Salud y Farmacia',                slug: 'neg-salud',        features: ['agenda'] },
     { name: 'Educación y Cultura',             slug: 'neg-educacion' },
-    { name: 'Servicios y Otros',               slug: 'neg-servicios' },
+    { name: 'Servicios y Otros',               slug: 'neg-servicios',    features: ['cotizacion'] },
   ];
 
   for (const p of negocioParentDefs) {
-    const c = await prisma.category.create({ data: { name: p.name, slug: p.slug, forType: 'NEGOCIO' } });
+    const c = await prisma.category.create({ data: { name: p.name, slug: p.slug, forType: 'NEGOCIO', features: p.features ?? [] } });
     negocioParents[p.slug] = c.id;
   }
 

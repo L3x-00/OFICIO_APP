@@ -67,6 +67,13 @@ export type Locality = Prisma.LocalityModel
  */
 export type Category = Prisma.CategoryModel
 /**
+ * Model Appointment
+ * Cita agendada entre un cliente y un proveedor (módulo Agenda).
+ * Solo disponible para proveedores cuyas categorías incluyen el feature
+ * "agenda". El límite de citas activas/mes depende del plan del proveedor.
+ */
+export type Appointment = Prisma.AppointmentModel
+/**
  * Model ProviderCategory
  * Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
  * Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias

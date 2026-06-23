@@ -12,10 +12,23 @@ import { ProvidersService } from './providers.service.js';
 import { Throttle } from '@nestjs/throttler';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { TrackEventDto } from './dto/track-event.dto.js';
+import { ProviderFeaturesService } from '../common/provider-features.service.js';
 
 @Controller('providers')
 export class ProvidersController {
-  constructor(private readonly providersService: ProvidersService) {}
+  constructor(
+    private readonly providersService: ProvidersService,
+    private readonly features: ProviderFeaturesService,
+  ) {}
+
+  // Funcionalidades especiales de una categoría (hereda del padre si la hija
+  // no tiene propias). Público — el cliente decide qué UI mostrar.
+  @Get('categories/:id/features')
+  getCategoryFeatures(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<string[]> {
+    return this.features.getCategoryFeatures(id);
+  }
 
   // Cachea el listado general de proveedores por 30 segundos.
   // El valor va en MILISEGUNDOS: Keyv (cache-manager v6/Prisma v7) interpreta
