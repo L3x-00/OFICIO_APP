@@ -18,6 +18,7 @@ import '../widgets/services/service_form_sheet.dart';
 import '../widgets/panel_feature_entry.dart';
 import '../../../menu/presentation/screens/manage_menu_screen.dart';
 import '../../../catalog/presentation/screens/manage_catalog_screen.dart';
+import '../../../agenda/presentation/screens/manage_appointments_screen.dart';
 
 /// Tab "Servicios/Productos" del panel del proveedor.
 ///
@@ -161,6 +162,21 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                         MaterialPageRoute(
                           builder: (_) =>
                               ManageCatalogScreen(providerId: dash.profile!.id),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // ── Agenda (solo categorías con feature) ───────────
+                if (dash.profile?.hasAgenda == true)
+                  SliverToBoxAdapter(
+                    child: PanelFeatureEntry(
+                      icon: Icons.event_available,
+                      title: 'Mi agenda',
+                      subtitle: 'Configura tu horario y gestiona tus citas',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ManageAppointmentsScreen(),
                         ),
                       ),
                     ),
