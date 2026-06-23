@@ -39,36 +39,59 @@ void main() {
     expect(find.text('Agotado'), findsOneWidget);
   });
 
-  testWidgets('con WhatsApp y disponible: muestra botón "Pedir"', (
-    tester,
-  ) async {
+  testWidgets('disponible + onAdd: muestra "Agregar"', (tester) async {
     await tester.pumpWidget(
-      host(
-        const MenuItemModel(
-          id: 1,
-          name: 'X',
-          price: 10,
-          whatsappOrderUrl: 'https://wa.me/51999111222',
+      MaterialApp(
+        home: Scaffold(
+          body: MenuItemCard(
+            item: const MenuItemModel(id: 1, name: 'X', price: 10),
+            onAdd: () {},
+            onRemove: () {},
+          ),
         ),
       ),
     );
-    expect(find.text('Pedir'), findsOneWidget);
+    expect(find.text('Agregar'), findsOneWidget);
   });
 
-  testWidgets('agotado: NO muestra botón "Pedir" aunque tenga WhatsApp', (
-    tester,
-  ) async {
+  testWidgets('quantity>0: muestra la cantidad y el stepper', (tester) async {
     await tester.pumpWidget(
-      host(
-        const MenuItemModel(
-          id: 1,
-          name: 'X',
-          price: 10,
-          isAvailable: false,
-          whatsappOrderUrl: 'https://wa.me/51999111222',
+      MaterialApp(
+        home: Scaffold(
+          body: MenuItemCard(
+            item: const MenuItemModel(id: 1, name: 'X', price: 10),
+            quantity: 2,
+            onAdd: () {},
+            onRemove: () {},
+          ),
         ),
       ),
     );
-    expect(find.text('Pedir'), findsNothing);
+    expect(find.text('2'), findsOneWidget);
+    expect(find.text('Agregar'), findsNothing);
+    expect(find.byIcon(Icons.add), findsOneWidget);
+    expect(find.byIcon(Icons.remove), findsOneWidget);
+  });
+
+  testWidgets('agotado: NO muestra control de carrito aunque haya onAdd', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MenuItemCard(
+            item: const MenuItemModel(
+              id: 1,
+              name: 'X',
+              price: 10,
+              isAvailable: false,
+            ),
+            onAdd: () {},
+            onRemove: () {},
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Agregar'), findsNothing);
   });
 }

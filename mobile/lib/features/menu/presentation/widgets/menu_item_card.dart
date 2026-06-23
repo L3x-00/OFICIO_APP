@@ -1,32 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../domain/models/menu_item_model.dart';
 
 /// Tarjeta de un plato en la carta PÚBLICA (vista cliente).
 /// Muestra foto, nombre, descripción, precio (con oferta tachada), badge
-/// "Agotado" y botón "Pedir por WhatsApp" si el proveedor lo permite.
+/// "Agotado" y un control de carrito (Agregar / − N +) cuando es pedible.
 class MenuItemCard extends StatelessWidget {
-  const MenuItemCard({super.key, required this.item});
+  const MenuItemCard({
+    super.key,
+    required this.item,
+    this.quantity = 0,
+    this.onAdd,
+    this.onRemove,
+  });
 
   final MenuItemModel item;
 
-  String _money(double v) => 'S/ ${v.toStringAsFixed(2)}';
+  /// Cantidad actual en el carrito.
+  final int quantity;
 
-  Future<void> _order() async {
-    final url = item.whatsappOrderUrl;
-    if (url == null) return;
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
+  /// Si se pasan, la tarjeta muestra el control de carrito. El screen solo
+  /// los provee cuando el proveedor es "pedible" (tiene WhatsApp visible).
+  final VoidCallback? onAdd;
+  final VoidCallback? onRemove;
+
+  String _money(double v) => 'S/ ${v.toStringAsFixed(2)}';
 
   @override
   Widget build(BuildContext context) {
     final agotado = !item.isAvailable;
-    final canOrder = !agotado && item.whatsappOrderUrl != null;
+    final canOrder = !agotado && onAdd != null;
 
     return Opacity(
       opacity: agotado ? 0.55 : 1,
@@ -136,40 +140,7 @@ class MenuItemCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      if (canOrder)
-                        InkWell(
-                          onTap: _order,
-                          borderRadius: BorderRadius.circular(99),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.whatsapp.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.chat,
-                                  size: 14,
-                                  color: AppColors.whatsapp,
-                                ),
-                                SizedBox(width: 5),
-                                Text(
-                                  'Pedir',
-                                  style: TextStyle(
-                                    color: AppColors.whatsapp,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      if (canOrder) _cartControl(),
                     ],
                   ),
                 ],
@@ -177,6 +148,77 @@ class MenuItemCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _cartControl() {
+    if (quantity <= 0) {
+      return InkWell(
+        onTap: onAdd,
+        borderRadius: BorderRadius.circular(99),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.whatsapp.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(99),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 15, color: AppColors.whatsapp),
+              SizedBox(width: 4),
+              Text(
+                'Agregar',
+                style: TextStyle(
+                  color: AppColors.whatsapp,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _StepBtn(icon: Icons.remove, onTap: onRemove),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            '$quantity',
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+            ),
+          ),
+        ),
+        _StepBtn(icon: Icons.add, onTap: onAdd),
+      ],
+    );
+  }
+}
+
+class _StepBtn extends StatelessWidget {
+  const _StepBtn({required this.icon, required this.onTap});
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(99),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: AppColors.whatsapp.withValues(alpha: 0.15),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 16, color: AppColors.whatsapp),
       ),
     );
   }
