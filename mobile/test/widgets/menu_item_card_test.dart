@@ -1,0 +1,74 @@
+/// Widget tests de [MenuItemCard] (tarjeta de plato en la carta pública).
+/// Se usan ítems SIN photoUrl para no tocar la red en los tests.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/features/menu/domain/models/menu_item_model.dart';
+import 'package:mobile/features/menu/presentation/widgets/menu_item_card.dart';
+
+void main() {
+  Widget host(MenuItemModel item) => MaterialApp(
+    home: Scaffold(body: MenuItemCard(item: item)),
+  );
+
+  testWidgets('muestra nombre y precio', (tester) async {
+    await tester.pumpWidget(
+      host(const MenuItemModel(id: 1, name: 'Lomo Saltado', price: 25)),
+    );
+    expect(find.text('Lomo Saltado'), findsOneWidget);
+    expect(find.text('S/ 25.00'), findsOneWidget);
+  });
+
+  testWidgets('oferta: muestra precio normal (tachado) y el de oferta', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(const MenuItemModel(id: 1, name: 'X', price: 20, offerPrice: 15)),
+    );
+    expect(find.text('S/ 20.00'), findsOneWidget);
+    expect(find.text('S/ 15.00'), findsOneWidget);
+  });
+
+  testWidgets('agotado: muestra badge "Agotado"', (tester) async {
+    await tester.pumpWidget(
+      host(
+        const MenuItemModel(id: 1, name: 'X', price: 10, isAvailable: false),
+      ),
+    );
+    expect(find.text('Agotado'), findsOneWidget);
+  });
+
+  testWidgets('con WhatsApp y disponible: muestra botón "Pedir"', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        const MenuItemModel(
+          id: 1,
+          name: 'X',
+          price: 10,
+          whatsappOrderUrl: 'https://wa.me/51999111222',
+        ),
+      ),
+    );
+    expect(find.text('Pedir'), findsOneWidget);
+  });
+
+  testWidgets('agotado: NO muestra botón "Pedir" aunque tenga WhatsApp', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        const MenuItemModel(
+          id: 1,
+          name: 'X',
+          price: 10,
+          isAvailable: false,
+          whatsappOrderUrl: 'https://wa.me/51999111222',
+        ),
+      ),
+    );
+    expect(find.text('Pedir'), findsNothing);
+  });
+}

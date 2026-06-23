@@ -17,6 +17,7 @@ import '../../domain/models/review_model.dart';
 import '../providers/providers_provider.dart';
 import '../sheets/report_sheet.dart';
 import '../widgets/provider_contact_bar.dart';
+import '../widgets/provider_feature_ctas.dart';
 import '../widgets/provider_gallery.dart';
 import '../widgets/provider_info_section.dart';
 import '../widgets/review_card.dart';
@@ -366,6 +367,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                           ),
                           const SizedBox(height: 20),
                         ],
+
+                        // ── Funcionalidades (carta/catálogo/agenda/…) ──
+                        ProviderFeatureCtas(provider: p, accent: _accent),
 
                         // ── Redes sociales ────────────────────
                         if (social.hasAny) ...[

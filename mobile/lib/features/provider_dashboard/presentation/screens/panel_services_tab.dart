@@ -15,6 +15,8 @@ import '../widgets/services/offers_section.dart';
 import '../widgets/services/service_card.dart';
 import '../widgets/services/service_components.dart';
 import '../widgets/services/service_form_sheet.dart';
+import '../widgets/panel_feature_entry.dart';
+import '../../../menu/presentation/screens/manage_menu_screen.dart';
 
 /// Tab "Servicios/Productos" del panel del proveedor.
 ///
@@ -49,150 +51,209 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
 
   @override
   Widget build(BuildContext context) {
-    final c      = context.colors;
-    final auth   = context.watch<AuthProvider>();
-    final dash   = context.watch<DashboardProvider>();
+    final c = context.colors;
+    final auth = context.watch<AuthProvider>();
+    final dash = context.watch<DashboardProvider>();
     final offers = context.watch<OfferPostsProvider>();
-    final services       = dash.services;
-    final plan           = dash.profile?.subscription?.plan ?? 'GRATIS';
-    final limit          = PlanLimits.items(plan, isNegocio: widget.isNegocio);
-    final atLimit        = !PlanLimits.canAddItem(plan, services.length, isNegocio: widget.isNegocio);
-    final label          = widget.isNegocio ? 'productos' : 'servicios';
-    final labelSingular  = widget.isNegocio ? 'producto' : 'servicio';
-    final limitLabel     = PlanLimits.itemsLabel(plan, isNegocio: widget.isNegocio);
+    final services = dash.services;
+    final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
+    final limit = PlanLimits.items(plan, isNegocio: widget.isNegocio);
+    final atLimit = !PlanLimits.canAddItem(
+      plan,
+      services.length,
+      isNegocio: widget.isNegocio,
+    );
+    final label = widget.isNegocio ? 'productos' : 'servicios';
+    final labelSingular = widget.isNegocio ? 'producto' : 'servicio';
+    final limitLabel = PlanLimits.itemsLabel(plan, isNegocio: widget.isNegocio);
 
     final servicesSteps = buildAdminServicesSteps(atLimit: atLimit);
 
     return AdminTabShowcase(
-      tab:          AdminTab.services,
-      userId:       auth.user?.id,
+      tab: AdminTab.services,
+      userId: auth.user?.id,
       providerType: widget.isNegocio ? 'NEGOCIO' : 'OFICIO',
-      isApproved:   dash.profile?.isVerified ?? false,
-      steps:        servicesSteps,
+      isApproved: dash.profile?.isVerified ?? false,
+      steps: servicesSteps,
       child: Scaffold(
-      backgroundColor: c.bg,
-      body: SafeArea(
-        child: RefreshIndicator(
-          color: AppColors.amber,
-          backgroundColor: c.bgCard,
-          onRefresh: () async {
-            final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
-            await dash.loadDashboard(providerType: type);
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                backgroundColor: c.bgCard,
-                pinned: true,
-                title: Text(
-                  widget.isNegocio ? 'Mis Productos' : 'Mis Servicios',
-                  style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        backgroundColor: c.bg,
+        body: SafeArea(
+          child: RefreshIndicator(
+            color: AppColors.amber,
+            backgroundColor: c.bgCard,
+            onRefresh: () async {
+              final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+              await dash.loadDashboard(providerType: type);
+            },
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: c.bgCard,
+                  pinned: true,
+                  title: Text(
+                    widget.isNegocio ? 'Mis Productos' : 'Mis Servicios',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  actions: [
+                    if (_isSaving)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: AppColors.amber,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                actions: [
-                  if (_isSaving)
-                    const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(color: AppColors.amber, strokeWidth: 2),
+
+                // ── Banner de límite de plan ────────────────────────
+                SliverToBoxAdapter(
+                  child: ShowcaseTarget(
+                    step: servicesSteps.firstWhere(
+                      (s) => s.key == kAdminServiceQuotaKey,
+                    ),
+                    isLast: isLastAdminStep(
+                      kAdminServiceQuotaKey,
+                      servicesSteps,
+                    ),
+                    child: PlanLimitBanner(
+                      plan: plan,
+                      current: services.length,
+                      limit: limit,
+                      isNegocio: widget.isNegocio,
+                      limitLabel: limitLabel,
+                    ),
+                  ),
+                ),
+
+                // ── Carta digital (solo categorías con feature) ────
+                if (dash.profile?.hasMenu == true)
+                  SliverToBoxAdapter(
+                    child: PanelFeatureEntry(
+                      icon: Icons.restaurant_menu,
+                      title: 'Mi carta digital',
+                      subtitle: 'Gestiona los platos que ven tus clientes',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ManageMenuScreen(providerId: dash.profile!.id),
+                        ),
                       ),
                     ),
-                ],
-              ),
-
-              // ── Banner de límite de plan ────────────────────────
-              SliverToBoxAdapter(
-                child: ShowcaseTarget(
-                  step: servicesSteps.firstWhere((s) => s.key == kAdminServiceQuotaKey),
-                  isLast: isLastAdminStep(kAdminServiceQuotaKey, servicesSteps),
-                  child: PlanLimitBanner(
-                    plan:        plan,
-                    current:     services.length,
-                    limit:       limit,
-                    isNegocio:   widget.isNegocio,
-                    limitLabel:  limitLabel,
                   ),
-                ),
-              ),
 
-              // ── Sección de Ofertas ──────────────────────────────
-              SliverToBoxAdapter(
-                child: OfferPostsSection(
-                  plan:      plan,
-                  offers:    offers.activeOffers,
-                  isLoading: offers.status == OfferPostsStatus.loading,
-                  onPublish: () => OfferFormSheet.show(context, offers, plan, widget.isNegocio),
-                  onDelete:  (id) => offers.deleteOffer(id),
-                  onEdit:    (o) => OfferFormSheet.show(
-                    context, offers, plan, widget.isNegocio,
-                    existing: o,
-                  ),
-                ),
-              ),
-
-              if (services.isEmpty)
-                SliverFillRemaining(
-                  child: EmptyServices(
-                    label: label,
-                    labelSingular: labelSingular,
-                    isNegocio: widget.isNegocio,
-                    onAdd: atLimit
-                        ? null
-                        : () => ServiceFormSheet.show(context, dash, onSaving: _setSaving),
-                  ),
-                )
-              else ...[
+                // ── Sección de Ofertas ──────────────────────────────
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Row(
-                      children: [
-                        Text(
-                          '${services.length}${limit < 999 ? '/$limit' : ''} ${services.length == 1 ? labelSingular : label}',
-                          style: TextStyle(color: c.textSecondary, fontSize: 13),
-                        ),
-                        const Spacer(),
-                        if (!atLimit)
-                          TextButton.icon(
-                            onPressed: () => ServiceFormSheet.show(context, dash, onSaving: _setSaving),
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('Añadir'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.amber,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: OfferPostsSection(
+                    plan: plan,
+                    offers: offers.activeOffers,
+                    isLoading: offers.status == OfferPostsStatus.loading,
+                    onPublish: () => OfferFormSheet.show(
+                      context,
+                      offers,
+                      plan,
+                      widget.isNegocio,
+                    ),
+                    onDelete: (id) => offers.deleteOffer(id),
+                    onEdit: (o) => OfferFormSheet.show(
+                      context,
+                      offers,
+                      plan,
+                      widget.isNegocio,
+                      existing: o,
+                    ),
+                  ),
+                ),
+
+                if (services.isEmpty)
+                  SliverFillRemaining(
+                    child: EmptyServices(
+                      label: label,
+                      labelSingular: labelSingular,
+                      isNegocio: widget.isNegocio,
+                      onAdd: atLimit
+                          ? null
+                          : () => ServiceFormSheet.show(
+                              context,
+                              dash,
+                              onSaving: _setSaving,
+                            ),
+                    ),
+                  )
+                else ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${services.length}${limit < 999 ? '/$limit' : ''} ${services.length == 1 ? labelSingular : label}',
+                            style: TextStyle(
+                              color: c.textSecondary,
+                              fontSize: 13,
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => ServiceCard(
-                        service:    services[i],
-                        isNegocio:  widget.isNegocio,
-                        onEdit:     () => ServiceFormSheet.show(context, dash,
-                            existing: services[i], onSaving: _setSaving),
-                        onDelete:   () => _deleteService(context, dash, services[i]),
+                          const Spacer(),
+                          if (!atLimit)
+                            TextButton.icon(
+                              onPressed: () => ServiceFormSheet.show(
+                                context,
+                                dash,
+                                onSaving: _setSaving,
+                              ),
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: const Text('Añadir'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.amber,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      childCount: services.length,
                     ),
                   ),
-                ),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, i) => ServiceCard(
+                          service: services[i],
+                          isNegocio: widget.isNegocio,
+                          onEdit: () => ServiceFormSheet.show(
+                            context,
+                            dash,
+                            existing: services[i],
+                            onSaving: _setSaving,
+                          ),
+                          onDelete: () =>
+                              _deleteService(context, dash, services[i]),
+                        ),
+                        childCount: services.length,
+                      ),
+                    ),
+                  ),
+                ],
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: _buildAddFab(
-        atLimit:      atLimit,
-        showFab:      services.isNotEmpty,
-        servicesSteps: servicesSteps,
-        dash:         dash,
-      ),
+        floatingActionButton: _buildAddFab(
+          atLimit: atLimit,
+          showFab: services.isNotEmpty,
+          servicesSteps: servicesSteps,
+          dash: dash,
+        ),
       ),
     );
   }
@@ -220,14 +281,17 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
           onPressed: () => PlanSelectorSheet.show(context),
           backgroundColor: AppColors.busy,
           icon: const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
-          label: const Text('Subir plan',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          label: const Text(
+            'Subir plan',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
       );
     }
     if (!showFab) return null;
     return FloatingActionButton(
-      onPressed: () => ServiceFormSheet.show(context, dash, onSaving: _setSaving),
+      onPressed: () =>
+          ServiceFormSheet.show(context, dash, onSaving: _setSaving),
       backgroundColor: AppColors.amber,
       child: const Icon(Icons.add_rounded, color: Colors.black),
     );
