@@ -234,6 +234,23 @@ describe('AI analytics (integration, BD real)', () => {
     // ventana. En vez de asumir qué fila es "hoy" (frágil cerca de medianoche
     // o según la hora UTC), validamos el INVARIANTE robusto: la suma de la
     // serie == lo de hoy (porque todo se insertó hoy).
+    // DEBUG TEMPORAL — diagnóstico del desfase timeline vs hoy.
+    const diag = await prisma.$queryRawUnsafe(
+      `SELECT (now() AT TIME ZONE 'America/Lima')::date::text AS today,
+              (SELECT min(("createdAt" AT TIME ZONE 'America/Lima')::date)::text FROM ai_messages) AS min_msg,
+              (SELECT max(("createdAt" AT TIME ZONE 'America/Lima')::date)::text FROM ai_messages) AS max_msg,
+              (SELECT count(*)::int FROM ai_messages WHERE role = 'user') AS user_count`,
+    );
+    // eslint-disable-next-line no-console
+    console.log(
+      'TIMELINE_DEBUG diag=',
+      JSON.stringify(diag),
+      'timeline=',
+      JSON.stringify(summary.timeline),
+      'qToday=',
+      summary.questionsToday,
+    );
+
     expect(summary.timeline.length).toBe(14); // backfill de 14 días
     const tlQuestions = summary.timeline.reduce(
       (a: number, r: { questions: number }) => a + r.questions,
