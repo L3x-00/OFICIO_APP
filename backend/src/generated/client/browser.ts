@@ -50,6 +50,19 @@ export type Category = Prisma.CategoryModel
  */
 export type Appointment = Prisma.AppointmentModel
 /**
+ * Model MenuItem
+ * Ítem de la CARTA DIGITAL (módulo carta_digital — Gastronomía).
+ * `isFeatured` = "menú del día", solo plan PREMIUM. `offerPrice` opcional
+ * (precio tachado). `category` = sección de la carta.
+ */
+export type MenuItem = Prisma.MenuItemModel
+/**
+ * Model CatalogProduct
+ * Producto del CATÁLOGO (módulo catalogo — Tiendas/Ferreterías).
+ * `offerPrice` opcional (precio tachado). `category` = sección de la tienda.
+ */
+export type CatalogProduct = Prisma.CatalogProductModel
+/**
  * Model ProviderCategory
  * Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
  * Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias

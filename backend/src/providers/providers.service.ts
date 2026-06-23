@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
+import { effectiveFeaturesFromCategories } from '../common/provider-features.service.js';
 
 @Injectable()
 export class ProvidersService {
@@ -232,7 +233,14 @@ export class ProvidersService {
             select: {
               isPrimary: true,
               category: {
-                select: { id: true, name: true, slug: true, iconUrl: true },
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  iconUrl: true,
+                  features: true,
+                  parent: { select: { features: true } },
+                },
               },
             },
             orderBy: { isPrimary: 'desc' },
@@ -261,7 +269,14 @@ export class ProvidersService {
     ]);
 
     return {
-      data: providers.map((p) => this._thumbImages(this.maskContactIfFree(p))),
+      data: providers.map((p) => {
+        const base = this._thumbImages(this.maskContactIfFree(p));
+        // `features` efectivos para el badge de la tarjeta del listado.
+        return {
+          ...base,
+          features: effectiveFeaturesFromCategories(p.providerCategories),
+        };
+      }),
       total,
       page,
       lastPage: Math.ceil(total / limit),
@@ -533,7 +548,14 @@ export class ProvidersService {
           select: {
             isPrimary: true,
             category: {
-              select: { id: true, name: true, slug: true, iconUrl: true },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                iconUrl: true,
+                features: true,
+                parent: { select: { features: true } },
+              },
             },
           },
           orderBy: { isPrimary: 'desc' },
@@ -556,7 +578,14 @@ export class ProvidersService {
         },
       },
     });
-    return this.maskContactIfFree(provider);
+    const masked = this.maskContactIfFree(provider);
+    if (masked && provider) {
+      // `features` efectivos (propios o heredados del padre) para que el
+      // cliente sepa qué módulos ofrece el proveedor (carta/catálogo/agenda…).
+      (masked as { features?: string[] }).features =
+        effectiveFeaturesFromCategories(provider.providerCategories);
+    }
+    return masked;
   }
 
   // ── LISTAR CATEGORÍAS ────────────────────────────────────

@@ -57,6 +57,8 @@ export const ModelName = {
   Locality: 'Locality',
   Category: 'Category',
   Appointment: 'Appointment',
+  MenuItem: 'MenuItem',
+  CatalogProduct: 'CatalogProduct',
   ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
@@ -208,6 +210,44 @@ export const AppointmentScalarFieldEnum = {
 } as const
 
 export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
+
+
+export const MenuItemScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  name: 'name',
+  description: 'description',
+  price: 'price',
+  offerPrice: 'offerPrice',
+  category: 'category',
+  photoUrl: 'photoUrl',
+  isAvailable: 'isAvailable',
+  isFeatured: 'isFeatured',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MenuItemScalarFieldEnum = (typeof MenuItemScalarFieldEnum)[keyof typeof MenuItemScalarFieldEnum]
+
+
+export const CatalogProductScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  name: 'name',
+  description: 'description',
+  price: 'price',
+  offerPrice: 'offerPrice',
+  stock: 'stock',
+  category: 'category',
+  photoUrl: 'photoUrl',
+  isAvailable: 'isAvailable',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CatalogProductScalarFieldEnum = (typeof CatalogProductScalarFieldEnum)[keyof typeof CatalogProductScalarFieldEnum]
 
 
 export const ProviderCategoryScalarFieldEnum = {

@@ -159,6 +159,53 @@ model Appointment {
   @@map("appointments")
 }
 
+/// Ítem de la CARTA DIGITAL (módulo carta_digital — Gastronomía).
+/// `isFeatured` = "menú del día", solo plan PREMIUM. `offerPrice` opcional
+/// (precio tachado). `category` = sección de la carta.
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  providerId  Int
+  name        String
+  description String?
+  price       Float
+  offerPrice  Float? // precio de oferta → el público muestra `price` tachado
+  category    String? // entrada | fondo | postre | bebida | promocion | otro
+  photoUrl    String?
+  isAvailable Boolean  @default(true)
+  isFeatured  Boolean  @default(false) // menú del día (solo PREMIUM)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@map("menu_items")
+}
+
+/// Producto del CATÁLOGO (módulo catalogo — Tiendas/Ferreterías).
+/// `offerPrice` opcional (precio tachado). `category` = sección de la tienda.
+model CatalogProduct {
+  id          Int      @id @default(autoincrement())
+  providerId  Int
+  name        String
+  description String?
+  price       Float
+  offerPrice  Float? // precio de oferta → el público muestra `price` tachado
+  stock       Int? // cantidad disponible (opcional)
+  category    String? // sección de la tienda (opcional)
+  photoUrl    String?
+  isAvailable Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@map("catalog_products")
+}
+
 /// Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
 /// Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias
 /// Especialidades (categorías hijas) — máximo según su plan — y marca
@@ -235,6 +282,8 @@ model Provider {
   search_tsv           Unsupported("tsvector")?
   notifications        AdminNotification[]
   appointments         Appointment[]
+  menuItems            MenuItem[]
+  catalogProducts      CatalogProduct[]
   chatsAsProvider      ChatRoom[]                @relation("ProviderChats")
   favorites            Favorite[]
   offerPosts           OfferPost[]

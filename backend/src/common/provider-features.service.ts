@@ -1,6 +1,40 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
+/** Fila de providerCategory con los features de la categoría y su padre. */
+type CategoryFeatureRow = {
+  category?: {
+    features?: unknown;
+    parent?: { features?: unknown } | null;
+  } | null;
+} | null;
+
+function toFeatureArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((x): x is string => typeof x === 'string')
+    : [];
+}
+
+/**
+ * Computa los features EFECTIVOS (hija o, si vacía, heredados del padre) de un
+ * conjunto de `providerCategories` ya cargadas. PURO (sin BD) — pensado para
+ * incluir `features` en respuestas de listado/detalle SIN N+1: basta con
+ * seleccionar `category.features` + `category.parent.features` en el query.
+ */
+export function effectiveFeaturesFromCategories(
+  rows: CategoryFeatureRow[],
+): string[] {
+  const set = new Set<string>();
+  for (const r of rows ?? []) {
+    const own = toFeatureArray(r?.category?.features);
+    const eff = own.length
+      ? own
+      : toFeatureArray(r?.category?.parent?.features);
+    eff.forEach((f) => set.add(f));
+  }
+  return [...set];
+}
+
 /**
  * Resuelve las FUNCIONALIDADES (features) habilitadas para una categoría o un
  * proveedor. Una categoría hija HEREDA los features del padre si su propio
@@ -34,13 +68,7 @@ export class ProviderFeaturesService {
         },
       },
     });
-    const set = new Set<string>();
-    for (const r of rows) {
-      const own = this.toArray(r.category?.features);
-      const eff = own.length ? own : this.toArray(r.category?.parent?.features);
-      eff.forEach((f) => set.add(f));
-    }
-    return [...set];
+    return effectiveFeaturesFromCategories(rows);
   }
 
   /** ¿El proveedor tiene habilitado `feature`? */
