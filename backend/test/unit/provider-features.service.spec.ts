@@ -3,8 +3,26 @@
  * padre + assert que gatea los módulos (agenda, carta, catálogo, cotización).
  */
 import { ForbiddenException } from '@nestjs/common';
-import { ProviderFeaturesService } from '../../src/common/provider-features.service.js';
+import {
+  ProviderFeaturesService,
+  effectiveFeaturesFromCategories,
+} from '../../src/common/provider-features.service.js';
 import { createPrismaMock, type PrismaMock } from '../mocks/prisma.mock';
+
+describe('effectiveFeaturesFromCategories (pure)', () => {
+  it('une features con herencia y sin duplicar; tolera nulls', () => {
+    const rows = [
+      { category: { features: ['carta_digital'], parent: null } },
+      { category: { features: [], parent: { features: ['catalogo'] } } },
+      { category: { features: ['carta_digital'], parent: null } },
+      null, // defensivo
+    ];
+    expect(effectiveFeaturesFromCategories(rows).sort()).toEqual([
+      'carta_digital',
+      'catalogo',
+    ]);
+  });
+});
 
 describe('ProviderFeaturesService (unit)', () => {
   let prisma: PrismaMock;
