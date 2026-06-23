@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../agenda/presentation/screens/booking_screen.dart';
 import '../../../catalog/presentation/screens/catalog_screen.dart';
 import '../../../menu/presentation/screens/menu_screen.dart';
 import '../../domain/models/provider_model.dart';
@@ -49,6 +50,24 @@ class ProviderFeatureCtas extends StatelessWidget {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => CatalogScreen(
+                providerId: provider.id,
+                businessName: provider.businessName,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (provider.hasAgenda) {
+      ctas.add(
+        _FeatureCta(
+          icon: Icons.event_available,
+          label: 'Agendar cita',
+          accent: accent,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => BookingScreen(
                 providerId: provider.id,
                 businessName: provider.businessName,
               ),

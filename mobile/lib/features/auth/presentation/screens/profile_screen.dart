@@ -6,6 +6,7 @@ import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/profile/contact_us_section.dart';
+import '../../../agenda/presentation/screens/my_appointments_screen.dart';
 import '../widgets/profile/guest_profile_view.dart';
 import '../widgets/profile/profile_avatar_picker.dart';
 import '../widgets/profile/profile_badges.dart';
@@ -267,6 +268,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const ChatListScreen(scope: 'client'),
+                  ),
+                ),
+              ),
+              SectionItem(
+                icon: Icons.event_available_outlined,
+                label: 'Mis citas',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const MyAppointmentsScreen(),
                   ),
                 ),
               ),
