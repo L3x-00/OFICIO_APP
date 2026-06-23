@@ -246,11 +246,16 @@ export class AiAnalyticsService {
         FROM generate_series(0, ${days - 1}::int) AS g
       ),
       usage AS (
-        SELECT ("createdAt" AT TIME ZONE 'America/Lima')::date AS day,
+        -- "createdAt" es timestamp WITHOUT time zone (mapeo Prisma de DateTime)
+        -- y guarda el wall-clock UTC. Para obtener el día en Perú hay que
+        -- interpretarlo primero como UTC y luego convertir a 'America/Lima'.
+        -- (Hacer AT TIME ZONE 'America/Lima' directo lo desfasaba +1 día en la
+        -- ventana UTC 00:00–05:00, dejando "hoy" fuera del rango → timeline 0.)
+        SELECT (("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Lima')::date AS day,
                count(*) FILTER (WHERE role = 'user') AS questions,
                coalesce(sum("tokensUsed"), 0)        AS tokens
         FROM ai_messages
-        WHERE ("createdAt" AT TIME ZONE 'America/Lima')::date
+        WHERE (("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Lima')::date
               > (SELECT today FROM bounds) - ${days}::int
         GROUP BY 1
       )
