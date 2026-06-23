@@ -88,6 +88,11 @@ class ProviderModel {
   final bool showWhatsapp;
   final bool showExactLocation;
 
+  /// Funcionalidades por categoría habilitadas para el proveedor
+  /// (efectivas, ya resueltas con herencia en el backend):
+  /// "agenda" | "carta_digital" | "catalogo" | "cotizacion".
+  final List<String> features;
+
   const ProviderModel({
     required this.id,
     this.slug,
@@ -136,7 +141,20 @@ class ProviderModel {
     this.showPhone = true,
     this.showWhatsapp = true,
     this.showExactLocation = true,
+    this.features = const [],
   });
+
+  /// ¿El proveedor ofrece carta digital? (Gastronomía).
+  bool get hasMenu => features.contains('carta_digital');
+
+  /// ¿Catálogo de productos? (Tiendas/Ferreterías).
+  bool get hasCatalog => features.contains('catalogo');
+
+  /// ¿Agenda de citas?
+  bool get hasAgenda => features.contains('agenda');
+
+  /// ¿Cotización?
+  bool get hasQuotation => features.contains('cotizacion');
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
     return ProviderModel(
@@ -190,6 +208,9 @@ class ProviderModel {
       showPhone: json['showPhone'] as bool? ?? true,
       showWhatsapp: json['showWhatsapp'] as bool? ?? true,
       showExactLocation: json['showExactLocation'] as bool? ?? true,
+      features:
+          (json['features'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
     );
   }
 
@@ -386,6 +407,7 @@ class ProviderModel {
       showPhone: showPhone,
       showWhatsapp: showWhatsapp,
       showExactLocation: showExactLocation,
+      features: features,
     );
   }
 }

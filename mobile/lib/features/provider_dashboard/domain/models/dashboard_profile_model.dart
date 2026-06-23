@@ -63,6 +63,15 @@ class DashboardProfileModel {
   final bool showWhatsapp;
   final bool showExactLocation;
 
+  /// Funcionalidades por categoría habilitadas (efectivas):
+  /// "agenda" | "carta_digital" | "catalogo" | "cotizacion".
+  final List<String> features;
+
+  bool get hasMenu => features.contains('carta_digital');
+  bool get hasCatalog => features.contains('catalogo');
+  bool get hasAgenda => features.contains('agenda');
+  bool get hasQuotation => features.contains('cotizacion');
+
   const DashboardProfileModel({
     required this.id,
     required this.businessName,
@@ -97,6 +106,7 @@ class DashboardProfileModel {
     this.showPhone = true,
     this.showWhatsapp = true,
     this.showExactLocation = true,
+    this.features = const [],
   });
 
   bool get isPaused => availability == 'OCUPADO';
@@ -155,6 +165,9 @@ class DashboardProfileModel {
       showPhone: json['showPhone'] as bool? ?? true,
       showWhatsapp: json['showWhatsapp'] as bool? ?? true,
       showExactLocation: json['showExactLocation'] as bool? ?? true,
+      features:
+          (json['features'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
     );
   }
 
@@ -230,6 +243,7 @@ class DashboardProfileModel {
       showPhone: showPhone ?? this.showPhone,
       showWhatsapp: showWhatsapp ?? this.showWhatsapp,
       showExactLocation: showExactLocation ?? this.showExactLocation,
+      features: features,
     );
   }
 

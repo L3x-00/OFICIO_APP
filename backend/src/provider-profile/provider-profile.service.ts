@@ -14,6 +14,7 @@ import {
 } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { effectiveFeaturesFromCategories } from '../common/provider-features.service.js';
 
 // Retención de notificaciones: 7 días (FASE 3 #3). Pasado ese plazo se purgan
 // automáticamente (cron diario) para ahorrar espacio en Supabase.
@@ -54,7 +55,14 @@ export class ProviderProfileService {
           select: {
             isPrimary: true,
             category: {
-              select: { id: true, name: true, slug: true, iconUrl: true },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                iconUrl: true,
+                features: true,
+                parent: { select: { features: true } },
+              },
             },
           },
           orderBy: { isPrimary: 'desc' },
@@ -92,6 +100,9 @@ export class ProviderProfileService {
     return {
       ...provider,
       totalFavorites: provider._count?.favorites ?? 0,
+      // Features efectivos (propios o heredados del padre) para que el panel
+      // del proveedor muestre las herramientas de su categoría (carta, etc.).
+      features: effectiveFeaturesFromCategories(provider.providerCategories),
     };
   }
 
