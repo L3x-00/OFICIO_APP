@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../catalog/presentation/screens/catalog_screen.dart';
 import '../../../menu/presentation/screens/menu_screen.dart';
 import '../../domain/models/provider_model.dart';
 
@@ -39,10 +40,35 @@ class ProviderFeatureCtas extends StatelessWidget {
       );
     }
 
+    if (provider.hasCatalog) {
+      ctas.add(
+        _FeatureCta(
+          icon: Icons.storefront,
+          label: 'Ver catálogo',
+          accent: accent,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => CatalogScreen(
+                providerId: provider.id,
+                businessName: provider.businessName,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (ctas.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
-      child: Column(children: ctas),
+      child: Column(
+        children: [
+          for (var i = 0; i < ctas.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            ctas[i],
+          ],
+        ],
+      ),
     );
   }
 }

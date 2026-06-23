@@ -1,5 +1,6 @@
 // Modelos de la Carta Digital. Reflejan la respuesta del backend
 // `GET /providers/:id/menu` (agrupada por sección) y los ítems individuales.
+import '../../../../shared/cart/cart_order.dart';
 
 /// Secciones canónicas de la carta (deben coincidir con el enum del backend).
 const List<String> kMenuSections = [
@@ -29,8 +30,9 @@ String menuSectionLabel(String section) {
   }
 }
 
-class MenuItemModel {
+class MenuItemModel implements OrderableItem {
   final int id;
+  @override
   final String name;
   final String? description;
   final double price;
@@ -64,6 +66,7 @@ class MenuItemModel {
       offerPrice != null && offerPrice! > 0 && offerPrice! < price;
 
   /// Precio efectivo a cobrar (oferta si aplica, si no el normal).
+  @override
   double get effectivePrice => hasOffer ? offerPrice! : price;
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) {
