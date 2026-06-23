@@ -230,13 +230,21 @@ describe('AI analytics (integration, BD real)', () => {
     const sumTop = top.reduce((a: number, t: any) => a + t.count, 0);
     expect(sumTop + sec.jailbreakTotal).toBe(summary.questionsAllTime);
 
-    // timeline: todo se insertó "ahora" → cae en UNA sola fila de día. La
-    // comparamos por contenido en vez de por el string de día (que difiere
-    // entre JS `peruDayKey` y el SQL `AT TIME ZONE` cerca de medianoche).
-    expect(summary.timeline.length).toBeGreaterThanOrEqual(1);
-    const todayRow = summary.timeline[summary.timeline.length - 1];
-    expect(todayRow.questions).toBe(summary.questionsToday);
-    expect(todayRow.tokens).toBe(summary.tokensToday);
+    // timeline: todo se insertó "ahora" → toda la actividad cae dentro de la
+    // ventana. En vez de asumir qué fila es "hoy" (frágil cerca de medianoche
+    // o según la hora UTC), validamos el INVARIANTE robusto: la suma de la
+    // serie == lo de hoy (porque todo se insertó hoy).
+    expect(summary.timeline.length).toBe(14); // backfill de 14 días
+    const tlQuestions = summary.timeline.reduce(
+      (a: number, r: { questions: number }) => a + r.questions,
+      0,
+    );
+    const tlTokens = summary.timeline.reduce(
+      (a: number, r: { tokens: number }) => a + r.tokens,
+      0,
+    );
+    expect(tlQuestions).toBe(summary.questionsToday);
+    expect(tlTokens).toBe(summary.tokensToday);
     expect(summary.tokensToday).toBe(200); // 120 + 80
 
     // costo coherente con tokens.
