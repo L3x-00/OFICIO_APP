@@ -234,25 +234,24 @@ export class AiAnalyticsService {
    * quedaba con 1 punto (línea invisible) y parecía "sin reporte".
    */
   private async dailyTimeline(days: number): Promise<AiUsagePoint[]> {
+    // Se trabaja con el tipo DATE (día calendario en Perú), no con timestamps
+    // "naked" + interval: así el JOIN serie↔uso es exacto sin ambigüedad de
+    // zona horaria ni de hora del día (antes el día de hoy podía no matchear).
     const rows = await this.prisma.$queryRaw<TimelineRow[]>(Prisma.sql`
       WITH bounds AS (
-        SELECT date_trunc('day', (now() AT TIME ZONE 'America/Lima')) AS today
+        SELECT (now() AT TIME ZONE 'America/Lima')::date AS today
       ),
       series AS (
-        SELECT generate_series(
-                 (SELECT today FROM bounds) - (${days - 1}::int * interval '1 day'),
-                 (SELECT today FROM bounds),
-                 interval '1 day'
-               ) AS day
+        SELECT ((SELECT today FROM bounds) - g) AS day
+        FROM generate_series(0, ${days - 1}::int) AS g
       ),
       usage AS (
-        SELECT date_trunc('day', "createdAt" AT TIME ZONE 'America/Lima') AS day,
+        SELECT ("createdAt" AT TIME ZONE 'America/Lima')::date AS day,
                count(*) FILTER (WHERE role = 'user') AS questions,
                coalesce(sum("tokensUsed"), 0)        AS tokens
         FROM ai_messages
-        WHERE "createdAt" >= (
-          (SELECT today FROM bounds) - (${days - 1}::int * interval '1 day')
-        ) AT TIME ZONE 'America/Lima'
+        WHERE ("createdAt" AT TIME ZONE 'America/Lima')::date
+              > (SELECT today FROM bounds) - ${days}::int
         GROUP BY 1
       )
       SELECT to_char(s.day, 'YYYY-MM-DD')      AS day,
