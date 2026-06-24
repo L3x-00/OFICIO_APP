@@ -645,4 +645,43 @@ describe('AuthService (unit)', () => {
       );
     });
   });
+
+  // ────────────────────────────────────────────────────────────
+  //  GET ME
+  // ────────────────────────────────────────────────────────────
+  describe('getMe()', () => {
+    it('devuelve el perfil (usuario + providers) si existe', async () => {
+      const me = {
+        id: 7,
+        email: 'a@b.com',
+        firstName: 'Ana',
+        providers: [{ id: 1, businessName: 'X' }],
+      };
+      prisma.user.findUnique.mockResolvedValue(me);
+      const res = await service.getMe(7);
+      expect(res).toBe(me);
+      expect(prisma.user.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 7 } }),
+      );
+    });
+
+    it('lanza UnauthorizedException si el usuario no existe', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      await expect(service.getMe(7)).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  // ────────────────────────────────────────────────────────────
+  //  LOGOUT
+  // ────────────────────────────────────────────────────────────
+  describe('logout()', () => {
+    it('borra el refresh token y confirma cierre de sesión', async () => {
+      prisma.refreshToken.deleteMany.mockResolvedValue({ count: 1 });
+      const res = await service.logout('rt-123');
+      expect(prisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+        where: { token: 'rt-123' },
+      });
+      expect(res).toEqual({ message: 'Sesión cerrada' });
+    });
+  });
 });
