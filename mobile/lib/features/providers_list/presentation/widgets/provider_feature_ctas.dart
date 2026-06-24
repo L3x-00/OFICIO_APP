@@ -3,6 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../agenda/presentation/screens/booking_screen.dart';
 import '../../../catalog/presentation/screens/catalog_screen.dart';
 import '../../../menu/presentation/screens/menu_screen.dart';
+import '../../../quotation/presentation/screens/request_quotation_screen.dart';
 import '../../domain/models/provider_model.dart';
 
 /// CTAs de las FUNCIONALIDADES por categoría dentro del detalle del proveedor
@@ -68,6 +69,24 @@ class ProviderFeatureCtas extends StatelessWidget {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => BookingScreen(
+                providerId: provider.id,
+                businessName: provider.businessName,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (provider.hasQuotation) {
+      ctas.add(
+        _FeatureCta(
+          icon: Icons.request_quote,
+          label: 'Pedir cotización',
+          accent: accent,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => RequestQuotationScreen(
                 providerId: provider.id,
                 businessName: provider.businessName,
               ),

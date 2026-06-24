@@ -19,6 +19,7 @@ import '../widgets/panel_feature_entry.dart';
 import '../../../menu/presentation/screens/manage_menu_screen.dart';
 import '../../../catalog/presentation/screens/manage_catalog_screen.dart';
 import '../../../agenda/presentation/screens/manage_appointments_screen.dart';
+import '../../../quotation/presentation/screens/manage_quotations_screen.dart';
 
 /// Tab "Servicios/Productos" del panel del proveedor.
 ///
@@ -177,6 +178,21 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const ManageAppointmentsScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // ── Cotizaciones (solo categorías con feature) ─────
+                if (dash.profile?.hasQuotation == true)
+                  SliverToBoxAdapter(
+                    child: PanelFeatureEntry(
+                      icon: Icons.request_quote,
+                      title: 'Cotizaciones',
+                      subtitle: 'Responde las solicitudes de presupuesto',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ManageQuotationsScreen(),
                         ),
                       ),
                     ),
