@@ -63,6 +63,13 @@ export type MenuItem = Prisma.MenuItemModel
  */
 export type CatalogProduct = Prisma.CatalogProductModel
 /**
+ * Model QuotationRequest
+ * Solicitud de COTIZACIÓN (módulo cotizacion). Canal de contacto sin límite:
+ * el cliente describe lo que necesita (+ foto opcional) y el proveedor
+ * responde con un presupuesto (texto + precio estimado opcional).
+ */
+export type QuotationRequest = Prisma.QuotationRequestModel
+/**
  * Model ProviderCategory
  * Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
  * Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias

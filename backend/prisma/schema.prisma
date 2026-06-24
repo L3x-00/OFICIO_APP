@@ -43,6 +43,7 @@ model User {
   /// (lastLoginAt > inactivityEmailSentAt) y vuelve a quedar inactivo.
   inactivityEmailSentAt DateTime?
   appointments     Appointment[]
+  quotationRequests QuotationRequest[]
   chatsAsClient    ChatRoom[]       @relation("ClientChats")
   redemptions      CoinRedemption[]
   favorites        Favorite[]
@@ -206,6 +207,29 @@ model CatalogProduct {
   @@map("catalog_products")
 }
 
+/// Solicitud de COTIZACIÓN (módulo cotizacion). Canal de contacto sin límite:
+/// el cliente describe lo que necesita (+ foto opcional) y el proveedor
+/// responde con un presupuesto (texto + precio estimado opcional).
+model QuotationRequest {
+  id             Int      @id @default(autoincrement())
+  providerId     Int
+  userId         Int
+  description    String
+  photoUrl       String?
+  status         String   @default("PENDIENTE") // PENDIENTE | RESPONDIDA | RECHAZADA
+  response       String?
+  estimatedPrice Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, status])
+  @@index([userId])
+  @@map("quotation_requests")
+}
+
 /// Tabla de unión proveedor ↔ Especialidades (muchos a muchos).
 /// Modelo "Multi-Especialidad con Sectores": un proveedor tiene varias
 /// Especialidades (categorías hijas) — máximo según su plan — y marca
@@ -284,6 +308,7 @@ model Provider {
   appointments         Appointment[]
   menuItems            MenuItem[]
   catalogProducts      CatalogProduct[]
+  quotationRequests    QuotationRequest[]
   chatsAsProvider      ChatRoom[]                @relation("ProviderChats")
   favorites            Favorite[]
   offerPosts           OfferPost[]

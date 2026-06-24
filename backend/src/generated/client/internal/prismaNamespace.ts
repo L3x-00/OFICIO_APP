@@ -392,6 +392,7 @@ export const ModelName = {
   Appointment: 'Appointment',
   MenuItem: 'MenuItem',
   CatalogProduct: 'CatalogProduct',
+  QuotationRequest: 'QuotationRequest',
   ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
@@ -444,7 +445,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "appointment" | "menuItem" | "catalogProduct" | "providerCategory" | "provider" | "providerImage" | "subscription" | "subscriptionAuditLog" | "userReport" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "appointment" | "menuItem" | "catalogProduct" | "quotationRequest" | "providerCategory" | "provider" | "providerImage" | "subscription" | "subscriptionAuditLog" | "userReport" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1037,6 +1038,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CatalogProductCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CatalogProductCountAggregateOutputType> | number
+        }
+      }
+    }
+    QuotationRequest: {
+      payload: Prisma.$QuotationRequestPayload<ExtArgs>
+      fields: Prisma.QuotationRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.QuotationRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.QuotationRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.QuotationRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.QuotationRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>
+        }
+        findMany: {
+          args: Prisma.QuotationRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>[]
+        }
+        create: {
+          args: Prisma.QuotationRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>
+        }
+        createMany: {
+          args: Prisma.QuotationRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.QuotationRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.QuotationRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>
+        }
+        update: {
+          args: Prisma.QuotationRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.QuotationRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.QuotationRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.QuotationRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.QuotationRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuotationRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.QuotationRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateQuotationRequest>
+        }
+        groupBy: {
+          args: Prisma.QuotationRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QuotationRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.QuotationRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QuotationRequestCountAggregateOutputType> | number
         }
       }
     }
@@ -3953,6 +4028,22 @@ export const CatalogProductScalarFieldEnum = {
 export type CatalogProductScalarFieldEnum = (typeof CatalogProductScalarFieldEnum)[keyof typeof CatalogProductScalarFieldEnum]
 
 
+export const QuotationRequestScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  userId: 'userId',
+  description: 'description',
+  photoUrl: 'photoUrl',
+  status: 'status',
+  response: 'response',
+  estimatedPrice: 'estimatedPrice',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuotationRequestScalarFieldEnum = (typeof QuotationRequestScalarFieldEnum)[keyof typeof QuotationRequestScalarFieldEnum]
+
+
 export const ProviderCategoryScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
@@ -5053,6 +5144,7 @@ export type GlobalOmitConfig = {
   appointment?: Prisma.AppointmentOmit
   menuItem?: Prisma.MenuItemOmit
   catalogProduct?: Prisma.CatalogProductOmit
+  quotationRequest?: Prisma.QuotationRequestOmit
   providerCategory?: Prisma.ProviderCategoryOmit
   provider?: Prisma.ProviderOmit
   providerImage?: Prisma.ProviderImageOmit
