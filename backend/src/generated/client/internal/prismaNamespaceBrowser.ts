@@ -59,6 +59,7 @@ export const ModelName = {
   Appointment: 'Appointment',
   MenuItem: 'MenuItem',
   CatalogProduct: 'CatalogProduct',
+  QuotationRequest: 'QuotationRequest',
   ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
   ProviderImage: 'ProviderImage',
@@ -248,6 +249,22 @@ export const CatalogProductScalarFieldEnum = {
 } as const
 
 export type CatalogProductScalarFieldEnum = (typeof CatalogProductScalarFieldEnum)[keyof typeof CatalogProductScalarFieldEnum]
+
+
+export const QuotationRequestScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  userId: 'userId',
+  description: 'description',
+  photoUrl: 'photoUrl',
+  status: 'status',
+  response: 'response',
+  estimatedPrice: 'estimatedPrice',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuotationRequestScalarFieldEnum = (typeof QuotationRequestScalarFieldEnum)[keyof typeof QuotationRequestScalarFieldEnum]
 
 
 export const ProviderCategoryScalarFieldEnum = {

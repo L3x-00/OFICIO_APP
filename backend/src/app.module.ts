@@ -34,6 +34,7 @@ import { ProviderFeaturesModule } from './common/provider-features.module.js';
 import { AppointmentsModule } from './appointments/appointments.module.js';
 import { MenuModule } from './menu/menu.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
+import { QuotationsModule } from './quotations/quotations.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -142,6 +143,8 @@ import { CatalogModule } from './catalog/catalog.module.js';
     // Carta Digital + Catálogo de productos.
     MenuModule,
     CatalogModule,
+    // Cotización (canal de presupuestos).
+    QuotationsModule,
   ],
   controllers: [AppController],
   providers: [

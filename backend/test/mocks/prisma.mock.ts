@@ -26,6 +26,7 @@ export type PrismaMock = {
   appointment: ReturnType<typeof modelMock>;
   menuItem: ReturnType<typeof modelMock>;
   catalogProduct: ReturnType<typeof modelMock>;
+  quotationRequest: ReturnType<typeof modelMock>;
   referralCode: ReturnType<typeof modelMock>;
   referral: ReturnType<typeof modelMock>;
   referralReward: ReturnType<typeof modelMock>;
@@ -96,6 +97,7 @@ export function createPrismaMock(): PrismaMock {
     appointment: modelMock(),
     menuItem: modelMock(),
     catalogProduct: modelMock(),
+    quotationRequest: modelMock(),
     providerImage: modelMock(),
     providerCategory: modelMock(),
     referralCode: modelMock(),
