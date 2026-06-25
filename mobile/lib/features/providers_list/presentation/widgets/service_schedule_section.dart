@@ -77,10 +77,11 @@ class ServicesList extends StatelessWidget {
                           child: Image.network(
                             item.imageUrl!,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => _iconBox(isNegocio),
+                            errorBuilder: (_, _, _) =>
+                                _iconBox(context, isNegocio),
                           ),
                         )
-                      : _iconBox(isNegocio),
+                      : _iconBox(context, isNegocio),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -144,7 +145,7 @@ class ServicesList extends StatelessWidget {
                       child: Text(
                         item.priceLabel,
                         style: TextStyle(
-                          color: accent,
+                          color: AppColors.tintOn(accent, c.isDark),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -166,13 +167,13 @@ class ServicesList extends StatelessWidget {
     );
   }
 
-  Widget _iconBox(bool isNegocio) => Container(
+  Widget _iconBox(BuildContext context, bool isNegocio) => Container(
     width: 48,
     height: 48,
     color: accent.withValues(alpha: 0.10),
     child: Icon(
       isNegocio ? Icons.inventory_2_rounded : Icons.build_circle_outlined,
-      color: accent,
+      color: AppColors.tintOn(accent, context.colors.isDark),
       size: 22,
     ),
   );
@@ -246,42 +247,80 @@ class ScheduleTable extends StatelessWidget {
       activeDays = activeDays.take(limit).toList();
     }
 
+    // Texto verde salvia legible para días abiertos. En claro, oscurecemos
+    // el salvia para que no se lave sobre la crema (cumple AA).
+    final openText = c.isDark
+        ? AppColors.available
+        : Color.alphaBlend(
+            Colors.black.withValues(alpha: 0.30),
+            AppColors.available,
+          );
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.border),
       ),
       child: Column(
-        children: activeDays.map((entry) {
-          final hours = _readHours(
-            schedule,
-            entry.key,
-          )!; // Ya filtramos los nulos arriba
-          final isClosed = hours == 'Cerrado';
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 88,
-                  child: Text(
-                    entry.value,
-                    style: TextStyle(color: c.textSecondary, fontSize: 13),
+        children: [
+          for (var i = 0; i < activeDays.length; i++)
+            Builder(
+              builder: (_) {
+                final entry = activeDays[i];
+                final hours = _readHours(
+                  schedule,
+                  entry.key,
+                )!; // Ya filtramos los nulos arriba
+                final isClosed = hours == 'Cerrado';
+                // Separador fino entre filas (excepto la primera).
+                final showDivider = i > 0;
+                return Container(
+                  decoration: BoxDecoration(
+                    border: showDivider
+                        ? Border(top: BorderSide(color: c.border, width: 0.5))
+                        : null,
                   ),
-                ),
-                Text(
-                  hours,
-                  style: TextStyle(
-                    color: isClosed ? AppColors.busy : c.textPrimary,
-                    fontSize: 13,
-                    fontWeight: isClosed ? FontWeight.normal : FontWeight.w500,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  child: Row(
+                    children: [
+                      // Punto-estado: salvia si abierto, apagado si cerrado.
+                      Container(
+                        width: 7,
+                        height: 7,
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isClosed ? c.textMuted : AppColors.available,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 88,
+                        child: Text(
+                          entry.value,
+                          style: TextStyle(
+                            color: isClosed ? c.textMuted : c.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        hours,
+                        style: TextStyle(
+                          color: isClosed ? c.textMuted : openText,
+                          fontSize: 13,
+                          fontWeight: isClosed
+                              ? FontWeight.normal
+                              : FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        }).toList(),
+        ],
       ),
     );
   }

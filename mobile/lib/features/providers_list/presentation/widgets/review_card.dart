@@ -38,7 +38,10 @@ class ReviewCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.border.withValues(alpha: 0.5)),
+          border: Border.all(
+            color: c.border.withValues(alpha: 0.5),
+            width: 0.5,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +65,7 @@ class ReviewCard extends StatelessWidget {
                         ? Text(
                             review.user?.initial ?? '?',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.primaryDark,
                               fontWeight: FontWeight.bold,
                             ),
                           )
@@ -121,20 +124,32 @@ class ReviewCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8),
                 child: Row(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        review.photoUrl,
-                        height: 60,
-                        width: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: c.border.withValues(alpha: 0.5),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          review.photoUrl,
+                          height: 60,
+                          width: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Ver foto',
-                      style: TextStyle(color: AppColors.primary, fontSize: 12),
+                      style: TextStyle(
+                        color: AppColors.primaryDark,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),

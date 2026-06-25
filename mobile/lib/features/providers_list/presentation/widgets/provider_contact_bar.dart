@@ -109,9 +109,13 @@ class ProviderContactBar extends StatelessWidget {
     // ruta padre y deja el diálogo colgado — usamos `dialogCtx` para el
     // pop y `rootNav` para la navegación posterior.
     final rootNav = Navigator.of(context, rootNavigator: true);
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (dialogCtx, animation, secondaryAnimation) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
@@ -154,6 +158,19 @@ class ProviderContactBar extends StatelessWidget {
           ),
         ],
       ),
+      transitionBuilder: (_, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.92, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
   }
 
@@ -216,9 +233,7 @@ class ProviderContactBar extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + bottomInset),
       decoration: BoxDecoration(
         color: c.bgCard,
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
-        ),
+        border: Border(top: BorderSide(color: c.border, width: 0.5)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -246,7 +261,8 @@ class ProviderContactBar extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.35),
+                    color: AppColors.primary.withValues(alpha: 0.30),
+                    width: 0.5,
                   ),
                 ),
                 child: Row(
@@ -279,6 +295,11 @@ class ProviderContactBar extends StatelessWidget {
                   child: _BigIconButton(
                     icon: Icons.forum_rounded,
                     color: AppColors.amber,
+                    // Glifo oscuro cálido sobre relleno dorado claro: amber
+                    // sobre amber@0.10 se lava (sobre todo en tema claro).
+                    glyphColor: AppColors.amberDeep,
+                    fillAlpha: 0.10,
+                    borderAlpha: 0.25,
                     onTap: () => _openInternalChat(context),
                   ),
                 ),
@@ -292,6 +313,12 @@ class ProviderContactBar extends StatelessWidget {
                     child: _BigIconButton(
                       svgAsset: 'assets/icons/whatsapp.svg',
                       color: AppColors.whatsapp,
+                      // Verde oscurecido sobre relleno verde claro: whatsapp
+                      // sobre whatsapp@fill se lava en tema claro.
+                      glyphColor: Color.alphaBlend(
+                        Colors.black.withValues(alpha: 0.30),
+                        AppColors.whatsapp,
+                      ),
                       onTap: _openWhatsApp,
                     ),
                   ),
@@ -304,6 +331,9 @@ class ProviderContactBar extends StatelessWidget {
                     child: _BigIconButton(
                       icon: Icons.call_rounded,
                       color: AppColors.call,
+                      // Glifo en azul oscuro de marca sobre relleno claro:
+                      // call sobre call@fill se lava en tema claro.
+                      glyphColor: AppColors.primaryDark,
                       onTap: _makeCall,
                     ),
                   ),
@@ -328,9 +358,10 @@ class ProviderContactBar extends StatelessWidget {
                   myReview != null ? 'Editar mi reseña' : 'Dejar una reseña',
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.star,
+                  foregroundColor: AppColors.primary,
                   side: BorderSide(
-                    color: AppColors.star.withValues(alpha: 0.4),
+                    color: AppColors.primary.withValues(alpha: 0.40),
+                    width: 0.5,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -360,6 +391,15 @@ class _BigIconButton extends StatefulWidget {
   final String? svgAsset; // ← nuevo: ruta del SVG
   final Color color;
 
+  /// Color del glifo (ícono). Por defecto = `color`, pero sobre rellenos
+  /// dorados claros conviene un glifo oscuro cálido (amberDeep) para no
+  /// lavarse en tema claro.
+  final Color? glyphColor;
+
+  /// Opacidad del relleno y del borde — permiten afinar cada botón.
+  final double fillAlpha;
+  final double borderAlpha;
+
   /// `FutureOr<void>` para soportar tanto handlers sync (`_makeCall`) como
   /// async (`_openInternalChat`). El widget bloquea taps adicionales
   /// hasta que el handler complete + un debounce de 600ms — sin esto,
@@ -370,6 +410,9 @@ class _BigIconButton extends StatefulWidget {
     this.icon,
     this.svgAsset,
     required this.color,
+    this.glyphColor,
+    this.fillAlpha = 0.12,
+    this.borderAlpha = 0.28,
     required this.onTap,
   }) : assert(icon != null || svgAsset != null);
 
@@ -407,14 +450,21 @@ class _BigIconButtonState extends State<_BigIconButton> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: 0.15),
+            color: widget.color.withValues(alpha: widget.fillAlpha),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: widget.color.withValues(alpha: 0.4)),
+            border: Border.all(
+              color: widget.color.withValues(alpha: widget.borderAlpha),
+              width: 0.5,
+            ),
           ),
           child: Center(
             child: widget.svgAsset != null
                 ? SvgPicture.asset(widget.svgAsset!, width: 22, height: 22)
-                : Icon(widget.icon, color: widget.color, size: 22),
+                : Icon(
+                    widget.icon,
+                    color: widget.glyphColor ?? widget.color,
+                    size: 22,
+                  ),
           ),
         ),
       ),

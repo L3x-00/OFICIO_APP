@@ -45,16 +45,37 @@ class ServiceDetailDialog {
       }
     };
     try {
-      await showDialog<void>(
+      await showGeneralDialog<void>(
         context: context,
+        barrierDismissible: true,
+        barrierLabel: 'Detalle',
         barrierColor: Colors.black.withValues(alpha: 0.55),
-        builder: (ctx) {
+        transitionDuration: const Duration(milliseconds: 240),
+        // 2.3 — apertura fade + scale suave (easeOutCubic).
+        transitionBuilder: (ctx, anim, _, child) {
+          final curved = CurvedAnimation(
+            parent: anim,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.94, end: 1.0).animate(curved),
+              child: child,
+            ),
+          );
+        },
+        pageBuilder: (ctx, _, _) {
           dialogCtx = ctx;
           return Dialog(
             backgroundColor: c.bgCard,
+            // Borde fino y sombra sutil — premium artesanal.
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: c.border, width: 0.5),
             ),
+            elevation: 0,
             insetPadding: const EdgeInsets.symmetric(
               horizontal: 28,
               vertical: 24,
@@ -145,7 +166,16 @@ class _DialogBodyState extends State<_DialogBody> {
   @override
   Widget build(BuildContext context) {
     final c = widget.c;
-    final accent = isNegocio ? AppColors.amber : AppColors.primary;
+    // Acento por tipo. El dorado a plena saturación se lava sobre la crema en
+    // tema claro → usar amberDark para texto/íconos pequeños. El fill del botón
+    // sí usa el amber pleno (con glifo oscuro cálido encima, ver más abajo).
+    final accentFill = isNegocio ? AppColors.amber : AppColors.primary;
+    final accentText = isNegocio
+        ? (c.isDark ? AppColors.amber : AppColors.amberDark)
+        : AppColors.primary;
+    // NEGOCIO: glifo oscuro cálido sobre dorado (≈5-6:1). OFICIO: blanco sobre
+    // azul profundo (≥4.5:1). Nunca blanco sobre pastel.
+    final onAccent = isNegocio ? AppColors.amberDeep : Colors.white;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 380),
       child: Column(
@@ -159,7 +189,7 @@ class _DialogBodyState extends State<_DialogBody> {
           if (service.imageUrl != null && service.imageUrl!.isNotEmpty)
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(22),
+                top: Radius.circular(20),
               ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
@@ -175,7 +205,7 @@ class _DialogBodyState extends State<_DialogBody> {
                         isNegocio
                             ? Icons.inventory_2_rounded
                             : Icons.design_services_rounded,
-                        color: accent,
+                        color: accentText,
                         size: 40,
                       ),
                     ),
@@ -204,14 +234,17 @@ class _DialogBodyState extends State<_DialogBody> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.12),
+                    color: accentFill.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: accent.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: accentFill.withValues(alpha: 0.28),
+                      width: 0.5,
+                    ),
                   ),
                   child: Text(
                     service.priceLabel,
                     style: TextStyle(
-                      color: accent,
+                      color: AppColors.tintOn(accentFill, c.isDark),
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -263,19 +296,20 @@ class _DialogBodyState extends State<_DialogBody> {
                       child: ElevatedButton.icon(
                         onPressed: _opening ? null : _consultarPrecio,
                         icon: _opening
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: onAccent,
                                 ),
                               )
                             : const Icon(Icons.forum_rounded, size: 16),
                         label: const Text('Consultar precio'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accent,
-                          foregroundColor: Colors.white,
+                          backgroundColor: accentFill,
+                          foregroundColor: onAccent,
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
