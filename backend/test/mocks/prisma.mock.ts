@@ -22,6 +22,12 @@ export type PrismaMock = {
   provider: ReturnType<typeof modelMock>;
   providerImage: ReturnType<typeof modelMock>;
   providerCategory: ReturnType<typeof modelMock>;
+  providerAnalytic: ReturnType<typeof modelMock>;
+  review: ReturnType<typeof modelMock>;
+  reviewReply: ReturnType<typeof modelMock>;
+  favorite: ReturnType<typeof modelMock>;
+  planRequest: ReturnType<typeof modelMock>;
+  userReport: ReturnType<typeof modelMock>;
   category: ReturnType<typeof modelMock>;
   appointment: ReturnType<typeof modelMock>;
   menuItem: ReturnType<typeof modelMock>;
@@ -94,6 +100,12 @@ export function createPrismaMock(): PrismaMock {
   const mock = {
     user: modelMock(),
     provider: modelMock(),
+    providerAnalytic: modelMock(),
+    review: modelMock(),
+    reviewReply: modelMock(),
+    favorite: modelMock(),
+    planRequest: modelMock(),
+    userReport: modelMock(),
     category: modelMock(),
     appointment: modelMock(),
     menuItem: modelMock(),
