@@ -50,37 +50,33 @@ class SubastaBanner extends StatelessWidget {
         }
       },
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: c.bgCard, // Fondo dinámico (blanco en claro, oscuro en dark)
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
-          // Sombra suave en tema claro, casi nula en oscuro
+          border: Border.all(color: c.border, width: 0.5),
+          // Sombra sutil en tema claro, casi nula en oscuro
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(
-                alpha: Theme.of(context).brightness == Brightness.dark
-                    ? 0.05
-                    : 0.12,
-              ),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: AppColors.amber.withValues(alpha: c.isDark ? 0.04 : 0.06),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(7),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.2),
+                color: AppColors.amber.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.campaign_rounded,
-                color: AppColors.primary,
-                size: 18,
+                color: AppColors.amber,
+                size: 17,
               ),
             ),
             const SizedBox(width: 10),
@@ -92,7 +88,7 @@ class SubastaBanner extends StatelessWidget {
                     '¿No encuentras lo que buscas? 🔍',
                     style: TextStyle(
                       color: c.textPrimary, // Texto dinámico
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -108,7 +104,7 @@ class SubastaBanner extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: AppColors.primary,
+              color: c.textSecondary,
               size: 14,
             ),
           ],

@@ -22,18 +22,25 @@ class FilterBar extends StatelessWidget {
       icon: Icons.apps_rounded,
       value: null,
       activeColor: AppColors.amber,
+      foreground: Color(
+        0xFF2A2418,
+      ), // texto oscuro: blanco-sobre-dorado es ilegible
     ),
     _TypeChipData(
       label: 'Profesionales',
       icon: Icons.handyman_rounded,
       value: 'PROFESSIONAL',
       activeColor: AppColors.primary,
+      foreground: Colors.white,
     ),
     _TypeChipData(
       label: 'Negocios',
       icon: Icons.storefront_rounded,
       value: 'BUSINESS',
-      activeColor: Color(0xFF8E2DE2),
+      // Malva apagado on-palette (reemplaza el azul periwinkle frío #7B8CDE,
+      // fuera de la dirección cálida); profundo para texto blanco AA.
+      activeColor: Color(0xFF7E6492),
+      foreground: Colors.white,
     ),
   ];
 
@@ -127,7 +134,7 @@ class _ParentChipRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: c.bgCard,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: c.border),
+                border: Border.all(color: c.border, width: 0.5),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -193,6 +200,7 @@ class _SubChipRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.3),
+                    width: 0.5,
                   ),
                 ),
                 child: Row(
@@ -249,11 +257,16 @@ class _TypeChipData {
   final IconData icon;
   final String? value;
   final Color activeColor;
+
+  /// Color de texto/ícono cuando el chip está seleccionado (sobre activeColor).
+  /// Se declara por chip para garantizar contraste AA (ej. dorado → texto oscuro).
+  final Color foreground;
   const _TypeChipData({
     required this.label,
     required this.icon,
     required this.value,
     required this.activeColor,
+    required this.foreground,
   });
 }
 
@@ -269,6 +282,13 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Seleccionado → foreground declarado (AA). Inactivo → la marca, pero el
+    // dorado va en su versión -Dark para que se lea sobre fondos claros.
+    final Color fg = isSelected
+        ? data.foreground
+        : (data.activeColor == AppColors.amber
+              ? AppColors.amberDark
+              : data.activeColor);
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: GestureDetector(
@@ -279,28 +299,24 @@ class _TypeChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? data.activeColor
-                : data.activeColor.withValues(alpha: 0.08),
+                : data.activeColor.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isSelected
                   ? data.activeColor
                   : data.activeColor.withValues(alpha: 0.25),
-              width: isSelected ? 0 : 1,
+              width: isSelected ? 0 : 0.5,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                data.icon,
-                size: 13,
-                color: isSelected ? Colors.white : data.activeColor,
-              ),
+              Icon(data.icon, size: 13, color: fg),
               const SizedBox(width: 5),
               Text(
                 data.label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : data.activeColor,
+                  color: fg,
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                 ),
@@ -338,7 +354,7 @@ class _CategoryChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primary : c.bgCard,
             borderRadius: BorderRadius.circular(20),
-            border: isSelected ? null : Border.all(color: c.border),
+            border: isSelected ? null : Border.all(color: c.border, width: 0.5),
           ),
           child: Text(
             label,

@@ -23,18 +23,22 @@ class GreetingHeader extends StatelessWidget {
           firstName != null ? '¡Hola, $firstName!' : '¡Explora los servicios!',
           style: TextStyle(
             color: c.textPrimary,
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           firstName != null
               ? '¿Qué servicios necesitas hoy?'
               : 'Contrata sin registro • Es gratis',
-          style: TextStyle(color: c.textSecondary, fontSize: 13),
+          style: TextStyle(
+            color: c.textMuted,
+            fontSize: 13,
+            fontWeight: FontWeight.normal,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

@@ -96,7 +96,9 @@ class ServiceCardMosaic extends StatelessWidget {
                         ),
                         child: const Icon(
                           Icons.verified_rounded,
-                          color: Colors.white,
+                          color: Color(
+                            0xFF2A2418,
+                          ), // glifo oscuro (AA sobre azul polvo)
                           size: 12,
                         ),
                       ),
@@ -108,12 +110,14 @@ class ServiceCardMosaic extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.9),
+                          color: AppColors.available.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
                           Icons.shield_rounded,
-                          color: Colors.white,
+                          color: Color(
+                            0xFF2A2418,
+                          ), // glifo oscuro (AA sobre salvia)
                           size: 12,
                         ),
                       ),
@@ -246,20 +250,32 @@ class _GridContactBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.colors.isDark;
+    // En tema claro el relleno color@0.14 queda casi blanco y el ícono a plena
+    // saturación pierde contraste; usamos un tono más profundo (3:1 mínimo).
+    final Color iconColor = isDark
+        ? color
+        : color == AppColors.amber
+        ? AppColors.amberDark
+        : color == AppColors.call
+        ? AppColors.primaryDark
+        : color;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 22,
         height: 22,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.14),
+          color: color.withValues(alpha: isDark ? 0.14 : 0.16),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color.withValues(alpha: 0.35)),
+          border: Border.all(
+            color: color.withValues(alpha: isDark ? 0.35 : 0.42),
+          ),
         ),
         child: Center(
           child: svgAsset != null
               ? SvgPicture.asset(svgAsset!, width: 12, height: 12)
-              : Icon(icon, color: color, size: 12),
+              : Icon(icon, color: iconColor, size: 12),
         ),
       ),
     );
@@ -292,10 +308,16 @@ class _MosaicStatusBadge extends StatelessWidget {
       label = p.availability.label;
     }
 
+    final isDark = context.colors.isDark;
+    // El texto del estado a 9px en el mismo tono pastel del fondo no se lee en
+    // tema claro; lo oscurecemos y subimos 1pt + algo más de relleno.
+    final Color textColor = isDark
+        ? color
+        : Color.alphaBlend(Colors.black.withValues(alpha: 0.45), color);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: isDark ? 0.12 : 0.16),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withValues(alpha: 0.30)),
       ),
@@ -311,8 +333,8 @@ class _MosaicStatusBadge extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: color,
-              fontSize: 9,
+              color: textColor,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
           ),

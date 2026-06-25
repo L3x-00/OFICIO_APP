@@ -21,11 +21,13 @@ class CollapsibleSearchBar extends StatefulWidget {
   State<CollapsibleSearchBar> createState() => _CollapsibleSearchBarState();
 }
 
-class _CollapsibleSearchBarState extends State<CollapsibleSearchBar> with TickerProviderStateMixin {
+class _CollapsibleSearchBarState extends State<CollapsibleSearchBar>
+    with TickerProviderStateMixin {
   final _controller = TextEditingController();
-  final _focusNode  = FocusNode();
+  final _focusNode = FocusNode();
   Timer? _debounce;
   bool _active = false;
+
   /// Indica si el hint "Toca para buscar..." todavía debe pulsar una vez.
   /// Se desactiva tras la primera interacción para no distraer.
   bool _showHintPulse = true;
@@ -57,7 +59,9 @@ class _CollapsibleSearchBarState extends State<CollapsibleSearchBar> with Ticker
     });
     // El TextField se construye en el siguiente frame; pedimos foco entonces
     // para que el teclado se abra solo.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _focusNode.requestFocus(),
+    );
   }
 
   void _collapse({bool clearText = false}) {
@@ -104,11 +108,12 @@ class _CollapsibleSearchBarState extends State<CollapsibleSearchBar> with Ticker
         children: [
           // Botón lupa
           Container(
-            width: 44, height: 44,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: c.bgCard,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: c.border),
+              border: Border.all(color: c.border, width: 0.5),
             ),
             child: Icon(Icons.search_rounded, color: c.textSecondary, size: 22),
           ),
@@ -116,7 +121,7 @@ class _CollapsibleSearchBarState extends State<CollapsibleSearchBar> with Ticker
           // Hint con pulse suave
           AnimatedOpacity(
             duration: const Duration(milliseconds: 500),
-            opacity: _showHintPulse ? 1.0 : 0.55,
+            opacity: _showHintPulse ? 0.9 : 0.45,
             child: Text(
               'Toca para buscar...',
               style: TextStyle(
@@ -166,6 +171,10 @@ class _CollapsibleSearchBarState extends State<CollapsibleSearchBar> with Ticker
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.border, width: 0.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

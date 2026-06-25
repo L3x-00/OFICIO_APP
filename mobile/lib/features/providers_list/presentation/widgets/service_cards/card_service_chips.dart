@@ -23,7 +23,7 @@ class ServicesRow extends StatelessWidget {
     final c = context.colors;
     const maxVisible = 3;
     final visible = services.take(maxVisible).toList();
-    final extra   = services.length - maxVisible;
+    final extra = services.length - maxVisible;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,7 +31,9 @@ class ServicesRow extends StatelessWidget {
         Row(
           children: [
             Icon(
-              isNegocio ? Icons.inventory_2_outlined : Icons.build_circle_outlined,
+              isNegocio
+                  ? Icons.inventory_2_outlined
+                  : Icons.build_circle_outlined,
               size: 13,
               color: isNegocio ? AppColors.amber : AppColors.primary,
             ),
@@ -52,13 +54,19 @@ class ServicesRow extends StatelessWidget {
           spacing: 6,
           runSpacing: 5,
           children: [
-            ...visible.map((s) => ServiceChip(
-                  item: s,
-                  isNegocio: isNegocio,
-                  provider: provider,
-                )),
+            ...visible.map(
+              (s) => ServiceChip(
+                item: s,
+                isNegocio: isNegocio,
+                provider: provider,
+              ),
+            ),
             if (extra > 0)
-              ServiceChip(label: '+$extra más', isExtra: true, isNegocio: isNegocio),
+              ServiceChip(
+                label: '+$extra más',
+                isExtra: true,
+                isNegocio: isNegocio,
+              ),
           ],
         ),
       ],
@@ -73,6 +81,7 @@ class ServiceChip extends StatelessWidget {
   final String? label;
   final bool isExtra;
   final bool isNegocio;
+
   /// Proveedor dueño del servicio — necesario para el botón "Consultar
   /// precio" del [ServiceDetailDialog]. Null sólo en el chip "+N más".
   final ProviderModel? provider;
@@ -88,23 +97,21 @@ class ServiceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c    = context.colors;
+    final c = context.colors;
     final text = label ?? item!.name;
     final price = (!isExtra && item?.price != null) ? item!.priceLabel : null;
-    final hasImage = !isExtra && item?.imageUrl != null && item!.imageUrl!.isNotEmpty;
+    final hasImage =
+        !isExtra && item?.imageUrl != null && item!.imageUrl!.isNotEmpty;
     final accent = isNegocio ? AppColors.amber : AppColors.primary;
 
     final chip = Container(
       padding: EdgeInsets.fromLTRB(hasImage ? 4 : 9, 4, 9, 4),
       decoration: BoxDecoration(
-        color: isExtra
-            ? c.bgInput
-            : accent.withValues(alpha: 0.08),
+        color: isExtra ? c.bgInput : accent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isExtra
-              ? c.border
-              : accent.withValues(alpha: 0.25),
+          width: 0.5,
+          color: isExtra ? c.border : accent.withValues(alpha: 0.25),
         ),
       ),
       child: Row(
@@ -118,7 +125,9 @@ class ServiceChip extends StatelessWidget {
                 height: 20,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Icon(
-                  isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
+                  isNegocio
+                      ? Icons.inventory_2_rounded
+                      : Icons.design_services_rounded,
                   size: 14,
                   color: accent,
                 ),
@@ -149,8 +158,12 @@ class ServiceChip extends StatelessWidget {
     if (isExtra || item == null || provider == null) return chip;
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      onTap: () => ServiceDetailDialog.show(context,
-          service: item!, isNegocio: isNegocio, provider: provider!),
+      onTap: () => ServiceDetailDialog.show(
+        context,
+        service: item!,
+        isNegocio: isNegocio,
+        provider: provider!,
+      ),
       child: chip,
     );
   }

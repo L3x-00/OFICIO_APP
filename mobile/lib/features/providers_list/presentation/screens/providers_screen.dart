@@ -148,7 +148,7 @@ class _ProvidersViewState extends State<_ProvidersView>
           elevation: 0,
           // ── Logo (esquina superior izquierda) ─────
           leading: Padding(
-            padding: const EdgeInsets.only(left: 12),
+            padding: const EdgeInsets.only(left: 8),
             child: Image.asset(
               c.isDark
                   ? 'assets/images/logo/servi.png'
@@ -166,7 +166,7 @@ class _ProvidersViewState extends State<_ProvidersView>
                 'Servi',
                 style: TextStyle(
                   color: c.textPrimary,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   fontSize: 18,
                 ),
               ),
@@ -208,7 +208,7 @@ class _ProvidersViewState extends State<_ProvidersView>
                             style: const TextStyle(
                               color: AppColors.amber,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -238,7 +238,12 @@ class _ProvidersViewState extends State<_ProvidersView>
                   icon: Badge(
                     isLabelVisible: prov.hasActiveFilters,
                     backgroundColor: AppColors.amber,
-                    child: Icon(Icons.tune_rounded, color: c.textPrimary),
+                    child: Icon(
+                      Icons.tune_rounded,
+                      color: prov.hasActiveFilters
+                          ? c.textPrimary
+                          : c.textSecondary,
+                    ),
                   ),
                   onPressed: () => _showFilterSheet(context, prov),
                 ),
@@ -420,7 +425,10 @@ class _CompactLocationChip extends StatelessWidget {
           children: [
             Icon(
               hasFilter ? Icons.location_on_rounded : Icons.public_rounded,
-              color: hasFilter ? AppColors.primary : AppColors.amber,
+              // En claro el dorado claro pierde fuerza sobre la crema: amberDark.
+              color: hasFilter
+                  ? AppColors.primary
+                  : (c.isDark ? AppColors.amber : AppColors.amberDark),
               size: 14,
             ),
             const SizedBox(width: 4),
@@ -452,9 +460,9 @@ class _CompactLocationChip extends StatelessWidget {
               ),
             ] else ...[
               const SizedBox(width: 2),
-              const Icon(
+              Icon(
                 Icons.arrow_drop_down_rounded,
-                color: AppColors.amber,
+                color: c.isDark ? AppColors.amber : AppColors.amberDark,
                 size: 18,
               ),
             ],

@@ -33,12 +33,12 @@ class ActionButtons extends StatelessWidget {
         onTap: onGoToDashboard,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 11),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.12),
+            color: AppColors.primary.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.35),
+              color: AppColors.primary.withValues(alpha: 0.25),
             ),
           ),
           child: Row(
@@ -110,12 +110,16 @@ class IconActionButton extends StatelessWidget {
   final String? svgAsset;
   final Color color;
   final VoidCallback? onTap;
+  final double fillAlpha;
+  final double borderAlpha;
   const IconActionButton({
     super.key,
     this.icon,
     this.svgAsset,
     required this.color,
     this.onTap,
+    this.fillAlpha = 0.10,
+    this.borderAlpha = 0.25,
   }) : assert(icon != null || svgAsset != null);
 
   @override
@@ -123,11 +127,11 @@ class IconActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
+          color: color.withValues(alpha: fillAlpha),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: borderAlpha)),
         ),
         child: Center(
           child: svgAsset != null
@@ -196,9 +200,9 @@ class CompactActionBtn extends StatelessWidget {
         width: 30,
         height: 30,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
+          color: color.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Center(
           child: svgAsset != null
