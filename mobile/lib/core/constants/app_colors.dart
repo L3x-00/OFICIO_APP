@@ -56,4 +56,21 @@ abstract class AppColors {
   static const Color standardBorder = Color(
     0xFF3A57C2,
   ); // Azul oscuro para borde
+
+  // ── Helpers de contraste (centralizan la regla "Suave pero legible AA") ──
+
+  /// Color de glifo/texto LEGIBLE sobre un fill SÓLIDO de [accent]
+  /// (avatar, pin de mapa, botón relleno). El dorado es un fill claro → glifo
+  /// oscuro; los acentos oscuros (azul) → glifo blanco.
+  static Color onSolid(Color accent) =>
+      accent == amber ? amberDeep : Colors.white;
+
+  /// Color de texto/ícono de [accent] sobre su PROPIO tinte claro
+  /// (chip con fill `accent.withValues(alpha: ~0.1)`). En tema oscuro el acento
+  /// se lee bien; en claro (crema) se lava, así que se oscurece para pasar AA.
+  static Color tintOn(Color accent, bool isDark) {
+    if (isDark) return accent;
+    if (accent == amber) return amberDeep; // dorado → casi negro cálido
+    return Color.alphaBlend(Colors.black.withValues(alpha: 0.42), accent);
+  }
 }

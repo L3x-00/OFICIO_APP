@@ -7,12 +7,12 @@ import '../../data/providers_repository.dart';
 /// Modal para reportar un proveedor por contenido inapropiado, fraude, etc.
 class ReportSheet {
   static const _reasons = [
-    ('INFORMACION_FALSA',  'Información falsa o engañosa'),
-    ('COMPORTAMIENTO',     'Comportamiento inapropiado'),
-    ('FRAUDE',             'Posible fraude o estafa'),
-    ('FOTO_INAPROPIADA',   'Fotos inapropiadas'),
-    ('NO_PRESTO',          'No prestó el servicio'),
-    ('OTRO',               'Otro motivo'),
+    ('INFORMACION_FALSA', 'Información falsa o engañosa'),
+    ('COMPORTAMIENTO', 'Comportamiento inapropiado'),
+    ('FRAUDE', 'Posible fraude o estafa'),
+    ('FOTO_INAPROPIADA', 'Fotos inapropiadas'),
+    ('NO_PRESTO', 'No prestó el servicio'),
+    ('OTRO', 'Otro motivo'),
   ];
 
   static Future<void> show(
@@ -27,11 +27,11 @@ class ReportSheet {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _ReportSheetContent(
-        providerId:   providerId,
+        providerId: providerId,
         providerName: providerName,
-        userId:       userId,
-        repo:         repo,
-        reasons:      _reasons,
+        userId: userId,
+        repo: repo,
+        reasons: _reasons,
       ),
     );
   }
@@ -72,9 +72,9 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
     setState(() => _sending = true);
     try {
       await widget.repo.reportProvider(
-        providerId:  widget.providerId,
-        userId:      widget.userId,
-        reason:      _selectedReason!,
+        providerId: widget.providerId,
+        userId: widget.userId,
+        reason: _selectedReason!,
         description: _descController.text.trim(),
       );
       if (mounted) {
@@ -106,23 +106,45 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 60, height: 60,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  color: AppColors.available.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.available.withValues(alpha: 0.35),
+                    width: 0.5,
+                  ),
                 ),
-                child: const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 32),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  color: c.isDark
+                      ? AppColors.available
+                      : Color.alphaBlend(
+                          Colors.black.withValues(alpha: 0.45),
+                          AppColors.available,
+                        ),
+                  size: 32,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 'Reporte enviado con éxito',
-                style: TextStyle(color: c.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 'Gracias por hacer de esta una comunidad saludable. Nuestro equipo revisará tu reporte a la brevedad.',
-                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
@@ -131,12 +153,18 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(dCtx).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
                   ),
-                  child: const Text('Aceptar', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Aceptar',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -148,14 +176,22 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
 
   @override
   Widget build(BuildContext context) {
-    final c          = context.colors;
-    final bottomPad  = MediaQuery.of(context).viewInsets.bottom;
+    final c = context.colors;
+    final bottomPad = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + bottomPad),
       decoration: BoxDecoration(
         color: c.bg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: c.border, width: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.amberDeep.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -164,7 +200,8 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
           // Handle
           Center(
             child: Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: c.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
@@ -182,7 +219,11 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                   color: AppColors.busy.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.flag_rounded, color: AppColors.busy, size: 20),
+                child: const Icon(
+                  Icons.flag_rounded,
+                  color: AppColors.busy,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -192,7 +233,9 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                     Text(
                       'Reportar proveedor',
                       style: TextStyle(
-                        color: c.textPrimary, fontSize: 16, fontWeight: FontWeight.bold,
+                        color: c.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
@@ -213,7 +256,11 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
 
           Text(
             '¿Cuál es el motivo del reporte?',
-            style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: c.textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -226,7 +273,10 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
                 decoration: BoxDecoration(
                   color: selected
                       ? AppColors.busy.withValues(alpha: 0.08)
@@ -236,6 +286,7 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                     color: selected
                         ? AppColors.busy.withValues(alpha: 0.5)
                         : c.border,
+                    width: 0.5,
                   ),
                 ),
                 child: Row(
@@ -257,7 +308,9 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                       style: TextStyle(
                         color: selected ? c.textPrimary : c.textSecondary,
                         fontSize: 13,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -284,7 +337,10 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -294,12 +350,16 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _sending ? null : () => Navigator.of(context).pop(),
+                  onPressed: _sending
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: c.textSecondary,
-                    side: BorderSide(color: c.border),
+                    side: BorderSide(color: c.border, width: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text('Cancelar'),
                 ),
@@ -307,21 +367,34 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: (_selectedReason == null || _sending) ? null : _submit,
+                  onPressed: (_selectedReason == null || _sending)
+                      ? null
+                      : _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.busy,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.busy.withValues(alpha: 0.4),
+                    disabledBackgroundColor: AppColors.busy.withValues(
+                      alpha: 0.4,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
                   child: _sending
                       ? const SizedBox(
-                          width: 18, height: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
-                      : const Text('Enviar reporte', style: TextStyle(fontWeight: FontWeight.bold)),
+                      : const Text(
+                          'Enviar reporte',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
             ],

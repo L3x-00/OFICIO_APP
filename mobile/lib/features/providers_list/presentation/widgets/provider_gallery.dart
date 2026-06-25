@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 class ProviderGallery extends StatefulWidget {
   final List<String> images;
   final Color accent;
+
   /// Botón opcional para superponer en la esquina inferior-derecha de la
   /// galería (típicamente, "Compartir perfil"). Si es null no se renderiza.
   final Widget? trailingAction;
@@ -89,10 +90,32 @@ class _ProviderGalleryState extends State<ProviderGallery> {
                           color: c.bgInput,
                           child: const Center(
                             child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                              color: AppColors.amber,
                             ),
                           ),
                         ),
+                ),
+              ),
+            ),
+          ),
+
+          // Gradiente inferior sutil para legibilidad de dots/acciones.
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: 88,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      AppColors.amberDeep.withValues(alpha: 0.32),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -114,8 +137,8 @@ class _ProviderGalleryState extends State<ProviderGallery> {
                     height: 6,
                     decoration: BoxDecoration(
                       color: i == _currentIndex
-                          ? widget.accent
-                          : Colors.white.withValues(alpha: 0.4),
+                          ? AppColors.primary
+                          : Colors.white.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -129,12 +152,16 @@ class _ProviderGalleryState extends State<ProviderGallery> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
+                color: AppColors.amberDeep.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 0.5,
+                ),
               ),
               child: Text(
                 '${_currentIndex + 1}/${widget.images.length}',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
           ),

@@ -89,9 +89,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   }
 
   /// Color de acento según el tipo de proveedor:
-  /// NEGOCIO → morado | OFICIO → azul primary
+  /// NEGOCIO → dorado (protagonista) | OFICIO → azul primary
   Color get _accent => _provider.type == ProviderType.negocio
-      ? const Color(0xFF8E2DE2)
+      ? AppColors.amber
       : AppColors.primary;
 
   /// Reseña del usuario actual para este proveedor (null si no ha reseñado).
@@ -209,9 +209,26 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
   void _showLoginRequired() {
     final c = context.colors;
     final rootNav = Navigator.of(context, rootNavigator: true);
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 230),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.92, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (dialogCtx, animation, secondaryAnimation) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
@@ -286,7 +303,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
       height: screenHeight * 0.92,
       decoration: BoxDecoration(
         color: c.bg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
@@ -295,9 +312,9 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Container(
               width: 40,
-              height: 4,
+              height: 3,
               decoration: BoxDecoration(
-                color: c.textMuted.withValues(alpha: 0.4),
+                color: c.textMuted.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -645,21 +662,24 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
             repo: _providersRepo,
           );
         },
-        icon: const Icon(
+        icon: Icon(
           Icons.flag_rounded,
           size: 16,
-          color: Color(0xFFEF4444),
+          color: AppColors.busy.withValues(alpha: 0.85),
         ),
-        label: const Text(
+        label: Text(
           'Reportar este servicio',
           style: TextStyle(
-            color: Color(0xFFEF4444),
+            color: AppColors.busy.withValues(alpha: 0.85),
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
+          side: BorderSide(
+            color: AppColors.busy.withValues(alpha: 0.4),
+            width: 1,
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -712,14 +732,14 @@ class _ShareFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black.withValues(alpha: 0.55),
+      color: AppColors.amberDeep.withValues(alpha: 0.45),
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: const Padding(
-          padding: EdgeInsets.all(10),
-          child: Icon(Icons.ios_share_rounded, color: Colors.white, size: 20),
+          padding: EdgeInsets.all(9),
+          child: Icon(Icons.ios_share_rounded, color: Colors.white, size: 18),
         ),
       ),
     );
@@ -736,17 +756,26 @@ class _FavFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black.withValues(alpha: 0.55),
+      color: AppColors.amberDeep.withValues(alpha: 0.45),
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Icon(
-            isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-            color: isFavorite ? AppColors.favorite : Colors.white,
-            size: 20,
+          padding: const EdgeInsets.all(9),
+          // Pequeño bounce/scale al alternar vacío↔lleno (solo visual).
+          child: AnimatedScale(
+            scale: isFavorite ? 1.15 : 1.0,
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutBack,
+            child: Icon(
+              key: ValueKey(isFavorite),
+              isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: isFavorite ? AppColors.favorite : Colors.white,
+              size: 18,
+            ),
           ),
         ),
       ),
@@ -788,7 +817,9 @@ class _SectionHeaderWithToggle extends StatelessWidget {
             child: Text(
               isExpanded ? collapseLabel : expandLabel,
               style: TextStyle(
-                color: accent,
+                color: context.colors.isDark
+                    ? AppColors.primary
+                    : AppColors.primaryDark,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),

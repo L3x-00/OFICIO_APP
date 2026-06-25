@@ -65,13 +65,15 @@ class _JoinUsFABState extends State<JoinUsFAB>
       label: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+            colors: [AppColors.primary, AppColors.primaryDark],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1E88E5).withValues(alpha: 0.4),
-              blurRadius: 12, spreadRadius: 2, offset: const Offset(0, 4),
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 8,
+              spreadRadius: 0,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -81,8 +83,14 @@ class _JoinUsFABState extends State<JoinUsFAB>
           children: [
             Icon(Icons.dashboard_rounded, color: Colors.white, size: 18),
             SizedBox(width: 8),
-            Text('Ir a mi panel',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(
+              'Ir a mi panel',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       ),
@@ -99,13 +107,15 @@ class _JoinUsFABState extends State<JoinUsFAB>
         label: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFFFB347), Color(0xFFFF6B35)],
+              colors: [AppColors.amberDark, AppColors.amberDeep],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF6B35).withValues(alpha: 0.4),
-                blurRadius: 12, spreadRadius: 2, offset: const Offset(0, 4),
+                color: AppColors.amberDeep.withValues(alpha: 0.08),
+                blurRadius: 8,
+                spreadRadius: 0,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -115,8 +125,14 @@ class _JoinUsFABState extends State<JoinUsFAB>
             children: [
               Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18),
               SizedBox(width: 8),
-              Text('¡Quiero ser parte!',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(
+                '¡Quiero ser parte!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
         ),
@@ -131,9 +147,9 @@ class _JoinUsFABState extends State<JoinUsFAB>
     // o aprobar un perfil mientras el socket está dormido.
     auth.refreshProviderStatus();
 
-    final oficioStatus  = auth.verificationStatusFor('OFICIO');
+    final oficioStatus = auth.verificationStatusFor('OFICIO');
     final negocioStatus = auth.verificationStatusFor('NEGOCIO');
-    final hasOficio  = oficioStatus  != null;
+    final hasOficio = oficioStatus != null;
     final hasNegocio = negocioStatus != null;
 
     // Si el user tiene los dos tipos registrados (cualquier combinación
@@ -147,11 +163,13 @@ class _JoinUsFABState extends State<JoinUsFAB>
     // Un solo perfil: si está aprobado, push directo al panel; si está
     // rechazado o pendiente, abrir el modal de Únete (que ya pinta
     // PendingBanner / RejectedBanner para ese tipo).
-    final onlyType   = hasOficio ? 'OFICIO' : 'NEGOCIO';
+    final onlyType = hasOficio ? 'OFICIO' : 'NEGOCIO';
     final onlyStatus = hasOficio ? oficioStatus : negocioStatus;
     if (onlyStatus == 'APROBADO') {
       Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(builder: (_) => ProviderPanel(providerType: onlyType)),
+        MaterialPageRoute(
+          builder: (_) => ProviderPanel(providerType: onlyType),
+        ),
       );
     } else {
       JoinUsModal.show(context);
@@ -174,16 +192,20 @@ class _JoinUsFABState extends State<JoinUsFAB>
         // instante).
         return Consumer<AuthProvider>(
           builder: (_, auth, _) {
-            final oficioStatus  = auth.verificationStatusFor('OFICIO');
+            final oficioStatus = auth.verificationStatusFor('OFICIO');
             final negocioStatus = auth.verificationStatusFor('NEGOCIO');
 
             return Container(
               decoration: BoxDecoration(
                 color: c.bg,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               padding: EdgeInsets.fromLTRB(
-                20, 12, 20,
+                20,
+                12,
+                20,
                 MediaQuery.of(sheetCtx).padding.bottom + 20,
               ),
               child: Column(
@@ -191,7 +213,8 @@ class _JoinUsFABState extends State<JoinUsFAB>
                 children: [
                   Center(
                     child: Container(
-                      width: 40, height: 4,
+                      width: 40,
+                      height: 4,
                       decoration: BoxDecoration(
                         color: c.textMuted.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
@@ -245,7 +268,7 @@ class _JoinUsFABState extends State<JoinUsFAB>
                   _ProfileChoiceCard(
                     icon: Icons.storefront_rounded,
                     title: 'Perfil de Negocio',
-                    color: const Color(0xFF8E2DE2),
+                    color: AppColors.amber,
                     status: negocioStatus,
                     rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
                     onApprovedTap: () {
@@ -307,34 +330,37 @@ class _ProfileChoiceCard extends StatelessWidget {
     final c = context.colors;
     final isApproved = status == 'APROBADO';
     final isRejected = status == 'RECHAZADO';
-    final isPending  = status == 'PENDIENTE';
+    final isPending = status == 'PENDIENTE';
 
     final accentColor = isRejected
-        ? const Color(0xFFEF4444)
+        ? AppColors.busy
         : isPending
-            ? AppColors.amber
-            : color;
+        ? (c.isDark ? AppColors.amber : AppColors.amberDark)
+        : color;
 
     final subtitle = isApproved
         ? 'Activo · Ir a mi panel'
         : isPending
-            ? 'En revisión por el administrador'
-            : isRejected
-                ? 'Rechazado · Toca para volver a postular'
-                : 'Sin perfil';
+        ? 'En revisión por el administrador'
+        : isRejected
+        ? 'Rechazado · Toca para volver a postular'
+        : 'Sin perfil';
 
     return GestureDetector(
       onTap: isApproved
           ? onApprovedTap
           : isRejected
-              ? onRejectedTap
-              : null,
+          ? onRejectedTap
+          : null,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: accentColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accentColor.withValues(alpha: 0.35)),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.30),
+            width: 0.5,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,7 +368,8 @@ class _ProfileChoiceCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 44, height: 44,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
@@ -365,7 +392,7 @@ class _ProfileChoiceCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(color: accentColor, fontSize: 12),
+                        style: TextStyle(color: c.textSecondary, fontSize: 12),
                       ),
                     ],
                   ),
@@ -374,18 +401,24 @@ class _ProfileChoiceCard extends StatelessWidget {
                   isApproved
                       ? Icons.chevron_right_rounded
                       : isRejected
-                          ? Icons.refresh_rounded
-                          : Icons.hourglass_top_rounded,
+                      ? Icons.refresh_rounded
+                      : Icons.hourglass_top_rounded,
                   color: accentColor,
                   size: 22,
                 ),
               ],
             ),
-            if (isRejected && rejectionReason != null && rejectionReason!.isNotEmpty) ...[
+            if (isRejected &&
+                rejectionReason != null &&
+                rejectionReason!.isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
                 'Motivo: $rejectionReason',
-                style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
               ),
             ],
           ],
@@ -394,4 +427,3 @@ class _ProfileChoiceCard extends StatelessWidget {
     );
   }
 }
-

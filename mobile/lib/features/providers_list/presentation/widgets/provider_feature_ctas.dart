@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../agenda/presentation/screens/booking_screen.dart';
 import '../../../catalog/presentation/screens/catalog_screen.dart';
 import '../../../menu/presentation/screens/menu_screen.dart';
@@ -126,30 +127,39 @@ class _FeatureCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    // Acento sólido a plena saturación se lava sobre la crema en tema claro.
+    // El helper centraliza la regla AA: en oscuro va tal cual, en claro lo
+    // oscurece (dorado → cálido casi negro) para texto/íconos legibles.
+    final fg = AppColors.tintOn(accent, colors.isDark);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: 0.10),
+          color: accent.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: accent.withValues(alpha: 0.30)),
+          border: Border.all(color: accent.withValues(alpha: 0.22), width: 0.5),
         ),
         child: Row(
           children: [
-            Icon(icon, color: accent, size: 20),
+            Icon(icon, color: fg, size: 20),
             const SizedBox(width: 12),
             Text(
               label,
               style: TextStyle(
-                color: accent,
+                color: fg,
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
               ),
             ),
             const Spacer(),
-            Icon(Icons.arrow_forward, color: accent, size: 18),
+            Icon(
+              Icons.arrow_forward,
+              color: fg.withValues(alpha: 0.75),
+              size: 18,
+            ),
           ],
         ),
       ),

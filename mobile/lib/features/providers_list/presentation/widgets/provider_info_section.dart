@@ -37,30 +37,35 @@ class ProviderHeader extends StatelessWidget {
           icon: Icons.verified_rounded,
           label: 'Verificado',
           color: AppColors.verified,
+          isDark: c.isDark,
         ),
       if (provider.isTrusted)
         _badge(
           icon: Icons.shield_rounded,
           label: 'Confiable',
-          color: const Color(0xFF10B981),
+          color: AppColors.available,
+          isDark: c.isDark,
         ),
       if (provider.type == ProviderType.oficio && provider.hasHomeService)
         _badge(
           icon: Icons.home_repair_service_rounded,
           label: 'Va a domicilio',
           color: AppColors.available,
+          isDark: c.isDark,
         ),
       if (provider.type == ProviderType.negocio && provider.hasDelivery)
         _badge(
           icon: Icons.delivery_dining_rounded,
           label: 'Delivery',
-          color: const Color(0xFFE07B39),
+          color: AppColors.delayed,
+          isDark: c.isDark,
         ),
       if (provider.type == ProviderType.negocio && provider.plenaCoordinacion)
         _badge(
           icon: Icons.handshake_rounded,
           label: 'Servicio a domicilio',
-          color: const Color(0xFF60A5FA),
+          color: AppColors.verified,
+          isDark: c.isDark,
         ),
     ];
 
@@ -111,7 +116,9 @@ class ProviderHeader extends StatelessWidget {
                   child: Text(
                     provider.categoryNames[i],
                     style: TextStyle(
-                      color: accent,
+                      // Texto de marca sobre su propio tinte claro → tintOn lo
+                      // oscurece en claro para no lavarse (AA).
+                      color: AppColors.tintOn(accent, c.isDark),
                       fontSize: 12,
                       fontWeight: i == 0 ? FontWeight.w700 : FontWeight.w500,
                     ),
@@ -131,7 +138,11 @@ class ProviderHeader extends StatelessWidget {
     required IconData icon,
     required String label,
     required Color color,
+    required bool isDark,
   }) {
+    // Fill claro (color@0.13) pero texto/ícono en `tintOn`: en claro el color
+    // de marca puro se lava sobre su propio tinte; tintOn lo oscurece para AA.
+    final fg = AppColors.tintOn(color, isDark);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -142,12 +153,12 @@ class ProviderHeader extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 14),
+          Icon(icon, color: fg, size: 14),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              color: color,
+              color: fg,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -362,8 +373,10 @@ class _OwnerAvatar extends StatelessWidget {
           (provider.ownerName ?? provider.businessName).isNotEmpty
               ? (provider.ownerName ?? provider.businessName)[0].toUpperCase()
               : '?',
-          style: const TextStyle(
-            color: Colors.white,
+          // Glifo legible sobre el fill SÓLIDO `accent`: si es dorado → glifo
+          // oscuro cálido; si es azul → blanco (onSolid resuelve ambos AA).
+          style: TextStyle(
+            color: AppColors.onSolid(accent),
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
@@ -515,12 +528,18 @@ class ProviderLocationSection extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.directions_rounded, color: accent, size: 14),
+                        // Píldora sobre tinte claro de `accent`: tintOn oscurece
+                        // ícono y texto en claro para pasar AA.
+                        Icon(
+                          Icons.directions_rounded,
+                          color: AppColors.tintOn(accent, c.isDark),
+                          size: 14,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Cómo llegar',
                           style: TextStyle(
-                            color: accent,
+                            color: AppColors.tintOn(accent, c.isDark),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -582,9 +601,9 @@ class ProviderLocationSection extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: accent.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          spreadRadius: 2,
+                          color: AppColors.amberDeep.withValues(alpha: 0.18),
+                          blurRadius: 6,
+                          spreadRadius: 0,
                         ),
                       ],
                     ),
@@ -592,7 +611,9 @@ class ProviderLocationSection extends StatelessWidget {
                       provider.type == ProviderType.negocio
                           ? Icons.storefront_rounded
                           : Icons.handyman_rounded,
-                      color: Colors.white,
+                      // Glifo legible sobre el fill SÓLIDO del pin `accent`:
+                      // dorado → oscuro cálido, azul → blanco (onSolid).
+                      color: AppColors.onSolid(accent),
                       size: 24,
                     ),
                   ),
@@ -615,13 +636,29 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Text(
-      title,
-      style: TextStyle(
-        color: c.textPrimary,
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Indicador de acento (barra dorada/azul de marca) para anclar el
+        // título visualmente sin recargarlo.
+        Container(
+          width: 3,
+          height: 16,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
