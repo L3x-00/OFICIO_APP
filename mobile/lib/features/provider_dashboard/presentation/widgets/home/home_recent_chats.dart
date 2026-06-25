@@ -103,7 +103,7 @@ class _ChatRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border, width: 0.5),
         ),
         child: Row(
           children: [
@@ -172,13 +172,13 @@ class _ChatRow extends StatelessWidget {
                       vertical: 1,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.busy,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       room.unreadCount > 9 ? '9+' : '${room.unreadCount}',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: AppColors.onSolid(AppColors.primary),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -229,7 +229,7 @@ class _Empty extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border, width: 0.5),
       ),
       child: Row(
         children: [

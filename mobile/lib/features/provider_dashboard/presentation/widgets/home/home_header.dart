@@ -14,6 +14,7 @@ class HomeHeader extends StatelessWidget {
   final bool isPaused;
   final DashboardProfileModel? profile;
   final String? coverUrl;
+
   /// C-10: el step + isLast se reciben construidos desde el padre
   /// (`panel_home_tab` los toma del deck via `buildAdminHomeSteps`).
   /// Antes el wrapper declaraba su propio `ShowcaseStep` literal con
@@ -38,7 +39,11 @@ class HomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+    final greeting = hour < 12
+        ? 'Buenos días'
+        : hour < 19
+        ? 'Buenas tardes'
+        : 'Buenas noches';
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,8 +140,8 @@ class HomeHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isNegocio
-              ? [const Color(0xFF2A0A4A), c.bgCard]
-              : [const Color(0xFF3D2B00), c.bgCard],
+              ? [AppColors.primaryDark, c.bgCard]
+              : [AppColors.amberDeep, c.bgCard],
         ),
       ),
       child: content,
@@ -153,7 +158,7 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isPaused ? AppColors.delayed : AppColors.available;
     final label = isPaused ? 'Pausado' : 'Activo';
-    final icon  = isPaused ? Icons.pause_circle_rounded : Icons.circle;
+    final icon = isPaused ? Icons.pause_circle_rounded : Icons.circle;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -167,7 +172,14 @@ class StatusBadge extends StatelessWidget {
         children: [
           Icon(icon, size: isPaused ? 14 : 8, color: color),
           const SizedBox(width: 5),
-          Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -181,33 +193,34 @@ class SubscriptionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFree           = sub.plan == 'GRATIS';
-    final isExpired        = sub.isExpired;
-    final isExpiringSoon   = sub.isExpiringSoon;
+    final isFree = sub.plan == 'GRATIS';
+    final isExpired = sub.isExpired;
+    final isExpiringSoon = sub.isExpiringSoon;
 
     final Color color;
     final IconData icon;
     final String text;
 
     if (isFree) {
-      color = const Color(0xFF22C55E);
-      icon  = Icons.storefront_rounded;
-      text  = 'Estás en el plan Gratis — ¡Sube de plan para más visibilidad!';
+      color = AppColors.available;
+      icon = Icons.storefront_rounded;
+      text = 'Estás en el plan Gratis — ¡Sube de plan para más visibilidad!';
     } else if (isExpired) {
       color = AppColors.busy;
-      icon  = Icons.warning_rounded;
-      text  = 'Tu plan ${sub.planLabel} venció. Pasaste al plan Gratis. Renueva para recuperar tus beneficios.';
+      icon = Icons.warning_rounded;
+      text =
+          'Tu plan ${sub.planLabel} venció. Pasaste al plan Gratis. Renueva para recuperar tus beneficios.';
     } else if (isExpiringSoon) {
       color = AppColors.amber;
-      icon  = Icons.access_time_rounded;
+      icon = Icons.access_time_rounded;
       final days = sub.daysUntilExpiration ?? 0;
-      text  = days <= 0
+      text = days <= 0
           ? 'Tu plan ${sub.planLabel} vence hoy. Renuévalo para evitar interrupciones.'
           : 'Tu plan ${sub.planLabel} vence en $days día${days == 1 ? '' : 's'}. Renuévalo a tiempo.';
     } else {
       color = AppColors.amber;
-      icon  = Icons.workspace_premium_rounded;
-      text  = 'Plan ${sub.planLabel} activo';
+      icon = Icons.workspace_premium_rounded;
+      text = 'Plan ${sub.planLabel} activo';
     }
 
     return Container(
@@ -246,7 +259,11 @@ class HomeServiceBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.home_repair_service_rounded, color: AppColors.available, size: 14),
+          Icon(
+            Icons.home_repair_service_rounded,
+            color: AppColors.available,
+            size: 14,
+          ),
           const SizedBox(width: 6),
           Text(
             'Va a domicilio',

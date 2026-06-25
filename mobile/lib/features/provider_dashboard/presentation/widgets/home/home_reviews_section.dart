@@ -47,7 +47,7 @@ class HomeReviewsSection extends StatelessWidget {
                   ),
                   child: Text(
                     'Ver todas →',
-                    style: TextStyle(color: AppColors.amber, fontSize: 13),
+                    style: TextStyle(color: AppColors.primary, fontSize: 13),
                   ),
                 ),
             ],
@@ -74,12 +74,12 @@ class ReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final rating  = review.rating;
+    final rating = review.rating;
     final comment = review.comment;
-    final user    = review.user;
-    final name    = user?.fullName ?? 'Anónimo';
+    final user = review.user;
+    final name = user?.fullName ?? 'Anónimo';
     final initial = user?.initial ?? '?';
-    final date    = review.createdAt;
+    final date = review.createdAt;
     final dateStr = '${date.day}/${date.month}/${date.year}';
 
     return Container(
@@ -88,7 +88,7 @@ class ReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +102,13 @@ class ReviewCard extends StatelessWidget {
                     ? NetworkImage(user!.avatarUrl!)
                     : null,
                 child: user?.avatarUrl == null
-                    ? Text(initial, style: TextStyle(color: AppColors.amber, fontWeight: FontWeight.bold))
+                    ? Text(
+                        initial,
+                        style: TextStyle(
+                          color: AppColors.amber,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
                     : null,
               ),
               const SizedBox(width: 10),
@@ -110,8 +116,18 @@ class ReviewCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
-                    Text(dateStr, style: TextStyle(color: c.textMuted, fontSize: 11)),
+                    Text(
+                      name,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      dateStr,
+                      style: TextStyle(color: c.textMuted, fontSize: 11),
+                    ),
                   ],
                 ),
               ),
@@ -131,7 +147,11 @@ class ReviewCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               comment,
-              style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.4),
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -177,7 +197,7 @@ class EmptyReviews extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border, width: 0.5),
       ),
       child: Center(
         child: Column(

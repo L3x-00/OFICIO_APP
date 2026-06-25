@@ -52,7 +52,10 @@ class HomeServicesPreview extends StatelessWidget {
                   ),
                   child: Text(
                     'Gestionar →',
-                    style: TextStyle(color: AppColors.amber, fontSize: 13),
+                    style: TextStyle(
+                      color: AppColors.tintOn(AppColors.amber, c.isDark),
+                      fontSize: 13,
+                    ),
                   ),
                 ),
             ],

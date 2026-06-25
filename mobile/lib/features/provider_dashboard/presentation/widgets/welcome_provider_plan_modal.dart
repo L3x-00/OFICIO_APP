@@ -18,9 +18,11 @@ enum WelcomePlan { estandarTrial, estandar, premium }
 class WelcomeProviderPlanModal extends StatefulWidget {
   /// Nombre o businessName que se saluda en el primer slide.
   final String displayName;
+
   /// providerId — usado para construir la clave de SharedPreferences que
   /// marca que el modal ya se vio.
   final int providerId;
+
   /// Variante de plan que define el copy y los slides del carrusel.
   final WelcomePlan plan;
 
@@ -36,21 +38,30 @@ class WelcomeProviderPlanModal extends StatefulWidget {
   /// vieron el carrousel antes de este cambio.
   static String _flagKey(int providerId, WelcomePlan plan) {
     switch (plan) {
-      case WelcomePlan.estandarTrial: return 'seen_welcome_estandar_$providerId';
-      case WelcomePlan.estandar:      return 'seen_welcome_estandar_paid_$providerId';
-      case WelcomePlan.premium:       return 'seen_welcome_premium_$providerId';
+      case WelcomePlan.estandarTrial:
+        return 'seen_welcome_estandar_$providerId';
+      case WelcomePlan.estandar:
+        return 'seen_welcome_estandar_paid_$providerId';
+      case WelcomePlan.premium:
+        return 'seen_welcome_premium_$providerId';
     }
   }
 
   /// Devuelve true si el modal aún NO se ha mostrado para este
   /// providerId + plan.
-  static Future<bool> shouldShow(int providerId, {WelcomePlan plan = WelcomePlan.estandarTrial}) async {
+  static Future<bool> shouldShow(
+    int providerId, {
+    WelcomePlan plan = WelcomePlan.estandarTrial,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_flagKey(providerId, plan)) != true;
   }
 
   /// Marca este providerId + plan como "ya vio el modal". Idempotente.
-  static Future<void> markShown(int providerId, {WelcomePlan plan = WelcomePlan.estandarTrial}) async {
+  static Future<void> markShown(
+    int providerId, {
+    WelcomePlan plan = WelcomePlan.estandarTrial,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_flagKey(providerId, plan), true);
   }
@@ -82,7 +93,8 @@ class WelcomeProviderPlanModal extends StatefulWidget {
   }
 
   @override
-  State<WelcomeProviderPlanModal> createState() => _WelcomeProviderPlanModalState();
+  State<WelcomeProviderPlanModal> createState() =>
+      _WelcomeProviderPlanModalState();
 }
 
 class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
@@ -97,9 +109,12 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
   /// más fácil de mantener y evita ramas condicionales por slide.
   List<_Slide> get _slides {
     switch (widget.plan) {
-      case WelcomePlan.estandarTrial: return _trialSlides;
-      case WelcomePlan.estandar:      return _estandarSlides;
-      case WelcomePlan.premium:       return _premiumSlides;
+      case WelcomePlan.estandarTrial:
+        return _trialSlides;
+      case WelcomePlan.estandar:
+        return _estandarSlides;
+      case WelcomePlan.premium:
+        return _premiumSlides;
     }
   }
 
@@ -108,7 +123,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
   static const _trialSlides = <_Slide>[
     _Slide(
       icon: Icons.celebration_rounded,
-      gradient: [Color(0xFFFFB300), Color(0xFFFF8F00)],
+      gradient: [AppColors.amber, AppColors.amberDark],
       title: '¡Bienvenido a Servi!',
       bodyTemplate:
           'Como regalo de bienvenida, tu cuenta tiene el plan '
@@ -119,7 +134,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.trending_up_rounded,
-      gradient: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+      gradient: [AppColors.primary, AppColors.primaryDark],
       title: 'Apareces antes en los resultados',
       bodyTemplate:
           'Con el plan Estándar tu perfil sube en el ranking de búsqueda. '
@@ -129,7 +144,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.photo_library_rounded,
-      gradient: [Color(0xFF00E676), Color(0xFF00897B)],
+      gradient: [AppColors.available, Color(0xFF3E6B4C)],
       title: 'Hasta 6 fotos y 6 servicios',
       bodyTemplate:
           'Muestra tu trabajo con galería ampliada y publica hasta '
@@ -139,7 +154,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.insights_rounded,
-      gradient: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+      gradient: [Color(0xFF8A78B0), Color(0xFF60507E)],
       title: 'Estadísticas en tiempo real',
       bodyTemplate:
           'Mira cuántas visitas, llamadas y mensajes recibes cada '
@@ -149,7 +164,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.verified_rounded,
-      gradient: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+      gradient: [AppColors.busy, Color(0xFF9E4A48)],
       title: 'Badge de plan visible',
       bodyTemplate:
           'Tu tarjeta pública lleva una insignia de plan que genera '
@@ -164,7 +179,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
   static const _estandarSlides = <_Slide>[
     _Slide(
       icon: Icons.verified_rounded,
-      gradient: [Color(0xFF22D3EE), Color(0xFF0EA5E9)],
+      gradient: [AppColors.primary, AppColors.primaryDark],
       title: '¡Tu pago fue aprobado!',
       bodyTemplate:
           'Tu plan Estándar ya está activo. Sigues apareciendo antes en '
@@ -174,7 +189,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.trending_up_rounded,
-      gradient: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+      gradient: [AppColors.primary, AppColors.primaryDark],
       title: 'Mayor visibilidad',
       bodyTemplate:
           'Tu perfil sigue en posición preferente en la búsqueda. '
@@ -184,7 +199,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.photo_library_rounded,
-      gradient: [Color(0xFF00E676), Color(0xFF00897B)],
+      gradient: [AppColors.available, Color(0xFF3E6B4C)],
       title: '6 fotos y 6 servicios',
       bodyTemplate:
           'Galería ampliada hasta 6 fotos y publica hasta 6 servicios '
@@ -193,7 +208,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.insights_rounded,
-      gradient: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+      gradient: [Color(0xFF8A78B0), Color(0xFF60507E)],
       title: 'Estadísticas en tiempo real',
       bodyTemplate:
           'Mira visitas, llamadas y mensajes por día. Mide qué '
@@ -206,7 +221,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
   static const _premiumSlides = <_Slide>[
     _Slide(
       icon: Icons.workspace_premium_rounded,
-      gradient: [Color(0xFFFFD54F), Color(0xFFFF8F00)],
+      gradient: [AppColors.amber, AppColors.amberDark],
       title: '¡Tu pago Premium fue aprobado!',
       bodyTemplate:
           'Tu plan Premium ya está activo. Tienes la mayor visibilidad '
@@ -216,7 +231,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.star_rounded,
-      gradient: [Color(0xFFFFC107), Color(0xFFFF5722)],
+      gradient: [AppColors.amber, AppColors.amberDark],
       title: 'Posición #1 garantizada',
       bodyTemplate:
           'Premium ocupa el primer lugar en cada búsqueda relevante. '
@@ -225,7 +240,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.photo_library_rounded,
-      gradient: [Color(0xFF00E676), Color(0xFF00897B)],
+      gradient: [AppColors.available, Color(0xFF3E6B4C)],
       title: 'Catálogo ilimitado',
       bodyTemplate:
           'Hasta 10 fotos de perfil y servicios/productos sin límite '
@@ -234,7 +249,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.insights_rounded,
-      gradient: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+      gradient: [Color(0xFF8A78B0), Color(0xFF60507E)],
       title: 'Estadísticas avanzadas',
       bodyTemplate:
           'Métricas profundas — origen de visitas, horarios de mayor '
@@ -243,7 +258,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.support_agent_rounded,
-      gradient: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+      gradient: [AppColors.busy, Color(0xFF9E4A48)],
       title: 'Soporte prioritario 24/7',
       bodyTemplate:
           'Atención prioritaria de nuestro equipo. Cualquier problema '
@@ -252,7 +267,7 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
     ),
     _Slide(
       icon: Icons.workspace_premium_rounded,
-      gradient: [Color(0xFFFFC107), Color(0xFFFF8F00)],
+      gradient: [AppColors.amber, AppColors.amberDark],
       title: 'Badge Premium dorado',
       bodyTemplate:
           'Tu tarjeta pública luce la insignia Premium. Genera '
@@ -368,7 +383,8 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
                       foregroundColor: const Color(0xFF3D2B00),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       elevation: 0,
                     ),
                     child: Text(
@@ -394,6 +410,7 @@ class _Slide {
   final List<Color> gradient;
   final String title;
   final String bodyTemplate;
+
   /// Etiqueta superior tipo "PLAN ESTÁNDAR · 1 MES GRATIS"
   final String pill;
 

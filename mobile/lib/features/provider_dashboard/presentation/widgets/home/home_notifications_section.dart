@@ -40,15 +40,18 @@ class HomeNotificationsSection extends StatelessWidget {
               if (unread > 0) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.amber,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '$unread',
-                    style: const TextStyle(
-                      color: Colors.black,
+                    style: TextStyle(
+                      color: AppColors.onSolid(AppColors.amber),
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -72,7 +75,8 @@ class HomeNotificationsSection extends StatelessWidget {
                   color: isUnread ? color.withValues(alpha: 0.08) : c.bgCard,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isUnread ? color.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.06),
+                    color: isUnread ? color.withValues(alpha: 0.35) : c.border,
+                    width: 0.5,
                   ),
                 ),
                 child: Row(
@@ -85,7 +89,11 @@ class HomeNotificationsSection extends StatelessWidget {
                         color: color.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(_iconForType(n.type), color: color, size: 18),
+                      child: Icon(
+                        _iconForType(n.type),
+                        color: AppColors.tintOn(color, c.isDark),
+                        size: 18,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -97,7 +105,7 @@ class HomeNotificationsSection extends StatelessWidget {
                               Text(
                                 _labelForType(n.type),
                                 style: TextStyle(
-                                  color: color,
+                                  color: AppColors.tintOn(color, c.isDark),
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -116,14 +124,20 @@ class HomeNotificationsSection extends StatelessWidget {
                               const Spacer(),
                               Text(
                                 _formatNotifDate(n.sentAt),
-                                style: TextStyle(color: c.textMuted, fontSize: 11),
+                                style: TextStyle(
+                                  color: c.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Text(
                             n.message,
-                            style: TextStyle(color: c.textSecondary, fontSize: 13),
+                            style: TextStyle(
+                              color: c.textSecondary,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -143,31 +157,43 @@ class HomeNotificationsSection extends StatelessWidget {
 
 Color _colorForType(String type) {
   switch (type) {
-    case 'APROBADO':              return const Color(0xFF22C55E);
-    case 'RECHAZADO':             return const Color(0xFFEF4444);
-    case 'VERIFICACION_REVOCADA': return const Color(0xFFF97316);
+    case 'APROBADO':
+      return AppColors.available;
+    case 'RECHAZADO':
+      return AppColors.busy;
+    case 'VERIFICACION_REVOCADA':
+      return AppColors.delayed;
     case 'MAS_INFO':
-    default:                      return const Color(0xFF3B82F6);
+    default:
+      return AppColors.primary;
   }
 }
 
 IconData _iconForType(String type) {
   switch (type) {
-    case 'APROBADO':              return Icons.verified_rounded;
-    case 'RECHAZADO':             return Icons.cancel_rounded;
-    case 'VERIFICACION_REVOCADA': return Icons.remove_circle_rounded;
+    case 'APROBADO':
+      return Icons.verified_rounded;
+    case 'RECHAZADO':
+      return Icons.cancel_rounded;
+    case 'VERIFICACION_REVOCADA':
+      return Icons.remove_circle_rounded;
     case 'MAS_INFO':
-    default:                      return Icons.info_rounded;
+    default:
+      return Icons.info_rounded;
   }
 }
 
 String _labelForType(String type) {
   switch (type) {
-    case 'APROBADO':              return 'Aprobado';
-    case 'RECHAZADO':             return 'Rechazado';
-    case 'VERIFICACION_REVOCADA': return 'Verificación revocada';
+    case 'APROBADO':
+      return 'Aprobado';
+    case 'RECHAZADO':
+      return 'Rechazado';
+    case 'VERIFICACION_REVOCADA':
+      return 'Verificación revocada';
     case 'MAS_INFO':
-    default:                      return 'Más información';
+    default:
+      return 'Más información';
   }
 }
 
@@ -175,7 +201,7 @@ String _formatNotifDate(DateTime dt) {
   final now = DateTime.now();
   final diff = now.difference(dt);
   if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes}m';
-  if (diff.inHours < 24)  return 'Hace ${diff.inHours}h';
-  if (diff.inDays < 7)    return 'Hace ${diff.inDays}d';
+  if (diff.inHours < 24) return 'Hace ${diff.inHours}h';
+  if (diff.inDays < 7) return 'Hace ${diff.inDays}d';
   return '${dt.day}/${dt.month}/${dt.year}';
 }

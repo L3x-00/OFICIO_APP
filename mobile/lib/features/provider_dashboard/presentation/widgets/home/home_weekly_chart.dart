@@ -41,7 +41,7 @@ class HomeWeeklyChart extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border, width: 0.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +72,7 @@ class HomeWeeklyChart extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child: CircularProgressIndicator(
-                    color: AppColors.amber,
+                    color: AppColors.primary,
                     strokeWidth: 2,
                   ),
                 ),
@@ -108,8 +108,12 @@ class WeeklyBarChart extends StatelessWidget {
         final e = entries[i];
         final dayIndex = DateTime.parse(e.date).weekday - 1;
         final dayLabel = _days[dayIndex.clamp(0, 6)];
-        final waH = maxVal > 0 ? (e.whatsapp / maxVal * 80).clamp(0, 80) as double : 0.0;
-        final callH = maxVal > 0 ? (e.calls / maxVal * 80).clamp(0, 80) as double : 0.0;
+        final waH = maxVal > 0
+            ? (e.whatsapp / maxVal * 80).clamp(0, 80) as double
+            : 0.0;
+        final callH = maxVal > 0
+            ? (e.calls / maxVal * 80).clamp(0, 80) as double
+            : 0.0;
 
         return Expanded(
           child: Padding(
@@ -154,7 +158,10 @@ class WeeklyBarChart extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(dayLabel, style: TextStyle(color: c.textMuted, fontSize: 10)),
+                Text(
+                  dayLabel,
+                  style: TextStyle(color: c.textMuted, fontSize: 10),
+                ),
               ],
             ),
           ),
@@ -175,7 +182,11 @@ class LegendDot extends StatelessWidget {
     final c = context.colors;
     return Row(
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 4),
         Text(label, style: TextStyle(color: c.textMuted, fontSize: 11)),
       ],

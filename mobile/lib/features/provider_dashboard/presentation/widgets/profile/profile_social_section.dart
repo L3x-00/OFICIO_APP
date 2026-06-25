@@ -52,14 +52,14 @@ class _ProfileSocialSectionState extends State<ProfileSocialSection> {
       key: 'whatsappBiz',
       label: 'WhatsApp Business',
       svgAsset: 'assets/icons/whatsapp.svg',
-      color: Color(0xFF25D366),
+      color: AppColors.whatsapp,
       hint: '+51 999 999 999',
     ),
     _SocialSpec(
       key: 'website',
       label: 'Sitio web',
       svgAsset: 'assets/icons/website.svg',
-      color: Color(0xFF60A5FA),
+      color: AppColors.primary,
       hint: 'https://...',
     ),
     _SocialSpec(

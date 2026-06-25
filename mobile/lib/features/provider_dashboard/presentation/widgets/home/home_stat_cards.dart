@@ -100,7 +100,7 @@ class StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +114,11 @@ class StatCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 18),
+                child: Icon(
+                  icon,
+                  color: AppColors.tintOn(color, c.isDark),
+                  size: 18,
+                ),
               ),
               const Spacer(),
               if (showStars)
@@ -124,8 +128,8 @@ class StatCard extends StatelessWidget {
                       i < rating.floor()
                           ? Icons.star_rounded
                           : i < rating
-                              ? Icons.star_half_rounded
-                              : Icons.star_border_rounded,
+                          ? Icons.star_half_rounded
+                          : Icons.star_border_rounded,
                       color: AppColors.star,
                       size: 12,
                     );
@@ -143,7 +147,14 @@ class StatCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(color: c.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(
+              color: c.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           Text(sublabel, style: TextStyle(color: c.textMuted, fontSize: 10)),
         ],
       ),

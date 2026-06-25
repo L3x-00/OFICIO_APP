@@ -118,36 +118,45 @@ class _ProviderPanelState extends State<ProviderPanel> {
             children: [
               ChangeNotifierProvider(
                 create: (_) => SubastasProvider(),
-                child: IndexedStack(
-                  index: _currentIndex,
-                  children: [
-                    PanelHomeTab(
-                      isNegocio: isNeg,
-                      isPaused: _isPaused,
-                      onChangeTab: _changeTab,
-                    ),
-                    PanelProfileTab(
-                      isNegocio: isNeg,
-                      isPaused: _isPaused,
-                      onPauseToggle: _togglePause,
-                    ),
-                    const OportunidadesTab(),
-                    PanelServicesTab(isNegocio: isNeg),
-                    PanelStatsTab(
-                      isNegocio: isNeg,
-                      onNavigateToSettings: () => _changeTab(6),
-                    ),
-                    // scope:'provider' + providerType separa la bandeja
-                    // de cada perfil. Si el user es OFICIO y NEGOCIO a la
-                    // vez, ver mensajes en el panel de NEGOCIO no muestra
-                    // los del panel de OFICIO ni los del rol cliente.
-                    ChatListScreen(
-                      scope: 'provider',
-                      providerType:
-                          widget.providerType ?? auth.activeProfileType,
-                    ),
-                    const PanelSettingsTab(),
-                  ],
+                // Fade suave (~200ms) al cambiar de tab — el IndexedStack se
+                // mantiene (preserva el estado de cada tab) y solo se anima la
+                // opacidad mediante una key por índice. No altera navegación.
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  switchInCurve: Curves.easeOut,
+                  switchOutCurve: Curves.easeIn,
+                  child: IndexedStack(
+                    key: ValueKey<int>(_currentIndex),
+                    index: _currentIndex,
+                    children: [
+                      PanelHomeTab(
+                        isNegocio: isNeg,
+                        isPaused: _isPaused,
+                        onChangeTab: _changeTab,
+                      ),
+                      PanelProfileTab(
+                        isNegocio: isNeg,
+                        isPaused: _isPaused,
+                        onPauseToggle: _togglePause,
+                      ),
+                      const OportunidadesTab(),
+                      PanelServicesTab(isNegocio: isNeg),
+                      PanelStatsTab(
+                        isNegocio: isNeg,
+                        onNavigateToSettings: () => _changeTab(6),
+                      ),
+                      // scope:'provider' + providerType separa la bandeja
+                      // de cada perfil. Si el user es OFICIO y NEGOCIO a la
+                      // vez, ver mensajes en el panel de NEGOCIO no muestra
+                      // los del panel de OFICIO ni los del rol cliente.
+                      ChatListScreen(
+                        scope: 'provider',
+                        providerType:
+                            widget.providerType ?? auth.activeProfileType,
+                      ),
+                      const PanelSettingsTab(),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -208,9 +217,9 @@ class _ProviderPanelState extends State<ProviderPanel> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Cerrar sesión',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: AppColors.onSolid(AppColors.busy)),
             ),
           ),
         ],
@@ -283,7 +292,7 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         PopupMenuButton<String>(
           tooltip: 'Más opciones',
-          icon: Icon(Icons.more_vert_rounded, color: c.textPrimary),
+          icon: Icon(Icons.more_vert_rounded, color: c.textSecondary),
           color: c.bgCard,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -554,9 +563,7 @@ class _PanelBottomNav extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: c.bgCard,
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
-        ),
+        border: Border(top: BorderSide(color: c.border, width: 0.5)),
       ),
       child: BottomNavigationBar(
         currentIndex: currentIndex,

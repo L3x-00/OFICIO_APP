@@ -34,7 +34,7 @@ class ProfileTrustSection extends StatelessWidget {
     final String subtitle;
 
     if (isTrusted) {
-      accent = const Color(0xFF10B981);
+      accent = AppColors.available;
       icon = Icons.verified_rounded;
       title = '¡Perfil verificado como confiable!';
       subtitle =
@@ -46,7 +46,7 @@ class ProfileTrustSection extends StatelessWidget {
       subtitle =
           'Tu solicitud está siendo revisada por nuestro equipo. Te notificaremos cuando tengamos una respuesta.';
     } else if (trustStatus == 'REJECTED') {
-      accent = const Color(0xFFEF4444);
+      accent = AppColors.busy;
       icon = Icons.cancel_rounded;
       title = 'Solicitud rechazada';
       subtitle =
@@ -61,7 +61,7 @@ class ProfileTrustSection extends StatelessWidget {
 
     // REJECTED → banner rojo con dos botones de acción
     if (trustStatus == 'REJECTED') {
-      const red = Color(0xFFEF4444);
+      const red = AppColors.busy;
       // Prioridad: motivo específico del rechazo de confianza, luego del rechazo de verificación
       final reason =
           (auth.providerDataFor(type)?['trustRejectionReason'] as String?) ??
@@ -183,7 +183,7 @@ class ProfileTrustSection extends StatelessWidget {
     // isTrusted → banner verde prominente, sin botón
     // isTrusted → tarjeta compacta e interactiva, adaptada al tema
     if (isTrusted) {
-      const green = Color(0xFF00E676); // Verde neón brillante (Aprobación)
+      const green = AppColors.available; // verde salvia (aprobación)
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -418,7 +418,7 @@ class RejectionDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    const red = Color(0xFFEF4444);
+    const red = AppColors.busy;
     return Dialog(
       backgroundColor: c.bgCard,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
