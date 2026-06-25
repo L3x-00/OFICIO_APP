@@ -30,29 +30,32 @@ class CoverImage extends StatelessWidget {
             errorWidget: _placeholder(c),
           ),
         ),
-        // Badge de plan — arriba a la izquierda (debajo de distancia si hay)
-        if (isPremiumPlan(provider.subscriptionPlan))
-          Positioned(
-            top: provider.distanceKm != null ? 46 : 12,
-            left: 12,
-            child: PlanBadge.premium(),
+        // Badges de plan/estado — esquina superior DERECHA, apilados
+        // verticalmente (plan arriba, verificado y confiable debajo).
+        Positioned(
+          top: 12,
+          right: 12,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (isPremiumPlan(provider.subscriptionPlan)) ...[
+                PlanBadge.premium(),
+                const SizedBox(height: 6),
+              ],
+              if (isStandardPlan(provider.subscriptionPlan)) ...[
+                PlanBadge.standard(),
+                const SizedBox(height: 6),
+              ],
+              if (provider.isVerified &&
+                  (isPremiumPlan(provider.subscriptionPlan) ||
+                      isStandardPlan(provider.subscriptionPlan))) ...[
+                const VerifiedBadge(),
+                const SizedBox(height: 6),
+              ],
+              if (provider.isTrusted) const TrustedBadge(),
+            ],
           ),
-        if (isStandardPlan(provider.subscriptionPlan))
-          Positioned(
-            top: provider.distanceKm != null ? 46 : 12,
-            left: 12,
-            child: PlanBadge.standard(),
-          ),
-        if (provider.isVerified &&
-            (isPremiumPlan(provider.subscriptionPlan) ||
-                isStandardPlan(provider.subscriptionPlan)))
-          Positioned(top: 12, right: 12, child: const VerifiedBadge()),
-        if (provider.isTrusted)
-          Positioned(
-            top: provider.isVerified ? 44 : 12,
-            right: 12,
-            child: const TrustedBadge(),
-          ),
+        ),
         if (provider.distanceKm != null)
           Positioned(
             top: 12,

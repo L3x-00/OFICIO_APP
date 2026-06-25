@@ -48,14 +48,14 @@ class _LocationChipBarState extends State<LocationChipBar> {
     final result = await LocationPickerSheet.show(
       context,
       initialDepartment: prov.department,
-      initialProvince:   prov.province,
-      initialDistrict:   prov.district,
+      initialProvince: prov.province,
+      initialDistrict: prov.district,
     );
     if (result != null && mounted) {
       await prov.setUserLocation(
         department: result.department,
-        province:   result.province,
-        district:   result.district,
+        province: result.province,
+        district: result.district,
       );
     }
   }
@@ -71,8 +71,12 @@ class _LocationChipBarState extends State<LocationChipBar> {
     // del usuario en tiempo real.
     final liveDistrict = prov.liveDistrict;
     final liveProvince = prov.liveProvince;
-    final displayDistrict = (liveDistrict?.isNotEmpty ?? false) ? liveDistrict : prov.district;
-    final displayProvince = (liveProvince?.isNotEmpty ?? false) ? liveProvince : prov.province;
+    final displayDistrict = (liveDistrict?.isNotEmpty ?? false)
+        ? liveDistrict
+        : prov.district;
+    final displayProvince = (liveProvince?.isNotEmpty ?? false)
+        ? liveProvince
+        : prov.province;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -83,10 +87,10 @@ class _LocationChipBarState extends State<LocationChipBar> {
                 key: const ValueKey('active'),
                 c: c,
                 department: prov.department!,
-                province:   displayProvince,
-                district:   displayDistrict,
-                onClear:    _clearLocation,
-                onTap:      _openManualPicker,
+                province: displayProvince,
+                district: displayDistrict,
+                onClear: _clearLocation,
+                onTap: _openManualPicker,
               )
             : _DetectGpsChip(
                 key: const ValueKey('detect'),
@@ -105,6 +109,7 @@ class _ActiveLocationChip extends StatelessWidget {
   final String? province;
   final String? district;
   final VoidCallback onClear;
+
   /// Tap sobre el cuerpo del chip — abre el LocationPickerSheet para
   /// elegir manualmente dept/prov/dist. La X sigue limpiando el filtro.
   final VoidCallback onTap;
@@ -120,11 +125,7 @@ class _ActiveLocationChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parts = <String>[
-      ?district,
-      ?province,
-      department,
-    ];
+    final parts = <String>[?district, ?province, department];
     final label = parts.join(' · ');
 
     return InkWell(
@@ -133,9 +134,12 @@ class _ActiveLocationChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.10),
+          color: AppColors.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            width: 0.5,
+          ),
         ),
         child: Row(
           children: [
@@ -189,19 +193,24 @@ class _DetectGpsChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.border),
+          border: Border.all(color: c.border, width: 0.5),
         ),
         child: Row(
           children: [
             busy
                 ? const SizedBox(
-                    width: 14, height: 14,
+                    width: 14,
+                    height: 14,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: AppColors.primary,
                     ),
                   )
-                : Icon(Icons.my_location_rounded, color: AppColors.primary, size: 16),
+                : Icon(
+                    Icons.my_location_rounded,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(

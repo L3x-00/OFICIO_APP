@@ -396,7 +396,7 @@ class ProvidersListView extends StatelessWidget {
                   height: 16,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.amber, AppColors.primary],
+                      colors: [AppColors.primary, AppColors.amber],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -585,12 +585,13 @@ class _ViewModeToggle extends StatelessWidget {
               margin: const EdgeInsets.only(left: 4),
               decoration: BoxDecoration(
                 color: active
-                    ? AppColors.primary.withValues(alpha: 0.15)
+                    ? AppColors.primary.withValues(alpha: 0.10)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(7),
                 border: Border.all(
+                  width: 0.5,
                   color: active
-                      ? AppColors.primary.withValues(alpha: 0.45)
+                      ? AppColors.primary.withValues(alpha: 0.25)
                       : Colors.transparent,
                 ),
               ),

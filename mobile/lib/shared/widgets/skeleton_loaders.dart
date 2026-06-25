@@ -21,10 +21,11 @@ class SkeletonBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     // base ligeramente más claro que el fondo de tarjeta; highlight aún más.
+    // Highlight sutil para acabado premium suave (no destello fuerte).
     final base = c.bgInput;
     final highlight = c.isDark
-        ? Colors.white.withValues(alpha: 0.06)
-        : Colors.white.withValues(alpha: 0.55);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.40);
     return Shimmer.fromColors(
       baseColor: base,
       highlightColor: highlight,

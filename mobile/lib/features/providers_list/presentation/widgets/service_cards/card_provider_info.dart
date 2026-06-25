@@ -50,14 +50,15 @@ class ProviderInfo extends StatelessWidget {
                 .map(
                   (name) => Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+                      horizontal: 7,
+                      vertical: 2.5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
+                      color: AppColors.primary.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: AppColors.primary.withValues(alpha: 0.18),
+                        width: 0.5,
                       ),
                     ),
                     child: Text(
@@ -119,9 +120,12 @@ class RatingRowData extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: availColor.withValues(alpha: 0.12),
+            color: availColor.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: availColor.withValues(alpha: 0.4)),
+            border: Border.all(
+              color: availColor.withValues(alpha: 0.3),
+              width: 0.5,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
