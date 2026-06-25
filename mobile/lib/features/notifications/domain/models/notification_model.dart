@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_colors.dart';
+
 /// Modelo unificado para notificaciones recibidas vía:
 /// - Socket.io (`fromSocket`) — payload en vivo emitido por el backend
 /// - REST `GET /provider-profile/me/notifications` (`fromJson`)
@@ -157,18 +159,18 @@ class AppNotification {
 
   Color get iconColor {
     return switch (type) {
-      'PROVIDER_APPROVED' => const Color(0xFF4CAF50),
-      'PROVIDER_REJECTED' => const Color(0xFFF44336),
-      'NEW_REVIEW' => const Color(0xFFFFB300),
-      'REVIEW_REPLY' => const Color(0xFF29B6F6),
-      'CHAT_MESSAGE' => const Color(0xFF25D366),
-      'PLAN_APROBADO' => const Color(0xFF4CAF50),
-      'PLAN_RECHAZADO' => const Color(0xFFF44336),
-      'PASSWORD_CHANGED' => const Color(0xFF2196F3),
-      'NEW_PROVIDER' => const Color(0xFF9C27B0),
-      'NEW_OFFER' => const Color(0xFFE07B39),
-      'OFFER_ACCEPTED' => const Color(0xFF10B981),
-      _ => const Color(0xFF607D8B),
+      'PROVIDER_APPROVED' => AppColors.available,
+      'PROVIDER_REJECTED' => AppColors.busy,
+      'NEW_REVIEW' => AppColors.amber,
+      'REVIEW_REPLY' => AppColors.verified,
+      'CHAT_MESSAGE' => AppColors.whatsapp,
+      'PLAN_APROBADO' => AppColors.available,
+      'PLAN_RECHAZADO' => AppColors.busy,
+      'PASSWORD_CHANGED' => AppColors.primary,
+      'NEW_PROVIDER' => AppColors.primary,
+      'NEW_OFFER' => AppColors.amber,
+      'OFFER_ACCEPTED' => AppColors.available,
+      _ => AppColors.primary,
     };
   }
 }

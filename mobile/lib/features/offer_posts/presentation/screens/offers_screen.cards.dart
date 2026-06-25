@@ -23,7 +23,7 @@ class _OfferCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border, width: 0.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class _OfferCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: prov.isBusiness
-                              ? const Color(0xFF8E2DE2).withValues(alpha: 0.15)
+                              ? AppColors.amber.withValues(alpha: 0.15)
                               : AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -68,7 +68,7 @@ class _OfferCard extends StatelessWidget {
                                   : Icons.engineering_rounded,
                               size: 10,
                               color: prov.isBusiness
-                                  ? const Color(0xFF8E2DE2)
+                                  ? AppColors.tintOn(AppColors.amber, c.isDark)
                                   : AppColors.primary,
                             ),
                             const SizedBox(width: 4),
@@ -76,7 +76,10 @@ class _OfferCard extends StatelessWidget {
                               prov.isBusiness ? 'Negocio' : 'Profesional',
                               style: TextStyle(
                                 color: prov.isBusiness
-                                    ? const Color(0xFF8E2DE2)
+                                    ? AppColors.tintOn(
+                                        AppColors.amber,
+                                        c.isDark,
+                                      )
                                     : AppColors.primary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
@@ -105,8 +108,11 @@ class _OfferCard extends StatelessWidget {
                                   ),
                                   child: Text(
                                     cat.name,
-                                    style: const TextStyle(
-                                      color: AppColors.amber,
+                                    style: TextStyle(
+                                      color: AppColors.tintOn(
+                                        AppColors.amber,
+                                        c.isDark,
+                                      ),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -179,8 +185,8 @@ class _OfferCard extends StatelessWidget {
                         ),
                         child: Text(
                           offer.priceLabel,
-                          style: const TextStyle(
-                            color: AppColors.amber,
+                          style: TextStyle(
+                            color: AppColors.tintOn(AppColors.amber, c.isDark),
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
@@ -221,7 +227,7 @@ class _OfferCard extends StatelessWidget {
                           child: _ContactButton(
                             svgAsset: 'assets/icons/whatsapp.svg',
                             label: 'WhatsApp',
-                            color: const Color(0xFF25D366),
+                            color: AppColors.whatsapp,
                             onTap: () => launchUrl(
                               Uri.parse(
                                 'https://wa.me/${prov.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en Servi',
@@ -466,8 +472,8 @@ class _NeedCard extends StatelessWidget {
                   ),
                   child: Text(
                     need.categoryName,
-                    style: const TextStyle(
-                      color: AppColors.amber,
+                    style: TextStyle(
+                      color: AppColors.tintOn(AppColors.amber, c.isDark),
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),

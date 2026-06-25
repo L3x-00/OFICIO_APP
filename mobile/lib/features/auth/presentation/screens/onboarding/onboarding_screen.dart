@@ -35,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.busy),
             child: const Text('Sí, cancelar'),
           ),
         ],

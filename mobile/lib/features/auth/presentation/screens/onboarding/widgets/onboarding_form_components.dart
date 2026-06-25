@@ -29,7 +29,7 @@ class TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isOficio ? AppColors.primary : const Color(0xFF8E2DE2);
+    final color = isOficio ? AppColors.primary : AppColors.amber;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -110,7 +110,7 @@ class FormFieldTile extends StatelessWidget {
                 : null,
             counterText: '',
             filled: true,
-            fillColor: c.bgCard,
+            fillColor: c.bgInput,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,

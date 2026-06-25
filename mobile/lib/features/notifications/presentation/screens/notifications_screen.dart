@@ -43,7 +43,7 @@ class NotificationsScreen extends StatelessWidget {
       body: !isLoggedIn
           ? const _GuestBody(
               icon: Icons.notifications_none_rounded,
-              iconColor: Color.fromARGB(176, 220, 226, 34),
+              iconColor: AppColors.amber,
               title: 'Mantente al tanto',
               message:
                   'Regístrate o inicia sesión para recibir notificaciones sobre tus servicios, ofertas y actualizaciones.',
@@ -55,7 +55,7 @@ class NotificationsScreen extends StatelessWidget {
                 _retentionBanner(c),
                 Expanded(
                   child: RefreshIndicator(
-                    color: const Color.fromARGB(176, 246, 255, 0),
+                    color: AppColors.primary,
                     onRefresh: () async => {},
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -269,8 +269,12 @@ class _NotificationTile extends StatelessWidget {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          // Leídas: fondo de tarjeta ligeramente más apagado que el lienzo.
+          // No leídas: tinte sutil de la marca para destacar.
           color: notification.isRead
-              ? Colors.transparent
+              ? (c.isDark
+                    ? c.bgCard.withValues(alpha: 0.45)
+                    : c.bgInput.withValues(alpha: 0.4))
               : AppColors.primary.withValues(alpha: 0.05),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

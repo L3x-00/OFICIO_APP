@@ -219,7 +219,7 @@ class _ChatRoomTile extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
                           decoration: BoxDecoration(
-                            color: AppColors.busy,
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(11),
                           ),
                           alignment: Alignment.center,

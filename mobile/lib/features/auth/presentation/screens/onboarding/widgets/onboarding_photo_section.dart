@@ -56,8 +56,18 @@ class OnboardingPhotoSection extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: List.generate(maxPhotos, (i) {
-              if (i < photos.length) return _FilledSlot(index: i, photos: photos, onRemove: onRemovePhoto, onReorder: onReorderPhotos);
-              return _EmptySlot(index: i, photosLength: photos.length, onPick: onPickPhoto);
+              if (i < photos.length)
+                return _FilledSlot(
+                  index: i,
+                  photos: photos,
+                  onRemove: onRemovePhoto,
+                  onReorder: onReorderPhotos,
+                );
+              return _EmptySlot(
+                index: i,
+                photosLength: photos.length,
+                onPick: onPickPhoto,
+              );
             }),
           ),
         ),
@@ -209,10 +219,10 @@ class _FilledSlot extends StatelessWidget {
                         color: AppColors.amber.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Portada',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.onSolid(AppColors.amber),
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
                         ),
@@ -254,7 +264,9 @@ class _EmptySlot extends StatelessWidget {
           color: c.bgCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isNext ? AppColors.primary.withValues(alpha: 0.35) : c.border,
+            color: isNext
+                ? AppColors.primary.withValues(alpha: 0.35)
+                : c.border,
           ),
         ),
         child: Column(

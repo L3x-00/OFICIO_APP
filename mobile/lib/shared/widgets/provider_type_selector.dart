@@ -32,7 +32,8 @@ class ProviderTypeSelectorSheet extends StatelessWidget {
           children: [
             // Handle
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: c.textMuted.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(2),
@@ -79,12 +80,13 @@ class ProviderTypeSelectorSheet extends StatelessWidget {
               icon: Icons.storefront_rounded,
               title: 'Panel de Negocio',
               subtitle: 'Gestiona tu negocio o local comercial',
-              color: const Color(0xFF8E2DE2),
+              color: AppColors.amber,
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
-                    builder: (_) => const ProviderPanel(providerType: 'NEGOCIO'),
+                    builder: (_) =>
+                        const ProviderPanel(providerType: 'NEGOCIO'),
                   ),
                 );
               },
@@ -126,12 +128,17 @@ class _PanelTypeCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48, height: 48,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(
+                icon,
+                color: AppColors.tintOn(color, c.isDark),
+                size: 24,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -155,7 +162,11 @@ class _PanelTypeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios_rounded, color: color, size: 16),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.tintOn(color, c.isDark),
+              size: 16,
+            ),
           ],
         ),
       ),

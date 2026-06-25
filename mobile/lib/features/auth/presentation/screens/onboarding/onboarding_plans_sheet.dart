@@ -36,13 +36,13 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final c      = context.colors;
+    final c = context.colors;
     final accent = _isNegocio ? AppColors.amber : AppColors.primary;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
-      minChildSize:     0.6,
-      maxChildSize:     0.95,
+      minChildSize: 0.6,
+      maxChildSize: 0.95,
       builder: (_, scrollController) => Container(
         decoration: BoxDecoration(
           color: c.bgCard,
@@ -53,7 +53,8 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
             Padding(
               padding: const EdgeInsets.only(top: 12, bottom: 4),
               child: Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
                   color: c.textMuted.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
@@ -71,8 +72,11 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      _isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded,
-                      color: accent, size: 20,
+                      _isNegocio
+                          ? Icons.storefront_rounded
+                          : Icons.handyman_rounded,
+                      color: accent,
+                      size: 20,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -82,11 +86,18 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
                       children: [
                         Text(
                           'Tu plan de bienvenida',
-                          style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           'Empieza con el Estándar gratis o sube a Premium',
-                          style: TextStyle(color: c.textSecondary, fontSize: 12),
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -113,42 +124,77 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
                       highlighted: !_wantsPremium,
                       onTap: () => setState(() => _wantsPremium = false),
                       features: [
-                        _feat(Icons.photo_library_rounded,
-                            '${PlanLimits.photos('ESTANDAR')} fotos de perfil'),
                         _feat(
-                          _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
-                          PlanLimits.itemsLabel('ESTANDAR', isNegocio: _isNegocio),
+                          Icons.photo_library_rounded,
+                          '${PlanLimits.photos('ESTANDAR')} fotos de perfil',
+                        ),
+                        _feat(
+                          _isNegocio
+                              ? Icons.inventory_2_rounded
+                              : Icons.design_services_rounded,
+                          PlanLimits.itemsLabel(
+                            'ESTANDAR',
+                            isNegocio: _isNegocio,
+                          ),
                         ),
                         if (_isNegocio)
-                          _feat(Icons.image_rounded, 'Foto por producto incluida'),
-                        _feat(Icons.bar_chart_rounded, 'Gestión de visitas y estadísticas'),
+                          _feat(
+                            Icons.image_rounded,
+                            'Foto por producto incluida',
+                          ),
+                        _feat(
+                          Icons.bar_chart_rounded,
+                          'Gestión de visitas y estadísticas',
+                        ),
                         _feat(Icons.verified_rounded, 'Badge verificado azul'),
                       ],
                     ),
                     const SizedBox(height: 12),
                     // ── PREMIUM — único plan seleccionable de pago ──
                     _SelectablePlanCard(
-                      planId:    'PREMIUM',
-                      title:     'Premium',
-                      price:     'S/ 39.90',
+                      planId: 'PREMIUM',
+                      title: 'Premium',
+                      price: 'S/ 39.90',
                       priceNote: 'por mes',
-                      color:     AppColors.premium,
-                      icon:      Icons.workspace_premium_rounded,
+                      color: AppColors.premium,
+                      icon: Icons.workspace_premium_rounded,
                       isSelected: _wantsPremium,
-                      onTap:      () => setState(() => _wantsPremium = true),
+                      onTap: () => setState(() => _wantsPremium = true),
                       features: [
-                        _feat(Icons.photo_library_rounded,
-                            '${PlanLimits.photos('PREMIUM')} fotos de perfil'),
                         _feat(
-                          _isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
-                          PlanLimits.itemsLabel('PREMIUM', isNegocio: _isNegocio),
+                          Icons.photo_library_rounded,
+                          '${PlanLimits.photos('PREMIUM')} fotos de perfil',
+                        ),
+                        _feat(
+                          _isNegocio
+                              ? Icons.inventory_2_rounded
+                              : Icons.design_services_rounded,
+                          PlanLimits.itemsLabel(
+                            'PREMIUM',
+                            isNegocio: _isNegocio,
+                          ),
                         ),
                         if (_isNegocio)
-                          _feat(Icons.image_rounded, 'Fotos ilimitadas por producto'),
-                        _feat(Icons.bar_chart_rounded, 'Estadísticas avanzadas'),
-                        _feat(Icons.workspace_premium_rounded, 'Badge dorado Premium'),
-                        _feat(Icons.star_rounded, 'Posición #1 en búsqueda garantizada'),
-                        _feat(Icons.support_agent_rounded, 'Soporte prioritario 24/7'),
+                          _feat(
+                            Icons.image_rounded,
+                            'Fotos ilimitadas por producto',
+                          ),
+                        _feat(
+                          Icons.bar_chart_rounded,
+                          'Estadísticas avanzadas',
+                        ),
+                        _feat(
+                          Icons.workspace_premium_rounded,
+                          'Badge dorado Premium',
+                        ),
+                        _feat(
+                          Icons.star_rounded,
+                          'Posición #1 en búsqueda garantizada',
+                        ),
+                        _feat(
+                          Icons.support_agent_rounded,
+                          'Soporte prioritario 24/7',
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -164,21 +210,28 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => widget.onContinue(_wantsPremium ? 'PREMIUM' : 'ESTANDAR'),
+                  onPressed: () =>
+                      widget.onContinue(_wantsPremium ? 'PREMIUM' : 'ESTANDAR'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _wantsPremium ? AppColors.premium : accent,
                     foregroundColor: _wantsPremium
-                        ? Colors.white
-                        : (_isNegocio ? const Color(0xFF3D2B00) : Colors.white),
+                        ? AppColors
+                              .amberDeep // premium = dorado claro → glifo oscuro legible
+                        : AppColors.onSolid(accent),
                     padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
                     _wantsPremium
                         ? 'Adquirir Plan Premium'
                         : 'Continuar con mi Plan Estándar gratis',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ),
@@ -189,15 +242,22 @@ class _OnboardingPlansSheetState extends State<OnboardingPlansSheet> {
     );
   }
 
-  static PlanFeatureItem _feat(IconData icon, String text, {bool locked = false}) =>
-      PlanFeatureItem(icon: icon, text: text, locked: locked);
+  static PlanFeatureItem _feat(
+    IconData icon,
+    String text, {
+    bool locked = false,
+  }) => PlanFeatureItem(icon: icon, text: text, locked: locked);
 }
 
 class PlanFeatureItem {
   final IconData icon;
   final String text;
   final bool locked;
-  const PlanFeatureItem({required this.icon, required this.text, this.locked = false});
+  const PlanFeatureItem({
+    required this.icon,
+    required this.text,
+    this.locked = false,
+  });
 }
 
 class PlanBadge extends StatelessWidget {
@@ -213,7 +273,14 @@ class PlanBadge extends StatelessWidget {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }
@@ -292,12 +359,17 @@ class _WelcomeStandardCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.verified_rounded, color: color, size: 20),
+                  child: const Icon(
+                    Icons.verified_rounded,
+                    color: color,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -306,49 +378,65 @@ class _WelcomeStandardCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Text('Estándar',
-                              style: TextStyle(
-                                  color: color,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Estándar',
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(width: 6),
                           const PlanBadge(label: 'GRATIS 1 MES', color: color),
                         ],
                       ),
-                      Text('Incluido al registrarte',
-                          style: TextStyle(color: c.textMuted, fontSize: 12)),
+                      Text(
+                        'Incluido al registrarte',
+                        style: TextStyle(color: c.textMuted, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
-                  width: 22, height: 22,
+                  width: 22,
+                  height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: highlighted ? color : Colors.transparent,
                     border: Border.all(
-                        color: highlighted ? color : c.border, width: 2),
+                      color: highlighted ? color : c.border,
+                      width: 2,
+                    ),
                   ),
                   child: highlighted
-                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                      ? Icon(
+                          Icons.check_rounded,
+                          color: AppColors.onSolid(color),
+                          size: 14,
+                        )
                       : null,
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            ...features.map((f) => Padding(
-              padding: const EdgeInsets.only(bottom: 7),
-              child: Row(
-                children: [
-                  Icon(f.icon, color: color, size: 15),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(f.text,
-                        style: TextStyle(color: c.textSecondary, fontSize: 13)),
-                  ),
-                ],
+            ...features.map(
+              (f) => Padding(
+                padding: const EdgeInsets.only(bottom: 7),
+                child: Row(
+                  children: [
+                    Icon(f.icon, color: color, size: 15),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        f.text,
+                        style: TextStyle(color: c.textSecondary, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -379,7 +467,8 @@ class _LockedGratisCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40, height: 40,
+              width: 40,
+              height: 40,
               decoration: const BoxDecoration(
                 color: Color(0x1A6B7280),
                 shape: BoxShape.circle,
@@ -393,11 +482,14 @@ class _LockedGratisCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Text('Gratis',
-                          style: TextStyle(
-                              color: muted,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Gratis',
+                        style: TextStyle(
+                          color: muted,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(width: 6),
                       const PlanBadge(label: 'No disponible', color: muted),
                     ],
@@ -405,7 +497,11 @@ class _LockedGratisCard extends StatelessWidget {
                   Text(
                     'Tu cuenta pasa a este plan automáticamente cuando '
                     'vence el mes de bienvenida.',
-                    style: TextStyle(color: c.textMuted, fontSize: 11.5, height: 1.35),
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 11.5,
+                      height: 1.35,
+                    ),
                   ),
                 ],
               ),
@@ -467,7 +563,8 @@ class _SelectablePlanCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
@@ -481,48 +578,71 @@ class _SelectablePlanCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Text(title,
-                              style: TextStyle(
-                                  color: color,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold)),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(width: 6),
-                          const PlanBadge(label: '⭐ Recomendado', color: AppColors.premium),
+                          const PlanBadge(
+                            label: '⭐ Recomendado',
+                            color: AppColors.premium,
+                          ),
                         ],
                       ),
-                      Text('$price $priceNote',
-                          style: TextStyle(color: c.textMuted, fontSize: 12)),
+                      Text(
+                        '$price $priceNote',
+                        style: TextStyle(color: c.textMuted, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
-                  width: 22, height: 22,
+                  width: 22,
+                  height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected ? color : Colors.transparent,
-                    border: Border.all(color: isSelected ? color : c.border, width: 2),
+                    border: Border.all(
+                      color: isSelected ? color : c.border,
+                      width: 2,
+                    ),
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                      ? Icon(
+                          Icons.check_rounded,
+                          // Premium = dorado claro → glifo oscuro legible (AA).
+                          color: color == AppColors.premium
+                              ? AppColors.amberDeep
+                              : AppColors.onSolid(color),
+                          size: 14,
+                        )
                       : null,
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            ...features.map((f) => Padding(
-              padding: const EdgeInsets.only(bottom: 7),
-              child: Row(
-                children: [
-                  Icon(f.icon, color: color, size: 15),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(f.text,
-                        style: TextStyle(color: c.textSecondary, fontSize: 13)),
-                  ),
-                ],
+            ...features.map(
+              (f) => Padding(
+                padding: const EdgeInsets.only(bottom: 7),
+                child: Row(
+                  children: [
+                    Icon(f.icon, color: color, size: 15),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        f.text,
+                        style: TextStyle(color: c.textSecondary, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),

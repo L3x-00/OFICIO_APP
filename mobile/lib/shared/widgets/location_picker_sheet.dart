@@ -50,8 +50,8 @@ class LocationPickerSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => LocationPickerSheet(
         initialDepartment: initialDepartment,
-        initialProvince:   initialProvince,
-        initialDistrict:   initialDistrict,
+        initialProvince: initialProvince,
+        initialDistrict: initialDistrict,
       ),
     );
   }
@@ -64,25 +64,30 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
   String? _department;
   String? _province;
   String? _district;
-  bool    _loadingGps = false;
+  bool _loadingGps = false;
   String? _gpsError;
 
   @override
   void initState() {
     super.initState();
     _department = widget.initialDepartment;
-    _province   = widget.initialProvince;
-    _district   = widget.initialDistrict;
+    _province = widget.initialProvince;
+    _district = widget.initialDistrict;
   }
 
-  List<String> get _provinces => _department == null ? [] : DynamicLocations.instance.provincesOf(_department!);
-  List<String> get _districts   => _province   == null ? [] : DynamicLocations.instance.districtsOf(_province!);
-  bool         get _canConfirm  => _department != null && _province != null && _district != null;
+  List<String> get _provinces => _department == null
+      ? []
+      : DynamicLocations.instance.provincesOf(_department!);
+  List<String> get _districts => _province == null
+      ? []
+      : DynamicLocations.instance.districtsOf(_province!);
+  bool get _canConfirm =>
+      _department != null && _province != null && _district != null;
 
   void _onDepartmentChanged(String? val) => setState(() {
     _department = val;
-    _province   = null;
-    _district   = null;
+    _province = null;
+    _district = null;
   });
 
   void _onProvinceChanged(String? val) => setState(() {
@@ -91,7 +96,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
   });
 
   Future<void> _detectGps() async {
-    setState(() { _loadingGps = true; _gpsError = null; });
+    setState(() {
+      _loadingGps = true;
+      _gpsError = null;
+    });
     try {
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -99,31 +107,44 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
       }
       if (permission == LocationPermission.deniedForever ||
           permission == LocationPermission.denied) {
-        setState(() { _gpsError = 'Permiso de ubicación denegado.'; });
+        setState(() {
+          _gpsError = 'Permiso de ubicación denegado.';
+        });
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
-      final geo = await GeocodingService.reverseGeocode(pos.latitude, pos.longitude, force: true);
+      final geo = await GeocodingService.reverseGeocode(
+        pos.latitude,
+        pos.longitude,
+        force: true,
+      );
 
       if (geo != null) {
         setState(() {
           _department = geo.department;
-          _province   = geo.province;
-          _district   = geo.district;
+          _province = geo.province;
+          _district = geo.district;
         });
       } else {
         // Fallback: mantener selección manual si la geocodificación falla
         setState(() {
-          _gpsError = 'No se pudo detectar la ubicación exacta. Selecciónala manualmente.';
+          _gpsError =
+              'No se pudo detectar la ubicación exacta. Selecciónala manualmente.';
         });
       }
     } catch (e) {
-      setState(() { _gpsError = 'No se pudo obtener la ubicación.'; });
+      setState(() {
+        _gpsError = 'No se pudo obtener la ubicación.';
+      });
     } finally {
-      setState(() { _loadingGps = false; });
+      setState(() {
+        _loadingGps = false;
+      });
     }
   }
 
@@ -140,7 +161,8 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
         children: [
           // Handle
           Container(
-            width: 40, height: 4,
+            width: 40,
+            height: 4,
             margin: const EdgeInsets.only(top: 12, bottom: 8),
             decoration: BoxDecoration(
               color: c.textMuted.withValues(alpha: 0.4),
@@ -152,9 +174,14 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
-                Icon(Icons.location_on_rounded, color: AppColors.primary, size: 22),
+                Icon(
+                  Icons.location_on_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 8),
-                Text('Tu Ubicación',
+                Text(
+                  'Tu Ubicación',
                   style: TextStyle(
                     color: c.textPrimary,
                     fontSize: 18,
@@ -170,7 +197,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
           if (_gpsError != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(_gpsError!, style: TextStyle(color: Colors.red[400], fontSize: 12)),
+              child: Text(
+                _gpsError!,
+                style: const TextStyle(color: AppColors.busy, fontSize: 12),
+              ),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -213,7 +243,9 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                     icon: Icons.place_rounded,
                     value: _district,
                     items: _districts,
-                    onChanged: _province == null ? null : (val) => setState(() => _district = val),
+                    onChanged: _province == null
+                        ? null
+                        : (val) => setState(() => _district = val),
                     colors: c,
                     disabled: _province == null,
                     noDataHint: _province != null && _districts.isEmpty
@@ -226,7 +258,9 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                     _ManualDistrictField(
                       initial: _district,
                       colors: c,
-                      onChanged: (val) => setState(() => _district = val.isNotEmpty ? val : null),
+                      onChanged: (val) => setState(
+                        () => _district = val.isNotEmpty ? val : null,
+                      ),
                     ),
                   ],
                   const SizedBox(height: 32),
@@ -236,27 +270,43 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
           ),
           // Confirm button
           Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              0,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
             child: SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 onPressed: _canConfirm
-                    ? () => Navigator.pop(context, LocationResult(
+                    ? () => Navigator.pop(
+                        context,
+                        LocationResult(
                           department: _department!,
-                          province:   _province!,
-                          district:   _district!,
-                        ))
+                          province: _province!,
+                          district: _district!,
+                        ),
+                      )
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  disabledBackgroundColor: AppColors.primary.withValues(
+                    alpha: 0.3,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 child: Text(
                   'Confirmar ubicación',
                   style: TextStyle(
-                    color: _canConfirm ? Colors.white : Colors.white54,
+                    color: _canConfirm
+                        ? AppColors.onSolid(AppColors.primary)
+                        : AppColors.onSolid(
+                            AppColors.primary,
+                          ).withValues(alpha: 0.5),
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
@@ -293,15 +343,27 @@ class _GpsButton extends StatelessWidget {
           children: [
             if (loading)
               SizedBox(
-                width: 14, height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
               )
             else
-              Icon(Icons.my_location_rounded, color: AppColors.primary, size: 14),
+              Icon(
+                Icons.my_location_rounded,
+                color: AppColors.primary,
+                size: 14,
+              ),
             const SizedBox(width: 5),
             Text(
               loading ? 'Detectando...' : 'Usar GPS',
-              style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -333,7 +395,9 @@ class _LocationDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveValue = (value != null && items.contains(value)) ? value : null;
+    final effectiveValue = (value != null && items.contains(value))
+        ? value
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -341,17 +405,20 @@ class _LocationDropdown extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: colors.textMuted),
             const SizedBox(width: 5),
-            Text(label,
-              style: TextStyle(color: colors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
+            Text(
+              label,
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: disabled
-                ? colors.bgCard.withValues(alpha: 0.5)
-                : colors.bg,
+            color: disabled ? colors.bgCard.withValues(alpha: 0.5) : colors.bg,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: value != null && !disabled
@@ -366,22 +433,37 @@ class _LocationDropdown extends StatelessWidget {
               hint: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  disabled ? 'Selecciona primero el anterior' : 'Seleccionar...',
+                  disabled
+                      ? 'Selecciona primero el anterior'
+                      : 'Seleccionar...',
                   style: TextStyle(color: colors.textMuted, fontSize: 14),
                 ),
               ),
               icon: Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: Icon(Icons.keyboard_arrow_down_rounded, color: colors.textMuted),
+                child: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: colors.textMuted,
+                ),
               ),
               dropdownColor: colors.bgCard,
-              items: items.map((item) => DropdownMenuItem(
-                value: item,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(item, style: TextStyle(color: colors.textPrimary, fontSize: 14)),
-                ),
-              )).toList(),
+              items: items
+                  .map(
+                    (item) => DropdownMenuItem(
+                      value: item,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          item,
+                          style: TextStyle(
+                            color: colors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
               onChanged: disabled ? null : onChanged,
             ),
           ),
@@ -389,7 +471,10 @@ class _LocationDropdown extends StatelessWidget {
         if (noDataHint != null)
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 2),
-            child: Text(noDataHint!, style: TextStyle(color: colors.textMuted, fontSize: 11)),
+            child: Text(
+              noDataHint!,
+              style: TextStyle(color: colors.textMuted, fontSize: 11),
+            ),
           ),
       ],
     );
@@ -438,14 +523,25 @@ class _ManualDistrictFieldState extends State<_ManualDistrictField> {
         fillColor: widget.colors.bg,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: widget.colors.textMuted.withValues(alpha: 0.2)),
+          borderSide: BorderSide(
+            color: widget.colors.textMuted.withValues(alpha: 0.2),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: widget.colors.textMuted.withValues(alpha: 0.2)),
+          borderSide: BorderSide(
+            color: widget.colors.textMuted.withValues(alpha: 0.2),
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        prefixIcon: Icon(Icons.place_rounded, color: widget.colors.textMuted, size: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        prefixIcon: Icon(
+          Icons.place_rounded,
+          color: widget.colors.textMuted,
+          size: 18,
+        ),
       ),
       onChanged: widget.onChanged,
     );
@@ -458,20 +554,20 @@ Future<void> saveUserLocation(
   BuildContext context,
   LocationResult location,
 ) async {
-  final auth      = context.read<AuthProvider>();
+  final auth = context.read<AuthProvider>();
   final providers = context.read<ProvidersProvider>();
 
   final ok = await auth.updateLocation(
     department: location.department,
-    province:   location.province,
-    district:   location.district,
+    province: location.province,
+    district: location.district,
   );
 
   if (ok) {
     await providers.setUserLocation(
       department: location.department,
-      province:   location.province,
-      district:   location.district,
+      province: location.province,
+      district: location.district,
     );
   }
 }

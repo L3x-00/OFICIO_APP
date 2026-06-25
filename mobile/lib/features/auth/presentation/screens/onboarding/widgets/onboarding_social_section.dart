@@ -12,6 +12,7 @@ class OnboardingSocialSection extends StatefulWidget {
   final TextEditingController twitterCtrl;
   final TextEditingController telegramCtrl;
   final TextEditingController whatsappBizCtrl;
+
   /// true cuando el form pertenece a un NEGOCIO. Filtra las redes a las
   /// 5 típicas (WhatsApp Biz, web, IG, TikTok, FB). OFICIO ve todas.
   final bool isNegocio;
@@ -30,7 +31,8 @@ class OnboardingSocialSection extends StatefulWidget {
   });
 
   @override
-  State<OnboardingSocialSection> createState() => _OnboardingSocialSectionState();
+  State<OnboardingSocialSection> createState() =>
+      _OnboardingSocialSectionState();
 }
 
 class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
@@ -44,32 +46,38 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
     // redes que NEGOCIO también usa para no reordenar visualmente la
     // sección al cambiar de tipo de perfil.
     const networks = [
-      ('whatsappBiz', 'WhatsApp (negocio)',   'assets/icons/whatsapp.svg'),
-      ('website',     'Página web',          'assets/icons/website.svg'),
-      ('instagram',   'Instagram',            'assets/icons/instagram.svg'),
-      ('tiktok',      'TikTok',               'assets/icons/tiktok.svg'),
-      ('facebook',    'Facebook',             'assets/icons/facebook.svg'),
-      ('linkedin',    'LinkedIn',             'assets/icons/linkedin.svg'),
-      ('twitterX',    'Twitter / X',          'assets/icons/twitterx.svg'),
-      ('telegram',    'Telegram',             'assets/icons/telegram.svg'),
+      ('whatsappBiz', 'WhatsApp (negocio)', 'assets/icons/whatsapp.svg'),
+      ('website', 'Página web', 'assets/icons/website.svg'),
+      ('instagram', 'Instagram', 'assets/icons/instagram.svg'),
+      ('tiktok', 'TikTok', 'assets/icons/tiktok.svg'),
+      ('facebook', 'Facebook', 'assets/icons/facebook.svg'),
+      ('linkedin', 'LinkedIn', 'assets/icons/linkedin.svg'),
+      ('twitterX', 'Twitter / X', 'assets/icons/twitterx.svg'),
+      ('telegram', 'Telegram', 'assets/icons/telegram.svg'),
     ];
 
     // NEGOCIO: limitar a las 5 redes típicas. El backend acepta todos
     // los campos, así que el filtrado vive solo en UI (mismo criterio
     // que la sección editable del panel del proveedor).
-    const negocioAllowed = {'whatsappBiz', 'website', 'instagram', 'tiktok', 'facebook'};
+    const negocioAllowed = {
+      'whatsappBiz',
+      'website',
+      'instagram',
+      'tiktok',
+      'facebook',
+    };
     final visible = widget.isNegocio
         ? networks.where((n) => negocioAllowed.contains(n.$1)).toList()
         : networks;
 
     final controllers = {
-      'website':     widget.websiteCtrl,
-      'instagram':   widget.instagramCtrl,
-      'tiktok':      widget.tiktokCtrl,
-      'facebook':    widget.facebookCtrl,
-      'linkedin':    widget.linkedinCtrl,
-      'twitterX':    widget.twitterCtrl,
-      'telegram':    widget.telegramCtrl,
+      'website': widget.websiteCtrl,
+      'instagram': widget.instagramCtrl,
+      'tiktok': widget.tiktokCtrl,
+      'facebook': widget.facebookCtrl,
+      'linkedin': widget.linkedinCtrl,
+      'twitterX': widget.twitterCtrl,
+      'telegram': widget.telegramCtrl,
       'whatsappBiz': widget.whatsappBizCtrl,
     };
 
@@ -83,7 +91,7 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
             decoration: BoxDecoration(
               color: c.bgCard,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: c.border, width: 0.5),
             ),
             child: Row(
               children: [
@@ -91,12 +99,20 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    _expanded ? 'Ocultar redes sociales' : 'Añadir redes sociales (opcional)',
-                    style: TextStyle(color: c.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                    _expanded
+                        ? 'Ocultar redes sociales'
+                        : 'Añadir redes sociales (opcional)',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 Icon(
-                  _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  _expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
                   color: c.textMuted,
                 ),
               ],
@@ -115,7 +131,10 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
                 decoration: InputDecoration(
                   // Aquí reemplazamos el Icon() por SvgPicture.asset()
                   prefixIcon: Padding(
-                    padding: const EdgeInsetsDirectional.only(start: 12.0, end: 8.0),
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 12.0,
+                      end: 8.0,
+                    ),
                     child: SvgPicture.asset(
                       entry.$3,
                       width: 18,
@@ -123,7 +142,10 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
                       // Sin colorFilter para que brillen los colores originales de marca
                     ),
                   ),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 18),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 18,
+                  ),
                   labelText: entry.$2,
                   labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
                   filled: true,
@@ -138,9 +160,15 @@ class _OnboardingSocialSectionState extends State<OnboardingSocialSection> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
             );

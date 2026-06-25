@@ -23,10 +23,8 @@ class RegistrationSuccessDialog extends StatelessWidget {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => RegistrationSuccessDialog(
-        isNegocio: isNegocio,
-        onAccept:  onAccept,
-      ),
+      builder: (_) =>
+          RegistrationSuccessDialog(isNegocio: isNegocio, onAccept: onAccept),
     );
   }
 
@@ -50,13 +48,15 @@ class RegistrationSuccessDialog extends StatelessWidget {
               ),
               child: Icon(
                 isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded,
-                color: AppColors.available,
+                color: AppColors.tintOn(AppColors.available, c.isDark),
                 size: 44,
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              isNegocio ? '¡Negocio Registrado!' : '¡Perfil Profesional Creado!',
+              isNegocio
+                  ? '¡Negocio Registrado!'
+                  : '¡Perfil Profesional Creado!',
               style: TextStyle(
                 color: c.textPrimary,
                 fontSize: 18,

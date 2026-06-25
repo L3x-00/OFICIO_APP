@@ -797,9 +797,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
+          width: 0.5,
           color: isComplete
               ? AppColors.available.withValues(alpha: 0.4)
-              : Colors.white.withValues(alpha: 0.06),
+              : c.border,
         ),
       ),
       child: Column(
@@ -1128,6 +1129,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
                   color: c.bgInput,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
+                    width: 0.5,
                     color: AppColors.primary.withValues(alpha: 0.25),
                   ),
                 ),

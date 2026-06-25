@@ -23,7 +23,7 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
   static const _steps = [
     _Step(
       icon: Icons.waving_hand_rounded,
-      gradient: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+      gradient: [AppColors.primary, AppColors.primaryDark],
       title: '¡Bienvenido a Servi!',
       body:
           'Conectamos personas con los mejores profesionales '
@@ -31,7 +31,7 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
     ),
     _Step(
       icon: Icons.manage_search_rounded,
-      gradient: [Color(0xFF00E676), Color(0xFF00897B)],
+      gradient: [AppColors.available, AppColors.primary],
       title: 'Encuentra lo que necesitas',
       body:
           'Electricistas, gasfiteros, peluquerías, restaurantes y más. '
@@ -39,7 +39,7 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
     ),
     _Step(
       icon: Icons.verified_user_rounded,
-      gradient: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+      gradient: [AppColors.verified, AppColors.primaryDark],
       title: 'Contrata con confianza',
       body:
           'Todos los proveedores pasan por un proceso de verificación. '
@@ -47,7 +47,7 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
     ),
     _Step(
       icon: Icons.rocket_launch_rounded,
-      gradient: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+      gradient: [AppColors.amber, AppColors.amberDark],
       title: '¡Todo listo!',
       body:
           'Explora, contrata y califica. Tu próximo servicio está '
@@ -99,12 +99,12 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
           decoration: BoxDecoration(
             color: c.bgCard,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+            border: Border.all(color: c.border, width: 0.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 40,
-                offset: const Offset(0, 16),
+                color: Colors.black.withValues(alpha: c.isDark ? 0.4 : 0.12),
+                blurRadius: 32,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
@@ -135,9 +135,7 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
                       width: _currentPage == i ? 22 : 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: _currentPage == i
-                            ? AppColors.primary
-                            : Colors.white.withValues(alpha: 0.18),
+                        color: _currentPage == i ? AppColors.primary : c.border,
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -156,12 +154,16 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
                         style: TextButton.styleFrom(
                           foregroundColor: c.textMuted,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 12),
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
                         ),
                         child: const Text(
                           'Saltar',
                           style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 14),
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     const Spacer(),
@@ -171,16 +173,21 @@ class _WelcomeOnboardingModalState extends State<WelcomeOnboardingModal>
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 14),
+                          horizontal: 28,
+                          vertical: 14,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         elevation: 0,
                         shadowColor: Colors.transparent,
                       ),
                       child: Text(
                         _isLast ? '¡Comenzar!' : 'Siguiente →',
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
@@ -249,7 +256,11 @@ class _StepPage extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(step.icon, color: Colors.white, size: 42),
+            child: Icon(
+              step.icon,
+              color: AppColors.onSolid(step.gradient.first),
+              size: 42,
+            ),
           ),
           const SizedBox(height: 26),
 
