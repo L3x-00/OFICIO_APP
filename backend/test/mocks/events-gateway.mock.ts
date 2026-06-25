@@ -16,6 +16,7 @@ export type EventsGatewayMock = {
   emitSubastaNew: jest.Mock;
   emitProviderStatusChanged: jest.Mock;
   emitProviderAvailabilityChanged: jest.Mock;
+  emitProviderAnalytics: jest.Mock;
   emitUserDeactivated: jest.Mock;
   server: {
     to: jest.Mock;
@@ -32,6 +33,7 @@ export function createEventsGatewayMock(): EventsGatewayMock {
     emitSubastaNew: jest.fn(),
     emitProviderStatusChanged: jest.fn(),
     emitProviderAvailabilityChanged: jest.fn(),
+    emitProviderAnalytics: jest.fn(),
     emitUserDeactivated: jest.fn(),
     server: { to, emit },
   };
