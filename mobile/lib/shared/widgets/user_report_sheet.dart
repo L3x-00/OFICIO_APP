@@ -115,12 +115,12 @@ class _UserReportContentState extends State<_UserReportContent> {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  color: AppColors.available.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.check_circle_rounded,
-                  color: Color(0xFF10B981),
+                  color: AppColors.available,
                   size: 32,
                 ),
               ),
@@ -151,7 +151,7 @@ class _UserReportContentState extends State<_UserReportContent> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(dCtx).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(

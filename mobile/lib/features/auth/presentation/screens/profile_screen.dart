@@ -201,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
                 Text(
                   u.email,
-                  style: TextStyle(color: c.textSecondary, fontSize: 14),
+                  style: TextStyle(color: c.textMuted, fontSize: 14),
                 ),
                 const SizedBox(height: 8),
                 AccountTypeBadge(auth: auth),

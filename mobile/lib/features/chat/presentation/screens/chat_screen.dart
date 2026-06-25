@@ -197,7 +197,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: c.bg,
       appBar: AppBar(
-        backgroundColor: c.bg,
+        backgroundColor: c.bgCard,
         elevation: 0,
         foregroundColor: c.textPrimary,
         titleSpacing: 0,
@@ -400,14 +400,14 @@ class _MessageBubble extends StatelessWidget {
 
     final failed = message.status == MessageStatus.failed;
 
-    // Cambio: Burbuja del emisor (mine) ahora es blanca con borde
+    // Burbuja propia → AppColors.primary; del proveedor → bgCard.
     final bg = failed
-        ? Colors.red.withValues(alpha: 0.06)
-        : (mine ? Colors.white : c.bgCard);
-    // Cambio: Texto del emisor oscuro para contraste
-    final fg = mine ? Colors.black87 : c.textPrimary;
-    // Cambio: Hora del emisor en gris oscuro
-    final timeColor = mine ? Colors.grey.shade600 : c.textMuted;
+        ? AppColors.busy.withValues(alpha: 0.08)
+        : (mine ? AppColors.primary : c.bgCard);
+    // Texto propio blanco sobre el fill sólido primary; ajeno textPrimary.
+    final fg = mine ? Colors.white : c.textPrimary;
+    // Hora: sobre primary usamos blanco translúcido; ajeno textMuted.
+    final timeColor = mine ? Colors.white.withValues(alpha: 0.85) : c.textMuted;
 
     final bubble = Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -425,11 +425,12 @@ class _MessageBubble extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
                 decoration: BoxDecoration(
                   color: bg,
-                  // Ambas burbujas tienen borde ligero para distinguir del fondo
+                  // Borde fino para distinguir del fondo (propia se funde con primary).
                   border: Border.all(
+                    width: 0.5,
                     color: failed
-                        ? Colors.red.shade300
-                        : (mine ? Colors.grey.shade300 : c.border),
+                        ? AppColors.busy.withValues(alpha: 0.4)
+                        : (mine ? Colors.transparent : c.border),
                   ),
                   borderRadius: BorderRadius.only(
                     topLeft: radius,
@@ -454,7 +455,7 @@ class _MessageBubble extends StatelessWidget {
                               ? 'No enviado · toca para reintentar'
                               : _hhmm(message.createdAt),
                           style: TextStyle(
-                            color: failed ? Colors.red.shade400 : timeColor,
+                            color: failed ? AppColors.busy : timeColor,
                             fontSize: 10.5,
                             fontWeight: FontWeight.w500,
                           ),
@@ -502,30 +503,24 @@ class _StatusIcon extends StatelessWidget {
         return Icon(
           Icons.access_time_rounded,
           size: 12,
-          // Cambio: Gris oscuro sobre blanco
-          color: Colors.grey.shade600,
+          // Sobre el fill sólido primary → blanco translúcido.
+          color: Colors.white.withValues(alpha: 0.8),
         );
       case MessageStatus.sent:
       case MessageStatus.delivered:
         return Icon(
           Icons.check_rounded,
           size: 14,
-          // Cambio: Gris oscuro sobre blanco
-          color: Colors.grey.shade600,
+          color: Colors.white.withValues(alpha: 0.8),
         );
       case MessageStatus.read:
-        // Doble check azul brillante (estilo WhatsApp sobre blanco)
-        return Icon(
-          Icons.done_all_rounded,
-          size: 14,
-          // Cambio: Azul brillante para que resalte sobre el blanco
-          color: Colors.blue,
-        );
+        // Doble check legible sobre primary.
+        return Icon(Icons.done_all_rounded, size: 14, color: Colors.white);
       case MessageStatus.failed:
         return Icon(
           Icons.error_outline_rounded,
           size: 14,
-          color: Colors.red.shade400,
+          color: AppColors.busy,
         );
     }
   }
@@ -553,8 +548,8 @@ class _Composer extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
         decoration: BoxDecoration(
-          color: c.bg,
-          border: Border(top: BorderSide(color: c.border)),
+          color: c.bgCard,
+          border: Border(top: BorderSide(color: c.border, width: 0.5)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_theme_colors.dart';
+
 /// Extensión de BuildContext para mostrar SnackBars modernos y consistentes.
 ///
 /// Uso:
@@ -9,32 +12,32 @@ import 'package:flutter/material.dart';
 ///   context.showInfoSnack('Verificando tus datos...');
 extension AppSnackBarX on BuildContext {
   void showErrorSnack(String message) => _show(
-        message,
-        icon: Icons.error_outline_rounded,
-        color: const Color(0xFFEF4444),
-        duration: const Duration(seconds: 4),
-      );
+    message,
+    icon: Icons.error_outline_rounded,
+    color: AppColors.busy,
+    duration: const Duration(seconds: 4),
+  );
 
   void showSuccessSnack(String message) => _show(
-        message,
-        icon: Icons.check_circle_outline_rounded,
-        color: const Color(0xFF10B981),
-        duration: const Duration(seconds: 3),
-      );
+    message,
+    icon: Icons.check_circle_outline_rounded,
+    color: AppColors.available,
+    duration: const Duration(seconds: 3),
+  );
 
   void showWarningSnack(String message) => _show(
-        message,
-        icon: Icons.warning_amber_rounded,
-        color: const Color(0xFFF59E0B),
-        duration: const Duration(seconds: 3),
-      );
+    message,
+    icon: Icons.warning_amber_rounded,
+    color: AppColors.amber,
+    duration: const Duration(seconds: 3),
+  );
 
   void showInfoSnack(String message) => _show(
-        message,
-        icon: Icons.info_outline_rounded,
-        color: const Color(0xFF3B82F6),
-        duration: const Duration(seconds: 3),
-      );
+    message,
+    icon: Icons.info_outline_rounded,
+    color: AppColors.primary,
+    duration: const Duration(seconds: 3),
+  );
 
   void _show(
     String message, {
@@ -79,27 +82,24 @@ class _AppSnackContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    // Glifo del acento legible sobre su propio tinte/superficie (AA en claro).
+    final accentOnSurface = AppColors.tintOn(color, colors.isDark);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color.lerp(const Color(0xFF161622), color, 0.18)!,
-            Color.lerp(const Color(0xFF1E1E2C), color, 0.10)!,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        // Tarjeta de tema con un velo del acento (suave y cálido).
+        color: Color.lerp(colors.bgCard, color, colors.isDark ? 0.14 : 0.07),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.30), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.30), width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.18),
+            color: color.withValues(alpha: 0.12),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.30),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.30 : 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -108,15 +108,15 @@ class _AppSnackContent extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: accentOnSurface, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFFF1F5F9),
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 height: 1.4,
@@ -131,7 +131,7 @@ class _AppSnackContent extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               child: Icon(
                 Icons.close_rounded,
-                color: const Color(0xFFF1F5F9).withValues(alpha: 0.50),
+                color: colors.textMuted,
                 size: 18,
               ),
             ),

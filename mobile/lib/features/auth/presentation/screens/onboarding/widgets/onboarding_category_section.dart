@@ -15,7 +15,7 @@ class OnboardingCategorySection extends StatelessWidget {
 
   /// Emite la lista actualizada de Especialidades + el id de la principal.
   final void Function(List<CategorySelectionResult> selected, int? primaryId)
-      onChanged;
+  onChanged;
 
   const OnboardingCategorySection({
     super.key,
@@ -54,7 +54,9 @@ class OnboardingCategorySection extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  _isNegocio ? Icons.storefront_outlined : Icons.category_outlined,
+                  _isNegocio
+                      ? Icons.storefront_outlined
+                      : Icons.category_outlined,
                   color: selected.isNotEmpty ? AppColors.primary : c.textMuted,
                   size: 20,
                 ),
@@ -67,14 +69,17 @@ class OnboardingCategorySection extends StatelessWidget {
                       Text(
                         _isNegocio ? 'Tipo de negocio *' : 'Especialidades *',
                         style: TextStyle(
-                            color: c.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                          color: c.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         selected.isEmpty
                             ? (_isNegocio
-                                ? 'Selecciona el tipo de negocio'
-                                : 'Selecciona hasta $maxCategories especialidades')
+                                  ? 'Selecciona el tipo de negocio'
+                                  : 'Selecciona hasta $maxCategories especialidades')
                             : '${selected.length} de $maxCategories seleccionada(s)',
                         style: TextStyle(
                           color: selected.isEmpty ? c.textMuted : c.textPrimary,
@@ -88,7 +93,10 @@ class OnboardingCategorySection extends StatelessWidget {
                   SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: c.textMuted),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: c.textMuted,
+                    ),
                   )
                 else
                   Icon(Icons.arrow_drop_down, color: c.textMuted),
@@ -125,16 +133,22 @@ class OnboardingCategorySection extends StatelessWidget {
                     GestureDetector(
                       onTap: () => onChanged(selected, sel.id),
                       child: Icon(
-                        isPrimary ? Icons.star_rounded : Icons.star_border_rounded,
+                        isPrimary
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
                         size: 16,
-                        color: isPrimary ? AppColors.amber : c.textMuted,
+                        color: isPrimary
+                            ? AppColors.tintOn(AppColors.amber, c.isDark)
+                            : c.textMuted,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       sel.name,
                       style: TextStyle(
-                        color: isPrimary ? AppColors.amber : AppColors.primary,
+                        color: isPrimary
+                            ? AppColors.tintOn(AppColors.amber, c.isDark)
+                            : AppColors.tintOn(AppColors.primary, c.isDark),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -142,7 +156,11 @@ class OnboardingCategorySection extends StatelessWidget {
                     const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () => _emitRemove(sel),
-                      child: Icon(Icons.close_rounded, size: 14, color: c.textMuted),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 14,
+                        color: c.textMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -188,11 +206,13 @@ class OnboardingCategorySection extends StatelessWidget {
         }
       } else {
         if (working.length >= maxCategories) return;
-        working.add(CategorySelectionResult(
-          id: item.id,
-          name: item.name,
-          parentName: parentName,
-        ));
+        working.add(
+          CategorySelectionResult(
+            id: item.id,
+            name: item.name,
+            parentName: parentName,
+          ),
+        );
         workingPrimary ??= item.id;
       }
     }
@@ -209,7 +229,9 @@ class OnboardingCategorySection extends StatelessWidget {
           final atRoot = pickerParent == null;
           final items = atRoot ? categories : pickerParent!.children;
           final title = atRoot
-              ? (_isNegocio ? 'Sector de tu negocio' : 'Elige tus especialidades')
+              ? (_isNegocio
+                    ? 'Sector de tu negocio'
+                    : 'Elige tus especialidades')
               : pickerParent!.name;
 
           return DraggableScrollableSheet(
@@ -235,8 +257,12 @@ class OnboardingCategorySection extends StatelessWidget {
                       children: [
                         if (!atRoot)
                           IconButton(
-                            icon: Icon(Icons.arrow_back_rounded, color: c.textSecondary),
-                            onPressed: () => setModal(() => pickerParent = null),
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: c.textSecondary,
+                            ),
+                            onPressed: () =>
+                                setModal(() => pickerParent = null),
                           )
                         else
                           const SizedBox(width: 48),
@@ -254,7 +280,10 @@ class OnboardingCategorySection extends StatelessWidget {
                               ),
                               Text(
                                 '${working.length}/$maxCategories seleccionadas',
-                                style: TextStyle(color: c.textMuted, fontSize: 11),
+                                style: TextStyle(
+                                  color: c.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
@@ -275,7 +304,8 @@ class OnboardingCategorySection extends StatelessWidget {
                         final item = items[i];
                         final hasChildren = item.children.isNotEmpty;
                         final isSel = working.any((s) => s.id == item.id);
-                        final capped = !isSel && working.length >= maxCategories;
+                        final capped =
+                            !isSel && working.length >= maxCategories;
                         return ListTile(
                           enabled: hasChildren || !capped,
                           title: Text(
@@ -284,21 +314,28 @@ class OnboardingCategorySection extends StatelessWidget {
                               color: isSel
                                   ? AppColors.primary
                                   : capped
-                                      ? c.textMuted
-                                      : c.textPrimary,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                                  ? c.textMuted
+                                  : c.textPrimary,
+                              fontWeight: isSel
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           ),
                           trailing: hasChildren
                               ? Icon(Icons.chevron_right, color: c.textMuted)
                               : isSel
-                                  ? const Icon(Icons.check_circle, color: AppColors.primary)
-                                  : Icon(Icons.circle_outlined, color: c.textMuted),
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.primary,
+                                )
+                              : Icon(Icons.circle_outlined, color: c.textMuted),
                           onTap: () {
                             if (hasChildren) {
                               setModal(() => pickerParent = item);
                             } else {
-                              setModal(() => toggle(item, pickerParent?.name ?? ''));
+                              setModal(
+                                () => toggle(item, pickerParent?.name ?? ''),
+                              );
                             }
                           },
                         );

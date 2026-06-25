@@ -72,17 +72,24 @@ class OnboardingAddressSection extends StatelessWidget {
           decoration: InputDecoration(
             hintText: 'Jr. Ejemplo 123, Ciudad',
             hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
-            prefixIcon: Icon(Icons.location_on_outlined, color: c.textMuted, size: 20),
+            prefixIcon: Icon(
+              Icons.location_on_outlined,
+              color: c.textMuted,
+              size: 20,
+            ),
             counterText: '',
             filled: true,
-            fillColor: c.bgCard,
+            fillColor: c.bgInput,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
             contentPadding: const EdgeInsets.all(14),
           ),
@@ -110,7 +117,9 @@ class OnboardingAddressSection extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              showAddressSection ? Icons.expand_less_rounded : Icons.language_rounded,
+              showAddressSection
+                  ? Icons.expand_less_rounded
+                  : Icons.language_rounded,
               color: showAddressSection ? AppColors.primary : c.textMuted,
               size: 17,
             ),
@@ -156,23 +165,35 @@ class OnboardingAddressSection extends StatelessWidget {
                 children: [
                   if (gpsLoading)
                     const SizedBox(
-                      width: 16, height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primary,
+                      ),
                     )
                   else
                     Icon(
-                      gpsPosition != null ? Icons.check_circle_rounded : Icons.my_location_rounded,
+                      gpsPosition != null
+                          ? Icons.check_circle_rounded
+                          : Icons.my_location_rounded,
                       size: 16,
-                      color: gpsPosition != null ? AppColors.available : AppColors.primary,
+                      color: gpsPosition != null
+                          ? AppColors.available
+                          : AppColors.primary,
                     ),
                   const SizedBox(width: 7),
                   Flexible(
                     child: Text(
                       gpsLoading
                           ? 'Obteniendo ubicación...'
-                          : gpsPosition != null ? 'GPS obtenido ✓' : 'Obtener ubicación actual',
+                          : gpsPosition != null
+                          ? 'GPS obtenido ✓'
+                          : 'Obtener ubicación actual',
                       style: TextStyle(
-                        color: gpsPosition != null ? AppColors.available : AppColors.primary,
+                        color: gpsPosition != null
+                            ? AppColors.available
+                            : AppColors.primary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -229,13 +250,27 @@ class OnboardingAddressSection extends StatelessWidget {
               labelStyle: TextStyle(color: c.textMuted, fontSize: 13),
               hintText: 'Pega el enlace de tu ubicación en Maps',
               hintStyle: TextStyle(color: c.textMuted, fontSize: 12),
-              prefixIcon: const Icon(Icons.map_outlined, color: AppColors.primary, size: 20),
+              prefixIcon: const Icon(
+                Icons.map_outlined,
+                color: AppColors.primary,
+                size: 20,
+              ),
               filled: true,
-              fillColor: c.bgCard,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              fillColor: c.bgInput,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -249,7 +284,11 @@ class OnboardingAddressSection extends StatelessWidget {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+            child: Icon(
+              Icons.arrow_forward_rounded,
+              color: AppColors.onSolid(AppColors.primary),
+              size: 20,
+            ),
           ),
         ),
       ],

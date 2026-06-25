@@ -853,7 +853,7 @@ class _Field extends StatelessWidget {
         prefixIcon: Icon(icon, color: c.textMuted, size: 20),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: c.bgCard,
+        fillColor: c.bgInput,
         errorStyle: const TextStyle(color: AppColors.busy, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

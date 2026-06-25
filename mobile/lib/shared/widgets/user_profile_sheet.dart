@@ -144,7 +144,7 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
       top: false,
       child: Container(
         decoration: BoxDecoration(
-          color: c.bg,
+          color: c.bgCard,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
@@ -169,7 +169,7 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
-                border: Border.all(color: c.border),
+                border: Border.all(color: c.border, width: 0.5),
               ),
               clipBehavior: Clip.antiAlias,
               child: hasAvatar
@@ -228,9 +228,9 @@ class _UserProfileSheetState extends State<_UserProfileSheet> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: c.bgCard,
+                color: c.bgInput,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: c.border),
+                border: Border.all(color: c.border, width: 0.5),
               ),
               child: Row(
                 children: [
