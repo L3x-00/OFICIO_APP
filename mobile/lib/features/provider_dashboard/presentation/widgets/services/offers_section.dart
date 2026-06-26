@@ -33,20 +33,41 @@ class OfferPostsSection extends StatelessWidget {
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Divider(color: Colors.white.withValues(alpha: 0.06)),
+          child: Divider(color: c.border),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
           child: Row(
             children: [
-              const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 16),
+              const Icon(
+                Icons.local_offer_rounded,
+                color: AppColors.amber,
+                size: 16,
+              ),
               const SizedBox(width: 6),
-              Text('Mis Ofertas', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(
+                'Mis Ofertas',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
               const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
-                child: Text('${offers.length}/${PlanLimits.offers(plan)}', style: const TextStyle(color: AppColors.amber, fontSize: 11, fontWeight: FontWeight.w600)),
+                decoration: BoxDecoration(
+                  color: AppColors.amber.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${offers.length}/${PlanLimits.offers(plan)}',
+                  style: TextStyle(
+                    color: AppColors.tintOn(AppColors.amber, c.isDark),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               const Spacer(),
               TextButton.icon(
@@ -54,9 +75,15 @@ class OfferPostsSection extends StatelessWidget {
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Publicar'),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.amber,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  foregroundColor: AppColors.tintOn(AppColors.amber, c.isDark),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -65,7 +92,12 @@ class OfferPostsSection extends StatelessWidget {
         if (isLoading)
           const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator(color: AppColors.amber, strokeWidth: 2)),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.amber,
+                strokeWidth: 2,
+              ),
+            ),
           )
         else if (offers.isEmpty)
           Padding(
@@ -79,11 +111,15 @@ class OfferPostsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Column(
-              children: offers.map((o) => OfferCard(
-                offer: o,
-                onDelete: () => onDelete(o.id),
-                onEdit: onEdit == null ? null : () => onEdit!(o),
-              )).toList(),
+              children: offers
+                  .map(
+                    (o) => OfferCard(
+                      offer: o,
+                      onDelete: () => onDelete(o.id),
+                      onEdit: onEdit == null ? null : () => onEdit!(o),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         const SizedBox(height: 8),
@@ -128,26 +164,51 @@ class OfferCard extends StatelessWidget {
                     width: 52,
                     height: 52,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _fallbackOfferIcon(),
+                    errorBuilder: (_, _, _) => _fallbackOfferIcon(c.isDark),
                   )
-                : _fallbackOfferIcon(),
+                : _fallbackOfferIcon(c.isDark),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(offer.title, style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  offer.title,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(5)),
-                      child: Text(offer.priceLabel, style: const TextStyle(color: AppColors.amber, fontSize: 11, fontWeight: FontWeight.w600)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        offer.priceLabel,
+                        style: TextStyle(
+                          color: AppColors.tintOn(AppColors.amber, c.isDark),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 6),
-                    Text(offer.timeLeftLabel, style: TextStyle(color: c.textMuted, fontSize: 11)),
+                    Text(
+                      offer.timeLeftLabel,
+                      style: TextStyle(color: c.textMuted, fontSize: 11),
+                    ),
                   ],
                 ),
               ],
@@ -156,7 +217,11 @@ class OfferCard extends StatelessWidget {
           if (onEdit != null)
             IconButton(
               onPressed: onEdit,
-              icon: Icon(Icons.edit_rounded, size: 18, color: AppColors.amber),
+              icon: Icon(
+                Icons.edit_rounded,
+                size: 18,
+                color: AppColors.tintOn(AppColors.amber, c.isDark),
+              ),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               splashRadius: 18,
@@ -174,13 +239,17 @@ class OfferCard extends StatelessWidget {
     );
   }
 
-  Widget _fallbackOfferIcon() => Container(
+  Widget _fallbackOfferIcon(bool isDark) => Container(
     width: 52,
     height: 52,
     decoration: BoxDecoration(
       color: AppColors.amber.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(10),
     ),
-    child: const Icon(Icons.local_offer_rounded, color: AppColors.amber, size: 22),
+    child: Icon(
+      Icons.local_offer_rounded,
+      color: AppColors.tintOn(AppColors.amber, isDark),
+      size: 22,
+    ),
   );
 }

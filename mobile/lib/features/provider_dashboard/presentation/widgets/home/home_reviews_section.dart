@@ -105,7 +105,7 @@ class ReviewCard extends StatelessWidget {
                     ? Text(
                         initial,
                         style: TextStyle(
-                          color: AppColors.amber,
+                          color: AppColors.tintOn(AppColors.amber, c.isDark),
                           fontWeight: FontWeight.bold,
                         ),
                       )

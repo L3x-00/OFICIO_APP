@@ -10,10 +10,10 @@ import 'package:flutter/material.dart';
 /// que cambiar un hex aquí propaga a toda la app. Los colores que dependen del
 /// tema (fondos, texto) viven en `AppThemeColors`.
 abstract class AppColors {
-  // Fondos (legacy oscuro — el tema real vive en AppThemeColors)
-  static const Color bgDark = Color(0xFF0F111A);
-  static const Color bgCard = Color(0xFF1A1D2A);
-  static const Color bgInput = Color(0xFF242838);
+  // Fondos (legacy oscuro cálido — el tema real vive en AppThemeColors)
+  static const Color bgDark = Color(0xFF17120C);
+  static const Color bgCard = Color(0xFF221B13);
+  static const Color bgInput = Color(0xFF2E2519);
 
   // Primario — azul medianoche suave. #4B6BE5 da 4.6:1 con texto blanco (AA),
   // un punto más profundo que el #5B7FFF puro para que los botones no se laven.
@@ -25,23 +25,27 @@ abstract class AppColors {
   static const Color amberDark = Color(0xFFA88944);
   static const Color amberDeep = Color(0xFF2A2418); // fondo oscuro cálido
 
-  // Estado de disponibilidad — tonos terrosos apagados
-  static const Color available = Color(0xFF5B9A6B); // Verde salvia
-  static const Color busy = Color(0xFFC4605E); // Rojo teja
-  static const Color delayed = Color(0xFFC48A50); // Naranja tostado
+  // Estado de disponibilidad — con algo más de brillo para que los chips
+  // de estado (abierto/cerrado) y los botones de acción RESALTEN sobre el
+  // resto apagado, sin volverse neón.
+  static const Color available = Color(0xFF4DB36B); // Verde (abierto) más vivo
+  static const Color busy = Color(0xFFDA5A52); // Rojo teja más vivo (cerrado)
+  static const Color delayed = Color(0xFFD8923E); // Naranja tostado más vivo
 
-  // Acento
-  static const Color star = Color(0xFFD4B860); // Dorado suave para estrellas
-  static const Color verified = Color(0xFF6B9FD4); // Azul polvoriento
-  static const Color favorite = Color(0xFFD4687A); // Rosa apagado
+  // Acento — pequeños elementos con un punto más de brillo para destacar.
+  static const Color star = Color(0xFFE2C04F); // Dorado de estrellas más vivo
+  static const Color verified = Color(
+    0xFF54A8EC,
+  ); // Azul de verificado más vivo
+  static const Color favorite = Color(0xFFE86A82); // Rosa más vivo
 
   // Texto (estático — para superficies oscuras de marca; el tema usa AppThemeColors)
   static const Color textPrimary = Color(0xFFF5F3EF); // blanco cálido
   static const Color textSecondary = Color(0xFFAEB4C0);
   static const Color textMuted = Color(0xFF6E7480);
 
-  // WhatsApp y llamada
-  static const Color whatsapp = Color(0xFF3DAF5C); // Verde WhatsApp atenuado
+  // WhatsApp y llamada — botones de contacto: con brillo para que destaquen.
+  static const Color whatsapp = Color(0xFF2EBE5C); // Verde WhatsApp más vivo
   static const Color call = Color(0xFF4B6BE5); // Igual que primario
 
   // Redes sociales (marca externa — se mantienen reconocibles)
@@ -60,10 +64,11 @@ abstract class AppColors {
   // ── Helpers de contraste (centralizan la regla "Suave pero legible AA") ──
 
   /// Color de glifo/texto LEGIBLE sobre un fill SÓLIDO de [accent]
-  /// (avatar, pin de mapa, botón relleno). El dorado es un fill claro → glifo
-  /// oscuro; los acentos oscuros (azul) → glifo blanco.
+  /// (avatar, pin de mapa, botón relleno). Decide por LUMINANCIA: los fills
+  /// claros (dorado, verde, naranja, rosa, azul claro de verificado…) llevan
+  /// glifo oscuro; solo los acentos profundos (primary) admiten blanco AA.
   static Color onSolid(Color accent) =>
-      accent == amber ? amberDeep : Colors.white;
+      accent.computeLuminance() > 0.22 ? amberDeep : Colors.white;
 
   /// Color de texto/ícono de [accent] sobre su PROPIO tinte claro
   /// (chip con fill `accent.withValues(alpha: ~0.1)`). En tema oscuro el acento

@@ -29,15 +29,19 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   // ── TEMA OSCURO (valores actuales) ────────────────────────
 
+  // Oscuro CÁLIDO (espresso charcoal) — subtono rojo/naranja para combinar con
+  // el logo (cálido), sin volverse marrón ni abrumar. R>G>B en los fondos.
   static const AppThemeColors dark = AppThemeColors(
-    bg: Color(0xFF0F111A), // azul-noche profundo (no negro puro)
-    bgCard: Color(0xFF1A1D2A), // tarjeta apenas más clara
-    bgInput: Color(0xFF242838), // input
+    bg: Color(0xFF17120C), // espresso profundo cálido (no negro, no azul)
+    bgCard: Color(0xFF221B13), // tarjeta cálida apenas más clara
+    bgInput: Color(0xFF2E2519), // input cálido
     textPrimary: Color(
       0xFFF5F3EF,
     ), // blanco cálido (no #FFF puro → menos fatiga)
-    textSecondary: Color(0xFFAEB4C0),
-    textMuted: Color(0xFF6E7480),
+    textSecondary: Color(0xFFB7AD9F), // gris cálido (antes azulado)
+    textMuted: Color(
+      0xFF9A8E7C,
+    ), // muted cálido (más claro → legible AA en oscuro)
     warmDeep: Color(0xFF2A2418), // fondo cálido ámbar para gradientes
     border: Color(0x0FFFFFFF), // white @ 6%
     isDark: true,

@@ -18,11 +18,14 @@ class SubscriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final isFree   = sub.plan == 'GRATIS';
+    final isFree = sub.plan == 'GRATIS';
     final isActive = sub.isActive || isFree;
-    final color    = isFree
-        ? const Color(0xFF22C55E)
-        : isActive ? AppColors.amber : AppColors.busy;
+    final color = isFree
+        ? AppColors.available
+        : isActive
+        ? AppColors.amber
+        : AppColors.busy;
+    final fg = AppColors.tintOn(color, c.isDark);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -35,7 +38,7 @@ class SubscriptionCard extends StatelessWidget {
         children: [
           Icon(
             isFree ? Icons.storefront_rounded : Icons.workspace_premium_rounded,
-            color: color,
+            color: fg,
             size: 28,
           ),
           const SizedBox(width: 14),
@@ -45,10 +48,18 @@ class SubscriptionCard extends StatelessWidget {
               children: [
                 Text(
                   'Plan ${sub.planLabel}',
-                  style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
-                  isFree ? 'Plan gratuito activo' : isActive ? 'Suscripción activa' : 'Suscripción inactiva',
+                  isFree
+                      ? 'Plan gratuito activo'
+                      : isActive
+                      ? 'Suscripción activa'
+                      : 'Suscripción inactiva',
                   style: TextStyle(color: c.textSecondary, fontSize: 12),
                 ),
               ],
@@ -67,7 +78,8 @@ class CollapsiblePlansSection extends StatefulWidget {
   const CollapsiblePlansSection({super.key, required this.currentPlan});
 
   @override
-  State<CollapsiblePlansSection> createState() => _CollapsiblePlansSectionState();
+  State<CollapsiblePlansSection> createState() =>
+      _CollapsiblePlansSectionState();
 }
 
 class _CollapsiblePlansSectionState extends State<CollapsiblePlansSection> {
@@ -113,7 +125,9 @@ class _CollapsiblePlansSectionState extends State<CollapsiblePlansSection> {
                   ),
                 ),
                 Icon(
-                  _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  _expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
                   color: _expanded ? AppColors.amber : c.textMuted,
                 ),
               ],
@@ -161,9 +175,13 @@ class _PlanCardState extends State<PlanCard> {
         context: context,
         builder: (dialogCtx) => AlertDialog(
           backgroundColor: c.bgCard,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Pago en revisión',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Pago en revisión',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+          ),
           content: Text(
             'Ya enviaste el comprobante del plan ${dash.pendingPaymentPlan}. Te avisaremos cuando el equipo lo apruebe o rechace.',
             style: TextStyle(color: c.textSecondary, height: 1.5),
@@ -171,7 +189,10 @@ class _PlanCardState extends State<PlanCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: Text('Entendido', style: TextStyle(color: AppColors.primary)),
+              child: Text(
+                'Entendido',
+                style: TextStyle(color: AppColors.primary),
+              ),
             ),
           ],
         ),
@@ -180,17 +201,22 @@ class _PlanCardState extends State<PlanCard> {
     }
 
     // If user has an active paid plan, block and redirect to cancel flow
-    final sub  = dash.profile?.subscription;
-    final hasActivePaidPlan = sub != null && sub.isActive && sub.plan != 'GRATIS';
+    final sub = dash.profile?.subscription;
+    final hasActivePaidPlan =
+        sub != null && sub.isActive && sub.plan != 'GRATIS';
     if (hasActivePaidPlan) {
       final c = context.colors;
       await showDialog(
         context: context,
         builder: (dialogCtx) => AlertDialog(
           backgroundColor: c.bgCard,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Plan activo detectado',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Plan activo detectado',
+            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+          ),
           content: Text(
             'TIENES QUE CANCELAR TU PLAN ACTUAL (${sub.planLabel}) antes de adquirir uno nuevo. Ve a Ajustes → Suscripción → Cancelar plan.',
             style: TextStyle(color: c.textSecondary, height: 1.5),
@@ -201,7 +227,10 @@ class _PlanCardState extends State<PlanCard> {
               // la ruta padre — con go_router, pop sobre el context del
               // árbol mata la pantalla y rebota al home.
               onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: Text('Entendido', style: TextStyle(color: AppColors.primary)),
+              child: Text(
+                'Entendido',
+                style: TextStyle(color: AppColors.primary),
+              ),
             ),
           ],
         ),
@@ -214,16 +243,19 @@ class _PlanCardState extends State<PlanCard> {
       // Marca local + recarga del dashboard para que la pill "Revisión
       // pendiente" aparezca al instante sin esperar al próximo refresh.
       dash.markPaymentPending(widget.plan.id);
-      context.showInfoSnack('Comprobante enviado. Te notificaremos cuando se valide.');
+      context.showInfoSnack(
+        'Comprobante enviado. Te notificaremos cuando se valide.',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
-    final plan    = widget.plan;
+    final c = context.colors;
+    final plan = widget.plan;
     final current = widget.isCurrent;
-    final isFree  = plan.id == 'GRATIS';
+    final isFree = plan.id == 'GRATIS';
+    final fg = AppColors.tintOn(plan.color, c.isDark);
     // Reactivo: cuando llega PLAN_APROBADO/RECHAZADO el provider notifica
     // y `pendingForThisPlan` cambia, re-renderizando la tarjeta sin pasos
     // extra.
@@ -233,10 +265,10 @@ class _PlanCardState extends State<PlanCard> {
     final tappable = !current && !isFree && pendingPlan == null;
 
     return GestureDetector(
-      onTapDown:   tappable ? (_) => setState(() => _pressed = true)  : null,
-      onTapUp:     tappable ? (_) => setState(() => _pressed = false) : null,
-      onTapCancel: tappable ? ()  => setState(() => _pressed = false) : null,
-      onTap:       tappable ? _openConfirmSheet : null,
+      onTapDown: tappable ? (_) => setState(() => _pressed = true) : null,
+      onTapUp: tappable ? (_) => setState(() => _pressed = false) : null,
+      onTapCancel: tappable ? () => setState(() => _pressed = false) : null,
+      onTap: tappable ? _openConfirmSheet : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.only(bottom: 12),
@@ -245,19 +277,25 @@ class _PlanCardState extends State<PlanCard> {
           color: current
               ? plan.color.withValues(alpha: c.isDark ? 0.12 : 0.06)
               : _pressed
-                  ? plan.color.withValues(alpha: 0.08)
-                  : c.bgCard,
+              ? plan.color.withValues(alpha: 0.08)
+              : c.bgCard,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: current
                 ? plan.color.withValues(alpha: 0.55)
                 : _pressed
-                    ? plan.color.withValues(alpha: 0.4)
-                    : c.border,
+                ? plan.color.withValues(alpha: 0.4)
+                : c.border,
             width: current ? 1.8 : 1.0,
           ),
           boxShadow: current
-              ? [BoxShadow(color: plan.color.withValues(alpha: 0.18), blurRadius: 16, offset: const Offset(0, 4))]
+              ? [
+                  BoxShadow(
+                    color: plan.color.withValues(alpha: 0.18),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : null,
         ),
         child: Column(
@@ -285,7 +323,7 @@ class _PlanCardState extends State<PlanCard> {
                           Text(
                             plan.label,
                             style: TextStyle(
-                              color: plan.color,
+                              color: fg,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -293,29 +331,49 @@ class _PlanCardState extends State<PlanCard> {
                           if (current) ...[
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: plan.color.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 'Plan actual',
-                                style: TextStyle(color: plan.color, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: fg,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
                           if (plan.isPopular && !current) ...[
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: AppColors.standard.withValues(alpha: 0.15),
+                                color: AppColors.standard.withValues(
+                                  alpha: 0.15,
+                                ),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: AppColors.standard.withValues(alpha: 0.4)),
+                                border: Border.all(
+                                  color: AppColors.standard.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                ),
                               ),
                               child: Text(
                                 '⭐ Popular',
-                                style: TextStyle(color: AppColors.standard, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: AppColors.standard,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -335,7 +393,10 @@ class _PlanCardState extends State<PlanCard> {
                             ),
                             TextSpan(
                               text: ' ${plan.priceNote}',
-                              style: TextStyle(color: c.textMuted, fontSize: 12),
+                              style: TextStyle(
+                                color: c.textMuted,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -344,30 +405,33 @@ class _PlanCardState extends State<PlanCard> {
                   ),
                 ),
                 if (tappable)
-                  Icon(Icons.chevron_right_rounded, color: plan.color.withValues(alpha: 0.6), size: 22),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: plan.color.withValues(alpha: 0.6),
+                    size: 22,
+                  ),
               ],
             ),
             const SizedBox(height: 14),
 
             // ── Features con SVG check ──────────────────────
-            ...plan.features.map((f) => Padding(
-              padding: const EdgeInsets.only(bottom: 7),
-              child: Row(
-                children: [
-                  SvgCheckIcon(color: plan.color),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      f,
-                      style: TextStyle(
-                        color: c.textSecondary,
-                        fontSize: 13,
+            ...plan.features.map(
+              (f) => Padding(
+                padding: const EdgeInsets.only(bottom: 7),
+                child: Row(
+                  children: [
+                    SvgCheckIcon(color: plan.color),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        f,
+                        style: TextStyle(color: c.textSecondary, fontSize: 13),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            )),
+            ),
 
             // ── CTA button (solo si no es actual ni gratis) ─
             if (pendingForThisPlan) ...[
@@ -384,18 +448,21 @@ class _PlanCardState extends State<PlanCard> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 14, height: 14,
+                      width: 14,
+                      height: 14,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2, color: plan.color,
+                        strokeWidth: 2,
+                        color: plan.color,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Text(
                       'Revisión pendiente',
                       style: TextStyle(
-                          color: plan.color,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold),
+                        color: fg,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -425,14 +492,21 @@ class _PlanCardState extends State<PlanCard> {
                   onPressed: _openConfirmSheet,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: plan.color,
-                    foregroundColor: plan.id == 'PREMIUM' ? const Color(0xFF3D2B00) : Colors.white,
+                    foregroundColor: plan.id == 'PREMIUM'
+                        ? const Color(0xFF3D2B00)
+                        : Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
                     'Solicitar plan ${plan.label}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -465,8 +539,10 @@ class _CancelPlanButtonState extends State<CancelPlanButton> {
       builder: (_) => AlertDialog(
         backgroundColor: c.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('¿Cancelar tu plan?',
-            style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold)),
+        title: Text(
+          '¿Cancelar tu plan?',
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold),
+        ),
         content: Text(
           'Al cancelar tu plan $plan perderás los beneficios inmediatamente y volverás al plan Gratis. Esta acción no reembolsa pagos anteriores.',
           style: TextStyle(color: c.textSecondary, height: 1.5),
@@ -480,9 +556,14 @@ class _CancelPlanButtonState extends State<CancelPlanButton> {
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.busy,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Sí, cancelar', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Sí, cancelar',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -495,7 +576,9 @@ class _CancelPlanButtonState extends State<CancelPlanButton> {
       if (!mounted) return;
       await widget.dash.loadDashboard();
       if (!mounted) return;
-      context.showSuccessSnack('Plan cancelado. Ahora estás en el plan Gratis.');
+      context.showSuccessSnack(
+        'Plan cancelado. Ahora estás en el plan Gratis.',
+      );
     } catch (e) {
       if (!mounted) return;
       context.showErrorSnack('No se pudo cancelar: $e');
@@ -506,20 +589,35 @@ class _CancelPlanButtonState extends State<CancelPlanButton> {
 
   @override
   Widget build(BuildContext context) {
+    final fg = AppColors.tintOn(AppColors.busy, context.colors.isDark);
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: _loading ? null : _confirm,
         icon: _loading
-            ? const SizedBox(width: 16, height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.busy))
-            : const Icon(Icons.cancel_outlined, size: 18, color: AppColors.busy),
-        label: const Text('Cancelar plan',
-            style: TextStyle(color: AppColors.busy, fontWeight: FontWeight.w600)),
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.busy,
+                ),
+              )
+            : const Icon(
+                Icons.cancel_outlined,
+                size: 18,
+                color: AppColors.busy,
+              ),
+        label: Text(
+          'Cancelar plan',
+          style: TextStyle(color: fg, fontWeight: FontWeight.w600),
+        ),
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: AppColors.busy.withValues(alpha: 0.5)),
           padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

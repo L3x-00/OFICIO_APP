@@ -29,7 +29,9 @@ class TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final color = isOficio ? AppColors.primary : AppColors.amber;
+    final glyph = AppColors.tintOn(color, c.isDark);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -43,13 +45,13 @@ class TypeBadge extends StatelessWidget {
           Icon(
             isOficio ? Icons.handyman_rounded : Icons.storefront_rounded,
             size: 14,
-            color: color,
+            color: glyph,
           ),
           const SizedBox(width: 6),
           Text(
             isOficio ? 'Profesional Independiente' : 'Negocio',
             style: TextStyle(
-              color: color,
+              color: glyph,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),

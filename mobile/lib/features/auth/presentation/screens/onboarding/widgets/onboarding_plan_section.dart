@@ -34,9 +34,9 @@ class OnboardingPlanSection extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.card_giftcard_rounded,
-                color: AppColors.available,
+                color: AppColors.tintOn(AppColors.available, c.isDark),
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -100,10 +100,10 @@ class OnboardingPlanSection extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'S/ 39.90/mes',
                       style: TextStyle(
-                        color: AppColors.premium,
+                        color: AppColors.tintOn(AppColors.premium, c.isDark),
                         fontSize: 13,
                         fontWeight: FontWeight.w900,
                       ),

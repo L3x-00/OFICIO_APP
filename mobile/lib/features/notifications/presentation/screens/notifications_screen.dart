@@ -468,6 +468,7 @@ class _NotifActionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fg = AppColors.tintOn(color, context.colors.isDark);
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: onTap,
@@ -484,13 +485,13 @@ class _NotifActionChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: color,
+                color: fg,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_forward_rounded, color: color, size: 12),
+            Icon(Icons.arrow_forward_rounded, color: fg, size: 12),
           ],
         ),
       ),

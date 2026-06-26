@@ -105,8 +105,11 @@ class OfferDetailSheet extends StatelessWidget {
                                     ),
                                     child: Text(
                                       cat.name,
-                                      style: const TextStyle(
-                                        color: AppColors.amber,
+                                      style: TextStyle(
+                                        color: AppColors.tintOn(
+                                          AppColors.amber,
+                                          c.isDark,
+                                        ),
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -166,16 +169,22 @@ class OfferDetailSheet extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.local_offer_rounded,
-                                color: AppColors.amber,
+                                color: AppColors.tintOn(
+                                  AppColors.amber,
+                                  c.isDark,
+                                ),
                                 size: 18,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 offer.priceLabel,
-                                style: const TextStyle(
-                                  color: AppColors.amber,
+                                style: TextStyle(
+                                  color: AppColors.tintOn(
+                                    AppColors.amber,
+                                    c.isDark,
+                                  ),
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -250,9 +259,12 @@ class OfferDetailSheet extends StatelessWidget {
                                       ),
                                       if (p.isVerified) ...[
                                         const SizedBox(width: 4),
-                                        const Icon(
+                                        Icon(
                                           Icons.verified_rounded,
-                                          color: AppColors.amber,
+                                          color: AppColors.tintOn(
+                                            AppColors.amber,
+                                            c.isDark,
+                                          ),
                                           size: 14,
                                         ),
                                       ],
@@ -260,9 +272,12 @@ class OfferDetailSheet extends StatelessWidget {
                                   ),
                                   Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.star_rounded,
-                                        color: AppColors.star,
+                                        color: AppColors.tintOn(
+                                          AppColors.star,
+                                          c.isDark,
+                                        ),
                                         size: 13,
                                       ),
                                       const SizedBox(width: 2),
@@ -650,6 +665,8 @@ class _ContactBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final tinted = AppColors.tintOn(color, c.isDark);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -664,12 +681,12 @@ class _ContactBtn extends StatelessWidget {
           children: [
             svgAsset != null
                 ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
-                : Icon(icon, size: 16, color: color),
+                : Icon(icon, size: 16, color: tinted),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: color,
+                color: tinted,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),

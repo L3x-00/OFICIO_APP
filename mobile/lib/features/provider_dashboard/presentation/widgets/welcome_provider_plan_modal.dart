@@ -456,8 +456,8 @@ class _SlidePage extends StatelessWidget {
             ),
             child: Text(
               slide.pill,
-              style: const TextStyle(
-                color: AppColors.amber,
+              style: TextStyle(
+                color: AppColors.tintOn(AppColors.amber, c.isDark),
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.6,

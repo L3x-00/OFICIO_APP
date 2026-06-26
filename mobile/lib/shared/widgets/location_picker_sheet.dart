@@ -347,20 +347,29 @@ class _GpsButton extends StatelessWidget {
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.primary,
+                  color: AppColors.tintOn(
+                    AppColors.primary,
+                    context.colors.isDark,
+                  ),
                 ),
               )
             else
               Icon(
                 Icons.my_location_rounded,
-                color: AppColors.primary,
+                color: AppColors.tintOn(
+                  AppColors.primary,
+                  context.colors.isDark,
+                ),
                 size: 14,
               ),
             const SizedBox(width: 5),
             Text(
               loading ? 'Detectando...' : 'Usar GPS',
               style: TextStyle(
-                color: AppColors.primary,
+                color: AppColors.tintOn(
+                  AppColors.primary,
+                  context.colors.isDark,
+                ),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),

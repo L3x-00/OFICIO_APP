@@ -69,7 +69,10 @@ class _OfferCard extends StatelessWidget {
                               size: 10,
                               color: prov.isBusiness
                                   ? AppColors.tintOn(AppColors.amber, c.isDark)
-                                  : AppColors.primary,
+                                  : AppColors.tintOn(
+                                      AppColors.primary,
+                                      c.isDark,
+                                    ),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -80,7 +83,10 @@ class _OfferCard extends StatelessWidget {
                                         AppColors.amber,
                                         c.isDark,
                                       )
-                                    : AppColors.primary,
+                                    : AppColors.tintOn(
+                                        AppColors.primary,
+                                        c.isDark,
+                                      ),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -550,7 +556,7 @@ class _NeedCard extends StatelessWidget {
                             _needMeta(
                               Icons.payments_rounded,
                               _budget(need.budgetMin, need.budgetMax),
-                              AppColors.available,
+                              AppColors.tintOn(AppColors.available, c.isDark),
                             ),
                         ],
                       ),
@@ -755,12 +761,16 @@ class _ContactButton extends StatelessWidget {
           children: [
             svgAsset != null
                 ? SvgPicture.asset(svgAsset!, width: 15, height: 15)
-                : Icon(icon, size: 15, color: color),
+                : Icon(
+                    icon,
+                    size: 15,
+                    color: AppColors.tintOn(color, context.colors.isDark),
+                  ),
             const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                color: color,
+                color: AppColors.tintOn(color, context.colors.isDark),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
