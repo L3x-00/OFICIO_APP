@@ -16,25 +16,39 @@ class ProfilePlanSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c       = context.colors;
-    final plan    = profile?.subscription?.plan ?? 'GRATIS';
-    final status  = profile?.subscription?.status ?? 'GRACIA';
+    final c = context.colors;
+    final plan = profile?.subscription?.plan ?? 'GRATIS';
+    final status = profile?.subscription?.status ?? 'GRACIA';
     final endDate = profile?.subscription?.endDate;
 
     final planColor = switch (plan.toUpperCase()) {
-      'PREMIUM'  => AppColors.premium,
+      'PREMIUM' => AppColors.premium,
       'ESTANDAR' => AppColors.primary,
-      'GRATIS'   => const Color(0xFF7CB9E8),
-      _          => c.textMuted,
+      'GRATIS' => AppColors.verified,
+      _ => c.textMuted,
     };
 
     final isPremium = plan.toUpperCase() == 'PREMIUM';
 
     String? endLabel;
     if (endDate != null) {
-      final months = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-                      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-      endLabel = 'Vence: ${endDate.day} ${months[endDate.month]} ${endDate.year}';
+      final months = [
+        '',
+        'ene',
+        'feb',
+        'mar',
+        'abr',
+        'may',
+        'jun',
+        'jul',
+        'ago',
+        'sep',
+        'oct',
+        'nov',
+        'dic',
+      ];
+      endLabel =
+          'Vence: ${endDate.day} ${months[endDate.month]} ${endDate.year}';
     }
 
     return Column(
@@ -42,14 +56,20 @@ class ProfilePlanSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.workspace_premium_rounded,
-                color: AppColors.amber, size: 18),
+            const Icon(
+              Icons.workspace_premium_rounded,
+              color: AppColors.amber,
+              size: 18,
+            ),
             const SizedBox(width: 8),
-            Text('Plan & Pagos',
-                style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700)),
+            Text(
+              'Plan & Pagos',
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -58,8 +78,7 @@ class ProfilePlanSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.bgCard,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: planColor.withValues(alpha: 0.3)),
+            border: Border.all(color: planColor.withValues(alpha: 0.3)),
           ),
           child: Column(
             children: [
@@ -67,19 +86,23 @@ class ProfilePlanSection extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 5),
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: planColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: planColor.withValues(alpha: 0.4)),
+                        color: planColor.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Text(
                       '${plan[0]}${plan.substring(1).toLowerCase()}',
                       style: TextStyle(
-                          color: planColor,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800),
+                        color: AppColors.tintOn(planColor, c.isDark),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -87,21 +110,24 @@ class ProfilePlanSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                          switch (status) {
-                            'GRACIA'    => 'Período de gracia',
-                            'VENCIDA'   => 'Vencido — pasó a Gratis',
-                            'CANCELADA' => 'Cancelado',
-                            _           => 'Activo',
-                          },
-                          style: TextStyle(
-                              color: status == 'VENCIDA' || status == 'CANCELADA'
-                                  ? AppColors.busy
-                                  : c.textSecondary,
-                              fontSize: 12)),
+                        switch (status) {
+                          'GRACIA' => 'Período de gracia',
+                          'VENCIDA' => 'Vencido — pasó a Gratis',
+                          'CANCELADA' => 'Cancelado',
+                          _ => 'Activo',
+                        },
+                        style: TextStyle(
+                          color: status == 'VENCIDA' || status == 'CANCELADA'
+                              ? AppColors.busy
+                              : c.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
                       if (endLabel != null)
-                        Text(endLabel,
-                            style: TextStyle(
-                                color: c.textMuted, fontSize: 11)),
+                        Text(
+                          endLabel,
+                          style: TextStyle(color: c.textMuted, fontSize: 11),
+                        ),
                     ],
                   ),
                 ],
@@ -126,7 +152,8 @@ class ProfilePlanSection extends StatelessWidget {
                         foregroundColor: c.textSecondary,
                         side: BorderSide(color: c.border),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
@@ -136,16 +163,22 @@ class ProfilePlanSection extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () => PlanSelectorSheet.show(context),
-                        icon: const Icon(
-                            Icons.rocket_launch_rounded,
-                            size: 16,
-                            color: Colors.black),
-                        label: const Text('Subir de plan',
-                            style: TextStyle(color: Colors.black)),
+                        icon: Icon(
+                          Icons.rocket_launch_rounded,
+                          size: 16,
+                          color: AppColors.onSolid(AppColors.amber),
+                        ),
+                        label: Text(
+                          'Subir de plan',
+                          style: TextStyle(
+                            color: AppColors.onSolid(AppColors.amber),
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.amber,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),

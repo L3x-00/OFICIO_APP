@@ -28,7 +28,7 @@ class ServiceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border),
       ),
       child: Row(
         children: [
@@ -81,7 +81,7 @@ class ServiceCard extends StatelessWidget {
                   child: Text(
                     service.priceLabel,
                     style: TextStyle(
-                      color: AppColors.amber,
+                      color: AppColors.tintOn(AppColors.amber, c.isDark),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -127,7 +127,7 @@ class ServiceCard extends StatelessWidget {
     ),
     child: Icon(
       isNegocio ? Icons.inventory_2_rounded : Icons.design_services_rounded,
-      color: AppColors.amber,
+      color: AppColors.tintOn(AppColors.amber, c.isDark),
       size: 24,
     ),
   );

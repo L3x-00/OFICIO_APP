@@ -360,7 +360,11 @@ class _RetentionBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.amber),
+          Icon(
+            Icons.lock_outline_rounded,
+            size: 14,
+            color: AppColors.tintOn(AppColors.amber, c.isDark),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

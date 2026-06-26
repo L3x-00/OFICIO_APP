@@ -209,7 +209,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                     '$d días',
                     style: TextStyle(
                       color: _selectedPeriod == d
-                          ? AppColors.amber
+                          ? AppColors.tintOn(AppColors.amber, c.isDark)
                           : c.textMuted,
                       fontSize: 12,
                       fontWeight: _selectedPeriod == d
@@ -276,7 +276,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,7 +335,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
           decoration: BoxDecoration(
             color: c.bgCard,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            border: Border.all(color: c.border),
           ),
           child: Row(
             children: [
@@ -370,7 +370,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,7 +464,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,7 +503,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
                 label: 'Plan',
                 value: profile.subscription!.planLabel,
                 valueColor: profile.subscription!.isActive
-                    ? AppColors.amber
+                    ? AppColors.tintOn(AppColors.amber, c.isDark)
                     : AppColors.busy,
               ),
           ],
@@ -526,7 +526,7 @@ class _PanelStatsTabState extends State<PanelStatsTab> {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,7 +615,7 @@ class _BigStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -694,7 +694,7 @@ class _ContactBar extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: c.border,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -816,9 +816,9 @@ class _StatsUpsellScreen extends StatelessWidget {
                       width: 1.5,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.bar_chart_rounded,
-                    color: AppColors.amber,
+                    color: AppColors.tintOn(AppColors.amber, c.isDark),
                     size: 44,
                   ),
                 ),
@@ -879,16 +879,16 @@ class _StatsUpsellScreen extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.workspace_premium_rounded,
-                        color: AppColors.amber,
+                        color: AppColors.tintOn(AppColors.amber, c.isDark),
                         size: 16,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Disponible desde Plan Estándar · S/ 29/mes',
                         style: TextStyle(
-                          color: AppColors.amber,
+                          color: AppColors.tintOn(AppColors.amber, c.isDark),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -954,7 +954,11 @@ class _UpsellBenefit extends StatelessWidget {
             child: Center(
               child: svgAsset != null
                   ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
-                  : Icon(icon, color: color, size: 16),
+                  : Icon(
+                      icon,
+                      color: AppColors.tintOn(color, c.isDark),
+                      size: 16,
+                    ),
             ),
           ),
           const SizedBox(width: 12),

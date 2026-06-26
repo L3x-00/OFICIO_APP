@@ -88,13 +88,17 @@ class ProfileTrustSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.cancel_rounded, color: red, size: 22),
+                    Icon(
+                      Icons.cancel_rounded,
+                      color: AppColors.tintOn(red, c.isDark),
+                      size: 22,
+                    ),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Solicitud rechazada',
                         style: TextStyle(
-                          color: red,
+                          color: AppColors.tintOn(red, c.isDark),
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -285,19 +289,19 @@ class ProfileTrustSection extends StatelessWidget {
                         color: green,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.shield_rounded,
-                            color: Colors.white,
+                            color: AppColors.onSolid(green),
                             size: 11,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
                             'Verificado',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.onSolid(green),
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -335,13 +339,17 @@ class ProfileTrustSection extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, color: accent, size: 22),
+                  Icon(
+                    icon,
+                    color: AppColors.tintOn(accent, c.isDark),
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       title,
                       style: TextStyle(
-                        color: accent,
+                        color: AppColors.tintOn(accent, c.isDark),
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
