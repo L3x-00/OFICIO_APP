@@ -15,6 +15,14 @@ class _OfferCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final prov = offer.provider;
+    // Oferta propia: comparamos el provider de la oferta con los perfiles del
+    // user (OFICIO/NEGOCIO). En ese caso NO mostramos contacto ni reportar
+    // (no te contactas ni te reportas a ti mismo), sino gestión de la oferta.
+    final auth = context.watch<AuthProvider>();
+    final ownOficioId = auth.providerDataFor('OFICIO')?['id'] as int?;
+    final ownNegocioId = auth.providerDataFor('NEGOCIO')?['id'] as int?;
+    final isOwn = prov.id == ownOficioId || prov.id == ownNegocioId;
+    final ownProfileType = prov.id == ownNegocioId ? 'NEGOCIO' : 'OFICIO';
 
     return GestureDetector(
       onTap: () => OfferDetailSheet.show(context, offer),
@@ -225,64 +233,101 @@ class _OfferCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // Botones de contacto
-                  Row(
-                    children: [
-                      if (prov.whatsapp != null)
-                        Expanded(
-                          child: _ContactButton(
-                            svgAsset: 'assets/icons/whatsapp.svg',
-                            label: 'WhatsApp',
-                            color: AppColors.whatsapp,
-                            onTap: () => launchUrl(
-                              Uri.parse(
-                                'https://wa.me/${prov.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en Servi',
+                  if (isOwn)
+                    // Oferta propia: gestión en vez de contacto/reporte.
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () =>
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProviderPanel(
+                                  providerType: ownProfileType,
+                                  initialTabIndex: 3,
+                                ),
+                              ),
+                            ),
+                        icon: const Icon(
+                          Icons.edit_rounded,
+                          size: 16,
+                          color: AppColors.amber,
+                        ),
+                        label: Text(
+                          'Editar oferta',
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: c.border),
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    // Botones de contacto
+                    Row(
+                      children: [
+                        if (prov.whatsapp != null)
+                          Expanded(
+                            child: _ContactButton(
+                              svgAsset: 'assets/icons/whatsapp.svg',
+                              label: 'WhatsApp',
+                              color: AppColors.whatsapp,
+                              onTap: () => launchUrl(
+                                Uri.parse(
+                                  'https://wa.me/${prov.whatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Hola, vi tu oferta "${offer.title}" en Servi',
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      if (prov.whatsapp != null && prov.phone != null)
-                        const SizedBox(width: 8),
-                      if (prov.phone != null)
-                        Expanded(
-                          child: _ContactButton(
-                            icon: Icons.phone_rounded,
-                            label: 'Llamar',
-                            color: AppColors.primary,
-                            onTap: () =>
-                                launchUrl(Uri.parse('tel:${prov.phone}')),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                      Builder(
-                        builder: (ctx) {
-                          final isReported = ctx
-                              .watch<PublicOffersProvider>()
-                              .isOfferReported(offer.id);
-                          return IconButton(
-                            onPressed: isReported
-                                ? null
-                                : () => _showReportSheet(ctx, offer.id),
-                            icon: Icon(
-                              isReported
-                                  ? Icons.flag_rounded
-                                  : Icons.flag_outlined,
-                              size: 18,
-                              color: isReported
-                                  ? c.textMuted.withValues(alpha: 0.4)
-                                  : c.textMuted,
+                        if (prov.whatsapp != null && prov.phone != null)
+                          const SizedBox(width: 8),
+                        if (prov.phone != null)
+                          Expanded(
+                            child: _ContactButton(
+                              icon: Icons.phone_rounded,
+                              label: 'Llamar',
+                              color: AppColors.primary,
+                              onTap: () =>
+                                  launchUrl(Uri.parse('tel:${prov.phone}')),
                             ),
-                            tooltip: isReported
-                                ? 'Ya reportaste esta oferta'
-                                : 'Reportar oferta',
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            splashRadius: 18,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                          ),
+                        const SizedBox(width: 8),
+                        Builder(
+                          builder: (ctx) {
+                            final isReported = ctx
+                                .watch<PublicOffersProvider>()
+                                .isOfferReported(offer.id);
+                            return IconButton(
+                              onPressed: isReported
+                                  ? null
+                                  : () => _showReportSheet(ctx, offer.id),
+                              icon: Icon(
+                                isReported
+                                    ? Icons.flag_rounded
+                                    : Icons.flag_outlined,
+                                size: 18,
+                                color: isReported
+                                    ? c.textMuted.withValues(alpha: 0.4)
+                                    : c.textMuted,
+                              ),
+                              tooltip: isReported
+                                  ? 'Ya reportaste esta oferta'
+                                  : 'Reportar oferta',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              splashRadius: 18,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

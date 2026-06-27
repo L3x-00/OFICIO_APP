@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../../../shared/widgets/skeleton_loaders.dart';
+import '../../../provider_dashboard/presentation/screens/provider_panel.dart';
 import '../../../subastas/domain/models/service_request_model.dart';
 import '../../../subastas/presentation/providers/subastas_provider.dart';
 import '../../domain/models/public_offer_model.dart';

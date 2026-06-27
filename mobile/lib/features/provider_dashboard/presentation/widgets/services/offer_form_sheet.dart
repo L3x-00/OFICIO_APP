@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../../core/utils/plan_limits.dart';
@@ -195,6 +199,11 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     return opts;
   }
 
+  /// Clave del borrador, separada por tipo de perfil para que el borrador de
+  /// OFICIO no pise el de NEGOCIO.
+  String get _draftKey =>
+      'offer_draft_${widget.isNegocio ? 'NEGOCIO' : 'OFICIO'}';
+
   @override
   void initState() {
     super.initState();
@@ -203,6 +212,13 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
       _titleCtrl.text = ex.title;
       _descCtrl.text = ex.description;
       _priceCtrl.text = ex.price != null ? ex.price!.toStringAsFixed(0) : '';
+    } else {
+      // CREATE: restauramos el borrador (si saliste sin publicar) y lo
+      // persistimos en cada cambio, así no se pierde lo escrito.
+      _restoreDraft();
+      _titleCtrl.addListener(_saveDraft);
+      _descCtrl.addListener(_saveDraft);
+      _priceCtrl.addListener(_saveDraft);
     }
   }
 
@@ -214,13 +230,56 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     super.dispose();
   }
 
+  // ── Borrador de oferta (solo modo CREATE) ─────────────────────
+
+  Future<void> _restoreDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_draftKey);
+    if (raw == null || !mounted) return;
+    try {
+      final d = jsonDecode(raw) as Map<String, dynamic>;
+      _titleCtrl.text = d['title'] as String? ?? '';
+      _descCtrl.text = d['description'] as String? ?? '';
+      _priceCtrl.text = d['price'] as String? ?? '';
+      final path = d['photoPath'] as String?;
+      setState(() {
+        if (d['durationHours'] is int) {
+          _durationHours = d['durationHours'] as int;
+        }
+        // La foto solo se restaura si el archivo temporal sigue existiendo.
+        if (path != null && File(path).existsSync()) _pickedPath = path;
+      });
+    } catch (_) {
+      /* borrador corrupto: lo ignoramos */
+    }
+  }
+
+  void _saveDraft() {
+    if (_isEdit) return;
+    final data = jsonEncode({
+      'title': _titleCtrl.text,
+      'description': _descCtrl.text,
+      'price': _priceCtrl.text,
+      'durationHours': _durationHours,
+      'photoPath': _pickedPath,
+    });
+    SharedPreferences.getInstance().then((p) => p.setString(_draftKey, data));
+  }
+
+  void _clearDraft() {
+    SharedPreferences.getInstance().then((p) => p.remove(_draftKey));
+  }
+
   Future<void> _pickPhoto() async {
     final picker = ImagePicker();
     final img = await picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 75,
     );
-    if (img != null) setState(() => _pickedPath = img.path);
+    if (img != null) {
+      setState(() => _pickedPath = img.path);
+      _saveDraft();
+    }
   }
 
   Future<void> _publish() async {
@@ -278,6 +337,7 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     );
     if (!mounted) return;
     if (ok) {
+      _clearDraft(); // publicada → ya no hay borrador que conservar
       nav.pop();
       messenger.showSnackBar(const SnackBar(content: Text('Oferta publicada')));
     } else {
@@ -455,7 +515,10 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
                         ),
                       ),
                       selected: sel,
-                      onSelected: (_) => setState(() => _durationHours = h),
+                      onSelected: (_) {
+                        setState(() => _durationHours = h);
+                        _saveDraft();
+                      },
                       backgroundColor: c.bgInput,
                       selectedColor: AppColors.amber,
                       showCheckmark: false,
