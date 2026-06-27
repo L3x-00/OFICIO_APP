@@ -331,7 +331,11 @@ export class TrustValidationService {
       }),
     ]);
 
-    // Notificar al proveedor en tiempo real
+    // Notificar al proveedor en tiempo real (WS) + PUSH para background.
+    // Sin el push, si la app estaba en background el evento WS se perdía y el
+    // rechazo solo aparecía al reiniciar; con push llega la notif del sistema y
+    // al abrir la app se muestra el dialog de rechazo (pendingTrustRejection),
+    // igual que el flujo de aprobación.
     this.eventsGateway.emitNotification({
       type: 'TRUST_REJECTED',
       title: 'Solicitud de validación rechazada',
@@ -339,6 +343,14 @@ export class TrustValidationService {
       targetUserId: request.provider.userId,
       targetProfileType: request.provider.type,
     });
+    void this.push
+      .sendToUser(
+        request.provider.userId,
+        'Solicitud de validación rechazada',
+        reason.trim(),
+        { type: 'TRUST_REJECTED', profileType: request.provider.type },
+      )
+      .catch(() => {});
 
     return { success: true };
   }

@@ -110,7 +110,11 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
               child: HomeHeader(
                 name: name,
                 isNegocio: widget.isNegocio,
-                isPaused: widget.isPaused,
+                // Reactivo al toggle de disponibilidad: el badge del header debe
+                // reflejar el estado actual de dash.profile (que se actualiza al
+                // instante en setAvailability), no el isPaused estático que el
+                // panel pasó una sola vez al construir el tab.
+                isPaused: dash.profile?.isPaused ?? widget.isPaused,
                 profile: dash.profile,
                 coverUrl: coverUrl,
                 // C-10: pasamos el step real del deck. firstWhereOrNull

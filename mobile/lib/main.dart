@@ -254,6 +254,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     final auth = context.read<AuthProvider>();
     if (auth.user == null) return;
     auth.refreshProviderStatus();
+    // Refresca el balance de monedas al volver al foreground: si el user recibió
+    // monedas (ej. referido aprobado) mientras la app estaba en background, el
+    // evento WS pudo perderse; aquí lo recuperamos para que el contador del
+    // header se actualice sin reiniciar la app.
+    auth.refreshCurrentUser();
   }
 
   void _onAuthChanged() {
@@ -364,14 +369,14 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       });
     }
 
-    // ── Validación de confianza rechazada ─────────────────────
+    // ── Validación de confianza rechazada (TRUST_REJECTED) ────
+    // Mismo patrón robusto que la aprobación: reintenta hasta que el navCtx
+    // esté listo y solo limpia el flag tras mostrar. Antes limpiaba el flag de
+    // forma SÍNCRONA antes del addPostFrameCallback, así que si el navCtx no
+    // estaba listo en ese frame el dialog nunca aparecía (rechazo no se veía en
+    // tiempo real, solo tras reiniciar).
     if (auth.pendingTrustRejection != null && mounted) {
-      final rejection = auth.pendingTrustRejection!;
-      auth.clearTrustRejection();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _showTrustRejectionDialog(rejection);
-      });
+      _tryShowTrustRejection(auth.pendingTrustRejection!);
     }
 
     // ── Solicitud de plan rechazada ───────────────────────────
@@ -567,6 +572,24 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       builder: (ctx) =>
           _TrustApprovalDialog(isNegocio: isNegocio, namePart: namePart),
     );
+  }
+
+  /// Muestra el dialog de rechazo de validación en tiempo real. Reintenta
+  /// frame por frame hasta que `_navigatorKey.currentContext` esté listo y solo
+  /// limpia `pendingTrustRejection` tras mostrar — mismo patrón robusto que la
+  /// aprobación, para que el rechazo aparezca sin reiniciar la app.
+  Future<void> _tryShowTrustRejection(TrustRejectionPayload payload) async {
+    BuildContext? navCtx;
+    for (var i = 0; i < 30; i++) {
+      navCtx = _navigatorKey.currentContext;
+      if (navCtx != null && navCtx.mounted) break;
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      if (!mounted) return;
+    }
+    if (navCtx == null || !navCtx.mounted) return;
+    if (!mounted) return;
+    context.read<AuthProvider>().clearTrustRejection();
+    showTrustRejectionDialog(navCtx, payload);
   }
 
   /// Intenta mostrar dialog bloqueante de cuenta eliminada. Reintenta
@@ -836,9 +859,6 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
 
   // Diálogos extraídos a core/widgets/auth_side_effect_dialogs.dart.
   // Los métodos quedan como delegantes finos para no tocar los call sites.
-  void _showTrustRejectionDialog(TrustRejectionPayload rejection) =>
-      showTrustRejectionDialog(context, rejection);
-
   void _showPlanPromotionDialog(PlanActivationPayload payload) =>
       showPlanPromotionDialog(context, payload);
 
