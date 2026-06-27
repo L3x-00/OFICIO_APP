@@ -201,6 +201,14 @@ describe('TrustValidationService (unit)', () => {
           body: 'Fotos ilegibles',
         }),
       );
+      // Push para background (espejo de approveRequest): sin esto el rechazo
+      // solo se veía al reiniciar la app.
+      expect(push.sendToUser).toHaveBeenCalledWith(
+        9,
+        expect.any(String),
+        'Fotos ilegibles',
+        expect.objectContaining({ type: 'TRUST_REJECTED' }),
+      );
       expect(res).toEqual({ success: true });
     });
   });
