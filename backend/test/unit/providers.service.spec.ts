@@ -145,6 +145,30 @@ describe('ProvidersService (unit)', () => {
       expect(res[1].phone).toBe('');
       expect(res[0].phone).toBe('999'); // PREMIUM intacto
     });
+
+    it('respeta los filtros activos: categoría/tipo entran al where de hidratación', async () => {
+      // Sin esto, buscar por radio dentro de "Gasfiteros" devolvía a TODOS los
+      // cercanos. El filtro se aplica en el findMany del paso 2 (Prisma).
+      prisma.$queryRaw.mockResolvedValue([{ id: 1, dist_m: 500 }]);
+      prisma.provider.findMany.mockResolvedValue([
+        { id: 1, phone: '999', subscription: { plan: 'PREMIUM' }, images: [] },
+      ]);
+      await service.getNearby(-12, -77, 5, {
+        categorySlug: 'gasfiteros',
+        type: 'NEGOCIO',
+      });
+      expect(prisma.provider.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: { in: [1] },
+            type: 'NEGOCIO',
+            providerCategories: {
+              some: { category: { slug: 'gasfiteros' } },
+            },
+          }),
+        }),
+      );
+    });
   });
 
   describe('trackEvent()', () => {

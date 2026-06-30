@@ -462,7 +462,17 @@ export class ProvidersService {
    * (geography), que aprovecha el índice GIST `providers_location_geog_gist`
    * (sin full scan). `radiusKm` se acota a [1, 50].
    */
-  async getNearby(latitude: number, longitude: number, radiusKm: number) {
+  async getNearby(
+    latitude: number,
+    longitude: number,
+    radiusKm: number,
+    filters: {
+      categorySlug?: string;
+      parentCategorySlug?: string;
+      type?: string;
+      search?: string;
+    } = {},
+  ) {
     if (
       !Number.isFinite(latitude) ||
       !Number.isFinite(longitude) ||
@@ -477,7 +487,10 @@ export class ProvidersService {
     const radiusM = km * 1000;
 
     // 1. IDs + distancia (metros) ordenados por cercanía. ST_DWithin(geography)
-    //    usa el índice GIST; ST_MakePoint recibe (lng, lat).
+    //    usa el índice GIST; ST_MakePoint recibe (lng, lat). Traemos hasta 150
+    //    candidatos: el filtro de categoría/tipo/búsqueda se aplica en el paso 2
+    //    (Prisma), así que necesitamos margen para que tras filtrar queden los
+    //    ~50 más cercanos que SÍ cumplen el contexto del usuario.
     const rows = await this.prisma.$queryRaw<
       Array<{ id: number; dist_m: number }>
     >`
@@ -488,7 +501,7 @@ export class ProvidersService {
         AND location_geog IS NOT NULL
         AND ST_DWithin(location_geog, ST_MakePoint(${longitude}, ${latitude})::geography, ${radiusM})
       ORDER BY dist_m ASC
-      LIMIT 50
+      LIMIT 150
     `;
     if (rows.length === 0) return [];
 
@@ -501,9 +514,48 @@ export class ProvidersService {
     }
     const ids = rows.map((r) => Number(r.id));
 
+    // Mismos filtros que `findAll` para que la búsqueda por radio respete el
+    // contexto activo (categoría, macrocategoría, tipo y texto). Sin esto, un
+    // usuario navegando "Gasfiteros" recibía a TODOS los cercanos.
+    const hydrateWhere: Prisma.ProviderWhereInput = { id: { in: ids } };
+    if (filters.parentCategorySlug) {
+      hydrateWhere.providerCategories = {
+        some: { category: { parent: { slug: filters.parentCategorySlug } } },
+      };
+    } else if (filters.categorySlug) {
+      hydrateWhere.providerCategories = {
+        some: { category: { slug: filters.categorySlug } },
+      };
+    }
+    if (filters.type === 'OFICIO' || filters.type === 'PROFESSIONAL') {
+      hydrateWhere.type = 'OFICIO';
+    } else if (filters.type === 'NEGOCIO' || filters.type === 'BUSINESS') {
+      hydrateWhere.type = 'NEGOCIO';
+    }
+    if (filters.search && filters.search.trim().length > 0) {
+      const q = filters.search.trim();
+      hydrateWhere.OR = [
+        { businessName: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+        {
+          user: {
+            OR: [
+              { firstName: { contains: q, mode: 'insensitive' } },
+              { lastName: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+        },
+        {
+          providerCategories: {
+            some: { category: { name: { contains: q, mode: 'insensitive' } } },
+          },
+        },
+      ];
+    }
+
     // 2. Hidratamos el shape de tarjeta completo para esos ids.
     const providers = await this.prisma.provider.findMany({
-      where: { id: { in: ids } },
+      where: hydrateWhere,
       include: {
         providerCategories: {
           select: {
@@ -533,6 +585,7 @@ export class ProvidersService {
     return ids
       .map((id) => byId.get(id))
       .filter((p): p is NonNullable<typeof p> => p != null)
+      .slice(0, 50)
       .map((p) => ({
         ...this._thumbImages(this.maskContactIfFree(p)),
         distanceKm: distByIdKm.get(p.id) ?? null,

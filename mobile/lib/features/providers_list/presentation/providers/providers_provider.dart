@@ -404,9 +404,9 @@ class ProvidersProvider extends ChangeNotifier {
 
   // ── Búsqueda por radio (mapa radar del filtro) ────────────
   /// Reemplaza la lista por los proveedores dentro del [radiusKm] alrededor
-  /// del punto dado (GET /providers/nearby). No persiste ni toca los filtros
-  /// estructurados: un refresh (pull) o cualquier cambio de filtro vuelve al
-  /// listado normal vía [loadProviders].
+  /// del punto dado (GET /providers/nearby), respetando los filtros activos
+  /// (categoría / tipo / texto). No MODIFICA esos filtros: un refresh (pull) o
+  /// cualquier cambio de filtro vuelve al listado normal vía [loadProviders].
   Future<void> applyNearby({
     required double latitude,
     required double longitude,
@@ -426,6 +426,13 @@ class ProvidersProvider extends ChangeNotifier {
       latitude: latitude,
       longitude: longitude,
       radiusKm: radiusKm,
+      // La búsqueda por radio respeta los filtros activos del listado.
+      categorySlug: _selectedCategory,
+      parentCategorySlug: _selectedCategory == null
+          ? _expandedParentSlug
+          : null,
+      type: _selectedType,
+      search: _searchQuery.isNotEmpty ? _searchQuery : null,
     );
     result.when(
       success: (list) => _providers = list,
