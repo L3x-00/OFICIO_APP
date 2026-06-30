@@ -157,7 +157,7 @@ export class ChatService {
 
     const room = await this.prisma.chatRoom.findUnique({
       where: { id: dto.chatRoomId },
-      include: { provider: { select: { userId: true } } },
+      include: { provider: { select: { userId: true, type: true } } },
     });
     if (!room) throw new NotFoundException('Sala de chat no encontrada');
 
@@ -171,6 +171,17 @@ export class ChatService {
 
     const receiverUserId =
       senderUserId === room.clientId ? providerOwnerUserId : room.clientId;
+
+    // Independencia de roles (#7): la notif de chat pertenece a UN rol concreto,
+    // no es cross-cutting. Si va AL PROVEEDOR (la envió el cliente) lleva su
+    // perfil (OFICIO/NEGOCIO) → el otro panel del mismo user NO la ve. Si va al
+    // CLIENTE, marcamos 'CLIENTE' (centinela) para que tampoco aparezca en los
+    // paneles de proveedor (no matchea OFICIO/NEGOCIO ni el branch null/null
+    // cross-cutting de getMyNotifications); sí aparece en "Alertas" (sin filtro).
+    const receiverIsProvider = senderUserId === room.clientId;
+    const notifProfileType = receiverIsProvider
+      ? room.provider.type
+      : 'CLIENTE';
 
     // Necesitamos el nombre del sender para titular la notificación
     // ("Mensaje de Juan Pérez" en vez del genérico "Nuevo mensaje").
@@ -210,6 +221,7 @@ export class ChatService {
         data: {
           providerId: null,
           targetUserId: receiverUserId,
+          targetProfileType: notifProfileType,
           type: 'CHAT_MESSAGE',
           title: notifTitle,
           message: message.content,
@@ -261,6 +273,7 @@ export class ChatService {
             title: notifTitle,
             body: message.content,
             targetUserId: receiverUserId,
+            targetProfileType: notifProfileType ?? undefined,
             avatarUrl: senderAvatar ?? undefined,
             // Deep-link: sin chatRoomId el inbox in-app caía a la lista de
             // chats vacía en vez de abrir el hilo del remitente. Mismo dato
