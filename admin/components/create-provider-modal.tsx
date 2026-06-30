@@ -28,6 +28,7 @@ const DEFAULT_SCHEDULE: Record<string, string> = {
 
 interface CategoryChild { id: number; name: string; }
 interface Category      { id: number; name: string; forType: string | null; children: CategoryChild[]; }
+interface Locality      { id: number; name: string; department: string; province?: string | null; district?: string | null; }
 
 interface Props { onClose: () => void; onSuccess: () => void; }
 
@@ -51,11 +52,6 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [razonSocial, setRazonSocial]         = useState('');
   const [hasDelivery, setHasDelivery]         = useState(false);
 
-  // Location
-  const [department, setDepartment] = useState('');
-  const [province,   setProvince]   = useState('');
-  const [district,   setDistrict]   = useState('');
-
   // Especialidades (multi-select, máx 3) + Sector expandido en el acordeón
   const [allCategories, setAllCategories]             = useState<Category[]>([]);
   const [selectedParentId, setSelectedParentId]       = useState<number | null>(null);
@@ -67,7 +63,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [schedule, setSchedule]         = useState<Record<string, string>>(DEFAULT_SCHEDULE);
 
   // Locality
-  const [localities, setLocalities] = useState<any[]>([]);
+  const [localities, setLocalities] = useState<Locality[]>([]);
   const [localityId, setLocalityId] = useState('');
 
   // Photos
@@ -100,6 +96,19 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   };
 
   const filteredParents = allCategories.filter((c) => c.forType === type);
+
+  // Localidades ordenadas dept→prov→dist y con etiqueta jerárquica completa.
+  // El catálogo guarda `name = district` solo, así que un dropdown plano de
+  // distritos es ambiguo (hay nombres repetidos entre provincias). Mostrar
+  // "Distrito — Provincia, Departamento" evita elegir el row equivocado.
+  const localityLabel = (l: Locality) => {
+    const head = l.district || l.name;
+    const tail = [l.province, l.department].filter(Boolean).join(', ');
+    return tail ? `${head} — ${tail}` : head;
+  };
+  const sortedLocalities = [...localities].sort((a, b) =>
+    localityLabel(a).localeCompare(localityLabel(b), 'es'),
+  );
 
   // Multi-especialidad: alterna selección, respeta el tope (MAX_SPECIALTIES)
   // y mantiene siempre una especialidad marcada como principal.
@@ -145,9 +154,15 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       if (whatsapp)    formData.append('whatsapp',    whatsapp);
       if (description) formData.append('description', description);
       if (address)     formData.append('address',     address);
-      if (department)  formData.append('department',  department);
-      if (province)    formData.append('province',    province);
-      if (district)    formData.append('district',    district);
+      // Ubicación administrativa = la de la localidad elegida (única fuente de
+      // verdad). Antes había campos de texto libre paralelos que iban al User
+      // pero NO a la tarjeta (que muestra provider.locality) → el admin tipeaba
+      // un distrito y la tarjeta mostraba el de la localidad por defecto. Ahora
+      // dept/prov/dist se derivan del row seleccionado y quedan consistentes.
+      const selectedLoc = localities.find((l) => String(l.id) === localityId);
+      if (selectedLoc?.department) formData.append('department', selectedLoc.department);
+      if (selectedLoc?.province)   formData.append('province',   selectedLoc.province);
+      if (selectedLoc?.district)   formData.append('district',   selectedLoc.district);
       if (type === 'OFICIO' && dni)               formData.append('dni',             dni);
       if (type === 'NEGOCIO' && ruc)              formData.append('ruc',             ruc);
       if (type === 'NEGOCIO' && nombreComercial)  formData.append('nombreComercial', nombreComercial);
@@ -164,8 +179,8 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al crear');
       setTempPassword(data.tempPassword);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al crear');
     } finally {
       setIsLoading(false);
     }
@@ -280,11 +295,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
           className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none mb-3"
         />
         <Field label="Dirección" value={address} onChange={setAddress} placeholder="Av. Principal 123" fullWidth />
-        <div className="grid grid-cols-3 gap-3 mt-3">
-          <Field label="Departamento" value={department} onChange={setDepartment} placeholder="Lima" />
-          <Field label="Provincia"    value={province}   onChange={setProvince}   placeholder="Lima" />
-          <Field label="Distrito"     value={district}   onChange={setDistrict}   placeholder="Miraflores" />
-        </div>
+        <p className="text-[11px] text-gray-500 mt-2">Distrito, provincia y departamento se toman de la <span className="text-gray-400">Localidad</span> seleccionada abajo.</p>
       </Section>
 
       {/* Especialidades — multi-select (máx 3) con marcado de principal */}
@@ -356,8 +367,9 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
         <select value={localityId} onChange={(e) => setLocalityId(e.target.value)}
           className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none appearance-none"
         >
-          {localities.map((l: any) => <option key={l.id} value={l.id} className="bg-[#1a1c1e]">{l.name}</option>)}
+          {sortedLocalities.map((l) => <option key={l.id} value={l.id} className="bg-[#1a1c1e]">{localityLabel(l)}</option>)}
         </select>
+        <p className="text-[11px] text-gray-500 mt-2">Define el distrito/provincia que verá el cliente en la tarjeta del proveedor.</p>
       </Section>
 
       {/* Horario — solo NEGOCIO */}

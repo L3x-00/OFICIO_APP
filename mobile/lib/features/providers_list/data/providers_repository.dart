@@ -106,6 +106,12 @@ class ProvidersRepository {
     required double latitude,
     required double longitude,
     required double radiusKm,
+    // Mismos filtros del listado: la búsqueda por radio respeta la categoría /
+    // tipo / texto activos en vez de devolver a TODOS los cercanos.
+    String? categorySlug,
+    String? parentCategorySlug,
+    String? type,
+    String? search,
   }) async {
     try {
       final response = await _dio.get(
@@ -114,6 +120,12 @@ class ProvidersRepository {
           'latitude': latitude,
           'longitude': longitude,
           'radiusKm': radiusKm,
+          if (categorySlug != null && categorySlug.isNotEmpty)
+            'categorySlug': categorySlug,
+          if (parentCategorySlug != null && parentCategorySlug.isNotEmpty)
+            'parentCategorySlug': parentCategorySlug,
+          if (type != null && type.isNotEmpty) 'type': type,
+          if (search != null && search.isNotEmpty) 'search': search,
         },
       );
       final list = (response.data as List)

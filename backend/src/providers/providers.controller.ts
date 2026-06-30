@@ -107,11 +107,16 @@ export class ProvidersController {
     @Query('latitude') latitude: string,
     @Query('longitude') longitude: string,
     @Query('radiusKm') radiusKm?: string,
+    @Query('categorySlug') categorySlug?: string,
+    @Query('parentCategorySlug') parentCategorySlug?: string,
+    @Query('type') type?: string,
+    @Query('search') search?: string,
   ) {
     return this.providersService.getNearby(
       parseFloat(latitude),
       parseFloat(longitude),
       radiusKm ? parseFloat(radiusKm) : 10,
+      { categorySlug, parentCategorySlug, type, search },
     );
   }
 
