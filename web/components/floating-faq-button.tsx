@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import FaqModal from './faq-modal';
+import FaqModal from '@/components/modals/faq-modal';
 
 export default function FloatingFaqButton() {
   const [isOpen, setIsOpen] = useState(false);

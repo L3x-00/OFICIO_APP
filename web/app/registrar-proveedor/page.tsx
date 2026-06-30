@@ -13,7 +13,7 @@ import { api, type RegisterProviderPayload, type FeaturedCategory } from '@/lib/
 import { isAuthenticated, saveSession } from '@/lib/auth';
 import { signInWithGoogleIdToken } from '@/lib/firebase';
 import { PERU_DEPARTMENTS, provincesOf, districtsOf } from '@/lib/peru-locations';
-import OnboardingPlansModal from '@/components/onboarding-plans-modal';
+import OnboardingPlansModal from '@/components/modals/onboarding-plans-modal';
 
 type ProviderType = 'OFICIO' | 'NEGOCIO';
 

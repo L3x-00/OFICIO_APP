@@ -23,7 +23,7 @@ export default function ReferralBanner() {
   }, []);
 
   return (
-    <section id="referidos-banner" className="relative py-24 sm:py-32 bg-dark-surface overflow-hidden">
+    <section id="referidos-banner" className="relative py-14 sm:py-16 bg-dark-surface overflow-hidden">
       {/* Fondo con resplandor ámbar */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber/5 rounded-full blur-[120px]" />

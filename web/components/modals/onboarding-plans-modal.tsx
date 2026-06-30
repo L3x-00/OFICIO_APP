@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { PLANS, type PlanInfo, type PlanId } from '@/lib/plans';
-import YapePaymentModal from '@/components/yape-payment-modal';
+import YapePaymentModal from '@/components/modals/yape-payment-modal';
 
 interface Props {
   isOpen: boolean;

@@ -87,10 +87,6 @@ export default function SearchRadarMap({
           scrollWheelZoom={false}
           style={{ width: '100%', height: '100%', background: '#0b0e14' }}
         >
-          <TileLayer
-            url="https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-            attribution='&copy; OpenStreetMap &copy; CARTO'
-          />
           <Circle
             center={center}
             radius={radiusKm * 1000}

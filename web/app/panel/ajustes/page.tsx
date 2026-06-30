@@ -18,7 +18,7 @@ import {
   Package,
   X,
 } from 'lucide-react';
-import YapePaymentModal from '@/components/yape-payment-modal';
+import YapePaymentModal from '@/components/modals/yape-payment-modal';
 import { getUser, clearSession } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { useProfileType } from '@/lib/profile-type-context';

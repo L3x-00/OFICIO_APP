@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useCountUp } from '@/lib/hooks';
 import { useProfileType } from '@/lib/profile-type-context';
-import { UserAvatarButton } from '@/components/user-profile-modal';
+import { UserAvatarButton } from '@/components/modals/user-profile-modal';
 import type { Provider, Analytics, Review } from '@/lib/types';
 
 // ========== ANIMACIONES TIPADAS CORRECTAMENTE ==========
