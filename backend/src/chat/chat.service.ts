@@ -213,6 +213,13 @@ export class ChatService {
           type: 'CHAT_MESSAGE',
           title: notifTitle,
           message: message.content,
+          // Deep-link persistido: al tocar la notif desde el historial (tras
+          // reabrir la app) se abre el hilo correcto. Sin esto caía a la lista.
+          metadata: {
+            chatRoomId: message.chatRoomId,
+            messageId: message.id,
+            senderId: message.senderId,
+          },
         },
       })
       .catch((e) =>

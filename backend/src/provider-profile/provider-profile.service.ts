@@ -330,14 +330,26 @@ export class ProviderProfileService {
     const notifications: typeof rawNotifications = [];
     for (const n of rawNotifications) {
       if (n.type === 'CHAT_MESSAGE') {
-        if (seenChat.has(n.title)) continue;
-        seenChat.add(n.title);
+        // Agrupar por sala si la metadata la trae (más fiable que el título
+        // enmascarado); fallback al título para filas viejas sin metadata.
+        const meta = (n.metadata as { chatRoomId?: number } | null) ?? null;
+        const key =
+          meta?.chatRoomId != null ? `room:${meta.chatRoomId}` : n.title;
+        if (seenChat.has(key)) continue;
+        seenChat.add(key);
       }
       notifications.push(n);
       if (notifications.length >= 50) break;
     }
 
-    return { data: notifications, unreadCount };
+    // Expandir `metadata` al top-level para que el deep-link del cliente móvil
+    // (chatRoomId/requestId/etc.) viaje también en las notifs del historial.
+    const data = notifications.map((n) => {
+      const { metadata, ...rest } = n;
+      return { ...rest, ...((metadata as Record<string, unknown>) ?? {}) };
+    });
+
+    return { data, unreadCount };
   }
 
   async markNotificationRead(userId: number, notifId: number) {

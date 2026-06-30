@@ -536,6 +536,10 @@ model AdminNotification {
   targetProfileType String?
   targetUserId      Int?
   title             String    @default("")
+  /// Metadata de deep-link (chatRoomId, messageId, senderId, requestId, …) para
+  /// que la notif PERSISTIDA pueda abrir el destino correcto al tocarla desde el
+  /// historial — antes solo viajaba en el payload WS/push en vivo y se perdía.
+  metadata          Json?
   provider          Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId, isRead])
