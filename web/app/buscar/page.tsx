@@ -293,7 +293,6 @@ export default function BuscarPage() {
         rel="noopener noreferrer"
         className="fixed bottom-5 left-4 z-40 inline-flex items-center gap-2 bg-white text-black font-semibold rounded-full pl-4 pr-5 py-2.5 text-sm shadow-lg hover:bg-white/90 transition-colors"
       >
-        <Store size={16} /> Descargar App
       </a>
     </main>
   );

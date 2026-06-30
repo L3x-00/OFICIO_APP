@@ -15,7 +15,7 @@ import {
   LayoutDashboard,
 } from 'lucide-react';
 import { isAuthenticated, getUser, clearSession } from '@/lib/auth';
-import AboutModal from '@/components/about-modal';
+import AboutModal from '@/components/modals/about-modal';
 import ThemeToggle from '@/components/theme/theme-toggle';
 
 const navLinks = [

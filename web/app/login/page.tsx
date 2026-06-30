@@ -314,21 +314,11 @@ export default function LoginPage() {
         </button>
 
         <div className="mt-7 pt-5 border-t border-white/5 text-center">
-          <p className="text-white/40 text-[12.5px] mb-2">
-            ¿Ofreces un servicio?{' '}
-            <Link href="/registrar-proveedor" className="text-primary-light font-semibold hover:underline underline-offset-4 transition-colors">
-              Regístrate como proveedor
-            </Link>
-          </p>
           <p className="text-white/40 text-[12.5px] mb-3">
             ¿No tienes cuenta?{' '}
             <Link href="https://play.google.com/store/apps/details?id=com.oficioapp.mobile" className="text-primary-light font-semibold hover:underline underline-offset-4 transition-colors">
               Descarga la app
             </Link>
-          </p>
-          <p className="text-white/30 text-[11px] flex items-center justify-center gap-1.5">
-            <ShieldCheck size={12} className="text-accent" strokeWidth={1.75} />
-            Tus credenciales viajan cifradas. Protegemos tu privacidad.
           </p>
         </div>
       </motion.div>

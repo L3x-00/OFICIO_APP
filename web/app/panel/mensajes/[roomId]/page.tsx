@@ -8,7 +8,7 @@ import { api, type ChatMessage, type ChatRoomSummary } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { getUser } from '@/lib/auth';
 import ChatRoomsList from '@/components/chat/chat-rooms-list';
-import { UserAvatarButton } from '@/components/user-profile-modal';
+import { UserAvatarButton } from '@/components/modals/user-profile-modal';
 import { useProfileTypeOptional } from '@/lib/profile-type-context';
 
 /**

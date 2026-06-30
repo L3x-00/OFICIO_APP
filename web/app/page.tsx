@@ -1,14 +1,10 @@
 import HeroSection from '@/components/hero-section';
 import StatsSection from '@/components/stats-section';
 import BenefitsSection from '@/components/benefits-section';
-import HowItWorksSection from '@/components/how-it-works-section';
-import ProvidersShowcase from '@/components/providers-showcase';
 import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
-import CtaProviderSection from '@/components/cta-provider-section';
 // import FaqSection from '@/components/faq-section'; comvertido en modal
 import UserManual from '@/components/user-manual';
-import ImageCarousel from '@/components/image-carousel';
 
 // ── Capa de animación scroll-reveal ──────────────────────────
 // Aplicamos las animaciones desde acá envolviendo cada sección, así
@@ -40,29 +36,14 @@ export default function HomePage() {
       <RevealSection>
         <BenefitsSection />
       </RevealSection>
-
-      <RevealSection y={40}>
-        <HowItWorksSection />
-      </RevealSection>
-
-      <SectionDivider tone="accent" />
-
-      <RevealSection>
-        <ImageCarousel />
-      </RevealSection>
-
+      
       <RevealSection delay={0.05}>
-        <UserManual />
+        <TestimonialsSection />
       </RevealSection>
 
       <SectionDivider tone="amber" />
-
-      <RevealSection y={40}>
-        <ProvidersShowcase />
-      </RevealSection>
-
       <RevealSection>
-        <TestimonialsSection />
+        <UserManual />
       </RevealSection>
 
       <SectionDivider tone="primary" />
@@ -72,10 +53,6 @@ export default function HomePage() {
       </RevealSection>
       
       <SectionDivider tone="muted" />
-
-      <RevealSection y={48}>
-        <CtaProviderSection />
-      </RevealSection>
     </>
   );
 }
