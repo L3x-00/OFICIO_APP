@@ -131,12 +131,18 @@ class AppointmentsRepository {
     }
   }
 
-  /// Horario semanal configurado (mapa día → rangos).
-  Future<ApiResult<Map<String, String>>> getSchedule() async {
+  /// Horario semanal configurado (mapa día → rangos) + tope de días del plan.
+  Future<ApiResult<ScheduleConfig>> getSchedule() async {
     try {
       final res = await _dio.get('/appointments/provider/schedule');
       final raw = (res.data['schedule'] as Map?) ?? {};
-      return Success(raw.map((k, v) => MapEntry(k.toString(), v.toString())));
+      final maxDays = (res.data['maxDays'] as num?)?.toInt() ?? 7;
+      return Success(
+        ScheduleConfig(
+          schedule: raw.map((k, v) => MapEntry(k.toString(), v.toString())),
+          maxDays: maxDays,
+        ),
+      );
     } catch (e) {
       return _fail(e, 'Error al cargar el horario');
     }
@@ -157,4 +163,12 @@ class AppointmentsRepository {
   List<Appointment> _parseList(dynamic data) => (data as List? ?? [])
       .map((e) => Appointment.fromJson(e as Map<String, dynamic>))
       .toList();
+}
+
+/// Horario semanal + tope de días activos que permite el plan del proveedor
+/// (GRATIS=1, ESTÁNDAR=3, PREMIUM=7). Lo devuelve el backend en `getSchedule`.
+class ScheduleConfig {
+  final Map<String, String> schedule;
+  final int maxDays;
+  const ScheduleConfig({required this.schedule, required this.maxDays});
 }

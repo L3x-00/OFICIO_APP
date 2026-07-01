@@ -45,10 +45,10 @@ describe('CatalogService (unit)', () => {
     );
   });
 
-  it('límite de plan: GRATIS con 3 productos → 402', async () => {
+  it('límite de plan: GRATIS con 5 productos → 402', async () => {
     prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'GRATIS' });
-    prisma.catalogProduct.count.mockResolvedValue(3);
+    prisma.catalogProduct.count.mockResolvedValue(5);
     expect.assertions(1);
     try {
       await service.addProduct(5, 7, dto as any);

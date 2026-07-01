@@ -118,6 +118,42 @@ describe('AppointmentsService (unit)', () => {
     });
   });
 
+  describe('setSchedule() — tope de días por plan', () => {
+    it('ESTANDAR (tope 3): 4 días activos → 402, no persiste', async () => {
+      prisma.provider.findFirst.mockResolvedValue({ id: 7, userId: 5 });
+      prisma.subscription.findFirst.mockResolvedValue({ plan: 'ESTANDAR' });
+      expect.assertions(2);
+      try {
+        await service.setSchedule(5, {
+          lun: '8:00-12:00',
+          mar: '8:00-12:00',
+          mie: '8:00-12:00',
+          jue: '8:00-12:00', // 4º día → excede el tope de 3
+        });
+      } catch (e) {
+        expect((e as HttpException).getStatus()).toBe(
+          HttpStatus.PAYMENT_REQUIRED,
+        );
+        expect(prisma.provider.update).not.toHaveBeenCalled();
+      }
+    });
+
+    it('ESTANDAR (tope 3): 3 días activos (+ "Cerrado" no cuenta) → persiste', async () => {
+      prisma.provider.findFirst.mockResolvedValue({ id: 7, userId: 5 });
+      prisma.subscription.findFirst.mockResolvedValue({ plan: 'ESTANDAR' });
+      prisma.provider.update.mockResolvedValue({ id: 7 });
+      const res = await service.setSchedule(5, {
+        lun: '8:00-12:00',
+        mar: '8:00-12:00',
+        mie: '8:00-12:00',
+        jue: 'Cerrado', // no cuenta como día activo
+        vie: '', // vacío tampoco
+      });
+      expect(prisma.provider.update).toHaveBeenCalled();
+      expect(res.maxDays).toBe(3);
+    });
+  });
+
   describe('getSlots() — bloques de 30 min', () => {
     const allDays = (range: string) => ({
       lun: range, mar: range, mie: range, jue: range,
