@@ -21,11 +21,11 @@ import type { ReorderItem } from '../common/dto/reorder.dto.js';
 
 const FEATURE = 'carta_digital';
 const LIMIT_FREE = 5;
-const LIMIT_ESTANDAR = 20;
+const LIMIT_ESTANDAR = 6;
 
 /**
  * Carta Digital. Feature-gate "carta_digital". Límites por plan
- * (GRATIS=5, ESTANDAR=20, PREMIUM=∞). `isFeatured` (menú del día) solo PREMIUM.
+ * (GRATIS=5, ESTANDAR=6, PREMIUM=∞). `isFeatured` (menú del día) solo PREMIUM.
  */
 @Injectable()
 export class MenuService {

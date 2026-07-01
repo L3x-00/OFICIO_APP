@@ -38,6 +38,10 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
   bool _loading = true;
   bool _saving = false;
   String? _error;
+  int _maxDays = 7; // tope de días activos por plan (lo fija el backend)
+
+  /// Días con al menos un rango = días "abiertos".
+  int get _activeDays => _dayKeys.where((d) => _ranges[d]!.isNotEmpty).length;
 
   @override
   void initState() {
@@ -49,10 +53,11 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
     final res = await _repo.getSchedule();
     if (!mounted) return;
     res.when(
-      success: (schedule) {
+      success: (config) {
         for (final d in _dayKeys) {
-          _ranges[d] = _parseDay(schedule[d] ?? '');
+          _ranges[d] = _parseDay(config.schedule[d] ?? '');
         }
+        _maxDays = config.maxDays;
         setState(() => _loading = false);
       },
       failure: (e) => setState(() {
@@ -114,6 +119,18 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
   }
 
   Future<void> _addRange(String day) async {
+    // Abrir un día NUEVO cuando ya se alcanzó el tope del plan queda bloqueado.
+    if (_ranges[day]!.isEmpty && _activeDays >= _maxDays) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Tu plan permite abrir la agenda $_maxDays día(s) por semana. '
+            'Actualiza para habilitar más días.',
+          ),
+        ),
+      );
+      return;
+    }
     final start = await showTimePicker(
       context: context,
       initialTime: const TimeOfDay(hour: 9, minute: 0),
@@ -167,8 +184,39 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
             )
           : ListView(
               padding: const EdgeInsets.all(14),
-              children: _dayKeys.map(_dayCard).toList(),
+              children: [_planBanner(), ..._dayKeys.map(_dayCard)],
             ),
+    );
+  }
+
+  Widget _planBanner() {
+    final atCap = _activeDays >= _maxDays;
+    final color = atCap ? AppColors.busy : AppColors.amber;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.5),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.event_available, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Días activos: $_activeDays de $_maxDays que permite tu plan.'
+              '${atCap ? ' Actualiza tu plan para abrir más días.' : ''}',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12.5,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

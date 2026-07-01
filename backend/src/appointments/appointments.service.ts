@@ -267,17 +267,35 @@ export class AppointmentsService {
         clean[k] = v.trim();
       }
     }
+
+    // Límite de días activos por plan (GRATIS=1, ESTANDAR=3, PREMIUM=7).
+    const plan = await this.getPlan(provider.id);
+    const maxDays = this.scheduleDayLimit(plan);
+    const activeDays = Object.values(clean).filter((v) =>
+      this.isOpenDay(v),
+    ).length;
+    if (activeDays > maxDays) {
+      throw new HttpException(
+        `Tu plan permite abrir la agenda ${maxDays} día(s) por semana. Actualiza para habilitar más días.`,
+        HttpStatus.PAYMENT_REQUIRED,
+      );
+    }
+
     await this.prisma.provider.update({
       where: { id: provider.id },
       data: { appointmentSchedule: clean },
     });
-    return { schedule: clean };
+    return { schedule: clean, maxDays };
   }
 
-  /** Obtiene el horario semanal configurado. */
+  /** Obtiene el horario semanal configurado + el tope de días del plan. */
   async getSchedule(userId: number) {
     const provider = await this.resolveOwnedProvider(userId);
-    return { schedule: this.asSchedule(provider.appointmentSchedule) };
+    const plan = await this.getPlan(provider.id);
+    return {
+      schedule: this.asSchedule(provider.appointmentSchedule),
+      maxDays: this.scheduleDayLimit(plan),
+    };
   }
 
   // ── CRON: recordatorio 24h antes (idempotente vía reminderSentAt) ──
@@ -373,6 +391,19 @@ export class AppointmentsService {
     if (plan === 'PREMIUM') return Infinity;
     if (plan === 'ESTANDAR') return 20;
     return 1; // GRATIS / sin suscripción
+  }
+
+  /** Días activos por semana que el proveedor puede abrir según su plan. */
+  private scheduleDayLimit(plan: string): number {
+    if (plan === 'PREMIUM') return 7; // semana completa
+    if (plan === 'ESTANDAR') return 3;
+    return 1; // GRATIS / sin suscripción
+  }
+
+  /** Un día está "abierto" si tiene un rango horario (no vacío ni "Cerrado"). */
+  private isOpenDay(value: string): boolean {
+    const v = value.trim().toLowerCase();
+    return v !== '' && v !== 'cerrado';
   }
 
   private asSchedule(value: unknown): Record<string, string> {

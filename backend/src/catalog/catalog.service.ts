@@ -19,12 +19,12 @@ import type { UpdateCatalogProductDto } from './dto/update-catalog-product.dto.j
 import type { ReorderItem } from '../common/dto/reorder.dto.js';
 
 const FEATURE = 'catalogo';
-const LIMIT_FREE = 3;
+const LIMIT_FREE = 5;
 const LIMIT_ESTANDAR = 6;
 
 /**
  * Catálogo de Productos. Feature-gate "catalogo". Límites por plan
- * (GRATIS=3, ESTANDAR=6, PREMIUM=∞). Sin "destacado". Categoría libre.
+ * (GRATIS=5, ESTANDAR=6, PREMIUM=∞). Sin "destacado". Categoría libre.
  */
 @Injectable()
 export class CatalogService {
