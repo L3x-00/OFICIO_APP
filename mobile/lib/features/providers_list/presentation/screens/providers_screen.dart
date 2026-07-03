@@ -434,9 +434,7 @@ class _CompactLocationChip extends StatelessWidget {
             const SizedBox(width: 4),
             Flexible(
               child: Text(
-                hasFilter
-                    ? 'Mostrando en: $label'
-                    : 'Mostrando todos los servicios',
+                hasFilter ? ' $label' : 'Mostrando todos los servicios',
                 style: TextStyle(
                   color: c.textPrimary,
                   fontSize: 11.5,

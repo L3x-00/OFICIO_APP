@@ -72,6 +72,7 @@ export type AdminNotificationCountAggregateOutputType = {
   targetProfileType: number
   targetUserId: number
   title: number
+  metadata: number
   _all: number
 }
 
@@ -122,6 +123,7 @@ export type AdminNotificationCountAggregateInputType = {
   targetProfileType?: true
   targetUserId?: true
   title?: true
+  metadata?: true
   _all?: true
 }
 
@@ -221,6 +223,7 @@ export type AdminNotificationGroupByOutputType = {
   targetProfileType: string | null
   targetUserId: number | null
   title: string
+  metadata: runtime.JsonValue | null
   _count: AdminNotificationCountAggregateOutputType | null
   _avg: AdminNotificationAvgAggregateOutputType | null
   _sum: AdminNotificationSumAggregateOutputType | null
@@ -256,6 +259,7 @@ export type AdminNotificationWhereInput = {
   targetProfileType?: Prisma.StringNullableFilter<"AdminNotification"> | string | null
   targetUserId?: Prisma.IntNullableFilter<"AdminNotification"> | number | null
   title?: Prisma.StringFilter<"AdminNotification"> | string
+  metadata?: Prisma.JsonNullableFilter<"AdminNotification">
   provider?: Prisma.XOR<Prisma.ProviderNullableScalarRelationFilter, Prisma.ProviderWhereInput> | null
 }
 
@@ -269,6 +273,7 @@ export type AdminNotificationOrderByWithRelationInput = {
   targetProfileType?: Prisma.SortOrderInput | Prisma.SortOrder
   targetUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
+  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   provider?: Prisma.ProviderOrderByWithRelationInput
 }
 
@@ -285,6 +290,7 @@ export type AdminNotificationWhereUniqueInput = Prisma.AtLeast<{
   targetProfileType?: Prisma.StringNullableFilter<"AdminNotification"> | string | null
   targetUserId?: Prisma.IntNullableFilter<"AdminNotification"> | number | null
   title?: Prisma.StringFilter<"AdminNotification"> | string
+  metadata?: Prisma.JsonNullableFilter<"AdminNotification">
   provider?: Prisma.XOR<Prisma.ProviderNullableScalarRelationFilter, Prisma.ProviderWhereInput> | null
 }, "id">
 
@@ -298,6 +304,7 @@ export type AdminNotificationOrderByWithAggregationInput = {
   targetProfileType?: Prisma.SortOrderInput | Prisma.SortOrder
   targetUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
+  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AdminNotificationCountOrderByAggregateInput
   _avg?: Prisma.AdminNotificationAvgOrderByAggregateInput
   _max?: Prisma.AdminNotificationMaxOrderByAggregateInput
@@ -318,6 +325,7 @@ export type AdminNotificationScalarWhereWithAggregatesInput = {
   targetProfileType?: Prisma.StringNullableWithAggregatesFilter<"AdminNotification"> | string | null
   targetUserId?: Prisma.IntNullableWithAggregatesFilter<"AdminNotification"> | number | null
   title?: Prisma.StringWithAggregatesFilter<"AdminNotification"> | string
+  metadata?: Prisma.JsonNullableWithAggregatesFilter<"AdminNotification">
 }
 
 export type AdminNotificationCreateInput = {
@@ -328,6 +336,7 @@ export type AdminNotificationCreateInput = {
   targetProfileType?: string | null
   targetUserId?: number | null
   title?: string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   provider?: Prisma.ProviderCreateNestedOneWithoutNotificationsInput
 }
 
@@ -341,6 +350,7 @@ export type AdminNotificationUncheckedCreateInput = {
   targetProfileType?: string | null
   targetUserId?: number | null
   title?: string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUpdateInput = {
@@ -351,6 +361,7 @@ export type AdminNotificationUpdateInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   provider?: Prisma.ProviderUpdateOneWithoutNotificationsNestedInput
 }
 
@@ -364,6 +375,7 @@ export type AdminNotificationUncheckedUpdateInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationCreateManyInput = {
@@ -376,6 +388,7 @@ export type AdminNotificationCreateManyInput = {
   targetProfileType?: string | null
   targetUserId?: number | null
   title?: string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUpdateManyMutationInput = {
@@ -386,6 +399,7 @@ export type AdminNotificationUpdateManyMutationInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUncheckedUpdateManyInput = {
@@ -398,6 +412,7 @@ export type AdminNotificationUncheckedUpdateManyInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationListRelationFilter = {
@@ -420,6 +435,7 @@ export type AdminNotificationCountOrderByAggregateInput = {
   targetProfileType?: Prisma.SortOrder
   targetUserId?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  metadata?: Prisma.SortOrder
 }
 
 export type AdminNotificationAvgOrderByAggregateInput = {
@@ -508,6 +524,7 @@ export type AdminNotificationCreateWithoutProviderInput = {
   targetProfileType?: string | null
   targetUserId?: number | null
   title?: string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUncheckedCreateWithoutProviderInput = {
@@ -519,6 +536,7 @@ export type AdminNotificationUncheckedCreateWithoutProviderInput = {
   targetProfileType?: string | null
   targetUserId?: number | null
   title?: string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationCreateOrConnectWithoutProviderInput = {
@@ -560,6 +578,7 @@ export type AdminNotificationScalarWhereInput = {
   targetProfileType?: Prisma.StringNullableFilter<"AdminNotification"> | string | null
   targetUserId?: Prisma.IntNullableFilter<"AdminNotification"> | number | null
   title?: Prisma.StringFilter<"AdminNotification"> | string
+  metadata?: Prisma.JsonNullableFilter<"AdminNotification">
 }
 
 export type AdminNotificationCreateManyProviderInput = {
@@ -571,6 +590,7 @@ export type AdminNotificationCreateManyProviderInput = {
   targetProfileType?: string | null
   targetUserId?: number | null
   title?: string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUpdateWithoutProviderInput = {
@@ -581,6 +601,7 @@ export type AdminNotificationUpdateWithoutProviderInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUncheckedUpdateWithoutProviderInput = {
@@ -592,6 +613,7 @@ export type AdminNotificationUncheckedUpdateWithoutProviderInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AdminNotificationUncheckedUpdateManyWithoutProviderInput = {
@@ -603,6 +625,7 @@ export type AdminNotificationUncheckedUpdateManyWithoutProviderInput = {
   targetProfileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -617,6 +640,7 @@ export type AdminNotificationSelect<ExtArgs extends runtime.Types.Extensions.Int
   targetProfileType?: boolean
   targetUserId?: boolean
   title?: boolean
+  metadata?: boolean
   provider?: boolean | Prisma.AdminNotification$providerArgs<ExtArgs>
 }, ExtArgs["result"]["adminNotification"]>
 
@@ -630,6 +654,7 @@ export type AdminNotificationSelectCreateManyAndReturn<ExtArgs extends runtime.T
   targetProfileType?: boolean
   targetUserId?: boolean
   title?: boolean
+  metadata?: boolean
   provider?: boolean | Prisma.AdminNotification$providerArgs<ExtArgs>
 }, ExtArgs["result"]["adminNotification"]>
 
@@ -643,6 +668,7 @@ export type AdminNotificationSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   targetProfileType?: boolean
   targetUserId?: boolean
   title?: boolean
+  metadata?: boolean
   provider?: boolean | Prisma.AdminNotification$providerArgs<ExtArgs>
 }, ExtArgs["result"]["adminNotification"]>
 
@@ -656,9 +682,10 @@ export type AdminNotificationSelectScalar = {
   targetProfileType?: boolean
   targetUserId?: boolean
   title?: boolean
+  metadata?: boolean
 }
 
-export type AdminNotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "type" | "message" | "isRead" | "sentAt" | "targetProfileType" | "targetUserId" | "title", ExtArgs["result"]["adminNotification"]>
+export type AdminNotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "providerId" | "type" | "message" | "isRead" | "sentAt" | "targetProfileType" | "targetUserId" | "title" | "metadata", ExtArgs["result"]["adminNotification"]>
 export type AdminNotificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   provider?: boolean | Prisma.AdminNotification$providerArgs<ExtArgs>
 }
@@ -692,6 +719,12 @@ export type $AdminNotificationPayload<ExtArgs extends runtime.Types.Extensions.I
     targetProfileType: string | null
     targetUserId: number | null
     title: string
+    /**
+     * Metadata de deep-link (chatRoomId, messageId, senderId, requestId, …) para
+     * que la notif PERSISTIDA pueda abrir el destino correcto al tocarla desde el
+     * historial — antes solo viajaba en el payload WS/push en vivo y se perdía.
+     */
+    metadata: runtime.JsonValue | null
   }, ExtArgs["result"]["adminNotification"]>
   composites: {}
 }
@@ -1125,6 +1158,7 @@ export interface AdminNotificationFieldRefs {
   readonly targetProfileType: Prisma.FieldRef<"AdminNotification", 'String'>
   readonly targetUserId: Prisma.FieldRef<"AdminNotification", 'Int'>
   readonly title: Prisma.FieldRef<"AdminNotification", 'String'>
+  readonly metadata: Prisma.FieldRef<"AdminNotification", 'Json'>
 }
     
 

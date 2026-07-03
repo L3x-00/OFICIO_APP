@@ -886,7 +886,7 @@ class _StatsUpsellScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Disponible desde Plan Estándar · S/ 29/mes',
+                        'Disponible desde Plan Estándar · S/ 19.90 x mes',
                         style: TextStyle(
                           color: AppColors.tintOn(AppColors.amber, c.isDark),
                           fontSize: 12,
