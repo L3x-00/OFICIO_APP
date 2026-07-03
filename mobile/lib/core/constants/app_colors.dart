@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 /// tema (fondos, texto) viven en `AppThemeColors`.
 abstract class AppColors {
   // Fondos (legacy oscuro cálido — el tema real vive en AppThemeColors)
-  static const Color bgDark = Color(0xFF17120C);
-  static const Color bgCard = Color(0xFF221B13);
-  static const Color bgInput = Color(0xFF2E2519);
+  static const Color bgDark = Color(0xFF0D0B08);
+  static const Color bgCard = Color(0xFF1A160F);
+  static const Color bgInput = Color(0xFF241F15);
 
   // Primario — azul medianoche suave. #4B6BE5 da 4.6:1 con texto blanco (AA),
   // un punto más profundo que el #5B7FFF puro para que los botones no se laven.

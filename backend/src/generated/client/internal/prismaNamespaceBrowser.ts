@@ -480,7 +480,8 @@ export const AdminNotificationScalarFieldEnum = {
   sentAt: 'sentAt',
   targetProfileType: 'targetProfileType',
   targetUserId: 'targetUserId',
-  title: 'title'
+  title: 'title',
+  metadata: 'metadata'
 } as const
 
 export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]

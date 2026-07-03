@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/payments_provider.dart';
-import '../../utils/qr_download.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 // Colores Yape
 const _kPurple = Color(0xFF6D1B7B);
@@ -84,14 +84,24 @@ class _YapePaymentScreenState extends State<YapePaymentScreen> {
   }
 
   Future<void> _openYape() async {
-    final uri = Uri.parse('yape://open');
+    // Usamos el enlace de Play Store.
+    // Si Yape está instalada, Android la abrirá directamente.
+    // Si no está instalada, se abrirá la Play Store para que la descargue.
+    final uri = Uri.parse(
+      'https://play.google.com/store/apps/details?id=com.bcp.innovacxion.yapeapp',
+    );
+
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      // Forzamos el uso de la app nativa si existe, en lugar del navegador
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
+      // Fallback por si el dispositivo no tiene forma de abrir URLs
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Yape no está instalado. Escanea el QR manualmente.'),
+          content: Text(
+            'No se pudo abrir Yape. Usa el botón de abajo para ir a la Play Store.',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
@@ -837,12 +847,6 @@ class _YapeLabel extends StatelessWidget {
 }
 
 // ── Link de descarga del QR ──────────────────────────────────
-//
-// Botón discreto (estilo link-text con icono pequeño) que vive dentro
-// del card del QR. La acción delega en [YapeQrDownloader.share] —
-// abre la hoja del sistema con la imagen ya cargada del bundle. Sin
-// efectos en el resto del flujo: el user puede ignorarlo y pagar como
-// antes.
 class _DownloadQrLink extends StatefulWidget {
   @override
   State<_DownloadQrLink> createState() => _DownloadQrLinkState();
@@ -854,15 +858,50 @@ class _DownloadQrLinkState extends State<_DownloadQrLink> {
   Future<void> _onTap() async {
     if (_busy) return;
     setState(() => _busy = true);
-    final ok = await YapeQrDownloader.share();
-    if (!mounted) return;
-    setState(() => _busy = false);
-    if (!ok) {
+
+    try {
+      // 1. Cargar la imagen desde los assets como bytes
+      final ByteData bytes = await rootBundle.load(
+        'assets/images/yape/qr.jpeg',
+      );
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      // 2. Guardar directamente en la galería/descargas del dispositivo
+      final result = await ImageGallerySaver.saveImage(
+        list,
+        quality: 100,
+        name: "QR_Yape_Servi", // Nombre del archivo que aparecerá en la galería
+      );
+
+      if (!mounted) return;
+
+      if (result['isSuccess'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ QR guardado en tu galería.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo guardar el QR.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo preparar el QR. Volvé a intentarlo.'),
+        SnackBar(
+          content: Text('Error al guardar: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -884,7 +923,7 @@ class _DownloadQrLinkState extends State<_DownloadQrLink> {
               child: CircularProgressIndicator(strokeWidth: 1.6, color: _kCyan),
             )
           : const Icon(Icons.download_rounded, size: 14),
-      label: Text(_busy ? 'Preparando…' : 'Descargar QR'),
+      label: Text(_busy ? 'Guardando…' : 'Descargar QR'),
     );
   }
 }

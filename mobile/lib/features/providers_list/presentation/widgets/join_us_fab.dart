@@ -107,7 +107,10 @@ class _JoinUsFABState extends State<JoinUsFAB>
         label: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.amberDark, AppColors.amberDeep],
+              colors: [
+                Color.fromARGB(255, 250, 212, 24),
+                Color.fromARGB(255, 230, 79, 19),
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
