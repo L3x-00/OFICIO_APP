@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 
-/// Badge "Verificado" — check azul para proveedores con verificación
+/// Badge "Verificado" â€” check azul para proveedores con verificaciÃ³n
 /// aprobada.
 class VerifiedBadge extends StatelessWidget {
   const VerifiedBadge({super.key});
@@ -24,17 +25,17 @@ class VerifiedBadge extends StatelessWidget {
           ),
         ],
       ),
-      // Glifo OSCURO cálido sobre el fill suave (no blanco): el azul polvoriento
+      // Glifo OSCURO cÃ¡lido sobre el fill suave (no blanco): el azul polvoriento
       // es demasiado claro para texto blanco (fallaba AA). #2A2418 da ~5.4:1.
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.verified_rounded, color: Color(0xFF2A2418), size: 12),
+          Icon(Icons.verified_rounded, color: AppColors.amberDeep, size: 12),
           SizedBox(width: 3),
           Text(
             'Verificado',
             style: TextStyle(
-              color: Color(0xFF2A2418),
+              color: AppColors.amberDeep,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -45,8 +46,8 @@ class VerifiedBadge extends StatelessWidget {
   }
 }
 
-/// Badge "Atiende a domicilio" — visible en tarjetas OFICIO cuyo perfil
-/// activó el toggle de servicio a domicilio. Aparece junto al resto de
+/// Badge "Atiende a domicilio" â€” visible en tarjetas OFICIO cuyo perfil
+/// activÃ³ el toggle de servicio a domicilio. Aparece junto al resto de
 /// badges sobre la foto de portada.
 class HomeServiceBadge extends StatelessWidget {
   const HomeServiceBadge({super.key});
@@ -68,20 +69,20 @@ class HomeServiceBadge extends StatelessWidget {
         ],
       ),
       // Glifo OSCURO sobre el dorado (blanco-sobre-amber daba ~2.3:1, ilegible).
-      // #2A2418 sobre #C4A35A ≈ 6:1, pasa AA holgado.
+      // #2A2418 sobre #C4A35A â‰ˆ 6:1, pasa AA holgado.
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.directions_run_rounded,
-            color: Color(0xFF2A2418),
+            color: AppColors.amberDeep,
             size: 12,
           ),
           SizedBox(width: 3),
           Text(
             'A domicilio',
             style: TextStyle(
-              color: Color(0xFF2A2418),
+              color: AppColors.amberDeep,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -92,7 +93,7 @@ class HomeServiceBadge extends StatelessWidget {
   }
 }
 
-/// Badge "Confiable" — escudo verde para proveedores con validación de
+/// Badge "Confiable" â€” escudo verde para proveedores con validaciÃ³n de
 /// confianza aprobada.
 class TrustedBadge extends StatelessWidget {
   const TrustedBadge({super.key});
@@ -116,16 +117,16 @@ class TrustedBadge extends StatelessWidget {
         ],
       ),
       // Glifo OSCURO sobre la salvia (blanco daba ~3.0:1, falla a 10px).
-      // #2A2418 sobre #5B9A6B ≈ 4.6:1.
+      // #2A2418 sobre #5B9A6B â‰ˆ 4.6:1.
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.shield_rounded, color: Color(0xFF2A2418), size: 12),
+          Icon(Icons.shield_rounded, color: AppColors.amberDeep, size: 12),
           SizedBox(width: 3),
           Text(
             'Confiable',
             style: TextStyle(
-              color: Color(0xFF2A2418),
+              color: AppColors.amberDeep,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -136,7 +137,7 @@ class TrustedBadge extends StatelessWidget {
   }
 }
 
-/// Badge de distancia — muestra metros (<1 km) o kilómetros sobre la foto
+/// Badge de distancia â€” muestra metros (<1 km) o kilÃ³metros sobre la foto
 /// de portada.
 class DistanceBadge extends StatelessWidget {
   final double km;
@@ -176,11 +177,11 @@ class DistanceBadge extends StatelessWidget {
   }
 }
 
-/// Badge de plan de suscripción (Premium / Estándar). Usar los factory
+/// Badge de plan de suscripciÃ³n (Premium / EstÃ¡ndar). Usar los factory
 /// constructors [PlanBadge.premium] y [PlanBadge.standard].
 ///
 /// Visualmente solo muestra el icono (corona dorada / estrella) sobre un
-/// fondo circular sutil. El texto Premium/Estándar se muestra en el modal
+/// fondo circular sutil. El texto Premium/EstÃ¡ndar se muestra en el modal
 /// de detalle. [label]/[textColor]/[hasGlow] se conservan por compatibilidad
 /// de API.
 class PlanBadge extends StatelessWidget {
@@ -208,7 +209,7 @@ class PlanBadge extends StatelessWidget {
   );
 
   factory PlanBadge.standard() => const PlanBadge(
-    label: 'Estándar',
+    label: 'EstÃ¡ndar',
     icon: Icons.star_rounded,
     color: AppColors.standard,
     textColor: Colors.white,
@@ -227,7 +228,11 @@ class PlanBadge extends StatelessWidget {
             ? [BoxShadow(color: color.withValues(alpha: 0.18), blurRadius: 4)]
             : null,
       ),
-      child: Icon(icon, color: color, size: 16),
+      child: Icon(
+        icon,
+        color: AppColors.tintOn(color, context.colors.isDark),
+        size: 16,
+      ),
     );
   }
 }

@@ -74,7 +74,7 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.busy,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onSolid(AppColors.busy),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -184,9 +184,12 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
                               color: AppColors.amber.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.bolt_rounded,
-                              color: AppColors.amber,
+                              color: AppColors.tintOn(
+                                AppColors.amber,
+                                c.isDark,
+                              ),
                               size: 20,
                             ),
                           ),
@@ -238,6 +241,29 @@ class _OportunidadesTabState extends State<OportunidadesTab> {
                 const SliverFillRemaining(
                   child: Center(
                     child: CircularProgressIndicator(color: AppColors.amber),
+                  ),
+                )
+              // Error real ≠ "sin oportunidades": mostrar aviso + reintentar.
+              else if (prov.state == SubastasState.error &&
+                  prov.opportunities.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          prov.error ??
+                              'No se pudieron cargar las oportunidades',
+                          style: TextStyle(color: c.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () => prov.loadOpportunities(),
+                          child: const Text('Reintentar'),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               else if (prov.opportunities.isEmpty)
@@ -353,8 +379,8 @@ class _OpportunityCard extends StatelessWidget {
                     ),
                     child: Text(
                       opp.categoryName,
-                      style: const TextStyle(
-                        color: AppColors.amber,
+                      style: TextStyle(
+                        color: AppColors.tintOn(AppColors.amber, c.isDark),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -395,9 +421,9 @@ class _OpportunityCard extends StatelessWidget {
                         color: AppColors.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.handyman_rounded,
-                        color: AppColors.amber,
+                        color: AppColors.tintOn(AppColors.amber, c.isDark),
                         size: 30,
                       ),
                     ),
@@ -433,7 +459,7 @@ class _OpportunityCard extends StatelessWidget {
                               _MetaChip(
                                 icon: Icons.location_city_rounded,
                                 label: opp.district!,
-                                color: AppColors.textMuted,
+                                color: c.textMuted,
                               ),
                             if (opp.budgetMin != null || opp.budgetMax != null)
                               _MetaChip(
@@ -654,7 +680,7 @@ class _OpportunityCard extends StatelessWidget {
             context,
             'Bloqueado',
             AppColors.busy.withValues(alpha: 0.15),
-            AppColors.busy,
+            AppColors.tintOn(AppColors.busy, c.isDark),
           )
         else if (!canParticipate)
           _pill(context, 'Sube tu rating', c.border, c.textMuted)
@@ -665,7 +691,7 @@ class _OpportunityCard extends StatelessWidget {
             label: const Text('Postular'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.amber,
-              foregroundColor: Colors.black,
+              foregroundColor: AppColors.onSolid(AppColors.amber),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -743,7 +769,7 @@ class _CountdownBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
-    final color = urgent ? AppColors.busy : AppColors.textMuted;
+    final color = urgent ? AppColors.busy : context.colors.textMuted;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -25,8 +25,7 @@ class VerificationSection extends StatelessWidget {
           onTap: () => onChanged(!verifiedOnly),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: verifiedOnly
                   ? AppColors.verified.withValues(alpha: 0.08)
@@ -44,7 +43,7 @@ class VerificationSection extends StatelessWidget {
                 Icon(
                   Icons.verified_rounded,
                   color: verifiedOnly
-                      ? AppColors.verified
+                      ? AppColors.tintOn(AppColors.verified, c.isDark)
                       : c.textMuted,
                   size: 20,
                 ),
@@ -63,8 +62,7 @@ class VerificationSection extends StatelessWidget {
                       ),
                       Text(
                         'Con el check azul de confianza',
-                        style: TextStyle(
-                            color: c.textMuted, fontSize: 11),
+                        style: TextStyle(color: c.textMuted, fontSize: 11),
                       ),
                     ],
                   ),

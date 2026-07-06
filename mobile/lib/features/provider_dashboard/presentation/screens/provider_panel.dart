@@ -33,31 +33,21 @@ class ProviderPanel extends StatefulWidget {
 class _ProviderPanelState extends State<ProviderPanel> {
   late int _currentIndex = widget.initialTabIndex;
 
-  // Historial de pestañas para que el back del sistema navegue DENTRO del
-  // panel (regresa a la tab previa / Inicio) en vez de salir del panel (UX #4.1).
-  final List<int> _tabHistory = [];
-
   // Shared mutable state — paused flag visible to all tabs
   bool _isPaused = false;
 
   void _togglePause(bool paused) => setState(() => _isPaused = paused);
 
-  /// Cambia de pestaña recordando la actual en el historial — así el back
-  /// regresa a la pestaña anterior sin abandonar el panel.
   void _changeTab(int i) {
     if (i == _currentIndex) return;
-    setState(() {
-      _tabHistory.add(_currentIndex);
-      _currentIndex = i;
-    });
+    setState(() => _currentIndex = i);
   }
 
-  /// Maneja el back del sistema: si hay historial de tabs, regresa a la
-  /// anterior; si no pero no estamos en Inicio, va a Inicio; en Inicio sí sale.
+  /// Back del sistema: desde CUALQUIER tab salta directo a Inicio (sin
+  /// deshacer tab por tab — antes el historial hacía tedioso salir del
+  /// panel); desde Inicio sí sale a la pantalla principal.
   void _handleBack() {
-    if (_tabHistory.isNotEmpty) {
-      setState(() => _currentIndex = _tabHistory.removeLast());
-    } else if (_currentIndex != 0) {
+    if (_currentIndex != 0) {
       setState(() => _currentIndex = 0);
     }
   }
@@ -89,9 +79,9 @@ class _ProviderPanelState extends State<ProviderPanel> {
 
     return AdminShowcaseWrapper(
       child: PopScope(
-        // Solo permitimos salir del panel desde Inicio sin historial; en
-        // cualquier otra tab, el back navega dentro del panel (UX #4.1).
-        canPop: _currentIndex == 0 && _tabHistory.isEmpty,
+        // Solo se sale del panel desde Inicio; en cualquier otra tab el back
+        // salta a Inicio primero (un solo paso, sin historial).
+        canPop: _currentIndex == 0,
         onPopInvokedWithResult: (didPop, _) {
           if (didPop) return;
           _handleBack();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/quotation_model.dart';
 
 /// Chip de estado de una cotización con su color.
@@ -8,7 +9,7 @@ class QuotationStatusChip extends StatelessWidget {
 
   final String status;
 
-  Color get _color {
+  Color _color(BuildContext context) {
     switch (status) {
       case kQuotRespondida:
         return AppColors.available;
@@ -17,13 +18,13 @@ class QuotationStatusChip extends StatelessWidget {
       case kQuotRechazada:
         return AppColors.busy;
       default:
-        return AppColors.textMuted;
+        return context.colors.textMuted;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = _color;
+    final c = _color(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(
@@ -33,7 +34,11 @@ class QuotationStatusChip extends StatelessWidget {
       ),
       child: Text(
         quotationStatusLabel(status),
-        style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: AppColors.tintOn(c, context.colors.isDark),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

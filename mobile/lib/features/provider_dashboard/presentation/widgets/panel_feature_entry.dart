@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 /// Entrada del panel del proveedor para gestionar una funcionalidad por
 /// categoría (carta, catálogo, agenda, cotización). Reutilizable.
@@ -19,6 +20,7 @@ class PanelFeatureEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: InkWell(
@@ -40,7 +42,11 @@ class PanelFeatureEntry extends StatelessWidget {
                   color: AppColors.amber.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: AppColors.amberDark, size: 20),
+                child: Icon(
+                  icon,
+                  color: AppColors.tintOn(AppColors.amberDark, c.isDark),
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -49,8 +55,8 @@ class PanelFeatureEntry extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: c.textPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 14.5,
                       ),
@@ -58,15 +64,12 @@ class PanelFeatureEntry extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: c.textSecondary, fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textMuted),
+              Icon(Icons.chevron_right, color: c.textMuted),
             ],
           ),
         ),

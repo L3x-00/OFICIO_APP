@@ -36,7 +36,9 @@ class UpsellContactSheet extends StatelessWidget {
         top: false,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            22, 14, 22,
+            22,
+            14,
+            22,
             MediaQuery.of(context).padding.bottom + 18,
           ),
           child: Column(
@@ -46,7 +48,8 @@ class UpsellContactSheet extends StatelessWidget {
               // Handle
               Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: c.textMuted.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
@@ -59,13 +62,21 @@ class UpsellContactSheet extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 56, height: 56,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
                       color: AppColors.amber.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.amber.withValues(alpha: 0.35), width: 1.5),
+                      border: Border.all(
+                        color: AppColors.amber.withValues(alpha: 0.35),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const Icon(Icons.lock_open_rounded, color: AppColors.amber, size: 28),
+                    child: Icon(
+                      Icons.lock_open_rounded,
+                      color: AppColors.tintOn(AppColors.amber, c.isDark),
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -84,7 +95,11 @@ class UpsellContactSheet extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Tus clientes pueden alcanzarte por $channel sin pasar por el chat.',
-                          style: TextStyle(color: c.textSecondary, fontSize: 12.5, height: 1.4),
+                          style: TextStyle(
+                            color: c.textSecondary,
+                            fontSize: 12.5,
+                            height: 1.4,
+                          ),
                         ),
                       ],
                     ),
@@ -94,10 +109,30 @@ class UpsellContactSheet extends StatelessWidget {
               const SizedBox(height: 22),
 
               // Lista de beneficios
-              _Benefit(svgAsset: 'assets/icons/whatsapp.svg', color: AppColors.whatsapp, text: 'Botón de WhatsApp activo en tu tarjeta', c: c),
-              _Benefit(icon: Icons.call_rounded,        color: AppColors.call,     text: 'Botón de llamada directa a tu número',   c: c),
-              _Benefit(icon: Icons.trending_up_rounded, color: AppColors.amber,    text: 'Apareces antes en los resultados',        c: c),
-              _Benefit(icon: Icons.verified_rounded,    color: AppColors.verified, text: 'Insignia de plan visible al cliente',     c: c),
+              _Benefit(
+                svgAsset: 'assets/icons/whatsapp.svg',
+                color: AppColors.whatsapp,
+                text: 'Botón de WhatsApp activo en tu tarjeta',
+                c: c,
+              ),
+              _Benefit(
+                icon: Icons.call_rounded,
+                color: AppColors.call,
+                text: 'Botón de llamada directa a tu número',
+                c: c,
+              ),
+              _Benefit(
+                icon: Icons.trending_up_rounded,
+                color: AppColors.amber,
+                text: 'Apareces antes en los resultados',
+                c: c,
+              ),
+              _Benefit(
+                icon: Icons.verified_rounded,
+                color: AppColors.verified,
+                text: 'Insignia de plan visible al cliente',
+                c: c,
+              ),
 
               const SizedBox(height: 24),
 
@@ -164,7 +199,8 @@ class _Benefit extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 32, height: 32,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
@@ -172,14 +208,22 @@ class _Benefit extends StatelessWidget {
             child: Center(
               child: svgAsset != null
                   ? SvgPicture.asset(svgAsset!, width: 16, height: 16)
-                  : Icon(icon, color: color, size: 16),
+                  : Icon(
+                      icon,
+                      color: AppColors.tintOn(color, c.isDark),
+                      size: 16,
+                    ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: c.textPrimary, fontSize: 13.5, height: 1.35),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 13.5,
+                height: 1.35,
+              ),
             ),
           ),
         ],

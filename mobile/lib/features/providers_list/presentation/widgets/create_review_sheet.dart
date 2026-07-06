@@ -44,11 +44,11 @@ class CreateReviewSheet extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreateReviewSheet(
-        providerId:            providerId,
-        providerName:          providerName,
-        userId:                userId,
-        existingReview:        existingReview,
-        initiallyRecommended:  initiallyRecommended,
+        providerId: providerId,
+        providerName: providerName,
+        userId: userId,
+        existingReview: existingReview,
+        initiallyRecommended: initiallyRecommended,
       ),
     );
   }
@@ -58,14 +58,14 @@ class CreateReviewSheet extends StatefulWidget {
 }
 
 class _CreateReviewSheetState extends State<CreateReviewSheet> {
-  final _repo              = ReviewsRepository();
+  final _repo = ReviewsRepository();
   final _commentController = TextEditingController();
 
-  int      _rating           = 0;
-  File?    _selectedImage;       // nueva foto elegida (local)
-  bool     _keepExistingPhoto = true; // solo aplica en edit mode
-  bool     _isLoading        = false;
-  String?  _errorMessage;
+  int _rating = 0;
+  File? _selectedImage; // nueva foto elegida (local)
+  bool _keepExistingPhoto = true; // solo aplica en edit mode
+  bool _isLoading = false;
+  String? _errorMessage;
 
   // Recomendación (solo edit mode)
   late bool _isRecommended;
@@ -105,13 +105,16 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
     }
     if (!context.mounted) return;
     final picked = await ImagePicker().pickImage(
-      source: source, maxWidth: 1200, maxHeight: 1200, imageQuality: 80,
+      source: source,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 80,
     );
     if (picked != null && mounted) {
       setState(() {
-        _selectedImage     = File(picked.path);
+        _selectedImage = File(picked.path);
         _keepExistingPhoto = false;
-        _errorMessage      = null;
+        _errorMessage = null;
       });
     }
   }
@@ -149,7 +152,10 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
   /// update según el modo y gestiona el error "ya existe" como éxito
   /// silencioso (cierra con `true`).
   Future<void> _performSubmit() async {
-    setState(() { _isLoading = true; _errorMessage = null; });
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
       // Determinar URL de foto final.
       String photoUrl;
@@ -165,10 +171,10 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
         // ── EDITAR ─────────────────────────────────────────
         await _repo.updateReview(
           reviewId: widget.existingReview!.id,
-          userId:   widget.userId,
-          rating:   _rating,
+          userId: widget.userId,
+          rating: _rating,
           photoUrl: photoUrl,
-          comment:  _commentController.text.trim().isNotEmpty
+          comment: _commentController.text.trim().isNotEmpty
               ? _commentController.text.trim()
               : null,
         );
@@ -176,10 +182,10 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
         // ── CREAR ──────────────────────────────────────────
         await _repo.createReview(
           providerId: widget.providerId,
-          userId:     widget.userId,
-          rating:     _rating,
-          photoUrl:   photoUrl,
-          comment:    _commentController.text.trim().isNotEmpty
+          userId: widget.userId,
+          rating: _rating,
+          photoUrl: photoUrl,
+          comment: _commentController.text.trim().isNotEmpty
               ? _commentController.text.trim()
               : null,
         );
@@ -229,7 +235,7 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final c           = context.colors;
+    final c = context.colors;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -247,7 +253,8 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
             // Handle
             Center(
               child: Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
                   color: c.textMuted.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
@@ -261,7 +268,11 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
               _isEditMode
                   ? 'Editar tu reseña'
                   : 'Reseñar a ${widget.providerName}',
-              style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -273,8 +284,14 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
             const SizedBox(height: 24),
 
             // ── Calificación ───────────────────────────────
-            Text('Calificación *',
-                style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(
+              'Calificación *',
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 10),
             RatingBar.builder(
               initialRating: _rating.toDouble(),
@@ -282,36 +299,54 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
               allowHalfRating: false,
               itemCount: 5,
               itemSize: 40,
-              itemBuilder: (_, _) => const Icon(Icons.star_rounded, color: AppColors.star),
+              itemBuilder: (_, _) =>
+                  const Icon(Icons.star_rounded, color: AppColors.star),
               onRatingUpdate: (r) => setState(() => _rating = r.toInt()),
             ),
             const SizedBox(height: 20),
 
             // ── Foto ──────────────────────────────────────
-            Text('Foto de evidencia *',
-                style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(
+              'Foto de evidencia *',
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('Sube una foto del trabajo realizado o del local',
-                style: TextStyle(color: c.textMuted, fontSize: 12)),
+            Text(
+              'Sube una foto del trabajo realizado o del local',
+              style: TextStyle(color: c.textMuted, fontSize: 12),
+            ),
             const SizedBox(height: 10),
             PhotoEvidencePicker(
-              selectedImage:      _selectedImage,
-              existingPhotoUrl:   _isEditMode ? widget.existingReview!.photoUrl : null,
-              isEditMode:         _isEditMode,
-              keepExistingPhoto:  _keepExistingPhoto,
-              onPickImage:        _pickImage,
-              onRemovePhoto:      () => setState(() {
-                _selectedImage     = null;
-                _keepExistingPhoto = _isEditMode; // en edit, vuelve a la original
+              selectedImage: _selectedImage,
+              existingPhotoUrl: _isEditMode
+                  ? widget.existingReview!.photoUrl
+                  : null,
+              isEditMode: _isEditMode,
+              keepExistingPhoto: _keepExistingPhoto,
+              onPickImage: _pickImage,
+              onRemovePhoto: () => setState(() {
+                _selectedImage = null;
+                _keepExistingPhoto =
+                    _isEditMode; // en edit, vuelve a la original
               }),
               onShowSourcePicker: _onShowSourcePicker,
-              colors:             c,
+              colors: c,
             ),
             const SizedBox(height: 20),
 
             // ── Comentario ────────────────────────────────
-            Text('Comentario (opcional)',
-                style: TextStyle(color: c.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(
+              'Comentario (opcional)',
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _commentController,
@@ -346,15 +381,27 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
                 decoration: BoxDecoration(
                   color: AppColors.busy.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.busy.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.busy.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: AppColors.busy, size: 18),
+                    Icon(
+                      Icons.error_outline,
+                      color: AppColors.tintOn(AppColors.busy, c.isDark),
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                        child: Text(_errorMessage!,
-                            style: const TextStyle(color: AppColors.busy, fontSize: 13))),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: AppColors.tintOn(AppColors.busy, c.isDark),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -364,7 +411,10 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
               width: double.infinity,
               child: _isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary))
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
                   : ElevatedButton(
                       onPressed: _submitReview,
                       style: ElevatedButton.styleFrom(
@@ -372,12 +422,15 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       child: Text(
                         _isEditMode ? 'Guardar cambios' : 'Publicar Reseña',
                         style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
             ),
@@ -429,7 +482,9 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
                     style: TextStyle(
                       color: _isRecommended ? c.textPrimary : c.textSecondary,
                       fontSize: 14,
-                      fontWeight: _isRecommended ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: _isRecommended
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                   Text(
@@ -444,10 +499,18 @@ class _CreateReviewSheetState extends State<CreateReviewSheet> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: _isRecommended
-                  ? const Icon(Icons.check_circle_rounded,
-                      color: AppColors.primary, size: 20, key: ValueKey(true))
-                  : Icon(Icons.radio_button_unchecked,
-                      color: c.textMuted, size: 20, key: ValueKey(false)),
+                  ? const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                      key: ValueKey(true),
+                    )
+                  : Icon(
+                      Icons.radio_button_unchecked,
+                      color: c.textMuted,
+                      size: 20,
+                      key: ValueKey(false),
+                    ),
             ),
           ],
         ),

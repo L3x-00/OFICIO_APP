@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../domain/models/menu_item_model.dart';
 
@@ -29,6 +30,7 @@ class MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final agotado = !item.isAvailable;
     final canOrder = !agotado && onAdd != null;
 
@@ -38,9 +40,9 @@ class MenuItemCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,8 +75,8 @@ class MenuItemCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.name,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: c.textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 14.5,
                           ),
@@ -90,10 +92,10 @@ class MenuItemCard extends StatelessWidget {
                             color: AppColors.busy.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(99),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Agotado',
                             style: TextStyle(
-                              color: AppColors.busy,
+                              color: AppColors.tintOn(AppColors.busy, c.isDark),
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                             ),
@@ -108,8 +110,8 @@ class MenuItemCard extends StatelessWidget {
                       item.description!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: c.textSecondary,
                         fontSize: 12.5,
                         height: 1.3,
                       ),
@@ -121,8 +123,8 @@ class MenuItemCard extends StatelessWidget {
                       if (item.hasOffer) ...[
                         Text(
                           _money(item.price),
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
+                          style: TextStyle(
+                            color: c.textMuted,
                             fontSize: 12,
                             decoration: TextDecoration.lineThrough,
                           ),
@@ -140,7 +142,7 @@ class MenuItemCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      if (canOrder) _cartControl(),
+                      if (canOrder) _cartControl(c),
                     ],
                   ),
                 ],
@@ -152,7 +154,8 @@ class MenuItemCard extends StatelessWidget {
     );
   }
 
-  Widget _cartControl() {
+  Widget _cartControl(AppThemeColors c) {
+    final onWhatsappTint = AppColors.tintOn(AppColors.whatsapp, c.isDark);
     if (quantity <= 0) {
       return InkWell(
         onTap: onAdd,
@@ -163,15 +166,15 @@ class MenuItemCard extends StatelessWidget {
             color: AppColors.whatsapp.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(99),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.add, size: 15, color: AppColors.whatsapp),
-              SizedBox(width: 4),
+              Icon(Icons.add, size: 15, color: onWhatsappTint),
+              const SizedBox(width: 4),
               Text(
                 'Agregar',
                 style: TextStyle(
-                  color: AppColors.whatsapp,
+                  color: onWhatsappTint,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -189,8 +192,8 @@ class MenuItemCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             '$quantity',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: c.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 15,
             ),
@@ -209,6 +212,7 @@ class _StepBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(99),
@@ -218,7 +222,11 @@ class _StepBtn extends StatelessWidget {
           color: AppColors.whatsapp.withValues(alpha: 0.15),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 16, color: AppColors.whatsapp),
+        child: Icon(
+          icon,
+          size: 16,
+          color: AppColors.tintOn(AppColors.whatsapp, c.isDark),
+        ),
       ),
     );
   }

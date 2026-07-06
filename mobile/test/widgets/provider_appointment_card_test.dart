@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/features/agenda/domain/models/appointment_model.dart';
 import 'package:mobile/features/agenda/presentation/widgets/provider_appointment_card.dart';
 
@@ -16,7 +17,10 @@ void main() {
     'user': {'firstName': 'Juan', 'lastName': 'Pérez'},
   });
 
-  Widget host(Widget c) => MaterialApp(home: Scaffold(body: c));
+  Widget host(Widget c) => MaterialApp(
+    theme: AppThemeColors.buildDark(),
+    home: Scaffold(body: c),
+  );
 
   testWidgets('pendiente: muestra Confirmar y Rechazar', (tester) async {
     await tester.pumpWidget(

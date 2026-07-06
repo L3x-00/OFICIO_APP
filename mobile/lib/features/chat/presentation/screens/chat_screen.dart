@@ -409,9 +409,13 @@ class _MessageBubble extends StatelessWidget {
         ? AppColors.busy.withValues(alpha: 0.08)
         : (mine ? AppColors.primary : c.bgCard);
     // Texto propio blanco sobre el fill sólido primary; ajeno textPrimary.
-    final fg = mine ? Colors.white : c.textPrimary;
+    // Fallida: el fondo es tinte claro de busy → blanco sería ilegible en claro.
+    final failedFg = AppColors.tintOn(AppColors.busy, c.isDark);
+    final fg = failed ? failedFg : (mine ? Colors.white : c.textPrimary);
     // Hora: sobre primary usamos blanco translúcido; ajeno textMuted.
-    final timeColor = mine ? Colors.white.withValues(alpha: 0.85) : c.textMuted;
+    final timeColor = failed
+        ? failedFg.withValues(alpha: 0.85)
+        : (mine ? Colors.white.withValues(alpha: 0.85) : c.textMuted);
 
     final bubble = Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),

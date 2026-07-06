@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/errors/failures.dart';
 import '../../data/appointments_repository.dart';
 
@@ -142,17 +143,28 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
       initialTime: TimeOfDay(hour: (start.hour + 1) % 24, minute: start.minute),
       helpText: 'Hora de fin',
     );
-    if (end == null) return;
+    if (end == null || !mounted) return;
+    final startMin = start.hour * 60 + start.minute;
+    final endMin = end.hour * 60 + end.minute;
+    if (endMin <= startMin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La hora de fin debe ser posterior a la de inicio'),
+        ),
+      );
+      return;
+    }
     setState(() => _ranges[day]!.add(_TimeRange(start, end)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: const Text('Horario de atención'),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
         actions: [
           if (!_loading)
             TextButton(
@@ -177,19 +189,19 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _error != null
           ? Center(
-              child: Text(
-                _error!,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
+              child: Text(_error!, style: TextStyle(color: c.textSecondary)),
             )
           : ListView(
               padding: const EdgeInsets.all(14),
-              children: [_planBanner(), ..._dayKeys.map(_dayCard)],
+              children: [
+                _planBanner(c),
+                ..._dayKeys.map((d) => _dayCard(d, c)),
+              ],
             ),
     );
   }
 
-  Widget _planBanner() {
+  Widget _planBanner(AppThemeColors c) {
     final atCap = _activeDays >= _maxDays;
     final color = atCap ? AppColors.busy : AppColors.amber;
     return Container(
@@ -202,14 +214,18 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.event_available, size: 18, color: color),
+          Icon(
+            Icons.event_available,
+            size: 18,
+            color: AppColors.tintOn(color, c.isDark),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Días activos: $_activeDays de $_maxDays que permite tu plan.'
               '${atCap ? ' Actualiza tu plan para abrir más días.' : ''}',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: c.textSecondary,
                 fontSize: 12.5,
                 height: 1.3,
               ),
@@ -220,13 +236,13 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
     );
   }
 
-  Widget _dayCard(String day) {
+  Widget _dayCard(String day, AppThemeColors c) {
     final ranges = _ranges[day]!;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -236,8 +252,8 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
             children: [
               Text(
                 _dayLabels[day]!,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: c.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -254,11 +270,11 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
             ],
           ),
           if (ranges.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
                 'Cerrado',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                style: TextStyle(color: c.textMuted, fontSize: 13),
               ),
             )
           else
@@ -267,15 +283,11 @@ class _ScheduleEditorScreenState extends State<ScheduleEditorScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.schedule,
-                      size: 15,
-                      color: AppColors.textMuted,
-                    ),
+                    Icon(Icons.schedule, size: 15, color: c.textMuted),
                     const SizedBox(width: 8),
                     Text(
                       '${_fmt(e.value.start)} - ${_fmt(e.value.end)}',
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: c.textSecondary),
                     ),
                     const Spacer(),
                     IconButton(

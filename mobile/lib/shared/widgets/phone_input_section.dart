@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_theme_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 // Países comunes para Latinoamérica / España
 const _kCountries = [
   ('+58', 'Venezuela 🇻🇪'),
@@ -11,7 +12,7 @@ const _kCountries = [
   ('+54', 'Argentina 🇦🇷'),
   ('+56', 'Chile 🇨🇱'),
   ('+34', 'España 🇪🇸'),
-  ('+1',  'EE.UU. / Canadá 🇺🇸'),
+  ('+1', 'EE.UU. / Canadá 🇺🇸'),
   ('+55', 'Brasil 🇧🇷'),
   ('+593', 'Ecuador 🇪🇨'),
   ('+591', 'Bolivia 🇧🇴'),
@@ -52,20 +53,20 @@ class PhoneInputSection extends StatefulWidget {
 
 class _PhoneInputSectionState extends State<PhoneInputSection> {
   // ── TELÉFONO ─────────────────────────────────────────────
-  bool   _phoneForeign = false;
-  String _phoneCode    = '+58';
+  bool _phoneForeign = false;
+  String _phoneCode = '+58';
   late TextEditingController _phoneCtrl;
 
   // ── WHATSAPP ─────────────────────────────────────────────
-  bool   _sameNumber    = true;
-  bool   _wapForeign    = false;
-  String _wapCode       = '+58';
+  bool _sameNumber = true;
+  bool _wapForeign = false;
+  String _wapCode = '+58';
   late TextEditingController _wapCtrl;
 
   @override
   void initState() {
     super.initState();
-    final phone    = widget.initialPhone    ?? '';
+    final phone = widget.initialPhone ?? '';
     final whatsapp = widget.initialWhatsapp;
 
     // Detectar si el teléfono es extranjero
@@ -74,7 +75,9 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
       // Encontrar código
       final match = _kCountries.where((c) => phone.startsWith(c.$1)).toList();
       _phoneCode = match.isNotEmpty ? match.first.$1 : '+58';
-      _phoneCtrl = TextEditingController(text: phone.replaceFirst(_phoneCode, '').trim());
+      _phoneCtrl = TextEditingController(
+        text: phone.replaceFirst(_phoneCode, '').trim(),
+      );
     } else {
       _phoneCtrl = TextEditingController(text: phone);
     }
@@ -87,9 +90,13 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
       _sameNumber = false;
       if (whatsapp.startsWith('+')) {
         _wapForeign = true;
-        final match = _kCountries.where((c) => whatsapp.startsWith(c.$1)).toList();
+        final match = _kCountries
+            .where((c) => whatsapp.startsWith(c.$1))
+            .toList();
         _wapCode = match.isNotEmpty ? match.first.$1 : '+58';
-        _wapCtrl = TextEditingController(text: whatsapp.replaceFirst(_wapCode, '').trim());
+        _wapCtrl = TextEditingController(
+          text: whatsapp.replaceFirst(_wapCode, '').trim(),
+        );
       } else {
         _wapCtrl = TextEditingController(text: whatsapp);
       }
@@ -108,7 +115,7 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
 
   void _notify() {
     final phone = _buildPhone();
-    final wap   = _sameNumber ? null : _buildWap();
+    final wap = _sameNumber ? null : _buildWap();
     widget.onChange(phone, wap);
   }
 
@@ -133,18 +140,25 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Campo Teléfono ────────────────────────────────
-        _FieldLabel(icon: Icons.phone_rounded, label: 'Teléfono de llamadas *', c: c),
+        _FieldLabel(
+          icon: Icons.phone_rounded,
+          label: 'Teléfono de llamadas *',
+          c: c,
+        ),
         const SizedBox(height: 6),
         _phoneForeign
             ? _ForeignField(
                 code: _phoneCode,
                 ctrl: _phoneCtrl,
-                onCodeChanged: (v) => setState(() { _phoneCode = v; _notify(); }),
+                onCodeChanged: (v) => setState(() {
+                  _phoneCode = v;
+                  _notify();
+                }),
                 c: c,
               )
             : _PeruField(ctrl: _phoneCtrl, hint: '987 654 321', c: c),
         const SizedBox(height: 6),
-                // Reemplaza tu _ForeignToggle por esto:
+        // Reemplaza tu _ForeignToggle por esto:
         GestureDetector(
           onTap: () => setState(() {
             _phoneForeign = !_phoneForeign;
@@ -155,13 +169,13 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: _phoneForeign 
-                  ? AppColors.primary.withValues(alpha: 0.08) 
+              color: _phoneForeign
+                  ? AppColors.primary.withValues(alpha: 0.08)
                   : c.bgInput,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _phoneForeign 
-                    ? AppColors.primary.withValues(alpha: 0.4) 
+                color: _phoneForeign
+                    ? AppColors.primary.withValues(alpha: 0.4)
                     : c.border,
               ),
             ),
@@ -179,12 +193,16 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
                   style: TextStyle(
                     color: _phoneForeign ? AppColors.primary : c.textSecondary,
                     fontSize: 12.5,
-                    fontWeight: _phoneForeign ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: _phoneForeign
+                        ? FontWeight.w600
+                        : FontWeight.w500,
                   ),
                 ),
                 const SizedBox(width: 6),
                 Icon(
-                  _phoneForeign ? Icons.check_circle_rounded : Icons.circle_outlined,
+                  _phoneForeign
+                      ? Icons.check_circle_rounded
+                      : Icons.circle_outlined,
                   size: 16,
                   color: _phoneForeign ? AppColors.primary : c.textMuted,
                 ),
@@ -208,13 +226,20 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
         // ── Campo WhatsApp (si diferente) ─────────────────
         if (!_sameNumber) ...[
           const SizedBox(height: 12),
-          _FieldLabel(svgAsset: 'assets/icons/whatsapp.svg', label: 'Número de WhatsApp', c: c),
+          _FieldLabel(
+            svgAsset: 'assets/icons/whatsapp.svg',
+            label: 'Número de WhatsApp',
+            c: c,
+          ),
           const SizedBox(height: 6),
           _wapForeign
               ? _ForeignField(
                   code: _wapCode,
                   ctrl: _wapCtrl,
-                  onCodeChanged: (v) => setState(() { _wapCode = v; _notify(); }),
+                  onCodeChanged: (v) => setState(() {
+                    _wapCode = v;
+                    _notify();
+                  }),
                   c: c,
                 )
               : _PeruField(ctrl: _wapCtrl, hint: '987 654 321', c: c),
@@ -238,19 +263,24 @@ class _PhoneInputSectionState extends State<PhoneInputSection> {
 // ─────────────────────────────────────────────────────────
 
 class _FieldLabel extends StatelessWidget {
-  final IconData? icon;       // ← Ahora es opcional
-  final String? svgAsset;     // ← Nuevo: ruta del SVG
+  final IconData? icon; // ← Ahora es opcional
+  final String? svgAsset; // ← Nuevo: ruta del SVG
   final String label;
   final AppThemeColors c;
-  const _FieldLabel({this.icon, this.svgAsset, required this.label, required this.c});
+  const _FieldLabel({
+    this.icon,
+    this.svgAsset,
+    required this.label,
+    required this.c,
+  });
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
       if (svgAsset != null)
         SvgPicture.asset(
-          svgAsset!, 
-          width: 14, 
+          svgAsset!,
+          width: 14,
           height: 14,
           // Mantenemos el color ámbar para que haga juego con el ícono de teléfono
           colorFilter: const ColorFilter.mode(AppColors.amber, BlendMode.srcIn),
@@ -258,7 +288,14 @@ class _FieldLabel extends StatelessWidget {
       else
         Icon(icon, size: 14, color: AppColors.amber),
       const SizedBox(width: 6),
-      Text(label, style: TextStyle(color: c.textMuted, fontSize: 12, fontWeight: FontWeight.w500)),
+      Text(
+        label,
+        style: TextStyle(
+          color: c.textMuted,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     ],
   );
 }
@@ -278,9 +315,12 @@ class _PeruField extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.bgCard,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            border: Border.all(color: c.border),
           ),
-          child: Text('+51 🇵🇪', style: TextStyle(color: c.textMuted, fontSize: 13)),
+          child: Text(
+            '+51 🇵🇪',
+            style: TextStyle(color: c.textMuted, fontSize: 13),
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -296,16 +336,19 @@ class _PeruField extends StatelessWidget {
               hintText: hint,
               hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               filled: true,
               fillColor: c.bgCard,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                borderSide: BorderSide(color: c.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                borderSide: BorderSide(color: c.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -347,7 +390,14 @@ class _ForeignField extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text(code, style: TextStyle(color: c.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  code,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(width: 4),
                 Icon(Icons.arrow_drop_down, size: 16, color: c.textMuted),
               ],
@@ -364,16 +414,23 @@ class _ForeignField extends StatelessWidget {
               hintText: 'Número sin código',
               hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               filled: true,
               fillColor: c.bgCard,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppColors.amber.withValues(alpha: 0.4)),
+                borderSide: BorderSide(
+                  color: AppColors.amber.withValues(alpha: 0.4),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppColors.amber.withValues(alpha: 0.4)),
+                borderSide: BorderSide(
+                  color: AppColors.amber.withValues(alpha: 0.4),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -401,23 +458,42 @@ class _ForeignField extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
               'Selecciona el país',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
             ),
           ),
           const Divider(height: 1),
           Flexible(
             child: ListView(
               shrinkWrap: true,
-              children: _kCountries.map((country) => ListTile(
-                title: Text(country.$2, style: TextStyle(color: c.textPrimary, fontSize: 14)),
-                trailing: Text(country.$1, style: TextStyle(color: AppColors.amber, fontWeight: FontWeight.bold)),
-                selected: country.$1 == code,
-                selectedTileColor: AppColors.amber.withValues(alpha: 0.08),
-                onTap: () {
-                  onCodeChanged(country.$1);
-                  Navigator.pop(context);
-                },
-              )).toList(),
+              children: _kCountries
+                  .map(
+                    (country) => ListTile(
+                      title: Text(
+                        country.$2,
+                        style: TextStyle(color: c.textPrimary, fontSize: 14),
+                      ),
+                      trailing: Text(
+                        country.$1,
+                        style: TextStyle(
+                          color: AppColors.amber,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      selected: country.$1 == code,
+                      selectedTileColor: AppColors.amber.withValues(
+                        alpha: 0.08,
+                      ),
+                      onTap: () {
+                        onCodeChanged(country.$1);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           const SizedBox(height: 8),
@@ -432,7 +508,12 @@ class _ForeignToggle extends StatelessWidget {
   final String label;
   final AppThemeColors c;
   final ValueChanged<bool> onChanged;
-  const _ForeignToggle({required this.value, required this.label, required this.c, required this.onChanged});
+  const _ForeignToggle({
+    required this.value,
+    required this.label,
+    required this.c,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -464,7 +545,11 @@ class _SameNumberToggle extends StatelessWidget {
   final bool value;
   final AppThemeColors c;
   final ValueChanged<bool> onChanged;
-  const _SameNumberToggle({required this.value, required this.c, required this.onChanged});
+  const _SameNumberToggle({
+    required this.value,
+    required this.c,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -473,17 +558,15 @@ class _SameNumberToggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: value
-              ? AppColors.amber.withValues(alpha: 0.1)
-              : c.bgCard,
+          color: value ? AppColors.amber.withValues(alpha: 0.1) : c.bgCard,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: value ? AppColors.amber.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.08),
+            color: value ? AppColors.amber.withValues(alpha: 0.4) : c.border,
           ),
         ),
         child: Row(
           children: [
-              SvgPicture.asset(
+            SvgPicture.asset(
               'assets/icons/whatsapp.svg',
               width: 16,
               height: 16,
@@ -505,7 +588,9 @@ class _SameNumberToggle extends StatelessWidget {
               ),
             ),
             Icon(
-              value ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              value
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
               size: 18,
               color: value ? AppColors.amber : c.textMuted,
             ),

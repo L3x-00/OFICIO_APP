@@ -56,11 +56,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!mounted) return;
 
     if (ok) {
+      final c = context.colors;
+      final tint = AppColors.tintOn(AppColors.available, c.isDark);
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF1A2E1A),
+          backgroundColor: c.bgCard,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -74,18 +76,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   color: AppColors.available.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppColors.available,
-                  size: 36,
-                ),
+                child: Icon(Icons.check_circle_rounded, color: tint, size: 36),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Contraseña restablecida',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.available,
+                  color: c.textPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -95,7 +93,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 'Ya puedes iniciar sesión con tu nueva contraseña.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.available.withValues(alpha: 0.8),
+                  color: c.textSecondary,
                   fontSize: 14,
                   height: 1.5,
                 ),

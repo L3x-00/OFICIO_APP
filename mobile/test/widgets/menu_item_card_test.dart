@@ -4,11 +4,14 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/features/menu/domain/models/menu_item_model.dart';
 import 'package:mobile/features/menu/presentation/widgets/menu_item_card.dart';
 
 void main() {
+  // theme con AppThemeColors — el widget lee context.colors.
   Widget host(MenuItemModel item) => MaterialApp(
+    theme: AppThemeColors.buildDark(),
     home: Scaffold(body: MenuItemCard(item: item)),
   );
 
@@ -42,6 +45,7 @@ void main() {
   testWidgets('disponible + onAdd: muestra "Agregar"', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppThemeColors.buildDark(),
         home: Scaffold(
           body: MenuItemCard(
             item: const MenuItemModel(id: 1, name: 'X', price: 10),
@@ -57,6 +61,7 @@ void main() {
   testWidgets('quantity>0: muestra la cantidad y el stepper', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppThemeColors.buildDark(),
         home: Scaffold(
           body: MenuItemCard(
             item: const MenuItemModel(id: 1, name: 'X', price: 10),
@@ -78,6 +83,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppThemeColors.buildDark(),
         home: Scaffold(
           body: MenuItemCard(
             item: const MenuItemModel(

@@ -199,9 +199,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               color: AppColors.favorite.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.favorite_border_rounded,
-              color: AppColors.favorite,
+              color: AppColors.tintOn(AppColors.favorite, c.isDark),
               size: 40,
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/peru_time.dart';
 import '../../data/appointments_repository.dart';
 import '../../domain/models/appointment_model.dart';
@@ -92,20 +93,21 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: Text(
           widget.businessName == null
               ? 'Agendar cita'
               : 'Agendar · ${widget.businessName}',
         ),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
       body: Column(
         children: [
           _dayPicker(),
-          const Divider(height: 1, color: Colors.white12),
+          Divider(height: 1, color: c.border),
           Expanded(child: _slots()),
           _descriptionField(),
           _confirmBar(),
@@ -115,6 +117,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _dayPicker() {
+    final c = context.colors;
     return SizedBox(
       height: 78,
       child: ListView.builder(
@@ -130,10 +133,10 @@ class _BookingScreenState extends State<BookingScreen> {
               width: 58,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: selected ? AppColors.amber : AppColors.bgCard,
+                color: selected ? AppColors.amber : c.bgCard,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: selected ? AppColors.amber : Colors.white12,
+                  color: selected ? AppColors.amber : c.border,
                 ),
               ),
               child: Column(
@@ -142,7 +145,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   Text(
                     _dayLabel(ymd, i),
                     style: TextStyle(
-                      color: selected ? Colors.black : AppColors.textSecondary,
+                      color: selected
+                          ? AppColors.onSolid(AppColors.amber)
+                          : c.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -151,7 +156,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   Text(
                     ymd.substring(8, 10),
                     style: TextStyle(
-                      color: selected ? Colors.black : AppColors.textPrimary,
+                      color: selected
+                          ? AppColors.onSolid(AppColors.amber)
+                          : c.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -169,6 +176,7 @@ class _BookingScreenState extends State<BookingScreen> {
     return FutureBuilder<ApiResult<List<AppointmentSlot>>>(
       future: _slotsFuture,
       builder: (context, snap) {
+        final c = context.colors;
         if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -177,19 +185,19 @@ class _BookingScreenState extends State<BookingScreen> {
           return Center(
             child: Text(
               result?.errorMessage ?? 'Error al cargar horarios',
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: c.textSecondary),
             ),
           );
         }
         final slots = result.data;
         if (slots.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text(
                 'No hay horarios disponibles este día.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: c.textSecondary),
               ),
             ),
           );
@@ -211,16 +219,18 @@ class _BookingScreenState extends State<BookingScreen> {
                   decoration: BoxDecoration(
                     color: selected
                         ? AppColors.amber.withValues(alpha: 0.2)
-                        : AppColors.bgCard,
+                        : c.bgCard,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: selected ? AppColors.amber : Colors.white12,
+                      color: selected ? AppColors.amber : c.border,
                     ),
                   ),
                   child: Text(
                     s.time,
                     style: TextStyle(
-                      color: selected ? AppColors.amber : AppColors.textPrimary,
+                      color: selected
+                          ? AppColors.tintOn(AppColors.amber, c.isDark)
+                          : c.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -234,6 +244,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _descriptionField() {
+    final c = context.colors;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
       child: TextField(
@@ -241,12 +252,12 @@ class _BookingScreenState extends State<BookingScreen> {
         maxLength: 300,
         minLines: 1,
         maxLines: 2,
-        style: const TextStyle(color: AppColors.textPrimary),
+        style: TextStyle(color: c.textPrimary),
         decoration: InputDecoration(
           hintText: 'Motivo (opcional)',
-          hintStyle: const TextStyle(color: AppColors.textMuted),
+          hintStyle: TextStyle(color: c.textMuted),
           filled: true,
-          fillColor: AppColors.bgCard,
+          fillColor: c.bgCard,
           counterText: '',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -269,7 +280,7 @@ class _BookingScreenState extends State<BookingScreen> {
             onPressed: enabled ? _confirm : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.amber,
-              foregroundColor: Colors.black,
+              foregroundColor: AppColors.onSolid(AppColors.amber),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../domain/models/menu_item_model.dart';
 import '../providers/menu_manager_provider.dart';
@@ -112,15 +113,16 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
-        decoration: const BoxDecoration(
-          color: AppColors.bgCard,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
           child: Form(
@@ -131,8 +133,8 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
               children: [
                 Text(
                   _isEdit ? 'Editar plato' : 'Nuevo plato',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                   ),
@@ -165,12 +167,9 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
                 const SizedBox(height: 6),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
+                  title: Text(
                     'Disponible',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: c.textPrimary, fontSize: 14),
                   ),
                   value: _isAvailable,
                   activeThumbColor: AppColors.available,
@@ -178,19 +177,13 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
+                  title: Text(
                     'Menú del día (destacado)',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: c.textPrimary, fontSize: 14),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Exclusivo del plan Premium',
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 11.5,
-                    ),
+                    style: TextStyle(color: c.textMuted, fontSize: 11.5),
                   ),
                   value: _isFeatured,
                   activeThumbColor: AppColors.amber,
@@ -203,7 +196,7 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
                     onPressed: _saving ? null : _save,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.amber,
-                      foregroundColor: Colors.black,
+                      foregroundColor: AppColors.onSolid(AppColors.amber),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: _saving
@@ -224,6 +217,7 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
   }
 
   Widget _photoPicker() {
+    final c = context.colors;
     return Center(
       child: GestureDetector(
         onTap: _uploading ? null : _pickPhoto,
@@ -231,26 +225,23 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
           width: 110,
           height: 110,
           decoration: BoxDecoration(
-            color: AppColors.bgInput,
+            color: c.bgInput,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: c.border),
           ),
           clipBehavior: Clip.antiAlias,
           child: _uploading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : _photoUrl != null
               ? AppNetworkImage(url: _photoUrl!, fit: BoxFit.cover)
-              : const Column(
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add_a_photo, color: AppColors.textMuted),
-                    SizedBox(height: 6),
+                    Icon(Icons.add_a_photo, color: c.textMuted),
+                    const SizedBox(height: 6),
                     Text(
                       'Foto',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: c.textMuted, fontSize: 12),
                     ),
                   ],
                 ),
@@ -260,14 +251,15 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
   }
 
   Widget _field(
-    TextEditingController c,
+    TextEditingController ctrl,
     String label, {
     bool required = false,
     bool number = false,
     int maxLines = 1,
   }) {
+    final c = context.colors;
     return TextFormField(
-      controller: c,
+      controller: ctrl,
       maxLines: maxLines,
       keyboardType: number
           ? const TextInputType.numberWithOptions(decimal: true)
@@ -275,12 +267,12 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
       inputFormatters: number
           ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
           : null,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: c.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textMuted),
+        labelStyle: TextStyle(color: c.textMuted),
         filled: true,
-        fillColor: AppColors.bgInput,
+        fillColor: c.bgInput,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -297,15 +289,16 @@ class _MenuItemFormSheetState extends State<MenuItemFormSheet> {
   }
 
   Widget _categoryDropdown() {
+    final c = context.colors;
     return DropdownButtonFormField<String>(
       initialValue: _category,
-      dropdownColor: AppColors.bgCard,
-      style: const TextStyle(color: AppColors.textPrimary),
+      dropdownColor: c.bgCard,
+      style: TextStyle(color: c.textPrimary),
       decoration: InputDecoration(
         labelText: 'Sección',
-        labelStyle: const TextStyle(color: AppColors.textMuted),
+        labelStyle: TextStyle(color: c.textMuted),
         filled: true,
-        fillColor: AppColors.bgInput,
+        fillColor: c.bgInput,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,

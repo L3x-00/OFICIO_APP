@@ -39,7 +39,7 @@ class FilterBar extends StatelessWidget {
       value: 'BUSINESS',
       // Malva apagado on-palette (reemplaza el azul periwinkle frío #7B8CDE,
       // fuera de la dirección cálida); profundo para texto blanco AA.
-      activeColor: Color(0xFF7E6492),
+      activeColor: AppColors.business,
       foreground: Colors.white,
     ),
   ];

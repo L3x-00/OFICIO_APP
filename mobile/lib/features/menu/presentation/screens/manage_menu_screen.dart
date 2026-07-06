@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/menu_item_model.dart';
 import '../providers/menu_manager_provider.dart';
 import '../widgets/menu_item_form_sheet.dart';
@@ -41,17 +42,15 @@ class _ManageMenuView extends StatelessWidget {
     MenuManagerProvider manager,
     MenuItemModel item,
   ) async {
+    final c = context.colors;
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgCard,
-        title: const Text(
-          'Eliminar plato',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
+        backgroundColor: c.bgCard,
+        title: Text('Eliminar plato', style: TextStyle(color: c.textPrimary)),
         content: Text(
           '¿Eliminar "${item.name}" de tu carta?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: c.textSecondary),
         ),
         actions: [
           TextButton(
@@ -81,15 +80,13 @@ class _ManageMenuView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final manager = context.watch<MenuManagerProvider>();
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
-      appBar: AppBar(
-        title: const Text('Mi carta'),
-        backgroundColor: AppColors.bgCard,
-      ),
+      backgroundColor: c.bg,
+      appBar: AppBar(title: const Text('Mi carta'), backgroundColor: c.bgCard),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.amber,
-        foregroundColor: Colors.black,
+        foregroundColor: AppColors.onSolid(AppColors.amber),
         onPressed: () => _openForm(context, manager),
         icon: const Icon(Icons.add),
         label: const Text('Añadir plato'),
@@ -103,7 +100,7 @@ class _ManageMenuView extends StatelessWidget {
             children: [
               Text(
                 manager.error ?? 'Error',
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: c.textSecondary),
               ),
               const SizedBox(height: 10),
               OutlinedButton(
@@ -149,33 +146,31 @@ class _ManageItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         onTap: onEdit,
         leading: CircleAvatar(
-          backgroundColor: AppColors.bgInput,
+          backgroundColor: c.bgInput,
           child: Icon(
             item.isFeatured ? Icons.star : Icons.restaurant,
-            color: item.isFeatured ? AppColors.amber : AppColors.textMuted,
+            color: item.isFeatured ? AppColors.amber : c.textMuted,
             size: 20,
           ),
         ),
         title: Text(
           item.name,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           '${menuSectionLabel(item.category ?? 'otro')} · S/ ${item.effectivePrice.toStringAsFixed(2)}'
           '${item.isAvailable ? '' : ' · Agotado'}',
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          style: TextStyle(color: c.textMuted, fontSize: 12),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -200,18 +195,19 @@ class _EmptyManage extends StatelessWidget {
   const _EmptyManage();
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final c = context.colors;
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.restaurant_menu, size: 44, color: AppColors.textMuted),
-            SizedBox(height: 12),
+            Icon(Icons.restaurant_menu, size: 44, color: c.textMuted),
+            const SizedBox(height: 12),
             Text(
               'Aún no tienes platos.\nToca "Añadir plato" para empezar tu carta.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: c.textSecondary),
             ),
           ],
         ),

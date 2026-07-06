@@ -130,7 +130,11 @@ class NotificationsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.schedule_rounded, color: AppColors.amber, size: 16),
+          Icon(
+            Icons.schedule_rounded,
+            color: AppColors.tintOn(AppColors.amber, c.isDark),
+            size: 16,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -174,7 +178,11 @@ class _GuestBody extends StatelessWidget {
                 color: iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: iconColor, size: 40),
+              child: Icon(
+                icon,
+                color: AppColors.tintOn(iconColor, c.isDark),
+                size: 40,
+              ),
             ),
             const SizedBox(height: 20),
             Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/catalog_product_model.dart';
 import '../providers/catalog_manager_provider.dart';
 import '../widgets/catalog_product_form_sheet.dart';
@@ -42,17 +43,18 @@ class _ManageCatalogView extends StatelessWidget {
     CatalogManagerProvider manager,
     CatalogProductModel item,
   ) async {
+    final c = context.colors;
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgCard,
-        title: const Text(
+        backgroundColor: c.bgCard,
+        title: Text(
           'Eliminar producto',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: c.textPrimary),
         ),
         content: Text(
           '¿Eliminar "${item.name}" de tu catálogo?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: c.textSecondary),
         ),
         actions: [
           TextButton(
@@ -82,15 +84,16 @@ class _ManageCatalogView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final manager = context.watch<CatalogManagerProvider>();
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: const Text('Mi catálogo'),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.amber,
-        foregroundColor: Colors.black,
+        foregroundColor: AppColors.onSolid(AppColors.amber),
         onPressed: () => _openForm(context, manager),
         icon: const Icon(Icons.add),
         label: const Text('Añadir producto'),
@@ -104,7 +107,7 @@ class _ManageCatalogView extends StatelessWidget {
             children: [
               Text(
                 manager.error ?? 'Error',
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: c.textSecondary),
               ),
               const SizedBox(height: 10),
               OutlinedButton(
@@ -151,29 +154,27 @@ class _ManageItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stockTxt = item.stock != null ? ' · ${item.stock} und' : '';
+    final c = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         onTap: onEdit,
-        leading: const CircleAvatar(
-          backgroundColor: AppColors.bgInput,
-          child: Icon(Icons.inventory_2, color: AppColors.textMuted, size: 20),
+        leading: CircleAvatar(
+          backgroundColor: c.bgInput,
+          child: Icon(Icons.inventory_2, color: c.textMuted, size: 20),
         ),
         title: Text(
           item.name,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           'S/ ${item.effectivePrice.toStringAsFixed(2)}$stockTxt'
           '${item.isSoldOut ? ' · Agotado' : ''}',
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          style: TextStyle(color: c.textMuted, fontSize: 12),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -198,18 +199,19 @@ class _EmptyManage extends StatelessWidget {
   const _EmptyManage();
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final c = context.colors;
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.storefront, size: 44, color: AppColors.textMuted),
-            SizedBox(height: 12),
+            Icon(Icons.storefront, size: 44, color: c.textMuted),
+            const SizedBox(height: 12),
             Text(
               'Aún no tienes productos.\nToca "Añadir producto" para empezar tu catálogo.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: c.textSecondary),
             ),
           ],
         ),

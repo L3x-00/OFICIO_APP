@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../data/quotation_repository.dart';
 import '../../domain/models/quotation_model.dart';
@@ -35,18 +36,24 @@ class _MyQuotationsScreenState extends State<MyQuotationsScreen> {
       'Hola ${q.providerName ?? ''}, sobre la cotización que te pedí: ${q.description}',
     );
     final uri = Uri.parse('https://wa.me/$digits?text=$text');
-    if (await canLaunchUrl(uri)) {
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir WhatsApp')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: const Text('Mis cotizaciones'),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
       body: FutureBuilder<ApiResult<List<Quotation>>>(
         future: _future,
@@ -63,12 +70,12 @@ class _MyQuotationsScreenState extends State<MyQuotationsScreen> {
           }
           final items = result.data;
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
                   'Aún no has pedido cotizaciones.',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: c.textSecondary),
                 ),
               ),
             );
@@ -97,15 +104,16 @@ class _ClientQuotCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final canContact =
         quote.isResponded && (quote.providerWhatsapp ?? '').isNotEmpty;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,8 +123,8 @@ class _ClientQuotCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   quote.providerName ?? 'Proveedor',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
@@ -128,10 +136,7 @@ class _ClientQuotCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             quote.description,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: c.textSecondary, fontSize: 13),
           ),
           if (quote.photoUrl != null) ...[
             const SizedBox(height: 8),
@@ -159,10 +164,10 @@ class _ClientQuotCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Respuesta',
                     style: TextStyle(
-                      color: AppColors.available,
+                      color: AppColors.tintOn(AppColors.available, c.isDark),
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
@@ -171,14 +176,14 @@ class _ClientQuotCard extends StatelessWidget {
                   if (quote.response != null)
                     Text(
                       quote.response!,
-                      style: const TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: c.textPrimary),
                     ),
                   if (quote.estimatedPrice != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       'Estimado: S/ ${quote.estimatedPrice!.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: AppColors.amber,
+                      style: TextStyle(
+                        color: AppColors.tintOn(AppColors.amber, c.isDark),
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -226,7 +231,7 @@ class _Retry extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(message, style: const TextStyle(color: AppColors.textSecondary)),
+          Text(message, style: TextStyle(color: context.colors.textSecondary)),
           const SizedBox(height: 10),
           OutlinedButton(onPressed: onRetry, child: const Text('Reintentar')),
         ],
