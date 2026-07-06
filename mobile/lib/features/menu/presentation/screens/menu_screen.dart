@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../data/menu_repository.dart';
 import '../../domain/menu_order.dart';
 import '../../domain/models/menu_item_model.dart';
@@ -64,18 +65,25 @@ class _MenuScreenState extends State<MenuScreen> {
     );
     if (url == null) return;
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    var ok = false;
+    try {
+      ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir WhatsApp')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: Text(widget.businessName ?? 'Carta'),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
       body: FutureBuilder<ApiResult<MenuResponse>>(
         future: _future,
@@ -148,6 +156,7 @@ class _SectionBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     if (section.items.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,8 +165,8 @@ class _SectionBlock extends StatelessWidget {
           padding: const EdgeInsets.only(top: 6, bottom: 10),
           child: Text(
             section.label,
-            style: const TextStyle(
-              color: AppColors.amber,
+            style: TextStyle(
+              color: AppColors.tintOn(AppColors.amber, c.isDark),
               fontSize: 16,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.2,
@@ -201,7 +210,7 @@ class _CartBar extends StatelessWidget {
             onPressed: onOrder,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.whatsapp,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onSolid(AppColors.whatsapp),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -232,15 +241,16 @@ class _EmptyState extends StatelessWidget {
   const _EmptyState();
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final c = context.colors;
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.restaurant_menu, size: 44, color: AppColors.textMuted),
-          SizedBox(height: 12),
+          Icon(Icons.restaurant_menu, size: 44, color: c.textMuted),
+          const SizedBox(height: 12),
           Text(
             'Este negocio aún no publicó su carta.',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: c.textSecondary),
           ),
         ],
       ),
@@ -255,13 +265,14 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.error_outline, size: 40, color: AppColors.busy),
           const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: AppColors.textSecondary)),
+          Text(message, style: TextStyle(color: c.textSecondary)),
           const SizedBox(height: 12),
           OutlinedButton(onPressed: onRetry, child: const Text('Reintentar')),
         ],

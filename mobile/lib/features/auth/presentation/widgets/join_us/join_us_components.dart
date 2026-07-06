@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 /// Lista de beneficios mostrada en la vista inicial del modal de unirse.
 const kJoinUsBenefits = [
   {
@@ -11,7 +12,7 @@ const kJoinUsBenefits = [
         'Tu servicio aparece en el mapa de tu localidad desde el día 1.',
     'color': AppColors.primary,
   },
-    {
+  {
     'svgAsset': 'assets/icons/whatsapp.svg', // ← SVG de WhatsApp
     'title': 'Contacto directo',
     'subtitle':
@@ -35,8 +36,8 @@ const kJoinUsBenefits = [
 
 /// Fila de beneficio (ícono circular + título + subtítulo).
 class BenefitRow extends StatelessWidget {
-  final IconData? icon;       // ← Ahora es opcional
-  final String? svgAsset;     // ← Nuevo: ruta del SVG
+  final IconData? icon; // ← Ahora es opcional
+  final String? svgAsset; // ← Nuevo: ruta del SVG
   final String title;
   final String subtitle;
   final Color color;
@@ -72,9 +73,9 @@ class BenefitRow extends StatelessWidget {
                       svgAsset!,
                       width: 20,
                       height: 20,
-                      // Tu SVG ya tiene el verde de WhatsApp, 
+                      // Tu SVG ya tiene el verde de WhatsApp,
                       // así que null respeta sus colores originales.
-                      colorFilter: null, 
+                      colorFilter: null,
                     )
                   : Icon(icon, color: color, size: 20),
             ),
@@ -147,11 +148,7 @@ class StatCard extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: c.textMuted,
-              fontSize: 10,
-              height: 1.3,
-            ),
+            style: TextStyle(color: c.textMuted, fontSize: 10, height: 1.3),
           ),
         ],
       ),
@@ -188,7 +185,7 @@ class TypeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.bgCard,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Row(
           children: [
@@ -217,20 +214,13 @@ class TypeCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      color: c.textSecondary,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: c.textSecondary, fontSize: 12),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: c.textMuted,
-              size: 16,
-            ),
+            Icon(Icons.arrow_forward_ios_rounded, color: c.textMuted, size: 16),
           ],
         ),
       ),

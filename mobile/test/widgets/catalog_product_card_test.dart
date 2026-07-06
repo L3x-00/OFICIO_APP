@@ -3,11 +3,15 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/features/catalog/domain/models/catalog_product_model.dart';
 import 'package:mobile/features/catalog/presentation/widgets/catalog_product_card.dart';
 
 void main() {
-  Widget host(Widget c) => MaterialApp(home: Scaffold(body: c));
+  Widget host(Widget c) => MaterialApp(
+    theme: AppThemeColors.buildDark(),
+    home: Scaffold(body: c),
+  );
 
   testWidgets('muestra nombre, precio y stock', (tester) async {
     await tester.pumpWidget(

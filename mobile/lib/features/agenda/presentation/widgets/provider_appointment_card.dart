@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/peru_time.dart';
 import '../../domain/models/appointment_model.dart';
 import 'appointment_status_chip.dart';
@@ -21,15 +22,16 @@ class ProviderAppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final hasActions =
         onConfirm != null || onReject != null || onComplete != null;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,8 +43,8 @@ class ProviderAppointmentCard extends StatelessWidget {
                   appt.clientName?.isNotEmpty == true
                       ? appt.clientName!
                       : 'Cliente',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
@@ -54,11 +56,11 @@ class ProviderAppointmentCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.event, size: 15, color: AppColors.textMuted),
+              Icon(Icons.event, size: 15, color: c.textMuted),
               const SizedBox(width: 6),
               Text(
                 fmtPeruDateTime(appt.date),
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: c.textSecondary),
               ),
             ],
           ),
@@ -66,10 +68,7 @@ class ProviderAppointmentCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               appt.description!,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 12.5,
-              ),
+              style: TextStyle(color: c.textMuted, fontSize: 12.5),
             ),
           ],
           if (hasActions) ...[
@@ -90,7 +89,7 @@ class ProviderAppointmentCard extends StatelessWidget {
                     onPressed: onConfirm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.available,
-                      foregroundColor: Colors.black,
+                      foregroundColor: AppColors.onSolid(AppColors.available),
                     ),
                     child: const Text('Confirmar'),
                   ),
@@ -99,7 +98,7 @@ class ProviderAppointmentCard extends StatelessWidget {
                     onPressed: onComplete,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.black,
+                      foregroundColor: AppColors.onSolid(AppColors.primary),
                     ),
                     child: const Text('Completar'),
                   ),

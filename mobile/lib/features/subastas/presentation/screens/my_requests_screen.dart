@@ -106,7 +106,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
         // en el empty state → duplicado). Siempre accesible.
         floatingActionButton: FloatingActionButton.extended(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onSolid(AppColors.primary),
           onPressed: () => _openPublishSheet(context),
           icon: const Icon(Icons.add_rounded),
           label: const Text('Publicar necesidad'),
@@ -156,6 +156,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
               loading: loading,
               items: prov.myRequests,
               emptyKind: _EmptyKind.all,
+              error: prov.state == SubastasState.error ? prov.error : null,
               onRefresh: () =>
                   context.read<SubastasProvider>().loadMyRequests(),
             ),
@@ -163,6 +164,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
               loading: loading,
               items: active,
               emptyKind: _EmptyKind.active,
+              error: prov.state == SubastasState.error ? prov.error : null,
               onRefresh: () =>
                   context.read<SubastasProvider>().loadMyRequests(),
             ),
@@ -194,12 +196,14 @@ class _RequestsList extends StatelessWidget {
   final List<ServiceRequestModel> items;
   final _EmptyKind emptyKind;
   final Future<void> Function() onRefresh;
+  final String? error;
 
   const _RequestsList({
     required this.loading,
     required this.items,
     required this.emptyKind,
     required this.onRefresh,
+    this.error,
   });
 
   @override
@@ -210,6 +214,23 @@ class _RequestsList extends StatelessWidget {
         count: 4,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
         itemBuilder: (_) => const OfferCardSkeleton(),
+      );
+    }
+    // Error real ≠ "no tienes solicitudes": sin esto, un fallo de red se veía
+    // como lista vacía sin aviso ni forma de reintentar.
+    if (items.isEmpty && error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(error!, style: TextStyle(color: c.textSecondary)),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: onRefresh,
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
       );
     }
     if (items.isEmpty) {
@@ -237,14 +258,14 @@ class _RequestsList extends StatelessWidget {
 
 /// Etiqueta + color del estado de la solicitud, en lenguaje del cliente.
 /// "Proveedor seleccionado" gana cuando ya hay una oferta aceptada.
-(String, Color) _statusLabel(ServiceRequestModel r) {
+(String, Color) _statusLabel(ServiceRequestModel r, AppThemeColors c) {
   // Esquema consistente: AWARDED/seleccionado=verde, OPEN/buscando=ámbar,
   // EXPIRED/cancelada=gris.
   if (r.offers.any((o) => o.status == OfferStatus.accepted)) {
     return ('Proveedor seleccionado', AppColors.available);
   }
   if (r.status == ServiceRequestStatus.open && r.isExpired) {
-    return ('Solicitud vencida', AppColors.textMuted);
+    return ('Solicitud vencida', c.textMuted);
   }
   return switch (r.status) {
     ServiceRequestStatus.open => ('Buscando proveedor', AppColors.amber),
@@ -253,8 +274,8 @@ class _RequestsList extends StatelessWidget {
       'Proveedor seleccionado',
       AppColors.available,
     ),
-    ServiceRequestStatus.expired => ('Solicitud vencida', AppColors.textMuted),
-    ServiceRequestStatus.cancelled => ('Cancelada', AppColors.textMuted),
+    ServiceRequestStatus.expired => ('Solicitud vencida', c.textMuted),
+    ServiceRequestStatus.cancelled => ('Cancelada', c.textMuted),
   };
 }
 
@@ -276,7 +297,7 @@ class _RequestCard extends StatelessWidget {
     final accepted = r.offers
         .where((o) => o.status == OfferStatus.accepted)
         .firstOrNull;
-    final statusColor = _statusLabel(r).$2;
+    final statusColor = _statusLabel(r, c).$2;
 
     return GestureDetector(
       onTap: () => _openDetail(context),
@@ -328,9 +349,9 @@ class _RequestCard extends StatelessWidget {
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.handyman_rounded,
-                        color: AppColors.primary,
+                        color: AppColors.tintOn(AppColors.primary, c.isDark),
                         size: 28,
                       ),
                     ),
@@ -391,11 +412,12 @@ class _RequestCard extends StatelessWidget {
   /// Abre el detalle completo (read-only) — nunca un dead-end (sheet con
   /// botón de cierre). Si hay proveedor aceptado, lo muestra al pie.
   void _openDetail(BuildContext context) {
+    final c = context.colors;
     final r = request;
     final accepted = r.offers
         .where((o) => o.status == OfferStatus.accepted)
         .firstOrNull;
-    final (label, color) = _statusLabel(r);
+    final (label, color) = _statusLabel(r, c);
     final loc = [
       r.district,
       r.province,
@@ -474,10 +496,10 @@ class _RequestFooter extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
+                child: Text(
                   'Ver ofertas',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.onSolid(AppColors.primary),
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -517,16 +539,16 @@ class _SelectedProviderBlock extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.verified_rounded,
                 size: 15,
-                color: AppColors.available,
+                color: AppColors.tintOn(AppColors.available, c.isDark),
               ),
               const SizedBox(width: 5),
               Text(
                 'Proveedor seleccionado',
                 style: TextStyle(
-                  color: AppColors.available,
+                  color: AppColors.tintOn(AppColors.available, c.isDark),
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -545,8 +567,8 @@ class _SelectedProviderBlock extends StatelessWidget {
                 child: offer.providerAvatarUrl == null
                     ? Text(
                         initial,
-                        style: const TextStyle(
-                          color: AppColors.primary,
+                        style: TextStyle(
+                          color: AppColors.tintOn(AppColors.primary, c.isDark),
                           fontWeight: FontWeight.bold,
                         ),
                       )
@@ -607,8 +629,8 @@ class _SelectedProviderBlock extends StatelessWidget {
                   ),
                   Text(
                     'S/ ${offer.price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      color: AppColors.available,
+                    style: TextStyle(
+                      color: AppColors.tintOn(AppColors.available, c.isDark),
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
@@ -714,7 +736,8 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = _statusLabel(request);
+    final c = context.colors;
+    final (label, color) = _statusLabel(request, c);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -724,7 +747,7 @@ class _StatusBadge extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: color,
+          color: AppColors.tintOn(color, c.isDark),
           fontSize: 11,
           fontWeight: FontWeight.w700,
         ),
@@ -741,6 +764,7 @@ class _CountdownChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final left = expiresAt.difference(DateTime.now());
     final hours = left.inHours;
     final mins = left.inMinutes.remainder(60);
@@ -753,13 +777,13 @@ class _CountdownChip extends StatelessWidget {
         Icon(
           Icons.timer_outlined,
           size: 13,
-          color: urgent ? AppColors.busy : AppColors.textMuted,
+          color: urgent ? AppColors.busy : c.textMuted,
         ),
         const SizedBox(width: 3),
         Text(
           label,
           style: TextStyle(
-            color: urgent ? AppColors.busy : AppColors.textMuted,
+            color: urgent ? AppColors.busy : c.textMuted,
             fontSize: 11,
           ),
         ),
@@ -799,9 +823,9 @@ class _EmptyRequests extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.campaign_rounded,
-                color: AppColors.primary,
+                color: AppColors.tintOn(AppColors.primary, c.isDark),
                 size: 40,
               ),
             ),

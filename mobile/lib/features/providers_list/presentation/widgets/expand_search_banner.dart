@@ -29,20 +29,24 @@ class ExpandSearchBanner extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isExpanded
-            ? Colors.green.withValues(alpha: 0.06)
+            ? AppColors.available.withValues(alpha: 0.06)
             : AppColors.amber.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isExpanded
-              ? Colors.green.withValues(alpha: 0.25)
+              ? AppColors.available.withValues(alpha: 0.25)
               : AppColors.amber.withValues(alpha: 0.25),
         ),
       ),
       child: Row(
         children: [
           Icon(
-            isExpanded ? Icons.check_circle_outline_rounded : Icons.travel_explore_rounded,
-            color: isExpanded ? Colors.green : AppColors.amber,
+            isExpanded
+                ? Icons.check_circle_outline_rounded
+                : Icons.travel_explore_rounded,
+            color: isExpanded
+                ? AppColors.tintOn(AppColors.available, c.isDark)
+                : AppColors.tintOn(AppColors.amber, c.isDark),
             size: 20,
           ),
           const SizedBox(width: 10),
@@ -62,7 +66,11 @@ class ExpandSearchBanner extends StatelessWidget {
                   isExpanded
                       ? 'Negocios de $department · Profesionales de todo el Perú'
                       : 'Negocios de tu departamento · Profesionales de todo el Perú',
-                  style: TextStyle(color: c.textMuted, fontSize: 11, height: 1.3),
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 11,
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
@@ -73,13 +81,18 @@ class ExpandSearchBanner extends StatelessWidget {
               onPressed: () => _confirmAndExpand(context),
               style: TextButton.styleFrom(
                 backgroundColor: AppColors.amber.withValues(alpha: 0.15),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: const Text(
+              child: Text(
                 'Ampliar',
                 style: TextStyle(
-                  color: AppColors.amber,
+                  color: AppColors.tintOn(AppColors.amber, c.isDark),
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
@@ -120,8 +133,10 @@ class ExpandSearchBanner extends StatelessWidget {
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.amber,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              foregroundColor: AppColors.onSolid(AppColors.amber),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Continuar'),
           ),

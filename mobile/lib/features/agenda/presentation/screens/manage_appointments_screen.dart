@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../data/appointments_repository.dart';
 import '../../domain/models/appointment_model.dart';
 import '../widgets/provider_appointment_card.dart';
@@ -13,13 +14,14 @@ class ManageAppointmentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: AppColors.bgDark,
+        backgroundColor: c.bg,
         appBar: AppBar(
           title: const Text('Mi agenda'),
-          backgroundColor: AppColors.bgCard,
+          backgroundColor: c.bgCard,
           actions: [
             IconButton(
               tooltip: 'Configurar horario',
@@ -29,11 +31,11 @@ class ManageAppointmentsScreen extends StatelessWidget {
               ),
             ),
           ],
-          bottom: const TabBar(
+          bottom: TabBar(
             labelColor: AppColors.amber,
-            unselectedLabelColor: AppColors.textMuted,
+            unselectedLabelColor: c.textMuted,
             indicatorColor: AppColors.amber,
-            tabs: [
+            tabs: const [
               Tab(text: 'Pendientes'),
               Tab(text: 'Confirmadas'),
               Tab(text: 'Historial'),
@@ -100,22 +102,20 @@ class _ApptTabState extends State<_ApptTab> with AutomaticKeepAliveClientMixin {
   }
 
   Future<void> _reject(Appointment a) async {
+    final c = context.colors;
     final ctrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgCard,
-        title: const Text(
-          'Rechazar cita',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
+        backgroundColor: c.bgCard,
+        title: Text('Rechazar cita', style: TextStyle(color: c.textPrimary)),
         content: TextField(
           controller: ctrl,
           maxLength: 300,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
+          style: TextStyle(color: c.textPrimary),
+          decoration: InputDecoration(
             hintText: 'Motivo (opcional)',
-            hintStyle: TextStyle(color: AppColors.textMuted),
+            hintStyle: TextStyle(color: c.textMuted),
           ),
         ),
         actions: [
@@ -141,6 +141,7 @@ class _ApptTabState extends State<_ApptTab> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final c = context.colors;
     return FutureBuilder<ApiResult<List<Appointment>>>(
       future: _future,
       builder: (context, snap) {
@@ -155,7 +156,7 @@ class _ApptTabState extends State<_ApptTab> with AutomaticKeepAliveClientMixin {
               children: [
                 Text(
                   result?.errorMessage ?? 'Error',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: c.textSecondary),
                 ),
                 const SizedBox(height: 10),
                 OutlinedButton(
@@ -173,7 +174,7 @@ class _ApptTabState extends State<_ApptTab> with AutomaticKeepAliveClientMixin {
               padding: const EdgeInsets.all(24),
               child: Text(
                 _emptyLabel(),
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: c.textSecondary),
               ),
             ),
           );

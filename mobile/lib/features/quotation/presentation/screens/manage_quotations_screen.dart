@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../data/quotation_repository.dart';
 import '../../domain/models/quotation_model.dart';
@@ -40,64 +41,77 @@ class _ManageQuotationsScreenState extends State<ManageQuotationsScreen> {
   }
 
   Future<void> _respond(Quotation q) async {
+    final c = context.colors;
     final responseCtrl = TextEditingController();
     final priceCtrl = TextEditingController();
+    String? errorText;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.bgCard,
-        title: const Text(
-          'Responder cotización',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: responseCtrl,
-              maxLength: 1000,
-              minLines: 2,
-              maxLines: 4,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: const InputDecoration(
-                hintText: 'Tu respuesta / presupuesto',
-                hintStyle: TextStyle(color: AppColors.textMuted),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: c.bgCard,
+          title: Text(
+            'Responder cotización',
+            style: TextStyle(color: c.textPrimary),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: responseCtrl,
+                maxLength: 1000,
+                minLines: 2,
+                maxLines: 4,
+                style: TextStyle(color: c.textPrimary),
+                decoration: InputDecoration(
+                  hintText: 'Tu respuesta / presupuesto',
+                  hintStyle: TextStyle(color: c.textMuted),
+                  errorText: errorText,
+                ),
               ),
+              TextField(
+                controller: priceCtrl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                style: TextStyle(color: c.textPrimary),
+                decoration: InputDecoration(
+                  labelText: 'Precio estimado S/ (opcional)',
+                  labelStyle: TextStyle(color: c.textMuted),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
             ),
-            TextField(
-              controller: priceCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+            ElevatedButton(
+              onPressed: () {
+                if (responseCtrl.text.trim().length < 2) {
+                  setDialogState(
+                    () =>
+                        errorText = 'Escribe una respuesta (mín. 2 caracteres)',
+                  );
+                  return;
+                }
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.amber,
+                foregroundColor: AppColors.onSolid(AppColors.amber),
               ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              ],
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Precio estimado S/ (opcional)',
-                labelStyle: TextStyle(color: AppColors.textMuted),
-              ),
+              child: const Text('Enviar'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.amber,
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('Enviar'),
-          ),
-        ],
       ),
     );
     if (ok != true) return;
-    if (responseCtrl.text.trim().length < 2) return;
     final res = await _repo.respond(
       q.id,
       response: responseCtrl.text,
@@ -114,11 +128,12 @@ class _ManageQuotationsScreenState extends State<ManageQuotationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: const Text('Cotizaciones'),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
       body: FutureBuilder<ApiResult<List<Quotation>>>(
         future: _future,
@@ -134,7 +149,7 @@ class _ManageQuotationsScreenState extends State<ManageQuotationsScreen> {
                 children: [
                   Text(
                     result?.errorMessage ?? 'Error',
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: c.textSecondary),
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton(
@@ -147,12 +162,12 @@ class _ManageQuotationsScreenState extends State<ManageQuotationsScreen> {
           }
           final items = result.data;
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
                   'No tienes solicitudes de cotización.',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: c.textSecondary),
                 ),
               ),
             );
@@ -184,13 +199,14 @@ class _ProviderQuotCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: c.bgCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,8 +218,8 @@ class _ProviderQuotCard extends StatelessWidget {
                   quote.clientName?.isNotEmpty == true
                       ? quote.clientName!
                       : 'Cliente',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
@@ -215,10 +231,7 @@ class _ProviderQuotCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             quote.description,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: c.textSecondary, fontSize: 13),
           ),
           if (quote.photoUrl != null) ...[
             const SizedBox(height: 8),
@@ -237,10 +250,7 @@ class _ProviderQuotCard extends StatelessWidget {
             Text(
               'Respondiste: ${quote.response}'
               '${quote.estimatedPrice != null ? ' · S/ ${quote.estimatedPrice!.toStringAsFixed(2)}' : ''}',
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 12.5,
-              ),
+              style: TextStyle(color: c.textMuted, fontSize: 12.5),
             ),
           ],
           if (onRespond != null || onReject != null) ...[
@@ -261,7 +271,7 @@ class _ProviderQuotCard extends StatelessWidget {
                     onPressed: onRespond,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.amber,
-                      foregroundColor: Colors.black,
+                      foregroundColor: AppColors.onSolid(AppColors.amber),
                     ),
                     child: const Text('Responder'),
                   ),

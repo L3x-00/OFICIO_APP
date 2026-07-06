@@ -453,7 +453,7 @@ class _LockedGratisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    const muted = Color(0xFF6B7280);
+    final muted = c.textMuted;
 
     return Opacity(
       opacity: 0.7,
@@ -469,11 +469,11 @@ class _LockedGratisCard extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              decoration: const BoxDecoration(
-                color: Color(0x1A6B7280),
+              decoration: BoxDecoration(
+                color: muted.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.lock_rounded, color: muted, size: 18),
+              child: Icon(Icons.lock_rounded, color: muted, size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -482,7 +482,7 @@ class _LockedGratisCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Gratis',
                         style: TextStyle(
                           color: muted,
@@ -491,7 +491,7 @@ class _LockedGratisCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const PlanBadge(label: 'No disponible', color: muted),
+                      PlanBadge(label: 'No disponible', color: muted),
                     ],
                   ),
                   Text(

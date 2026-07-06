@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../domain/models/catalog_product_model.dart';
 
@@ -24,6 +25,7 @@ class CatalogProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final agotado = item.isSoldOut;
     final canOrder = !agotado && onAdd != null;
 
@@ -33,9 +35,9 @@ class CatalogProductCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: c.bgCard,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(color: c.border),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,14 +63,14 @@ class CatalogProductCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.name,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: c.textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 14.5,
                           ),
                         ),
                       ),
-                      if (agotado) _badge('Agotado', AppColors.busy),
+                      if (agotado) _badge('Agotado', AppColors.busy, c),
                     ],
                   ),
                   if (item.description != null &&
@@ -78,8 +80,8 @@ class CatalogProductCard extends StatelessWidget {
                       item.description!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: c.textSecondary,
                         fontSize: 12.5,
                         height: 1.3,
                       ),
@@ -90,10 +92,7 @@ class CatalogProductCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       '${item.stock} disponibles',
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11.5,
-                      ),
+                      style: TextStyle(color: c.textMuted, fontSize: 11.5),
                     ),
                   ],
                   const SizedBox(height: 6),
@@ -102,8 +101,8 @@ class CatalogProductCard extends StatelessWidget {
                       if (item.hasOffer) ...[
                         Text(
                           _money(item.price),
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
+                          style: TextStyle(
+                            color: c.textMuted,
                             fontSize: 12,
                             decoration: TextDecoration.lineThrough,
                           ),
@@ -121,7 +120,7 @@ class CatalogProductCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      if (canOrder) _cartControl(),
+                      if (canOrder) _cartControl(c),
                     ],
                   ),
                 ],
@@ -133,7 +132,7 @@ class CatalogProductCard extends StatelessWidget {
     );
   }
 
-  Widget _badge(String text, Color color) => Container(
+  Widget _badge(String text, Color color, AppThemeColors c) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
     decoration: BoxDecoration(
       color: color.withValues(alpha: 0.15),
@@ -142,14 +141,15 @@ class CatalogProductCard extends StatelessWidget {
     child: Text(
       text,
       style: TextStyle(
-        color: color,
+        color: AppColors.tintOn(color, c.isDark),
         fontSize: 10.5,
         fontWeight: FontWeight.w700,
       ),
     ),
   );
 
-  Widget _cartControl() {
+  Widget _cartControl(AppThemeColors c) {
+    final onTint = AppColors.tintOn(AppColors.whatsapp, c.isDark);
     if (quantity <= 0) {
       return InkWell(
         onTap: onAdd,
@@ -160,15 +160,15 @@ class CatalogProductCard extends StatelessWidget {
             color: AppColors.whatsapp.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(99),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.add, size: 15, color: AppColors.whatsapp),
-              SizedBox(width: 4),
+              Icon(Icons.add, size: 15, color: onTint),
+              const SizedBox(width: 4),
               Text(
                 'Agregar',
                 style: TextStyle(
-                  color: AppColors.whatsapp,
+                  color: onTint,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -186,8 +186,8 @@ class CatalogProductCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             '$quantity',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: c.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 15,
             ),
@@ -206,6 +206,7 @@ class _StepBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(99),
@@ -215,7 +216,11 @@ class _StepBtn extends StatelessWidget {
           color: AppColors.whatsapp.withValues(alpha: 0.15),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 16, color: AppColors.whatsapp),
+        child: Icon(
+          icon,
+          size: 16,
+          color: AppColors.tintOn(AppColors.whatsapp, c.isDark),
+        ),
       ),
     );
   }

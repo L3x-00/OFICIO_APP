@@ -43,9 +43,9 @@ class OffersBanner extends StatelessWidget {
                 color: AppColors.amber.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.local_offer_rounded,
-                color: AppColors.amber,
+                color: AppColors.tintOn(AppColors.amber, c.isDark),
                 size: 17,
               ),
             ),

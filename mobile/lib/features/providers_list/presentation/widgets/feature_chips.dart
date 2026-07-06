@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 /// Metadata visual de cada funcionalidad por categoría.
 const Map<String, ({IconData icon, String label})> _kFeatureMeta = {
@@ -23,6 +24,7 @@ class FeatureChips extends StatelessWidget {
         .whereType<({IconData icon, String label})>()
         .toList();
     if (metas.isEmpty) return const SizedBox.shrink();
+    final tint = AppColors.tintOn(AppColors.amber, context.colors.isDark);
 
     return Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -43,12 +45,12 @@ class FeatureChips extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(m.icon, size: 12, color: AppColors.amberDark),
+                    Icon(m.icon, size: 12, color: tint),
                     const SizedBox(width: 4),
                     Text(
                       m.label,
-                      style: const TextStyle(
-                        color: AppColors.amberDark,
+                      style: TextStyle(
+                        color: tint,
                         fontSize: 10.5,
                         fontWeight: FontWeight.w700,
                       ),

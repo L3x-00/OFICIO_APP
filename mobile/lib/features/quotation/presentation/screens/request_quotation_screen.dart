@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../data/quotation_repository.dart';
 import 'my_quotations_screen.dart';
@@ -91,23 +92,24 @@ class _RequestQuotationScreenState extends State<RequestQuotationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: c.bg,
       appBar: AppBar(
         title: Text(
           widget.businessName == null
               ? 'Pedir cotización'
               : 'Cotizar · ${widget.businessName}',
         ),
-        backgroundColor: AppColors.bgCard,
+        backgroundColor: c.bgCard,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
+          Text(
             '¿Qué necesitas cotizar?',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: c.textPrimary,
               fontWeight: FontWeight.w700,
               fontSize: 16,
             ),
@@ -118,13 +120,13 @@ class _RequestQuotationScreenState extends State<RequestQuotationScreen> {
             maxLength: 1000,
             minLines: 4,
             maxLines: 8,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(color: c.textPrimary),
             decoration: InputDecoration(
               hintText:
                   'Describe el trabajo, medidas, materiales, plazos… mientras más detalle, mejor el presupuesto.',
-              hintStyle: const TextStyle(color: AppColors.textMuted),
+              hintStyle: TextStyle(color: c.textMuted),
               filled: true,
-              fillColor: AppColors.bgCard,
+              fillColor: c.bgCard,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -132,7 +134,7 @@ class _RequestQuotationScreenState extends State<RequestQuotationScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _photoSection(),
+          _photoSection(c),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -140,7 +142,7 @@ class _RequestQuotationScreenState extends State<RequestQuotationScreen> {
               onPressed: _submitting ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.amber,
-                foregroundColor: Colors.black,
+                foregroundColor: AppColors.onSolid(AppColors.amber),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -163,7 +165,7 @@ class _RequestQuotationScreenState extends State<RequestQuotationScreen> {
     );
   }
 
-  Widget _photoSection() {
+  Widget _photoSection(AppThemeColors c) {
     if (_photoUrl != null) {
       return Stack(
         children: [
@@ -199,10 +201,10 @@ class _RequestQuotationScreenState extends State<RequestQuotationScreen> {
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : const Icon(Icons.add_a_photo, size: 18, color: AppColors.textMuted),
+          : Icon(Icons.add_a_photo, size: 18, color: c.textMuted),
       label: Text(
         _uploading ? 'Subiendo…' : 'Adjuntar foto (opcional)',
-        style: const TextStyle(color: AppColors.textSecondary),
+        style: TextStyle(color: c.textSecondary),
       ),
     );
   }

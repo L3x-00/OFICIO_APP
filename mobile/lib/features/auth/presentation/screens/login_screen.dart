@@ -910,6 +910,7 @@ class _AccountExistsOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Material(
       color: Colors.black54,
       child: Center(
@@ -919,7 +920,7 @@ class _AccountExistsOverlay extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             constraints: const BoxConstraints(maxWidth: 380),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: c.bgCard,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -932,28 +933,28 @@ class _AccountExistsOverlay extends StatelessWidget {
                     color: AppColors.busy.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.error_outline_rounded,
-                    color: AppColors.busy,
+                    color: AppColors.tintOn(AppColors.busy, c.isDark),
                     size: 34,
                   ),
                 ),
                 const SizedBox(height: 18),
-                const Text(
+                Text(
                   'Cuenta ya registrada',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: c.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Ya hay una cuenta registrada con este correo. Por favor '
                   'intenta con otro, o inicia sesión con tu cuenta.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black54, height: 1.4),
+                  style: TextStyle(color: c.textSecondary, height: 1.4),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -981,9 +982,9 @@ class _AccountExistsOverlay extends StatelessWidget {
                   width: double.infinity,
                   child: TextButton(
                     onPressed: onAccept,
-                    child: const Text(
+                    child: Text(
                       'Aceptar',
-                      style: TextStyle(color: Colors.black54),
+                      style: TextStyle(color: c.textSecondary),
                     ),
                   ),
                 ),

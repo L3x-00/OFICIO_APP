@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../domain/models/appointment_model.dart';
 
 /// Chip de estado de una cita con su color correspondiente.
@@ -8,7 +9,7 @@ class AppointmentStatusChip extends StatelessWidget {
 
   final String status;
 
-  Color get _color {
+  Color _color(BuildContext context) {
     switch (status) {
       case kApptConfirmada:
         return AppColors.available;
@@ -20,13 +21,13 @@ class AppointmentStatusChip extends StatelessWidget {
       case kApptCompletada:
         return AppColors.primary;
       default:
-        return AppColors.textMuted;
+        return context.colors.textMuted;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = _color;
+    final c = _color(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(
@@ -36,7 +37,11 @@ class AppointmentStatusChip extends StatelessWidget {
       ),
       child: Text(
         appointmentStatusLabel(status),
-        style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: AppColors.tintOn(c, context.colors.isDark),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

@@ -190,7 +190,7 @@ class OfferComparisonSheet extends StatelessWidget {
             onPressed: () => Navigator.of(dialogCtx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.available,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onSolid(AppColors.available),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -245,19 +245,19 @@ class _OfferCard extends StatelessWidget {
                   top: Radius.circular(13),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.thumb_up_alt_rounded,
                     size: 12,
-                    color: AppColors.available,
+                    color: AppColors.tintOn(AppColors.available, c.isDark),
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
                     'Mejor precio',
                     style: TextStyle(
-                      color: AppColors.available,
+                      color: AppColors.tintOn(AppColors.available, c.isDark),
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
@@ -283,8 +283,11 @@ class _OfferCard extends StatelessWidget {
                           offer.providerName.isNotEmpty
                               ? offer.providerName[0].toUpperCase()
                               : '?',
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: AppColors.tintOn(
+                              AppColors.primary,
+                              c.isDark,
+                            ),
                             fontWeight: FontWeight.w700,
                             fontSize: 18,
                           ),
@@ -374,19 +377,19 @@ class _OfferCard extends StatelessWidget {
                     onPressed: isSubmitting ? null : onAccept,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.onSolid(AppColors.primary),
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     child: isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: AppColors.onSolid(AppColors.primary),
                             ),
                           )
                         : const Text(
@@ -413,6 +416,7 @@ class _StarRating extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -427,10 +431,7 @@ class _StarRating extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(
-          '($reviews)',
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-        ),
+        Text('($reviews)', style: TextStyle(color: c.textMuted, fontSize: 11)),
       ],
     );
   }

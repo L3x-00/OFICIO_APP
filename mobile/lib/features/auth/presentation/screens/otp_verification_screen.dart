@@ -332,6 +332,7 @@ class _OtpSuccessOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Material(
       color: Colors.black54,
       child: Center(
@@ -341,31 +342,39 @@ class _OtpSuccessOverlay extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             constraints: const BoxConstraints(maxWidth: 360),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: c.bgCard,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.green,
-                  size: 80,
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.available.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    color: AppColors.tintOn(AppColors.available, c.isDark),
+                    size: 34,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Código verificado',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: c.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Tu correo ha sido validado correctamente.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black54),
+                  style: TextStyle(color: c.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(

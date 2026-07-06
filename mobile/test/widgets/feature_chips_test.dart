@@ -4,10 +4,15 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/features/providers_list/presentation/widgets/feature_chips.dart';
 
 void main() {
-  Widget host(Widget child) => MaterialApp(home: Scaffold(body: child));
+  // El widget lee context.colors → el host necesita el ThemeExtension real.
+  Widget host(Widget child) => MaterialApp(
+    theme: AppThemeColors.buildDark(),
+    home: Scaffold(body: child),
+  );
 
   testWidgets('muestra un chip por cada feature conocida', (tester) async {
     await tester.pumpWidget(

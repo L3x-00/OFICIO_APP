@@ -219,9 +219,9 @@ class _ReportSheetContentState extends State<_ReportSheetContent> {
                   color: AppColors.busy.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.flag_rounded,
-                  color: AppColors.busy,
+                  color: AppColors.tintOn(AppColors.busy, c.isDark),
                   size: 20,
                 ),
               ),

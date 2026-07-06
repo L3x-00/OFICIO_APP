@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../shared/widgets/app_network_image.dart';
 import '../../domain/models/catalog_product_model.dart';
 import '../providers/catalog_manager_provider.dart';
@@ -117,15 +118,16 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
-        decoration: const BoxDecoration(
-          color: AppColors.bgCard,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
           child: Form(
@@ -136,23 +138,24 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
               children: [
                 Text(
                   _isEdit ? 'Editar producto' : 'Nuevo producto',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: c.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 16),
-                _photoPicker(),
+                _photoPicker(c),
                 const SizedBox(height: 14),
-                _field(_name, 'Nombre', required: true),
+                _field(c, _name, 'Nombre', required: true),
                 const SizedBox(height: 12),
-                _field(_desc, 'Descripción', maxLines: 2),
+                _field(c, _desc, 'Descripción', maxLines: 2),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: _field(
+                        c,
                         _price,
                         'Precio (S/)',
                         required: true,
@@ -161,7 +164,12 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _field(_offer, 'Oferta (opcional)', number: true),
+                      child: _field(
+                        c,
+                        _offer,
+                        'Oferta (opcional)',
+                        number: true,
+                      ),
                     ),
                   ],
                 ),
@@ -169,21 +177,23 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
                 Row(
                   children: [
                     Expanded(
-                      child: _field(_stock, 'Stock (opcional)', integer: true),
+                      child: _field(
+                        c,
+                        _stock,
+                        'Stock (opcional)',
+                        integer: true,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(child: _field(_category, 'Sección (opcional)')),
+                    Expanded(child: _field(c, _category, 'Sección (opcional)')),
                   ],
                 ),
                 const SizedBox(height: 6),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
+                  title: Text(
                     'Disponible',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: c.textPrimary, fontSize: 14),
                   ),
                   value: _isAvailable,
                   activeThumbColor: AppColors.available,
@@ -196,7 +206,7 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
                     onPressed: _saving ? null : _save,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.amber,
-                      foregroundColor: Colors.black,
+                      foregroundColor: AppColors.onSolid(AppColors.amber),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: _saving
@@ -216,7 +226,7 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
     );
   }
 
-  Widget _photoPicker() {
+  Widget _photoPicker(AppThemeColors c) {
     return Center(
       child: GestureDetector(
         onTap: _uploading ? null : _pickPhoto,
@@ -224,26 +234,23 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
           width: 110,
           height: 110,
           decoration: BoxDecoration(
-            color: AppColors.bgInput,
+            color: c.bgInput,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            border: Border.all(color: c.border),
           ),
           clipBehavior: Clip.antiAlias,
           child: _uploading
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : _photoUrl != null
               ? AppNetworkImage(url: _photoUrl!, fit: BoxFit.cover)
-              : const Column(
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add_a_photo, color: AppColors.textMuted),
-                    SizedBox(height: 6),
+                    Icon(Icons.add_a_photo, color: c.textMuted),
+                    const SizedBox(height: 6),
                     Text(
                       'Foto',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: c.textMuted, fontSize: 12),
                     ),
                   ],
                 ),
@@ -253,7 +260,8 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
   }
 
   Widget _field(
-    TextEditingController c,
+    AppThemeColors c,
+    TextEditingController controller,
     String label, {
     bool required = false,
     bool number = false,
@@ -262,7 +270,7 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
   }) {
     final numeric = number || integer;
     return TextFormField(
-      controller: c,
+      controller: controller,
       maxLines: maxLines,
       keyboardType: numeric
           ? TextInputType.numberWithOptions(decimal: number)
@@ -274,12 +282,12 @@ class _CatalogProductFormSheetState extends State<CatalogProductFormSheet> {
               ),
             ]
           : null,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: c.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textMuted),
+        labelStyle: TextStyle(color: c.textMuted),
         filled: true,
-        fillColor: AppColors.bgInput,
+        fillColor: c.bgInput,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,

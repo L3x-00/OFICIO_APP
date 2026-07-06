@@ -37,7 +37,11 @@ class AccountTypeBadge extends StatelessWidget {
       ),
       child: Text(
         _label(),
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -59,8 +63,10 @@ class AccountTypeBadge extends StatelessWidget {
 class PendingApprovalBanner extends StatelessWidget {
   /// 'OFICIO' | 'NEGOCIO'
   final String providerType;
+
   /// 'PENDIENTE' | 'APROBADO' | 'RECHAZADO'
   final String status;
+
   /// Motivo de rechazo (solo cuando status == 'RECHAZADO')
   final String? rejectionReason;
 
@@ -71,8 +77,8 @@ class PendingApprovalBanner extends StatelessWidget {
     this.rejectionReason,
   });
 
-  bool get _isNegocio    => providerType == 'NEGOCIO';
-  bool get _isRejected   => status == 'RECHAZADO';
+  bool get _isNegocio => providerType == 'NEGOCIO';
+  bool get _isRejected => status == 'RECHAZADO';
 
   Color get _accentColor {
     if (_isRejected) return const Color(0xFFEF4444);
@@ -130,7 +136,11 @@ class PendingApprovalBanner extends StatelessWidget {
                       color: accent.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.cancel_rounded, color: accent, size: 24),
+                    child: const Icon(
+                      Icons.cancel_rounded,
+                      color: accent,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -148,7 +158,11 @@ class PendingApprovalBanner extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'El administrador ha rechazado tu solicitud por el siguiente motivo:',
-                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 12),
               Container(
@@ -161,8 +175,8 @@ class PendingApprovalBanner extends StatelessWidget {
                 ),
                 child: Text(
                   rejectionReason ?? 'No se especificó un motivo.',
-                  style: const TextStyle(
-                    color: Color(0xFFEF4444),
+                  style: TextStyle(
+                    color: AppColors.tintOn(AppColors.busy, c.isDark),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1.5,
@@ -178,12 +192,20 @@ class PendingApprovalBanner extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline_rounded, color: AppColors.amber, size: 18),
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: AppColors.amber,
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Puedes corregir la información e intentar registrarte nuevamente.',
-                        style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+                        style: TextStyle(
+                          color: c.textSecondary,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
@@ -199,9 +221,14 @@ class PendingApprovalBanner extends StatelessWidget {
                         foregroundColor: accent,
                         side: BorderSide(color: accent.withValues(alpha: 0.5)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: const Text(
+                        'Entendido',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -213,13 +240,15 @@ class PendingApprovalBanner extends StatelessWidget {
                         // rootNavigator: el form de re-registro sale del
                         // shell del cliente para no dejar visible la
                         // bottom nav debajo.
-                        Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
-                          builder: (_) => ProviderOnboardingForm(
-                            providerType: providerType,
-                            isStandalone: true,
-                            initialData: auth.providerDataFor(providerType),
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProviderOnboardingForm(
+                              providerType: providerType,
+                              isStandalone: true,
+                              initialData: auth.providerDataFor(providerType),
+                            ),
                           ),
-                        ));
+                        );
                       },
                       icon: const Icon(Icons.refresh_rounded, size: 16),
                       label: const Text('Reintentar'),
@@ -227,7 +256,9 @@ class PendingApprovalBanner extends StatelessWidget {
                         backgroundColor: accent,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         textStyle: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -268,7 +299,9 @@ class PendingApprovalBanner extends StatelessWidget {
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
-                      _isNegocio ? 'Aprobación del Negocio' : 'Aprobación del Perfil Profesional',
+                      _isNegocio
+                          ? 'Aprobación del Negocio'
+                          : 'Aprobación del Perfil Profesional',
                       style: TextStyle(
                         color: c.textPrimary,
                         fontSize: 17,
@@ -282,19 +315,22 @@ class PendingApprovalBanner extends StatelessWidget {
               ApprovalStep(
                 number: '1',
                 title: 'Revisión de datos',
-                description: 'El equipo de Servi verifica que la información de tu perfil sea correcta y completa.',
+                description:
+                    'El equipo de Servi verifica que la información de tu perfil sea correcta y completa.',
               ),
               const SizedBox(height: 14),
               ApprovalStep(
                 number: '2',
                 title: 'Verificación de identidad',
-                description: 'Si proporcionaste DNI u otros documentos, se valida su autenticidad.',
+                description:
+                    'Si proporcionaste DNI u otros documentos, se valida su autenticidad.',
               ),
               const SizedBox(height: 14),
               ApprovalStep(
                 number: '3',
                 title: 'Notificación de aprobación',
-                description: 'Recibirás una notificación en la app cuando tu perfil sea aprobado y esté visible para los clientes.',
+                description:
+                    'Recibirás una notificación en la app cuando tu perfil sea aprobado y esté visible para los clientes.',
               ),
               const SizedBox(height: 20),
               Container(
@@ -305,12 +341,20 @@ class PendingApprovalBanner extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.schedule_rounded, color: AppColors.amber, size: 18),
+                    const Icon(
+                      Icons.schedule_rounded,
+                      color: AppColors.amber,
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'El proceso suele demorar entre 24 y 48 horas hábiles.',
-                        style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+                        style: TextStyle(
+                          color: c.textSecondary,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
@@ -325,9 +369,14 @@ class PendingApprovalBanner extends StatelessWidget {
                     backgroundColor: accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -436,7 +485,11 @@ class ApprovalStep extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 description,
-                style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+                style: TextStyle(
+                  color: c.textSecondary,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
               ),
             ],
           ),

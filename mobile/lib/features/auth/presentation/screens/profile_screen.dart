@@ -449,7 +449,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ActionButton(
             icon: Icons.delete_forever_rounded,
             label: 'Eliminar cuenta',
-            color: const Color(0xFF991B1B),
+            color: AppColors.busy,
             onTap: () => ProfileDialogs.confirmDeleteAccount(context, auth),
           ),
           const SizedBox(height: 24),

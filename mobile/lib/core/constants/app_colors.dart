@@ -22,6 +22,9 @@ abstract class AppColors {
 
   // Acento PROTAGONISTA — dorado tostado, cálido pero apagado (artesanal).
   static const Color amber = Color(0xFFC4A35A);
+  static const Color business = Color(
+    0xFF7E6492,
+  ); // malva taxonomía chip Negocios
   static const Color amberDark = Color(0xFFA88944);
   static const Color amberDeep = Color(0xFF2A2418); // fondo oscuro cálido
 
