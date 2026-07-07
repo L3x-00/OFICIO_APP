@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Post,
+  Put,
   Delete,
   Body,
   Request,
@@ -12,13 +13,39 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ProviderProfileService } from './provider-profile.service.js';
+import { CoverageService } from '../coverage/coverage.service.js';
+import { SetCoverageDto } from '../coverage/dto/set-coverage.dto.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @Controller('provider-profile')
 @UseGuards(JwtAuthGuard)
 export class ProviderProfileController {
-  constructor(private readonly service: ProviderProfileService) {}
+  constructor(
+    private readonly service: ProviderProfileService,
+    private readonly coverage: CoverageService,
+  ) {}
+
+  // ── ALCANCE (distritos donde se muestra el proveedor) ─────
+
+  // GET /provider-profile/me/coverage?type=OFICIO|NEGOCIO
+  @Get('me/coverage')
+  getCoverage(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') type?: string,
+  ) {
+    return this.coverage.getCoverage(req.user.userId, type);
+  }
+
+  // PUT /provider-profile/me/coverage?type=OFICIO|NEGOCIO — reemplaza la selección
+  @Put('me/coverage')
+  setCoverage(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: SetCoverageDto,
+    @Query('type') type?: string,
+  ) {
+    return this.coverage.setCoverage(req.user.userId, dto.localityIds, type);
+  }
 
   // GET /provider-profile/me?type=OFICIO|NEGOCIO
   @Get('me')

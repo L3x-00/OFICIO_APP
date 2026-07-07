@@ -7,6 +7,7 @@ import '../widgets/profile/profile_availability_section.dart';
 import '../widgets/profile/profile_info_section.dart';
 import '../widgets/profile/profile_photos_section.dart';
 import '../widgets/profile/profile_plan_section.dart';
+import '../widgets/profile/profile_reach_section.dart';
 import '../widgets/profile/profile_social_section.dart';
 import '../widgets/profile/profile_trust_section.dart';
 
@@ -53,7 +54,9 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
           _buildAppBar(),
           if (dash.isLoading && profile == null)
             const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator(color: AppColors.amber)),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.amber),
+              ),
             )
           else ...[
             SliverToBoxAdapter(
@@ -91,6 +94,9 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
                       onSavingChanged: _setSaving,
                     ),
                     const SizedBox(height: 20),
+                    // Alcance: distritos donde se muestra (según plan)
+                    ProfileReachSection(isNegocio: widget.isNegocio),
+                    const SizedBox(height: 20),
                     // Validación de confianza
                     ProfileTrustSection(isNegocio: widget.isNegocio),
                     const SizedBox(height: 20),
@@ -110,7 +116,7 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
   // ── APP BAR ───────────────────────────────────────────────
 
   SliverAppBar _buildAppBar() {
-    final c    = context.colors;
+    final c = context.colors;
     final dash = context.watch<DashboardProvider>();
     final busy = _isSaving || dash.isUploadingPhoto;
     return SliverAppBar(
@@ -128,7 +134,9 @@ class _PanelProfileTabState extends State<PanelProfileTab> {
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
-                color: dash.isUploadingPhoto ? AppColors.primary : AppColors.amber,
+                color: dash.isUploadingPhoto
+                    ? AppColors.primary
+                    : AppColors.amber,
                 strokeWidth: 2,
               ),
             ),

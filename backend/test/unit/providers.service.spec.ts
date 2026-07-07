@@ -325,4 +325,54 @@ describe('ProvidersService (unit)', () => {
       });
     });
   });
+
+  describe('findAll — alcance por distritos (provider_coverage)', () => {
+    const CATALOG = [
+      { id: 1, department: 'Junín', province: 'Huancayo', district: 'Huancayo' },
+      { id: 2, department: 'Junín', province: 'Huancayo', district: 'El Tambo' },
+      { id: 5, department: 'Junín', province: 'Jauja', district: 'Jauja' },
+    ];
+
+    beforeEach(() => {
+      prisma.locality.findMany.mockResolvedValue(CATALOG);
+      prisma.provider.findMany.mockResolvedValue([]);
+      prisma.provider.count.mockResolvedValue(0);
+    });
+
+    /// El filtro de distrito debe matchear registrado O cobertura de pago —
+    /// compuesto en AND para no pisar el OR de la búsqueda por texto.
+    it('filtro por distrito → OR registrado/coverage gateado por plan de pago', async () => {
+      await service.findAll({
+        department: 'Junín',
+        province: 'Huancayo',
+        district: 'El Tambo',
+      });
+      const where = prisma.provider.findMany.mock.calls[0][0].where;
+      const loc = where.AND[0];
+      expect(loc.OR[0]).toEqual({ localityId: { in: [2] } });
+      expect(loc.OR[1].subscription.plan.in).toEqual(['ESTANDAR', 'PREMIUM']);
+      expect(loc.OR[1].coverage.some.localityId.in).toEqual([2]);
+      // El where.OR raíz queda libre para la búsqueda por texto.
+      expect(where.OR).toBeUndefined();
+    });
+
+    it('search + distrito conviven: OR de texto en raíz, ubicación en AND', async () => {
+      await service.findAll({
+        department: 'Junín',
+        province: 'Huancayo',
+        district: 'El Tambo',
+        search: 'gasfitero',
+      });
+      const where = prisma.provider.findMany.mock.calls[0][0].where;
+      expect(where.OR).toBeDefined(); // búsqueda por texto
+      expect(where.AND[0].OR[0].localityId.in).toEqual([2]); // ubicación intacta
+    });
+
+    it('localityId directo también pasa por el OR de coverage', async () => {
+      await service.findAll({ localityId: 7 });
+      const where = prisma.provider.findMany.mock.calls[0][0].where;
+      expect(where.AND[0].OR[0]).toEqual({ localityId: { in: [7] } });
+      expect(where.AND[0].OR[1].coverage.some.localityId.in).toEqual([7]);
+    });
+  });
 });

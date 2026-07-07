@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/network/dio_client.dart';
+import '../domain/models/coverage_model.dart';
 import '../domain/models/dashboard_profile_model.dart';
 import '../domain/models/service_item_model.dart';
 import '../../providers_list/domain/models/review_model.dart';
@@ -211,6 +212,29 @@ class DashboardRepository {
       '/provider-profile/me/images/$imageId',
       queryParameters: type != null ? {'type': type} : null,
     );
+  }
+
+  // ── ALCANCE (distritos donde se muestra el proveedor) ────
+
+  Future<CoverageModel> getCoverage({String? type}) async {
+    final response = await _dio.get(
+      '/provider-profile/me/coverage',
+      queryParameters: type != null ? {'type': type} : null,
+    );
+    return CoverageModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Reemplaza los distritos ADICIONALES (el registrado siempre cuenta).
+  Future<CoverageModel> setCoverage(
+    List<int> localityIds, {
+    String? type,
+  }) async {
+    final response = await _dio.put(
+      '/provider-profile/me/coverage',
+      queryParameters: type != null ? {'type': type} : null,
+      data: {'localityIds': localityIds},
+    );
+    return CoverageModel.fromJson(response.data as Map<String, dynamic>);
   }
 
   // ── SOLICITUD DE UPGRADE DE PLAN ─────────────────────────

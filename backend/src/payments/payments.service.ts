@@ -12,6 +12,7 @@ import { PushNotificationsService } from '../firebase/push-notifications.service
 import { SubmitYapeDto } from './dto/submit-yape.dto.js';
 import { MercadoPagoService } from './mercadopago/mercadopago.service.js';
 import type { PaidPlan } from './mercadopago/dto/create-preference.dto.js';
+import { syncCoverageToPlan } from '../coverage/coverage.service.js';
 
 const YapePaymentStatus = {
   PENDING: 'PENDING',
@@ -298,7 +299,10 @@ export class PaymentsService {
       }
     });
 
-    // 5. Notificar al proveedor
+    // 5. Sincronizar alcance por distritos (default o recorte según plan).
+    await syncCoverageToPlan(this.prisma, payment.providerId, payment.plan);
+
+    // 6. Notificar al proveedor
     const planLabel =
       payment.plan.charAt(0) + payment.plan.slice(1).toLowerCase();
     const title = '¡Pago aprobado con éxito!';
@@ -588,6 +592,9 @@ export class PaymentsService {
       }
       throw e;
     }
+
+    // Sincronizar alcance por distritos (default o recorte según plan).
+    await syncCoverageToPlan(this.prisma, provider.id, plan);
 
     // 3. Notificaciones (fuera de la tx, no bloquean si fallan).
     const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();

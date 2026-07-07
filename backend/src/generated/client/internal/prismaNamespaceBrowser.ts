@@ -62,6 +62,7 @@ export const ModelName = {
   QuotationRequest: 'QuotationRequest',
   ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
+  ProviderCoverage: 'ProviderCoverage',
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
   SubscriptionAuditLog: 'SubscriptionAuditLog',
@@ -327,6 +328,16 @@ export const ProviderScalarFieldEnum = {
 } as const
 
 export type ProviderScalarFieldEnum = (typeof ProviderScalarFieldEnum)[keyof typeof ProviderScalarFieldEnum]
+
+
+export const ProviderCoverageScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  localityId: 'localityId',
+  createdAt: 'createdAt'
+} as const
+
+export type ProviderCoverageScalarFieldEnum = (typeof ProviderCoverageScalarFieldEnum)[keyof typeof ProviderCoverageScalarFieldEnum]
 
 
 export const ProviderImageScalarFieldEnum = {

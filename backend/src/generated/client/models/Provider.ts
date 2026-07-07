@@ -593,6 +593,7 @@ export type ProviderWhereInput = {
   verificationDocs?: Prisma.VerificationDocListRelationFilter
   yapePayments?: Prisma.YapePaymentListRelationFilter
   aiMemory?: Prisma.XOR<Prisma.AiProviderMemoryNullableScalarRelationFilter, Prisma.AiProviderMemoryWhereInput> | null
+  coverage?: Prisma.ProviderCoverageListRelationFilter
 }
 
 export type ProviderOrderByWithRelationInput = {
@@ -667,6 +668,7 @@ export type ProviderOrderByWithRelationInput = {
   verificationDocs?: Prisma.VerificationDocOrderByRelationAggregateInput
   yapePayments?: Prisma.YapePaymentOrderByRelationAggregateInput
   aiMemory?: Prisma.AiProviderMemoryOrderByWithRelationInput
+  coverage?: Prisma.ProviderCoverageOrderByRelationAggregateInput
 }
 
 export type ProviderWhereUniqueInput = Prisma.AtLeast<{
@@ -745,6 +747,7 @@ export type ProviderWhereUniqueInput = Prisma.AtLeast<{
   verificationDocs?: Prisma.VerificationDocListRelationFilter
   yapePayments?: Prisma.YapePaymentListRelationFilter
   aiMemory?: Prisma.XOR<Prisma.AiProviderMemoryNullableScalarRelationFilter, Prisma.AiProviderMemoryWhereInput> | null
+  coverage?: Prisma.ProviderCoverageListRelationFilter
 }, "id" | "slug" | "userId_type">
 
 export type ProviderOrderByWithAggregationInput = {
@@ -922,6 +925,7 @@ export type ProviderCreateInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateInput = {
@@ -994,6 +998,7 @@ export type ProviderUncheckedCreateInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUpdateInput = {
@@ -1065,6 +1070,7 @@ export type ProviderUpdateInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateInput = {
@@ -1137,6 +1143,7 @@ export type ProviderUncheckedUpdateInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyInput = {
@@ -1645,6 +1652,20 @@ export type EnumTrustStatusFieldUpdateOperationsInput = {
   set?: $Enums.TrustStatus
 }
 
+export type ProviderCreateNestedOneWithoutCoverageInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutCoverageInput, Prisma.ProviderUncheckedCreateWithoutCoverageInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutCoverageInput
+  connect?: Prisma.ProviderWhereUniqueInput
+}
+
+export type ProviderUpdateOneRequiredWithoutCoverageNestedInput = {
+  create?: Prisma.XOR<Prisma.ProviderCreateWithoutCoverageInput, Prisma.ProviderUncheckedCreateWithoutCoverageInput>
+  connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutCoverageInput
+  upsert?: Prisma.ProviderUpsertWithoutCoverageInput
+  connect?: Prisma.ProviderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProviderUpdateToOneWithWhereWithoutCoverageInput, Prisma.ProviderUpdateWithoutCoverageInput>, Prisma.ProviderUncheckedUpdateWithoutCoverageInput>
+}
+
 export type ProviderCreateNestedOneWithoutImagesInput = {
   create?: Prisma.XOR<Prisma.ProviderCreateWithoutImagesInput, Prisma.ProviderUncheckedCreateWithoutImagesInput>
   connectOrCreate?: Prisma.ProviderCreateOrConnectWithoutImagesInput
@@ -1969,6 +1990,7 @@ export type ProviderCreateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutUserInput = {
@@ -2040,6 +2062,7 @@ export type ProviderUncheckedCreateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutUserInput = {
@@ -2188,6 +2211,7 @@ export type ProviderCreateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutLocalityInput = {
@@ -2259,6 +2283,7 @@ export type ProviderUncheckedCreateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutLocalityInput = {
@@ -2355,6 +2380,7 @@ export type ProviderCreateWithoutAppointmentsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutAppointmentsInput = {
@@ -2426,6 +2452,7 @@ export type ProviderUncheckedCreateWithoutAppointmentsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutAppointmentsInput = {
@@ -2512,6 +2539,7 @@ export type ProviderUpdateWithoutAppointmentsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutAppointmentsInput = {
@@ -2583,6 +2611,7 @@ export type ProviderUncheckedUpdateWithoutAppointmentsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutMenuItemsInput = {
@@ -2653,6 +2682,7 @@ export type ProviderCreateWithoutMenuItemsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutMenuItemsInput = {
@@ -2724,6 +2754,7 @@ export type ProviderUncheckedCreateWithoutMenuItemsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutMenuItemsInput = {
@@ -2810,6 +2841,7 @@ export type ProviderUpdateWithoutMenuItemsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutMenuItemsInput = {
@@ -2881,6 +2913,7 @@ export type ProviderUncheckedUpdateWithoutMenuItemsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutCatalogProductsInput = {
@@ -2951,6 +2984,7 @@ export type ProviderCreateWithoutCatalogProductsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutCatalogProductsInput = {
@@ -3022,6 +3056,7 @@ export type ProviderUncheckedCreateWithoutCatalogProductsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutCatalogProductsInput = {
@@ -3108,6 +3143,7 @@ export type ProviderUpdateWithoutCatalogProductsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutCatalogProductsInput = {
@@ -3179,6 +3215,7 @@ export type ProviderUncheckedUpdateWithoutCatalogProductsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutQuotationRequestsInput = {
@@ -3249,6 +3286,7 @@ export type ProviderCreateWithoutQuotationRequestsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutQuotationRequestsInput = {
@@ -3320,6 +3358,7 @@ export type ProviderUncheckedCreateWithoutQuotationRequestsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutQuotationRequestsInput = {
@@ -3406,6 +3445,7 @@ export type ProviderUpdateWithoutQuotationRequestsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutQuotationRequestsInput = {
@@ -3477,6 +3517,7 @@ export type ProviderUncheckedUpdateWithoutQuotationRequestsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutProviderCategoriesInput = {
@@ -3547,6 +3588,7 @@ export type ProviderCreateWithoutProviderCategoriesInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
@@ -3618,6 +3660,7 @@ export type ProviderUncheckedCreateWithoutProviderCategoriesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutProviderCategoriesInput = {
@@ -3704,6 +3747,7 @@ export type ProviderUpdateWithoutProviderCategoriesInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
@@ -3764,6 +3808,309 @@ export type ProviderUncheckedUpdateWithoutProviderCategoriesInput = {
   offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
   planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
   analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
+  recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUncheckedUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUncheckedUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
+}
+
+export type ProviderCreateWithoutCoverageInput = {
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductCreateNestedManyWithoutProviderInput
+  quotationRequests?: Prisma.QuotationRequestCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportCreateNestedManyWithoutProviderInput
+  locality: Prisma.LocalityCreateNestedOneWithoutProvidersInput
+  user: Prisma.UserCreateNestedOneWithoutProvidersInput
+  recommendations?: Prisma.RecommendationCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderUncheckedCreateWithoutCoverageInput = {
+  id?: number
+  userId: number
+  type?: $Enums.ProviderType
+  businessName: string
+  description?: string | null
+  phone: string
+  whatsapp?: string | null
+  address?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: $Enums.AvailabilityStatus
+  isVisible?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  isVerified?: boolean
+  hasCleanRecord?: boolean
+  averageRating?: number
+  totalReviews?: number
+  localityId: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  dni?: string | null
+  hasDelivery?: boolean
+  hasHomeService?: boolean
+  isTrusted?: boolean
+  nombreComercial?: string | null
+  planPriority?: number
+  plenaCoordinacion?: boolean
+  razonSocial?: string | null
+  ruc?: string | null
+  totalRecommendations?: number
+  trustStatus?: $Enums.TrustStatus
+  facebook?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  telegram?: string | null
+  tiktok?: string | null
+  twitterX?: string | null
+  website?: string | null
+  whatsappBiz?: string | null
+  showPhone?: boolean
+  showWhatsapp?: boolean
+  showExactLocation?: boolean
+  slug?: string | null
+  slugEditedAt?: Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedCreateNestedManyWithoutProviderInput
+  appointments?: Prisma.AppointmentUncheckedCreateNestedManyWithoutProviderInput
+  menuItems?: Prisma.MenuItemUncheckedCreateNestedManyWithoutProviderInput
+  catalogProducts?: Prisma.CatalogProductUncheckedCreateNestedManyWithoutProviderInput
+  quotationRequests?: Prisma.QuotationRequestUncheckedCreateNestedManyWithoutProviderInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedCreateNestedManyWithoutProviderInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutProviderInput
+  offerPosts?: Prisma.OfferPostUncheckedCreateNestedManyWithoutProviderInput
+  offers?: Prisma.OfferUncheckedCreateNestedManyWithoutProviderInput
+  planRequests?: Prisma.PlanRequestUncheckedCreateNestedManyWithoutProviderInput
+  analytics?: Prisma.ProviderAnalyticUncheckedCreateNestedManyWithoutProviderInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedCreateNestedManyWithoutProviderInput
+  images?: Prisma.ProviderImageUncheckedCreateNestedManyWithoutProviderInput
+  reports?: Prisma.ProviderReportUncheckedCreateNestedManyWithoutProviderInput
+  recommendations?: Prisma.RecommendationUncheckedCreateNestedManyWithoutProviderInput
+  referralRewards?: Prisma.ReferralRewardUncheckedCreateNestedManyWithoutProviderInput
+  referralReceived?: Prisma.ReferralUncheckedCreateNestedOneWithoutInvitedProviderInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProviderInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutProviderInput
+  trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
+  verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
+  yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+}
+
+export type ProviderCreateOrConnectWithoutCoverageInput = {
+  where: Prisma.ProviderWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutCoverageInput, Prisma.ProviderUncheckedCreateWithoutCoverageInput>
+}
+
+export type ProviderUpsertWithoutCoverageInput = {
+  update: Prisma.XOR<Prisma.ProviderUpdateWithoutCoverageInput, Prisma.ProviderUncheckedUpdateWithoutCoverageInput>
+  create: Prisma.XOR<Prisma.ProviderCreateWithoutCoverageInput, Prisma.ProviderUncheckedCreateWithoutCoverageInput>
+  where?: Prisma.ProviderWhereInput
+}
+
+export type ProviderUpdateToOneWithWhereWithoutCoverageInput = {
+  where?: Prisma.ProviderWhereInput
+  data: Prisma.XOR<Prisma.ProviderUpdateWithoutCoverageInput, Prisma.ProviderUncheckedUpdateWithoutCoverageInput>
+}
+
+export type ProviderUpdateWithoutCoverageInput = {
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUpdateManyWithoutProviderNestedInput
+  quotationRequests?: Prisma.QuotationRequestUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUpdateManyWithoutProviderNestedInput
+  images?: Prisma.ProviderImageUpdateManyWithoutProviderNestedInput
+  reports?: Prisma.ProviderReportUpdateManyWithoutProviderNestedInput
+  locality?: Prisma.LocalityUpdateOneRequiredWithoutProvidersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProvidersNestedInput
+  recommendations?: Prisma.RecommendationUpdateManyWithoutProviderNestedInput
+  referralRewards?: Prisma.ReferralRewardUpdateManyWithoutProviderNestedInput
+  referralReceived?: Prisma.ReferralUpdateOneWithoutInvitedProviderNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutProviderNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutProviderNestedInput
+  trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
+  verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
+  yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+}
+
+export type ProviderUncheckedUpdateWithoutCoverageInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumProviderTypeFieldUpdateOperationsInput | $Enums.ProviderType
+  businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  scheduleJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  appointmentSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  availability?: Prisma.EnumAvailabilityStatusFieldUpdateOperationsInput | $Enums.AvailabilityStatus
+  isVisible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasCleanRecord?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  averageRating?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalReviews?: Prisma.IntFieldUpdateOperationsInput | number
+  localityId?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dni?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasHomeService?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTrusted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  nombreComercial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  planPriority?: Prisma.IntFieldUpdateOperationsInput | number
+  plenaCoordinacion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalRecommendations?: Prisma.IntFieldUpdateOperationsInput | number
+  trustStatus?: Prisma.EnumTrustStatusFieldUpdateOperationsInput | $Enums.TrustStatus
+  facebook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktok?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twitterX?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappBiz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  showPhone?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showWhatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showExactLocation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slugEditedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notifications?: Prisma.AdminNotificationUncheckedUpdateManyWithoutProviderNestedInput
+  appointments?: Prisma.AppointmentUncheckedUpdateManyWithoutProviderNestedInput
+  menuItems?: Prisma.MenuItemUncheckedUpdateManyWithoutProviderNestedInput
+  catalogProducts?: Prisma.CatalogProductUncheckedUpdateManyWithoutProviderNestedInput
+  quotationRequests?: Prisma.QuotationRequestUncheckedUpdateManyWithoutProviderNestedInput
+  chatsAsProvider?: Prisma.ChatRoomUncheckedUpdateManyWithoutProviderNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutProviderNestedInput
+  offerPosts?: Prisma.OfferPostUncheckedUpdateManyWithoutProviderNestedInput
+  offers?: Prisma.OfferUncheckedUpdateManyWithoutProviderNestedInput
+  planRequests?: Prisma.PlanRequestUncheckedUpdateManyWithoutProviderNestedInput
+  analytics?: Prisma.ProviderAnalyticUncheckedUpdateManyWithoutProviderNestedInput
+  providerCategories?: Prisma.ProviderCategoryUncheckedUpdateManyWithoutProviderNestedInput
   images?: Prisma.ProviderImageUncheckedUpdateManyWithoutProviderNestedInput
   reports?: Prisma.ProviderReportUncheckedUpdateManyWithoutProviderNestedInput
   recommendations?: Prisma.RecommendationUncheckedUpdateManyWithoutProviderNestedInput
@@ -3845,6 +4192,7 @@ export type ProviderCreateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutImagesInput = {
@@ -3916,6 +4264,7 @@ export type ProviderUncheckedCreateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutImagesInput = {
@@ -4002,6 +4351,7 @@ export type ProviderUpdateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutImagesInput = {
@@ -4073,6 +4423,7 @@ export type ProviderUncheckedUpdateWithoutImagesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutSubscriptionInput = {
@@ -4143,6 +4494,7 @@ export type ProviderCreateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutSubscriptionInput = {
@@ -4214,6 +4566,7 @@ export type ProviderUncheckedCreateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutSubscriptionInput = {
@@ -4300,6 +4653,7 @@ export type ProviderUpdateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
@@ -4371,6 +4725,7 @@ export type ProviderUncheckedUpdateWithoutSubscriptionInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutPlanRequestsInput = {
@@ -4441,6 +4796,7 @@ export type ProviderCreateWithoutPlanRequestsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
@@ -4512,6 +4868,7 @@ export type ProviderUncheckedCreateWithoutPlanRequestsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutPlanRequestsInput = {
@@ -4598,6 +4955,7 @@ export type ProviderUpdateWithoutPlanRequestsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
@@ -4669,6 +5027,7 @@ export type ProviderUncheckedUpdateWithoutPlanRequestsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReviewsInput = {
@@ -4739,6 +5098,7 @@ export type ProviderCreateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReviewsInput = {
@@ -4810,6 +5170,7 @@ export type ProviderUncheckedCreateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReviewsInput = {
@@ -4896,6 +5257,7 @@ export type ProviderUpdateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReviewsInput = {
@@ -4967,6 +5329,7 @@ export type ProviderUncheckedUpdateWithoutReviewsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutFavoritesInput = {
@@ -5037,6 +5400,7 @@ export type ProviderCreateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutFavoritesInput = {
@@ -5108,6 +5472,7 @@ export type ProviderUncheckedCreateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutFavoritesInput = {
@@ -5194,6 +5559,7 @@ export type ProviderUpdateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutFavoritesInput = {
@@ -5265,6 +5631,7 @@ export type ProviderUncheckedUpdateWithoutFavoritesInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutVerificationDocsInput = {
@@ -5335,6 +5702,7 @@ export type ProviderCreateWithoutVerificationDocsInput = {
   trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
@@ -5406,6 +5774,7 @@ export type ProviderUncheckedCreateWithoutVerificationDocsInput = {
   trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutVerificationDocsInput = {
@@ -5492,6 +5861,7 @@ export type ProviderUpdateWithoutVerificationDocsInput = {
   trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
@@ -5563,6 +5933,7 @@ export type ProviderUncheckedUpdateWithoutVerificationDocsInput = {
   trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutAnalyticsInput = {
@@ -5633,6 +6004,7 @@ export type ProviderCreateWithoutAnalyticsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutAnalyticsInput = {
@@ -5704,6 +6076,7 @@ export type ProviderUncheckedCreateWithoutAnalyticsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutAnalyticsInput = {
@@ -5790,6 +6163,7 @@ export type ProviderUpdateWithoutAnalyticsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
@@ -5861,6 +6235,7 @@ export type ProviderUncheckedUpdateWithoutAnalyticsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutNotificationsInput = {
@@ -5931,6 +6306,7 @@ export type ProviderCreateWithoutNotificationsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutNotificationsInput = {
@@ -6002,6 +6378,7 @@ export type ProviderUncheckedCreateWithoutNotificationsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutNotificationsInput = {
@@ -6088,6 +6465,7 @@ export type ProviderUpdateWithoutNotificationsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutNotificationsInput = {
@@ -6159,6 +6537,7 @@ export type ProviderUncheckedUpdateWithoutNotificationsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutRecommendationsInput = {
@@ -6229,6 +6608,7 @@ export type ProviderCreateWithoutRecommendationsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutRecommendationsInput = {
@@ -6300,6 +6680,7 @@ export type ProviderUncheckedCreateWithoutRecommendationsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutRecommendationsInput = {
@@ -6386,6 +6767,7 @@ export type ProviderUpdateWithoutRecommendationsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
@@ -6457,6 +6839,7 @@ export type ProviderUncheckedUpdateWithoutRecommendationsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReportsInput = {
@@ -6527,6 +6910,7 @@ export type ProviderCreateWithoutReportsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReportsInput = {
@@ -6598,6 +6982,7 @@ export type ProviderUncheckedCreateWithoutReportsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReportsInput = {
@@ -6684,6 +7069,7 @@ export type ProviderUpdateWithoutReportsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReportsInput = {
@@ -6755,6 +7141,7 @@ export type ProviderUncheckedUpdateWithoutReportsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutTrustValidationsInput = {
@@ -6825,6 +7212,7 @@ export type ProviderCreateWithoutTrustValidationsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
@@ -6896,6 +7284,7 @@ export type ProviderUncheckedCreateWithoutTrustValidationsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutTrustValidationsInput = {
@@ -6982,6 +7371,7 @@ export type ProviderUpdateWithoutTrustValidationsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
@@ -7053,6 +7443,7 @@ export type ProviderUncheckedUpdateWithoutTrustValidationsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutOffersInput = {
@@ -7123,6 +7514,7 @@ export type ProviderCreateWithoutOffersInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutOffersInput = {
@@ -7194,6 +7586,7 @@ export type ProviderUncheckedCreateWithoutOffersInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutOffersInput = {
@@ -7280,6 +7673,7 @@ export type ProviderUpdateWithoutOffersInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutOffersInput = {
@@ -7351,6 +7745,7 @@ export type ProviderUncheckedUpdateWithoutOffersInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutYapePaymentsInput = {
@@ -7421,6 +7816,7 @@ export type ProviderCreateWithoutYapePaymentsInput = {
   trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
@@ -7492,6 +7888,7 @@ export type ProviderUncheckedCreateWithoutYapePaymentsInput = {
   trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutYapePaymentsInput = {
@@ -7578,6 +7975,7 @@ export type ProviderUpdateWithoutYapePaymentsInput = {
   trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
@@ -7649,6 +8047,7 @@ export type ProviderUncheckedUpdateWithoutYapePaymentsInput = {
   trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReferralReceivedInput = {
@@ -7719,6 +8118,7 @@ export type ProviderCreateWithoutReferralReceivedInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
@@ -7790,6 +8190,7 @@ export type ProviderUncheckedCreateWithoutReferralReceivedInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReferralReceivedInput = {
@@ -7876,6 +8277,7 @@ export type ProviderUpdateWithoutReferralReceivedInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
@@ -7947,6 +8349,7 @@ export type ProviderUncheckedUpdateWithoutReferralReceivedInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutReferralRewardsInput = {
@@ -8017,6 +8420,7 @@ export type ProviderCreateWithoutReferralRewardsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
@@ -8088,6 +8492,7 @@ export type ProviderUncheckedCreateWithoutReferralRewardsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutReferralRewardsInput = {
@@ -8174,6 +8579,7 @@ export type ProviderUpdateWithoutReferralRewardsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
@@ -8245,6 +8651,7 @@ export type ProviderUncheckedUpdateWithoutReferralRewardsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutChatsAsProviderInput = {
@@ -8315,6 +8722,7 @@ export type ProviderCreateWithoutChatsAsProviderInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
@@ -8386,6 +8794,7 @@ export type ProviderUncheckedCreateWithoutChatsAsProviderInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutChatsAsProviderInput = {
@@ -8472,6 +8881,7 @@ export type ProviderUpdateWithoutChatsAsProviderInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
@@ -8543,6 +8953,7 @@ export type ProviderUncheckedUpdateWithoutChatsAsProviderInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutOfferPostsInput = {
@@ -8613,6 +9024,7 @@ export type ProviderCreateWithoutOfferPostsInput = {
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutOfferPostsInput = {
@@ -8684,6 +9096,7 @@ export type ProviderUncheckedCreateWithoutOfferPostsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedCreateNestedOneWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutOfferPostsInput = {
@@ -8770,6 +9183,7 @@ export type ProviderUpdateWithoutOfferPostsInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
@@ -8841,6 +9255,7 @@ export type ProviderUncheckedUpdateWithoutOfferPostsInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateWithoutAiMemoryInput = {
@@ -8911,6 +9326,7 @@ export type ProviderCreateWithoutAiMemoryInput = {
   trustValidations?: Prisma.TrustValidationRequestCreateNestedManyWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentCreateNestedManyWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderUncheckedCreateWithoutAiMemoryInput = {
@@ -8982,6 +9398,7 @@ export type ProviderUncheckedCreateWithoutAiMemoryInput = {
   trustValidations?: Prisma.TrustValidationRequestUncheckedCreateNestedManyWithoutProviderInput
   verificationDocs?: Prisma.VerificationDocUncheckedCreateNestedManyWithoutProviderInput
   yapePayments?: Prisma.YapePaymentUncheckedCreateNestedManyWithoutProviderInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutProviderInput
 }
 
 export type ProviderCreateOrConnectWithoutAiMemoryInput = {
@@ -9068,6 +9485,7 @@ export type ProviderUpdateWithoutAiMemoryInput = {
   trustValidations?: Prisma.TrustValidationRequestUpdateManyWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutAiMemoryInput = {
@@ -9139,6 +9557,7 @@ export type ProviderUncheckedUpdateWithoutAiMemoryInput = {
   trustValidations?: Prisma.TrustValidationRequestUncheckedUpdateManyWithoutProviderNestedInput
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderCreateManyUserInput = {
@@ -9257,6 +9676,7 @@ export type ProviderUpdateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutUserInput = {
@@ -9328,6 +9748,7 @@ export type ProviderUncheckedUpdateWithoutUserInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutUserInput = {
@@ -9494,6 +9915,7 @@ export type ProviderUpdateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateWithoutLocalityInput = {
@@ -9565,6 +9987,7 @@ export type ProviderUncheckedUpdateWithoutLocalityInput = {
   verificationDocs?: Prisma.VerificationDocUncheckedUpdateManyWithoutProviderNestedInput
   yapePayments?: Prisma.YapePaymentUncheckedUpdateManyWithoutProviderNestedInput
   aiMemory?: Prisma.AiProviderMemoryUncheckedUpdateOneWithoutProviderNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutProviderNestedInput
 }
 
 export type ProviderUncheckedUpdateManyWithoutLocalityInput = {
@@ -9641,6 +10064,7 @@ export type ProviderCountOutputType = {
   trustValidations: number
   verificationDocs: number
   yapePayments: number
+  coverage: number
 }
 
 export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -9664,6 +10088,7 @@ export type ProviderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensio
   trustValidations?: boolean | ProviderCountOutputTypeCountTrustValidationsArgs
   verificationDocs?: boolean | ProviderCountOutputTypeCountVerificationDocsArgs
   yapePayments?: boolean | ProviderCountOutputTypeCountYapePaymentsArgs
+  coverage?: boolean | ProviderCountOutputTypeCountCoverageArgs
 }
 
 /**
@@ -9816,6 +10241,13 @@ export type ProviderCountOutputTypeCountYapePaymentsArgs<ExtArgs extends runtime
   where?: Prisma.YapePaymentWhereInput
 }
 
+/**
+ * ProviderCountOutputType without action
+ */
+export type ProviderCountOutputTypeCountCoverageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProviderCoverageWhereInput
+}
+
 
 export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -9889,6 +10321,7 @@ export type ProviderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
   yapePayments?: boolean | Prisma.Provider$yapePaymentsArgs<ExtArgs>
   aiMemory?: boolean | Prisma.Provider$aiMemoryArgs<ExtArgs>
+  coverage?: boolean | Prisma.Provider$coverageArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["provider"]>
 
@@ -10070,6 +10503,7 @@ export type ProviderInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   verificationDocs?: boolean | Prisma.Provider$verificationDocsArgs<ExtArgs>
   yapePayments?: boolean | Prisma.Provider$yapePaymentsArgs<ExtArgs>
   aiMemory?: boolean | Prisma.Provider$aiMemoryArgs<ExtArgs>
+  coverage?: boolean | Prisma.Provider$coverageArgs<ExtArgs>
   _count?: boolean | Prisma.ProviderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProviderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10109,6 +10543,7 @@ export type $ProviderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     verificationDocs: Prisma.$VerificationDocPayload<ExtArgs>[]
     yapePayments: Prisma.$YapePaymentPayload<ExtArgs>[]
     aiMemory: Prisma.$AiProviderMemoryPayload<ExtArgs> | null
+    coverage: Prisma.$ProviderCoveragePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -10585,6 +11020,7 @@ export interface Prisma__ProviderClient<T, Null = never, ExtArgs extends runtime
   verificationDocs<T extends Prisma.Provider$verificationDocsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$verificationDocsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerificationDocPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   yapePayments<T extends Prisma.Provider$yapePaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$yapePaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$YapePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   aiMemory<T extends Prisma.Provider$aiMemoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$aiMemoryArgs<ExtArgs>>): Prisma.Prisma__AiProviderMemoryClient<runtime.Types.Result.GetResult<Prisma.$AiProviderMemoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  coverage<T extends Prisma.Provider$coverageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Provider$coverageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderCoveragePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11595,6 +12031,30 @@ export type Provider$aiMemoryArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   include?: Prisma.AiProviderMemoryInclude<ExtArgs> | null
   where?: Prisma.AiProviderMemoryWhereInput
+}
+
+/**
+ * Provider.coverage
+ */
+export type Provider$coverageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProviderCoverage
+   */
+  select?: Prisma.ProviderCoverageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProviderCoverage
+   */
+  omit?: Prisma.ProviderCoverageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProviderCoverageInclude<ExtArgs> | null
+  where?: Prisma.ProviderCoverageWhereInput
+  orderBy?: Prisma.ProviderCoverageOrderByWithRelationInput | Prisma.ProviderCoverageOrderByWithRelationInput[]
+  cursor?: Prisma.ProviderCoverageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProviderCoverageScalarFieldEnum | Prisma.ProviderCoverageScalarFieldEnum[]
 }
 
 /**

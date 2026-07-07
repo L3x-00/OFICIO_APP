@@ -83,6 +83,17 @@ export type ProviderCategory = Prisma.ProviderCategoryModel
  */
 export type Provider = Prisma.ProviderModel
 /**
+ * Model ProviderCoverage
+ * ALCANCE: distritos ADICIONALES donde el proveedor es visible en los
+ * listados públicos. El distrito registrado (Provider.localityId) SIEMPRE
+ * es visible y NO se guarda aquí. Los extras solo surten efecto con plan
+ * de pago (el gate se aplica en la query de visibilidad, no aquí), así al
+ * vencer/cancelar el plan la selección se conserva pero deja de aplicar.
+ * Límite TOTAL por plan (incluye el registrado): GRATIS 1, ESTANDAR 3,
+ * PREMIUM 10. Solo distritos de la MISMA provincia del registrado.
+ */
+export type ProviderCoverage = Prisma.ProviderCoverageModel
+/**
  * Model ProviderImage
  * 
  */
