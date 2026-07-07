@@ -395,6 +395,7 @@ export const ModelName = {
   QuotationRequest: 'QuotationRequest',
   ProviderCategory: 'ProviderCategory',
   Provider: 'Provider',
+  ProviderCoverage: 'ProviderCoverage',
   ProviderImage: 'ProviderImage',
   Subscription: 'Subscription',
   SubscriptionAuditLog: 'SubscriptionAuditLog',
@@ -445,7 +446,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "appointment" | "menuItem" | "catalogProduct" | "quotationRequest" | "providerCategory" | "provider" | "providerImage" | "subscription" | "subscriptionAuditLog" | "userReport" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "appointment" | "menuItem" | "catalogProduct" | "quotationRequest" | "providerCategory" | "provider" | "providerCoverage" | "providerImage" | "subscription" | "subscriptionAuditLog" | "userReport" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1260,6 +1261,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ProviderCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ProviderCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProviderCoverage: {
+      payload: Prisma.$ProviderCoveragePayload<ExtArgs>
+      fields: Prisma.ProviderCoverageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProviderCoverageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProviderCoverageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>
+        }
+        findFirst: {
+          args: Prisma.ProviderCoverageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProviderCoverageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>
+        }
+        findMany: {
+          args: Prisma.ProviderCoverageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>[]
+        }
+        create: {
+          args: Prisma.ProviderCoverageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>
+        }
+        createMany: {
+          args: Prisma.ProviderCoverageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProviderCoverageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>[]
+        }
+        delete: {
+          args: Prisma.ProviderCoverageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>
+        }
+        update: {
+          args: Prisma.ProviderCoverageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>
+        }
+        deleteMany: {
+          args: Prisma.ProviderCoverageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProviderCoverageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProviderCoverageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>[]
+        }
+        upsert: {
+          args: Prisma.ProviderCoverageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderCoveragePayload>
+        }
+        aggregate: {
+          args: Prisma.ProviderCoverageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProviderCoverage>
+        }
+        groupBy: {
+          args: Prisma.ProviderCoverageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProviderCoverageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProviderCoverageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProviderCoverageCountAggregateOutputType> | number
         }
       }
     }
@@ -4106,6 +4181,16 @@ export const ProviderScalarFieldEnum = {
 export type ProviderScalarFieldEnum = (typeof ProviderScalarFieldEnum)[keyof typeof ProviderScalarFieldEnum]
 
 
+export const ProviderCoverageScalarFieldEnum = {
+  id: 'id',
+  providerId: 'providerId',
+  localityId: 'localityId',
+  createdAt: 'createdAt'
+} as const
+
+export type ProviderCoverageScalarFieldEnum = (typeof ProviderCoverageScalarFieldEnum)[keyof typeof ProviderCoverageScalarFieldEnum]
+
+
 export const ProviderImageScalarFieldEnum = {
   id: 'id',
   providerId: 'providerId',
@@ -5148,6 +5233,7 @@ export type GlobalOmitConfig = {
   quotationRequest?: Prisma.QuotationRequestOmit
   providerCategory?: Prisma.ProviderCategoryOmit
   provider?: Prisma.ProviderOmit
+  providerCoverage?: Prisma.ProviderCoverageOmit
   providerImage?: Prisma.ProviderImageOmit
   subscription?: Prisma.SubscriptionOmit
   subscriptionAuditLog?: Prisma.SubscriptionAuditLogOmit

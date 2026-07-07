@@ -9,6 +9,7 @@ import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
 import { effectiveFeaturesFromCategories } from '../common/provider-features.service.js';
+import { visibleInLocalities } from '../coverage/coverage.service.js';
 
 @Injectable()
 export class ProvidersService {
@@ -72,8 +73,16 @@ export class ProvidersService {
     if (availability) {
       where.availability = availability as AvailabilityStatus;
     }
+
+    // ALCANCE: el proveedor "está" en una localidad por su distrito
+    // registrado O por su cobertura de pago (provider_coverage). Se compone
+    // en `where.AND` para no pisar el `where.OR` de la búsqueda por texto.
+    const andWhere = (cond: Prisma.ProviderWhereInput) => {
+      where.AND = [...((where.AND as Prisma.ProviderWhereInput[]) ?? []), cond];
+    };
+
     if (localityId) {
-      where.localityId = localityId;
+      andWhere(visibleInLocalities([localityId]));
     }
 
     // Filtro de ubicación estructurado (jerarquía: dept -> prov -> dist).
@@ -127,17 +136,15 @@ export class ProvidersService {
         if (wantsOficio) {
           // Solo profesionales — sin filtro de ubicación (todo el Perú).
         } else if (wantsNegocio) {
-          where.localityId = { in: inDept };
+          andWhere(visibleInLocalities(inDept));
         } else {
           // Todos: OFICIO de cualquier zona + NEGOCIO del departamento.
-          where.AND = [
-            {
-              OR: [
-                { type: 'OFICIO' },
-                { type: 'NEGOCIO', localityId: { in: inDept } },
-              ],
-            },
-          ];
+          andWhere({
+            OR: [
+              { type: 'OFICIO' },
+              { AND: [{ type: 'NEGOCIO' }, visibleInLocalities(inDept)] },
+            ],
+          });
         }
       } else {
         // Filtro normal con degradación jerárquica:
@@ -151,7 +158,7 @@ export class ProvidersService {
         }
 
         if (matchedIds.length > 0) {
-          where.localityId = { in: matchedIds };
+          andWhere(visibleInLocalities(matchedIds));
         } else {
           // No matchea ningún nivel — forzamos "sin resultados" para no
           // mostrar al usuario proveedores fuera de su zona.
@@ -365,7 +372,8 @@ export class ProvidersService {
     const VISIBLE_APPROVED = {
       isVisible: true,
       verificationStatus: 'APROBADO' as const,
-      ...(localityIds ? { localityId: { in: localityIds } } : {}),
+      // Registrado O cobertura de pago (mismo criterio que findAll).
+      ...(localityIds ? { AND: [visibleInLocalities(localityIds)] } : {}),
     };
 
     // 1. Conteo de proveedores aprobados/visibles por categoría (hoja).

@@ -10,6 +10,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { MinioService } from '../common/minio.service.js';
 import { CreateOfferPostDto } from './dto/create-offer-post.dto.js';
+import { visibleInLocalities } from '../coverage/coverage.service.js';
 
 // Límites por plan: máx activas y ventana de expiración en horas
 const PLAN_LIMITS: Record<
@@ -302,9 +303,10 @@ export class OfferPostsService {
         .map((l) => l.id);
 
       if (matchIds.length > 0) {
+        // Registrado O cobertura de pago (mismo criterio que providers.findAll).
         where.provider = {
           ...(where.provider ?? {}),
-          localityId: { in: matchIds },
+          AND: [visibleInLocalities(matchIds)],
         };
       } else {
         where.id = -1; // sin resultados

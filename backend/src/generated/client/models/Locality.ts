@@ -273,6 +273,7 @@ export type LocalityWhereInput = {
   province_norm?: Prisma.StringNullableFilter<"Locality"> | string | null
   district_norm?: Prisma.StringNullableFilter<"Locality"> | string | null
   providers?: Prisma.ProviderListRelationFilter
+  coverage?: Prisma.ProviderCoverageListRelationFilter
 }
 
 export type LocalityOrderByWithRelationInput = {
@@ -289,6 +290,7 @@ export type LocalityOrderByWithRelationInput = {
   province_norm?: Prisma.SortOrderInput | Prisma.SortOrder
   district_norm?: Prisma.SortOrderInput | Prisma.SortOrder
   providers?: Prisma.ProviderOrderByRelationAggregateInput
+  coverage?: Prisma.ProviderCoverageOrderByRelationAggregateInput
 }
 
 export type LocalityWhereUniqueInput = Prisma.AtLeast<{
@@ -308,6 +310,7 @@ export type LocalityWhereUniqueInput = Prisma.AtLeast<{
   province_norm?: Prisma.StringNullableFilter<"Locality"> | string | null
   district_norm?: Prisma.StringNullableFilter<"Locality"> | string | null
   providers?: Prisma.ProviderListRelationFilter
+  coverage?: Prisma.ProviderCoverageListRelationFilter
 }, "id">
 
 export type LocalityOrderByWithAggregationInput = {
@@ -361,6 +364,7 @@ export type LocalityCreateInput = {
   province_norm?: string | null
   district_norm?: string | null
   providers?: Prisma.ProviderCreateNestedManyWithoutLocalityInput
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutLocalityInput
 }
 
 export type LocalityUncheckedCreateInput = {
@@ -377,6 +381,7 @@ export type LocalityUncheckedCreateInput = {
   province_norm?: string | null
   district_norm?: string | null
   providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutLocalityInput
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutLocalityInput
 }
 
 export type LocalityUpdateInput = {
@@ -392,6 +397,7 @@ export type LocalityUpdateInput = {
   province_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   providers?: Prisma.ProviderUpdateManyWithoutLocalityNestedInput
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutLocalityNestedInput
 }
 
 export type LocalityUncheckedUpdateInput = {
@@ -408,6 +414,7 @@ export type LocalityUncheckedUpdateInput = {
   province_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   providers?: Prisma.ProviderUncheckedUpdateManyWithoutLocalityNestedInput
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutLocalityNestedInput
 }
 
 export type LocalityCreateManyInput = {
@@ -530,6 +537,20 @@ export type LocalityUpdateOneRequiredWithoutProvidersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LocalityUpdateToOneWithWhereWithoutProvidersInput, Prisma.LocalityUpdateWithoutProvidersInput>, Prisma.LocalityUncheckedUpdateWithoutProvidersInput>
 }
 
+export type LocalityCreateNestedOneWithoutCoverageInput = {
+  create?: Prisma.XOR<Prisma.LocalityCreateWithoutCoverageInput, Prisma.LocalityUncheckedCreateWithoutCoverageInput>
+  connectOrCreate?: Prisma.LocalityCreateOrConnectWithoutCoverageInput
+  connect?: Prisma.LocalityWhereUniqueInput
+}
+
+export type LocalityUpdateOneRequiredWithoutCoverageNestedInput = {
+  create?: Prisma.XOR<Prisma.LocalityCreateWithoutCoverageInput, Prisma.LocalityUncheckedCreateWithoutCoverageInput>
+  connectOrCreate?: Prisma.LocalityCreateOrConnectWithoutCoverageInput
+  upsert?: Prisma.LocalityUpsertWithoutCoverageInput
+  connect?: Prisma.LocalityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LocalityUpdateToOneWithWhereWithoutCoverageInput, Prisma.LocalityUpdateWithoutCoverageInput>, Prisma.LocalityUncheckedUpdateWithoutCoverageInput>
+}
+
 export type LocalityCreateWithoutProvidersInput = {
   name: string
   department: string
@@ -542,6 +563,7 @@ export type LocalityCreateWithoutProvidersInput = {
   department_norm?: string | null
   province_norm?: string | null
   district_norm?: string | null
+  coverage?: Prisma.ProviderCoverageCreateNestedManyWithoutLocalityInput
 }
 
 export type LocalityUncheckedCreateWithoutProvidersInput = {
@@ -557,6 +579,7 @@ export type LocalityUncheckedCreateWithoutProvidersInput = {
   department_norm?: string | null
   province_norm?: string | null
   district_norm?: string | null
+  coverage?: Prisma.ProviderCoverageUncheckedCreateNestedManyWithoutLocalityInput
 }
 
 export type LocalityCreateOrConnectWithoutProvidersInput = {
@@ -587,6 +610,7 @@ export type LocalityUpdateWithoutProvidersInput = {
   department_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverage?: Prisma.ProviderCoverageUpdateManyWithoutLocalityNestedInput
 }
 
 export type LocalityUncheckedUpdateWithoutProvidersInput = {
@@ -602,6 +626,85 @@ export type LocalityUncheckedUpdateWithoutProvidersInput = {
   department_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   province_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   district_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverage?: Prisma.ProviderCoverageUncheckedUpdateManyWithoutLocalityNestedInput
+}
+
+export type LocalityCreateWithoutCoverageInput = {
+  name: string
+  department: string
+  country?: string
+  isActive?: boolean
+  createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
+  department_norm?: string | null
+  province_norm?: string | null
+  district_norm?: string | null
+  providers?: Prisma.ProviderCreateNestedManyWithoutLocalityInput
+}
+
+export type LocalityUncheckedCreateWithoutCoverageInput = {
+  id?: number
+  name: string
+  department: string
+  country?: string
+  isActive?: boolean
+  createdAt?: Date | string
+  district?: string | null
+  province?: string | null
+  source?: $Enums.LocalitySource
+  department_norm?: string | null
+  province_norm?: string | null
+  district_norm?: string | null
+  providers?: Prisma.ProviderUncheckedCreateNestedManyWithoutLocalityInput
+}
+
+export type LocalityCreateOrConnectWithoutCoverageInput = {
+  where: Prisma.LocalityWhereUniqueInput
+  create: Prisma.XOR<Prisma.LocalityCreateWithoutCoverageInput, Prisma.LocalityUncheckedCreateWithoutCoverageInput>
+}
+
+export type LocalityUpsertWithoutCoverageInput = {
+  update: Prisma.XOR<Prisma.LocalityUpdateWithoutCoverageInput, Prisma.LocalityUncheckedUpdateWithoutCoverageInput>
+  create: Prisma.XOR<Prisma.LocalityCreateWithoutCoverageInput, Prisma.LocalityUncheckedCreateWithoutCoverageInput>
+  where?: Prisma.LocalityWhereInput
+}
+
+export type LocalityUpdateToOneWithWhereWithoutCoverageInput = {
+  where?: Prisma.LocalityWhereInput
+  data: Prisma.XOR<Prisma.LocalityUpdateWithoutCoverageInput, Prisma.LocalityUncheckedUpdateWithoutCoverageInput>
+}
+
+export type LocalityUpdateWithoutCoverageInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  department?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
+  department_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providers?: Prisma.ProviderUpdateManyWithoutLocalityNestedInput
+}
+
+export type LocalityUncheckedUpdateWithoutCoverageInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  department?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumLocalitySourceFieldUpdateOperationsInput | $Enums.LocalitySource
+  department_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  province_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district_norm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providers?: Prisma.ProviderUncheckedUpdateManyWithoutLocalityNestedInput
 }
 
 
@@ -611,10 +714,12 @@ export type LocalityUncheckedUpdateWithoutProvidersInput = {
 
 export type LocalityCountOutputType = {
   providers: number
+  coverage: number
 }
 
 export type LocalityCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   providers?: boolean | LocalityCountOutputTypeCountProvidersArgs
+  coverage?: boolean | LocalityCountOutputTypeCountCoverageArgs
 }
 
 /**
@@ -634,6 +739,13 @@ export type LocalityCountOutputTypeCountProvidersArgs<ExtArgs extends runtime.Ty
   where?: Prisma.ProviderWhereInput
 }
 
+/**
+ * LocalityCountOutputType without action
+ */
+export type LocalityCountOutputTypeCountCoverageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProviderCoverageWhereInput
+}
+
 
 export type LocalitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -649,6 +761,7 @@ export type LocalitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   province_norm?: boolean
   district_norm?: boolean
   providers?: boolean | Prisma.Locality$providersArgs<ExtArgs>
+  coverage?: boolean | Prisma.Locality$coverageArgs<ExtArgs>
   _count?: boolean | Prisma.LocalityCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["locality"]>
 
@@ -700,6 +813,7 @@ export type LocalitySelectScalar = {
 export type LocalityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "department" | "country" | "isActive" | "createdAt" | "district" | "province" | "source" | "department_norm" | "province_norm" | "district_norm", ExtArgs["result"]["locality"]>
 export type LocalityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   providers?: boolean | Prisma.Locality$providersArgs<ExtArgs>
+  coverage?: boolean | Prisma.Locality$coverageArgs<ExtArgs>
   _count?: boolean | Prisma.LocalityCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LocalityIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -709,6 +823,7 @@ export type $LocalityPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   name: "Locality"
   objects: {
     providers: Prisma.$ProviderPayload<ExtArgs>[]
+    coverage: Prisma.$ProviderCoveragePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1118,6 +1233,7 @@ readonly fields: LocalityFieldRefs;
 export interface Prisma__LocalityClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   providers<T extends Prisma.Locality$providersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Locality$providersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  coverage<T extends Prisma.Locality$coverageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Locality$coverageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderCoveragePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1573,6 +1689,30 @@ export type Locality$providersArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ProviderScalarFieldEnum | Prisma.ProviderScalarFieldEnum[]
+}
+
+/**
+ * Locality.coverage
+ */
+export type Locality$coverageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProviderCoverage
+   */
+  select?: Prisma.ProviderCoverageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProviderCoverage
+   */
+  omit?: Prisma.ProviderCoverageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProviderCoverageInclude<ExtArgs> | null
+  where?: Prisma.ProviderCoverageWhereInput
+  orderBy?: Prisma.ProviderCoverageOrderByWithRelationInput | Prisma.ProviderCoverageOrderByWithRelationInput[]
+  cursor?: Prisma.ProviderCoverageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProviderCoverageScalarFieldEnum | Prisma.ProviderCoverageScalarFieldEnum[]
 }
 
 /**

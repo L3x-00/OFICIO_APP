@@ -15,6 +15,7 @@ import {
   planToPriority,
   clearProvidersCache,
 } from './admin-shared.js';
+import { syncCoverageToPlan } from '../../coverage/coverage.service.js';
 
 /**
  * Validación de confianza / verificación documental de proveedores.
@@ -147,6 +148,9 @@ export class AdminTrustService {
 
       return [updatedProvider];
     });
+
+    // Alcance por distritos: default para la cortesía ESTANDAR (no-op si GRATIS).
+    await syncCoverageToPlan(this.prisma, id, trialPlan);
 
     // Invalidar caché para que la app móvil vea al proveedor de inmediato
     await clearProvidersCache(this.cacheManager);

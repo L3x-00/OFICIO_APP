@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/dashboard_repository.dart';
+import '../../domain/models/coverage_model.dart';
 import '../../domain/models/dashboard_profile_model.dart';
 import '../../domain/models/service_item_model.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
@@ -106,6 +107,10 @@ class DashboardProvider extends ChangeNotifier {
 
       _status = DashboardStatus.loaded;
 
+      // Refrescar el alcance si ya estaba cargado — un cambio de plan
+      // (aprobación/vencimiento) altera límite y distritos default.
+      if (_coverage != null) loadCoverage();
+
       // --- NUEVO: Unirse a salas de categoría para recibir subastas ---
       _joinCategoryRooms();
 
@@ -175,6 +180,44 @@ class DashboardProvider extends ChangeNotifier {
     if (_pendingPaymentPlan == null) return;
     _pendingPaymentPlan = null;
     notifyListeners();
+  }
+
+  // ── ALCANCE (distritos donde se muestra el proveedor) ────
+
+  CoverageModel? _coverage;
+  bool _isLoadingCoverage = false;
+  CoverageModel? get coverage => _coverage;
+  bool get isLoadingCoverage => _isLoadingCoverage;
+
+  /// Carga el alcance del perfil activo. Silencioso: un fallo no tumba el
+  /// panel (la sección muestra su propio estado vacío).
+  Future<void> loadCoverage() async {
+    if (_isLoadingCoverage) return;
+    _isLoadingCoverage = true;
+    notifyListeners();
+    try {
+      _coverage = await _repo.getCoverage(type: _currentProviderType);
+    } catch (_) {
+      // No crítico — la sección Alcance muestra reintento.
+    } finally {
+      _isLoadingCoverage = false;
+      notifyListeners();
+    }
+  }
+
+  /// Reemplaza los distritos adicionales. Devuelve null si todo OK, o el
+  /// mensaje de error para mostrar en un snackbar.
+  Future<String?> saveCoverage(List<int> localityIds) async {
+    try {
+      _coverage = await _repo.setCoverage(
+        localityIds,
+        type: _currentProviderType,
+      );
+      notifyListeners();
+      return null;
+    } catch (e) {
+      return _formatError(e);
+    }
   }
 
   // Carga notificaciones sin afectar el estado principal. Filtra por
@@ -503,6 +546,8 @@ class DashboardProvider extends ChangeNotifier {
     _error = null;
     _currentProviderType = null;
     _pendingPaymentPlan = null;
+    _coverage = null;
+    _isLoadingCoverage = false;
     notifyListeners();
   }
 

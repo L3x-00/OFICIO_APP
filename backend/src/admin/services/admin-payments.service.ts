@@ -7,6 +7,7 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EventsGateway } from '../../events/events.gateway.js';
 import { PushNotificationsService } from '../../firebase/push-notifications.service.js';
 import { planToPriority } from './admin-shared.js';
+import { syncCoverageToPlan } from '../../coverage/coverage.service.js';
 
 /**
  * Solicitudes de plan (pagos por Yape) y su aprobación/rechazo. Extraído del
@@ -95,6 +96,9 @@ export class AdminPaymentsService {
         data: { status: 'APROBADO' },
       });
     });
+
+    // Alcance por distritos: siembra default o recorta según el plan aprobado.
+    await syncCoverageToPlan(this.prisma, req.providerId, req.plan);
 
     // Persist notification for provider
     await this.prisma.adminNotification.create({

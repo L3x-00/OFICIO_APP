@@ -108,6 +108,7 @@ model Locality {
   province_norm   String?
   district_norm   String?
   providers       Provider[]
+  coverage        ProviderCoverage[]
 
   @@index([department, province, district])
   @@index([source])
@@ -329,6 +330,7 @@ model Provider {
   verificationDocs     VerificationDoc[]
   yapePayments         YapePayment[]
   aiMemory             AiProviderMemory?
+  coverage             ProviderCoverage[]
 
   @@unique([userId, type])
   @@index([isVisible, verificationStatus])
@@ -341,6 +343,26 @@ model Provider {
   @@index([location_geog], map: "providers_location_geog_gist", type: Gist, where: raw("(location_geog IS NOT NULL)"))
   @@index([search_tsv], map: "providers_search_tsv_gin", type: Gin)
   @@map("providers")
+}
+
+/// ALCANCE: distritos ADICIONALES donde el proveedor es visible en los
+/// listados públicos. El distrito registrado (Provider.localityId) SIEMPRE
+/// es visible y NO se guarda aquí. Los extras solo surten efecto con plan
+/// de pago (el gate se aplica en la query de visibilidad, no aquí), así al
+/// vencer/cancelar el plan la selección se conserva pero deja de aplicar.
+/// Límite TOTAL por plan (incluye el registrado): GRATIS 1, ESTANDAR 3,
+/// PREMIUM 10. Solo distritos de la MISMA provincia del registrado.
+model ProviderCoverage {
+  id         Int      @id @default(autoincrement())
+  providerId Int
+  localityId Int
+  createdAt  DateTime @default(now())
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  locality   Locality @relation(fields: [localityId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, localityId])
+  @@index([localityId])
+  @@map("provider_coverage")
 }
 
 model ProviderImage {

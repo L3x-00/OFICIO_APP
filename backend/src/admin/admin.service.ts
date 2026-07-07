@@ -28,6 +28,7 @@ import {
   planToPriority as sharedPlanToPriority,
   clearProvidersCache as sharedClearProvidersCache,
 } from './services/admin-shared.js';
+import { syncCoverageToPlan } from '../coverage/coverage.service.js';
 
 @Injectable()
 export class AdminService {
@@ -319,6 +320,9 @@ export class AdminService {
       return { provider, userId: user.id };
     });
 
+    // Alcance por distritos: default para la cortesía ESTANDAR.
+    await syncCoverageToPlan(this.prisma, result.provider.id, 'ESTANDAR');
+
     return { ...result, tempPassword };
   }
 
@@ -458,6 +462,9 @@ export class AdminService {
         },
       });
     }
+
+    // Alcance por distritos: siembra default o recorta según el nuevo plan.
+    await syncCoverageToPlan(this.prisma, id, plan);
 
     // Solo notificar si es una promoción real (ESTANDAR o PREMIUM)
     if (plan === 'ESTANDAR' || plan === 'PREMIUM') {

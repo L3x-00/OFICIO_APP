@@ -46,26 +46,65 @@ async function main() {
   // ── 2. LOCALIDADES (catálogo completo, CON tildes) ────────
   console.log('📍 Creando localidades...');
 
+  // Junín: catálogo OFICIAL completo (124 distritos, 9 provincias).
+  // El ORDEN importa: dentro de cada provincia los distritos urbanos van
+  // primero — el default del "Alcance" (provider_coverage) toma vecinos por
+  // orden de id, así un proveedor de El Tambo arranca con Huancayo y Chilca.
+  const juninDistricts: Record<string, string[]> = {
+    Huancayo: [
+      'Huancayo', 'El Tambo', 'Chilca', 'Pilcomayo', 'Sapallanga', 'Huancán',
+      'Huayucachi', 'Sicaya', 'San Agustín de Cajas', 'San Jerónimo de Tunán',
+      'Hualhuas', 'Saño', 'Quilcas', 'Quichuay', 'Ingenio', 'Pucará', 'Viques',
+      'Huacrapuquio', 'Cullhuas', 'Chupuro', 'Colca', 'Chicche', 'Chongos Alto',
+      'Chacapampa', 'Carhuacallanga', 'Huasicancha', 'Pariahuanca',
+      'Santo Domingo de Acobamba',
+    ],
+    Jauja: [
+      'Jauja', 'Yauyos', 'Sausa', 'Acolla', 'Apata', 'Ataura', 'Canchayllo',
+      'Curicaca', 'El Mantaro', 'Huamalí', 'Huaripampa', 'Huertas', 'Janjaillo',
+      'Julcán', 'Leonor Ordóñez', 'Llocllapampa', 'Marco', 'Masma',
+      'Masma Chicche', 'Molinos', 'Monobamba', 'Muqui', 'Muquiyauyo', 'Paca',
+      'Paccha', 'Pancán', 'Parco', 'Pomacancha', 'Ricrán', 'San Lorenzo',
+      'San Pedro de Chunán', 'Sincos', 'Tunan Marca', 'Yauli',
+    ],
+    Concepción: [
+      'Concepción', 'Matahuasi', 'Santa Rosa de Ocopa', 'Aco', 'Andamarca',
+      'Chambará', 'Cochas', 'Comas', 'Heroínas Toledo', 'Manzanares',
+      'Mariscal Castilla', 'Mito', 'Nueve de Julio', 'Orcotuna',
+      'San José de Quero',
+    ],
+    Chupaca: [
+      'Chupaca', 'Yanacancha', 'Ahuac', 'Chongos Bajo', 'Huáchac',
+      'Huamancaca Chico', 'San Juan de Iscos', 'San Juan de Jarpa',
+      'Tres de Diciembre',
+    ],
+    Tarma: [
+      'Tarma', 'Acobamba', 'Huaricolca', 'Huasahuasi', 'La Unión', 'Palca',
+      'Palcamayo', 'San Pedro de Cajas', 'Tapo',
+    ],
+    // 'La Merced' no es distrito oficial (es la capital del distrito
+    // Chanchamayo) pero se conserva: hay proveedores registrados en él.
+    Chanchamayo: [
+      'La Merced', 'Chanchamayo', 'San Ramón', 'Pichanaqui', 'Perené',
+      'San Luis de Shuaro', 'Vitoc',
+    ],
+    Satipo: [
+      'Satipo', 'Mazamari', 'Pangoa', 'Río Negro', 'Coviriali', 'Llaylla',
+      'Pampa Hermosa', 'Río Tambo', 'Vizcatán del Ene',
+    ],
+    Yauli: [
+      'La Oroya', 'Santa Rosa de Sacco', 'Morococha', 'Yauli', 'Chacapalpa',
+      'Huay-Huay', 'Marcapomacocha', 'Paccha', 'Santa Bárbara de Carhuacayán',
+      'Suitucancha',
+    ],
+    Junín: ['Junín', 'Carhuamayo', 'Ondores', 'Ulcumayo'],
+  };
+
   const localitiesData = [
-    // ── Junín ──────────────────────────────
-    { department: 'Junín', province: 'Huancayo', district: 'Huancayo' },
-    { department: 'Junín', province: 'Huancayo', district: 'El Tambo' },
-    { department: 'Junín', province: 'Huancayo', district: 'Chilca' },
-    { department: 'Junín', province: 'Huancayo', district: 'Pilcomayo' },
-    { department: 'Junín', province: 'Huancayo', district: 'Sapallanga' },
-    { department: 'Junín', province: 'Jauja', district: 'Jauja' },
-    { department: 'Junín', province: 'Concepción', district: 'Concepción' },
-    { department: 'Junín', province: 'Concepción', district: 'Matahuasi' },
-    { department: 'Junín', province: 'Concepción', district: 'Santa Rosa de Ocopa' },
-    { department: 'Junín', province: 'Chupaca', district: 'Chupaca' },
-    { department: 'Junín', province: 'Chupaca', district: 'Yanacancha' },
-    { department: 'Junín', province: 'Tarma', district: 'Tarma' },
-    { department: 'Junín', province: 'Chanchamayo', district: 'La Merced' },
-    { department: 'Junín', province: 'Chanchamayo', district: 'Pichanaqui' },
-    { department: 'Junín', province: 'Satipo', district: 'Satipo' },
-    { department: 'Junín', province: 'Satipo', district: 'Mazamari' },
-    { department: 'Junín', province: 'Satipo', district: 'Pangoa' },
-    { department: 'Junín', province: 'Yauli', district: 'La Oroya' },
+    // ── Junín (catálogo completo) ──────────
+    ...Object.entries(juninDistricts).flatMap(([province, districts]) =>
+      districts.map((district) => ({ department: 'Junín', province, district })),
+    ),
 
     // ── Lima ───────────────────────────────
     { department: 'Lima', province: 'Lima', district: 'Lima' },

@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
+import { syncCoverageToPlan } from '../coverage/coverage.service.js';
 
 const INVITER_REWARD_COINS = 25;
 const INVITED_WELCOME_COINS = 5;
@@ -411,6 +412,9 @@ export class ReferralsService {
           },
         });
       });
+
+      // Alcance por distritos: siembra default o recorta según plan canjeado.
+      await syncCoverageToPlan(this.prisma, provider.id, upper);
 
       this.events.emitNotification({
         type: 'PLAN_REDEEMED',
