@@ -65,7 +65,21 @@ Cambios importantes: **rama nueva → commit → push a la rama → PR → CI ve
 - **Toggles privacidad** (`showPhone`/`showWhatsapp`/`showExactLocation`). **Perfil público de usuario**. **Asistente IA "Ofi"** (guardrails PII/toxicidad/inyección, caché semántico, cuota atómica). **Imágenes CDN**: 2 buckets R2 (público CDN + privado firmado), thumbnails Sharp.
 - **Rediseño visual** "cálida artesanal": claro=crema `#FAF7F2`, oscuro=casi negro cálido `#0D0B08`; contraste AA vía onSolid/tintOn.
 
-## 8. Comandos y verificación
+## 8. Skills del proyecto (auto-cargados en cada chat)
+
+Viven en `.claude/skills/` (versionados) — Claude Code los registra solo al abrir
+el repo; encapsulan los flujos repetitivos para no re-derivarlos (ahorro de tokens):
+
+- **/verificar** — checks por diff: tsc+jest backend, analyze+test móvil, admin/web. Correr tras cada cambio importante.
+- **/subir-pr** — rama → stage selectivo → commit → push → PR (gh REST) → poll CI → gate SQL → squash-merge → sync main.
+- **/sql-prod** — protocolo BD: schema + prisma generate + SQL idempotente que el USUARIO aplica manualmente en Supabase (bloquea merge).
+- **/ui-tema** — reglas de color/tema móvil (context.colors, tintOn/onSolid, const, tests con ThemeExtension). Leer ANTES de tocar UI Flutter.
+- **/cerrar-tanda** — actualizar este doc (§7/§10) + memoria + reporte final tras mergear.
+
+⚠️ `web/` no tiene check en CI (solo Backend/Mobile/Admin) — su única
+verificación es `/verificar` local antes de mergear.
+
+## 9. Comandos y verificación
 
 ```bash
 # Backend (ESM)
@@ -84,7 +98,7 @@ docker-compose up -d
 
 Pre-commit (husky + lint-staged): eslint/prettier por subproyecto + `dart format`/`analyze`. RTK: prefijar `rtk` a comandos ahorra 60-90% tokens (incluso en chains con `&&`).
 
-## 9. Estado / pendientes
+## 10. Estado / pendientes
 
 - **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado).
 - **Pendiente:** aplicar `backend/prisma/sql/audit_log.sql` a Supabase (idempotente; hasta entonces las escrituras de auditoría fallan en silencio, no rompen nada). Grafo `graphify-out/` desactualizado (no refleja coverage). Deuda: dos flujos de pago paralelos (`YapePayment` vs `PlanRequest`).
