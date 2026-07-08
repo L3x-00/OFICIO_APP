@@ -13,6 +13,7 @@ Pattern: [thing] [action] [reason]. [next step].
 ---
 ## Contexto Estructural con Graphify
 Antes de modificar archivos críticos o para entender dependencias entre backend, mobile, web y admin, consulta el grafo en `graphify-out/`. Utiliza el comando `graphify query` o lee `graphify-out/GRAPH_REPORT.md` para evitar leer archivos uno por uno y ahorrar tokens.
+⚠️ Verifica su frescura en CONTEXTO_PROYECTO §10 — si figura desactualizado, no confiar en él para módulos nuevos (ej. coverage).
 
 ---
 ## ⭐ Contexto del sistema (auto-cargado — LEER PRIMERO)
@@ -31,7 +32,9 @@ Para pegar el contexto en otro chat, copia `docs/CONTEXTO_PROYECTO.md`.
 # Servi — Guía de Desarrollo Optimizado
 
 **RTK Habilitado**: Sí (ahorrador de tokens 60-90%)
-**Estado**: producción — ver `@docs/CONTEXTO_PROYECTO.md` §9 para el estado vivo.
+**Estado**: producción — ver `@docs/CONTEXTO_PROYECTO.md` §10 para el estado vivo.
+**Skills del proyecto** (`.claude/skills/`, auto-cargados): `/verificar` · `/subir-pr` · `/sql-prod` · `/ui-tema` · `/cerrar-tanda` — usar estos flujos en vez de re-derivarlos.
+Los code blocks DENTRO de los skills se ejecutan tal cual (sin prefijo `rtk`) — son la receta exacta validada; la regla RTK aplica al resto de comandos.
 
 ---
 
@@ -67,6 +70,13 @@ rtk npm run dev                    # Inicia Next.js development
 ```bash
 cd mobile
 rtk flutter run -d chrome          # Inicia en Chrome (rápido)
+```
+
+### Web pública (Puerto 3002 — SIN check en CI, verificar local)
+```bash
+cd web
+rtk npm run dev                    # dev
+rtk npm run build                  # verificación antes de mergear cambios web/
 ```
 
 ### Git
