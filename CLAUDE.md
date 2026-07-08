@@ -15,63 +15,30 @@ Pattern: [thing] [action] [reason]. [next step].
 Antes de modificar archivos críticos o para entender dependencias entre backend, mobile, web y admin, consulta el grafo en `graphify-out/`. Utiliza el comando `graphify query` o lee `graphify-out/GRAPH_REPORT.md` para evitar leer archivos uno por uno y ahorrar tokens.
 
 ---
+## ⭐ Contexto del sistema (auto-cargado — LEER PRIMERO)
+
+El contexto completo y actual del proyecto (apps, stack, módulos, convenciones,
+BD, flujo de trabajo, features, estado) vive en un único doc portable que se
+carga automáticamente aquí:
+
+@docs/CONTEXTO_PROYECTO.md
+
+Es la fuente de verdad. No hace falta explorar el repo archivo por archivo:
+ese doc ya resume todo. Mantenerlo actualizado al cerrar cada tanda de cambios.
+Para pegar el contexto en otro chat, copia `docs/CONTEXTO_PROYECTO.md`.
+
+---
 # Servi — Guía de Desarrollo Optimizado
 
-**Última actualización**: 2026-04-09
 **RTK Habilitado**: Sí (ahorrador de tokens 60-90%)
-**Estado del Proyecto**: Hito 5.8+ (8 críticos pendientes)
+**Estado**: producción — ver `@docs/CONTEXTO_PROYECTO.md` §9 para el estado vivo.
 
 ---
 
-## 🎯 Contexto Rápido
+## 📁 Estructura y módulos
 
-**Servi** = Marketplace de servicios locales para ciudades intermedias del Perú.
-- **3 apps**: Flutter (cliente+proveedor), NestJS backend, Next.js admin
-- **Modelo**: Clientes gratis, proveedores pagan suscripción
-- **Mercado**: Electricistas, gasfiteros, peluquerías, restaurantes, etc.
-
-**Ubicación docs**:
-- Estado actual: `./ESTADO_ACTUAL.md` (leer primero)
-- Observaciones priorizadas: `./OBSERVACIONES_PRIORIZADAS.md` (bugs a arreglar)
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-C:\Users\Usuario\oficio_app\
-├── mobile/                  # Flutter (Dart)
-│   ├── lib/core/           # Constants, Network, Errors
-│   ├── lib/features/       # Feature-First: auth, providers_list, favorites, reviews, provider_dashboard
-│   ├── lib/shared/         # Widgets reutilizables
-│   └── pubspec.yaml
-├── backend/                 # NestJS (TypeScript ESM)
-│   ├── src/
-│   │   ├── auth/           # JWT, registro, login
-│   │   ├── users/          # Gestión de usuarios
-│   │   ├── providers/      # Listado, detalle, analytics
-│   │   ├── reviews/        # Reseñas + validación GPS/QR
-│   │   ├── favorites/      # Favoritos
-│   │   ├── admin/          # Panel administrador
-│   │   ├── provider-panel/ # Panel personal proveedor
-│   │   ├── events/         # WebSockets (Pusher)
-│   │   └── app.module.ts
-│   ├── prisma/schema.prisma # ORM + modelos BD
-│   ├── .env
-│   └── package.json
-├── admin/                   # Next.js (TypeScript + Tailwind)
-│   ├── app/
-│   │   ├── page.tsx        # Dashboard con 8 métricas
-│   │   ├── providers/      # CRUD proveedores
-│   │   ├── reviews/        # Moderación reseñas
-│   │   └── layout.tsx
-│   ├── components/
-│   └── lib/api.ts
-├── docker-compose.yml       # PostgreSQL 16 + PostGIS, Redis 7.2, MinIO
-├── ESTADO_ACTUAL.md
-├── OBSERVACIONES_PRIORIZADAS.md
-└── CLAUDE.md (este archivo)
-```
+4 apps: `mobile/` (Flutter), `backend/` (NestJS ESM), `admin/` + `web/` (Next.js 16).
+Lista completa de módulos backend y features móvil en `@docs/CONTEXTO_PROYECTO.md` §3.
 
 ---
 
@@ -113,14 +80,9 @@ rtk git log --oneline              # Ver commits recientes
 
 ## 🏗️ Stack Tecnológico
 
-| Componente | Tech | Versión | Puerto |
-|-----------|------|---------|--------|
-| Mobile | Flutter | 3.41.6 | — |
-| Backend | NestJS | 11.x | 3000 |
-| Admin | Next.js | 15 | 3001 |
-| Database | PostgreSQL | 16+PostGIS | 5432 |
-| Cache | Redis | 7.2 | 6379 |
-| Storage | MinIO | S3-compatible | 9000 |
+Flutter 3.41.6 · NestJS 11 (ESM) :3000 · Next.js 16 admin :3001 / web :3002 ·
+Supabase Postgres 16+PostGIS · Upstash Redis · R2/MinIO · Firebase FCM.
+Detalle + despliegue en `@docs/CONTEXTO_PROYECTO.md` §2.
 
 ---
 
@@ -152,45 +114,6 @@ features/
 
 ---
 
-## 🐛 8 Críticos a Resolver
-
-**Lee `./OBSERVACIONES_PRIORIZADAS.md` para detalles.**
-
-### TIER 1: BLOQUEA UX (Arreglar primero)
-1. Manejo de fotos — desaparecen al cambiar de cuenta
-2. Reseñas error — ValidationException + desincronización
-3. Categoría selector — no se puede seleccionar
-
-### TIER 2: COMPLETA UX
-4. Lógica de roles — botones no responden
-5. Detalles proveedor — falta información
-6. Botón cliente — Modal incompleto
-7. Auto-completa servicios — Formulario vacío
-
-### TIER 3: NUEVAS FUNCIONALIDADES
-8. Sistema notificaciones — Bandeja + WebSockets
-
----
-
-## 💡 Prompts Recomendados
-
-```
-# Al empezar sesión
-"Leo ESTADO_ACTUAL.md y OBSERVACIONES_PRIORIZADAS.md.
-¿Cuál es el crítico #1 que arreglamos hoy?"
-
-# Para arreglar un bug
-"Necesito arreglar crítico #1: fotos desaparecen al cambiar cuentas.
-Frontend: mobile/lib/features/auth/.../profile_screen.dart
-¿Cuál es la causa? ¿Cómo lo arreglamos?"
-
-# Para implementar feature
-"Voy a implementar [feature].
-¿Qué archivos en frontend/backend/admin necesito tocar?"
-```
-
----
-
 ## 📊 RTK — Ahorrador Automático de Tokens
 
 RTK **automáticamente** filtra output innecesario sin que hagas nada especial. Ahorras 60-90% de tokens en comandos comunes.
@@ -204,15 +127,6 @@ rtk git status                     # Git (70% ahorro)
 rtk git diff                       # Git diffs (80% ahorro)
 rtk docker-compose up -d           # Infra (85% ahorro)
 ```
-
----
-
-## 🎯 Cómo Empezar Hoy
-
-1. Lee `./ESTADO_ACTUAL.md` (5 min)
-2. Lee `./OBSERVACIONES_PRIORIZADAS.md` (10 min)
-3. Identifica crítico #1
-4. Pregunta: "¿Por qué desaparecen las fotos al cambiar de cuenta?"
 
 ---
 
