@@ -116,6 +116,14 @@ export default function Navbar() {
     router.push('/');
   };
 
+  // En la home el hero es una foto oscura en AMBOS temas: mientras el navbar
+  // está transparente encima, sus textos deben ser blancos aunque el tema sea
+  // claro. Al hacer scroll pasa a glass y vuelve a los colores por tema.
+  const overHero = pathname === '/' && !scrolled;
+  const linkCls = overHero
+    ? 'text-white/85 hover:text-white'
+    : 'text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white';
+
   return (
     <>
       <motion.nav
@@ -124,54 +132,54 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'glass shadow-card-glass border-b border-white/5'
-            : 'bg-transparent border-b border-transparent'
+            ? 'glass dark:glass shadow-card-glass border-b border-white/5 dark:border-white/5'
+            : `bg-transparent border-b border-transparent ${overHero ? 'force-dark-zone' : ''}`
         }`}
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
           <div
             className={`flex items-center justify-between transition-all duration-300 ${
-              scrolled ? 'h-14' : 'h-16'
+              scrolled ? 'h-16' : 'h-20'
             }`}
           >
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-              <div className="relative w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shadow-glow-sm transition-transform duration-300 group-hover:scale-[1.04] border border-white/10">
+            {/* Logo - más grande y sin borde redondo */}
+            <Link href="/" className="flex items-center gap-3 flex-shrink-0 group">
+              <div className="relative w-12 h-12 flex items-center justify-center transition-transform duration-300 group-hover:scale-[1.05]">
                 <Image
                   src="/images/logo/servi.png"
                   alt="Servi logo"
-                  width={22}
-                  height={22}
+                  width={40}
+                  height={40}
                   className="object-contain"
                   priority
                 />
               </div>
-              <span className="hidden sm:inline-block font-display font-bold text-[17px] tracking-tightest text-white group-hover:text-primary-light transition-colors">
+              <span className={`hidden sm:inline-block font-display font-bold text-xl tracking-tightest ${overHero ? 'text-white' : 'text-gray-900 dark:text-white'} group-hover:text-primary dark:group-hover:text-primary-light transition-colors`}>
                 Servi
               </span>
             </Link>
 
-            {/* Enlaces desktop */}
-            <div className="hidden md:flex items-center gap-7">
+            {/* Enlaces desktop - letras más gruesas y grandes */}
+            <div className="hidden lg:flex items-center gap-8">
               {navLinks.map(({ href, label }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="nav-link-light relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-primary-light after:origin-right after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-smooth"
+                  className={`${linkCls} font-semibold text-[15px] transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary dark:after:bg-primary-light after:origin-right after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:ease-smooth`}
                 >
                   {label}
                 </Link>
               ))}
               <button
                 onClick={() => setAboutOpen(true)}
-                className="nav-link-light inline-flex items-center gap-1 group"
+                className={`${linkCls} font-semibold text-[15px] transition-colors inline-flex items-center gap-1 group`}
               >
                 Conócenos
               </button>
             </div>
 
             {/* Desktop CTA - toggle de tema + Acceder/avatar */}
-            <div className="hidden md:flex items-center gap-2.5">
+            <div className="hidden lg:flex items-center gap-3">
               {/* Toggle de tema (sol/luna) — siempre visible antes
                   del CTA, igual para users autenticados y públicos. */}
               <ThemeToggle />
@@ -179,25 +187,25 @@ export default function Navbar() {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 bg-white/5 border border-white/10 hover:border-primary/30 px-2.5 py-1.5 rounded-full transition-all duration-200 hover:shadow-glow-sm"
+                    className="flex items-center gap-2.5 bg-white/10 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-primary/30 dark:hover:border-primary/30 px-3.5 py-2 rounded-full transition-all duration-200 hover:shadow-glow-sm"
                   >
                     {userAvatar ? (
                       <img
                         src={userAvatar}
                         alt={userName}
-                        className="w-7 h-7 rounded-full object-cover ring-2 ring-white/10"
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-white/10"
                       />
                     ) : (
-                      <div className="avatar avatar-orange w-7 h-7 text-[11px]">
+                      <div className="avatar avatar-orange w-8 h-8 text-[13px]">
                         {userInitials}
                       </div>
                     )}
-                    <span className="font-display font-medium text-sm text-white/80">
+                    <span className="font-display font-semibold text-sm text-gray-700 dark:text-white/80">
                       {userName}
                     </span>
                     <ChevronDown
-                      size={14}
-                      className={`text-white/40 transition-transform duration-200 ${
+                      size={16}
+                      className={`text-gray-400 dark:text-white/40 transition-transform duration-200 ${
                         dropdownOpen ? 'rotate-180' : ''
                       }`}
                     />
@@ -210,30 +218,30 @@ export default function Navbar() {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute right-0 top-full mt-2 w-56 glass rounded-xl py-1.5 z-50 shadow-glow-lg border border-white/10 overflow-hidden"
+                        className="absolute right-0 top-full mt-2 w-56 glass dark:glass rounded-xl py-1.5 z-50 shadow-glow-lg border border-gray-200/50 dark:border-white/10 overflow-hidden"
                       >
                         <Link
                           href={panelPath}
                           onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-600 dark:text-white/70 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                         >
-                          <LayoutDashboard size={15} className="text-primary-light" />
+                          <LayoutDashboard size={16} className="text-primary dark:text-primary-light" />
                           Mi Panel
                         </Link>
                         <Link
                           href="/perfil"
                           onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-600 dark:text-white/70 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                         >
-                          <User size={15} className="text-primary-light" />
+                          <User size={16} className="text-primary dark:text-primary-light" />
                           Mi perfil
                         </Link>
-                        <div className="border-t border-white/5 my-1" />
+                        <div className="border-t border-gray-200/50 dark:border-white/5 my-1" />
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2.5 w-full px-4 py-2.5 text-[13px] text-rose-400 hover:bg-rose-500/10 transition-colors"
+                          className="flex items-center gap-2.5 w-full px-4 py-2.5 text-[14px] font-medium text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
                         >
-                          <LogOut size={15} />
+                          <LogOut size={16} />
                           Cerrar sesión
                         </button>
                       </motion.div>
@@ -243,9 +251,9 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="btn btn-primary btn-sm press-effect inline-flex items-center gap-2"
+                  className="btn btn-primary btn-md press-effect inline-flex items-center gap-2.5 font-semibold px-5 py-2.5"
                 >
-                  <LogIn size={14} />
+                  <LogIn size={16} />
                   Acceder
                 </Link>
               )}
@@ -253,18 +261,18 @@ export default function Navbar() {
 
             {/* Botón hamburguesa móvil */}
             <button
-              className="md:hidden text-white/60 hover:text-white p-1 relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+              className={`lg:hidden ${overHero ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'} p-1.5 relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Menú"
             >
               <Menu
-                size={22}
+                size={24}
                 className={`absolute transition-all duration-300 ${
                   mobileMenuOpen ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'
                 }`}
               />
               <X
-                size={22}
+                size={24}
                 className={`absolute transition-all duration-300 ${
                   mobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'
                 }`}
@@ -281,7 +289,7 @@ export default function Navbar() {
               initial="closed"
               animate="open"
               exit="closed"
-              className="md:hidden glass border-t border-white/10 mt-1 shadow-glow-lg"
+              className="lg:hidden glass dark:glass border-t border-gray-200/50 dark:border-white/10 mt-1 shadow-glow-lg"
             >
               <div className="px-4 pb-5 pt-3 space-y-1">
                 {navLinks.map(({ href, label }) => (
@@ -289,7 +297,7 @@ export default function Navbar() {
                     key={href}
                     href={href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block text-white/70 hover:text-white hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[14px] font-medium font-display"
+                    className="block text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[15px] font-semibold font-display"
                   >
                     {label}
                   </Link>
@@ -299,27 +307,27 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     setAboutOpen(true);
                   }}
-                  className="w-full text-left text-white/70 hover:text-white hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[14px] font-medium font-display"
+                  className="w-full text-left text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[15px] font-semibold font-display"
                 >
                   Conócenos
                 </button>
-                <div className="pt-3 border-t border-white/10">
+                <div className="pt-3 border-t border-gray-200/50 dark:border-white/10">
                   {authed ? (
                     <div className="space-y-1">
                       <Link
                         href={panelPath}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[14px] font-medium font-display"
+                        className="flex items-center gap-2 text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[15px] font-semibold font-display"
                       >
-                        <LayoutDashboard size={16} className="text-primary-light" />
+                        <LayoutDashboard size={18} className="text-primary dark:text-primary-light" />
                         Mi Panel
                       </Link>
                       <Link
                         href="/perfil"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[14px] font-medium font-display"
+                        className="flex items-center gap-2 text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[15px] font-semibold font-display"
                       >
-                        <User size={16} className="text-primary-light" />
+                        <User size={18} className="text-primary dark:text-primary-light" />
                         Mi perfil
                       </Link>
                       <button
@@ -327,25 +335,25 @@ export default function Navbar() {
                           handleLogout();
                           setMobileMenuOpen(false);
                         }}
-                        className="flex items-center gap-2 w-full text-rose-400 hover:bg-rose-500/10 rounded-lg px-3 py-2.5 transition-colors text-[14px] font-medium font-display"
+                        className="flex items-center gap-2 w-full text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg px-3 py-2.5 transition-colors text-[15px] font-semibold font-display"
                       >
-                        <LogOut size={16} />
+                        <LogOut size={18} />
                         Cerrar sesión
                       </button>
                     </div>
                   ) : (
                     <Link
                       href="/login"
-                      className="btn btn-primary press-effect w-full justify-center"
+                      className="btn btn-primary press-effect w-full justify-center font-semibold py-2.5"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <LogIn size={16} />
+                      <LogIn size={18} />
                       Acceder
                     </Link>
                   )}
                   {/* Toggle de tema en el drawer mobile — mismo botón
                       ícono que en desktop, alineado a la derecha. */}
-                  <div className="flex justify-end pt-2 border-t border-white/5">
+                  <div className="flex justify-end pt-2 border-t border-gray-200/50 dark:border-white/5">
                     <ThemeToggle />
                   </div>
                 </div>

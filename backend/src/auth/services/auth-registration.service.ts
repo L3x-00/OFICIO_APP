@@ -50,6 +50,9 @@ export type RegisterProviderData = {
   whatsapp?: string | null;
   description?: string;
   address?: string;
+  // Coordenadas → location_geog (trigger PostGIS) para búsqueda por radio.
+  latitude?: number;
+  longitude?: number;
   categoryIds?: number[]; // hasta 3 Especialidades (categorías hijas)
   primaryCategoryId?: number; // Especialidad principal (isPrimary)
   localityId?: number;
@@ -380,6 +383,15 @@ export class AuthRegistrationService {
           whatsapp: data.whatsapp?.trim() || null,
           description: data.description || null,
           address: data.address || null,
+          // Ambas o ninguna: una coordenada suelta no ubica nada.
+          latitude:
+            data.latitude != null && data.longitude != null
+              ? data.latitude
+              : null,
+          longitude:
+            data.latitude != null && data.longitude != null
+              ? data.longitude
+              : null,
           website: data.website?.trim() || null,
           instagram: data.instagram?.trim() || null,
           tiktok: data.tiktok?.trim() || null,

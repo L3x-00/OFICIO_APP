@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Search, MapPin, Star, Radar, Store, Loader2, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Search, MapPin, Star, Radar, Loader2, X } from 'lucide-react';
 import {
   api,
   type PublicProvider,
@@ -15,23 +16,28 @@ import {
 const SearchRadarMap = dynamic(() => import('@/components/search/search-radar-map'), {
   ssr: false,
   loading: () => (
-    <div className="h-[300px] rounded-2xl border border-white/10 bg-dark-card/50 flex items-center justify-center text-white/40">
+    <div className="h-[300px] rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-dark-card/50 flex items-center justify-center text-gray-400 dark:text-white/40">
       <Loader2 className="animate-spin" />
     </div>
   ),
 });
 
-// TODO: el usuario completará estos enlaces (los dejamos vacíos como en mobile).
-const PLAY_STORE_URL = '';
-const SOCIALS: { icon: string; label: string; href: string }[] = [
-  { icon: 'whatsapp.svg', label: 'WhatsApp', href: '' },
-  { icon: 'instagram.svg', label: 'Instagram', href: '' },
-  { icon: 'tiktok.svg', label: 'TikTok', href: '' },
-  { icon: 'facebook.svg', label: 'Facebook', href: '' },
-  { icon: 'gmail.svg', label: 'Correo', href: '' },
-];
-
+/* useSearchParams exige un boundary de Suspense al prerender (Next 16). */
 export default function BuscarPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white dark:bg-dark-premium flex items-center justify-center">
+          <Loader2 className="animate-spin text-primary" />
+        </main>
+      }
+    >
+      <BuscarPageInner />
+    </Suspense>
+  );
+}
+
+function BuscarPageInner() {
   const [categories, setCategories] = useState<FeaturedCategory[]>([]);
   const [groups, setGroups] = useState<FeaturedGroup[]>([]);
   const [topRated, setTopRated] = useState<PublicProvider[]>([]);
@@ -105,22 +111,60 @@ export default function BuscarPage() {
     }
   }, []);
 
+  /* Deep-link desde la landing (solutions-section):
+     /buscar?categoria=<slug-padre>&provincia=X — listado por ubicación
+     /buscar?categoria=<slug-padre>&lat=..&lng=..&km=.. — radio PostGIS */
+  const searchParams = useSearchParams();
+  const deepLinkRan = useRef(false);
+  useEffect(() => {
+    if (deepLinkRan.current) return;
+    const categoria = searchParams.get('categoria');
+    const lat = Number(searchParams.get('lat'));
+    const lng = Number(searchParams.get('lng'));
+    const km = Number(searchParams.get('km')) || 10;
+    const provincia = searchParams.get('provincia');
+    const titulo = searchParams.get('titulo') || categoria;
+    if (!categoria && !(lat && lng)) return;
+    deepLinkRan.current = true;
+
+    setSearching(true);
+    setResults([]);
+    const done = (data: PublicProvider[], title: string) => {
+      setResults(data);
+      setResultsTitle(title);
+      setSearching(false);
+    };
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+      api
+        .getNearby(lat, lng, km, categoria ? { parentCategorySlug: categoria } : {})
+        .then((data) => done(data, `${titulo} · cerca de ti (${km} km)`))
+        .catch(() => done([], `${titulo} · cerca de ti (${km} km)`));
+    } else if (categoria) {
+      api
+        .searchProviders({ parentCategorySlug: categoria, province: provincia ?? undefined, limit: 24 })
+        .then((data) => done(data, provincia ? `${titulo} · ${provincia}` : String(titulo)))
+        .catch(() => done([], String(titulo)));
+    }
+  }, [searchParams]);
+
   return (
-    <main className="min-h-screen pb-24">
-      <div className="max-w-6xl mx-auto px-4 pt-8 sm:pt-12">
-        {/* Hero + búsqueda */}
+    <main className="min-h-screen pb-16 bg-white dark:bg-dark-premium transition-colors duration-300">
+      {/* pt compensa el navbar fijo (h-20) */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28">
+        {/* Header */}
         <header className="mb-6">
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Buscar servicios
           </h1>
-          <p className="text-white/50 text-sm mt-1">
+          <p className="text-gray-500 dark:text-white/50 text-sm mt-1">
             Encuentra profesionales y negocios verificados cerca de ti.
           </p>
         </header>
 
+        {/* Barra de búsqueda */}
         <div className="flex items-center gap-2 mb-5">
           <div className="flex-1 relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -128,15 +172,15 @@ export default function BuscarPage() {
                 if (e.key === 'Enter') runTextSearch();
               }}
               placeholder="¿Qué servicio necesitas? (electricista, peluquería…)"
-              className="w-full bg-dark-card/70 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:border-primary/50 transition-colors"
+              className="w-full bg-gray-100 dark:bg-dark-card/70 border border-gray-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-white/30 outline-none focus:border-primary/50 transition-colors"
             />
           </div>
           <button
             onClick={runTextSearch}
             disabled={searching || !query.trim()}
-            className="bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl px-5 py-3 text-sm transition-colors disabled:opacity-50"
+            className="btn btn-primary press-effect h-[46px] px-5 text-sm font-semibold disabled:opacity-50"
           >
-            Buscar
+            {searching ? <Loader2 size={16} className="animate-spin" /> : 'Buscar'}
           </button>
         </div>
 
@@ -151,8 +195,8 @@ export default function BuscarPage() {
                   onClick={() => pickCategory(cat)}
                   className={`shrink-0 px-4 py-2 rounded-full text-[13px] font-medium border transition-colors ${
                     active
-                      ? 'bg-primary/20 border-primary/50 text-primary'
-                      : 'bg-white/[0.04] border-white/10 text-white/70 hover:text-white hover:border-white/20'
+                      ? 'bg-primary/15 border-primary/40 text-primary dark:text-primary-light'
+                      : 'bg-gray-100 dark:bg-white/[0.04] border-gray-200 dark:border-white/10 text-gray-600 dark:text-white/70 hover:border-gray-300 dark:hover:border-white/20'
                   }`}
                 >
                   {cat.name}
@@ -166,22 +210,22 @@ export default function BuscarPage() {
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <Radar size={18} className="text-primary" />
-            <h2 className="font-display text-lg font-bold text-white">Buscar por radio</h2>
+            <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">Buscar por radio</h2>
           </div>
           <SearchRadarMap onSearch={runNearby} loading={searching} />
         </section>
 
-        {/* Resultados (búsqueda / categoría / cercanía) o descubrimiento */}
+        {/* Resultados o descubrimiento */}
         {results !== null ? (
           <section className="mb-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-bold text-white">
+              <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">
                 {resultsTitle}{' '}
-                <span className="text-white/40 text-sm font-normal">({results.length})</span>
+                <span className="text-gray-400 dark:text-white/40 text-sm font-normal">({results.length})</span>
               </h2>
               <button
                 onClick={clearResults}
-                className="inline-flex items-center gap-1 text-white/50 hover:text-white text-sm"
+                className="inline-flex items-center gap-1 text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white text-sm transition-colors"
               >
                 <X size={14} /> Limpiar
               </button>
@@ -189,7 +233,7 @@ export default function BuscarPage() {
             {searching ? (
               <LoaderRow />
             ) : results.length === 0 ? (
-              <p className="text-white/40 text-sm py-8 text-center">
+              <p className="text-gray-400 dark:text-white/40 text-sm py-12 text-center">
                 No encontramos proveedores para esta búsqueda.
               </p>
             ) : (
@@ -217,7 +261,7 @@ export default function BuscarPage() {
             {/* Recomendados */}
             {topRated.length > 0 && (
               <section className="mb-10">
-                <h2 className="font-display text-lg font-bold text-white mb-4">Recomendados</h2>
+                <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white mb-4">Recomendados</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {topRated.slice(0, 6).map((p) => (
                     <ProviderCard key={p.id} provider={p} />
@@ -230,75 +274,34 @@ export default function BuscarPage() {
 
         {/* Banner publicitario propio */}
         <section className="mb-10">
-          <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/15 to-amber/10 p-6 sm:p-8">
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-primary/20 items-center justify-center shrink-0">
-                <Store className="text-primary" />
+          <div className="relative overflow-hidden rounded-2xl border border-primary/20 dark:border-primary/30 bg-gradient-to-br from-primary/5 to-amber/5 dark:from-primary/15 dark:to-amber/10 p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="hidden sm:flex w-12 h-12 rounded-xl bg-primary/10 dark:bg-primary/20 items-center justify-center shrink-0">
+                <Search size={20} className="text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-lg sm:text-xl font-bold text-white">
-                  ¿Aún no tienes tu negocio registrado?
+                <h3 className="font-display text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                  ¿Eres profesional o tienes un negocio?
                 </h3>
-                <p className="text-white/60 text-sm mt-1">
-                  Únete a Servi y llega a miles de clientes en tu ciudad. El registro es gratis.
+                <p className="text-gray-500 dark:text-white/60 text-sm mt-1">
+                  Regístrate gratis en Servi y recibe clientes en tu ciudad.
                 </p>
               </div>
               <Link
-                href="/login"
-                className="shrink-0 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition-colors"
+                href="/registrar-proveedor"
+                className="shrink-0 btn btn-primary press-effect text-sm font-semibold"
               >
-                ¡Regístrate!
+                Registrar mi servicio
               </Link>
             </div>
           </div>
         </section>
-
-        {/* Descarga la app + redes */}
-        <section className="rounded-2xl border border-white/10 bg-dark-card/50 p-6 text-center">
-          <h3 className="font-display text-lg font-bold text-white">Lleva Servi contigo</h3>
-          <p className="text-white/50 text-sm mt-1 mb-4">
-            Descarga la app y encuentra servicios donde estés.
-          </p>
-          <a
-            href={PLAY_STORE_URL || undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white text-black font-semibold rounded-xl px-5 py-3 text-sm hover:bg-white/90 transition-colors"
-          >
-            Descargar App
-          </a>
-          <div className="flex items-center justify-center gap-3 mt-5">
-            {SOCIALS.map((s) => (
-              <a
-                key={s.icon}
-                href={s.href || undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={s.label}
-                title={s.label}
-                className="w-10 h-10 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center hover:border-white/25 transition-colors"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/images/social/${s.icon}`} alt={s.label} width={20} height={20} />
-              </a>
-            ))}
-          </div>
-        </section>
       </div>
-
-      {/* Botón sticky de descarga (esquina inferior izquierda, lejos de los FAB) */}
-      <a
-        href={PLAY_STORE_URL || undefined}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-5 left-4 z-40 inline-flex items-center gap-2 bg-white text-black font-semibold rounded-full pl-4 pr-5 py-2.5 text-sm shadow-lg hover:bg-white/90 transition-colors"
-      >
-      </a>
     </main>
   );
 }
 
-// ── Tarjeta de proveedor → perfil público /p/[id] (acepta id numérico) ──
+// ── Tarjeta de proveedor ──
 function ProviderCard({ provider }: { provider: PublicProvider }) {
   const cover =
     provider.images?.find((i) => i.isCover)?.url ??
@@ -315,9 +318,9 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
   return (
     <Link
       href={href}
-      className="glass glass-hover overflow-hidden group block rounded-2xl border border-white/10 transition-all"
+      className="group block rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-card overflow-hidden hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-lg dark:hover:shadow-glow-sm transition-all duration-300"
     >
-      <div className="relative aspect-[5/3] bg-dark-card overflow-hidden">
+      <div className="relative aspect-[5/3] bg-gray-100 dark:bg-dark-card overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={cover}
@@ -325,9 +328,9 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
           loading="lazy"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         {provider.category?.name && (
-          <span className="absolute top-2 left-2 text-[11px] bg-black/50 text-white/90 px-2 py-0.5 rounded-full">
+          <span className="absolute top-2 left-2 text-[11px] bg-black/50 text-white/90 px-2 py-0.5 rounded-full backdrop-blur-sm">
             {provider.category.name}
           </span>
         )}
@@ -338,15 +341,15 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-white font-semibold text-sm truncate">{provider.businessName}</p>
-        <div className="flex items-center gap-2 mt-1 text-xs text-white/50">
+        <p className="text-gray-900 dark:text-white font-semibold text-sm truncate">{provider.businessName}</p>
+        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-white/50">
           <span className="inline-flex items-center gap-1 text-amber">
             <Star size={12} className="fill-amber" /> {rating.toFixed(1)}
-            <span className="text-white/40">({reviews})</span>
+            <span className="text-gray-400 dark:text-white/40">({reviews})</span>
           </span>
           {location && (
             <span className="inline-flex items-center gap-1 truncate">
-              <MapPin size={12} /> {location}
+              <MapPin size={12} className="text-gray-400 dark:text-white/40" /> {location}
             </span>
           )}
         </div>
@@ -355,11 +358,11 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
   );
 }
 
-// ── Carrusel horizontal de proveedores ──
+// ── Carrusel horizontal ──
 function Carousel({ title, providers }: { title: string; providers: PublicProvider[] }) {
   return (
     <section className="mb-8">
-      <h2 className="font-display text-lg font-bold text-white mb-4">{title}</h2>
+      <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white mb-4">{title}</h2>
       <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
         {providers.map((p) => (
           <div key={p.id} className="w-[260px] shrink-0">
@@ -373,7 +376,7 @@ function Carousel({ title, providers }: { title: string; providers: PublicProvid
 
 function LoaderRow() {
   return (
-    <div className="py-12 flex justify-center text-white/40">
+    <div className="py-12 flex justify-center text-gray-400 dark:text-white/40">
       <Loader2 className="animate-spin" />
     </div>
   );

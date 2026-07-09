@@ -317,6 +317,9 @@ export interface RegisterProviderPayload {
   plenaCoordinacion?: boolean;
   // comunes
   address?: string;
+  /** Coordenadas (del enlace de Google Maps) — habilitan la búsqueda por radio. */
+  latitude?: number;
+  longitude?: number;
   categoryIds: number[];
   primaryCategoryId?: number;
   department?: string;
@@ -661,8 +664,13 @@ export const api = {
   async searchProviders(params: {
     search?: string;
     categorySlug?: string;
+    /** Slug de categoría PADRE — trae proveedores de todas sus hijas. */
+    parentCategorySlug?: string;
     type?: "PROFESSIONAL" | "BUSINESS";
     sortBy?: "rating" | "reviews" | "availability";
+    department?: string;
+    province?: string;
+    district?: string;
     limit?: number;
     page?: number;
   } = {}): Promise<PublicProvider[]> {
@@ -672,6 +680,10 @@ export const api = {
     if (params.sortBy) qs.set("sortBy", params.sortBy);
     if (params.search) qs.set("search", params.search);
     if (params.categorySlug) qs.set("categorySlug", params.categorySlug);
+    if (params.parentCategorySlug) qs.set("parentCategorySlug", params.parentCategorySlug);
+    if (params.department) qs.set("department", params.department);
+    if (params.province) qs.set("province", params.province);
+    if (params.district) qs.set("district", params.district);
     if (params.type) qs.set("type", params.type);
     const res = await fetch(`${API_BASE_URL}/providers?${qs.toString()}`, {
       method: "GET",
@@ -680,6 +692,23 @@ export const api = {
     if (!res.ok) throw new Error(`Error ${res.status} buscando proveedores`);
     const json = (await res.json()) as { data?: PublicProvider[] } | PublicProvider[];
     return Array.isArray(json) ? json : json.data ?? [];
+  },
+
+  /** Total de proveedores que matchean un filtro (para conteos en la landing). */
+  async countProviders(params: {
+    parentCategorySlug?: string;
+    province?: string;
+  }): Promise<number> {
+    const qs = new URLSearchParams({ limit: "1", page: "1" });
+    if (params.parentCategorySlug) qs.set("parentCategorySlug", params.parentCategorySlug);
+    if (params.province) qs.set("province", params.province);
+    const res = await fetch(`${API_BASE_URL}/providers?${qs.toString()}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Error ${res.status} contando proveedores`);
+    const json = (await res.json()) as { total?: number };
+    return json.total ?? 0;
   },
 
   /** Catálogo de categorías (padres + hijos). Público. */
@@ -708,8 +737,11 @@ export const api = {
     latitude: number,
     longitude: number,
     radiusKm: number,
+    filters: { categorySlug?: string; parentCategorySlug?: string } = {},
   ): Promise<NearbyProvider[]> {
-    const qs = `?latitude=${latitude}&longitude=${longitude}&radiusKm=${radiusKm}`;
+    let qs = `?latitude=${latitude}&longitude=${longitude}&radiusKm=${radiusKm}`;
+    if (filters.categorySlug) qs += `&categorySlug=${encodeURIComponent(filters.categorySlug)}`;
+    if (filters.parentCategorySlug) qs += `&parentCategorySlug=${encodeURIComponent(filters.parentCategorySlug)}`;
     const res = await fetch(`${API_BASE_URL}/providers/nearby${qs}`, {
       method: "GET",
       cache: "no-store",
