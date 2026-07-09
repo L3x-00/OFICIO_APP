@@ -12,6 +12,8 @@ import {
   MaxLength,
   Matches,
   ValidateIf,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
@@ -106,6 +108,23 @@ export class RegisterProviderDto {
   @IsString()
   @MaxLength(200)
   address?: string;
+
+  // ── Coordenadas (GPS del móvil o enlace de Maps en web) ───
+  // Alimentan location_geog (trigger PostGIS) → sin ellas el proveedor
+  // no aparece en la búsqueda por radio.
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
 
   // Al menos una categoría es obligatoria — si llega vacío, el catálogo no
   // sabría en qué bucket mostrar al proveedor.

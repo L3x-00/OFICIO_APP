@@ -25,24 +25,6 @@ const benefits: BenefitDef[] = [
     accent: 'orange',
   },
   {
-    icon: MapPin,
-    title: 'Reseñas con GPS',
-    desc: 'Opiniones geolocalizadas que garantizan autenticidad en cada experiencia.',
-    accent: 'accent',
-  },
-  {
-    icon: CreditCard,
-    title: 'Pagos seguros con Yape',
-    desc: 'Método de pago confiable usado por millones de peruanos cada día.',
-    accent: 'amber',
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Soporte local',
-    desc: 'Equipo peruano que entiende las necesidades de tu ciudad y negocio.',
-    accent: 'orange',
-  },
-  {
     // SVG oficial de WhatsApp — sustituye al ícono Zap genérico que no
     // representaba la naturaleza del beneficio. Vive en /public.
     icon: '/images/social/whatsapp.svg',
