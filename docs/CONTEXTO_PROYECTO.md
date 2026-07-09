@@ -5,7 +5,7 @@ Code (o de claude.ai) para dar contexto completo del sistema sin explorar
 archivo por archivo. En este repo se **auto-carga** vía `@docs/CONTEXTO_PROYECTO.md`
 en `CLAUDE.md`. Mantener actualizado al cerrar cada tanda de cambios.
 
-**Última actualización:** 2026-07-09 · Estado: producción, landing web conectada a API real + wizard registro proveedor desplegados (PR #31).
+**Última actualización:** 2026-07-09 · Estado: producción — reducción de superficie: subastas y ofertas OCULTAS (reactivables), foco en proveedores OFICIO.
 
 ---
 
@@ -16,6 +16,10 @@ en `CLAUDE.md`. Mantener actualizado al cerrar cada tanda de cambios.
 (Huancayo). **Modelo:** clientes gratis; proveedores pagan suscripción
 (GRATIS / ESTÁNDAR / PREMIUM). Un usuario puede ser cliente y además tener perfil
 proveedor OFICIO y/o NEGOCIO — los tres perfiles son independientes.
+**Enfoque actual (2026-07):** la app está en lanzamiento — se REDUJO la
+superficie de funciones para simplificar la experiencia; prioridad en
+proveedores de OFICIO (los NEGOCIO son secundarios). Subastas y ofertas
+quedaron ocultas (ver §3), reactivables a futuro.
 
 ## 2. Apps, stack y despliegue
 
@@ -30,9 +34,11 @@ proveedor OFICIO y/o NEGOCIO — los tres perfiles son independientes.
 
 ## 3. Módulos
 
-**backend/src/** — `auth` (JWT, OTP, social) · `users` · `providers` (listado/detalle/analytics/nearby) · `provider-profile` (panel propio + coverage) · `reviews` (GPS/QR) · `favorites` · `chat` · `menu` (carta) · `catalog` · `appointments` (agenda) · `quotations` (cotización) · `coverage` (alcance por distrito) · `offer-posts` · `subastas` · `referrals` (canje monedas→plan) · `payments` (Yape + MercadoPago) · `trust-validation` · `user-reports` · `admin` (+services: dashboard/trust/reports/payments) · `ai-assistant` ("Ofi", aislado) · `events` (WS) · `firebase` (push) · `email` · `localities` · `common` (MinioService, provider-features.service, storefront.helpers) · `generated` (cliente Prisma, regenera en CI — no editar). Schema: `backend/prisma/schema.prisma`.
+**backend/src/** — `auth` (JWT, OTP, social) · `users` · `providers` (listado/detalle/analytics/nearby) · `provider-profile` (panel propio + coverage) · `reviews` (GPS/QR) · `favorites` · `chat` · `menu` (carta) · `catalog` · `appointments` (agenda) · `quotations` (cotización) · `coverage` (alcance por distrito) · `offer-posts` ⛔OCULTO · `subastas` ⛔OCULTO · `referrals` (canje monedas→plan) · `payments` (Yape + MercadoPago; PlanRequest DEPRECADO) · `trust-validation` · `user-reports` · `admin` (+services: dashboard/trust/reports/payments) · `ai-assistant` ("Ofi", aislado) · `events` (WS) · `firebase` (push) · `email` · `localities` · `common` (MinioService, provider-features.service, storefront.helpers, **feature-flag.guard**) · `generated` (cliente Prisma, regenera en CI — no editar). Schema: `backend/prisma/schema.prisma`.
 
-**mobile/lib/features/** — `auth` · `providers_list` (listado+detalle+reseñas+filtros+radio) · `provider_dashboard` (panel proveedor, tabs) · `favorites` · `chat` · `menu` · `catalog` · `agenda` · `quotation` · `subastas` · `offer_posts` · `referrals` · `notifications` · `payments` · `trust_validation` · `localities` · `ai_assistant` · `showcase`. **mobile/lib/core/** — `constants` (app_colors), `theme` (app_theme_colors, theme_provider), `network` (dio_client), `router`, `services`, `errors`, `utils`, `widgets`. Cada feature: `data/` (repo) · `domain/` (models) · `presentation/` (screens/widgets/providers).
+**mobile/lib/features/** — `auth` · `providers_list` (listado+detalle+reseñas+filtros+radio) · `provider_dashboard` (panel proveedor, tabs) · `favorites` · `chat` · `menu` · `catalog` · `agenda` · `quotation` · `subastas` ⛔OCULTO · `offer_posts` ⛔OCULTO · `referrals` · `notifications` · `payments` · `trust_validation` · `localities` · `ai_assistant` · `showcase`. **mobile/lib/core/** — `constants` (app_colors, **feature_flags**), `theme` (app_theme_colors, theme_provider), `network` (dio_client), `router`, `services`, `errors`, `utils`, `widgets`. Cada feature: `data/` (repo) · `domain/` (models) · `presentation/` (screens/widgets/providers).
+
+⛔ **Features OCULTAS (2026-07, código intacto):** subastas "ConfiServ" y ofertas (offer_posts) están desactivadas para simplificar el lanzamiento — foco en proveedores OFICIO. Reactivar = backend `FEATURE_SUBASTAS`/`FEATURE_OFERTAS=true` en Render (guard `common/feature-flag.guard.ts`, controllers públicos → 404) + móvil `core/constants/feature_flags.dart` (`kSubastasEnabled`/`kOfertasEnabled=true` y recompilar) + restaurar navs comentados en web/admin. Tablas BD intactas; los controllers `/admin/offers` y `/admin/offer-reports` siguen vivos (moderación de historial) y el cron `expireOffers` sigue limpiando.
 
 ## 4. Convenciones NO negociables
 
@@ -102,6 +108,6 @@ Pre-commit (husky + lint-staged): eslint/prettier por subproyecto + `dart format
 
 ## 10. Estado / pendientes
 
-- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`.
-- **Pendiente:** Móvil aún NO envía lat/lng al registrar (el DTO ya las acepta — adopción pendiente). CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: probar integración web local vía proxy. Grafo `graphify-out/` desactualizado (no refleja coverage). Deuda: dos flujos de pago paralelos (`YapePayment` vs `PlanRequest`). Nota: el `AuditLog @@map("audit_log")` + `AuditLogService` de la auditoría V2 (ver memoria) NUNCA se commiteó — es tema aparte del trigger de #34.
+- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`. **Reducción de superficie:** subastas + ofertas OCULTAS en todo el ecosistema (ver §3), PlanRequest deprecado (tab admin retirado, métodos móviles borrados; endpoint vivo para apps viejas, tabla se conserva), retención de notifs leídas 7d / no leídas 30d, fix fila histórica de payments en primer pago Yape, fix markNotificationRead admin sin scope.
+- **Pendiente:** Móvil aún NO envía lat/lng al registrar (el DTO ya las acepta — adopción pendiente). Recompilar .aab para que el ocultamiento llegue a Play. CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: probar integración web local vía proxy. Grafo `graphify-out/` desactualizado. Nota: el `AuditLog @@map("audit_log")` + `AuditLogService` de la auditoría V2 (ver memoria) NUNCA se commiteó — es tema aparte del trigger de #34.
 - **Docs:** este archivo + `docs/ESTADO_ACTUAL.md` (puntero) + `docs/ARQUITECTURA_DESPLIEGUE.md` (arquitectura/infra detallada). Las copias en la RAÍZ están gitignored (punteros locales). Memorias de sesión en `~/.claude/projects/.../memory/`.

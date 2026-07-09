@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'core/constants/feature_flags.dart';
 import 'core/router/app_router.dart';
 import 'core/services/fcm_service.dart';
 import 'core/widgets/auth_side_effect_dialogs.dart';
@@ -834,7 +835,10 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
             businessName: '',
           ),
         );
+      // Feature OCULTA (kSubastasEnabled): pushes viejos de subasta tocados
+      // con el flag apagado no navegan (la ruta /my-requests no existe).
       case 'NEW_OFFER':
+        if (!kSubastasEnabled) break;
         widget.router.go('/');
         // Deep-link a la solicitud específica que recibió la postulación.
         final reqId = message.data['requestId'];
@@ -842,6 +846,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
           reqId != null ? '/my-requests?requestId=$reqId' : '/my-requests',
         );
       case 'OFFER_ACCEPTED':
+        if (!kSubastasEnabled) break;
         widget.router.go('/');
         widget.router.push('/provider-panel');
       case 'CHAT_MESSAGE':

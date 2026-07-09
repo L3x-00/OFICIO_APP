@@ -354,7 +354,8 @@ function MobileBottomNav() {
     { label: 'Inicio',    Icon: Home,          href: '/panel' },
     { label: 'Perfil',    Icon: UserCog,       href: '/panel/perfil' },
     { label: 'Mensajes',  Icon: MessageSquare, href: '/panel/mensajes' },
-    { label: 'Ofertas',   Icon: Zap,           href: '/panel/ofertas' },
+    // Feature OCULTA (2026-07): subastas — restaurar junto con FEATURE_SUBASTAS.
+    // { label: 'Ofertas',   Icon: Zap,           href: '/panel/ofertas' },
     { label: 'Servicios', Icon: Briefcase,     href: '/panel/servicios' },
     { label: 'Stats',     Icon: BarChart3,     href: '/panel/estadisticas' },
     { label: 'Referidos', Icon: Gift,          href: '/panel/referidos' },

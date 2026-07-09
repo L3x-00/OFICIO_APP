@@ -67,24 +67,28 @@ export const COMMON_TOOLS: AiToolDef[] = [
       },
     },
   },
-  {
-    roles: ALL_ROLES,
-    declaration: {
-      name: 'search_offers',
-      description:
-        'Busca ofertas/promociones activas publicadas por proveedores en Servi. ' +
-        'Úsala cuando el usuario pregunta por descuentos o promociones vigentes.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          category: {
-            type: Type.STRING,
-            description: 'Rubro para filtrar las ofertas (opcional).',
-          },
-        },
-      },
-    },
-  },
+  // Feature OCULTA (2026-07): tool `search_offers` retirado del catálogo —
+  // offer_posts está desactivado (FEATURE_OFERTAS). El case en
+  // ai-assistant.service.ts queda como código muerto inofensivo; para
+  // reactivar, restaurar este bloque:
+  // {
+  //   roles: ALL_ROLES,
+  //   declaration: {
+  //     name: 'search_offers',
+  //     description:
+  //       'Busca ofertas/promociones activas publicadas por proveedores en Servi. ' +
+  //       'Úsala cuando el usuario pregunta por descuentos o promociones vigentes.',
+  //     parameters: {
+  //       type: Type.OBJECT,
+  //       properties: {
+  //         category: {
+  //           type: Type.STRING,
+  //           description: 'Rubro para filtrar las ofertas (opcional).',
+  //         },
+  //       },
+  //     },
+  //   },
+  // },
   {
     roles: ALL_ROLES,
     declaration: {

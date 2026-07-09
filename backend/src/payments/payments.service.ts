@@ -278,24 +278,25 @@ export class PaymentsService {
         data: { planPriority: priority },
       });
 
-      // 4. Registrar en tabla payments histórica
-      if (payment.provider.subscription) {
-        const sub = await tx.subscription.findUnique({
-          where: { providerId: payment.providerId },
-          select: { id: true },
+      // 4. Registrar en tabla payments histórica. SIEMPRE: la subscription
+      // ya existe dentro de esta tx (paso 2 la creó si no había). Antes se
+      // condicionaba a payment.provider.subscription — snapshot PRE-tx — y
+      // el PRIMER pago de un proveedor activaba el plan sin dejar registro.
+      const sub = await tx.subscription.findUnique({
+        where: { providerId: payment.providerId },
+        select: { id: true },
+      });
+      if (sub) {
+        await tx.payment.create({
+          data: {
+            subscriptionId: sub.id,
+            amount: payment.amount,
+            currency: 'PEN',
+            method: 'yape',
+            reference: payment.verificationCode,
+            confirmedAt: new Date(),
+          },
         });
-        if (sub) {
-          await tx.payment.create({
-            data: {
-              subscriptionId: sub.id,
-              amount: payment.amount,
-              currency: 'PEN',
-              method: 'yape',
-              reference: payment.verificationCode,
-              confirmedAt: new Date(),
-            },
-          });
-        }
       }
     });
 

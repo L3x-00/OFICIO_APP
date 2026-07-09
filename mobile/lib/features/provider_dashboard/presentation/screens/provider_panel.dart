@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/constants/feature_flags.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/features/ai_assistant/presentation/ai_assistant_fab.dart';
@@ -17,6 +18,17 @@ import 'panel_settings_tab.dart';
 import '../../../chat/presentation/screens/chat_list_screen.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 
+/// Índices del IndexedStack/BottomNav del panel proveedor. Dependen de
+/// kSubastasEnabled: el tab Oportunidades ('Ofertas', índice 2) se quita
+/// con collection-if y los siguientes se corren un lugar. Cualquier salto
+/// de tab hardcodeado debe usar estas constantes, nunca números sueltos.
+const int kPanelTabInicio = 0;
+const int kPanelTabPerfil = 1;
+const int kPanelTabServicios = kSubastasEnabled ? 3 : 2;
+const int kPanelTabStats = kSubastasEnabled ? 4 : 3;
+const int kPanelTabMensajes = kSubastasEnabled ? 5 : 4;
+const int kPanelTabAjustes = kSubastasEnabled ? 6 : 5;
+
 class ProviderPanel extends StatefulWidget {
   /// Tipo de perfil que abre el panel: 'OFICIO' | 'NEGOCIO' | null (usa activeProfileType)
   final String? providerType;
@@ -31,7 +43,9 @@ class ProviderPanel extends StatefulWidget {
 }
 
 class _ProviderPanelState extends State<ProviderPanel> {
-  late int _currentIndex = widget.initialTabIndex;
+  // Clamp: deep-links viejos (?tab=N de notifs FCM persistidas) pueden
+  // apuntar a un índice que ya no existe tras ocultar Oportunidades.
+  late int _currentIndex = widget.initialTabIndex.clamp(0, kPanelTabAjustes);
 
   // Shared mutable state — paused flag visible to all tabs
   bool _isPaused = false;
@@ -129,11 +143,14 @@ class _ProviderPanelState extends State<ProviderPanel> {
                         isPaused: _isPaused,
                         onPauseToggle: _togglePause,
                       ),
-                      const OportunidadesTab(),
+                      // Feature OCULTA (kSubastasEnabled) — mismo flag en el
+                      // nav item 'Ofertas' de abajo: índices siempre parejos.
+                      if (kSubastasEnabled) const OportunidadesTab(),
                       PanelServicesTab(isNegocio: isNeg),
                       PanelStatsTab(
                         isNegocio: isNeg,
-                        onNavigateToSettings: () => _changeTab(6),
+                        onNavigateToSettings: () =>
+                            _changeTab(kPanelTabAjustes),
                       ),
                       // scope:'provider' + providerType separa la bandeja
                       // de cada perfil. Si el user es OFICIO y NEGOCIO a la
@@ -582,10 +599,12 @@ class _PanelBottomNav extends StatelessWidget {
             ),
             label: 'Perfil',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.bolt_rounded),
-            label: 'Ofertas',
-          ),
+          // Feature OCULTA (kSubastasEnabled): tab Oportunidades del panel.
+          if (kSubastasEnabled)
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.bolt_rounded),
+              label: 'Ofertas',
+            ),
           BottomNavigationBarItem(
             icon: Icon(
               isNegocio

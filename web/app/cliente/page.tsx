@@ -303,7 +303,7 @@ function ClienteContent() {
                 </h2>
                 <p className="text-white/50 text-[14.5px] mb-7 max-w-md mx-auto leading-relaxed">
                   Ya tienes un perfil de proveedor. Entra a tu panel para ver tus
-                  estadísticas, mensajes y oportunidades.
+                  estadísticas, mensajes y servicios.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
                   <button

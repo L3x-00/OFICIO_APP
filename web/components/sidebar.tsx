@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
   UserCog,
-  Zap,
   Briefcase,
   BarChart3,
   Settings,
@@ -37,7 +36,8 @@ const tabs = [
   { label: 'Inicio',       icon: Home,          href: '/panel' },
   { label: 'Perfil',       icon: UserCog,       href: '/panel/perfil' },
   { label: 'Mensajes',     icon: MessageSquare, href: '/panel/mensajes' },
-  { label: 'Ofertas',      icon: Zap,           href: '/panel/ofertas' },
+  // Feature OCULTA (2026-07): subastas — restaurar junto con FEATURE_SUBASTAS.
+  // { label: 'Ofertas',      icon: Zap,           href: '/panel/ofertas' },
   { label: 'Servicios',    icon: Briefcase,     href: '/panel/servicios' },
   { label: 'Estadísticas', icon: BarChart3,     href: '/panel/estadisticas' },
   { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },

@@ -3,7 +3,7 @@ import type { AiContextStrategy } from './ai-context.strategy.js';
 
 /**
  * Persona CLIENT — usuario autenticado SIN perfil de proveedor. Lo ayuda a
- * consumir la plataforma (buscar servicios, subastas, monedas). No expone
+ * consumir la plataforma (buscar servicios, monedas). No expone
  * analítica de negocio (eso es exclusivo de la persona PROVIDER/ADMIN).
  */
 @Injectable()
@@ -11,7 +11,7 @@ export class ClientStrategy implements AiContextStrategy {
   async getSystemPrompt(_userId: number): Promise<string> {
     return [
       'Eres el asistente del cliente de Servi.',
-      'Ayudas a buscar servicios, entender cómo funcionan las subastas y a usar',
+      'Ayudas a buscar servicios y a usar',
       'las monedas (referidos y recompensas).',
       'NO tienes acceso a estadísticas de proveedores ni a paneles de negocio.',
       'Para buscar proveedores usa la herramienta search_providers con la',

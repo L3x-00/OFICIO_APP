@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/feature_flags.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/plan_limits.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -46,10 +47,14 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
-      context.read<OfferPostsProvider>().load(type: type);
-    });
+    // Feature OCULTA (kOfertasEnabled): sin la sección de ofertas tampoco
+    // hay que cargarlas (el endpoint responde 404 con el flag apagado).
+    if (kOfertasEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+        context.read<OfferPostsProvider>().load(type: type);
+      });
+    }
   }
 
   @override
@@ -198,28 +203,29 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
                     ),
                   ),
 
-                // ── Sección de Ofertas ──────────────────────────────
-                SliverToBoxAdapter(
-                  child: OfferPostsSection(
-                    plan: plan,
-                    offers: offers.activeOffers,
-                    isLoading: offers.status == OfferPostsStatus.loading,
-                    onPublish: () => OfferFormSheet.show(
-                      context,
-                      offers,
-                      plan,
-                      widget.isNegocio,
-                    ),
-                    onDelete: (id) => offers.deleteOffer(id),
-                    onEdit: (o) => OfferFormSheet.show(
-                      context,
-                      offers,
-                      plan,
-                      widget.isNegocio,
-                      existing: o,
+                // ── Sección de Ofertas — feature OCULTA (kOfertasEnabled) ──
+                if (kOfertasEnabled)
+                  SliverToBoxAdapter(
+                    child: OfferPostsSection(
+                      plan: plan,
+                      offers: offers.activeOffers,
+                      isLoading: offers.status == OfferPostsStatus.loading,
+                      onPublish: () => OfferFormSheet.show(
+                        context,
+                        offers,
+                        plan,
+                        widget.isNegocio,
+                      ),
+                      onDelete: (id) => offers.deleteOffer(id),
+                      onEdit: (o) => OfferFormSheet.show(
+                        context,
+                        offers,
+                        plan,
+                        widget.isNegocio,
+                        existing: o,
+                      ),
                     ),
                   ),
-                ),
 
                 if (services.isEmpty)
                   SliverFillRemaining(

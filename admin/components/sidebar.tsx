@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Star, BarChart2,
   Tag, Zap, Bell, FileBarChart, ChevronRight,
-  Activity, Gift, Coins, MessageSquare, Tag as TagIcon,
+  Activity, Gift, Coins, MessageSquare,
   ShieldCheck, UsersRound, MapPin, Bot, Mail,
 } from 'lucide-react';
 
@@ -27,7 +27,10 @@ const navGroups = [
   {
     label: 'Marketplace',
     items: [
-      { href: '/marketplace/offers', label: 'Ofertas', icon: TagIcon },
+      // Feature OCULTA (2026-07): offer-posts desactivado (FEATURE_OFERTAS).
+      // La página /marketplace/offers sigue accesible por URL para moderar
+      // historial; solo se quita del menú. Restaurar al reactivar.
+      // { href: '/marketplace/offers', label: 'Ofertas', icon: TagIcon },
       { href: '/marketplace/chats',  label: 'Chats',   icon: MessageSquare },
     ],
   },

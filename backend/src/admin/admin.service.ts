@@ -772,10 +772,14 @@ export class AdminService {
   }
 
   async markNotificationRead(id: number) {
-    return this.prisma.adminNotification.update({
-      where: { id },
+    // Mismo scope que getNotifications/markAll: sin él, un admin podía
+    // marcar leída por id una notificación PERSONAL de un usuario
+    // (updateMany + filtro en lugar de update por unique).
+    const result = await this.prisma.adminNotification.updateMany({
+      where: { id, ...AdminService.ADMIN_NOTIF_WHERE },
       data: { isRead: true },
     });
+    return { updated: result.count };
   }
 
   async markAllNotificationsRead() {

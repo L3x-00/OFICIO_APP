@@ -24,10 +24,14 @@ import {
 } from './dto/create-offer-post.dto.js';
 import { ReportOfferDto } from './dto/report-offer.dto.js';
 import { memOpts as multerImageConfig } from '../common/multer-image.config.js';
+import { FeatureFlag } from '../common/feature-flag.guard.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 // ── RUTAS PÚBLICAS ────────────────────────────────────────────
+// Feature OCULTA (2026-07): sin FEATURE_OFERTAS=true responde 404.
+// Los controllers ADMIN de abajo NO se flaguean (moderación de historial).
 @Controller('offers')
+@UseGuards(FeatureFlag('FEATURE_OFERTAS'))
 export class OffersPublicController {
   constructor(private service: OfferPostsService) {}
 
@@ -66,8 +70,9 @@ export class OffersPublicController {
 }
 
 // ── RUTAS DE PROVEEDOR ───────────────────────────────────────
+// Feature OCULTA (2026-07): ver nota de OffersPublicController.
 @Controller('providers/me/offers')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(FeatureFlag('FEATURE_OFERTAS'), JwtAuthGuard, RolesGuard)
 @Roles('PROVEEDOR')
 export class ProviderOffersController {
   constructor(private service: OfferPostsService) {}

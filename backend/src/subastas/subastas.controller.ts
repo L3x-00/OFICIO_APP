@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { SubastasService } from './subastas.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { FeatureFlag } from '../common/feature-flag.guard.js';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto.js';
 import { SubmitOfferDto } from './dto/submit-offer.dto.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
@@ -19,8 +20,10 @@ import { ArrivedDto } from './dto/arrived.dto.js';
 import { PaginateRequestsDto } from './dto/paginate-requests.dto.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
+// Feature OCULTA (2026-07): FeatureFlag primero — sin FEATURE_SUBASTAS=true
+// todo /subastas/* responde 404. Reactivable por env en Render sin deploy.
 @Controller('subastas')
-@UseGuards(JwtAuthGuard)
+@UseGuards(FeatureFlag('FEATURE_SUBASTAS'), JwtAuthGuard)
 export class SubastasController {
   constructor(private readonly service: SubastasService) {}
 

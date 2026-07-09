@@ -23,7 +23,8 @@ const _kPlanFeatures = {
     'Servicios ilimitados',
     'Máxima prioridad',
     'Badge Premium',
-    'Subastas',
+    // 'Subastas' — feature oculta (kSubastasEnabled); restaurar al reactivar.
+    'Alcance en más distritos',
   ],
 };
 

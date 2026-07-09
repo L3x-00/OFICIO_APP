@@ -8,8 +8,9 @@
 ///   • El árbol se construye sin lanzar excepciones (smoke real).
 ///   • La locale activa es `es-419` (la del marketplace LATAM).
 ///   • El router declara las rutas top-level críticas: `/`, `/welcome`,
-///     `/login`, `/otp`, `/chats`, `/favorites`, `/offers`, `/alerts`,
-///     `/profile`, `/chat/:roomId`, `/provider-panel`.
+///     `/login`, `/otp`, `/chats`, `/favorites`, `/alerts`,
+///     `/profile`, `/chat/:roomId`, `/provider-panel` — y las rutas de
+///     features ocultas (`/offers`, `/my-requests`) según su flag.
 ///
 /// Bootstrap del AuthProvider: con `installTestBackend()` el secure
 /// storage es un Map vacío → `restoreSession()` retorna null → estado
@@ -20,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile/core/constants/feature_flags.dart';
 import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
@@ -173,15 +175,27 @@ void main() {
     // Tabs del shell
     expect(paths, contains('/'));
     expect(paths, contains('/favorites'));
-    expect(paths, contains('/offers'));
     expect(paths, contains('/alerts'));
     expect(paths, contains('/profile'));
+
+    // Features ocultas (feature_flags.dart): sus rutas existen SOLO con
+    // el flag encendido — el matcher se invierte según el flag para que
+    // el test proteja ambos estados (hoy: ausentes; al reactivar: presentes).
+    expect(
+      paths,
+      kOfertasEnabled ? contains('/offers') : isNot(contains('/offers')),
+    );
+    expect(
+      paths,
+      kSubastasEnabled
+          ? contains('/my-requests')
+          : isNot(contains('/my-requests')),
+    );
 
     // Rutas privadas top-level
     expect(paths, contains('/chat/:roomId'));
     expect(paths, contains('/chats'));
     expect(paths, contains('/referrals'));
-    expect(paths, contains('/my-requests'));
     expect(paths, contains('/edit-profile'));
     expect(paths, contains('/change-password'));
     expect(paths, contains('/trust-validation'));

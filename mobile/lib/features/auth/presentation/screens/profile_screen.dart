@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/constants/feature_flags.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
@@ -248,18 +249,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              SectionItem(
-                icon: Icons.assignment_outlined,
-                label: 'Mis solicitudes',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ChangeNotifierProvider(
-                      create: (_) => SubastasProvider(),
-                      child: const MyRequestsScreen(),
+              // Feature OCULTA (kSubastasEnabled): entrada a Mis solicitudes.
+              if (kSubastasEnabled)
+                SectionItem(
+                  icon: Icons.assignment_outlined,
+                  label: 'Mis solicitudes',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ChangeNotifierProvider(
+                        create: (_) => SubastasProvider(),
+                        child: const MyRequestsScreen(),
+                      ),
                     ),
                   ),
                 ),
-              ),
               SectionItem(
                 icon: Icons.forum_outlined,
                 label: 'Mis mensajes',
