@@ -374,7 +374,7 @@ class ProviderContactBar extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'Solo puedes reseñar a proveedores con los que hayas '
-                'interactuado (chat, llamada o subasta).',
+                'interactuado (chat o llamada).',
                 style: TextStyle(color: c.textMuted, fontSize: 11, height: 1.3),
                 textAlign: TextAlign.center,
               ),

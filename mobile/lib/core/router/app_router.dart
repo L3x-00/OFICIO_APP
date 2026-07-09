@@ -26,6 +26,7 @@ import '../../features/referrals/presentation/screens/referral_screen.dart';
 import '../../features/subastas/presentation/providers/subastas_provider.dart';
 import '../../features/subastas/presentation/screens/my_requests_screen.dart';
 import '../../features/trust_validation/presentation/screens/trust_validation_form_screen.dart';
+import '../constants/feature_flags.dart';
 import 'app_shell.dart';
 import 'router_notifier.dart';
 
@@ -150,20 +151,24 @@ GoRouter createRouter({
         builder: (_, _) => const ChatListScreen(scope: 'client'),
       ),
       GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
-      GoRoute(
-        path: '/my-requests',
-        builder: (_, state) {
-          // ?requestId=<id> llega del deep-link de "Nueva postulación":
-          // la pantalla abre el comparador de postulaciones de esa solicitud.
-          final requestId = int.tryParse(
-            state.uri.queryParameters['requestId'] ?? '',
-          );
-          return ChangeNotifierProvider(
-            create: (_) => SubastasProvider(),
-            child: MyRequestsScreen(autoOpenRequestId: requestId),
-          );
-        },
-      ),
+      // Feature OCULTA (kSubastasEnabled): sin la ruta, deep-links viejos a
+      // /my-requests (notifs FCM persistidas) caen al errorBuilder/redirect
+      // en vez de abrir una pantalla muerta.
+      if (kSubastasEnabled)
+        GoRoute(
+          path: '/my-requests',
+          builder: (_, state) {
+            // ?requestId=<id> llega del deep-link de "Nueva postulación":
+            // la pantalla abre el comparador de postulaciones de esa solicitud.
+            final requestId = int.tryParse(
+              state.uri.queryParameters['requestId'] ?? '',
+            );
+            return ChangeNotifierProvider(
+              create: (_) => SubastasProvider(),
+              child: MyRequestsScreen(autoOpenRequestId: requestId),
+            );
+          },
+        ),
       GoRoute(
         path: '/edit-profile',
         builder: (_, _) => const EditProfileScreen(),
@@ -234,13 +239,19 @@ GoRouter createRouter({
               ),
             ],
           ),
-          // Tab 2 — Ofertas
-          StatefulShellBranch(
-            routes: [
-              GoRoute(path: '/offers', builder: (_, _) => const OffersScreen()),
-            ],
-          ),
-          // Tab 3 — Alertas
+          // Tab Ofertas — feature OCULTA (kOfertasEnabled). El collection-if
+          // corre los índices de los branches siguientes; app_shell usa el
+          // mismo flag en sus items para que SIEMPRE coincidan.
+          if (kOfertasEnabled)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/offers',
+                  builder: (_, _) => const OffersScreen(),
+                ),
+              ],
+            ),
+          // Tab Alertas
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -287,10 +298,12 @@ class AppRoutes {
   static const String myRequests = '/my-requests';
 
   // Tabs index — útil para mantener compatibilidad con código viejo
-  // que decide qué tab activar por índice.
+  // que decide qué tab activar por índice. Los índices dependen de
+  // kOfertasEnabled (el tab Ofertas se quita del shell con collection-if,
+  // corriendo Alertas y Perfil un lugar).
   static const int tabExplorar = 0;
   static const int tabFavoritos = 1;
-  static const int tabOfertas = 2;
-  static const int tabAlertas = 3;
-  static const int tabPerfil = 4;
+  static const int tabOfertas = 2; // solo existe si kOfertasEnabled
+  static const int tabAlertas = kOfertasEnabled ? 3 : 2;
+  static const int tabPerfil = kOfertasEnabled ? 4 : 3;
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/constants/feature_flags.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/notification_modal.dart';
 import 'package:provider/provider.dart';
@@ -417,9 +418,13 @@ class _NotificationTile extends StatelessWidget {
           label: 'Ir al chat',
           route: roomId != null ? '/chat/$roomId' : '/chats',
         );
+      // Feature OCULTA (kSubastasEnabled): con el flag apagado las notifs
+      // históricas de subasta quedan como tiles informativos SIN chip —
+      // sus rutas destino (/my-requests, tab Oportunidades) ya no existen.
       // Cliente: llegó una oferta a SU solicitud → "Mis Solicitudes" con el
       // comparador de postulaciones de esa solicitud abierto (si hay requestId).
       case 'NEW_OFFER':
+        if (!kSubastasEnabled) return null;
         final reqId = asInt(data['requestId']);
         return _NotifAction(
           label: 'Ver detalles',
@@ -428,11 +433,12 @@ class _NotificationTile extends StatelessWidget {
               : '/my-requests',
         );
       // Proveedor: nueva necesidad disponible o su oferta fue aceptada →
-      // panel del proveedor en la pestaña Oportunidades (índice 2). Antes
+      // panel del proveedor en la pestaña Oportunidades. Antes
       // iba a '/my-requests' (pantalla del cliente) y mostraba lo equivocado.
       case 'OFFER_ACCEPTED':
       case 'OFERTA_ACEPTADA':
       case 'NUEVA_OPORTUNIDAD':
+        if (!kSubastasEnabled) return null;
         return const _NotifAction(
           label: 'Ver oportunidad',
           route: '/provider-panel?tab=2',

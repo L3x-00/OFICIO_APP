@@ -178,19 +178,20 @@ void showPlanPromotionDialog(
   final c = context.colors;
   const green = Color(0xFF10B981);
 
+  // Copy sin 'oportunidades' — subastas está oculta (kSubastasEnabled).
   final benefits = switch (payload.plan) {
     'PREMIUM' => [
       'Máxima visibilidad ante clientes',
       'Servicios y productos ilimitados',
       'Estadísticas avanzadas de perfil',
       'Badge "Premium" destacado',
-      'Acceso prioritario a oportunidades',
+      'Alcance en más distritos',
     ],
     'ESTANDAR' => [
       'Mayor visibilidad ante clientes',
       'Hasta 10 servicios o productos',
       'Estadísticas básicas de perfil',
-      'Acceso a oportunidades de trabajo',
+      'Alcance en más distritos',
     ],
     _ => ['Mayor visibilidad ante clientes', 'Acceso a más funcionalidades'],
   };

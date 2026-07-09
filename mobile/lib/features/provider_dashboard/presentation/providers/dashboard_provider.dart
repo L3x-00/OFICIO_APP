@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/feature_flags.dart';
 import '../../data/dashboard_repository.dart';
 import '../../domain/models/coverage_model.dart';
 import '../../domain/models/dashboard_profile_model.dart';
@@ -111,8 +112,10 @@ class DashboardProvider extends ChangeNotifier {
       // (aprobación/vencimiento) altera límite y distritos default.
       if (_coverage != null) loadCoverage();
 
-      // --- NUEVO: Unirse a salas de categoría para recibir subastas ---
-      _joinCategoryRooms();
+      // Feature OCULTA (kSubastasEnabled): las salas de categoría existen
+      // SOLO para recibir subastas en vivo — sin la feature no nos unimos
+      // (corta la fuente de notifs NUEVA_OPORTUNIDAD).
+      if (kSubastasEnabled) _joinCategoryRooms();
 
       // Cargar notificaciones silenciosamente
       _loadNotificationsSilent();
@@ -471,17 +474,8 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
-  /// Solicita upgrade de plan. Devuelve true si se envió con éxito.
-  Future<bool> requestPlanUpgrade(String plan) async {
-    try {
-      await _repo.requestPlanUpgrade(plan, type: _currentProviderType);
-      return true;
-    } catch (e) {
-      _error = _formatError(e);
-      notifyListeners();
-      return false;
-    }
-  }
+  // DEPRECADO (2026-07): requestPlanUpgrade eliminado — método sin llamadores
+  // en la UI (flujo PlanRequest retirado; upgrades por Yape/MercadoPago).
 
   /// Elimina el perfil de proveedor en cascada. Devuelve true si tuvo éxito.
   Future<bool> deleteProviderProfile() async {

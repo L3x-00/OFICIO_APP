@@ -16,9 +16,11 @@ import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { effectiveFeaturesFromCategories } from '../common/provider-features.service.js';
 
-// Retención de notificaciones: 7 días (FASE 3 #3). Pasado ese plazo se purgan
-// automáticamente (cron diario) para ahorrar espacio en Supabase.
-const NOTIFICATION_RETENTION_DAYS = 7;
+// Retención de notificaciones (cron diario, ahorra espacio en Supabase):
+// las LEÍDAS se purgan a los 7 días; las NO leídas viven 30 días para que
+// un usuario inactivo no las pierda sin haberlas visto.
+const NOTIFICATION_RETENTION_READ_DAYS = 7;
+const NOTIFICATION_RETENTION_UNREAD_DAYS = 30;
 
 @Injectable()
 export class ProviderProfileService {
@@ -377,22 +379,31 @@ export class ProviderProfileService {
   }
 
   /**
-   * Una vez al día (04:00 UTC) elimina las notificaciones con más de
-   * 5 días — leídas o no. Mantiene la bandeja liviana y evita acumular
-   * histórico viejo. Afecta tanto el inbox del proveedor como el panel
-   * de notificaciones del admin (ambos leen `adminNotification`).
+   * Una vez al día (04:00 UTC) purga notificaciones viejas: leídas a los
+   * 7 días, NO leídas a los 30 (así un usuario inactivo una semana no
+   * pierde avisos sin verlos). Mantiene la bandeja liviana. Afecta tanto
+   * el inbox del proveedor como el panel de notificaciones del admin
+   * (ambos leen `adminNotification`).
    */
   @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async pruneOldNotifications() {
-    const threshold = new Date(
-      Date.now() - NOTIFICATION_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+    const readThreshold = new Date(
+      Date.now() - NOTIFICATION_RETENTION_READ_DAYS * 24 * 60 * 60 * 1000,
+    );
+    const unreadThreshold = new Date(
+      Date.now() - NOTIFICATION_RETENTION_UNREAD_DAYS * 24 * 60 * 60 * 1000,
     );
     const result = await this.prisma.adminNotification.deleteMany({
-      where: { sentAt: { lt: threshold } },
+      where: {
+        OR: [
+          { isRead: true, sentAt: { lt: readThreshold } },
+          { isRead: false, sentAt: { lt: unreadThreshold } },
+        ],
+      },
     });
     if (result.count > 0) {
       this.logger.log(
-        `[notif-cleanup] eliminadas ${result.count} notificaciones > ${NOTIFICATION_RETENTION_DAYS} días`,
+        `[notif-cleanup] eliminadas ${result.count} notificaciones (leídas > ${NOTIFICATION_RETENTION_READ_DAYS}d, no leídas > ${NOTIFICATION_RETENTION_UNREAD_DAYS}d)`,
       );
     }
   }

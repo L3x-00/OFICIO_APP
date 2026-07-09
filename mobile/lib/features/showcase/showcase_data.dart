@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/feature_flags.dart';
 
 /// Definiciones de los pasos del Feature Discovery de la pantalla
 /// principal. Centraliza los `GlobalKey` y los textos para que los
@@ -12,11 +13,17 @@ import 'package:flutter/material.dart';
 // ─────────────────────────────────────────────
 // Pasos compartidos por usuario registrado e invitado
 // ─────────────────────────────────────────────
-final GlobalKey kShowcaseProviderCard = GlobalKey(debugLabel: 'sc.providerCard');
-final GlobalKey kShowcaseSubastaBanner = GlobalKey(debugLabel: 'sc.subastaBanner');
+final GlobalKey kShowcaseProviderCard = GlobalKey(
+  debugLabel: 'sc.providerCard',
+);
+final GlobalKey kShowcaseSubastaBanner = GlobalKey(
+  debugLabel: 'sc.subastaBanner',
+);
 final GlobalKey kShowcaseSearchBar = GlobalKey(debugLabel: 'sc.searchBar');
 final GlobalKey kShowcaseFiltersIcon = GlobalKey(debugLabel: 'sc.filtersIcon');
-final GlobalKey kShowcaseLocationChip = GlobalKey(debugLabel: 'sc.locationChip');
+final GlobalKey kShowcaseLocationChip = GlobalKey(
+  debugLabel: 'sc.locationChip',
+);
 final GlobalKey kShowcaseCoinsIcon = GlobalKey(debugLabel: 'sc.coinsIcon');
 final GlobalKey kShowcaseJoinUsFab = GlobalKey(debugLabel: 'sc.joinUsFab');
 
@@ -52,14 +59,18 @@ final List<ShowcaseStep> kShowcaseStepsRegistered = [
         'reportar, los botones de mensaje, llamadas, WhatsApp y el '
         'ícono de compartir.',
   ),
-  ShowcaseStep(
-    key: kShowcaseSubastaBanner,
-    title: 'Publica tus necesidades',
-    description:
-        'Publica lo que necesitas y recibe ofertas de profesionales '
-        'cercanos. Ellos te enviarán sus propuestas y tú eliges la '
-        'mejor.',
-  ),
+  // Feature OCULTA (kSubastasEnabled): el paso sale del deck junto con el
+  // SubastaBanner del home (providers_screen hace firstWhere sobre esta
+  // key — flag desalineado = StateError en build).
+  if (kSubastasEnabled)
+    ShowcaseStep(
+      key: kShowcaseSubastaBanner,
+      title: 'Publica tus necesidades',
+      description:
+          'Publica lo que necesitas y recibe ofertas de profesionales '
+          'cercanos. Ellos te enviarán sus propuestas y tú eliges la '
+          'mejor.',
+    ),
   ShowcaseStep(
     key: kShowcaseSearchBar,
     title: 'Busca lo que necesitas',
@@ -105,19 +116,21 @@ final List<ShowcaseStep> kShowcaseStepsRegistered = [
         'Guarda a tus proveedores de confianza aquí para tener acceso '
         'directo a ellos cuando los necesites.',
   ),
-  ShowcaseStep(
-    key: kShowcaseOffersTab,
-    title: 'Ofertas y promociones',
-    description:
-        'Descubre descuentos y promociones exclusivas que publican los '
-        'proveedores verificados.',
-  ),
+  // Feature OCULTA (kOfertasEnabled): paso ligado al tab Ofertas del shell.
+  if (kOfertasEnabled)
+    ShowcaseStep(
+      key: kShowcaseOffersTab,
+      title: 'Ofertas y promociones',
+      description:
+          'Descubre descuentos y promociones exclusivas que publican los '
+          'proveedores verificados.',
+    ),
   ShowcaseStep(
     key: kShowcaseAlertsTab,
     title: 'Tus notificaciones',
     description:
-        'Recibe alertas sobre el estado de tus solicitudes, nuevas '
-        'ofertas y respuestas de proveedores.',
+        'Recibe alertas sobre mensajes, reseñas y avisos importantes '
+        'de tu cuenta.',
   ),
 ];
 
@@ -143,27 +156,43 @@ bool isLastShowcaseStep(GlobalKey key, {required bool isGuest}) {
 // sea trivial de auditar.
 
 // ── TAB INICIO ───────────────────────────────────────────────
-final GlobalKey kAdminPublicPreviewKey = GlobalKey(debugLabel: 'sc.admin.publicPreview');
-final GlobalKey kAdminPlanBadgeKey     = GlobalKey(debugLabel: 'sc.admin.planBadge');
-final GlobalKey kAdminSwitchRoleKey    = GlobalKey(debugLabel: 'sc.admin.switchRole');
+final GlobalKey kAdminPublicPreviewKey = GlobalKey(
+  debugLabel: 'sc.admin.publicPreview',
+);
+final GlobalKey kAdminPlanBadgeKey = GlobalKey(
+  debugLabel: 'sc.admin.planBadge',
+);
+final GlobalKey kAdminSwitchRoleKey = GlobalKey(
+  debugLabel: 'sc.admin.switchRole',
+);
 
 // ── TAB SERVICIOS ────────────────────────────────────────────
-final GlobalKey kAdminServiceQuotaKey  = GlobalKey(debugLabel: 'sc.admin.serviceQuota');
-final GlobalKey kAdminAddServiceKey    = GlobalKey(debugLabel: 'sc.admin.addService');
+final GlobalKey kAdminServiceQuotaKey = GlobalKey(
+  debugLabel: 'sc.admin.serviceQuota',
+);
+final GlobalKey kAdminAddServiceKey = GlobalKey(
+  debugLabel: 'sc.admin.addService',
+);
 
 // ── TAB ESTADÍSTICAS ─────────────────────────────────────────
-final GlobalKey kAdminStatsPeriodKey    = GlobalKey(debugLabel: 'sc.admin.statsPeriod');
-final GlobalKey kAdminStatsBreakdownKey = GlobalKey(debugLabel: 'sc.admin.statsBreakdown');
-final GlobalKey kAdminStatsChartKey     = GlobalKey(debugLabel: 'sc.admin.statsChart');
+final GlobalKey kAdminStatsPeriodKey = GlobalKey(
+  debugLabel: 'sc.admin.statsPeriod',
+);
+final GlobalKey kAdminStatsBreakdownKey = GlobalKey(
+  debugLabel: 'sc.admin.statsBreakdown',
+);
+final GlobalKey kAdminStatsChartKey = GlobalKey(
+  debugLabel: 'sc.admin.statsChart',
+);
 
 /// Identificador del tab del panel para la clave de SharedPreferences.
 /// Mantenido como String literal (no enum) para que el formato de la
 /// key —`has_seen_admin_{tab}_{userId}_{providerType}`— quede claro
 /// en el storage.
 class AdminTab {
-  static const String home     = 'home';
+  static const String home = 'home';
   static const String services = 'services';
-  static const String stats    = 'stats';
+  static const String stats = 'stats';
 }
 
 /// Step "switch role" extraído como constante para que el
@@ -184,7 +213,7 @@ final ShowcaseStep kAdminSwitchRoleStep = ShowcaseStep(
 /// estado en runtime — por eso es función, no constante.
 List<ShowcaseStep> buildAdminHomeSteps({
   required String plan,
-  required bool   hasBothProfiles,
+  required bool hasBothProfiles,
 }) {
   final isFree = plan == 'GRATIS';
   return [
@@ -201,7 +230,7 @@ List<ShowcaseStep> buildAdminHomeSteps({
       description: isFree
           ? 'Estás en plan Gratis. Toca para ver cómo destacar más.'
           : 'Aquí ves tu membresía. Toca para descubrir cómo '
-            'obtener más beneficios y visibilidad.',
+                'obtener más beneficios y visibilidad.',
     ),
     if (hasBothProfiles) kAdminSwitchRoleStep,
   ];
@@ -210,9 +239,7 @@ List<ShowcaseStep> buildAdminHomeSteps({
 /// Builder de pasos para el tab SERVICIOS. El paso del FAB sólo
 /// aparece si el usuario ya llegó al límite — no tiene sentido
 /// destacar "necesitas publicar más" si todavía puede añadir.
-List<ShowcaseStep> buildAdminServicesSteps({
-  required bool atLimit,
-}) {
+List<ShowcaseStep> buildAdminServicesSteps({required bool atLimit}) {
   return [
     ShowcaseStep(
       key: kAdminServiceQuotaKey,
@@ -236,9 +263,7 @@ List<ShowcaseStep> buildAdminServicesSteps({
 /// Builder de pasos para el tab ESTADÍSTICAS. El copy del gráfico
 /// cambia si no hay datos todavía (evita prometer "tus días fuertes"
 /// cuando todo está en cero).
-List<ShowcaseStep> buildAdminStatsSteps({
-  required bool hasChartData,
-}) {
+List<ShowcaseStep> buildAdminStatsSteps({required bool hasChartData}) {
   return [
     ShowcaseStep(
       key: kAdminStatsPeriodKey,
@@ -258,8 +283,8 @@ List<ShowcaseStep> buildAdminStatsSteps({
       key: kAdminStatsChartKey,
       title: hasChartData ? 'Tus días fuertes' : 'Tu crecimiento diario',
       description: hasChartData
-          ? 'Identifica qué días recibes más contactos. ¡Publica '
-            'ofertas esos días para maximizar!'
+          ? 'Identifica qué días recibes más contactos y '
+                '¡aprovéchalos para promocionarte!'
           : 'Aquí verás tu crecimiento diario. ¡Sigue promocionándote!',
     ),
   ];
@@ -315,9 +340,8 @@ final List<ShowcaseStep> kShowcaseStepsGuest = [
     key: kShowcaseProfileTab,
     title: 'Crea tu cuenta gratis',
     description:
-        'Regístrate para chatear con profesionales, guardar favoritos, '
-        'recibir notificaciones y publicar tus necesidades. Es '
-        'completamente gratis.',
+        'Regístrate para chatear con profesionales, guardar favoritos '
+        'y recibir notificaciones. Es completamente gratis.',
   ),
   // 6. CTA Join Us
   ShowcaseStep(

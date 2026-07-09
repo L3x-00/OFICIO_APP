@@ -237,18 +237,8 @@ class DashboardRepository {
     return CoverageModel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  // ── SOLICITUD DE UPGRADE DE PLAN ─────────────────────────
-
-  /// Envía solicitud de cambio de plan al backend.
-  /// [plan] = 'ESTANDAR' | 'PREMIUM'
-  /// [type] = 'OFICIO' | 'NEGOCIO'
-  Future<void> requestPlanUpgrade(String plan, {String? type}) async {
-    await _dio.post(
-      '/provider-profile/me/plan-request',
-      queryParameters: type != null ? {'type': type} : null,
-      data: {'plan': plan},
-    );
-  }
+  // DEPRECADO (2026-07): requestPlanUpgrade (POST plan-request) eliminado —
+  // flujo sin comprobante retirado; los upgrades van por Yape/MercadoPago.
 
   Future<void> deleteProviderProfile({String? type}) async {
     await _dio.delete(

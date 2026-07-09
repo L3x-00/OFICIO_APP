@@ -33,8 +33,8 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
     a: 'Usa el buscador o explora por categorías. Cada proveedor pasa por validación de identidad y puedes guiarte por sus reseñas reales.',
   },
   {
-    q: '¿Solicitar un servicio tiene costo?',
-    a: 'No. Publicar una solicitud es gratis: recibes varias propuestas y eliges la que mejor se adapte a tu presupuesto.',
+    q: '¿Buscar un servicio tiene costo?',
+    a: 'No. Buscar y contactar profesionales es totalmente gratis: comparas perfiles, reseñas y eliges el que mejor se adapte a tu presupuesto.',
   },
   {
     q: '¿Cómo me registro como profesional o negocio?',
@@ -44,9 +44,14 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
     q: '¿Qué son las monedas de recompensa?',
     a: 'Es nuestro sistema de lealtad: ganas monedas invitando amigos con tu código de referido y las canjeas por descuentos o planes premium.',
   },
+  // Feature OCULTA (2026-07): subastas — restaurar esta FAQ al reactivar.
+  // {
+  //   q: '¿Cómo funcionan las subastas de servicios?',
+  //   a: 'Publicas tu necesidad y los proveedores de esa categoría te envían propuestas; tú revisas y eliges la ganadora.',
+  // },
   {
-    q: '¿Cómo funcionan las subastas de servicios?',
-    a: 'Publicas tu necesidad y los proveedores de esa categoría te envían propuestas; tú revisas y eliges la ganadora.',
+    q: '¿Cómo contacto a un proveedor?',
+    a: 'Desde su perfil puedes escribirle por chat, llamarlo o enviarle WhatsApp directamente — sin intermediarios ni comisiones.',
   },
 ];
 

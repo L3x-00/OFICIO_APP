@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/feature_flags.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../ai_assistant/presentation/ai_assistant_fab.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -264,21 +265,23 @@ class _ProvidersViewState extends State<_ProvidersView>
               const _GreetingRow(),
               const _SearchAndLocationRow(),
               const FilterBar(),
-              // Banner subasta wrapped — paso "publica tus necesidades"
-              // del deck registered (no aparece en guest).
-              ShowcaseTarget(
-                step: kShowcaseStepsRegistered.firstWhere(
-                  (s) => s.key == kShowcaseSubastaBanner,
+              // Features OCULTAS: ambos banners salen con su flag. El paso
+              // kShowcaseSubastaBanner del deck usa el MISMO flag — el
+              // firstWhere de abajo solo corre si el paso existe.
+              if (kSubastasEnabled)
+                ShowcaseTarget(
+                  step: kShowcaseStepsRegistered.firstWhere(
+                    (s) => s.key == kShowcaseSubastaBanner,
+                  ),
+                  isLast: isLastShowcaseStep(
+                    kShowcaseSubastaBanner,
+                    isGuest: isGuest,
+                  ),
+                  targetHeight: 90,
+                  targetWidth: 360,
+                  child: const SubastaBanner(),
                 ),
-                isLast: isLastShowcaseStep(
-                  kShowcaseSubastaBanner,
-                  isGuest: isGuest,
-                ),
-                targetHeight: 90,
-                targetWidth: 360,
-                child: const SubastaBanner(),
-              ),
-              const OffersBanner(),
+              if (kOfertasEnabled) const OffersBanner(),
               const Expanded(child: ProvidersListView()),
             ],
           ),

@@ -27,7 +27,29 @@ const itemVariants = {
   }
 };
 
+/* Feature OCULTA (2026-07): subastas desactivadas (backend responde 404 con
+   FEATURE_SUBASTAS apagado). La página redirige al panel; el componente
+   original queda intacto abajo para reactivarla junto con el nav
+   (sidebar.tsx + panel/layout.tsx) y la env en Render. */
+const SUBASTAS_ENABLED = false;
+
 export default function PanelOfertasPage() {
+  if (!SUBASTAS_ENABLED) return <RedirectToPanel />;
+  return <PanelOfertasInner />;
+}
+
+function RedirectToPanel() {
+  useEffect(() => {
+    window.location.replace('/panel');
+  }, []);
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <Loader2 className="animate-spin text-primary" />
+    </div>
+  );
+}
+
+function PanelOfertasInner() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);

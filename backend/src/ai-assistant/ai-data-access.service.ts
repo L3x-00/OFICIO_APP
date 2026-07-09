@@ -431,12 +431,14 @@ export class AiDataAccessService {
           hint: 'Verifica tu identidad para destacar como proveedor confiable.',
         });
       }
-      if (p.activeOffers === 0) {
-        actions.push({
-          label: 'Publica una oferta',
-          hint: 'Las ofertas activas atraen más clientes a tu perfil.',
-        });
-      }
+      // Feature OCULTA (2026-07): tip de ofertas retirado — offer_posts
+      // desactivado (FEATURE_OFERTAS). Restaurar al reactivar:
+      // if (p.activeOffers === 0) {
+      //   actions.push({
+      //     label: 'Publica una oferta',
+      //     hint: 'Las ofertas activas atraen más clientes a tu perfil.',
+      //   });
+      // }
       if (p.plan === 'GRATIS') {
         actions.push({
           label: 'Mejora tu plan',

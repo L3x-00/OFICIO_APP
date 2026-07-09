@@ -23,8 +23,8 @@ const faqData: FaqCategory[] = [
         answer: 'Sometemos a cada proveedor a un riguroso proceso de validación de identidad y antecedentes antes de activar su perfil. Además, puedes guiarte por las calificaciones y reseñas reales de otros usuarios de la comunidad.',
       },
       {
-        question: '¿Tiene algún costo solicitar un servicio?',
-        answer: 'No, publicar una solicitud de servicio es totalmente gratuito. Recibirás diferentes propuestas y tú eliges la que mejor se adapte a tu presupuesto y necesidad.',
+        question: '¿Tiene algún costo buscar un servicio?',
+        answer: 'No, buscar y contactar profesionales es totalmente gratuito. Puedes comparar perfiles, reseñas y precios, y elegir el que mejor se adapte a tu presupuesto y necesidad.',
       },
       {
         question: '¿Cómo funcionan las monedas de recompensa?',
@@ -41,16 +41,17 @@ const faqData: FaqCategory[] = [
     items: [
       {
         question: '¿Cómo puedo empezar a ofrecer mis servicios?',
-        answer: 'Solo debes registrarte, completar tu perfil profesional y subir los documentos solicitados para la verificación (DNI/RUC). Una vez aprobado, podrás empezar a enviar ofertas a las solicitudes de los clientes.',
+        answer: 'Solo debes registrarte, completar tu perfil profesional y subir los documentos solicitados para la verificación (DNI/RUC). Una vez aprobado, los clientes de tu zona podrán encontrarte y contactarte directamente.',
       },
       {
         question: '¿Qué beneficios obtengo con los planes Estándar y Premium?',
-        answer: 'Los planes te permiten enviar más ofertas por día, aparecer en los primeros lugares de búsqueda y obtener una insignia de "Proveedor Destacado" para generar más confianza.',
+        answer: 'Los planes te permiten aparecer en los primeros lugares de búsqueda, ampliar tu alcance a más distritos, publicar más servicios y obtener una insignia destacada para generar más confianza.',
       },
-      {
-        question: '¿Cómo funcionan las subastas de servicios?',
-        answer: 'Cuando un cliente publica una necesidad, recibirás una notificación si coincide con tu categoría. Podrás enviar una propuesta económica y técnica; el cliente revisará todas las ofertas y seleccionará la ganadora.',
-      },
+      // Feature OCULTA (2026-07): subastas — restaurar esta FAQ al reactivar.
+      // {
+      //   question: '¿Cómo funcionan las subastas de servicios?',
+      //   answer: 'Cuando un cliente publica una necesidad, recibirás una notificación si coincide con tu categoría. Podrás enviar una propuesta económica y técnica; el cliente revisará todas las ofertas y seleccionará la ganadora.',
+      // },
       {
         question: '¿Es seguro el sistema de pagos por Yape?',
         answer: 'Totalmente. Hemos integrado un flujo de validación de capturas de pantalla y estados de pago que son verificados por el sistema para asegurar que tu suscripción se active correctamente y sin errores.',

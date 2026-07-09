@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../showcase/showcase_data.dart';
+import 'provider_panel.dart' show kPanelTabServicios, kPanelTabMensajes;
 import '../../../showcase/showcase_overlay.dart';
 import '../../../chat/domain/models/chat_room_model.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
@@ -140,12 +141,12 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
                 child: HomeContactPreview(profile: dash.profile),
               ),
             ),
-            // Servicios/Productos del proveedor → tab Servicios (3).
+            // Servicios/Productos del proveedor → tab Servicios.
             SliverToBoxAdapter(
               child: HomeServicesPreview(
                 isNegocio: widget.isNegocio,
                 services: dash.services,
-                onViewAll: () => widget.onChangeTab(3),
+                onViewAll: () => widget.onChangeTab(kPanelTabServicios),
               ),
             ),
             // Últimas 2 conversaciones → tab Mensajes (5).
@@ -165,7 +166,7 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
                     ),
                   );
                 },
-                onViewAll: () => widget.onChangeTab(5),
+                onViewAll: () => widget.onChangeTab(kPanelTabMensajes),
               ),
             ),
             SliverToBoxAdapter(
