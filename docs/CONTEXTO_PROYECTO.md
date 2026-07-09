@@ -5,7 +5,7 @@ Code (o de claude.ai) para dar contexto completo del sistema sin explorar
 archivo por archivo. En este repo se **auto-carga** vía `@docs/CONTEXTO_PROYECTO.md`
 en `CLAUDE.md`. Mantener actualizado al cerrar cada tanda de cambios.
 
-**Última actualización:** 2026-07-08 · Estado: producción, backlog OBSERVACIONES completo + Alcance por distritos desplegado.
+**Última actualización:** 2026-07-09 · Estado: producción, landing web conectada a API real + wizard registro proveedor desplegados (PR #31).
 
 ---
 
@@ -64,6 +64,8 @@ Cambios importantes: **rama nueva → commit → push a la rama → PR → CI ve
 - **Búsqueda por radio** (PostGIS `getNearby`) respeta filtros activos; **listado por ubicación** jerárquica dept→prov→dist.
 - **Toggles privacidad** (`showPhone`/`showWhatsapp`/`showExactLocation`). **Perfil público de usuario**. **Asistente IA "Ofi"** (guardrails PII/toxicidad/inyección, caché semántico, cuota atómica). **Imágenes CDN**: 2 buckets R2 (público CDN + privado firmado), thumbnails Sharp.
 - **Rediseño visual** "cálida artesanal": claro=crema `#FAF7F2`, oscuro=casi negro cálido `#0D0B08`; contraste AA vía onSolid/tintOn.
+- **Landing web conectada a API real** (PR #31): hero con foto Huancayo legible en ambos temas (clase `force-dark-zone` contra la inversión `html.light` de globals.css); `solutions-section` con categorías padre reales + marquee infinito + geolocalización ("Ver servicios" → `/buscar?categoria&lat/lng` o fallback `provincia=Huancayo`); `/buscar` acepta deep-links; `providers-section` embebe el registro proveedor como **wizard de 6 pasos** (componente compartido `web/components/onboarding/provider-onboarding-form.tsx`, variantes full/wizard) con código de referido, borrador localStorage e invitados que se registran con Google al FINAL.
+- **Coordenadas en registro** (PR #31): `RegisterProviderDto` acepta `latitude/longitude` opcionales y se persisten al crear el Provider (web las saca del enlace de Maps) — antes ningún cliente las enviaba y los proveedores nuevos no salían en búsqueda por radio. Trigger + backfill: `backend/prisma/sql/provider_location_geog_trigger.sql` (aplicado en Supabase).
 
 ## 8. Skills del proyecto (auto-cargados en cada chat)
 
@@ -100,6 +102,6 @@ Pre-commit (husky + lint-staged): eslint/prettier por subproyecto + `dart format
 
 ## 10. Estado / pendientes
 
-- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado).
-- **Pendiente:** aplicar `backend/prisma/sql/audit_log.sql` a Supabase (idempotente; hasta entonces las escrituras de auditoría fallan en silencio, no rompen nada). Grafo `graphify-out/` desactualizado (no refleja coverage). Deuda: dos flujos de pago paralelos (`YapePayment` vs `PlanRequest`).
+- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado).
+- **Pendiente:** aplicar `backend/prisma/sql/audit_log.sql` a Supabase (idempotente; hasta entonces las escrituras de auditoría fallan en silencio, no rompen nada). Móvil aún NO envía lat/lng al registrar (el DTO ya las acepta — adopción pendiente). CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: probar integración web local vía proxy. Grafo `graphify-out/` desactualizado (no refleja coverage). Deuda: dos flujos de pago paralelos (`YapePayment` vs `PlanRequest`); en el working tree quedan cambios móviles sin subir (yape_payment_screen + pubspec) de otra tanda.
 - **Docs:** este archivo + `docs/ESTADO_ACTUAL.md` (puntero) + `docs/ARQUITECTURA_DESPLIEGUE.md` (arquitectura/infra detallada). Las copias en la RAÍZ están gitignored (punteros locales). Memorias de sesión en `~/.claude/projects/.../memory/`.
