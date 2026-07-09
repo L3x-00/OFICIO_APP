@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/payments_provider.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 
 // Colores Yape
 const _kPurple = Color(0xFF6D1B7B);
@@ -867,29 +867,17 @@ class _DownloadQrLinkState extends State<_DownloadQrLink> {
       final Uint8List list = bytes.buffer.asUint8List();
 
       // 2. Guardar directamente en la galería/descargas del dispositivo
-      final result = await ImageGallerySaver.saveImage(
-        list,
-        quality: 100,
-        name: "QR_Yape_Servi", // Nombre del archivo que aparecerá en la galería
-      );
+      await Gal.putImageBytes(list, name: "QR_Yape_Servi");
 
       if (!mounted) return;
 
-      if (result['isSuccess'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ QR guardado en tu galería.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo guardar el QR.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      // Éxito: Gal.putImageBytes no lanza excepción si se guardó correctamente
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ QR guardado en tu galería.'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
