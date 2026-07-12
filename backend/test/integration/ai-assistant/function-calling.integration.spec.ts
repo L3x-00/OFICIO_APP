@@ -23,6 +23,7 @@ import type { PrismaService } from '../../../prisma/prisma.service.js';
 
 // ── Mock del SDK de Gemini (antes de importar el service) ──────────
 const mockGenerateContent = jest.fn();
+const referralsEnabled = process.env.FEATURE_REFERIDOS === 'true';
 
 // `unstable_mockModule` existe en runtime (@jest/globals, modo ESM) pero
 // los @types/jest de este repo no lo declaran → cast a any.
@@ -127,7 +128,7 @@ describe('Function calling (integration, Gemini mockeado + BD real)', () => {
     return service;
   }
 
-  it('intercepta functionCall(get_user_coins) → consulta BD → reinyecta a Gemini → respuesta pasa por Guardrails', async () => {
+  it('intercepta functionCall(get_user_coins) y reinyecta la respuesta según el flag → Guardrails', async () => {
     const user = await createTestUser(prisma, { coins: 250 });
 
     // 1ª respuesta: pide la tool. 2ª: texto final (con DNI para probar Guardrails).
@@ -157,7 +158,9 @@ describe('Function calling (integration, Gemini mockeado + BD real)', () => {
     );
     expect(secondContents).toContain('functionResponse');
     expect(secondContents).toContain('get_user_coins');
-    expect(secondContents).toContain('250'); // coins reales desde Postgres
+    expect(secondContents).toContain(
+      referralsEnabled ? '250' : 'Herramienta no disponible: get_user_coins',
+    );
 
     // La respuesta final pasó por Guardrails → DNI enmascarado.
     expect(result.reply).toContain('[DATO PRIVADO]');
