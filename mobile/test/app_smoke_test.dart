@@ -195,7 +195,12 @@ void main() {
     // Rutas privadas top-level
     expect(paths, contains('/chat/:roomId'));
     expect(paths, contains('/chats'));
-    expect(paths, contains('/referrals'));
+    expect(
+      paths,
+      kReferidosEnabled
+          ? contains('/referrals')
+          : isNot(contains('/referrals')),
+    );
     expect(paths, contains('/edit-profile'));
     expect(paths, contains('/change-password'));
     expect(paths, contains('/trust-validation'));

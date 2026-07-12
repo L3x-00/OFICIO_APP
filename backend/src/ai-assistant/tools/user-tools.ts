@@ -15,33 +15,41 @@ import type { AiToolDef } from '../ai-assistant.types.js';
 
 const ACCOUNT_ROLES = ['USUARIO', 'PROVEEDOR'] as const;
 
+// Feature OCULTA (2026-07): las tools de monedas/referidos solo se declaran
+// con FEATURE_REFERIDOS=true — sin ellas Ofi no ofrece ni explica el sistema.
+const REFERIDOS_ENABLED = process.env.FEATURE_REFERIDOS === 'true';
+
 export const USER_TOOLS: AiToolDef[] = [
-  {
-    roles: ACCOUNT_ROLES,
-    declaration: {
-      name: 'get_user_coins',
-      description:
-        'Devuelve el saldo de monedas Servi del usuario actual. ' +
-        'Úsala cuando pregunte cuántas monedas tiene.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {},
-      },
-    },
-  },
-  {
-    roles: ACCOUNT_ROLES,
-    declaration: {
-      name: 'get_referral_stats',
-      description:
-        'Devuelve las estadísticas de referidos del usuario actual ' +
-        '(código, invitados totales e invitados exitosos).',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {},
-      },
-    },
-  },
+  ...(REFERIDOS_ENABLED
+    ? ([
+        {
+          roles: ACCOUNT_ROLES,
+          declaration: {
+            name: 'get_user_coins',
+            description:
+              'Devuelve el saldo de monedas Servi del usuario actual. ' +
+              'Úsala cuando pregunte cuántas monedas tiene.',
+            parameters: {
+              type: Type.OBJECT,
+              properties: {},
+            },
+          },
+        },
+        {
+          roles: ACCOUNT_ROLES,
+          declaration: {
+            name: 'get_referral_stats',
+            description:
+              'Devuelve las estadísticas de referidos del usuario actual ' +
+              '(código, invitados totales e invitados exitosos).',
+            parameters: {
+              type: Type.OBJECT,
+              properties: {},
+            },
+          },
+        },
+      ] as AiToolDef[])
+    : []),
   {
     roles: ACCOUNT_ROLES,
     declaration: {
@@ -49,8 +57,8 @@ export const USER_TOOLS: AiToolDef[] = [
       description:
         'Devuelve el contexto propio del usuario actual para dar respuestas ' +
         'personalizadas. Si es proveedor: visitas, favoritos, rating, ' +
-        'reseñas, fotos, ofertas activas, plan y sello de confianza. Si es ' +
-        'cliente: monedas y favoritos. Úsala cuando pregunte por "mi perfil", ' +
+        'reseñas, fotos, plan y sello de confianza. Si es ' +
+        'cliente: sus favoritos. Úsala cuando pregunte por "mi perfil", ' +
         '"cómo voy" o pida consejos personalizados.',
       parameters: {
         type: Type.OBJECT,

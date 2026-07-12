@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/constants/feature_flags.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/services/geocoding_service.dart';
@@ -565,8 +566,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
   /// [auth] capturado mientras el widget estaba montado (evita usar `context`
   /// tras un eventual pop del formulario al aceptar el modal).
   Future<void> _finishRegistrationInBackground(AuthProvider auth) async {
+    // Feature OCULTA (kReferidosEnabled): sin el flag el endpoint está en
+    // 404 — no intentar aplicar (el draft puede traer un código viejo).
     final refCode = _referralCodeCtrl.text.trim();
-    if (refCode.isNotEmpty) {
+    if (kReferidosEnabled && refCode.isNotEmpty) {
       try {
         await ReferralsRepository().applyCode(refCode);
       } catch (_) {
@@ -685,8 +688,10 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
   Future<void> _processFinalSteps(bool goToPayment) async {
     final auth = context.read<AuthProvider>();
 
+    // Feature OCULTA (kReferidosEnabled): sin el flag no se aplica el código
+    // (endpoint en 404 — mostraría error en cada registro con draft viejo).
     final refCode = _referralCodeCtrl.text.trim();
-    if (refCode.isNotEmpty) {
+    if (kReferidosEnabled && refCode.isNotEmpty) {
       try {
         await ReferralsRepository().applyCode(refCode);
         if (!mounted) return;
@@ -1117,57 +1122,59 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
 
               const SizedBox(height: 28),
 
-              // ── CÓDIGO REFERIDO ─────────────────────
-              const FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: c.bgInput,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    width: 0.5,
-                    color: AppColors.primary.withValues(alpha: 0.25),
+              // ── CÓDIGO REFERIDO — feature OCULTA (kReferidosEnabled) ──
+              if (kReferidosEnabled) ...[
+                const FormSectionHeader(label: 'CÓDIGO DE REFERIDO (OPCIONAL)'),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.card_giftcard_rounded,
-                      color: AppColors.primary,
-                      size: 20,
+                  decoration: BoxDecoration(
+                    color: c.bgInput,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      width: 0.5,
+                      color: AppColors.primary.withValues(alpha: 0.25),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _referralCodeCtrl,
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Ej: ALEX1234',
-                          hintStyle: TextStyle(color: c.textMuted),
-                        ),
-                        style: TextStyle(
-                          color: c.textPrimary,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.5,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.card_giftcard_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _referralCodeCtrl,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Ej: ALEX1234',
+                            hintStyle: TextStyle(color: c.textMuted),
+                          ),
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 6, left: 4),
-                child: Text(
-                  'Si alguien te invitó, ingresa su código aquí. Recibirás 5 monedas al ser aprobado.',
-                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, left: 4),
+                  child: Text(
+                    'Si alguien te invitó, ingresa su código aquí. Recibirás 5 monedas al ser aprobado.',
+                    style: TextStyle(color: c.textMuted, fontSize: 11),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 28),
+                const SizedBox(height: 28),
+              ],
 
               // ── PLAN DE SUSCRIPCIÓN ─────────────────
               const FormSectionHeader(label: 'PLAN DE SUSCRIPCIÓN'),

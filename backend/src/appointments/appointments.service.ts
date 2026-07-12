@@ -301,6 +301,8 @@ export class AppointmentsService {
   // ── CRON: recordatorio 24h antes (idempotente vía reminderSentAt) ──
   @Cron('0 9 * * *', { timeZone: PERU_TZ })
   async sendDayBeforeReminders(): Promise<void> {
+    if (process.env.FEATURE_AGENDA !== 'true') return;
+
     try {
       const startTomorrow = new Date(this.startOfPeruDayUtc() + DAY_MS);
       const endTomorrow = new Date(this.startOfPeruDayUtc() + 2 * DAY_MS);

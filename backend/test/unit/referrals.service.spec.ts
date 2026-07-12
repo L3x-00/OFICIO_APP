@@ -263,6 +263,24 @@ describe('ReferralsService (unit)', () => {
   describe('onProviderApproved()', () => {
     const PROVIDER_ID = 555;
 
+    // Feature OCULTA (2026-07): onProviderApproved tiene early-return si
+    // FEATURE_REFERIDOS !== 'true' (evita regalar monedas de una feature
+    // invisible). Estos tests validan el comportamiento CON la feature
+    // encendida; el early-return se prueba aparte al final.
+    beforeEach(() => {
+      process.env.FEATURE_REFERIDOS = 'true';
+    });
+    afterEach(() => {
+      delete process.env.FEATURE_REFERIDOS;
+    });
+
+    it('early-return null con FEATURE_REFERIDOS apagado (no toca BD)', async () => {
+      delete process.env.FEATURE_REFERIDOS;
+      const r = await service.onProviderApproved(PROVIDER_ID);
+      expect(r).toBeNull();
+      expect(prisma.provider.findUnique).not.toHaveBeenCalled();
+    });
+
     it('no-op (return null) si el proveedor no existe', async () => {
       prisma.provider.findUnique.mockResolvedValue(null);
       const r = await service.onProviderApproved(PROVIDER_ID);

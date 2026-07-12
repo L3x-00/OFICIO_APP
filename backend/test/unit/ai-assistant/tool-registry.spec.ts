@@ -22,6 +22,7 @@ import { AiPersonaType } from '../../../src/ai-assistant/strategies/ai-context.s
 
 const allOn = { isToolEnabled: () => true };
 const allOff = { isToolEnabled: () => false };
+const referralsEnabled = process.env.FEATURE_REFERIDOS === 'true';
 
 describe('tool-registry buildActiveTools (unit, por persona)', () => {
   it('GUEST → sin tools (tools undefined, activeNames vacío)', () => {
@@ -30,7 +31,7 @@ describe('tool-registry buildActiveTools (unit, por persona)', () => {
     expect(activeNames.size).toBe(0);
   });
 
-  it('CLIENT → solo búsqueda + monedas; NO tools de negocio ni admin', () => {
+  it('CLIENT → búsqueda + monedas solo con Referidos activo; NO tools de negocio ni admin', () => {
     const { tools, activeNames } = buildActiveTools(
       AiPersonaType.CLIENT,
       allOn,
@@ -38,7 +39,7 @@ describe('tool-registry buildActiveTools (unit, por persona)', () => {
     expect(tools).toBeDefined();
     expect(activeNames.has('search_providers')).toBe(true);
     expect(activeNames.has('search_categories')).toBe(true);
-    expect(activeNames.has('get_user_coins')).toBe(true);
+    expect(activeNames.has('get_user_coins')).toBe(referralsEnabled);
     expect(activeNames.has('explain_feature')).toBe(true);
     // No negocio:
     expect(activeNames.has('get_provider_stats')).toBe(false);
@@ -80,10 +81,10 @@ describe('tool-registry buildActiveTools (unit, por persona)', () => {
     expect(activeNames.size).toBe(0);
   });
 
-  it('kill-switch selectivo: CLIENT con search_providers OFF → omite esa, deja get_user_coins', () => {
+  it('kill-switch selectivo: CLIENT con search_providers OFF → omite esa y respeta Referidos', () => {
     const flags = { isToolEnabled: (n: string) => n !== 'search_providers' };
     const { activeNames } = buildActiveTools(AiPersonaType.CLIENT, flags);
     expect(activeNames.has('search_providers')).toBe(false); // matada por kill-switch
-    expect(activeNames.has('get_user_coins')).toBe(true); // sigue activa
+    expect(activeNames.has('get_user_coins')).toBe(referralsEnabled);
   });
 });

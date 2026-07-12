@@ -40,6 +40,7 @@ export class CatalogService {
       where: { id: providerId },
       select: {
         id: true,
+        type: true,
         businessName: true,
         whatsapp: true,
         whatsappBiz: true,
@@ -47,6 +48,10 @@ export class CatalogService {
       },
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado.');
+    // Reducción 2026-07: catálogo es SOLO para NEGOCIO.
+    if (provider.type !== 'NEGOCIO') {
+      throw new NotFoundException('Proveedor no encontrado.');
+    }
 
     const items = await this.prisma.catalogProduct.findMany({
       where: { providerId },
@@ -163,11 +168,17 @@ export class CatalogService {
   private async assertOwner(userId: number, providerId: number) {
     const provider = await this.prisma.provider.findUnique({
       where: { id: providerId },
-      select: { id: true, userId: true },
+      select: { id: true, userId: true, type: true },
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado.');
     if (provider.userId !== userId) {
       throw new ForbiddenException('No eres el dueño de este proveedor.');
+    }
+    // Reducción 2026-07: catálogo es SOLO para NEGOCIO (gestión incluida).
+    if (provider.type !== 'NEGOCIO') {
+      throw new ForbiddenException(
+        'El catálogo está disponible solo para negocios.',
+      );
     }
     return provider;
   }

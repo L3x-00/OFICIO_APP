@@ -1,6 +1,7 @@
 import HeroSection from '@/components/hero-section';
 import BenefitsSection from '@/components/benefits-section';
-import ReferralBanner from '@/components/referral-banner';
+// Feature OCULTA (2026-07): referidos — restaurar junto con FEATURE_REFERIDOS.
+// import ReferralBanner from '@/components/referral-banner';
 import TestimonialsSection from '@/components/testimonials-section';
 import UserManual from '@/components/user-manual';
 import ProvidersSection from '@/components/providers-section';
@@ -39,11 +40,12 @@ export default function HomePage() {
         <UserManual />
       </RevealSection>
 
+      {/* Feature OCULTA (2026-07): banner de referidos.
       <SectionDivider tone="primary" />
-
       <RevealSection>
         <ReferralBanner />
       </RevealSection>
+      */}
 
       <SectionDivider tone="muted" />
     </>

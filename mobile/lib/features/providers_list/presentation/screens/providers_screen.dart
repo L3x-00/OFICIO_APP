@@ -172,52 +172,52 @@ class _ProvidersViewState extends State<_ProvidersView>
                 ),
               ),
               const Spacer(),
-              // Monedas a la derecha del título — wrapper showcase
-              // (solo aplica al deck registered; en guest la key no
-              // aparece en startShowCase y el spotlight nunca se
-              // dispara sobre ella).
-              ShowcaseTarget(
-                step: kShowcaseStepsRegistered.firstWhere(
-                  (s) => s.key == kShowcaseCoinsIcon,
-                ),
-                isLast: isLastShowcaseStep(
-                  kShowcaseCoinsIcon,
-                  isGuest: isGuest,
-                ),
-                targetHeight: 28,
-                targetWidth: 60,
-                child: Consumer<AuthProvider>(
-                  builder: (_, auth, _) {
-                    final coins = auth.user?.coins ?? 0;
-                    return GestureDetector(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ReferralScreen(),
+              // Feature OCULTA (kReferidosEnabled): contador de monedas.
+              // El paso kShowcaseCoinsIcon del deck usa el MISMO flag —
+              // el firstWhere de abajo solo corre si el paso existe.
+              if (kReferidosEnabled)
+                ShowcaseTarget(
+                  step: kShowcaseStepsRegistered.firstWhere(
+                    (s) => s.key == kShowcaseCoinsIcon,
+                  ),
+                  isLast: isLastShowcaseStep(
+                    kShowcaseCoinsIcon,
+                    isGuest: isGuest,
+                  ),
+                  targetHeight: 28,
+                  targetWidth: 60,
+                  child: Consumer<AuthProvider>(
+                    builder: (_, auth, _) {
+                      final coins = auth.user?.coins ?? 0;
+                      return GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ReferralScreen(),
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.monetization_on_rounded,
-                            color: AppColors.amber,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$coins',
-                            style: const TextStyle(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.monetization_on_rounded,
                               color: AppColors.amber,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              size: 20,
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            const SizedBox(width: 4),
+                            Text(
+                              '$coins',
+                              style: const TextStyle(
+                                color: AppColors.amber,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
           actions: [

@@ -14,7 +14,10 @@ import {
 } from '../generated/client/enums.js';
 import { Prisma } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
-import { effectiveFeaturesFromCategories } from '../common/provider-features.service.js';
+import {
+  effectiveFeaturesFromCategories,
+  visibleProviderFeatures,
+} from '../common/provider-features.service.js';
 
 // Retención de notificaciones (cron diario, ahorra espacio en Supabase):
 // las LEÍDAS se purgan a los 7 días; las NO leídas viven 30 días para que
@@ -103,8 +106,14 @@ export class ProviderProfileService {
       ...provider,
       totalFavorites: provider._count?.favorites ?? 0,
       // Features efectivos (propios o heredados del padre) para que el panel
-      // del proveedor muestre las herramientas de su categoría (carta, etc.).
-      features: effectiveFeaturesFromCategories(provider.providerCategories),
+      // del proveedor muestre las herramientas de su categoría. Superficie
+      // 'panel': agenda/cotización se conservan para DRENAR citas y
+      // cotizaciones existentes; carta/catálogo solo NEGOCIO (reducción 2026-07).
+      features: visibleProviderFeatures(
+        effectiveFeaturesFromCategories(provider.providerCategories),
+        provider.type,
+        'panel',
+      ),
     };
   }
 

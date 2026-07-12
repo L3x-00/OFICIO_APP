@@ -29,14 +29,14 @@ describe('CatalogService (unit)', () => {
   });
 
   it('ownership: un usuario que no es dueño → 403', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 99 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 99, type: 'NEGOCIO' });
     await expect(service.addProduct(5, 7, dto as any)).rejects.toThrow(
       ForbiddenException,
     );
   });
 
   it('feature-gate: proveedor sin "catalogo" → 403', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     features.assertProviderHasFeature.mockRejectedValue(
       new ForbiddenException('sin catalogo'),
     );
@@ -46,7 +46,7 @@ describe('CatalogService (unit)', () => {
   });
 
   it('límite de plan: GRATIS con 5 productos → 402', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'GRATIS' });
     prisma.catalogProduct.count.mockResolvedValue(5);
     expect.assertions(1);
@@ -60,7 +60,7 @@ describe('CatalogService (unit)', () => {
   });
 
   it('ESTANDAR con 5 productos (límite 6) → crea', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'ESTANDAR' });
     prisma.catalogProduct.count.mockResolvedValue(5);
     prisma.catalogProduct.create.mockResolvedValue({ id: 1 });
@@ -71,6 +71,7 @@ describe('CatalogService (unit)', () => {
   it('catálogo público: agrupa y arma link de WhatsApp', async () => {
     prisma.provider.findUnique.mockResolvedValue({
       id: 7,
+      type: 'NEGOCIO',
       businessName: 'Ferretería Sur',
       whatsapp: '+51 988 777 666',
       whatsappBiz: null,

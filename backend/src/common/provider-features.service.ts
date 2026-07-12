@@ -35,6 +35,54 @@ export function effectiveFeaturesFromCategories(
   return [...set];
 }
 
+/** Superficie que consume el array de features. */
+export type FeatureSurface = 'public' | 'panel';
+
+/**
+ * Reducción de superficie (2026-07): filtra qué features son VISIBLES según
+ * tipo de proveedor y kill-switches de entorno. El móvil deriva sus CTAs y
+ * entradas del panel 100% de este array → filtrar aquí oculta la UI incluso
+ * en .aab ya instalados, sin recompilar.
+ *
+ * Reglas:
+ * - `carta_digital`/`catalogo`: SOLO proveedores NEGOCIO (los OFICIO quedan
+ *   con chat/contacto). Ambas superficies.
+ * - `agenda`/`cotizacion`: OCULTAS al público salvo FEATURE_AGENDA /
+ *   FEATURE_COTIZACION = 'true' en env. El PANEL las conserva para que el
+ *   proveedor atienda citas/cotizaciones YA existentes (se drenan solas);
+ *   nuevas no pueden crearse porque el CTA público desaparece y el endpoint
+ *   de creación está flagueado.
+ */
+export function visibleProviderFeatures(
+  features: string[],
+  providerType: string | null | undefined,
+  surface: FeatureSurface,
+): string[] {
+  return features.filter((f) => {
+    if (
+      (f === 'carta_digital' || f === 'catalogo') &&
+      providerType !== 'NEGOCIO'
+    ) {
+      return false;
+    }
+    if (
+      f === 'agenda' &&
+      surface === 'public' &&
+      process.env.FEATURE_AGENDA !== 'true'
+    ) {
+      return false;
+    }
+    if (
+      f === 'cotizacion' &&
+      surface === 'public' &&
+      process.env.FEATURE_COTIZACION !== 'true'
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 /**
  * Resuelve las FUNCIONALIDADES (features) habilitadas para una categoría o un
  * proveedor. Una categoría hija HEREDA los features del padre si su propio

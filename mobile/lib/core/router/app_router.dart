@@ -150,7 +150,10 @@ GoRouter createRouter({
         path: '/chats',
         builder: (_, _) => const ChatListScreen(scope: 'client'),
       ),
-      GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
+      // Feature OCULTA (kReferidosEnabled): deep-links viejos a /referrals
+      // caen al redirect en vez de abrir una pantalla con endpoints en 404.
+      if (kReferidosEnabled)
+        GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
       // Feature OCULTA (kSubastasEnabled): sin la ruta, deep-links viejos a
       // /my-requests (notifs FCM persistidas) caen al errorBuilder/redirect
       // en vez de abrir una pantalla muerta.

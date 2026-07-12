@@ -14,6 +14,8 @@ interface FaqCategory {
   items: FaqItem[];
 }
 
+const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
+
 const faqData: FaqCategory[] = [
   {
     category: 'Para Clientes',
@@ -26,10 +28,12 @@ const faqData: FaqCategory[] = [
         question: '¿Tiene algún costo buscar un servicio?',
         answer: 'No, buscar y contactar profesionales es totalmente gratuito. Puedes comparar perfiles, reseñas y precios, y elegir el que mejor se adapte a tu presupuesto y necesidad.',
       },
-      {
-        question: '¿Cómo funcionan las monedas de recompensa?',
-        answer: 'Es nuestro sistema de lealtad. Puedes ganar monedas invitando a amigos con tu código de referido. Estas monedas se acumulan en tu perfil y pueden ser canjeadas por descuentos en servicios o meses de planes premium.',
-      },
+      ...(REFERRALS_ENABLED
+        ? [{
+            question: '¿Cómo funcionan las monedas de recompensa?',
+            answer: 'Es nuestro sistema de lealtad. Puedes ganar monedas invitando a amigos con tu código de referido. Estas monedas se acumulan en tu perfil y pueden ser canjeadas por descuentos en servicios o meses de planes premium.',
+          }]
+        : []),
       {
         question: '¿Qué hago si tengo un problema con un servicio?',
         answer: 'Contamos con un sistema de soporte técnico y reporte de incidentes dentro de la app. Nuestro equipo administrativo mediará para asegurar que se cumplan los términos y condiciones bajo la normativa de protección al consumidor en Perú.',

@@ -275,6 +275,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
+              // "Mis citas"/"Mis cotizaciones" se CONSERVAN aunque agenda y
+              // cotización estén ocultas: drenan citas/cotizaciones ya
+              // existentes (no se pueden crear nuevas — backend 404).
               SectionItem(
                 icon: Icons.event_available_outlined,
                 label: 'Mis citas',
@@ -290,15 +293,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const MyQuotationsScreen()),
                 ),
+                // isLast pasa aquí cuando referidos está oculto (era del
+                // ítem de abajo).
+                isLast: !kReferidosEnabled,
               ),
-              SectionItem(
-                icon: Icons.card_giftcard_rounded,
-                label: 'Promociones y referidos',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ReferralScreen()),
+              // Feature OCULTA (kReferidosEnabled).
+              if (kReferidosEnabled)
+                SectionItem(
+                  icon: Icons.card_giftcard_rounded,
+                  label: 'Promociones y referidos',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ReferralScreen()),
+                  ),
+                  isLast: true,
                 ),
-                isLast: true,
-              ),
             ],
           ),
 

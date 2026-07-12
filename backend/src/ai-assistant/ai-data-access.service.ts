@@ -456,10 +456,13 @@ export class AiDataAccessService {
           hint: 'Guarda proveedores en favoritos para contactarlos rápido.',
         });
       }
-      actions.push({
-        label: 'Invita y gana monedas',
-        hint: `Tienes ${u.coins} moneda(s). Invita amigos con tu código para ganar más.`,
-      });
+      // Feature OCULTA (2026-07): no sugerir monedas con referidos apagado.
+      if (process.env.FEATURE_REFERIDOS === 'true') {
+        actions.push({
+          label: 'Invita y gana monedas',
+          hint: `Tienes ${u.coins} moneda(s). Invita amigos con tu código para ganar más.`,
+        });
+      }
     }
     return actions;
   }

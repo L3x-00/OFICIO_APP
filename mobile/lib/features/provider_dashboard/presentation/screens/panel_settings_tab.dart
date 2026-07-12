@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/feature_flags.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -95,23 +96,25 @@ class PanelSettingsTab extends StatelessWidget {
                     ],
                   ),
 
-                  SettingsSection(
-                    icon: Icons.card_giftcard_rounded,
-                    title: 'Promociones',
-                    children: [
-                      SettingsTile(
-                        icon: Icons.monetization_on_rounded,
-                        label: 'Referidos y monedas',
-                        subtitle:
-                            'Invita profesionales y canjea monedas por planes o servicios',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const ReferralScreen(),
+                  // Feature OCULTA (kReferidosEnabled): sección Promociones.
+                  if (kReferidosEnabled)
+                    SettingsSection(
+                      icon: Icons.card_giftcard_rounded,
+                      title: 'Promociones',
+                      children: [
+                        SettingsTile(
+                          icon: Icons.monetization_on_rounded,
+                          label: 'Referidos y monedas',
+                          subtitle:
+                              'Invita profesionales y canjea monedas por planes o servicios',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ReferralScreen(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
                   SettingsSection(
                     icon: Icons.workspace_premium_rounded,
