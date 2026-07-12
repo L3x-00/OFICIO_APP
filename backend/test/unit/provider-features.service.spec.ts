@@ -6,6 +6,7 @@ import { ForbiddenException } from '@nestjs/common';
 import {
   ProviderFeaturesService,
   effectiveFeaturesFromCategories,
+  visibleProviderFeatures,
 } from '../../src/common/provider-features.service.js';
 import { createPrismaMock, type PrismaMock } from '../mocks/prisma.mock';
 
@@ -21,6 +22,41 @@ describe('effectiveFeaturesFromCategories (pure)', () => {
       'carta_digital',
       'catalogo',
     ]);
+  });
+});
+
+describe('visibleProviderFeatures (reducción 2026-07)', () => {
+  const ALL = ['carta_digital', 'catalogo', 'agenda', 'cotizacion'];
+
+  afterEach(() => {
+    delete process.env.FEATURE_AGENDA;
+    delete process.env.FEATURE_COTIZACION;
+  });
+
+  it('OFICIO pierde carta/catálogo en ambas superficies', () => {
+    expect(visibleProviderFeatures(ALL, 'OFICIO', 'panel').sort()).toEqual([
+      'agenda',
+      'cotizacion',
+    ]);
+    expect(visibleProviderFeatures(ALL, 'OFICIO', 'public')).toEqual([]);
+  });
+
+  it('público: agenda/cotización ocultas sin env; panel las conserva (drenaje)', () => {
+    expect(visibleProviderFeatures(ALL, 'NEGOCIO', 'public').sort()).toEqual([
+      'carta_digital',
+      'catalogo',
+    ]);
+    expect(visibleProviderFeatures(ALL, 'NEGOCIO', 'panel').sort()).toEqual(
+      ALL.slice().sort(),
+    );
+  });
+
+  it("env 'true' reactiva agenda/cotización al público", () => {
+    process.env.FEATURE_AGENDA = 'true';
+    process.env.FEATURE_COTIZACION = 'true';
+    expect(visibleProviderFeatures(ALL, 'NEGOCIO', 'public').sort()).toEqual(
+      ALL.slice().sort(),
+    );
   });
 });
 

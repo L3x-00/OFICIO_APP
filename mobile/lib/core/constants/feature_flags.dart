@@ -18,3 +18,15 @@ const bool kSubastasEnabled = false;
 /// Ofertas/promociones (offer_posts): tab Ofertas del cliente, banner del
 /// home y sección de gestión en el panel proveedor.
 const bool kOfertasEnabled = false;
+
+/// Referidos/monedas: contador de monedas del home, pantalla de canje,
+/// entradas en perfil/ajustes, campo "código de referido" del onboarding.
+/// Los saldos quedan CONGELADOS en BD (invisibles, no canjeables) y
+/// reaparecen al reactivar. Backend: FEATURE_REFERIDOS.
+const bool kReferidosEnabled = false;
+
+// NOTA agenda/cotización: NO llevan flag móvil. Sus CTAs y entradas del
+// panel se apagan solos porque derivan del array `features` que el backend
+// ya filtra (FEATURE_AGENDA/FEATURE_COTIZACION + carta/catálogo solo
+// NEGOCIO). "Mis citas"/"Mis cotizaciones" del perfil cliente se CONSERVAN
+// para drenar citas/cotizaciones existentes.

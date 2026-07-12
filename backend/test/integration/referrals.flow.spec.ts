@@ -39,17 +39,24 @@ function build(prisma: PrismaService) {
 
 describe('Referrals flow (integration)', () => {
   let prisma: PrismaService;
+  const originalFeatureReferidos = process.env.FEATURE_REFERIDOS;
 
   beforeAll(async () => {
     prisma = await getTestPrisma();
   });
 
   beforeEach(async () => {
+    process.env.FEATURE_REFERIDOS = 'true';
     await truncateAll(prisma);
     await ensureSeedCatalogs(prisma);
   });
 
   afterAll(async () => {
+    if (originalFeatureReferidos === undefined) {
+      delete process.env.FEATURE_REFERIDOS;
+    } else {
+      process.env.FEATURE_REFERIDOS = originalFeatureReferidos;
+    }
     await disconnectTestPrisma();
   });
 
@@ -190,6 +197,31 @@ describe('Referrals flow (integration)', () => {
       where: { id: inviter.id },
     });
     expect(inviterRow!.coins).toBe(25); // NO se duplica
+  });
+
+  it('onProviderApproved no acredita monedas con Referidos oculto', async () => {
+    process.env.FEATURE_REFERIDOS = 'false';
+    const { service } = build(prisma);
+    const inviter = await createTestUser(prisma);
+    const invited = await createTestUser(prisma, {
+      email: `hidden-${Date.now()}@x.com`,
+    });
+    const code = await service.getMyCode(inviter.id);
+    await service.applyCode(invited.id, code.code);
+    const provider = await createTestProvider(prisma, invited.id);
+
+    expect(await service.onProviderApproved(provider.id)).toBeNull();
+
+    const [inviterRow, invitedRow, codeRow, referral] = await Promise.all([
+      prisma.user.findUnique({ where: { id: inviter.id } }),
+      prisma.user.findUnique({ where: { id: invited.id } }),
+      prisma.referralCode.findUnique({ where: { userId: inviter.id } }),
+      prisma.referral.findUnique({ where: { invitedUserId: invited.id } }),
+    ]);
+    expect(inviterRow!.coins).toBe(0);
+    expect(invitedRow!.coins).toBe(0);
+    expect(codeRow!.successfulInvites).toBe(0);
+    expect(referral!.status).toBe('PENDING');
   });
 
   it('redeem de plan PREMIUM descuenta 2000 coins y activa subscription en BD', async () => {

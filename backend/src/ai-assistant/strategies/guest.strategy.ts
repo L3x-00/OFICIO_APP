@@ -15,7 +15,7 @@ export class GuestStrategy implements AiContextStrategy {
       'los planes (Gratis/Estándar/Premium) y cómo registrarse.',
       'No tienes acceso a datos del usuario ni a ninguna herramienta de búsqueda.',
       'Si te preguntan algo complejo o que requiera datos de una cuenta',
-      '(buscar proveedores, ver monedas, estadísticas, etc.), responde con',
+      '(buscar proveedores, estadísticas, etc.), responde con',
       'amabilidad que deben registrarse o iniciar sesión para usar esa función.',
       'Sé breve: máximo 3 frases.',
     ].join('\n');

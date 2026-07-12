@@ -276,8 +276,8 @@ export default function HeroSection() {
               {
                 num: '02',
                 icon: '/images/social/whatsapp.svg',
-                title: 'Conecta y cotiza',
-                desc: 'Chatea directamente con el profesional, explica tu problema y recibe un presupuesto transparente.',
+                title: 'Conecta directamente',
+                desc: 'Chatea directamente con el profesional y explica lo que necesitas antes de contratar.',
               },
               {
                 num: '03',

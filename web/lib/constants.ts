@@ -24,6 +24,7 @@ import {
     green:  { bg: 'bg-accent/10',     text: 'text-accent',        border: 'border-accent/20',   dot: 'bg-accent' },
     rose:   { bg: 'bg-rose-500/10',   text: 'text-rose-400',      border: 'border-rose-500/20', dot: 'bg-rose-400' },
   } as const;
+  const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
   
   // ========== SECCIONES DEL MANUAL ==========
   export const GUIDE_SECTIONS: GuideSection[] = [
@@ -164,7 +165,7 @@ import {
         },
       ],
     },
-    {
+    ...(REFERRALS_ENABLED ? ([{
       id: 'monedas',
       title: 'Sistema de Monedas y Referidos',
       icon: Coins,
@@ -197,7 +198,7 @@ import {
           ],
         },
       ],
-    },
+    }] satisfies GuideSection[]) : []),
     {
       id: 'planes',
       title: 'Planes y Suscripciones',

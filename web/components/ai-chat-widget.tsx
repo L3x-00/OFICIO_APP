@@ -25,6 +25,8 @@ interface AiHistoryResponse {
   messages: { role: string; content: string; createdAt?: string }[];
 }
 
+const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
+
 // FAQs de arranque. Para visitantes se responden localmente (el endpoint de
 // IA exige sesión); para usuarios autenticados se envían al modelo real.
 const FAQ_ITEMS: { q: string; a: string }[] = [
@@ -40,10 +42,12 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
     q: '¿Cómo me registro como profesional o negocio?',
     a: 'Descarga la app, completa tu perfil y sube tus documentos (DNI/RUC) para la verificación. Al aprobarse, podrás recibir clientes.',
   },
-  {
-    q: '¿Qué son las monedas de recompensa?',
-    a: 'Es nuestro sistema de lealtad: ganas monedas invitando amigos con tu código de referido y las canjeas por descuentos o planes premium.',
-  },
+  ...(REFERRALS_ENABLED
+    ? [{
+        q: '¿Qué son las monedas de recompensa?',
+        a: 'Es nuestro sistema de lealtad: ganas monedas invitando amigos con tu código de referido y las canjeas por descuentos o planes premium.',
+      }]
+    : []),
   // Feature OCULTA (2026-07): subastas — restaurar esta FAQ al reactivar.
   // {
   //   q: '¿Cómo funcionan las subastas de servicios?',

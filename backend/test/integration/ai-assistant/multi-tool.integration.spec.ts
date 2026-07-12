@@ -23,6 +23,7 @@ import { createTestUser, createTestProvider } from '../../utils/factories';
 import type { PrismaService } from '../../../prisma/prisma.service.js';
 
 const mockGenerateContent = jest.fn();
+const referralsEnabled = process.env.FEATURE_REFERIDOS === 'true';
 
 (jest as any).unstable_mockModule('@google/genai', () => ({
   GoogleGenAI: jest.fn(() => ({
@@ -262,7 +263,7 @@ describe('Multi-tool orchestration (integration, BD real)', () => {
       .flatMap((t: any) => t.functionDeclarations ?? [])
       .map((d: any) => d.name);
     expect(declared).not.toContain('search_providers');
-    expect(declared).toContain('get_user_coins'); // otras siguen activas
+    expect(declared.includes('get_user_coins')).toBe(referralsEnabled);
     // No se ejecutó: executeTool la corta por activeNames.
     expect(searchSpy).not.toHaveBeenCalled();
   });

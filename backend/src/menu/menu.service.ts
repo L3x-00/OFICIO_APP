@@ -41,6 +41,7 @@ export class MenuService {
       where: { id: providerId },
       select: {
         id: true,
+        type: true,
         businessName: true,
         whatsapp: true,
         whatsappBiz: true,
@@ -48,6 +49,11 @@ export class MenuService {
       },
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado.');
+    // Reducción 2026-07: carta es SOLO para NEGOCIO — un OFICIO cuya
+    // categoría tuviera 'carta_digital' no debe exponerla al público.
+    if (provider.type !== 'NEGOCIO') {
+      throw new NotFoundException('Proveedor no encontrado.');
+    }
 
     const items = await this.prisma.menuItem.findMany({
       where: { providerId },
@@ -172,11 +178,17 @@ export class MenuService {
   private async assertOwner(userId: number, providerId: number) {
     const provider = await this.prisma.provider.findUnique({
       where: { id: providerId },
-      select: { id: true, userId: true },
+      select: { id: true, userId: true, type: true },
     });
     if (!provider) throw new NotFoundException('Proveedor no encontrado.');
     if (provider.userId !== userId) {
       throw new ForbiddenException('No eres el dueño de este proveedor.');
+    }
+    // Reducción 2026-07: carta es SOLO para NEGOCIO (gestión incluida).
+    if (provider.type !== 'NEGOCIO') {
+      throw new ForbiddenException(
+        'La carta digital está disponible solo para negocios.',
+      );
     }
     return provider;
   }

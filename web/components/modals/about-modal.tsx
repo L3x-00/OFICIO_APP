@@ -19,6 +19,8 @@ const ACCENT = {
   amber:  { bg: 'bg-amber/10', text: 'text-amber', border: 'border-amber/20' },
 } as const;
 
+const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
+
 const ABOUT_SECTIONS = [
   {
     title: 'Nuestra Misión',
@@ -52,7 +54,9 @@ const ABOUT_SECTIONS = [
   },
   {
     title: 'Crecimiento',
-    desc: 'Gracias al boca a boca, las invitaciones entre colegas y nuestro programa de referidos con monedas, más profesionales se suman cada semana a la plataforma.',
+    desc: REFERRALS_ENABLED
+      ? 'Gracias al boca a boca, las invitaciones entre colegas y nuestro programa de referidos con monedas, más profesionales se suman cada semana a la plataforma.'
+      : 'Gracias al boca a boca y las recomendaciones entre colegas, más profesionales se suman cada semana a la plataforma.',
     icon: TrendingUp,
     accent: 'amber' as keyof typeof ACCENT,
   },

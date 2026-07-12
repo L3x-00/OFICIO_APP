@@ -195,6 +195,12 @@ export class ReferralsService {
    * notificaciones (websocket + push).
    */
   async onProviderApproved(providerId: number) {
+    // Feature OCULTA (2026-07): este método se invoca INTERNAMENTE desde
+    // admin-trust al aprobar proveedores (el guard HTTP no lo cubre). Sin
+    // el early-return seguiría regalando monedas y mandando push de una
+    // feature invisible. El Referral queda PENDING intacto en BD.
+    if (process.env.FEATURE_REFERIDOS !== 'true') return null;
+
     const provider = await this.prisma.provider.findUnique({
       where: { id: providerId },
       select: {

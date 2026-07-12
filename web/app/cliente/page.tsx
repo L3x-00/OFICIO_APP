@@ -30,6 +30,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { User as UserType } from '@/lib/types';
 
+const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
+
 interface NotificationItem {
   id: number;
   type: string;
@@ -65,7 +67,9 @@ function ClienteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab: ClientSection =
-    searchParams.get('tab') === 'referidos' ? 'referrals' : 'favorites';
+    REFERRALS_ENABLED && searchParams.get('tab') === 'referidos'
+      ? 'referrals'
+      : 'favorites';
   const [user, setUser] = useState<UserType | null>(null);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -248,12 +252,14 @@ function ClienteContent() {
             count={unreadCount}
             highlight={unreadCount > 0}
           />
-          <TabButton
-            active={activeSection === 'referrals'}
-            onClick={() => setActiveSection('referrals')}
-            icon={Gift}
-            label="Referidos"
-          />
+          {REFERRALS_ENABLED && (
+            <TabButton
+              active={activeSection === 'referrals'}
+              onClick={() => setActiveSection('referrals')}
+              icon={Gift}
+              label="Referidos"
+            />
+          )}
           <TabButton
             active={activeSection === 'settings'}
             onClick={() => setActiveSection('settings')}
@@ -273,7 +279,7 @@ function ClienteContent() {
           >
             {activeSection === 'favorites' && <FavoritesSection items={favorites} />}
             {activeSection === 'notifications' && <NotificationsSection items={notifications} />}
-            {activeSection === 'referrals' && <ReferralPanel />}
+            {REFERRALS_ENABLED && activeSection === 'referrals' && <ReferralPanel />}
             {activeSection === 'settings' && <SettingsSection user={user} />}
           </motion.div>
         </AnimatePresence>

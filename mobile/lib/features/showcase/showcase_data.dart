@@ -94,13 +94,16 @@ final List<ShowcaseStep> kShowcaseStepsRegistered = [
         'Muestra los servicios cerca de ti. Toca para cambiar de '
         'ubicación o ampliar la búsqueda a todo el Perú.',
   ),
-  ShowcaseStep(
-    key: kShowcaseCoinsIcon,
-    title: 'Monedas y referidos',
-    description:
-        'Invita a profesionales y gana monedas. Canjéalas por planes '
-        'gratis o servicios reales de la comunidad.',
-  ),
+  // Feature OCULTA (kReferidosEnabled): paso ligado al contador de monedas
+  // del header (providers_screen hace firstWhere sobre esta key).
+  if (kReferidosEnabled)
+    ShowcaseStep(
+      key: kShowcaseCoinsIcon,
+      title: 'Monedas y referidos',
+      description:
+          'Invita a profesionales y gana monedas. Canjéalas por planes '
+          'gratis o servicios reales de la comunidad.',
+    ),
   ShowcaseStep(
     key: kShowcaseJoinUsFab,
     title: 'Únete como profesional o negocio',

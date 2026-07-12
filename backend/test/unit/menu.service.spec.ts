@@ -30,14 +30,14 @@ describe('MenuService (unit)', () => {
   });
 
   it('ownership: un usuario que no es dueño → 403', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 99 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 99, type: 'NEGOCIO' });
     await expect(service.addItem(5, 7, dto as any)).rejects.toThrow(
       ForbiddenException,
     );
   });
 
   it('feature-gate: proveedor sin "carta_digital" → 403', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     features.assertProviderHasFeature.mockRejectedValue(
       new ForbiddenException('sin carta'),
     );
@@ -47,7 +47,7 @@ describe('MenuService (unit)', () => {
   });
 
   it('límite de plan: GRATIS con 5 platos → 402', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'GRATIS' });
     prisma.menuItem.count.mockResolvedValue(5);
     expect.assertions(1);
@@ -61,7 +61,7 @@ describe('MenuService (unit)', () => {
   });
 
   it('isFeatured (menú del día) en plan no PREMIUM → 402', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'ESTANDAR' });
     expect.assertions(1);
     try {
@@ -74,7 +74,7 @@ describe('MenuService (unit)', () => {
   });
 
   it('PREMIUM: crea con isFeatured y sin chequear conteo', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5 });
+    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'PREMIUM' });
     prisma.menuItem.create.mockResolvedValue({ id: 1 });
     await service.addItem(5, 7, { ...dto, isFeatured: true } as any);
@@ -85,6 +85,7 @@ describe('MenuService (unit)', () => {
   it('carta pública: agrupa por sección y arma link de WhatsApp', async () => {
     prisma.provider.findUnique.mockResolvedValue({
       id: 7,
+      type: 'NEGOCIO',
       businessName: 'Cevichería',
       whatsapp: '+51 999 111 222',
       whatsappBiz: null,
@@ -104,6 +105,7 @@ describe('MenuService (unit)', () => {
   it('respeta el toggle showWhatsapp=false (sin link)', async () => {
     prisma.provider.findUnique.mockResolvedValue({
       id: 7,
+      type: 'NEGOCIO',
       businessName: 'X',
       whatsapp: '+51999',
       whatsappBiz: null,

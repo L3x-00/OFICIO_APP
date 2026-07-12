@@ -13,6 +13,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
+import { FeatureFlag } from '../common/feature-flag.guard.js';
 import { ReferralsService } from './referrals.service.js';
 
 interface AuthedRequest {
@@ -20,8 +21,11 @@ interface AuthedRequest {
 }
 
 // ── /referrals (autenticado) ────────────────────────────────
+// Feature OCULTA (2026-07): sin FEATURE_REFERIDOS=true responde 404.
+// Los saldos de monedas quedan INTACTOS en BD (congelados e invisibles);
+// el AdminReferralsController de abajo NO se flaguea (historial/rewards).
 @Controller('referrals')
-@UseGuards(JwtAuthGuard)
+@UseGuards(FeatureFlag('FEATURE_REFERIDOS'), JwtAuthGuard)
 export class ReferralsController {
   constructor(private readonly referrals: ReferralsService) {}
 

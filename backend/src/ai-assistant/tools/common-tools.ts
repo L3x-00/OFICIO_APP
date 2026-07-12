@@ -95,15 +95,14 @@ export const COMMON_TOOLS: AiToolDef[] = [
       name: 'explain_feature',
       description:
         'Obtiene la explicación oficial de una función o concepto de Servi ' +
-        '(planes, reseñas, monedas, referidos, verificación, etc.) desde la ' +
+        '(planes, reseñas, verificación, etc.) desde la ' +
         'base de conocimiento. Úsala antes de inventar cómo funciona algo.',
       parameters: {
         type: Type.OBJECT,
         properties: {
           feature: {
             type: Type.STRING,
-            description:
-              "Tema a explicar, p.ej. 'planes', 'reseñas', 'monedas', 'referidos'.",
+            description: "Tema a explicar, p.ej. 'planes', 'reseñas'.",
           },
         },
         required: ['feature'],

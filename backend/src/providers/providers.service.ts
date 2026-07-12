@@ -8,7 +8,10 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma, AvailabilityStatus } from '../generated/client/client.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
-import { effectiveFeaturesFromCategories } from '../common/provider-features.service.js';
+import {
+  effectiveFeaturesFromCategories,
+  visibleProviderFeatures,
+} from '../common/provider-features.service.js';
 import { visibleInLocalities } from '../coverage/coverage.service.js';
 
 @Injectable()
@@ -278,10 +281,15 @@ export class ProvidersService {
     return {
       data: providers.map((p) => {
         const base = this._thumbImages(this.maskContactIfFree(p));
-        // `features` efectivos para el badge de la tarjeta del listado.
+        // `features` efectivos para el badge de la tarjeta del listado,
+        // filtrados por superficie/tipo (reducción 2026-07).
         return {
           ...base,
-          features: effectiveFeaturesFromCategories(p.providerCategories),
+          features: visibleProviderFeatures(
+            effectiveFeaturesFromCategories(p.providerCategories),
+            p.type,
+            'public',
+          ),
         };
       }),
       total,
@@ -642,9 +650,13 @@ export class ProvidersService {
     const masked = this.maskContactIfFree(provider);
     if (masked && provider) {
       // `features` efectivos (propios o heredados del padre) para que el
-      // cliente sepa qué módulos ofrece el proveedor (carta/catálogo/agenda…).
-      (masked as { features?: string[] }).features =
-        effectiveFeaturesFromCategories(provider.providerCategories);
+      // cliente sepa qué módulos ofrece el proveedor — filtrados por
+      // superficie/tipo (reducción 2026-07).
+      (masked as { features?: string[] }).features = visibleProviderFeatures(
+        effectiveFeaturesFromCategories(provider.providerCategories),
+        provider.type,
+        'public',
+      );
     }
     return masked;
   }

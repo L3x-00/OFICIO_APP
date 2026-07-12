@@ -18,7 +18,6 @@ import {
   Store,
   Wrench,
   LayoutDashboard,
-  Gift,
   MessageSquare,
   User as UserIcon,
   Bell,
@@ -40,7 +39,8 @@ const tabs = [
   // { label: 'Ofertas',      icon: Zap,           href: '/panel/ofertas' },
   { label: 'Servicios',    icon: Briefcase,     href: '/panel/servicios' },
   { label: 'Estadísticas', icon: BarChart3,     href: '/panel/estadisticas' },
-  { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },
+  // Feature OCULTA (2026-07): referidos — restaurar junto con FEATURE_REFERIDOS.
+  // { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },
   { label: 'Ajustes',      icon: Settings,      href: '/panel/ajustes' },
 ];
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/constants/feature_flags.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../domain/ai_message_model.dart';
 import 'ofi_chat_avatar.dart';
@@ -10,6 +11,8 @@ import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 /// SIN llamar al backend ni gastar cuota de IA. La IA completa y personalizada
 /// queda detrás del login.
 const Map<String, String> kGuestFaq = {
+  // Feature OCULTA (kReferidosEnabled): la entrada 'Sistema de Monedas'
+  // sale del mapa con collection-if (sigue siendo const).
   '¿Qué es Servi?':
       'Servi es un marketplace de servicios locales del Perú. Conecta a clientes '
       'con profesionales y negocios verificados de tu ciudad: electricistas, '
@@ -26,9 +29,10 @@ const Map<String, String> kGuestFaq = {
       'El Sello Confiable marca a los proveedores verificados por Servi: identidad '
       'validada y buen historial. Búscalo en el perfil para contratar con '
       'tranquilidad.',
-  'Sistema de Monedas':
-      'Las Monedas son créditos dentro de Servi que ganas al referir amigos y usar '
-      'la app. Te dan beneficios y descuentos en la plataforma.',
+  if (kReferidosEnabled)
+    'Sistema de Monedas':
+        'Las Monedas son créditos dentro de Servi que ganas al referir amigos y usar '
+        'la app. Te dan beneficios y descuentos en la plataforma.',
   '¿Cómo publico mi servicio?':
       'Regístrate como proveedor (Oficio o Negocio), completa tu perfil, elige tus '
       'especialidades y publícalo. Tras la verificación, tu servicio aparece en '

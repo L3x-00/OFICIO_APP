@@ -92,16 +92,19 @@ export class AiKnowledgeSeeder implements OnModuleInit {
           'el sello "Confiable".',
       },
     },
-    {
-      topic: 'referidos_y_monedas',
-      content: {
-        codigo: 'Cada usuario tiene un código de referido único.',
-        recompensa:
-          'Al aprobarse un invitado, el que invita gana 50 monedas y el ' +
-          'invitado 5.',
-        canje: '500 monedas = 1 mes Estándar; 1000 = 2 meses Premium.',
-      },
-    },
+    // Feature OCULTA (2026-07): entrada de referidos retirada del seeder —
+    // en prod la fila existente se desactiva por SQL (isActive=false, ver
+    // backend/prisma/sql/ocultar_features_kb.sql). Restaurar al reactivar.
+    // {
+    //   topic: 'referidos_y_monedas',
+    //   content: {
+    //     codigo: 'Cada usuario tiene un código de referido único.',
+    //     recompensa:
+    //       'Al aprobarse un invitado, el que invita gana 50 monedas y el ' +
+    //       'invitado 5.',
+    //     canje: '500 monedas = 1 mes Estándar; 1000 = 2 meses Premium.',
+    //   },
+    // },
     {
       topic: 'soporte',
       content: {

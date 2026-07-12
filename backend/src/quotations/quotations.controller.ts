@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { FeatureFlag } from '../common/feature-flag.guard.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 import { memOpts } from '../common/multer-image.config.js';
 import { QuotationsService } from './quotations.service.js';
@@ -26,8 +27,13 @@ export class QuotationsController {
 
   // ── CLIENTE ────────────────────────────────────────────────
 
+  // Feature OCULTA (2026-07): solo se bloquea CREAR nuevas cotizaciones
+  // (foto + create). Listar y responder quedan vivos para drenar las
+  // pendientes existentes.
+
   /** Sube la foto del problema/proyecto → { url } (estática, antes de :id). */
   @Post('photo')
+  @UseGuards(FeatureFlag('FEATURE_COTIZACION'))
   @UseInterceptors(FileInterceptor('file', memOpts))
   uploadPhoto(@UploadedFile() file: Express.Multer.File) {
     return this.quotations.uploadPhoto(file);
@@ -35,6 +41,7 @@ export class QuotationsController {
 
   /** Crea una solicitud de cotización. */
   @Post()
+  @UseGuards(FeatureFlag('FEATURE_COTIZACION'))
   create(
     @Request() req: AuthenticatedRequest,
     @Body() body: CreateQuotationDto,

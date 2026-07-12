@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { FeatureFlag } from '../common/feature-flag.guard.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 import { AppointmentsService } from './appointments.service.js';
 import { CreateAppointmentDto } from './dto/create-appointment.dto.js';
@@ -56,7 +57,12 @@ export class AppointmentsController {
   }
 
   /** Horarios disponibles del proveedor para un día (cliente). */
+  // Feature OCULTA (2026-07): solo se bloquea AGENDAR NUEVO (slots + create,
+  // cinturón para .aab viejos — el CTA público ya no llega por el filtro de
+  // features). El resto de endpoints queda vivo para DRENAR citas existentes
+  // (verlas, confirmarlas, cancelarlas) hasta que mueran solas.
   @Get('provider/:providerId/slots')
+  @UseGuards(FeatureFlag('FEATURE_AGENDA'))
   getSlots(
     @Param('providerId', ParseIntPipe) providerId: number,
     @Query('date') date: string,
@@ -68,6 +74,7 @@ export class AppointmentsController {
 
   /** Crea una cita. */
   @Post()
+  @UseGuards(FeatureFlag('FEATURE_AGENDA'))
   create(
     @Request() req: AuthenticatedRequest,
     @Body() body: CreateAppointmentDto,

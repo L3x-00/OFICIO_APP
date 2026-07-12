@@ -55,6 +55,7 @@ const SOCIAL_FIELDS: { key: keyof RegisterProviderPayload; label: string; placeh
 const MAX_CATEGORIES = 6;
 const MAX_PHOTOS = 4;
 const DRAFT_KEY = 'servi_onboarding_draft_web';
+const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
 
 /** Extrae lat,lng de una URL de Google Maps (varios formatos comunes). */
 function parseLatLngFromMaps(url: string): { lat: number; lng: number } | null {
@@ -358,7 +359,7 @@ export default function ProviderOnboardingForm({
       }
 
       // Código de referido — no bloquea el registro si falla (igual que móvil).
-      if (referralCode.trim()) {
+      if (REFERRALS_ENABLED && referralCode.trim()) {
         try {
           await api.applyReferralCode(referralCode.trim().toUpperCase());
           toast.success('Código de referido aplicado');
@@ -596,7 +597,7 @@ export default function ProviderOnboardingForm({
     </>
   );
 
-  const referralBlock = (
+  const referralBlock = REFERRALS_ENABLED ? (
     <Section title="Código de referido (opcional)">
       <Field label="¿Alguien te invitó a Servi?">
         <div className="relative">
@@ -605,7 +606,7 @@ export default function ProviderOnboardingForm({
         </div>
       </Field>
     </Section>
-  );
+  ) : null;
 
   const submitButton = (
     <button type="button" onClick={handleSubmit} disabled={submitting}
