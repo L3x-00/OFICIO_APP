@@ -9,11 +9,16 @@ Pattern: [thing] [action] [reason]. [next step].
 - **Simplicity First**: No speculative code. No bloated abstractions. 100 lines < 1000.
 - **Surgical Changes**: Only touch requested code. Match existing style. No drive-by refactoring.
 - **Goal-Driven**: Loop until success criteria are met. Test-first when possible.
+- **Root Cause**: Trace callers and fix shared cause, not one reported symptom.
+- **Trust Boundaries**: Never simplify validation, security, accessibility, or data safety.
+- **Regression**: Non-trivial logic leaves one smallest runnable check.
 
 ---
 ## Contexto Estructural con Graphify
 Antes de modificar archivos críticos o para entender dependencias entre backend, mobile, web y admin, consulta el grafo en `graphify-out/`. Utiliza el comando `graphify query` o lee `graphify-out/GRAPH_REPORT.md` para evitar leer archivos uno por uno y ahorrar tokens.
 ⚠️ Verifica su frescura en CONTEXTO_PROYECTO §10 — si figura desactualizado, no confiar en él para módulos nuevos (ej. coverage).
+Si el preflight marca Graphify `STALE`, no regenerarlo sobre árbol sucio:
+usar contexto canónico + `rg`; regenerar desde un worktree limpio.
 
 ---
 ## ⭐ Contexto del sistema (auto-cargado — LEER PRIMERO)
@@ -27,14 +32,25 @@ carga automáticamente aquí:
 Es la fuente de verdad. No hace falta explorar el repo archivo por archivo:
 ese doc ya resume todo. Mantenerlo actualizado al cerrar cada tanda de cambios.
 Para pegar el contexto en otro chat, copia `docs/CONTEXTO_PROYECTO.md`.
+Para reactivar funciones ocultas, usar
+`docs/REACTIVACION_FUNCIONALIDADES_OCULTAS.md`; no revertir PRs completos.
 
 ---
 # Servi — Guía de Desarrollo Optimizado
 
-**RTK Habilitado**: Sí (ahorrador de tokens 60-90%)
+**RTK**: usar solo si `Get-Command rtk`/`command -v rtk` lo encuentra; si falta,
+ejecutar el comando directo sin reintentar.
+**Node**: objetivo local/CI = 20 (`.nvmrc`). Si el preflight reporta Node 24 u
+otra versión, cambiar a Node 20 antes de instalar dependencias o construir.
 **Estado**: producción — ver `@docs/CONTEXTO_PROYECTO.md` §10 para el estado vivo.
+**Cambios**: preflight + plan primero; no editar código sin aprobación de fase.
+**Árbol local**: preservar cambios existentes. No tocar `mobile/` inconcluso sin
+briefing explícito.
 **Skills del proyecto** (`.claude/skills/`, auto-cargados): `/verificar` · `/subir-pr` · `/sql-prod` · `/ui-tema` · `/cerrar-tanda` — usar estos flujos en vez de re-derivarlos.
 Los code blocks DENTRO de los skills se ejecutan tal cual (sin prefijo `rtk`) — son la receta exacta validada; la regla RTK aplica al resto de comandos.
+Skills genéricos Supabase nunca sustituyen `/sql-prod`: producción usa SQL
+manual por el usuario, sin `execute_sql`, `migrate deploy`, `db push` ni
+`--force-reset`.
 
 ---
 
@@ -45,7 +61,7 @@ Lista completa de módulos backend y features móvil en `@docs/CONTEXTO_PROYECTO
 
 ---
 
-## 🚀 Comandos Esenciales (con RTK)
+## 🚀 Comandos Esenciales (RTK si está disponible)
 
 ### Infraestructura
 ```bash
@@ -72,7 +88,7 @@ cd mobile
 rtk flutter run -d chrome          # Inicia en Chrome (rápido)
 ```
 
-### Web pública (Puerto 3002 — SIN check en CI, verificar local)
+### Web pública (Puerto 3002 — build dentro del check Admin + verificación local)
 ```bash
 cd web
 rtk npm run dev                    # dev
@@ -126,7 +142,8 @@ features/
 
 ## 📊 RTK — Ahorrador Automático de Tokens
 
-RTK **automáticamente** filtra output innecesario sin que hagas nada especial. Ahorras 60-90% de tokens en comandos comunes.
+Cuando está disponible, RTK filtra output innecesario. Si no existe en PATH,
+usar el comando original una vez.
 
 **Comandos Servi prioritarios**:
 ```bash
@@ -143,12 +160,13 @@ rtk docker-compose up -d           # Infra (85% ahorro)
 <!-- rtk-instructions v2 -->
 ## RTK (Rust Token Killer) — Optimización Automática
 
-**Golden Rule**: Prefija `rtk` a comandos (incluso en chains con `&&`):
+**Golden Rule**: si RTK existe, prefijarlo a comandos (incluso en chains con `&&`):
 ```bash
 rtk git add . && rtk git commit -m "msg" && rtk git push
 ```
 
-RTK filtra automáticamente. Resultado: 60-90% menos tokens, sin esfuerzo extra.
+Cuando está disponible, RTK filtra automáticamente. Resultado: 60-90% menos
+tokens, sin esfuerzo extra.
 
 **Meta commands**:
 ```bash

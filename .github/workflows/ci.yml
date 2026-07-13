@@ -2,8 +2,9 @@
 # Enterprise CI/CD — OficioApp / Servi
 # ─────────────────────────────────────────────────────────────────────
 # Objetivo: nunca permitir despliegues rotos a producción.
-# Cada job es independiente y corre en paralelo. El job `deploy-gate`
-# solo se habilita cuando los 3 jobs anteriores (backend, mobile, admin)
+# Cada job es independiente y corre en paralelo. Admin también valida web para
+# conservar el mismo status check protegido. El job `deploy-gate`
+# solo se habilita cuando los 3 jobs anteriores (backend, mobile, admin+web)
 # son success. Fail-fast: cualquier paso fallido detiene su job.
 #
 # Servicios reales (no mocks de red) para backend:
@@ -182,7 +183,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: ESLint
-        run: npm run lint
+        run: npm run lint:check
 
       - name: Build (nest build)
         run: npm run build
@@ -290,12 +291,12 @@ jobs:
           retention-days: 7
 
   # ───────────────────────────────────────────────────────────────────
-  # ADMIN — Next.js
+  # ADMIN + WEB — Next.js (un status check para Branch Protection)
   # ───────────────────────────────────────────────────────────────────
   admin-ci:
     name: Admin (Next.js)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     env:
       # next.config.ts pone `typescript.ignoreBuildErrors: true`, así
@@ -320,7 +321,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: admin/package-lock.json
+          cache-dependency-path: |
+            admin/package-lock.json
+            web/package-lock.json
 
       - name: Install deps
         run: npm ci
@@ -347,11 +350,21 @@ jobs:
       - name: Build (next build)
         run: npm run build
 
+      # web/ comparte este job para que el status protegido "Admin (Next.js)"
+      # bloquee también regresiones de la landing/panel sin cambiar Branch Protection.
+      - name: Install web deps
+        working-directory: web
+        run: npm ci
+
+      - name: Build web (Next.js)
+        working-directory: web
+        run: npm run build
+
   # ───────────────────────────────────────────────────────────────────
   # DEPLOY GATE — solo dispara cuando los 3 jobs anteriores pasan
   # ───────────────────────────────────────────────────────────────────
-  # Estructura preparada para Fase 4: Render (backend) + Supabase
-  # (prisma migrate deploy) + Google Play (mobile bundle). El job NO
+  # Estructura preparada para Fase 4: Render (backend) + gate SQL manual de
+  # Supabase + Google Play (mobile bundle). El job NO
   # despliega nada en Fase 1 — solo verifica que el merge a main vino
   # con todos los checks verdes y deja huella en el run.
   deploy-gate:
@@ -368,7 +381,7 @@ jobs:
           echo ""
           echo "Próximos pasos cuando habilitemos Fase 4:"
           echo "  • Backend → Render deploy hook (curl al webhook)."
-          echo "  • Supabase → npx prisma migrate deploy contra la URL del Pooler."
+          echo "  • Supabase → usuario aplica SQL idempotente manual y confirma el gate."
           echo "  • Mobile  → upload del .aab a Google Play (track internal)."
           echo "  • Admin   → Vercel/Render deploy de la app Next."
           echo ""
