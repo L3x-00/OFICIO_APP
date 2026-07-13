@@ -1,5 +1,12 @@
 # Auditoría Técnica Integral de Servi
 
+> **HISTÓRICO — NO ES ESTADO VIVO.** Snapshot del 2026-06-02. Conserva
+> hallazgos originales debajo de su tabla de resolución, por eso mezcla estados
+> resueltos y recomendaciones viejas (Next 15, conteos antiguos). Usar
+> [`CONTEXTO_PROYECTO.md`](CONTEXTO_PROYECTO.md) §10 para estado actual.
+> Última revisión de vigencia: 2026-07-13; esta tanda no reejecutó auditoría ni
+> altera sus hallazgos históricos.
+
 **Fecha**: 2026-06-02
 **Versión del sistema**: post Módulo IA "Ofi" + sincronización cross-device + búsqueda por localidad
 **Alcance**: Backend (NestJS), Admin (Next.js 15), Web (Next.js 15), Mobile (Flutter)
@@ -100,7 +107,7 @@ Estos hallazgos eran CRÍTICOS/ALTOS y **ya no aplican**:
 ## 🟠 ALTA
 
 ### A1 · [Arquitectura/Infra] `CacheModule` mal cableado → `CACHE_MANAGER` corre EN MEMORIA, no en Redis
-- **Archivo**: [backend/src/app.module.ts:50-72](backend/src/app.module.ts#L50-L72)
+- **Archivo**: [backend/src/app.module.ts:50-72](../backend/src/app.module.ts#L50-L72)
 - **Descripción**: el `useFactory` retorna `{ store, ttl }` (clave **singular** `store`). Con `cache-manager@7` (+ `@nestjs/cache-manager@3`), la API correcta es `{ stores: [...] }` (**plural**, array). `cache-manager-redis-yet@5` es para `cache-manager@5` (incompatibilidad de versión). Resultado: la conexión Redis se abre pero el cache-manager **no la usa** y cae a un store LRU **en memoria, por-instancia**.
 - **Riesgo**:
   - El **circuit breaker** de la IA y la **caché de respuestas** viven en memoria → se **pierden al reiniciar/deploy** y **no se comparten** entre instancias.
@@ -110,13 +117,13 @@ Estos hallazgos eran CRÍTICOS/ALTOS y **ya no aplican**:
 - **Sugerencia**: migrar a la API v7 con `@keyv/redis` (o `cache-manager@5` + `cache-manager-redis-store`), retornando `{ stores: [new Keyv(...)] }`. **Mientras tanto, correr 1 sola instancia en Render** para que breaker/caché/métricas sean coherentes.
 
 ### A2 · [Seguridad/Escalabilidad] Throttler con storage en memoria
-- **Archivo**: [backend/src/app.module.ts:39](backend/src/app.module.ts#L39)
+- **Archivo**: [backend/src/app.module.ts:39](../backend/src/app.module.ts#L39)
 - **Descripción**: `ThrottlerModule.forRoot([...])` sin storage Redis → contadores por-instancia.
 - **Riesgo**: con N instancias en Render, un atacante obtiene `límite × N` requests/min → **bypass del rate-limit** (credential stuffing, brute-force de OTP).
 - **Sugerencia**: `@nest-lab/throttler-storage-redis` apuntando al Redis de Upstash ya configurado. Además, aplicar `@Throttle` estricto por endpoint en `/auth/*` (login 5/min, verify-otp 5/15min, forgot-password 3/15min).
 
 ### A3 · [Seguridad] `/uploads/*` servido estáticamente sin autenticación
-- **Archivo**: [backend/src/main.ts:71-73](backend/src/main.ts#L71-L73)
+- **Archivo**: [backend/src/main.ts:71-73](../backend/src/main.ts#L71-L73)
 - **Descripción**: `app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' })` expone públicamente la carpeta local. Hoy el directorio está **vacío** (riesgo **latente**), pero cualquier flujo que escriba localmente un documento de verificación (DNI/RUC) o voucher de Yape quedaría accesible por URL adivinable.
 - **Riesgo**: fuga de PII si en el futuro se almacena algo localmente en vez de R2.
 - **Sugerencia**: eliminar el `useStaticAssets` (el flujo real sube a R2) o gatearlo con guard JWT + validación de propiedad.
@@ -128,7 +135,7 @@ Estos hallazgos eran CRÍTICOS/ALTOS y **ya no aplican**:
 - **Sugerencia**: consolidar el historial (un único baseline) y baseline-ar Supabase con `prisma migrate resolve --applied`. No habilitar `migrate deploy` en CI hasta resolverlo. (Las 3 tablas de IA ya están validadas + con guard test `ai-migrations.spec.ts`.)
 
 ### A5 · [Seguridad] `firebase-admin@12.7.0` con vulnerabilidades transitivas
-- **Archivo**: [backend/package.json:54](backend/package.json#L54)
+- **Archivo**: [backend/package.json:54](../backend/package.json#L54)
 - **Descripción**: versión mayor atrasada; arrastra la mayoría de las 20 vulns del `npm audit` del backend.
 - **Riesgo**: DoS en parsers multipart, prototype pollution vía gRPC/protobuf.
 - **Sugerencia**: `npm i firebase-admin@13` y regresión de `verifyIdToken` + social login + push.
@@ -144,12 +151,12 @@ Estos hallazgos eran CRÍTICOS/ALTOS y **ya no aplican**:
 ## 🟡 MEDIA
 
 ### M1 · [Mantenibilidad] God objects — `admin.service.ts` (2153 líneas) y `auth.service.ts` (1007)
-- **Archivos**: [backend/src/admin/admin.service.ts](backend/src/admin/admin.service.ts) (2153), [backend/src/auth/auth.service.ts](backend/src/auth/auth.service.ts) (1007)
+- **Archivos**: [backend/src/admin/admin.service.ts](../backend/src/admin/admin.service.ts) (2153), [backend/src/auth/auth.service.ts](../backend/src/auth/auth.service.ts) (1007)
 - **Descripción**: `admin.service.ts` mezcla métricas, CRUD de proveedores, verificación, plan-requests, reportes, analytics, CRUD de categorías, cache-invalidation — todo en una clase (creció desde 1362 líneas). Viola SRP; difícil de testear y mantener.
 - **Sugerencia**: subdividir por dominio: `AdminDashboardService`, `AdminProvidersService`, `AdminCategoriesService`, `AdminPlanRequestsService`, `AdminReportsService`. Igual para `auth.service` (auth vs registro/OTP vs account-status).
 
 ### M2 · [Seguridad/Tipado] `tsconfig.json` con `noImplicitAny: false` + `req: any` difundido
-- **Archivo**: [backend/tsconfig.json:21-22](backend/tsconfig.json#L21-L22)
+- **Archivo**: [backend/tsconfig.json:21-22](../backend/tsconfig.json#L21-L22)
 - **Descripción**: `strictNullChecks: true` (bien) pero `noImplicitAny: false` y `strictBindCallApply: false`. Múltiples controllers usan `@Request() req: any`, ocultando errores de tipo en `req.user`.
 - **Sugerencia**: activar `noImplicitAny: true` progresivamente; tipar `AuthenticatedRequest { user: { userId: number; role: UserRole; email: string } }`.
 
@@ -159,19 +166,19 @@ Estos hallazgos eran CRÍTICOS/ALTOS y **ya no aplican**:
 - **Sugerencia**: priorizar `auth.service` (registro/OTP/login/refresh), `payments`/`subastas` (transaccional), y repos clave de Flutter.
 
 ### M4 · [Calidad] AI Guardrails: rama de toxicidad + PII (email/uuid/ruc) sin test
-- **Archivo**: [backend/src/ai-assistant/ai-guardrails.service.ts](backend/src/ai-assistant/ai-guardrails.service.ts)
+- **Archivo**: [backend/src/ai-assistant/ai-guardrails.service.ts](../backend/src/ai-assistant/ai-guardrails.service.ts)
 - **Descripción**: la capa de moderación de salida tiene tests solo para DNI/teléfono. La rama `isToxic → true` y la redacción de `email`/`uuid`/`ruc` no están testeadas.
 - **Riesgo**: posible fuga de PII en respuestas de la IA si la redacción regresa.
 - **Sugerencia**: agregar casos de toxicidad + cada patrón de PII (es lógica de seguridad de salida).
 
 ### M5 · [Mobile] `use_build_context_synchronously` — BuildContext tras `await`
-- **Archivo**: [mobile/lib/features/providers_list/presentation/providers/providers_provider.dart:470-559](mobile/lib/features/providers_list/presentation/providers/providers_provider.dart#L470) (+ `onboarding_screen.dart:45`, `profile_social_section.dart:302`)
+- **Archivo**: [mobile/lib/features/providers_list/presentation/providers/providers_provider.dart:470-559](../mobile/lib/features/providers_list/presentation/providers/providers_provider.dart#L470) (+ `onboarding_screen.dart:45`, `profile_social_section.dart:302`)
 - **Descripción**: `dart analyze` reporta uso de `BuildContext` a través de gaps async (varias ocurrencias). Algunas guardadas por un `mounted` no relacionado.
 - **Riesgo**: crashes (`looking up a deactivated widget's ancestor`) o navegación/SnackBars perdidos si el widget se desmonta durante el `await`.
 - **Sugerencia**: capturar `Navigator`/`ScaffoldMessenger` **antes** del `await`, o guardar con `if (!context.mounted) return;` correctamente.
 
 ### M6 · [Base de Datos] Modelo `User` sin índices secundarios
-- **Archivo**: [backend/prisma/schema.prisma](backend/prisma/schema.prisma) (modelo `User`)
+- **Archivo**: [backend/prisma/schema.prisma](../backend/prisma/schema.prisma) (modelo `User`)
 - **Descripción**: solo `@unique` en `email`/`firebaseUid`. El listado admin filtra por `role`/`isActive` y busca por texto en nombre/email (seq scan).
 - **Sugerencia**: `@@index([role, isActive])`; para búsqueda, `pg_trgm` GIN sobre `firstName||' '||lastName`.
 

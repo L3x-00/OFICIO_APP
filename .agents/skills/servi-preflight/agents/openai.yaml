@@ -1,0 +1,4 @@
+interface:
+  display_name: "Preflight Servi"
+  short_description: "Contexto y riesgos antes de tocar Servi"
+  default_prompt: "Use $servi-preflight para cargar contexto y revisar el estado seguro del workspace."

@@ -1,11 +1,11 @@
 # CONTEXTO DEL PROYECTO — Servi (oficio_app)
 
-**Fuente de verdad única y portable.** Pégalo en cualquier chat nuevo de Claude
-Code (o de claude.ai) para dar contexto completo del sistema sin explorar
-archivo por archivo. En este repo se **auto-carga** vía `@docs/CONTEXTO_PROYECTO.md`
-en `CLAUDE.md`. Mantener actualizado al cerrar cada tanda de cambios.
+**Fuente de verdad única y portable.** Pégalo en cualquier chat/agente nuevo para
+dar contexto completo sin explorar archivo por archivo. Claude lo auto-carga vía
+`@docs/CONTEXTO_PROYECTO.md` en `CLAUDE.md`; Codex debe leerlo explícitamente por
+instrucción de `AGENTS.md`. Mantener actualizado al cerrar cada tanda.
 
-**Última actualización:** 2026-07-09 · Estado: producción — reducción de superficie: subastas y ofertas OCULTAS (reactivables), foco en proveedores OFICIO.
+**Última actualización:** 2026-07-13 · Estado: producción — subastas, ofertas, referidos/monedas, agenda y cotización OCULTAS de forma reversible; Carta y Catálogo visibles solo para proveedores NEGOCIO.
 
 ---
 
@@ -27,10 +27,10 @@ quedaron ocultas (ver §3), reactivables a futuro.
 |-----|-------|-----------|-----------|
 | **mobile/** | Flutter 3.41.6 (Dart), provider (ChangeNotifier), go_router, dio | — | .aab a Google Play (recompilar para publicar) |
 | **backend/** | NestJS 11 (TypeScript **ESM**), Prisma 7.8 + PrismaPg | 3000 | Render (`oficio-backend.onrender.com`), `main` auto-deploy, health `GET /health` |
-| **admin/** | Next.js 16 (TS + Tailwind **v3**) | 3001 | — |
-| **web/** | Next.js 16 (landing + panel proveedor + chat + perfil público) | 3002 | — |
+| **admin/** | Next.js 16 (TS + Tailwind **v3**) | 3001 | Vercel (`oficioadmin`) |
+| **web/** | Next.js 16 (landing + panel proveedor + chat + perfil público) | 3002 | Vercel (`oficio_web`) |
 
-**Infra:** Supabase PostgreSQL 16 + PostGIS · Upstash Redis (cache/throttle/cuota IA) · Cloudflare R2 / MinIO (storage) · Firebase FCM (push) · WebSocket socket.io (`events/`, vía Pusher). Local: `docker-compose up -d` (Postgres+PostGIS, Redis 7.2, MinIO).
+**Infra:** Supabase PostgreSQL 16 + PostGIS · Upstash Redis (cache/throttle/cuota IA) · Cloudflare R2 / MinIO (storage) · Firebase FCM (push) · WebSocket Socket.IO (`events/`). Local: `docker-compose up -d` (Postgres+PostGIS, Redis 7.2, MinIO).
 
 ## 3. Módulos
 
@@ -38,7 +38,12 @@ quedaron ocultas (ver §3), reactivables a futuro.
 
 **mobile/lib/features/** — `auth` · `providers_list` (listado+detalle+reseñas+filtros+radio) · `provider_dashboard` (panel proveedor, tabs) · `favorites` · `chat` · `menu` · `catalog` · `agenda` · `quotation` · `subastas` ⛔OCULTO · `offer_posts` ⛔OCULTO · `referrals` · `notifications` · `payments` · `trust_validation` · `localities` · `ai_assistant` · `showcase`. **mobile/lib/core/** — `constants` (app_colors, **feature_flags**), `theme` (app_theme_colors, theme_provider), `network` (dio_client), `router`, `services`, `errors`, `utils`, `widgets`. Cada feature: `data/` (repo) · `domain/` (models) · `presentation/` (screens/widgets/providers).
 
-⛔ **Features OCULTAS (2026-07, código intacto):** subastas "ConfiServ" y ofertas (offer_posts) están desactivadas para simplificar el lanzamiento — foco en proveedores OFICIO. Reactivar = backend `FEATURE_SUBASTAS`/`FEATURE_OFERTAS=true` en Render (guard `common/feature-flag.guard.ts`, controllers públicos → 404) + móvil `core/constants/feature_flags.dart` (`kSubastasEnabled`/`kOfertasEnabled=true` y recompilar) + restaurar navs comentados en web/admin. Tablas BD intactas; los controllers `/admin/offers` y `/admin/offer-reports` siguen vivos (moderación de historial) y el cron `expireOffers` sigue limpiando.
+**Features ocultas (2026-07, código intacto):**
+- **Subastas "ConfiServ" y ofertas:** reactivar con `FEATURE_SUBASTAS=true` / `FEATURE_OFERTAS=true` en Render, flags móviles y navs web/admin comentados. Tablas intactas; `/admin/offers`, `/admin/offer-reports` y `expireOffers` histórico siguen vivos.
+- **Referidos/monedas, agenda y cotización (PR #37):** endpoints públicos devuelven 404 con `FEATURE_REFERIDOS`, `FEATURE_AGENDA` y `FEATURE_COTIZACION`; flujos internos salen temprano con la misma variable. Móvil usa `kReferidosEnabled=false`; Agenda/Cotización se ocultan dinámicamente desde el array backend `features`; web usa `NEXT_PUBLIC_FEATURE_REFERIDOS`. Ofi no declara herramientas de monedas y la fila `ai_knowledge_entries.topic = 'referidos_y_monedas'` quedó inactiva mediante SQL manual.
+- **Carta y Catálogo:** continúan activos para `NEGOCIO`; `OFICIO` no recibe `carta_digital`/`catalogo` en `features` y sus endpoints de lectura/gestión lo bloquean. No existe flag actual para OFICIO: reactivarlo requiere PR backend con switches reversibles.
+
+Runbook exacto, independiente por funcionalidad: [`REACTIVACION_FUNCIONALIDADES_OCULTAS.md`](REACTIVACION_FUNCIONALIDADES_OCULTAS.md). No revertir PR #36/#37 completos ni reactivar `PlanRequest`.
 
 ## 4. Convenciones NO negociables
 
@@ -50,8 +55,8 @@ quedaron ocultas (ver §3), reactivables a futuro.
 
 ## 5. Base de datos y migraciones (LEER antes de tocar schema)
 
-- **Historial whole-schema ROTO** → `db push` de facto. Cambios aditivos se aplican por **SQL idempotente** (`CREATE ... IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`) en `backend/prisma/sql/`.
-- **REGLA DURA:** el usuario aplica TODO el SQL a Supabase **manualmente**. Claude NUNCA ejecuta SQL contra prod — entrega el archivo `.sql` y espera confirmación. Nunca `migrate deploy` ni `--force-reset`.
+- **Baseline repo reparado:** `backend/prisma/migrations/0_init` único fue validado desde cero. Estado de `resolve --applied` en Supabase no confirmado; por eso producción NO usa `migrate deploy`. CI sincroniza solo su BD efímera con `db push`.
+- **REGLA DURA:** cambios aditivos van por SQL idempotente en `backend/prisma/sql/`; el usuario aplica TODO SQL a Supabase **manualmente**. Ningún agente usa `execute_sql`, `apply_migration`, `migrate deploy`, `db push` ni `--force-reset` contra prod.
 - Conexión: **pooler** de Supabase (`DATABASE_URL`, puerto 5432, `sslmode=require`). `npx prisma generate` local necesita `DATABASE_URL`/`DIRECT_URL` seteados (no conecta).
 - Triggers en BD manejan `location_geog` (geography/GIST), `search_tsv` (tsvector/GIN) y `subscription_audit_log`. No usar `dbgenerated` con refs a columnas.
 - **DateTime Prisma = timestamp SIN tz** (wall-clock UTC). Día Perú en SQL: `AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima'`. `now()` sí es timestamptz.
@@ -59,11 +64,12 @@ quedaron ocultas (ver §3), reactivables a futuro.
 
 ## 6. Flujo de trabajo (Branch Protection ACTIVA en main)
 
-Cambios importantes: **rama nueva → commit → push a la rama → PR → CI verde (Backend/Mobile/Admin) → squash-merge**. NUNCA push directo a main (lo bloquea). Triviales pueden ir directo. `gh` en `C:\Program Files\GitHub CLI\gh.exe`; token vía `git credential` (scope repo/workflow, **sin read:org** → usar `gh api -X POST/PUT/PATCH repos/L3x-00/OFICIO_APP/...` REST, no `gh pr create/edit`/merge que tocan campos de org). CI corre `npx prisma generate` (no commitear `generated/`). Repo: `L3x-00/OFICIO_APP`. Commits: `Co-Authored-By: Claude ...`.
+Cambios importantes: **rama nueva → commit → push a la rama → PR → CI verde (Backend/Mobile/Admin+Web) → squash-merge**. NUNCA push directo a main (lo bloquea). Triviales pueden ir directo. `gh` en `C:\Program Files\GitHub CLI\gh.exe`; token vía `git credential` (scope repo/workflow, **sin read:org** → usar `gh api -X POST/PUT/PATCH repos/L3x-00/OFICIO_APP/...` REST, no `gh pr create/edit`/merge que tocan campos de org). CI corre `npx prisma generate` (no commitear `generated/`). Repo: `L3x-00/OFICIO_APP`. Trailer de commit = agente real (`Claude <noreply@anthropic.com>` u `OpenAI Codex <noreply@openai.com>`).
 
 ## 7. Features en producción
 
-- **Funcionalidades por categoría** (feature-gate por `Category.features`, herencia hija→padre): Carta, Catálogo (carrito → pedido WhatsApp), Agenda (slots 30min, recordatorio cron 24h), Cotización. CTA en detalle + entrada en panel.
+- **Funcionalidades por categoría** (feature-gate por `Category.features`, herencia hija→padre): Carta y Catálogo (carrito → pedido WhatsApp) están activos solo para `NEGOCIO`; `OFICIO` queda bloqueado en filtro, lectura y gestión. Agenda (slots 30 min, recordatorio cron 24 h) y Cotización permanecen en código, pero ocultas por `FEATURE_AGENDA` / `FEATURE_COTIZACION`; sus CTA y entradas de panel no se muestran.
+- **Referidos y monedas:** flujo, historial y tablas se conservan; con `FEATURE_REFERIDOS` apagado no acredita monedas ni expone endpoints, UI, notificaciones o herramientas Ofi. Las pruebas cubren ambos estados del flag.
 - **Gating por plan**: carta/catálogo ítems GRATIS 5 / ESTÁNDAR 6 / PREMIUM ∞; agenda días activos/semana 1/3/7 (excede→402).
 - **Alcance por distritos** (PR #28): `provider_coverage` = distritos EXTRA (el registrado siempre visible). Límite TOTAL por plan **GRATIS 1 / ESTÁNDAR 3 / PREMIUM 10**, misma provincia. **Gate en LECTURA** (`coverage.visibleInLocalities()`): extras solo si plan pago; al vencer quedan inertes pero se conservan. `syncCoverageToPlan()` (función suelta, try/catch, nunca revierte pago) siembra/recorta tras las 7 activaciones de plan. Endpoints `GET/PUT /provider-profile/me/coverage?type=`. Móvil: sección "Alcance" en tab Perfil.
 - **Notificaciones** con discriminador (`AdminNotification.targetProfileType`/`metadata` JSONB para deep-link) — independencia por rol (cliente/OFICIO/NEGOCIO).
@@ -73,19 +79,41 @@ Cambios importantes: **rama nueva → commit → push a la rama → PR → CI ve
 - **Landing web conectada a API real** (PR #31): hero con foto Huancayo legible en ambos temas (clase `force-dark-zone` contra la inversión `html.light` de globals.css); `solutions-section` con categorías padre reales + marquee infinito + geolocalización ("Ver servicios" → `/buscar?categoria&lat/lng` o fallback `provincia=Huancayo`); `/buscar` acepta deep-links; `providers-section` embebe el registro proveedor como **wizard de 6 pasos** (componente compartido `web/components/onboarding/provider-onboarding-form.tsx`, variantes full/wizard) con código de referido, borrador localStorage e invitados que se registran con Google al FINAL.
 - **Coordenadas en registro** (PR #31): `RegisterProviderDto` acepta `latitude/longitude` opcionales y se persisten al crear el Provider (web las saca del enlace de Maps) — antes ningún cliente las enviaba y los proveedores nuevos no salían en búsqueda por radio. Trigger + backfill: `backend/prisma/sql/provider_location_geog_trigger.sql` (aplicado en Supabase).
 
-## 8. Skills del proyecto (auto-cargados en cada chat)
+## 8. Skills y preflight de agentes
 
-Viven en `.claude/skills/` (versionados) — Claude Code los registra solo al abrir
-el repo; encapsulan los flujos repetitivos para no re-derivarlos (ahorro de tokens):
+Claude usa `.claude/skills/`; Codex usa `.agents/skills/`. Encapsulan flujos
+repetitivos para no re-derivarlos. Al cambiar una regla compartida, sincronizar
+ambas variantes. Las reglas Servi de `/sql-prod` prevalecen sobre skills
+genéricos Supabase/Postgres.
 
+- **/servi-preflight** (Codex) — estado compacto: rama/diff, apps, gate SQL,
+  contexto, Graphify, memoria, skills, artefactos, RTK y Node esperado.
 - **/verificar** — checks por diff: tsc+jest backend, analyze+test móvil, admin/web. Correr tras cada cambio importante.
 - **/subir-pr** — rama → stage selectivo → commit → push → PR (gh REST) → poll CI → gate SQL → squash-merge → sync main.
 - **/sql-prod** — protocolo BD: schema + prisma generate + SQL idempotente que el USUARIO aplica manualmente en Supabase (bloquea merge).
 - **/ui-tema** — reglas de color/tema móvil (context.colors, tintOn/onSolid, const, tests con ThemeExtension). Leer ANTES de tocar UI Flutter.
 - **/cerrar-tanda** — actualizar este doc (§7/§10) + memoria + reporte final tras mergear.
 
-⚠️ `web/` no tiene check en CI (solo Backend/Mobile/Admin) — su única
-verificación es `/verificar` local antes de mergear.
+`web/` se construye dentro del status protegido **Admin (Next.js)**; `/verificar`
+mantiene además el build local dirigido.
+
+### Mapa documental
+
+- `docs/CONTEXTO_PROYECTO.md`: fuente canónica de estado, stack, reglas y pendientes.
+- `docs/ARQUITECTURA_DESPLIEGUE.md`: infraestructura, despliegue, resiliencia y BD.
+- `docs/REACTIVACION_FUNCIONALIDADES_OCULTAS.md`: reactivación y rollback independiente de las cinco features ocultas y Carta/Catálogo para OFICIO.
+- `docs/ESTADO_ACTUAL.md`: puntero corto a este documento; no duplica estado.
+- `docs/AUDITORÍA_TÉCNICA.md`: snapshot histórico del 2026-06-02; no usar como estado vivo.
+- `graphify-out/GRAPH_REPORT.md` y `graphify-out/graph.json`: mapa estructural; confiar solo si `npm run preflight` marca `FRESH`. La frescura compara cambios commiteados de fuente de apps; commits solo de docs/tooling no invalidan el grafo.
+
+### Inicio de un chat nuevo
+
+```text
+Trabaja en C:\Users\Usuario\oficio_app. Antes de editar, ejecuta npm run preflight
+y lee docs/CONTEXTO_PROYECTO.md. Preserva el árbol sucio y no toques mobile/
+inconcluso sin briefing. Si Graphify está FRESH, consúltalo; si está STALE,
+usa contexto canónico + rg y no lo regeneres sobre trabajo incompleto.
+```
 
 ## 9. Comandos y verificación
 
@@ -93,7 +121,7 @@ verificación es `/verificar` local antes de mergear.
 # Backend (ESM)
 cd backend && npm run start:dev          # dev :3000
 npx tsc --noEmit                         # typecheck
-npm test                                 # unit (494 pasando)
+npm test                                 # unit (502 pasando)
 # Mobile
 cd mobile && flutter analyze
 cd mobile && flutter test                # 209 pasando
@@ -104,10 +132,34 @@ cd web && npm run build                  # :3002
 docker-compose up -d
 ```
 
-Pre-commit (husky + lint-staged): eslint/prettier por subproyecto + `dart format`/`analyze`. RTK: prefijar `rtk` a comandos ahorra 60-90% tokens (incluso en chains con `&&`).
+Pre-commit (husky + lint-staged): backend/admin con eslint/prettier y móvil con
+`dart format`/`analyze`; web queda gateado por `next build` en CI.
+
+Node objetivo = 20 (`.nvmrc` + GitHub Actions). Si `npm run preflight` reporta
+Node 24 u otra versión local, cambiar a Node 20 (`nvm use 20`, `fnm use 20` o
+equivalente) antes de instalar dependencias o construir apps Node.
+
+Preflight: `npm run preflight`. RTK es opcional: si no existe en PATH, usar el
+comando directo sin reintentar (ausente en PowerShell al 2026-07-11).
+
+Web Next 16: `web/` debe usar `proxy.ts` (no `middleware.ts`), `metadataBase`
+en `app/layout.tsx` y `turbopack.root` en `next.config.ts` para evitar warnings
+de build en monorepo.
+
+Última verificación de la tanda PR #37 (2026-07-12): backend TypeScript y
+Jest unitario 502/502; móvil `flutter test` 209/209 (15 infos preexistentes en
+`flutter analyze`); admin type-check, tests 15/15 y build; web build con Node
+20. Estado del commit `002791d` revalidado el 2026-07-13: Backend, Mobile,
+Admin, Supabase Preview y deploy gate verdes; Vercel `oficio_web` y
+`oficioadmin` desplegados con estado `success`. Render `GET /health` respondió
+`ok`; los endpoints públicos flagueados de Subastas, Ofertas y Referidos
+respondieron 404.
 
 ## 10. Estado / pendientes
 
-- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`. **Reducción de superficie:** subastas + ofertas OCULTAS en todo el ecosistema (ver §3), PlanRequest deprecado (tab admin retirado, métodos móviles borrados; endpoint vivo para apps viejas, tabla se conserva), retención de notifs leídas 7d / no leídas 30d, fix fila histórica de payments en primer pago Yape, fix markNotificationRead admin sin scope.
-- **Pendiente:** Móvil aún NO envía lat/lng al registrar (el DTO ya las acepta — adopción pendiente). Recompilar .aab para que el ocultamiento llegue a Play. CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: probar integración web local vía proxy. Grafo `graphify-out/` desactualizado. Nota: el `AuditLog @@map("audit_log")` + `AuditLogService` de la auditoría V2 (ver memoria) NUNCA se commiteó — es tema aparte del trigger de #34.
-- **Docs:** este archivo + `docs/ESTADO_ACTUAL.md` (puntero) + `docs/ARQUITECTURA_DESPLIEGUE.md` (arquitectura/infra detallada). Las copias en la RAÍZ están gitignored (punteros locales). Memorias de sesión en `~/.claude/projects/.../memory/`.
+- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`. **Reducción de superficie:** subastas, ofertas, referidos/monedas, agenda y cotización OCULTAS; Carta/Catálogo restringidos a NEGOCIO. PlanRequest deprecado (endpoint vivo para apps viejas; tabla conservada), retención de notifs leídas 7d / no leídas 30d, fix fila histórica de payments en primer pago Yape y fix `markNotificationRead` admin sin scope.
+- **Mergeado y verificado:** PR #37, squash `002791d` (2026-07-12), ocultó referidos/monedas, agenda y cotización en backend, móvil, web y Ofi sin borrar código. El usuario aplicó manualmente `backend/prisma/sql/ocultar_features_kb.sql` en Supabase: solo desactiva la entrada de conocimiento de Ofi; no cambia schema ni elimina triggers/funciones. El 2026-07-13 se verificaron Render sano, flags públicos apagados, CI verde y deploys Vercel web/admin exitosos.
+- **Contexto/tooling 2026-07-13:** `servi-preflight` incorpora Node esperado y frescura Graphify por cambios de fuente; `.nvmrc`/root `engines` fijan Node 20; `AGENTS.md`/`web/AGENTS.md` cargan reglas; CI valida también el build web. Se añadió el runbook detallado y se regeneró `graphify-out/` desde un worktree limpio en `002791d`: 912 archivos, 8,924 nodos, 14,389 relaciones y 439 comunidades. El grafo representa la fuente de apps commiteada desde esa base; commits solo documentales/tooling no lo invalidan y cambios locales sin commit quedan fuera.
+- **Local sin PR (NO desplegado):** fixes web Next 16 (`web/proxy.ts`, `metadataBase`, `turbopack.root`) con `cd web && npm run build` OK en Node 24 local. Hay cambios móviles inconclusos del usuario; NO tocarlos sin briefing explícito.
+- **Pendiente:** recompilar/publicar `.aab` para confirmar que el ocultamiento móvil llegó a Play; esa publicación no se verificó. Móvil aún NO envía lat/lng al registrar (el DTO ya las acepta — adopción pendiente). CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: probar integración web local vía proxy. Limpieza técnica pendiente en PR separado: dejar de trackear settings/lock locales Claude y artefactos coverage/generated ya versionados; dry-run detectó 191 archivos candidatos, pero NO se ejecutó `git rm --cached`. Nota: el `AuditLog @@map("audit_log")` + `AuditLogService` de la auditoría V2 NUNCA se commiteó — distinto del trigger de #34.
+- **Docs:** fuente viva `docs/CONTEXTO_PROYECTO.md`; arquitectura en `docs/ARQUITECTURA_DESPLIEGUE.md`; reactivación en `docs/REACTIVACION_FUNCIONALIDADES_OCULTAS.md`; `docs/ESTADO_ACTUAL.md` es puntero y `docs/AUDITORÍA_TÉCNICA.md` es histórico. El contexto/tooling debe versionarse como una unidad; los fixes runtime web y cambios móviles permanecen fuera. Memorias no derivables en `~/.claude/projects/.../memory/` y `~/.codex/projects/.../memory/`.

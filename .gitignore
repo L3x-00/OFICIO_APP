@@ -1,7 +1,12 @@
 node_modules
 dist
 .env
-/src/generated/client
+/backend/src/generated/
+coverage/
+**/coverage/
+**/build/reports/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
 *.log
 /AUDITORÍA_TÉCNICA.md
 CLAUDE.md

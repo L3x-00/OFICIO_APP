@@ -2,8 +2,12 @@
   "name": "servi-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Root del monorepo Servi — solo aloja Husky + lint-staged. Cada subproyecto (backend, admin, mobile) mantiene sus propias dependencias y scripts.",
+  "engines": {
+    "node": "20.x"
+  },
+  "description": "Tooling raíz de Servi: preflight, Husky y lint-staged. Cada app mantiene sus dependencias y checks.",
   "scripts": {
+    "preflight": "node .agents/skills/servi-preflight/scripts/preflight.mjs",
     "prepare": "husky"
   },
   "devDependencies": {
