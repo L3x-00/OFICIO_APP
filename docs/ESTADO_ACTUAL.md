@@ -14,3 +14,5 @@
 >
 > Reactivación futura, independiente y reversible:
 > **[`REACTIVACION_FUNCIONALIDADES_OCULTAS.md`](REACTIVACION_FUNCIONALIDADES_OCULTAS.md)**.
+>
+> Contexto, tooling de agentes, CI web y Graphify sincronizados mediante PR #38.
