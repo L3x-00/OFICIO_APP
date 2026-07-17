@@ -22,6 +22,7 @@ import type { ReorderItem } from '../common/dto/reorder.dto.js';
 const FEATURE = 'carta_digital';
 const LIMIT_FREE = 5;
 const LIMIT_ESTANDAR = 6;
+const MENU_IMAGE_FOLDERS = ['menu'] as const;
 
 /**
  * Carta Digital. Feature-gate "carta_digital". Límites por plan
@@ -89,6 +90,7 @@ export class MenuService {
       }
     }
 
+    const photoUrl = this.validateNewPhotoUrl(dto.photoUrl);
     return this.prisma.menuItem.create({
       data: {
         providerId,
@@ -97,7 +99,7 @@ export class MenuService {
         price: dto.price,
         offerPrice: dto.offerPrice ?? null,
         category: dto.category ?? null,
-        photoUrl: dto.photoUrl ?? null,
+        photoUrl: photoUrl ?? null,
         isAvailable: dto.isAvailable ?? true,
         isFeatured: dto.isFeatured ?? false,
         order: dto.order ?? 0,
@@ -112,11 +114,21 @@ export class MenuService {
     dto: UpdateMenuItemDto,
   ) {
     await this.assertOwner(userId, providerId);
-    await this.assertItemBelongs(itemId, providerId);
+    const current = await this.assertItemBelongs(itemId, providerId);
     if (dto.isFeatured) {
       this.assertPremium(await this.getPlan(providerId));
     }
-    return this.prisma.menuItem.update({ where: { id: itemId }, data: dto });
+    const data = { ...dto };
+    if (
+      dto.photoUrl?.trim() &&
+      !this.minio.isSameImageReference(current.photoUrl, dto.photoUrl)
+    ) {
+      data.photoUrl = this.minio.assertManagedImageUrl(
+        dto.photoUrl,
+        MENU_IMAGE_FOLDERS,
+      );
+    }
+    return this.prisma.menuItem.update({ where: { id: itemId }, data });
   }
 
   async deleteItem(userId: number, providerId: number, itemId: number) {
@@ -165,6 +177,12 @@ export class MenuService {
   }
 
   // ── Helpers ────────────────────────────────────────────────
+
+  private validateNewPhotoUrl(photoUrl?: string): string | undefined {
+    return photoUrl?.trim()
+      ? this.minio.assertManagedImageUrl(photoUrl, MENU_IMAGE_FOLDERS)
+      : photoUrl;
+  }
 
   private assertPremium(plan: string): void {
     if (plan !== 'PREMIUM') {

@@ -15,12 +15,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { TrustValidationService } from './trust-validation.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
+import { trustValidationImagesOpts } from '../common/multer-image.config.js';
 
 @Controller('trust-validation')
 export class TrustValidationController {
@@ -39,7 +39,7 @@ export class TrustValidationController {
         { name: 'businessPhoto2', maxCount: 1 },
         { name: 'ownerDniPhoto', maxCount: 1 },
       ],
-      { storage: memoryStorage() },
+      trustValidationImagesOpts,
     ),
   )
   submitRequest(

@@ -14,6 +14,7 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 import { EventsGateway } from '../../events/events.gateway.js';
 import { EmailService } from '../../email/email.service.js';
 import { MinioService } from '../../common/minio.service.js';
+import { assertManagedServiceImageUrls } from '../../common/service-image-validation.js';
 import { uniqueSlug } from '../../common/slug.util.js';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
@@ -243,6 +244,10 @@ export class AuthRegistrationService {
     }
 
     // Resolver la localidad del proveedor.
+    if (data.type === 'NEGOCIO') {
+      assertManagedServiceImageUrls(this.minio, data.scheduleJson);
+    }
+
     let localityId = data.localityId;
     if (localityId) {
       const locExists = await this.prisma.locality.findUnique({

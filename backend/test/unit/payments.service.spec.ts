@@ -27,6 +27,7 @@ describe('PaymentsService (unit)', () => {
   let prisma: PrismaMock;
   let events: EventsGatewayMock;
   let push: PushMock;
+  let minio: { assertManagedImageUrl: jest.Mock };
   let service: PaymentsService;
 
   beforeEach(() => {
@@ -34,7 +35,15 @@ describe('PaymentsService (unit)', () => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     push = createPushMock();
-    service = new PaymentsService(prisma as any, events as any, push as any);
+    minio = {
+      assertManagedImageUrl: jest.fn((url: string) => url),
+    };
+    service = new PaymentsService(
+      prisma as any,
+      events as any,
+      push as any,
+      minio as any,
+    );
   });
 
   describe('expireSubscriptions() [cron]', () => {
@@ -72,7 +81,10 @@ describe('PaymentsService (unit)', () => {
     it('sin perfil del tipo pedido → Forbidden', async () => {
       prisma.provider.findUnique.mockResolvedValue(null);
       await expect(
-        service.submitYapePayment(7, { plan: 'PREMIUM', providerType: 'OFICIO' } as any),
+        service.submitYapePayment(7, {
+          plan: 'PREMIUM',
+          providerType: 'OFICIO',
+        } as any),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -103,6 +115,9 @@ describe('PaymentsService (unit)', () => {
         verificationCode: 'VC',
       } as any);
       const data = prisma.yapePayment.create.mock.calls[0][0].data;
+      expect(minio.assertManagedImageUrl).toHaveBeenCalledWith('v', [
+        'payments/vouchers',
+      ]);
       expect(data.amount).toBe(39.9); // oficial, NO 1
       expect(data.uploadedAmount).toBe(1); // lo declarado, solo referencia
       // Evento admin con el monto oficial.
@@ -223,15 +238,17 @@ describe('PaymentsService (unit)', () => {
         expect(prisma.yapePayment.update).toHaveBeenCalledWith(
           expect.objectContaining({
             where: { id: 1 },
-            data: expect.objectContaining({ status: 'APPROVED', reviewedByAdminId: 2 }),
+            data: expect.objectContaining({
+              status: 'APPROVED',
+              reviewedByAdminId: 2,
+            }),
           }),
         );
         // Suscripción activada con el plan + status + endDate (~1 mes).
         const subData = prisma.subscription.update.mock.calls[0][0].data;
         expect(subData.plan).toBe('PREMIUM');
         expect(subData.status).toBe('ACTIVA');
-        const days =
-          (subData.endDate.getTime() - Date.now()) / 86_400_000;
+        const days = (subData.endDate.getTime() - Date.now()) / 86_400_000;
         expect(days).toBeGreaterThanOrEqual(28);
         expect(days).toBeLessThanOrEqual(31);
         expect(prisma.provider.update).toHaveBeenCalledWith(
@@ -378,41 +395,41 @@ describe('PaymentsService (unit)', () => {
     it('éxito: upsert con endDate EXACTO 30 días + pago con reference=paymentId + evento NEW_MP_PAYMENT + push', async () => {
       jest.useFakeTimers().setSystemTime(Date.UTC(2026, 5, 24, 12, 0, 0));
       try {
-      prisma.payment.findFirst.mockResolvedValue(null);
-      prisma.provider.findFirst.mockResolvedValue({
-        id: 10,
-        businessName: 'B',
-        type: 'OFICIO',
-      });
-      prisma.subscription.findUniqueOrThrow.mockResolvedValue({ id: 99 });
+        prisma.payment.findFirst.mockResolvedValue(null);
+        prisma.provider.findFirst.mockResolvedValue({
+          id: 10,
+          businessName: 'B',
+          type: 'OFICIO',
+        });
+        prisma.subscription.findUniqueOrThrow.mockResolvedValue({ id: 99 });
 
-      await service.activateSubscriptionFromPayment(base);
+        await service.activateSubscriptionFromPayment(base);
 
-      // A-03: endDate = ahora + 30 días EXACTOS (no setMonth+1, que pierde días).
-      const expectedEnd = Date.now() + 30 * 24 * 60 * 60 * 1000;
-      const upsertArg = prisma.subscription.upsert.mock.calls[0][0];
-      expect(upsertArg.create.endDate.getTime()).toBe(expectedEnd);
-      expect(upsertArg.update.endDate.getTime()).toBe(expectedEnd);
-      // A-04: en renovación (update) NO se toca startDate.
-      expect(upsertArg.update.startDate).toBeUndefined();
-      expect(prisma.payment.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            amount: 39.9,
-            currency: 'PEN',
-            reference: 'mp-123', // clave de idempotencia
+        // A-03: endDate = ahora + 30 días EXACTOS (no setMonth+1, que pierde días).
+        const expectedEnd = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        const upsertArg = prisma.subscription.upsert.mock.calls[0][0];
+        expect(upsertArg.create.endDate.getTime()).toBe(expectedEnd);
+        expect(upsertArg.update.endDate.getTime()).toBe(expectedEnd);
+        // A-04: en renovación (update) NO se toca startDate.
+        expect(upsertArg.update.startDate).toBeUndefined();
+        expect(prisma.payment.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              amount: 39.9,
+              currency: 'PEN',
+              reference: 'mp-123', // clave de idempotencia
+            }),
           }),
-        }),
-      );
-      expect(prisma.provider.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: { planPriority: 1 } }),
-      );
-      // M-03: canal correcto (NO NEW_YAPE_PAYMENT).
-      expect(events.emitAdminEvent).toHaveBeenCalledWith(
-        'NEW_MP_PAYMENT',
-        expect.objectContaining({ paymentId: 'mp-123' }),
-      );
-      expect(push.sendToUser).toHaveBeenCalledTimes(1);
+        );
+        expect(prisma.provider.update).toHaveBeenCalledWith(
+          expect.objectContaining({ data: { planPriority: 1 } }),
+        );
+        // M-03: canal correcto (NO NEW_YAPE_PAYMENT).
+        expect(events.emitAdminEvent).toHaveBeenCalledWith(
+          'NEW_MP_PAYMENT',
+          expect.objectContaining({ paymentId: 'mp-123' }),
+        );
+        expect(push.sendToUser).toHaveBeenCalledTimes(1);
       } finally {
         jest.useRealTimers();
       }

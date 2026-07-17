@@ -5,9 +5,11 @@ import { UploadController } from './upload.controller.js';
 import { MulterModule } from '@nestjs/platform-express';
 import { EventsModule } from '../events/events.module.js';
 import { FirebaseModule } from '../firebase/firebase.module.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
   imports: [
+    AuthModule,
     MulterModule.register({ dest: './uploads' }),
     EventsModule,
     FirebaseModule,

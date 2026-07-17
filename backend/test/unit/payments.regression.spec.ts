@@ -18,12 +18,21 @@ describe('PaymentsService.cancelPlan (unit)', () => {
   let prisma: PrismaMock;
   let events: EventsGatewayMock;
   let push: PushMock;
+  let minio: { assertManagedImageUrl: jest.Mock };
 
   beforeEach(() => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     push = createPushMock();
-    service = new PaymentsService(prisma as any, events as any, push as any);
+    minio = {
+      assertManagedImageUrl: jest.fn((url: string) => url),
+    };
+    service = new PaymentsService(
+      prisma as any,
+      events as any,
+      push as any,
+      minio as any,
+    );
   });
 
   it('idempotente: plan ya CANCELADA → { success, alreadyCancelled } sin lanzar', async () => {

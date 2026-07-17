@@ -8,6 +8,9 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
 import { Prisma } from '../generated/client/client.js';
+import { MinioService } from '../common/minio.service.js';
+
+const REVIEW_IMAGE_FOLDERS = ['reviews/evidence'] as const;
 
 @Injectable()
 export class ReviewsService {
@@ -15,6 +18,7 @@ export class ReviewsService {
     private prisma: PrismaService,
     private eventsGateway: EventsGateway,
     private push: PushNotificationsService,
+    private minio: MinioService,
   ) {}
 
   // ── CREAR RESEÑA ─────────────────────────────────────────
@@ -31,6 +35,7 @@ export class ReviewsService {
     }
 
     // Verificar que el proveedor existe
+    const photoUrl = this.validateNewPhotoUrl(data.photoUrl);
     const provider = await this.prisma.provider.findUnique({
       where: { id: data.providerId },
     });
@@ -70,7 +75,7 @@ export class ReviewsService {
           userId: data.userId,
           rating: data.rating,
           comment: data.comment,
-          photoUrl: data.photoUrl,
+          photoUrl,
           verificationMethod: interaction.method,
           isVisible: true,
         },
@@ -141,6 +146,8 @@ export class ReviewsService {
 
   // ── LISTAR RESEÑAS DE UN PROVEEDOR ───────────────────────
   async findByProvider(providerId: number, page = 1, limit = 10) {
+    page = Math.min(10000, Math.max(1, Number.isInteger(page) ? page : 1));
+    limit = Math.min(100, Math.max(1, Number.isInteger(limit) ? limit : 10));
     const skip = (page - 1) * limit;
 
     const [reviews, total] = await Promise.all([
@@ -191,7 +198,15 @@ export class ReviewsService {
     page?: number;
     limit?: number;
   }) {
-    const { isVisible, page = 1, limit = 20 } = filters;
+    const { isVisible } = filters;
+    const page = Math.min(
+      10000,
+      Math.max(1, Number.isInteger(filters.page) ? (filters.page ?? 1) : 1),
+    );
+    const limit = Math.min(
+      100,
+      Math.max(1, Number.isInteger(filters.limit) ? (filters.limit ?? 20) : 20),
+    );
     const skip = (page - 1) * limit;
 
     const where: Prisma.ReviewWhereInput = {};
@@ -252,13 +267,24 @@ export class ReviewsService {
       throw new BadRequestException('La calificación debe ser entre 1 y 5');
     }
 
+    let photoUrl = data.photoUrl;
+    if (
+      photoUrl?.trim() &&
+      !this.minio.isSameImageReference(review.photoUrl, photoUrl)
+    ) {
+      photoUrl = this.minio.assertManagedImageUrl(
+        photoUrl,
+        REVIEW_IMAGE_FOLDERS,
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.review.update({
         where: { id: reviewId },
         data: {
           ...(data.rating !== undefined && { rating: data.rating }),
           ...(data.comment !== undefined && { comment: data.comment }),
-          ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl }),
+          ...(data.photoUrl !== undefined && { photoUrl }),
         },
         include: {
           user: {
@@ -309,12 +335,13 @@ export class ReviewsService {
       );
     }
 
+    const photoUrl = this.validateNewPhotoUrl(data.photoUrl);
     const reply = await this.prisma.reviewReply.create({
       data: {
         reviewId: data.reviewId,
         userId: data.userId,
         content: data.content,
-        photoUrl: data.photoUrl,
+        photoUrl,
       },
       include: {
         user: { select: { firstName: true, lastName: true, avatarUrl: true } },
@@ -370,6 +397,12 @@ export class ReviewsService {
   // ── HELPERS ───────────────────────────────────────────────
 
   // Recalcula el promedio real desde la BD
+  private validateNewPhotoUrl(photoUrl?: string): string | undefined {
+    return photoUrl?.trim()
+      ? this.minio.assertManagedImageUrl(photoUrl, REVIEW_IMAGE_FOLDERS)
+      : photoUrl;
+  }
+
   private async updateProviderRating(providerId: number) {
     const result = await this.prisma.review.aggregate({
       where: { providerId, isVisible: true },

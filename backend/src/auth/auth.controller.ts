@@ -23,9 +23,9 @@ import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { SocialLoginDto } from './dto/social-login.dto.js';
 import { UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { Throttle } from '@nestjs/throttler';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
+import { providerImagesOpts } from '../common/multer-image.config.js';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -45,7 +45,7 @@ export class AuthController {
   // Registro de perfil de proveedor (usuario ya autenticado)
   @UseGuards(JwtAuthGuard)
   @Post('register/provider')
-  @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
+  @UseInterceptors(FilesInterceptor('images', 4, providerImagesOpts))
   @HttpCode(HttpStatus.CREATED)
   async registerProvider(
     @Request() req: AuthenticatedRequest,

@@ -5,38 +5,54 @@
  *   • límite por plan (GRATIS=3 → 402).
  *   • catálogo público agrupado + link de WhatsApp.
  */
-import {
-  ForbiddenException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus } from '@nestjs/common';
 import { CatalogService } from '../../src/catalog/catalog.service.js';
 import { createPrismaMock, type PrismaMock } from '../mocks/prisma.mock';
 
 describe('CatalogService (unit)', () => {
   let prisma: PrismaMock;
   let features: { assertProviderHasFeature: jest.Mock };
-  let minio: { uploadFile: jest.Mock };
+  let minio: {
+    uploadFile: jest.Mock;
+    assertManagedImageUrl: jest.Mock;
+    isSameImageReference: jest.Mock;
+  };
   let service: CatalogService;
 
   const dto = { name: 'Taladro', price: 120 };
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    features = { assertProviderHasFeature: jest.fn().mockResolvedValue(undefined) };
-    minio = { uploadFile: jest.fn().mockResolvedValue('https://cdn/x.jpg') };
+    features = {
+      assertProviderHasFeature: jest.fn().mockResolvedValue(undefined),
+    };
+    minio = {
+      uploadFile: jest.fn().mockResolvedValue('https://cdn/x.jpg'),
+      assertManagedImageUrl: jest.fn((url: string) => url),
+      isSameImageReference: jest.fn(
+        (current: string | null, next: string | null) => current === next,
+      ),
+    };
     service = new CatalogService(prisma as any, features as any, minio as any);
   });
 
   it('ownership: un usuario que no es dueño → 403', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 99, type: 'NEGOCIO' });
+    prisma.provider.findUnique.mockResolvedValue({
+      id: 7,
+      userId: 99,
+      type: 'NEGOCIO',
+    });
     await expect(service.addProduct(5, 7, dto as any)).rejects.toThrow(
       ForbiddenException,
     );
   });
 
   it('feature-gate: proveedor sin "catalogo" → 403', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
+    prisma.provider.findUnique.mockResolvedValue({
+      id: 7,
+      userId: 5,
+      type: 'NEGOCIO',
+    });
     features.assertProviderHasFeature.mockRejectedValue(
       new ForbiddenException('sin catalogo'),
     );
@@ -46,7 +62,11 @@ describe('CatalogService (unit)', () => {
   });
 
   it('límite de plan: GRATIS con 5 productos → 402', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
+    prisma.provider.findUnique.mockResolvedValue({
+      id: 7,
+      userId: 5,
+      type: 'NEGOCIO',
+    });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'GRATIS' });
     prisma.catalogProduct.count.mockResolvedValue(5);
     expect.assertions(1);
@@ -60,12 +80,36 @@ describe('CatalogService (unit)', () => {
   });
 
   it('ESTANDAR con 5 productos (límite 6) → crea', async () => {
-    prisma.provider.findUnique.mockResolvedValue({ id: 7, userId: 5, type: 'NEGOCIO' });
+    prisma.provider.findUnique.mockResolvedValue({
+      id: 7,
+      userId: 5,
+      type: 'NEGOCIO',
+    });
     prisma.subscription.findFirst.mockResolvedValue({ plan: 'ESTANDAR' });
     prisma.catalogProduct.count.mockResolvedValue(5);
     prisma.catalogProduct.create.mockResolvedValue({ id: 1 });
     await service.addProduct(5, 7, dto as any);
     expect(prisma.catalogProduct.create).toHaveBeenCalled();
+  });
+
+  it('valida la carpeta de una foto nueva antes de crear', async () => {
+    prisma.provider.findUnique.mockResolvedValue({
+      id: 7,
+      userId: 5,
+      type: 'NEGOCIO',
+    });
+    prisma.subscription.findFirst.mockResolvedValue({ plan: 'PREMIUM' });
+    prisma.catalogProduct.create.mockResolvedValue({ id: 1 });
+
+    await service.addProduct(5, 7, {
+      ...dto,
+      photoUrl: 'https://img.test/catalog/item.jpg',
+    } as any);
+
+    expect(minio.assertManagedImageUrl).toHaveBeenCalledWith(
+      'https://img.test/catalog/item.jpg',
+      ['catalog'],
+    );
   });
 
   it('catálogo público: agrupa y arma link de WhatsApp', async () => {
@@ -78,7 +122,13 @@ describe('CatalogService (unit)', () => {
       showWhatsapp: true,
     });
     prisma.catalogProduct.findMany.mockResolvedValue([
-      { id: 1, name: 'Martillo', category: 'Herramientas', isAvailable: true, order: 0 },
+      {
+        id: 1,
+        name: 'Martillo',
+        category: 'Herramientas',
+        isAvailable: true,
+        order: 0,
+      },
       { id: 2, name: 'Clavos', category: null, isAvailable: false, order: 0 },
     ]);
     const res = await service.getPublicCatalog(7);

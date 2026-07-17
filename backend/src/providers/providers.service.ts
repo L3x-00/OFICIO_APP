@@ -14,6 +14,21 @@ import {
 } from '../common/provider-features.service.js';
 import { visibleInLocalities } from '../coverage/coverage.service.js';
 
+const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
+  'dni',
+  'ruc',
+  'razonSocial',
+  'verificationStatus',
+  'trustStatus',
+  'planPriority',
+  'appointmentSchedule',
+  'slugEditedAt',
+  'localityId',
+  'isVisible',
+  'createdAt',
+  'updatedAt',
+] as const;
+
 @Injectable()
 export class ProvidersService {
   constructor(
@@ -55,9 +70,17 @@ export class ProvidersService {
       department,
       province,
       district,
-      page = 1,
-      limit = 20,
+      page: requestedPage = 1,
+      limit: requestedLimit = 20,
     } = filters;
+    const page = Math.min(
+      10000,
+      Math.max(1, Number.isInteger(requestedPage) ? requestedPage : 1),
+    );
+    const limit = Math.min(
+      100,
+      Math.max(1, Number.isInteger(requestedLimit) ? requestedLimit : 20),
+    );
 
     // Solo proveedores visibles y aprobados por el admin
     const where: Prisma.ProviderWhereInput = {
@@ -280,7 +303,7 @@ export class ProvidersService {
 
     return {
       data: providers.map((p) => {
-        const base = this._thumbImages(this.maskContactIfFree(p));
+        const base = this._thumbImages(this.toPublicProvider(p));
         // `features` efectivos para el badge de la tarjeta del listado,
         // filtrados por superficie/tipo (reducción 2026-07).
         return {
@@ -350,6 +373,35 @@ export class ProvidersService {
    * plan (PREMIUM > ESTANDAR > GRATIS). Alimenta los carruseles del home móvil
    * sin tocar la paginación de `findAll`.
    */
+  private toPublicProvider(provider: any): any {
+    if (!provider) return provider;
+
+    const sanitized = { ...this.maskContactIfFree(provider) };
+    for (const field of PRIVATE_PUBLIC_PROVIDER_FIELDS) {
+      delete sanitized[field];
+    }
+
+    if (sanitized.showPhone === false) sanitized.phone = '';
+    if (sanitized.showWhatsapp === false) {
+      sanitized.whatsapp = null;
+      sanitized.whatsappBiz = null;
+    }
+    if (sanitized.showExactLocation === false) {
+      sanitized.address = null;
+      sanitized.latitude = null;
+      sanitized.longitude = null;
+      if (sanitized.locality) {
+        sanitized.locality = {
+          ...sanitized.locality,
+          name: null,
+          district: null,
+        };
+      }
+    }
+
+    return sanitized;
+  }
+
   async getFeaturedGrouped(opts?: { province?: string; department?: string }) {
     const { province, department } = opts ?? {};
 
@@ -462,7 +514,7 @@ export class ProvidersService {
             iconUrl: r.parent.iconUrl,
           },
           providers: providers.map((p) =>
-            this._thumbImages(this.maskContactIfFree(p)),
+            this._thumbImages(this.toPublicProvider(p)),
           ),
         };
       }),
@@ -603,15 +655,19 @@ export class ProvidersService {
       .filter((p): p is NonNullable<typeof p> => p != null)
       .slice(0, 50)
       .map((p) => ({
-        ...this._thumbImages(this.maskContactIfFree(p)),
+        ...this._thumbImages(this.toPublicProvider(p)),
         distanceKm: distByIdKm.get(p.id) ?? null,
       }));
   }
 
   // ── OBTENER un proveedor por ID ──────────────────────────
   async findOne(id: number) {
-    const provider = await this.prisma.provider.findUnique({
-      where: { id },
+    const provider = await this.prisma.provider.findFirst({
+      where: {
+        id,
+        isVisible: true,
+        verificationStatus: 'APROBADO',
+      },
       include: {
         providerCategories: {
           select: {
@@ -647,7 +703,7 @@ export class ProvidersService {
         },
       },
     });
-    const masked = this.maskContactIfFree(provider);
+    const masked = this.toPublicProvider(provider);
     if (masked && provider) {
       // `features` efectivos (propios o heredados del padre) para que el
       // cliente sepa qué módulos ofrece el proveedor — filtrados por

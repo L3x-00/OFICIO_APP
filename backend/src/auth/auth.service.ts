@@ -18,6 +18,8 @@ import {
 } from './services/auth-registration.service.js';
 import { AuthAccountService } from './services/auth-account.service.js';
 
+const TRUSTED_SOCIAL_EMAIL_PROVIDERS = new Set(['google.com', 'facebook.com']);
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -137,7 +139,12 @@ export class AuthService {
         include: { user: true },
       });
 
-      if (!storedToken || storedToken.expiresAt < new Date()) {
+      if (
+        !storedToken ||
+        storedToken.expiresAt < new Date() ||
+        !storedToken.user.isActive ||
+        storedToken.user.deletedAt != null
+      ) {
         throw new UnauthorizedException('Token expirado');
       }
 
@@ -216,6 +223,29 @@ export class AuthService {
         ],
       },
     });
+
+    const signInProvider = decoded.firebase?.sign_in_provider;
+    const sameFirebaseIdentity = user?.firebaseUid === uid;
+    const hasTrustedEmail =
+      decoded.email_verified === true &&
+      TRUSTED_SOCIAL_EMAIL_PROVIDERS.has(signInProvider ?? '');
+
+    // Un token Firebase valido no basta para vincular cuentas por correo:
+    // el proveedor tambien debe haber verificado ese correo. Los re-logins
+    // con el mismo firebaseUid siguen funcionando aunque el claim cambie.
+    if (!sameFirebaseIdentity && !hasTrustedEmail) {
+      throw new UnauthorizedException(
+        'No se pudo verificar el correo de la cuenta social.',
+      );
+    }
+
+    // Nunca iniciar una cuenta ya vinculada usando otro UID que solo comparte
+    // el mismo correo. Firebase debe resolver esa vinculacion primero.
+    if (user?.firebaseUid && !sameFirebaseIdentity) {
+      throw new UnauthorizedException(
+        'Este correo ya esta vinculado a otra cuenta social.',
+      );
+    }
 
     let isNewUser = false;
 

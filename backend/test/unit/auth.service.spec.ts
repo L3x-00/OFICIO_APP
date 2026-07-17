@@ -53,7 +53,11 @@ describe('AuthService (unit)', () => {
     sendWelcomeEmail: jest.Mock;
   };
   let firebase: { verifyIdToken: jest.Mock };
-  let minio: { uploadFile: jest.Mock };
+  let minio: {
+    uploadFile: jest.Mock;
+    assertManagedImageUrl: jest.Mock;
+    isSameImageReference: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = createPrismaMock();
@@ -71,7 +75,13 @@ describe('AuthService (unit)', () => {
       sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
     };
     firebase = { verifyIdToken: jest.fn() };
-    minio = { uploadFile: jest.fn() };
+    minio = {
+      uploadFile: jest.fn(),
+      assertManagedImageUrl: jest.fn((url: string) => url),
+      isSameImageReference: jest.fn(
+        (current: string | null, next: string | null) => current === next,
+      ),
+    };
     // Auditoría fire-and-forget (lastLoginAt/lastIp) en login/socialLogin usa
     // `.catch()`; sin un valor por defecto el mock devuelve undefined y el
     // `.catch` revienta. Los tests que necesitan el RETORNO lo overridean.
@@ -311,6 +321,21 @@ describe('AuthService (unit)', () => {
       );
     });
 
+    it('rechaza refresh de una cuenta suspendida', async () => {
+      const token = jwt.sign({ sub: 1, email: 'x', role: 'USUARIO' });
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        token,
+        user: userFixture({ isActive: false }),
+        userId: 1,
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+
+      await expect(service.refreshTokens(token)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(prisma.refreshToken.delete).not.toHaveBeenCalled();
+    });
+
     it('lanza UnauthorizedException si el token no se puede verificar', async () => {
       jwt.verify.mockImplementationOnce(() => {
         throw new Error('jwt malformed');
@@ -428,13 +453,21 @@ describe('AuthService (unit)', () => {
   //  SOCIAL LOGIN (Firebase)
   // ────────────────────────────────────────────────────────────
   describe('socialLogin()', () => {
+    const verifiedGoogleToken = (claims: Record<string, unknown>) => ({
+      email_verified: true,
+      firebase: { sign_in_provider: 'google.com' },
+      ...claims,
+    });
+
     it('crea cuenta nueva cuando Firebase trae un email sin usuario previo', async () => {
-      firebase.verifyIdToken.mockResolvedValue({
-        uid: 'fbuid-1',
-        email: 'social@example.com',
-        name: 'Ana Soto',
-        picture: 'https://pic',
-      });
+      firebase.verifyIdToken.mockResolvedValue(
+        verifiedGoogleToken({
+          uid: 'fbuid-1',
+          email: 'social@example.com',
+          name: 'Ana Soto',
+          picture: 'https://pic',
+        }),
+      );
       prisma.user.findFirst.mockResolvedValue(null);
       const created = socialUserFixture({
         id: 200,
@@ -473,11 +506,13 @@ describe('AuthService (unit)', () => {
     // social deja de persistir ("no has iniciado sesión" al reabrir) — este
     // test falla antes de que eso llegue a producción.
     it('REGRESIÓN: la respuesta incluye userId y role (shape consistente)', async () => {
-      firebase.verifyIdToken.mockResolvedValue({
-        uid: 'fbuid-shape',
-        email: 'shape@example.com',
-        name: 'Shape Test',
-      });
+      firebase.verifyIdToken.mockResolvedValue(
+        verifiedGoogleToken({
+          uid: 'fbuid-shape',
+          email: 'shape@example.com',
+          name: 'Shape Test',
+        }),
+      );
       prisma.user.findFirst.mockResolvedValue(null);
       const created = socialUserFixture({
         id: 321,
@@ -501,11 +536,13 @@ describe('AuthService (unit)', () => {
     it('vincula firebaseUid (NO bloquea) si el email existe sin firebaseUid', async () => {
       // Cuenta creada por email/password, o social cuyo firebaseUid se limpió.
       // Firebase ya verificó el correo → se vincula y loguea, no se bloquea.
-      firebase.verifyIdToken.mockResolvedValue({
-        uid: 'fbuid-2',
-        email: 'manual@example.com',
-        picture: 'https://pic',
-      });
+      firebase.verifyIdToken.mockResolvedValue(
+        verifiedGoogleToken({
+          uid: 'fbuid-2',
+          email: 'manual@example.com',
+          picture: 'https://pic',
+        }),
+      );
       const existing = userFixture({
         id: 77,
         email: 'manual@example.com',
@@ -513,7 +550,10 @@ describe('AuthService (unit)', () => {
         isActive: true,
       });
       prisma.user.findFirst.mockResolvedValue(existing);
-      prisma.user.update.mockResolvedValue({ ...existing, firebaseUid: 'fbuid-2' });
+      prisma.user.update.mockResolvedValue({
+        ...existing,
+        firebaseUid: 'fbuid-2',
+      });
       prisma.refreshToken.create.mockResolvedValue({});
 
       const result = await service.socialLogin('any-token');
@@ -530,10 +570,12 @@ describe('AuthService (unit)', () => {
     });
 
     it('reactiva cuenta soft-deleted vía social SIN otorgar mes de gracia', async () => {
-      firebase.verifyIdToken.mockResolvedValue({
-        uid: 'fbuid-3',
-        email: 'deleted@example.com',
-      });
+      firebase.verifyIdToken.mockResolvedValue(
+        verifiedGoogleToken({
+          uid: 'fbuid-3',
+          email: 'deleted@example.com',
+        }),
+      );
       const soft = softDeletedUserFixture({ email: 'deleted@example.com' });
       prisma.user.findFirst.mockResolvedValue(soft);
       prisma.provider.deleteMany.mockResolvedValue({ count: 1 });
@@ -563,10 +605,12 @@ describe('AuthService (unit)', () => {
     });
 
     it('lanza UnauthorizedException si la cuenta está suspendida por admin (inactiva sin deletedAt)', async () => {
-      firebase.verifyIdToken.mockResolvedValue({
-        uid: 'fbuid-4',
-        email: 'banned@example.com',
-      });
+      firebase.verifyIdToken.mockResolvedValue(
+        verifiedGoogleToken({
+          uid: 'fbuid-4',
+          email: 'banned@example.com',
+        }),
+      );
       prisma.user.findFirst.mockResolvedValue(
         userFixture({
           email: 'banned@example.com',
@@ -577,6 +621,56 @@ describe('AuthService (unit)', () => {
       await expect(service.socialLogin('any-token')).rejects.toThrow(
         UnauthorizedException,
       );
+    });
+
+    it('permite re-login del mismo firebaseUid sin depender otra vez del claim email_verified', async () => {
+      firebase.verifyIdToken.mockResolvedValue({
+        uid: 'fbuid-existing',
+        email: 'social@example.com',
+        email_verified: false,
+        firebase: { sign_in_provider: 'google.com' },
+      });
+      const existing = socialUserFixture({
+        firebaseUid: 'fbuid-existing',
+      });
+      prisma.user.findFirst.mockResolvedValue(existing);
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      await expect(service.socialLogin('any-token')).resolves.toEqual(
+        expect.objectContaining({ userId: existing.id, isNewUser: false }),
+      );
+    });
+
+    it('rechaza crear o vincular por un correo social no verificado', async () => {
+      firebase.verifyIdToken.mockResolvedValue({
+        uid: 'fbuid-unverified',
+        email: 'victim@example.com',
+        email_verified: false,
+        firebase: { sign_in_provider: 'google.com' },
+      });
+      prisma.user.findFirst.mockResolvedValue(null);
+
+      await expect(service.socialLogin('any-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(prisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it('rechaza un UID distinto aunque comparta correo con otra cuenta social', async () => {
+      firebase.verifyIdToken.mockResolvedValue(
+        verifiedGoogleToken({
+          uid: 'fbuid-attacker',
+          email: 'social@example.com',
+        }),
+      );
+      prisma.user.findFirst.mockResolvedValue(
+        socialUserFixture({ firebaseUid: 'fbuid-owner' }),
+      );
+
+      await expect(service.socialLogin('any-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(prisma.refreshToken.create).not.toHaveBeenCalled();
     });
 
     it('lanza BadRequestException si Firebase no devuelve email', async () => {

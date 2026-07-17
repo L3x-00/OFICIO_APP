@@ -21,6 +21,10 @@ describe('ReviewsService (unit)', () => {
   let prisma: PrismaMock;
   let events: EventsGatewayMock;
   let push: PushMock;
+  let minio: {
+    assertManagedImageUrl: jest.Mock;
+    isSameImageReference: jest.Mock;
+  };
   let service: ReviewsService;
 
   beforeEach(() => {
@@ -28,11 +32,35 @@ describe('ReviewsService (unit)', () => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     push = createPushMock();
-    service = new ReviewsService(prisma as any, events as any, push as any);
+    minio = {
+      assertManagedImageUrl: jest.fn((url: string) => url),
+      isSameImageReference: jest.fn(
+        (current: string | null, next: string | null) => current === next,
+      ),
+    };
+    service = new ReviewsService(
+      prisma as any,
+      events as any,
+      push as any,
+      minio as any,
+    );
   });
 
   describe('create()', () => {
     const base = { providerId: 3, userId: 7, rating: 5, comment: 'Bien' };
+
+    it('rechaza una foto nueva fuera del almacenamiento de Servi', async () => {
+      minio.assertManagedImageUrl.mockImplementationOnce(() => {
+        throw new BadRequestException('URL no permitida');
+      });
+      await expect(
+        service.create({
+          ...base,
+          photoUrl: 'https://evil.example/review.jpg',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.provider.findUnique).not.toHaveBeenCalled();
+    });
 
     it('rating fuera de 1-5 → BadRequest', async () => {
       await expect(service.create({ ...base, rating: 0 })).rejects.toThrow(
@@ -158,9 +186,9 @@ describe('ReviewsService (unit)', () => {
   describe('updateReview()', () => {
     it('reseña inexistente → NotFound', async () => {
       prisma.review.findUnique.mockResolvedValue(null);
-      await expect(
-        service.updateReview(1, 7, { rating: 4 }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updateReview(1, 7, { rating: 4 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('no es el autor → Forbidden', async () => {
@@ -169,9 +197,9 @@ describe('ReviewsService (unit)', () => {
         userId: 99,
         providerId: 3,
       });
-      await expect(
-        service.updateReview(1, 7, { rating: 4 }),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.updateReview(1, 7, { rating: 4 })).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('rating fuera de rango → BadRequest', async () => {
@@ -180,9 +208,9 @@ describe('ReviewsService (unit)', () => {
         userId: 7,
         providerId: 3,
       });
-      await expect(
-        service.updateReview(1, 7, { rating: 9 }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.updateReview(1, 7, { rating: 9 })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('éxito: actualiza y recalcula promedio del proveedor', async () => {
@@ -205,6 +233,27 @@ describe('ReviewsService (unit)', () => {
         }),
       );
       expect((res as any).id).toBe(1);
+    });
+
+    it('permite conservar una foto historica sin revalidarla', async () => {
+      prisma.review.findUnique.mockResolvedValue({
+        id: 1,
+        userId: 7,
+        providerId: 3,
+        photoUrl: 'https://legacy.example/review.jpg',
+      });
+      minio.isSameImageReference.mockReturnValueOnce(true);
+      prisma.review.update.mockResolvedValue({ id: 1 });
+      prisma.review.aggregate.mockResolvedValue({
+        _avg: { rating: 5 },
+        _count: { rating: 1 },
+      });
+
+      await service.updateReview(1, 7, {
+        photoUrl: 'https://legacy.example/review.jpg',
+      });
+
+      expect(minio.assertManagedImageUrl).not.toHaveBeenCalled();
     });
   });
 
@@ -303,6 +352,17 @@ describe('ReviewsService (unit)', () => {
         lastPage: 1,
       });
     });
+  });
+
+  it('caps public review pagination before querying Prisma', async () => {
+    prisma.review.findMany.mockResolvedValue([]);
+    prisma.review.count.mockResolvedValue(0);
+
+    await service.findByProvider(3, -5, 500000);
+
+    expect(prisma.review.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 0, take: 100 }),
+    );
   });
 
   describe('validateQrCode()', () => {

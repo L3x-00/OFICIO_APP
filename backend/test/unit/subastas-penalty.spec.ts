@@ -29,9 +29,15 @@ function makeDeps(prismaOver: Record<string, any> = {}) {
     $executeRaw: jest.fn(async () => 1),
     ...prismaOver,
   };
-  const events: any = { emitNotification: jest.fn(), emitSubastaNew: jest.fn() };
+  const events: any = {
+    emitNotification: jest.fn(),
+    emitSubastaNew: jest.fn(),
+  };
   const push: any = { sendToUser: jest.fn() };
-  const service = new SubastasService(prisma, events, push);
+  const minio: any = {
+    assertManagedImageUrl: jest.fn((url: string) => url),
+  };
+  const service = new SubastasService(prisma, events, push, minio);
   return { service, prisma };
 }
 
@@ -99,6 +105,10 @@ describe('SubastasService — penalización por cancelaciones', () => {
 function prismaTxStub() {
   return {
     serviceRequest: { findUnique: jest.fn(async () => null) },
-    offer: { count: jest.fn(async () => 0), findUnique: jest.fn(), create: jest.fn() },
+    offer: {
+      count: jest.fn(async () => 0),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
   };
 }

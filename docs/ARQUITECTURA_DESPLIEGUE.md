@@ -1,6 +1,6 @@
 # ARQUITECTURA DE DESPLIEGUE — Servi
 
-**Última actualización:** 2026-07-13
+**Última actualización:** 2026-07-16
 
 > ÚNICA fuente de verdad de arquitectura (la copia de la raíz está gitignored
 > y es solo un puntero local). El estudio largo que vivía aquí quedó obsoleto;
@@ -15,6 +15,10 @@ Admin (Next.js/Vercel) ─┘        │                  ├─► Upstash Redi
                                  │                  └─► R2 / MinIO (storage)
                                  └─► WebSocket (socket.io) ── Push FCM (Firebase)
 ```
+
+**Borde público:** web `oficioapp.org.pe` (Cloudflare/Vercel), admin
+`oficioadmin.vercel.app`, API `api.oficioapp.org.pe` (Cloudflare/Render). DNS
+delegado a Cloudflare (`javier.ns.cloudflare.com`, `katelyn.ns.cloudflare.com`).
 
 ## Estado de despliegue verificado
 
@@ -50,10 +54,17 @@ Admin (Next.js/Vercel) ─┘        │                  ├─► Upstash Redi
 ## Resiliencia / seguridad operativa
 - **Redis:** `.on('error')` + reconnect en Throttler (ioredis), Cache (KeyvRedis/node-redis) y AiQuota; ninguno mata el proceso.
 - **Proceso:** `main.ts` captura `uncaughtException`/`unhandledRejection` (log + Sentry, sin `process.exit`).
-- **WebSocket:** handshake valida JWT; `EventsGateway.afterInit` registra listeners de error del engine.
-- **Uploads:** límites Multer + filtro de tipo + auth (JWT) en todas las rutas de subida.
+- **WebSocket:** producción valida JWT y registra listeners de error del engine. El hardening local 7F, todavía NO desplegado, además consulta usuario activo/rol actual en BD durante el handshake.
+- **Uploads:** el hardening local 7A–7C, todavía NO desplegado, exige JWT en todas las rutas, limita tamaño/píxeles, decodifica y re-encodea con Sharp, elimina metadatos y valida origen/carpeta de URLs gestionadas.
 - **Pagos:** transacciones atómicas con claim condicional; idempotencia MercadoPago por `reference`; webhook MP con firma HMAC.
 - **Sentry:** backend y Flutter capturan excepciones; DSN por variable de entorno.
+- **Identidad/sesiones local 7D–7F, NO desplegado:** allowlist de campos, guards/roles, privacidad de salida pública, email social verificado, revocación de refresh tokens al suspender y rol WebSocket tomado de BD.
+- **Admin local 7F, NO desplegado:** CSV protegido contra fórmulas y headers defensivos con CSP `Report-Only`.
+- **Android release:** R8 minify + resource shrinking activos; cleartext bloqueado salvo hosts locales de desarrollo. No hay certificate pinning por su riesgo operativo de corte durante rotaciones; la frontera de seguridad permanece en el backend.
+
+Cambios externos no se aplicaron desde código. Estado observado y orden seguro de
+TLS, correo, MFA, Supabase y origen Render:
+[`SEGURIDAD_OPERATIVA.md`](SEGURIDAD_OPERATIVA.md).
 
 ## Variables de entorno críticas (no hardcodear)
 `DATABASE_URL`, `REDIS_HOST/PORT/PASSWORD/TLS`, `JWT_SECRET`, `MERCADOPAGO_*` (incl. `WEBHOOK_SECRET`), `SENTRY_DSN`, `ALLOWED_ORIGINS`, claves R2/MinIO, credenciales Firebase, claves IA (Gemini/OpenRouter).

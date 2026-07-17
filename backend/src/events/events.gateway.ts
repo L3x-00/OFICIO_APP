@@ -117,10 +117,36 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      const userId = Number(payload.sub);
+      if (!Number.isInteger(userId) || userId <= 0) {
+        this.logger.warn(`[WS] userId invalido desde ${client.id}`);
+        client.disconnect(true);
+        return;
+      }
+
+      // El JWT prueba autenticidad, pero su rol/estado puede haber cambiado.
+      // Consultar BD una vez por conexion evita mantener sockets suspendidos o
+      // privilegios admin antiguos hasta que expire el access token.
+      const currentUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          isActive: true,
+          deletedAt: true,
+        },
+      });
+      if (!currentUser?.isActive || currentUser.deletedAt != null) {
+        this.logger.warn(`[WS] usuario inactivo desde ${client.id}`);
+        client.disconnect(true);
+        return;
+      }
+
       client.data.user = {
-        userId: Number(payload.sub),
-        email: String(payload.email),
-        role: String(payload.role),
+        userId: currentUser.id,
+        email: currentUser.email,
+        role: currentUser.role,
       };
 
       // Sala personal automática (no depende de evento del cliente)
