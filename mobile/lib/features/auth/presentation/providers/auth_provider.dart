@@ -196,8 +196,9 @@ class AuthProvider extends ChangeNotifier
   /// en `/otp`.
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
-    if (_needsEmailVerification)
+    if (_needsEmailVerification) {
       return AppNavigationState.needsEmailVerification;
+    }
     if (_user == null && _isGuest) return AppNavigationState.guest;
     if (_user == null) return AppNavigationState.unauthenticated;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
@@ -386,7 +387,6 @@ class AuthProvider extends ChangeNotifier
     String password, {
     bool rememberSession = false,
   }) async {
-    _isGuest = false;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -395,6 +395,7 @@ class AuthProvider extends ChangeNotifier
 
     result.when(
       success: (user) {
+        _isGuest = false;
         _user = user;
         _needsOnboarding = (user.role == null || user.role.isEmpty);
       },
@@ -568,7 +569,6 @@ class AuthProvider extends ChangeNotifier
     required String lastName,
     String? phone,
   }) async {
-    _isGuest = false;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -583,6 +583,7 @@ class AuthProvider extends ChangeNotifier
 
     result.when(
       success: (data) {
+        _isGuest = false;
         final pendingId = data['pendingId'] as String?;
         if (pendingId != null) {
           _registration?.setPending(pendingId: pendingId, email: email);
