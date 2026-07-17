@@ -16,18 +16,22 @@ describe('AdminService.notifyProvider (unit)', () => {
   let prisma: PrismaMock;
   let events: ReturnType<typeof createEventsGatewayMock>;
   let push: ReturnType<typeof createPushMock>;
+  let minio: { assertManagedImageUrl: jest.Mock };
   let service: AdminService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     push = createPushMock();
+    minio = {
+      assertManagedImageUrl: jest.fn((url: string) => url),
+    };
     // Solo prisma/events/push son relevantes; el resto de deps del god
     // object no se tocan en notifyProvider → mocks vacíos.
     service = new AdminService(
       prisma as any,
       events as any,
-      {} as any, // minio
+      minio as any,
       push as any,
       {} as any, // categories
       {} as any, // dashboard
@@ -89,9 +93,9 @@ describe('AdminService.notifyProvider (unit)', () => {
 
   it('lanza NotFoundException si el proveedor no existe', async () => {
     prisma.provider.findUnique.mockResolvedValue(null);
-    await expect(
-      service.notifyProvider(404, 'a', 'b'),
-    ).rejects.toThrow(NotFoundException);
+    await expect(service.notifyProvider(404, 'a', 'b')).rejects.toThrow(
+      NotFoundException,
+    );
     expect(events.emitNotification).not.toHaveBeenCalled();
     expect(push.sendToUser).not.toHaveBeenCalled();
   });
@@ -109,9 +113,8 @@ describe('AdminService.notifyProvider (unit)', () => {
 
   it('REGRESIÓN: ADMIN_NOTIF_WHERE incluye los types de usuario que antes no se guardaban', () => {
     const where = (AdminService as any).ADMIN_NOTIF_WHERE;
-    const typeClause = where.OR.find(
-      (c: any) => c.type?.in,
-    )?.type?.in as string[];
+    const typeClause = where.OR.find((c: any) => c.type?.in)?.type
+      ?.in as string[];
     expect(typeClause).toEqual(
       expect.arrayContaining([
         'BROADCAST_LOG',
@@ -120,5 +123,46 @@ describe('AdminService.notifyProvider (unit)', () => {
         'USER_PENDING',
       ]),
     );
+  });
+
+  it('rechaza una imagen externa en broadcasts antes de enviarlos', async () => {
+    minio.assertManagedImageUrl.mockImplementationOnce(() => {
+      throw new BadRequestException('URL no permitida');
+    });
+
+    await expect(
+      service.broadcastNotification(
+        'Aviso',
+        'Mensaje',
+        'https://evil.example/banner.jpg',
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(minio.assertManagedImageUrl).toHaveBeenCalledWith(
+      'https://evil.example/banner.jpg',
+      ['admin/broadcasts'],
+    );
+  });
+
+  it('revoca todos los refresh tokens al suspender un usuario', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 7,
+      email: 'user@example.com',
+      role: 'USUARIO',
+    });
+    prisma.user.update.mockResolvedValue({
+      id: 7,
+      email: 'user@example.com',
+      role: 'USUARIO',
+      isActive: false,
+    });
+
+    await expect(service.updateUserStatus(7, false)).resolves.toEqual(
+      expect.objectContaining({ id: 7, isActive: false }),
+    );
+    expect(prisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 7 },
+    });
+    expect(events.emitUserDeactivated).toHaveBeenCalledWith(7);
   });
 });

@@ -36,12 +36,21 @@ describe('ProvidersService (unit)', () => {
 
   describe('findOne() — máscara en detalle', () => {
     it('proveedor inexistente → null', async () => {
-      prisma.provider.findUnique.mockResolvedValue(null);
+      prisma.provider.findFirst.mockResolvedValue(null);
       await expect(service.findOne(1)).resolves.toBeNull();
+      expect(prisma.provider.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            id: 1,
+            isVisible: true,
+            verificationStatus: 'APROBADO',
+          },
+        }),
+      );
     });
 
     it('GRATIS: enmascara TODO el contacto y recorta fotos a 2', async () => {
-      prisma.provider.findUnique.mockResolvedValue({
+      prisma.provider.findFirst.mockResolvedValue({
         id: 1,
         phone: '999',
         whatsapp: '999',
@@ -77,7 +86,7 @@ describe('ProvidersService (unit)', () => {
     });
 
     it('DEFAULT-DENY: sin suscripción vigente se enmascara como GRATIS', async () => {
-      prisma.provider.findUnique.mockResolvedValue({
+      prisma.provider.findFirst.mockResolvedValue({
         id: 1,
         phone: '999',
         whatsapp: '999',
@@ -91,7 +100,7 @@ describe('ProvidersService (unit)', () => {
     });
 
     it('PREMIUM: no enmascara el contacto', async () => {
-      prisma.provider.findUnique.mockResolvedValue({
+      prisma.provider.findFirst.mockResolvedValue({
         id: 1,
         phone: '999',
         whatsapp: '999',
@@ -102,6 +111,61 @@ describe('ProvidersService (unit)', () => {
       const p: any = await service.findOne(1);
       expect(p.phone).toBe('999');
       expect(p.images).toHaveLength(3);
+    });
+  });
+
+  it('removes legal identity and applies public privacy toggles', async () => {
+    prisma.provider.findFirst.mockResolvedValue({
+      id: 1,
+      dni: '12345678',
+      ruc: '20123456789',
+      razonSocial: 'Privado SAC',
+      verificationStatus: 'APROBADO',
+      trustStatus: 'VERIFIED',
+      planPriority: 1,
+      phone: '999',
+      whatsapp: '999',
+      whatsappBiz: '999',
+      address: 'Calle privada 123',
+      latitude: -12,
+      longitude: -75,
+      showPhone: false,
+      showWhatsapp: false,
+      showExactLocation: false,
+      locality: {
+        name: 'El Tambo',
+        department: 'Junin',
+        province: 'Huancayo',
+        district: 'El Tambo',
+      },
+      subscription: { plan: 'PREMIUM' },
+      providerCategories: [],
+      images: [],
+    });
+
+    const p: any = await service.findOne(1);
+
+    for (const field of [
+      'dni',
+      'ruc',
+      'razonSocial',
+      'verificationStatus',
+      'trustStatus',
+      'planPriority',
+    ]) {
+      expect(p).not.toHaveProperty(field);
+    }
+    expect(p.phone).toBe('');
+    expect(p.whatsapp).toBeNull();
+    expect(p.whatsappBiz).toBeNull();
+    expect(p.address).toBeNull();
+    expect(p.latitude).toBeNull();
+    expect(p.longitude).toBeNull();
+    expect(p.locality).toEqual({
+      name: null,
+      department: 'Junin',
+      province: 'Huancayo',
+      district: null,
     });
   });
 
@@ -174,12 +238,18 @@ describe('ProvidersService (unit)', () => {
   describe('trackEvent()', () => {
     it('persiste y emite al DUEÑO del provider', async () => {
       prisma.providerAnalytic.create.mockResolvedValue({ id: 1 });
-      prisma.provider.findUnique.mockResolvedValue({ userId: 9, type: 'OFICIO' });
+      prisma.provider.findUnique.mockResolvedValue({
+        userId: 9,
+        type: 'OFICIO',
+      });
       await service.trackEvent(10, 'whatsapp_click', 5);
       expect(prisma.providerAnalytic.create).toHaveBeenCalled();
       expect(events.emitProviderAnalytics).toHaveBeenCalledWith(
         9,
-        expect.objectContaining({ providerId: 10, eventType: 'whatsapp_click' }),
+        expect.objectContaining({
+          providerId: 10,
+          eventType: 'whatsapp_click',
+        }),
       );
     });
 
@@ -328,8 +398,18 @@ describe('ProvidersService (unit)', () => {
 
   describe('findAll — alcance por distritos (provider_coverage)', () => {
     const CATALOG = [
-      { id: 1, department: 'Junín', province: 'Huancayo', district: 'Huancayo' },
-      { id: 2, department: 'Junín', province: 'Huancayo', district: 'El Tambo' },
+      {
+        id: 1,
+        department: 'Junín',
+        province: 'Huancayo',
+        district: 'Huancayo',
+      },
+      {
+        id: 2,
+        department: 'Junín',
+        province: 'Huancayo',
+        district: 'El Tambo',
+      },
       { id: 5, department: 'Junín', province: 'Jauja', district: 'Jauja' },
     ];
 

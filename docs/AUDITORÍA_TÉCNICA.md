@@ -2,10 +2,10 @@
 
 > **HISTÓRICO — NO ES ESTADO VIVO.** Snapshot del 2026-06-02. Conserva
 > hallazgos originales debajo de su tabla de resolución, por eso mezcla estados
-> resueltos y recomendaciones viejas (Next 15, conteos antiguos). Usar
-> [`CONTEXTO_PROYECTO.md`](CONTEXTO_PROYECTO.md) §10 para estado actual.
-> Última revisión de vigencia: 2026-07-13; esta tanda no reejecutó auditoría ni
-> altera sus hallazgos históricos.
+> resueltos y recomendaciones viejas (Next 15, conteos antiguos). El hardening
+> local 7A–7F del 2026-07-16, sus pruebas y lo aún no desplegado están en
+> [`CONTEXTO_PROYECTO.md`](CONTEXTO_PROYECTO.md) §9–§10. Acciones externas
+> manuales: [`SEGURIDAD_OPERATIVA.md`](SEGURIDAD_OPERATIVA.md).
 
 **Fecha**: 2026-06-02
 **Versión del sistema**: post Módulo IA "Ofi" + sincronización cross-device + búsqueda por localidad

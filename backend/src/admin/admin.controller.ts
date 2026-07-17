@@ -17,12 +17,12 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 
 import { AdminService } from './admin.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
+import { providerImagesOpts } from '../common/multer-image.config.js';
 import { CreateProviderDto } from './dto/create-provider.dto.js';
 import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
@@ -137,7 +137,7 @@ export class AdminController {
 
   @Post('providers')
   // 'images' es el nombre del campo en el FormData, permitimos hasta 4 fotos
-  @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
+  @UseInterceptors(FilesInterceptor('images', 4, providerImagesOpts))
   createProvider(
     @Body() body: CreateProviderDto,
     @UploadedFiles() files: Express.Multer.File[],

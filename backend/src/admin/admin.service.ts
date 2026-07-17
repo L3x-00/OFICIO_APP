@@ -29,6 +29,7 @@ import {
   clearProvidersCache as sharedClearProvidersCache,
 } from './services/admin-shared.js';
 import { syncCoverageToPlan } from '../coverage/coverage.service.js';
+import { assertManagedServiceImageUrls } from '../common/service-image-validation.js';
 
 @Injectable()
 export class AdminService {
@@ -198,6 +199,27 @@ export class AdminService {
       throw new ConflictException('El correo electrónico ya está registrado.');
     }
 
+    let parsedSchedule: object | undefined;
+    if (data.scheduleJson) {
+      try {
+        parsedSchedule = JSON.parse(data.scheduleJson);
+      } catch {
+        /* Invalid JSON keeps the existing default schedule behavior. */
+      }
+    }
+    if (!parsedSchedule) {
+      parsedSchedule = {
+        lun: '8:00-18:00',
+        mar: '8:00-18:00',
+        mie: '8:00-18:00',
+        jue: '8:00-18:00',
+        vie: '8:00-18:00',
+        sab: '9:00-13:00',
+        dom: 'Cerrado',
+      };
+    }
+    assertManagedServiceImageUrls(this.minio, parsedSchedule);
+
     const bcrypt = await import('bcrypt');
     const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const tempPassword = Array.from(
@@ -243,26 +265,6 @@ export class AdminService {
       });
 
       // 2. Crear Proveedor
-      let parsedSchedule: object | undefined;
-      if (data.scheduleJson) {
-        try {
-          parsedSchedule = JSON.parse(data.scheduleJson);
-        } catch {
-          /* ignore */
-        }
-      }
-      if (!parsedSchedule) {
-        parsedSchedule = {
-          lun: '8:00-18:00',
-          mar: '8:00-18:00',
-          mie: '8:00-18:00',
-          jue: '8:00-18:00',
-          vie: '8:00-18:00',
-          sab: '9:00-13:00',
-          dom: 'Cerrado',
-        };
-      }
-
       const provider = await tx.provider.create({
         data: {
           userId: user.id,
@@ -688,10 +690,18 @@ export class AdminService {
         'No se puede modificar el estado de un administrador',
       );
 
-    const updated = await this.prisma.user.update({
-      where: { id },
-      data: { isActive },
-      select: { id: true, email: true, isActive: true, role: true },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.user.update({
+        where: { id },
+        data: { isActive },
+        select: { id: true, email: true, isActive: true, role: true },
+      });
+
+      if (!isActive) {
+        await tx.refreshToken.deleteMany({ where: { userId: id } });
+      }
+
+      return result;
     });
 
     // Notificar en tiempo real al dispositivo del usuario para forzar cierre de sesión
@@ -961,7 +971,9 @@ export class AdminService {
     }
     const cleanTitle = title.trim();
     const cleanBody = message.trim();
-    const cleanImage = imageUrl?.trim() || null;
+    const cleanImage = imageUrl?.trim()
+      ? this.minio.assertManagedImageUrl(imageUrl, ['admin/broadcasts'])
+      : null;
 
     const result = await this.push.broadcast({
       title: cleanTitle,
@@ -1074,7 +1086,9 @@ export class AdminService {
     }
     const cleanSubject = subject.trim();
     const cleanBody = message.trim();
-    const cleanImage = imageUrl?.trim() || undefined;
+    const cleanImage = imageUrl?.trim()
+      ? this.minio.assertManagedImageUrl(imageUrl, ['admin/broadcasts'])
+      : undefined;
 
     // Segmentación por rol. Nunca incluimos ADMIN en correos promocionales.
     const roleFilter: Prisma.UserWhereInput =

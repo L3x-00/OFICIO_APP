@@ -72,4 +72,15 @@ describe('ProvidersService.findAll — gating por plan (unit)', () => {
     const res: any = await service.findAll({});
     expect(res.data[0].phone).toBe('999888777');
   });
+
+  it('acota paginacion publica antes de consultar Prisma', async () => {
+    prisma.provider.findMany.mockResolvedValue([]);
+    prisma.provider.count.mockResolvedValue(0);
+
+    await service.findAll({ page: -10, limit: 1000000 });
+
+    expect(prisma.provider.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 0, take: 100 }),
+    );
+  });
 });

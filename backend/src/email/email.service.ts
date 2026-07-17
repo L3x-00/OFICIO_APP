@@ -32,7 +32,7 @@ export class EmailService {
   async sendOtpEmail(to: string, otp: string): Promise<void> {
     if (!this.client) {
       this.logger.warn(
-        `[EMAIL SKIP] BREVO_API_KEY no configurada. OTP para ${to}: ${otp}`,
+        '[EMAIL SKIP] BREVO_API_KEY no configurada. OTP no enviado.',
       );
       return;
     }
@@ -74,7 +74,7 @@ export class EmailService {
   ): Promise<void> {
     if (!this.client) {
       this.logger.warn(
-        `[EMAIL SKIP] BREVO_API_KEY no configurada. Reset URL para ${to}: ${resetUrl}`,
+        '[EMAIL SKIP] BREVO_API_KEY no configurada. Enlace de reset no enviado.',
       );
       return;
     }
@@ -109,7 +109,7 @@ export class EmailService {
   async sendPasswordResetEmail(to: string, code: string): Promise<void> {
     if (!this.client) {
       this.logger.warn(
-        `[EMAIL SKIP] BREVO_API_KEY no configurada. Reset code para ${to}: ${code}`,
+        '[EMAIL SKIP] BREVO_API_KEY no configurada. Codigo de reset no enviado.',
       );
       return;
     }

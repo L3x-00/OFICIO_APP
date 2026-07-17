@@ -20,13 +20,27 @@ import {
 describe('ProviderProfileService (unit)', () => {
   let prisma: PrismaMock;
   let events: EventsGatewayMock;
+  let minio: {
+    assertManagedImageUrl: jest.Mock;
+    isSameImageReference: jest.Mock;
+  };
   let service: ProviderProfileService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
-    service = new ProviderProfileService(prisma as any, events as any);
+    minio = {
+      assertManagedImageUrl: jest.fn((url: string) => url),
+      isSameImageReference: jest.fn(
+        (current: string | null, next: string | null) => current === next,
+      ),
+    };
+    service = new ProviderProfileService(
+      prisma as any,
+      events as any,
+      minio as any,
+    );
   });
 
   describe('getMyProfile()', () => {
@@ -91,6 +105,46 @@ describe('ProviderProfileService (unit)', () => {
         }),
       );
     });
+
+    it('rechaza una imagen externa nueva dentro de scheduleJson.services', async () => {
+      minio.assertManagedImageUrl.mockImplementationOnce(() => {
+        throw new BadRequestException('URL no permitida');
+      });
+
+      await expect(
+        service.updateMyProfile(7, {
+          scheduleJson: {
+            services: [
+              {
+                id: 'service-1',
+                imageUrl: 'https://evil.example/service.jpg',
+              },
+            ],
+          },
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  it('drops privileged fields from a manipulated self-update object', async () => {
+    prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+    prisma.provider.update.mockResolvedValue({ id: 5 });
+
+    await service.updateMyProfile(7, {
+      businessName: 'Perfil seguro',
+      isTrusted: true,
+      isVisible: false,
+      planPriority: 1,
+      verificationStatus: 'APROBADO',
+    } as any);
+
+    expect(prisma.provider.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { businessName: 'Perfil seguro' },
+      }),
+    );
   });
 
   describe('setAvailability()', () => {
@@ -124,6 +178,10 @@ describe('ProviderProfileService (unit)', () => {
       prisma.subscription.findUnique.mockResolvedValue(null);
       prisma.providerImage.create.mockResolvedValue({ id: 1 });
       await service.addImage(7, 'https://x.jpg');
+      expect(minio.assertManagedImageUrl).toHaveBeenCalledWith(
+        'https://x.jpg',
+        ['providers/gallery'],
+      );
       expect(prisma.providerImage.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ isCover: true, order: 0 }),
@@ -189,7 +247,10 @@ describe('ProviderProfileService (unit)', () => {
       const res = await service.requestPlanUpgrade(7, 'PREMIUM');
       expect(prisma.adminNotification.create).toHaveBeenCalled();
       expect(events.emitNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'NEW_PLAN_REQUEST', targetRole: 'ADMIN' }),
+        expect.objectContaining({
+          type: 'NEW_PLAN_REQUEST',
+          targetRole: 'ADMIN',
+        }),
       );
       expect(res).toEqual({ success: true, requestId: 7 });
     });

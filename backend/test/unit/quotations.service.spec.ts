@@ -14,7 +14,10 @@ describe('QuotationsService (unit)', () => {
   let prisma: PrismaMock;
   let push: ReturnType<typeof createPushMock>;
   let features: { assertProviderHasFeature: jest.Mock };
-  let minio: { uploadFile: jest.Mock };
+  let minio: {
+    uploadFile: jest.Mock;
+    assertManagedImageUrl: jest.Mock;
+  };
   let service: QuotationsService;
 
   const dto = { providerId: 7, description: 'Necesito pintar mi casa' };
@@ -25,7 +28,10 @@ describe('QuotationsService (unit)', () => {
     features = {
       assertProviderHasFeature: jest.fn().mockResolvedValue(undefined),
     };
-    minio = { uploadFile: jest.fn().mockResolvedValue('https://cdn/x.jpg') };
+    minio = {
+      uploadFile: jest.fn().mockResolvedValue('https://cdn/x.jpg'),
+      assertManagedImageUrl: jest.fn((url: string) => url),
+    };
     service = new QuotationsService(
       prisma as any,
       features as any,
@@ -56,9 +62,19 @@ describe('QuotationsService (unit)', () => {
         userId: 99,
         businessName: 'Pintores X',
       });
-      prisma.quotationRequest.create.mockResolvedValue({ id: 1, providerId: 7 });
-      const res = await service.create(5, dto as any);
+      prisma.quotationRequest.create.mockResolvedValue({
+        id: 1,
+        providerId: 7,
+      });
+      const res = await service.create(5, {
+        ...dto,
+        photoUrl: 'https://img.test/quotations/request.jpg',
+      } as any);
       expect(res).toMatchObject({ id: 1 });
+      expect(minio.assertManagedImageUrl).toHaveBeenCalledWith(
+        'https://img.test/quotations/request.jpg',
+        ['quotations'],
+      );
       expect(push.sendToUser).toHaveBeenCalledWith(
         99,
         expect.any(String),

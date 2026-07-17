@@ -21,6 +21,7 @@ import type { ReorderItem } from '../common/dto/reorder.dto.js';
 const FEATURE = 'catalogo';
 const LIMIT_FREE = 5;
 const LIMIT_ESTANDAR = 6;
+const CATALOG_IMAGE_FOLDERS = ['catalog'] as const;
 
 /**
  * Catálogo de Productos. Feature-gate "catalogo". Límites por plan
@@ -88,6 +89,7 @@ export class CatalogService {
       }
     }
 
+    const photoUrl = this.validateNewPhotoUrl(dto.photoUrl);
     return this.prisma.catalogProduct.create({
       data: {
         providerId,
@@ -97,7 +99,7 @@ export class CatalogService {
         offerPrice: dto.offerPrice ?? null,
         stock: dto.stock ?? null,
         category: dto.category ?? null,
-        photoUrl: dto.photoUrl ?? null,
+        photoUrl: photoUrl ?? null,
         isAvailable: dto.isAvailable ?? true,
         order: dto.order ?? 0,
       },
@@ -111,10 +113,20 @@ export class CatalogService {
     dto: UpdateCatalogProductDto,
   ) {
     await this.assertOwner(userId, providerId);
-    await this.assertProductBelongs(productId, providerId);
+    const current = await this.assertProductBelongs(productId, providerId);
+    const data = { ...dto };
+    if (
+      dto.photoUrl?.trim() &&
+      !this.minio.isSameImageReference(current.photoUrl, dto.photoUrl)
+    ) {
+      data.photoUrl = this.minio.assertManagedImageUrl(
+        dto.photoUrl,
+        CATALOG_IMAGE_FOLDERS,
+      );
+    }
     return this.prisma.catalogProduct.update({
       where: { id: productId },
-      data: dto,
+      data,
     });
   }
 
@@ -164,6 +176,12 @@ export class CatalogService {
   }
 
   // ── Helpers ────────────────────────────────────────────────
+
+  private validateNewPhotoUrl(photoUrl?: string): string | undefined {
+    return photoUrl?.trim()
+      ? this.minio.assertManagedImageUrl(photoUrl, CATALOG_IMAGE_FOLDERS)
+      : photoUrl;
+  }
 
   private async assertOwner(userId: number, providerId: number) {
     const provider = await this.prisma.provider.findUnique({

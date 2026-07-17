@@ -11,6 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { RolesGuard } from '../auth/roles.guard.js';
+import { Roles } from '../auth/roles.decorator.js';
 import { ReviewsService } from './reviews.service.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 import {
@@ -61,6 +63,8 @@ export class ReviewsController {
 
   // GET /reviews — Todas las reseñas (admin)
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   findAll(
     @Query('isVisible') isVisible?: string,
     @Query('page') page?: string,
@@ -88,6 +92,8 @@ export class ReviewsController {
 
   // PATCH /reviews/:id/moderate — Ocultar o mostrar reseña
   @Patch(':id/moderate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   moderate(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: ModerateReviewDto,

@@ -31,7 +31,15 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 function build(prisma: PrismaService) {
   const events = createEventsGatewayMock();
   const push = createPushMock();
-  const service = new SubastasService(prisma, events as any, push as any);
+  const minio = {
+    assertManagedImageUrl: jest.fn((url: string) => url),
+  };
+  const service = new SubastasService(
+    prisma,
+    events as any,
+    push as any,
+    minio as any,
+  );
   return { service, events, push };
 }
 

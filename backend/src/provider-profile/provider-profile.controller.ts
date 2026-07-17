@@ -17,6 +17,10 @@ import { CoverageService } from '../coverage/coverage.service.js';
 import { SetCoverageDto } from '../coverage/dto/set-coverage.dto.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
+import {
+  SetProviderAvailabilityDto,
+  UpdateOwnProviderProfileDto,
+} from './dto/update-own-provider-profile.dto.js';
 
 @Controller('provider-profile')
 @UseGuards(JwtAuthGuard)
@@ -60,7 +64,7 @@ export class ProviderProfileController {
   @Patch('me')
   updateMyProfile(
     @Request() req: AuthenticatedRequest,
-    @Body() body: any,
+    @Body() body: UpdateOwnProviderProfileDto,
     @Query('type') type?: string,
   ) {
     return this.service.updateMyProfile(req.user.userId, body, type);
@@ -70,7 +74,7 @@ export class ProviderProfileController {
   @Patch('me/availability')
   setAvailability(
     @Request() req: AuthenticatedRequest,
-    @Body() body: { availability: any },
+    @Body() body: SetProviderAvailabilityDto,
     @Query('type') type?: string,
   ) {
     return this.service.setAvailability(

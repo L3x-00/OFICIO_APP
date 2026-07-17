@@ -13,6 +13,7 @@ import { SubmitYapeDto } from './dto/submit-yape.dto.js';
 import { MercadoPagoService } from './mercadopago/mercadopago.service.js';
 import type { PaidPlan } from './mercadopago/dto/create-preference.dto.js';
 import { syncCoverageToPlan } from '../coverage/coverage.service.js';
+import { MinioService } from '../common/minio.service.js';
 
 const YapePaymentStatus = {
   PENDING: 'PENDING',
@@ -45,6 +46,7 @@ export class PaymentsService {
     private prisma: PrismaService,
     private events: EventsGateway,
     private push: PushNotificationsService,
+    private minio: MinioService,
   ) {}
 
   /**
@@ -127,13 +129,16 @@ export class PaymentsService {
         'Ya tienes un pago pendiente de validación',
       );
 
+    const voucherUrl = this.minio.assertManagedImageUrl(dto.voucherUrl, [
+      'payments/vouchers',
+    ]);
     const payment = await this.prisma.yapePayment.create({
       data: {
         providerId: provider.id,
         plan: dto.plan as any,
         amount: realPrice, // monto oficial, server-side
         uploadedAmount: dto.amount ?? null, // lo declarado por el usuario
-        voucherUrl: dto.voucherUrl,
+        voucherUrl,
         verificationCode: dto.verificationCode,
         note: dto.note,
       },

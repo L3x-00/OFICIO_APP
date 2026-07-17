@@ -21,7 +21,11 @@ describe('AuthRegistrationService (unit)', () => {
   let prisma: PrismaMock;
   let events: EventsGatewayMock;
   let email: { sendOtpEmail: jest.Mock };
-  let minio: { uploadFile: jest.Mock };
+  let minio: {
+    uploadFile: jest.Mock;
+    assertManagedImageUrl: jest.Mock;
+    isSameImageReference: jest.Mock;
+  };
   let cache: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let service: AuthRegistrationService;
 
@@ -30,7 +34,13 @@ describe('AuthRegistrationService (unit)', () => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     email = { sendOtpEmail: jest.fn().mockResolvedValue(undefined) };
-    minio = { uploadFile: jest.fn().mockResolvedValue('https://cdn/x.jpg') };
+    minio = {
+      uploadFile: jest.fn().mockResolvedValue('https://cdn/x.jpg'),
+      assertManagedImageUrl: jest.fn((url: string) => url),
+      isSameImageReference: jest.fn(
+        (current: string | null, next: string | null) => current === next,
+      ),
+    };
     cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
     service = new AuthRegistrationService(
       prisma as any,
@@ -108,9 +118,9 @@ describe('AuthRegistrationService (unit)', () => {
 
     it('usuario inexistente → Unauthorized', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      await expect(
-        service.registerProvider(7, baseData, []),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.registerProvider(7, baseData, [])).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('ya tiene perfil del mismo tipo (no rechazado) → Conflict', async () => {
@@ -119,18 +129,48 @@ describe('AuthRegistrationService (unit)', () => {
         id: 5,
         verificationStatus: 'APROBADO',
       });
-      await expect(
-        service.registerProvider(7, baseData, []),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.registerProvider(7, baseData, [])).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('DNI ya usado por OTRO usuario → Conflict', async () => {
       prisma.user.findUnique.mockResolvedValue(userFixture({ id: 7 }));
       prisma.provider.findUnique.mockResolvedValue(null); // sin perfil previo
       prisma.provider.findFirst.mockResolvedValue({ id: 9 }); // DNI tomado
+      await expect(service.registerProvider(7, baseData, [])).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
+    it('rechaza imagen externa embebida en servicios del registro', async () => {
+      prisma.user.findUnique.mockResolvedValue(userFixture({ id: 7 }));
+      prisma.provider.findUnique.mockResolvedValue(null);
+      minio.assertManagedImageUrl.mockImplementationOnce(() => {
+        throw new BadRequestException('URL no permitida');
+      });
+
       await expect(
-        service.registerProvider(7, baseData, []),
-      ).rejects.toThrow(ConflictException);
+        service.registerProvider(
+          7,
+          {
+            ...baseData,
+            type: 'NEGOCIO',
+            dni: undefined,
+            scheduleJson: {
+              services: [
+                {
+                  id: 'service-1',
+                  imageUrl: 'https://evil.example/service.jpg',
+                },
+              ],
+            },
+          },
+          [],
+        ),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(minio.uploadFile).not.toHaveBeenCalled();
     });
 
     it('éxito: crea el perfil PENDIENTE y emite eventos al admin', async () => {

@@ -11,6 +11,7 @@ import { PushNotificationsService } from '../firebase/push-notifications.service
 import type { CreateQuotationDto } from './dto/create-quotation.dto.js';
 
 const FEATURE = 'cotizacion';
+const QUOTATION_IMAGE_FOLDERS = ['quotations'] as const;
 
 /**
  * Cotización: canal de contacto (sin límite). Feature-gate "cotizacion". El
@@ -36,12 +37,15 @@ export class QuotationsService {
     if (!provider) throw new NotFoundException('Proveedor no encontrado.');
     await this.features.assertProviderHasFeature(provider.id, FEATURE);
 
+    const photoUrl = dto.photoUrl?.trim()
+      ? this.minio.assertManagedImageUrl(dto.photoUrl, QUOTATION_IMAGE_FOLDERS)
+      : null;
     const q = await this.prisma.quotationRequest.create({
       data: {
         providerId: provider.id,
         userId,
         description: dto.description.trim(),
-        photoUrl: dto.photoUrl?.trim() || null,
+        photoUrl,
       },
     });
 

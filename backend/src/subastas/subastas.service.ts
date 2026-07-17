@@ -12,6 +12,7 @@ import { CreateServiceRequestDto } from './dto/create-service-request.dto.js';
 import { SubmitOfferDto } from './dto/submit-offer.dto.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { ArrivedDto } from './dto/arrived.dto.js';
+import { MinioService } from '../common/minio.service.js';
 
 // Prisma enum values — kept as string constants so the module compiles
 // before `prisma generate` is run after la nueva migration.
@@ -49,6 +50,7 @@ export class SubastasService {
     private prisma: PrismaService,
     private events: EventsGateway,
     private push: PushNotificationsService,
+    private minio: MinioService,
   ) {}
 
   // ── CREAR SOLICITUD ─────────────────────────────────────────
@@ -57,13 +59,16 @@ export class SubastasService {
     await this._checkPenalty(userId);
 
     const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
+    const photoUrl = dto.photoUrl?.trim()
+      ? this.minio.assertManagedImageUrl(dto.photoUrl, ['providers/gallery'])
+      : dto.photoUrl;
 
     const request = await this.prisma.serviceRequest.create({
       data: {
         userId,
         categoryId: dto.categoryId,
         description: dto.description,
-        photoUrl: dto.photoUrl,
+        photoUrl,
         budgetMin: dto.budgetMin,
         budgetMax: dto.budgetMax,
         desiredDate: dto.desiredDate ? new Date(dto.desiredDate) : undefined,

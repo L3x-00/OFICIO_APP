@@ -24,11 +24,32 @@ describe('EmailService (unit)', () => {
     });
 
     it('sendOtpEmail no envía ni lanza', async () => {
-      await expect(service.sendOtpEmail('a@b.com', '123456')).resolves.toBeUndefined();
+      await expect(
+        service.sendOtpEmail('a@b.com', '123456'),
+      ).resolves.toBeUndefined();
+    });
+
+    it('no escribe OTP, códigos, URLs ni destinatarios en logs de fallback', async () => {
+      const warn = jest.spyOn((service as any).logger, 'warn');
+
+      await service.sendOtpEmail('secret@example.com', '123456');
+      await service.sendPasswordResetEmail('secret@example.com', '654321');
+      await service.sendAdminPasswordResetEmail(
+        'secret@example.com',
+        'https://example.com/reset?token=super-secret',
+      );
+
+      const logs = warn.mock.calls.flat().join(' ');
+      expect(logs).not.toContain('secret@example.com');
+      expect(logs).not.toContain('123456');
+      expect(logs).not.toContain('654321');
+      expect(logs).not.toContain('super-secret');
     });
 
     it('sendWelcomeEmail no lanza', async () => {
-      await expect(service.sendWelcomeEmail('a@b.com', 'Ana')).resolves.toBeUndefined();
+      await expect(
+        service.sendWelcomeEmail('a@b.com', 'Ana'),
+      ).resolves.toBeUndefined();
     });
 
     it('sendBroadcastEmail devuelve 0 (no hay cliente)', async () => {
@@ -60,7 +81,10 @@ describe('EmailService (unit)', () => {
       await service.sendOtpEmail('a@b.com', '987654');
       expect(sendTransac).toHaveBeenCalledTimes(1);
       const arg = sendTransac.mock.calls[0][0];
-      expect(arg.sender).toEqual({ email: 'hi@servi.pe', name: 'Servi Soporte' });
+      expect(arg.sender).toEqual({
+        email: 'hi@servi.pe',
+        name: 'Servi Soporte',
+      });
       expect(arg.to).toEqual([{ email: 'a@b.com' }]);
       expect(arg.htmlContent).toContain('987654');
     });
@@ -74,12 +98,18 @@ describe('EmailService (unit)', () => {
 
     it('sendWelcomeEmail (branded): si falla, NO lanza (best-effort)', async () => {
       sendTransac.mockRejectedValue(new Error('brevo down'));
-      await expect(service.sendWelcomeEmail('a@b.com')).resolves.toBeUndefined();
+      await expect(
+        service.sendWelcomeEmail('a@b.com'),
+      ).resolves.toBeUndefined();
     });
 
     it('sendBroadcastEmail: cuenta los exitosos y envía individualmente', async () => {
       const recipients = Array.from({ length: 25 }, (_, i) => `u${i}@b.com`);
-      const sent = await service.sendBroadcastEmail(recipients, 'Promo', 'Hola');
+      const sent = await service.sendBroadcastEmail(
+        recipients,
+        'Promo',
+        'Hola',
+      );
       expect(sent).toBe(25);
       expect(sendTransac).toHaveBeenCalledTimes(25);
     });
