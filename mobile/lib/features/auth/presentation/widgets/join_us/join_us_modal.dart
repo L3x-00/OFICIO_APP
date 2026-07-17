@@ -21,6 +21,7 @@ class JoinUsModal extends StatefulWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
+      useRootNavigator: true, // ← AGREGAR ESTA LÍNEA
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const JoinUsModal(),
@@ -98,7 +99,9 @@ class _JoinUsModalState extends State<JoinUsModal>
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: EdgeInsets.fromLTRB(
-            20, 12, 20,
+            20,
+            12,
+            20,
             MediaQuery.of(sheetCtx).padding.bottom + 20,
           ),
           child: Column(
@@ -106,7 +109,8 @@ class _JoinUsModalState extends State<JoinUsModal>
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: c.textMuted.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
@@ -116,7 +120,11 @@ class _JoinUsModalState extends State<JoinUsModal>
               const SizedBox(height: 20),
               Text(
                 '¿A qué panel deseas ir?',
-                style: TextStyle(color: c.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 20),
               PanelChoiceOption(

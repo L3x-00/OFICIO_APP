@@ -102,6 +102,7 @@ class _ProvidersViewState extends State<_ProvidersView>
   void _showFilterSheet(BuildContext context, ProvidersProvider prov) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true, // ← AGREGAR ESTA LÍNEA
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => FilterSheet(prov: prov),
@@ -361,9 +362,6 @@ class _SearchAndLocationRow extends StatelessWidget {
 }
 
 // ── Chip de ubicación compacto ────────────────────────────
-
-// ── Chip de ubicación compacto ────────────────────────────
-
 class _CompactLocationChip extends StatelessWidget {
   final ProvidersProvider prov;
   const _CompactLocationChip({required this.prov});

@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/profile/contact_us_section.dart';
 import '../../../agenda/presentation/screens/my_appointments_screen.dart';
@@ -25,8 +26,6 @@ import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
 import 'saved_accounts_screen.dart';
 
-// ── Barrel exports: otros archivos pueden importar
-//    `profile_screen.dart` y acceder a todos los componentes extraídos.
 export '../widgets/profile/guest_profile_view.dart';
 export '../widgets/profile/profile_avatar_picker.dart';
 export '../widgets/profile/profile_badges.dart';
@@ -35,12 +34,6 @@ export '../widgets/profile/profile_helpers.dart';
 export '../widgets/profile/profile_sections.dart';
 export '../widgets/profile/profile_toggles.dart';
 
-/// Pantalla de perfil del usuario. Orquesta:
-///   - Vista de invitado ([GuestProfileView]) si `auth.user == null`.
-///   - Avatar + nombre + badge de tipo de cuenta.
-///   - Secciones colapsables: información, gestión, perfiles de proveedor,
-///     conversión a proveedor, preferencias, soporte.
-///   - Botones de cerrar sesión y eliminar cuenta.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -249,7 +242,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              // Feature OCULTA (kSubastasEnabled): entrada a Mis solicitudes.
               if (kSubastasEnabled)
                 SectionItem(
                   icon: Icons.assignment_outlined,
@@ -266,18 +258,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SectionItem(
                 icon: Icons.forum_outlined,
                 label: 'Mis mensajes',
-                // scope:'client' — la entrada a "Mis mensajes" desde el
-                // perfil cliente vive en la bandeja del cliente, no
-                // mezcla con los mensajes recibidos como proveedor.
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const ChatListScreen(scope: 'client'),
                   ),
                 ),
               ),
-              // "Mis citas"/"Mis cotizaciones" se CONSERVAN aunque agenda y
-              // cotización estén ocultas: drenan citas/cotizaciones ya
-              // existentes (no se pueden crear nuevas — backend 404).
               SectionItem(
                 icon: Icons.event_available_outlined,
                 label: 'Mis citas',
@@ -293,11 +279,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const MyQuotationsScreen()),
                 ),
-                // isLast pasa aquí cuando referidos está oculto (era del
-                // ítem de abajo).
                 isLast: !kReferidosEnabled,
               ),
-              // Feature OCULTA (kReferidosEnabled).
               if (kReferidosEnabled)
                 SectionItem(
                   icon: Icons.card_giftcard_rounded,
@@ -310,12 +293,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
 
-          // ── Mis perfiles (solo si tiene alguno) ───────────
-          if (auth.hasOficioProfile || auth.hasNegocioProfile)
+          // ═══════════════════════════════════════════════════
+          // ── Mis perfiles (UNIFICADO) ──────────────────────
+          // ═══════════════════════════════════════════════════
+          if (auth.hasOficioProfile ||
+              auth.hasNegocioProfile ||
+              auth.canBecomeRole('OFICIO') ||
+              auth.canBecomeRole('NEGOCIO'))
             ExpandableSection(
               icon: Icons.work_outline_rounded,
               title: 'Mis perfiles',
               children: [
+                // ── OFICIO ──────────────────────────────────
                 if (auth.hasOficioProfile) ...[
                   if (auth.verificationStatusFor('OFICIO') == 'APROBADO')
                     SectionItem(
@@ -333,8 +322,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
                       rejectionReason: auth.rejectionReasonFor('OFICIO'),
                     ),
+                ] else if (auth.canBecomeRole('OFICIO'))
+                  SectionItem(
+                    icon: Icons.handyman_rounded,
+                    label: 'Ser profesional independiente',
+                    onTap: () => ProfileNavigationHelper.openAddProfile(
+                      context,
+                      'OFICIO',
+                    ),
+                  ),
+
+                // ── Separador ───────────────────────────────
+                if ((auth.hasOficioProfile || auth.canBecomeRole('OFICIO')) &&
+                    (auth.hasNegocioProfile || auth.canBecomeRole('NEGOCIO')))
                   const SizedBox(height: 4),
-                ],
+
+                // ── NEGOCIO ─────────────────────────────────
                 if (auth.hasNegocioProfile) ...[
                   if (auth.verificationStatusFor('NEGOCIO') == 'APROBADO')
                     SectionItem(
@@ -344,6 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context,
                         'NEGOCIO',
                       ),
+                      isLast: true,
                     )
                   else
                     PendingApprovalBanner(
@@ -352,50 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           auth.verificationStatusFor('NEGOCIO') ?? 'PENDIENTE',
                       rejectionReason: auth.rejectionReasonFor('NEGOCIO'),
                     ),
-                  const SizedBox(height: 4),
-                ],
-                if (auth.hasApprovedProvider) ...[
-                  if (auth.hasOficioProfile && !auth.hasNegocioProfile)
-                    SectionItem(
-                      icon: Icons.storefront_rounded,
-                      label: 'Registrar un Negocio',
-                      onTap: () => ProfileNavigationHelper.openAddProfile(
-                        context,
-                        'NEGOCIO',
-                      ),
-                      isLast: true,
-                    ),
-                  if (auth.hasNegocioProfile && !auth.hasOficioProfile)
-                    SectionItem(
-                      icon: Icons.handyman_rounded,
-                      label: 'Ofrecer servicios como Profesional',
-                      onTap: () => ProfileNavigationHelper.openAddProfile(
-                        context,
-                        'OFICIO',
-                      ),
-                      isLast: true,
-                    ),
-                ],
-              ],
-            ),
-
-          // ── Conviértete en proveedor ─────────────────────
-          if (auth.canBecomeRole('OFICIO') || auth.canBecomeRole('NEGOCIO'))
-            ExpandableSection(
-              icon: Icons.add_business_rounded,
-              title: 'Conviértete en proveedor',
-              children: [
-                if (auth.canBecomeRole('OFICIO'))
-                  SectionItem(
-                    icon: Icons.handyman_rounded,
-                    label: 'Ser profesional independiente',
-                    onTap: () => ProfileNavigationHelper.openAddProfile(
-                      context,
-                      'OFICIO',
-                    ),
-                    isLast: !auth.canBecomeRole('NEGOCIO'),
-                  ),
-                if (auth.canBecomeRole('NEGOCIO'))
+                ] else if (auth.canBecomeRole('NEGOCIO'))
                   SectionItem(
                     icon: Icons.storefront_rounded,
                     label: 'Registrar un negocio',
@@ -416,6 +377,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ThemeToggleRow(theme: theme),
               const SizedBox(height: 8),
               CategoryFilterToggleRow(prov: context.watch<ProvidersProvider>()),
+              // Toggle visibilidad del asistente Ofi.
+              // Solo para clientes puros (sin perfil de proveedor).
+              if (!auth.hasOficioProfile && !auth.hasNegocioProfile) ...[
+                const SizedBox(height: 8),
+                const _OfiVisibilityToggle(),
+              ],
               const SizedBox(height: 8),
               SectionItem(
                 icon: Icons.devices_rounded,
@@ -444,7 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
 
-          // ── Contáctanos (canales oficiales de soporte) ──────
+          // ── Contáctanos ──────────────────────────────────
           const SizedBox(height: 8),
           const ContactUsSection(),
 
@@ -466,6 +433,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Toggle de visibilidad del asistente Ofi
+// ═══════════════════════════════════════════════════════════════
+
+class _OfiVisibilityToggle extends StatefulWidget {
+  const _OfiVisibilityToggle();
+
+  @override
+  State<_OfiVisibilityToggle> createState() => _OfiVisibilityToggleState();
+}
+
+class _OfiVisibilityToggleState extends State<_OfiVisibilityToggle> {
+  static const _key = 'ofi_fab_visible';
+  bool _visible = true;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() {
+        _visible = prefs.getBool(_key) ?? true;
+        _loaded = true;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  Future<void> _toggle(bool v) async {
+    setState(() => _visible = v);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_key, v);
+    } catch (_) {
+      // best-effort: si falla la persistencia, el cambio visual persiste
+      // en esta sesión.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    if (!_loaded) return const SizedBox.shrink();
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      title: Text(
+        'Mostrar asistente Ofi',
+        style: TextStyle(color: c.textPrimary, fontSize: 14),
+      ),
+      subtitle: Text(
+        'Muestra el asistente virtual en la pantalla principal',
+        style: TextStyle(color: c.textMuted, fontSize: 11),
+      ),
+      value: _visible,
+      onChanged: _toggle,
+      activeColor: AppColors.primary,
     );
   }
 }

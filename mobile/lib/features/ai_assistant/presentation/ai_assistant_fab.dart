@@ -14,6 +14,11 @@ import 'ofi_speech_bubble.dart';
 /// SOLO experiencia visual/interacción. Al tocar abre EXACTAMENTE el mismo
 /// [AiAssistantScreen] con la lógica existente (mismo `providerType`, misma
 /// navegación). No toca providers de IA, repos ni servicios.
+///
+/// **Toggle de visibilidad**: Si el usuario desactiva "Mostrar asistente Ofi"
+/// desde Perfil > Preferencias, este FAB no se renderiza. Solo aplica a
+/// clientes puros (sin perfil de proveedor). Invitados y proveedores no se
+/// ven afectados.
 class AiAssistantFab extends StatefulWidget {
   /// Perfil activo (OFICIO|NEGOCIO) si se abre desde el panel del proveedor.
   final String? providerType;
@@ -26,33 +31,36 @@ class AiAssistantFab extends StatefulWidget {
 
 class _AiAssistantFabState extends State<AiAssistantFab> {
   static const _dismissKey = 'ofi_bubble_dismissed_until';
+  static const _ofiVisibleKey = 'ofi_fab_visible';
   static const _visibleDur = Duration(seconds: 6);
   static const _hiddenDur = Duration(seconds: 25);
   static const _firstDelay = Duration(seconds: 3);
   static const _dismissWindow = Duration(minutes: 30);
-  // Rotación pasiva de la expresión en idle (Fase 2).
   static const _idleRotate = Duration(seconds: 15);
   static const _peekDur = Duration(milliseconds: 2500);
 
   final OfiMessageRotator _rotator = OfiMessageRotator();
 
-  Timer? _timer; // ciclo del globo (6s/25s)
-  Timer? _idleTimer; // rotación pasiva en idle
-  Timer? _peekTimer; // retorno del "peek" pasivo
+  Timer? _timer;
+  Timer? _idleTimer;
+  Timer? _peekTimer;
   bool _bubbleVisible = false;
   bool _chatOpen = false;
   OfiMessage? _message;
-  // Expresión por defecto en idle = "pensando" (Fase 2).
   String _idleAsset = OfiAssets.thinking;
   int _dismissedUntilMs = 0;
+
+  /// Controla la visibilidad del FAB según el toggle de Perfil > Preferencias.
+  /// Solo aplica a clientes puros. Valor por defecto: true (visible).
+  bool _ofiVisible = true;
+  bool _ofiPrefLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    _loadOfiPreference();
     _loadDismissed();
-    // Arranca oculto; primera aparición a los 3s, luego 6s visible / 25s oculto.
     _timer = Timer(_firstDelay, _toggle);
-    // Rotación pasiva de la expresión cada 15s (sensación de "vida" en idle).
     _idleTimer = Timer.periodic(_idleRotate, (_) => _passivePeek());
   }
 
@@ -64,8 +72,44 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     super.dispose();
   }
 
-  /// "Peek" pasivo: en idle, cambia ~2.5s a la cara neutra y vuelve a pensar
-  /// (crossfade lo hace suave). Solo cuando NO hay globo ni chat abierto.
+  /// Carga la preferencia de visibilidad de Ofi desde SharedPreferences.
+  Future<void> _loadOfiPreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() {
+        _ofiVisible = prefs.getBool(_ofiVisibleKey) ?? true;
+        _ofiPrefLoaded = true;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _ofiPrefLoaded = true);
+    }
+  }
+
+  /// Verifica si el FAB debe mostrarse según el contexto del usuario.
+  ///
+  /// - Invitados: siempre visible (el toggle no aplica).
+  /// - Proveedores (OFICIO/NEGOCIO): siempre visible en su panel.
+  /// - Clientes puros: respeta el toggle de Perfil > Preferencias.
+  bool _shouldShow(BuildContext context) {
+    // Mientras la preferencia no se haya cargado, mostramos Ofi por defecto
+    // para evitar un flicker (parpadeo) al iniciar la app.
+    if (!_ofiPrefLoaded) return true;
+
+    try {
+      final auth = context.read<AuthProvider>();
+      // Invitado → siempre visible.
+      if (!auth.isAuthenticated) return true;
+      // Proveedor → el toggle no aplica (Ofi se muestra en su panel).
+      if (auth.hasOficioProfile || auth.hasNegocioProfile) return true;
+      // Cliente puro → leer preferencia.
+      return _ofiVisible;
+    } catch (_) {
+      // Ante cualquier error (ej. Provider no encontrado), mostramos Ofi.
+      return true;
+    }
+  }
+
   void _passivePeek() {
     if (!mounted || _bubbleVisible || _chatOpen) return;
     setState(() => _idleAsset = OfiAssets.defaultFace);
@@ -86,7 +130,6 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     _timer = Timer(_bubbleVisible ? _visibleDur : _hiddenDur, _toggle);
   }
 
-  /// Detecta la audiencia para los mensajes contextuales (Fase 4).
   OfiAudience _audience() {
     if (widget.providerType != null) return OfiAudience.provider;
     final role = context.read<AuthProvider>().userRole;
@@ -104,7 +147,6 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     }
   }
 
-  /// Cierre manual del globo → ocultar 30 min (persistido).
   Future<void> _dismissBubble() async {
     final until = DateTime.now().add(_dismissWindow).millisecondsSinceEpoch;
     if (mounted) {
@@ -121,8 +163,6 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     }
   }
 
-  /// Abre el asistente — MISMA lógica/navegación. Marca el estado de avatar
-  /// "chat abierto" (glow continuo) mientras la pantalla esté arriba.
   Future<void> _openAssistant() async {
     if (mounted) setState(() => _chatOpen = true);
     await Navigator.of(context).push(
@@ -133,8 +173,6 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     if (mounted) setState(() => _chatOpen = false);
   }
 
-  /// Reglas UX (Fase 4) — NO mostrar el globo si hay otra ruta encima
-  /// (chat/modal), si el teclado está visible o si fue cerrado < 30 min.
   bool _canShowBubble(BuildContext context) {
     if (_chatOpen) return false;
     final route = ModalRoute.of(context);
@@ -144,43 +182,38 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     return true;
   }
 
-  /// Tamaño responsive del avatar (72–88) según ancho de pantalla (Fase 6).
   double _avatarSize(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    if (w >= 600) return 88; // tablets
-    if (w >= 360) return 80; // teléfonos estándar
-    return 72; // teléfonos pequeños
+    if (w >= 600) return 88;
+    if (w >= 360) return 80;
+    return 72;
   }
 
   @override
   Widget build(BuildContext context) {
+    // Si el toggle de Perfil > Preferencias desactivó a Ofi, no renderizar.
+    if (!_shouldShow(context)) return const SizedBox.shrink();
+
     final avatarSize = _avatarSize(context);
     final screenW = MediaQuery.of(context).size.width;
-    // El globo nunca supera el ancho útil → nunca se recorta (Fase 6).
     final bubbleMaxW = (screenW * 0.64).clamp(200.0, 300.0);
-    const bubbleArea = 130.0; // espacio reservado para el globo (≈3-4 líneas)
+    const bubbleArea = 130.0;
 
     final show = _bubbleVisible && _canShowBubble(context);
     final avatarState = _chatOpen
         ? OfiAvatarState.chatOpen
         : (show ? OfiAvatarState.newMessage : OfiAvatarState.idle);
 
-    // Expresión mostrada: la del mensaje si el globo está visible; si no, la
-    // de idle (pensar / peek). El crossfade lo resuelve OfiAvatar.
     final avatarAsset = (show && _message != null)
         ? _message!.asset
         : _idleAsset;
 
-    // Área reservada (transparente y pass-through): mantiene fija la posición
-    // del avatar y permite que el globo crezca HACIA ARRIBA sin recortarse ni
-    // mover otros FAB. Clip.none → el glow/globo pueden desbordar.
     return SizedBox(
       width: bubbleMaxW,
       height: avatarSize + bubbleArea,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Globo encima de Ofi, anclado abajo-derecha (crece hacia arriba).
           Positioned(
             right: 0,
             bottom: avatarSize,
@@ -191,7 +224,6 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
               maxWidth: bubbleMaxW,
             ),
           ),
-          // Mascota Ofi anclada abajo-derecha (posición estable del FAB).
           Positioned(
             right: 0,
             bottom: 0,
