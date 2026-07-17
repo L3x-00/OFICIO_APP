@@ -25,6 +25,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://oficioapp.org.pe'),
   title: 'Servi – Marketplace de servicios locales en Perú',
   description:
     'Conecta con profesionales y negocios verificados de tu ciudad. Reseñas validadas, pagos con Yape y soporte local en todo el Perú.',

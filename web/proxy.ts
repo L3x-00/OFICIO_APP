@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const PROTECTED_PATHS = ["/panel", "/cliente"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PATHS.some((prefix) =>
