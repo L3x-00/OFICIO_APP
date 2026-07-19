@@ -376,14 +376,23 @@ class NotificationsProvider extends ChangeNotifier {
     }
   }
 
-  void markRead(String id) {
+  Future<void> markRead(String id) async {
     final n = _items.where((n) => n.id == id).firstOrNull;
     if (n != null && !n.isRead) {
       n.isRead = true;
       _readOverrides.add(id);
       notifyListeners();
-      _persistReadOverrides();
-      if (_isBroadcast(n)) _persistBroadcasts();
+      await _persistReadOverrides();
+      if (_isBroadcast(n)) {
+        await _persistBroadcasts();
+        return;
+      }
+      if (!_isPersistedServerNotification(n)) return;
+      try {
+        await _dio.patch('/provider-profile/me/notifications/$id/read');
+      } on DioException catch (e) {
+        if (kDebugMode) debugPrint('[Notifications] markRead: ${e.message}');
+      }
     }
   }
 

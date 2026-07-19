@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/network/socket_service.dart';
 import 'package:mobile/features/notifications/domain/models/notification_model.dart';
@@ -75,6 +76,42 @@ void main() {
     await provider.loadHistory();
 
     expect(provider.items.map((n) => n.id), isNot(contains('91')));
+  });
+
+  test('lectura individual se persiste también en backend', () async {
+    adapter.onGet(
+      '/provider-profile/me/notifications',
+      body: [
+        {
+          'id': 91,
+          'type': 'GENERIC',
+          'title': 'Aviso',
+          'message': 'Persistido',
+          'sentAt': DateTime.now().toIso8601String(),
+          'isRead': false,
+        },
+      ],
+    );
+    adapter.onPatch('/provider-profile/me/notifications/91/read');
+    final provider = NotificationsProvider();
+    provider.setUser(userId: 7, role: 'USUARIO');
+    await pumpEventQueue(times: 20);
+
+    await provider.markRead('91');
+
+    expect(provider.items.single.isRead, true);
+    expect(
+      adapter.captured,
+      contains(
+        isA<RequestOptions>()
+            .having((r) => r.method, 'method', 'PATCH')
+            .having(
+              (r) => r.path,
+              'path',
+              '/provider-profile/me/notifications/91/read',
+            ),
+      ),
+    );
   });
 
   test('lectura y descarte de broadcast sobreviven al reinicio', () async {
