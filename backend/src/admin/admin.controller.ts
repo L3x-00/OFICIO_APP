@@ -30,6 +30,7 @@ import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto.js';
 import { BroadcastEmailDto } from './dto/broadcast-email.dto.js';
 import { NotifyProviderDto } from './dto/notify-provider.dto.js';
+import { NotificationsQueryDto } from './dto/notifications-query.dto.js';
 import { LocalitiesService } from '../localities/localities.service.js';
 import {
   CreateLocalityDto,
@@ -251,13 +252,12 @@ export class AdminController {
   // ── NOTIFICACIONES ────────────────────────────────────────
 
   @Get('notifications')
-  getNotifications(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  getNotifications(@Query() query: NotificationsQueryDto) {
     return this.adminService.getNotifications(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
+      query.page,
+      query.limit,
+      query.from ? new Date(query.from) : undefined,
+      query.to ? new Date(query.to) : undefined,
     );
   }
 

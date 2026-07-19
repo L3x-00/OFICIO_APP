@@ -125,6 +125,39 @@ describe('AdminService.notifyProvider (unit)', () => {
     );
   });
 
+  it('filtra notificaciones por rango de fecha en todas las consultas', async () => {
+    const from = new Date('2026-07-01T05:00:00.000Z');
+    const to = new Date('2026-08-01T04:59:59.999Z');
+    prisma.adminNotification.findMany.mockResolvedValue([]);
+    prisma.adminNotification.count.mockResolvedValue(0);
+
+    await service.getNotifications(2, 20, from, to);
+
+    const expectedRange = { sentAt: { gte: from, lte: to } };
+    expect(prisma.adminNotification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining(expectedRange),
+        skip: 20,
+        take: 20,
+      }),
+    );
+    for (const call of prisma.adminNotification.count.mock.calls) {
+      expect(call[0]?.where).toEqual(expect.objectContaining(expectedRange));
+    }
+  });
+
+  it('rechaza un rango de fecha invertido sin consultar la BD', async () => {
+    await expect(
+      service.getNotifications(
+        1,
+        20,
+        new Date('2026-07-20T00:00:00.000Z'),
+        new Date('2026-07-10T00:00:00.000Z'),
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.adminNotification.findMany).not.toHaveBeenCalled();
+  });
+
   it('rechaza una imagen externa en broadcasts antes de enviarlos', async () => {
     minio.assertManagedImageUrl.mockImplementationOnce(() => {
       throw new BadRequestException('URL no permitida');

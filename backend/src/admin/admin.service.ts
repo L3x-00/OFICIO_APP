@@ -746,9 +746,24 @@ export class AdminService {
       ],
     };
 
-  async getNotifications(page = 1, limit = 20) {
+  async getNotifications(page = 1, limit = 20, from?: Date, to?: Date) {
+    if (from && to && from > to) {
+      throw new BadRequestException(
+        'La fecha inicial no puede ser posterior a la fecha final',
+      );
+    }
     const skip = (page - 1) * limit;
-    const where = AdminService.ADMIN_NOTIF_WHERE;
+    const where: Prisma.AdminNotificationWhereInput = {
+      ...AdminService.ADMIN_NOTIF_WHERE,
+      ...(from || to
+        ? {
+            sentAt: {
+              ...(from ? { gte: from } : {}),
+              ...(to ? { lte: to } : {}),
+            },
+          }
+        : {}),
+    };
 
     const [notifications, total, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({

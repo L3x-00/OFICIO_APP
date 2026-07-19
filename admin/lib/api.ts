@@ -316,8 +316,22 @@ export const updateUserStatus = (id: number, isActive: boolean) =>
   });
 
 // ── NOTIFICACIONES ─────────────────────────────────────────
-export const getNotifications = (page = 1) =>
-  fetchApi<NotificationsResponse>(`/admin/notifications?page=${page}&limit=20`);
+export interface NotificationsQuery {
+  page?: number;
+  limit?: number;
+  from?: string;
+  to?: string;
+}
+
+export const getNotifications = (query: NotificationsQuery = {}) => {
+  const params = new URLSearchParams({
+    page: String(query.page ?? 1),
+    limit: String(query.limit ?? 20),
+  });
+  if (query.from) params.set('from', query.from);
+  if (query.to) params.set('to', query.to);
+  return fetchApi<NotificationsResponse>(`/admin/notifications?${params}`);
+};
 
 export const markNotificationRead = (id: number) =>
   fetchApi(`/admin/notifications/${id}/read`, { method: 'PATCH' });

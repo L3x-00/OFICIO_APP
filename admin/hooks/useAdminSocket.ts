@@ -4,33 +4,60 @@ import { useEffect, useRef } from 'react';
 import { getAdminSocket, AdminNotificationPayload } from '@/lib/socket';
 
 /**
- * Escucha eventos WebSocket del backend y llama `onEvent` cuando llega
- * una notificación dirigida al rol ADMIN (targetRole === 'ADMIN').
+ * Escucha notificaciones ADMIN y actividad administrativa del backend.
+ * La actividad dispara una recarga autoritativa del listado y contador.
  *
  * @param onEvent  Callback que recibe el payload completo del evento.
  *                 Estabiliza la referencia con useCallback en el componente padre.
  */
 export function useAdminSocket(
-  onEvent: (payload: AdminNotificationPayload) => void,
+  onNotification: (payload: AdminNotificationPayload) => void,
+  onAdminActivity?: () => void,
 ) {
-  // Guardamos la referencia mutable para no re-suscribir en cada render
-  const callbackRef = useRef(onEvent);
-  useEffect(() => { callbackRef.current = onEvent; }, [onEvent]);
+  const notificationRef = useRef(onNotification);
+  const activityRef = useRef(onAdminActivity);
+  useEffect(() => {
+    notificationRef.current = onNotification;
+  }, [onNotification]);
+  useEffect(() => {
+    activityRef.current = onAdminActivity;
+  }, [onAdminActivity]);
 
   useEffect(() => {
     // Solo ejecutar en el cliente (Next.js puede renderizar en servidor)
     if (typeof window === 'undefined') return;
 
     const socket = getAdminSocket();
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const handler = (payload: AdminNotificationPayload) => {
-      // Filtrar: solo procesar notificaciones dirigidas al admin
-      if (payload.targetRole === 'ADMIN') {
-        callbackRef.current(payload);
-      }
+    // Algunos flujos emiten ambos eventos seguidos. Una sola recarga
+    // autoritativa evita requests y contadores duplicados.
+    const scheduleRefresh = () => {
+      if (!activityRef.current) return;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => activityRef.current?.(), 120);
     };
 
-    socket.on('notification', handler);
-    return () => { socket.off('notification', handler); };
+    const notificationHandler = (payload: AdminNotificationPayload) => {
+      // Filtrar: solo procesar notificaciones dirigidas al admin
+      if (payload.targetRole === 'ADMIN') {
+        notificationRef.current(payload);
+        scheduleRefresh();
+      }
+    };
+    const adminEventHandler = () => scheduleRefresh();
+    const connectHandler = () => scheduleRefresh();
+
+    socket.on('notification', notificationHandler);
+    socket.on('adminEvent', adminEventHandler);
+    socket.on('connect', connectHandler);
+    if (!socket.connected) socket.connect();
+
+    return () => {
+      socket.off('notification', notificationHandler);
+      socket.off('adminEvent', adminEventHandler);
+      socket.off('connect', connectHandler);
+      if (refreshTimer) clearTimeout(refreshTimer);
+    };
   }, []); // sin dependencias: se monta/desmonta una vez
 }

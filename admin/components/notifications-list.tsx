@@ -5,6 +5,7 @@ import {
   CheckCircle, XCircle, HelpCircle, ShieldOff,
   Bell, BellOff, Loader2, ChevronLeft, ChevronRight, CheckCheck,
   CreditCard, RefreshCw, AlertCircle, Megaphone, UserPlus, Gift,
+  CalendarRange, X,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -171,6 +172,13 @@ const DEFAULT_TYPE_CFG = {
   border: 'border-white/10',
 };
 
+function toIsoBoundary(value: string, endOfDay: boolean): string | undefined {
+  if (!value) return undefined;
+  const time = endOfDay ? '23:59:59.999' : '00:00:00.000';
+  const date = new Date(`${value}T${time}`);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
 export function NotificationsList() {
   const [items, setItems]           = useState<NotificationItem[]>([]);
   const [total, setTotal]           = useState(0);
@@ -181,12 +189,23 @@ export function NotificationsList() {
   const [error, setError]           = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
   const [viewingNotif, setViewingNotif] = useState<NotificationItem | null>(null);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const invalidRange = Boolean(dateFrom && dateTo && dateFrom > dateTo);
 
   const load = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    if (invalidRange) {
+      setIsLoading(false);
+      return;
+    }
     try {
-      const data = await getNotifications(page);
+      const data = await getNotifications({
+        page,
+        from: toIsoBoundary(dateFrom, false),
+        to: toIsoBoundary(dateTo, true),
+      });
       setItems(data.data);
       setTotal(data.total);
       setLastPage(data.lastPage);
@@ -196,7 +215,7 @@ export function NotificationsList() {
     } finally {
       setIsLoading(false);
     }
-  }, [page]);
+  }, [dateFrom, dateTo, invalidRange, page]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -204,8 +223,13 @@ export function NotificationsList() {
   // socket admin cuando el backend persiste/emite una nueva notificación
   // (registro, pago Yape, referido, etc.) → el panel se actualiza en vivo.
   const refresh = useCallback(async () => {
+    if (invalidRange) return;
     try {
-      const data = await getNotifications(page);
+      const data = await getNotifications({
+        page,
+        from: toIsoBoundary(dateFrom, false),
+        to: toIsoBoundary(dateTo, true),
+      });
       setItems(data.data);
       setTotal(data.total);
       setLastPage(data.lastPage);
@@ -213,9 +237,9 @@ export function NotificationsList() {
     } catch {
       // Silencioso: el botón "Actualizar" y la próxima navegación reintentan.
     }
-  }, [page]);
+  }, [dateFrom, dateTo, invalidRange, page]);
 
-  useAdminSocket(refresh);
+  useAdminSocket(() => {}, refresh);
 
   const handleMarkRead = async (id: number) => {
     try {
@@ -253,7 +277,7 @@ export function NotificationsList() {
   return (
     <div className="space-y-4">
       {/* Header bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           {unreadCount > 0 ? (
             <span className="flex items-center gap-2 text-sm font-medium text-orange-400">
@@ -289,6 +313,59 @@ export function NotificationsList() {
           )}
         </div>
       </div>
+
+      <div className="flex flex-wrap items-end gap-3 border-y border-white/5 py-3">
+        <CalendarRange size={16} className="mb-2.5 text-gray-500" />
+        <label className="grid gap-1 text-xs text-gray-500">
+          <span>Desde</span>
+          <input
+            aria-label="Desde"
+            type="date"
+            value={dateFrom}
+            max={dateTo || undefined}
+            onChange={(event) => {
+              setDateFrom(event.target.value);
+              setPage(1);
+            }}
+            className="h-9 rounded-lg border border-white/10 bg-[#151515] px-3 text-sm text-gray-200 [color-scheme:dark] focus:border-blue-500/60 focus:outline-none"
+          />
+        </label>
+        <label className="grid gap-1 text-xs text-gray-500">
+          <span>Hasta</span>
+          <input
+            aria-label="Hasta"
+            type="date"
+            value={dateTo}
+            min={dateFrom || undefined}
+            onChange={(event) => {
+              setDateTo(event.target.value);
+              setPage(1);
+            }}
+            className="h-9 rounded-lg border border-white/10 bg-[#151515] px-3 text-sm text-gray-200 [color-scheme:dark] focus:border-blue-500/60 focus:outline-none"
+          />
+        </label>
+        {(dateFrom || dateTo) && (
+          <button
+            type="button"
+            onClick={() => {
+              setDateFrom('');
+              setDateTo('');
+              setPage(1);
+            }}
+            className="mb-0.5 grid h-9 w-9 place-items-center rounded-lg border border-white/10 text-gray-500 transition-colors hover:border-white/20 hover:text-white"
+            title="Limpiar rango"
+            aria-label="Limpiar rango"
+          >
+            <X size={15} />
+          </button>
+        )}
+      </div>
+
+      {invalidRange && (
+        <p role="alert" className="text-sm text-red-400">
+          La fecha inicial no puede ser posterior a la fecha final.
+        </p>
+      )}
 
       {/* Error state */}
       {error && (

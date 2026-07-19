@@ -28,6 +28,11 @@ export function getAdminSocket(): Socket {
   return _socket;
 }
 
+export function disconnectAdminSocket(): void {
+  _socket?.disconnect();
+  _socket = null;
+}
+
 export interface AdminNotificationPayload {
   type: string;
   title: string;

@@ -19,6 +19,7 @@ import {
   notifyProvider,
   getExpiringProviders,
   broadcastNotification,
+  getNotifications,
 } from '@/lib/api';
 
 beforeEach(() => fetchApi.mockClear());
@@ -54,5 +55,21 @@ describe('admin api wrappers', () => {
       '/admin/notifications/broadcast',
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+
+  it('getNotifications serializa paginación y rango ISO', async () => {
+    await getNotifications({
+      page: 2,
+      from: '2026-07-01T05:00:00.000Z',
+      to: '2026-08-01T04:59:59.999Z',
+    });
+
+    const path = fetchApi.mock.calls[0]?.[0] as string;
+    const url = new URL(path, 'http://admin.local');
+    expect(url.pathname).toBe('/admin/notifications');
+    expect(url.searchParams.get('page')).toBe('2');
+    expect(url.searchParams.get('limit')).toBe('20');
+    expect(url.searchParams.get('from')).toBe('2026-07-01T05:00:00.000Z');
+    expect(url.searchParams.get('to')).toBe('2026-08-01T04:59:59.999Z');
   });
 });
