@@ -7,6 +7,9 @@ import '../../../../core/network/socket_service.dart';
 import '../../domain/models/notification_model.dart';
 
 class NotificationsProvider extends ChangeNotifier {
+  static const _readRetention = Duration(days: 5);
+  static const _unreadRetention = Duration(days: 30);
+
   final Dio _dio = DioClient.instance.dio;
 
   final List<AppNotification> _items = [];
@@ -46,6 +49,15 @@ class NotificationsProvider extends ChangeNotifier {
   static bool _isBroadcast(AppNotification n) =>
       n.type == 'BROADCAST' || (n.imageUrl != null && n.imageUrl!.isNotEmpty);
 
+  static bool _isWithinRetention(AppNotification notification, DateTime now) {
+    final age = now.difference(notification.createdAt);
+    if (age.isNegative) return true;
+    return age <= (notification.isRead ? _readRetention : _unreadRetention);
+  }
+
+  static bool _isPersistedServerNotification(AppNotification notification) =>
+      int.tryParse(notification.id) != null;
+
   Future<void> _loadReadOverrides(int userId) async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getStringList(_readKey(userId)) ?? const [];
@@ -68,10 +80,8 @@ class NotificationsProvider extends ChangeNotifier {
   Future<void> _loadBroadcasts(int userId) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_broadcastKey(userId)) ?? const [];
-    _broadcasts
-      ..clear()
-      ..addAll(
-        raw.map((s) {
+    final parsed = raw
+        .map((s) {
           try {
             return AppNotification.fromLocalJson(
               jsonDecode(s) as Map<String, dynamic>,
@@ -79,8 +89,21 @@ class NotificationsProvider extends ChangeNotifier {
           } catch (_) {
             return null;
           }
-        }).whereType<AppNotification>(),
+        })
+        .whereType<AppNotification>()
+        .toList();
+    final now = DateTime.now();
+    final retained = parsed.where((n) => _isWithinRetention(n, now)).toList();
+    _broadcasts
+      ..clear()
+      ..addAll(retained);
+
+    if (retained.length != raw.length) {
+      await prefs.setStringList(
+        _broadcastKey(userId),
+        retained.map((n) => jsonEncode(n.toLocalJson())).toList(),
       );
+    }
   }
 
   Future<void> _persistBroadcasts() async {
@@ -326,6 +349,10 @@ class NotificationsProvider extends ChangeNotifier {
     for (final old in existing) {
       if (_items.any((n) => n.id == old.id)) continue;
       if (dupOfServer(old)) continue;
+      // Si una fila numérica ya no vino del servidor, fue eliminada o purgada.
+      // Solo preservamos eventos efímeros de socket/FCM y broadcasts locales.
+      if (_isPersistedServerNotification(old)) continue;
+      if (!_isWithinRetention(old, DateTime.now())) continue;
       _items.add(old);
     }
     _items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -340,7 +367,7 @@ class NotificationsProvider extends ChangeNotifier {
       _readOverrides.add(n.id);
     }
     notifyListeners();
-    await _persistReadOverrides();
+    await Future.wait([_persistReadOverrides(), _persistBroadcasts()]);
     // Persist to backend (fire-and-forget; UI already updated)
     try {
       await _dio.patch('/provider-profile/me/notifications/read-all');
@@ -356,11 +383,17 @@ class NotificationsProvider extends ChangeNotifier {
       _readOverrides.add(id);
       notifyListeners();
       _persistReadOverrides();
+      if (_isBroadcast(n)) _persistBroadcasts();
     }
   }
 
   void dismiss(String id) {
     _items.removeWhere((n) => n.id == id);
+    final removedBroadcast = _broadcasts.any((n) => n.id == id);
+    _broadcasts.removeWhere((n) => n.id == id);
+    _readOverrides.remove(id);
     notifyListeners();
+    _persistReadOverrides();
+    if (removedBroadcast) _persistBroadcasts();
   }
 }

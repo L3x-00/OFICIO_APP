@@ -22,9 +22,9 @@ import { MinioService } from '../common/minio.service.js';
 import { assertManagedServiceImageUrls } from '../common/service-image-validation.js';
 
 // Retención de notificaciones (cron diario, ahorra espacio en Supabase):
-// las LEÍDAS se purgan a los 7 días; las NO leídas viven 30 días para que
+// las LEÍDAS se purgan a los 5 días; las NO leídas viven 30 días para que
 // un usuario inactivo no las pierda sin haberlas visto.
-const NOTIFICATION_RETENTION_READ_DAYS = 7;
+const NOTIFICATION_RETENTION_READ_DAYS = 5;
 const NOTIFICATION_RETENTION_UNREAD_DAYS = 30;
 
 const SELF_EDITABLE_PROVIDER_FIELDS = [
@@ -425,7 +425,7 @@ export class ProviderProfileService {
 
   /**
    * Una vez al día (04:00 UTC) purga notificaciones viejas: leídas a los
-   * 7 días, NO leídas a los 30 (así un usuario inactivo una semana no
+   * 5 días, NO leídas a los 30 (así un usuario inactivo una semana no
    * pierde avisos sin verlos). Mantiene la bandeja liviana. Afecta tanto
    * el inbox del proveedor como el panel de notificaciones del admin
    * (ambos leen `adminNotification`).

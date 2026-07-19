@@ -57,7 +57,7 @@ class NotificationsScreen extends StatelessWidget {
                 Expanded(
                   child: RefreshIndicator(
                     color: AppColors.primary,
-                    onRefresh: () async => {},
+                    onRefresh: notifs.loadHistory,
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: notifs.items.length,
@@ -103,7 +103,7 @@ class NotificationsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Por ahora no tienes avisos nuevos.\nTe avisaremos cuando algo ocurra.',
+              'No tienes avisos recientes.\nLas notificaciones leídas de más de 5 días se eliminan automáticamente.',
               style: TextStyle(
                 color: c.textSecondary,
                 fontSize: 13,
@@ -117,8 +117,7 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  /// Aviso de retención — las notificaciones se purgan a los 5 días
-  /// (cron `pruneOldNotifications` del backend, NOTIFICATION_RETENTION_DAYS).
+  /// Aviso de retención coordinado con `pruneOldNotifications` del backend.
   Widget _retentionBanner(AppThemeColors c) {
     return Container(
       width: double.infinity,
@@ -139,7 +138,7 @@ class NotificationsScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Las notificaciones se eliminan automáticamente después de 5 días.',
+              'Las leídas se eliminan después de 5 días. Las no leídas se conservan hasta 30 días.',
               style: TextStyle(color: c.textSecondary, fontSize: 12),
             ),
           ),
