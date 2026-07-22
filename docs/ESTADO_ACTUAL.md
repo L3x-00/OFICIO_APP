@@ -8,10 +8,10 @@
 > Se unificó aquí para no volver a tener dos documentos de estado divergentes.
 > El histórico de este archivo está en git.
 >
-> **Última sincronización:** 2026-07-22. Producción continúa en el estado
-> verificado de PR #37/#38 hasta completar el release consolidado PR #49.
-> Hardening, correcciones funcionales y UX autorizada ya están versionados y
-> validados globalmente; falta CI/merge/deploy. Ver §9–§10 del documento
+> **Última sincronización:** 2026-07-22. Release consolidado PR #49 desplegado
+> en `main@db0d000`; CI, Render y Vercel verificados. Hardening, correcciones
+> funcionales y UX autorizada están activos en backend/web/admin. Publicación
+> del nuevo `.aab` sigue a cargo del propietario. Ver §9–§10 del documento
 > canónico para checks, alcance y pendientes operativos reales.
 >
 > Reactivación futura, independiente y reversible:
@@ -20,5 +20,5 @@
 > Seguridad externa y pasos manuales:
 > **[`SEGURIDAD_OPERATIVA.md`](SEGURIDAD_OPERATIVA.md)**.
 >
-> Graphify fue regenerado desde worktree limpio en `e58a0f4` el 2026-07-22;
+> Graphify fue regenerado desde worktree limpio y anclado a `db0d000` el 2026-07-22;
 > usar `GRAPH_REPORT.md`/`graph.json`. No regenerar sobre el árbol local sucio.

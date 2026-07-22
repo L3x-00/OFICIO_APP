@@ -2,12 +2,11 @@
 
 ## 1. Estado ejecutivo
 
-Release consolidado: **PR #49**, rama `feat/release-cierre-julio`.
+Release consolidado: **PR #49**, squash `db0d000` en `main`.
 
-Estado al redactar: código completo, verificación local global verde y cierre
-documental en curso. Aún no declarar producción hasta CI verde, squash merge y
-comprobación de Render/Vercel. No hubo cambios de schema, migraciones, SQL de
-producción, DNS ni configuración Supabase.
+Estado final: CI verde y despliegues Render/Vercel verificados el 2026-07-22.
+No hubo cambios de schema, migraciones, SQL de producción, DNS ni configuración
+Supabase. Publicación Android queda pendiente del propietario.
 
 Objetivo cumplido en código: corregir auth manual, retención/notificaciones,
 eventos críticos de proveedor y operación Admin; integrar hardening viable sin
@@ -39,7 +38,7 @@ añadir controles frágiles; preservar funciones, datos y trabajo local ajeno.
 | Notificaciones Admin | #46 | `3c4de61` | Realtime, reconexión, fallback y filtros fecha |
 | Ocultar crecimiento Admin | #47 | `fe842c8` | Nav/widget fuera; rutas e historial vivos |
 | Foto faltante proveedor | #48 | `e58a0f4` | Una imagen inicial, solo cuando no existe ninguna |
-| Release consolidado | #49 | pendiente de squash | Única integración destinada a `main` |
+| Release consolidado | #49 | `db0d000` | Integrado y desplegado en `main` |
 
 Los PRs #39–#48 permanecen como trazabilidad temática. No deben mergearse por
 separado después de #49: duplicarían cambios ya integrados.
@@ -153,7 +152,9 @@ Deuda conocida no introducida:
 
 ## 7. Graphify y contexto
 
-Graphify regenerado en worktree limpio desde `e58a0f4`:
+Graphify regenerado en worktree limpio y anclado a `db0d000`. El árbol fuente
+entre `e58a0f4` y el squash fue comparado con diff cero antes de cambiar el
+metadato de frescura:
 
 - 945 archivos;
 - 9,242 nodos;
@@ -186,17 +187,21 @@ estado vivo.
 - Hardening: evitar rollback global. Corregir únicamente frontera que cause
   regresión y conservar autenticación/autorización.
 
-## 9. Acciones manuales restantes
+## 9. Cierre y acciones manuales restantes
 
-Antes de declarar release cerrado:
+Completado:
 
-1. Esperar CI verde de #49.
-2. Squash merge a `main`.
-3. Verificar Render `GET /health` y logs de arranque.
-4. Verificar deploys Vercel web/admin del squash.
-5. Smoke: login inválido, registro duplicado, lista/filtro Admin y vista de fotos.
-6. Probar alta de foto con cuenta Admin solo sobre proveedor sin imágenes.
-7. Generar/publicar `.aab` por el propietario.
+1. CI #49 verde: Backend, Mobile y Admin/Web.
+2. Squash merge `db0d000` a `main`.
+3. Render `GET /health` = `ok`; endpoint nuevo de foto sin JWT = 401, sin mutación.
+4. Vercel web/admin = `success`; web final 200 y headers Admin observados.
+
+Pendiente del propietario:
+
+1. Generar/publicar `.aab`.
+2. Smoke móvil tras instalar build: login inválido, registro duplicado y overlays.
+3. Con cuenta Admin, probar filtro fecha y alta de foto solo en proveedor vacío.
+4. No usar credenciales de cliente para probar operaciones Admin.
 
 Seguridad externa, separada del release:
 
