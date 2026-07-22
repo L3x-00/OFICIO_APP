@@ -1,6 +1,6 @@
 # Seguridad operativa
 
-> Estado auditado: 2026-07-16. Produccion. Este documento no contiene secretos.
+> Estado auditado: 2026-07-22. Producción. Este documento no contiene secretos.
 
 ## 1. Regla de ejecucion
 
@@ -12,14 +12,14 @@
 
 ## 2. Estado comprobado
 
-| Control | Estado 2026-07-16 | Decision |
+| Control | Estado 2026-07-22 | Decisión |
 |---|---|---|
 | HTTPS web, API y admin | Activo | Mantener |
 | HSTS web/API/admin | Activo | Mantener |
 | TLS 1.0/1.1 en `www.oficioapp.org.pe` | Aceptado por Cloudflare | Subir minimo a TLS 1.2 |
 | TLS 1.0/1.1 en API/admin | Rechazado | Correcto |
 | Cabeceras web | HSTS, `DENY`, `nosniff`, referrer policy | CSP queda en observacion antes de imponerla |
-| Cabeceras admin | Produccion: solo HSTS observado. Local 7F: `nosniff`, `DENY`, referrer, permissions, noindex y CSP Report-Only | Desplegar solo por PR/CI; no imponer CSP aun |
+| Cabeceras admin | Producción actual: solo HSTS observado. PR #49: `nosniff`, `DENY`, referrer, permissions, noindex y CSP Report-Only | Desplegar solo tras CI; no imponer CSP aún |
 | Origen directo Render | Publicamente accesible | No asumir que Cloudflare protege ese hostname |
 | SPF/DKIM/DMARC del dominio | Sin MX ni `_dmarc` observados | Configurar solo tras validar remitente real en Brevo |
 | DNSSEC | Sin DS/DNSKEY observado | Habilitar con registrador y Cloudflare, con verificacion |
@@ -27,6 +27,26 @@
 | Uso de Supabase Data API en codigo | No encontrado | Deshabilitar en dashboard tras confirmar integraciones externas |
 | MFA de cuentas operativas | No verificable desde repo | Obligatoria para propietarios y administradores |
 | Credencial de prueba compartida | Expuesta fuera del gestor de secretos | Rotar y revocar sesiones |
+
+### 2.1 Hardening de código en release PR #49
+
+Validado localmente con suites completas; aún no equivale a despliegue:
+
+- uploads autenticados, límites estrictos, re-encode Sharp sin metadatos y
+  validación de origen/carpeta para objetos gestionados;
+- allowlist de actualización de perfil, guards/roles y respuestas públicas sin
+  campos privados;
+- login social solo con proveedor permitido y correo verificado; no vincula UIDs
+  distintos solo por compartir email;
+- suspensión revoca refresh tokens; WebSocket revalida usuario activo y rol en BD;
+- paginación acotada, CSV neutralizado contra fórmulas y logs de correo sin OTP,
+  URL sensible ni destinatario;
+- Admin con headers defensivos y CSP solo `Report-Only`.
+
+No se añadió certificate pinning, bloqueo del origen Render, WAF agresivo,
+renovación de claves ni cambio Supabase. Esos controles requieren operación
+externa y rollback independiente. Confirmar merge/deploy en
+`CONTEXTO_PROYECTO.md` antes de asumirlos activos.
 
 ## 3. Acciones obligatorias sin cambio de codigo
 

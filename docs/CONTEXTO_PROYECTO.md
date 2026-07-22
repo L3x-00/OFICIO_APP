@@ -5,7 +5,7 @@ dar contexto completo sin explorar archivo por archivo. Claude lo auto-carga ví
 `@docs/CONTEXTO_PROYECTO.md` en `CLAUDE.md`; Codex debe leerlo explícitamente por
 instrucción de `AGENTS.md`. Mantener actualizado al cerrar cada tanda.
 
-**Última actualización:** 2026-07-16 · Estado: producción estable en `main`; subastas, ofertas, referidos/monedas, agenda y cotización OCULTAS de forma reversible; Carta y Catálogo visibles solo para proveedores NEGOCIO. Hardening de seguridad 7A–7F validado localmente, todavía NO desplegado.
+**Última actualización:** 2026-07-22 · Estado: producción estable en `main`; release consolidado PR #49 en validación final. Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
 
 ---
 
@@ -72,11 +72,15 @@ Cambios importantes: **rama nueva → commit → push a la rama → PR → CI ve
 - **Referidos y monedas:** flujo, historial y tablas se conservan; con `FEATURE_REFERIDOS` apagado no acredita monedas ni expone endpoints, UI, notificaciones o herramientas Ofi. Las pruebas cubren ambos estados del flag.
 - **Gating por plan**: carta/catálogo ítems GRATIS 5 / ESTÁNDAR 6 / PREMIUM ∞; agenda días activos/semana 1/3/7 (excede→402).
 - **Alcance por distritos** (PR #28): `provider_coverage` = distritos EXTRA (el registrado siempre visible). Límite TOTAL por plan **GRATIS 1 / ESTÁNDAR 3 / PREMIUM 10**, misma provincia. **Gate en LECTURA** (`coverage.visibleInLocalities()`): extras solo si plan pago; al vencer quedan inertes pero se conservan. `syncCoverageToPlan()` (función suelta, try/catch, nunca revierte pago) siembra/recorta tras las 7 activaciones de plan. Endpoints `GET/PUT /provider-profile/me/coverage?type=`. Móvil: sección "Alcance" en tab Perfil.
-- **Notificaciones** con discriminador (`AdminNotification.targetProfileType`/`metadata` JSONB para deep-link) — independencia por rol (cliente/OFICIO/NEGOCIO).
+- **Notificaciones** con discriminador (`AdminNotification.targetProfileType`/`metadata` JSONB para deep-link) — independencia por rol (cliente/OFICIO/NEGOCIO). Retención efectiva: leídas 5 días, no leídas 30 días; backend y móvil aplican el mismo criterio. Móvil informa de forma discreta cuando depura historial vencido.
+- **Auth manual móvil:** un login fallido o un registro con correo duplicado permanece en su pantalla y muestra error amigable; el modo invitado solo se limpia después de autenticación exitosa. No confundir fallo de credenciales con usuario nuevo ni redirigirlo al onboarding.
+- **Estados de proveedor importantes:** aprobación y rechazo viajan por notificación persistida + FCM. Móvil en foreground, resume o cold start consume una cola local y muestra overlay global; aprobación usa celebración ligera y rechazo conserva el motivo. Cada evento se marca consumido para no repetirse.
+- **Admin operativo:** notificaciones con filtros de fecha en servidor, refresco Socket.IO (`notification`/`adminEvent`), reconexión, fallback visible de 60 s y cierre de socket en logout. Referidos/Recompensas están ocultos solo en navegación/dashboard; rutas e historial siguen vivos. Si un proveedor no tiene imágenes, Admin puede subir exactamente una imagen inicial; no existe CRUD, reemplazo ni borrado administrativo.
 - **Búsqueda por radio** (PostGIS `getNearby`) respeta filtros activos; **listado por ubicación** jerárquica dept→prov→dist.
 - **Toggles privacidad** (`showPhone`/`showWhatsapp`/`showExactLocation`). **Perfil público de usuario**. **Asistente IA "Ofi"** (guardrails PII/toxicidad/inyección, caché semántico, cuota atómica). **Imágenes CDN**: 2 buckets R2 (público CDN + privado firmado), thumbnails Sharp.
 - **Rediseño visual** "cálida artesanal": claro=crema `#FAF7F2`, oscuro=casi negro cálido `#0D0B08`; contraste AA vía onSolid/tintOn.
-- **Landing web conectada a API real** (PR #31): hero con foto Huancayo legible en ambos temas (el hero conserva `force-dark-zone`); `solutions-section` con categorías padre reales + marquee infinito + geolocalización ("Ver servicios" → `/buscar?categoria&lat/lng` o fallback `provincia=Huancayo`); `/buscar` acepta deep-links; `providers-section` embebe el registro proveedor como **wizard de 6 pasos** (componente compartido `web/components/onboarding/provider-onboarding-form.tsx`, variantes full/wizard) con código de referido, borrador localStorage e invitados que se registran con Google al FINAL. En el árbol local, `providers-section` ya usa colores semánticos adaptativos y eliminó `force-dark-zone` solo del bloque de registro; aún no está desplegado.
+- **Landing web conectada a API real** (PR #31): hero con foto Huancayo legible en ambos temas (el hero conserva `force-dark-zone`); `solutions-section` con categorías padre reales + marquee infinito + geolocalización ("Ver servicios" → `/buscar?categoria&lat/lng` o fallback `provincia=Huancayo`); `/buscar` acepta deep-links; `providers-section` embebe el registro proveedor como **wizard de 6 pasos** (componente compartido `web/components/onboarding/provider-onboarding-form.tsx`, variantes full/wizard) con código de referido, borrador localStorage e invitados que se registran con Google al FINAL. El release PR #49 incorpora tema semántico adaptativo en ese bloque, elimina su `force-dark-zone` y actualiza la marca a Servi.
+- **UX móvil integrada en PR #49:** bottom sheets de registro/filtros usan root navigator; Perfil unifica altas y estados OFICIO/NEGOCIO en "Mis perfiles"; clientes puros pueden ocultar el FAB de Ofi con `SharedPreferences`. Los flags de Subastas/Ofertas/Referidos permanecen apagados.
 - **Coordenadas en registro** (PR #31): `RegisterProviderDto` acepta `latitude/longitude` opcionales y se persisten al crear el Provider (web las saca del enlace de Maps) — antes ningún cliente las enviaba y los proveedores nuevos no salían en búsqueda por radio. Trigger + backfill: `backend/prisma/sql/provider_location_geog_trigger.sql` (aplicado en Supabase).
 
 ## 8. Skills y preflight de agentes
@@ -122,13 +126,13 @@ usa contexto canónico + rg y no lo regeneres sobre trabajo incompleto.
 # Backend (ESM)
 cd backend && npm run start:dev          # dev :3000
 npx tsc --noEmit                         # typecheck
-npm test                                 # unit (563 pasando)
+npm test                                 # unit (571 pasando)
 npm run test:integration                 # requiere stack Docker local
 npm run test:e2e                         # requiere stack Docker local
 npx cross-env RUN_GEMINI_CONTRACT_TESTS=true npm run test:contract  # Gemini real; requiere clave local
 # Mobile
 cd mobile && flutter analyze
-cd mobile && flutter test                # 209 pasando
+cd mobile && flutter test                # 220 pasando
 # Admin / Web
 cd admin && npm run dev                  # :3001   (type-check aparte: next build ignora TS)
 cd web && npm run build                  # :3002
@@ -150,29 +154,35 @@ Web Next 16: `web/` debe usar `proxy.ts` (no `middleware.ts`), `metadataBase`
 en `app/layout.tsx` y `turbopack.root` en `next.config.ts` para evitar warnings
 de build en monorepo.
 
-**Verificación local completa 2026-07-16, Node 20.20.2:** backend unitario
-61 suites/563 tests, integración 19/101 sobre `oficio_test_db` local, E2E 2/16,
-contrato Gemini real 1/7, cobertura por encima de sus umbrales, TypeScript y
-build: OK. ESLint backend: 0 errores y 262 warnings históricos. Mobile:
-209/209; `flutter analyze --no-fatal-infos` OK, con 15 infos de estilo y cero
-warnings/errores. Admin: 4 suites/15 tests, type-check y build OK; su lint global
-conserva deuda previa de 84 errores/24 warnings. Web no define suite de tests;
-build de producción OK. Auditorías npm de producción: cero vulnerabilidades
-high/critical; quedan moderadas (backend 20, admin 10, web 2) y una low en admin,
-sin aplicar `--force` porque las propuestas implican downgrades/cambios mayores.
-Producción y Supabase no fueron modificados durante estos checks.
+**Verificación local completa 2026-07-22, Node 20.20.2 / Flutter 3.41.6:**
+backend 63 suites/571 unitarios, 19/101 integración sobre Postgres local, 2/16
+E2E y 1/7 contratos Gemini reales; TypeScript, build y ESLint pasan. ESLint
+conserva 262 warnings históricos y cero errores. Cobertura backend: 58.23%
+statements, 50.68% branches, 43.65% functions y 58.80% lines. Jest todavía
+emite el warning histórico de `forceExit`/handles abiertos después de pasar.
+Mobile: 220/220 y cobertura 12.4% (3468/27873), superior al ratchet 9%; analyze
+con 14 infos de estilo y cero warnings/errores. Admin: 9 archivos/25 tests,
+type-check y build OK; cobertura 15.04% statements/lines, 69.66% branches y
+41.29% functions. Su lint global conserva deuda previa de 84 errores/24
+warnings; CI lo trata como informativo. Web no define tests; build y TypeScript
+OK. No se construyó `.aab` por decisión del propietario. Producción y Supabase
+no fueron modificados durante estos checks.
 
-Estado desplegado del commit `002791d`, revalidado el 2026-07-13: CI verde;
-Vercel `oficio_web`/`oficioadmin` en `success`; Render `GET /health` en `ok` y
-Subastas, Ofertas y Referidos respondiendo 404 con flags apagados.
+Última producción confirmada antes del release: `main@2b80faa` / runtime
+`002791d`, revalidada el 2026-07-13. El consolidado 2026-07 está en PR #49 y no
+debe declararse desplegado hasta CI verde, squash merge, health de Render y
+deploys Vercel verificados. Auditorías npm del 2026-07-16: cero vulnerabilidades
+high/critical; moderadas conocidas backend 20, admin 10, web 2 y una low admin,
+sin `--force` por riesgo de downgrades/cambios mayores.
 
 ## 10. Estado / pendientes
 
-- **Desplegado:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`. **Reducción de superficie:** subastas, ofertas, referidos/monedas, agenda y cotización OCULTAS; Carta/Catálogo restringidos a NEGOCIO. PlanRequest deprecado (endpoint vivo para apps viejas; tabla conservada), retención de notifs leídas 7d / no leídas 30d, fix fila histórica de payments en primer pago Yape y fix `markNotificationRead` admin sin scope.
+- **Desplegado antes de PR #49:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`. **Reducción de superficie:** subastas, ofertas, referidos/monedas, agenda y cotización OCULTAS; Carta/Catálogo restringidos a NEGOCIO. PlanRequest deprecado (endpoint vivo para apps viejas; tabla conservada), retención previa de notifs leídas 7d / no leídas 30d, fix fila histórica de payments en primer pago Yape y fix `markNotificationRead` admin sin scope.
 - **Mergeado y verificado:** PR #37, squash `002791d` (2026-07-12), ocultó referidos/monedas, agenda y cotización en backend, móvil, web y Ofi sin borrar código. El usuario aplicó manualmente `backend/prisma/sql/ocultar_features_kb.sql` en Supabase: solo desactiva la entrada de conocimiento de Ofi; no cambia schema ni elimina triggers/funciones. El 2026-07-13 se verificaron Render sano, flags públicos apagados, CI verde y deploys Vercel web/admin exitosos.
-- **Contexto/tooling 2026-07-13 (PR #38):** `servi-preflight` incorpora Node esperado y frescura Graphify por cambios de fuente; `.nvmrc`/root `engines` fijan Node 20; `AGENTS.md`/`web/AGENTS.md` cargan reglas; CI valida también el build web. Se añadió el runbook detallado y se regeneró `graphify-out/` desde un worktree limpio en `002791d`: 912 archivos, 8,924 nodos, 14,389 relaciones y 439 comunidades. El grafo representa la fuente de apps commiteada desde esa base; commits solo documentales/tooling no lo invalidan y cambios locales sin commit quedan fuera.
-- **Hardening 7A–7F local, sin PR y NO desplegado (2026-07-16):** subidas autenticadas con límites, decodificación/re-encode Sharp y descarte de metadatos; validación de origen/carpeta para URLs gestionadas; DTO estricto para perfil propio, guards/roles y privacidad de perfiles públicos; paginación acotada; login social exige proveedor confiable y `email_verified`, sin vincular UIDs distintos por email; usuarios suspendidos pierden refresh tokens y WebSocket revalida usuario/rol contra BD; CSV neutraliza fórmulas; fallback de correo no registra OTP/URLs/destinatarios; admin agrega headers defensivos y CSP `Report-Only`. Pruebas y builds completos verdes según §9. No hubo SQL, deploy, cambios DNS ni cambios Supabase.
-- **UX local del usuario, NO desplegada y preservada:** `web/components/providers-section.tsx` usa tema semántico adaptativo y marca Servi; móvil abre los bottom sheets de registro/filtros en el root navigator, unifica "Mis perfiles" y permite a clientes puros ocultar el FAB de Ofi mediante `SharedPreferences`. Los flags móviles de Subastas/Ofertas/Referidos no cambiaron. No modificar estos archivos como parte del hardening sin briefing explícito.
+- **Release consolidado 2026-07, PR #49 en validación:** apila PRs #39–#48. Incluye hardening 7A–7F, runtime Next 16, UX autorizada web/móvil, errores de auth manual, retención 5/30 días, overlays globales de aprobación/rechazo, ciclo de notificaciones Admin, ocultamiento Admin de Referidos/Recompensas y alta única de foto faltante. Cada tema conserva rama/PR independiente; #49 es la única integración destinada a `main`. No hubo schema, SQL ni ejecución contra Supabase.
+- **Hardening 7A–7F versionado en PR #39 e integrado en #49:** subidas autenticadas con límites, decodificación/re-encode Sharp y descarte de metadatos; validación de origen/carpeta para URLs gestionadas; DTO estricto para perfil propio, guards/roles y privacidad de perfiles públicos; paginación acotada; login social exige proveedor confiable y `email_verified`, sin vincular UIDs distintos por email; usuarios suspendidos pierden refresh tokens y WebSocket revalida usuario/rol contra BD; CSV neutraliza fórmulas; fallback de correo no registra OTP/URLs/destinatarios; admin agrega headers defensivos y CSP `Report-Only`. No incluye certificate pinning, WAF agresivo ni controles externos.
+- **Graphify 2026-07-22:** regenerado desde worktree limpio en `e58a0f4`: 945 archivos, 9,242 nodos, 14,871 relaciones y 462 comunidades. `graph.html` ya no se genera porque supera el límite visual de 5,000 nodos; usar `GRAPH_REPORT.md`, `graph.json` y `graphify query`. El grafo excluye cambios locales sin commit; commits solo documentales/tooling no invalidan su frescura.
+- **Trabajo local ajeno preservado:** el árbol principal mantiene ajustes no versionados del usuario en web/mobile y artefactos generados. No forman parte de #49 salvo los commits UX explícitos #41/#42. Nunca usar `git add -A`, regenerar Graphify allí ni revertirlos.
 - **Seguridad operativa pendiente:** ejecutar manualmente y por separado `docs/SEGURIDAD_OPERATIVA.md`: rotar la cuenta de prueba expuesta y revocar sesiones; fijar TLS mínimo 1.2 en Cloudflare; configurar SPF/DKIM y luego DMARC en observación; exigir MFA; confirmar integraciones externas antes de apagar Supabase Data API; habilitar SSL obligatorio de Postgres solo en ventana porque reinicia la BD; no bloquear todavía el origen directo de Render. Estado documentado no significa aplicado.
-- **Pendiente general:** crear rama/PR del hardening y pasar CI antes de desplegar. Recompilar/publicar `.aab` queda a cargo del usuario. Móvil aún NO envía lat/lng al registrar (el DTO ya las acepta — adopción pendiente). CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: probar integración web local vía proxy. Graphify no se regenera sobre este árbol sucio; representa el snapshot commiteado indicado arriba. `test:cov` regeneró 125 artefactos versionados de `coverage/`; no stagearlos junto al hardening. Limpieza técnica pendiente en PR separado: dejar de trackear settings/lock locales Claude y artefactos coverage/generated ya versionados; dry-run detectó 191 archivos candidatos, pero NO se ejecutó `git rm --cached`. Nota: el `AuditLog @@map("audit_log")` + `AuditLogService` de la auditoría V2 NUNCA se commiteó — distinto del trigger de #34.
-- **Docs:** fuente viva `docs/CONTEXTO_PROYECTO.md`; arquitectura en `docs/ARQUITECTURA_DESPLIEGUE.md`; seguridad operativa en `docs/SEGURIDAD_OPERATIVA.md`; reactivación en `docs/REACTIVACION_FUNCIONALIDADES_OCULTAS.md`; `docs/ESTADO_ACTUAL.md` es puntero y `docs/AUDITORÍA_TÉCNICA.md` es histórico. El contexto/tooling debe versionarse como una unidad; los cambios runtime permanecen locales hasta PR/CI. Memorias no derivables en `~/.claude/projects/.../memory/` y `~/.codex/projects/.../memory/`.
+- **Pendiente de release:** CI verde y squash merge de #49; después verificar `GET /health`, deploy Vercel web/admin y smoke de auth/notificaciones/foto inicial. Recompilar/publicar `.aab` queda a cargo del usuario. Móvil aún NO envía lat/lng al registrar (DTO ya acepta; adopción pendiente). CORS prod (`ALLOWED_ORIGINS`) no incluye `localhost:3002`: integración web local debe usar proxy. `test:cov` modifica artefactos versionados de `coverage/`; no stagearlos. Limpieza técnica de settings/coverage/generated queda en PR separado. El `AuditLog @@map("audit_log")` + `AuditLogService` de auditoría V2 nunca se commiteó; no confundir con trigger #34.
+- **Docs:** fuente viva `docs/CONTEXTO_PROYECTO.md`; arquitectura en `docs/ARQUITECTURA_DESPLIEGUE.md`; seguridad operativa en `docs/SEGURIDAD_OPERATIVA.md`; reactivación en `docs/REACTIVACION_FUNCIONALIDADES_OCULTAS.md`; reporte de esta tanda en `docs/REPORTE_RELEASE_2026-07-22.md`; `docs/ESTADO_ACTUAL.md` es puntero y `docs/AUDITORÍA_TÉCNICA.md` es histórico.
