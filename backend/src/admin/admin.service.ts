@@ -413,6 +413,74 @@ export class AdminService {
     return updated;
   }
 
+  async addProviderImageIfEmpty(id: number, file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Selecciona una imagen para el proveedor.');
+    }
+
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        images: { take: 1, select: { id: true } },
+      },
+    });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+    if (provider.images.length > 0) {
+      throw new ConflictException(
+        'El proveedor ya tiene una foto. No se permite reemplazarla desde admin.',
+      );
+    }
+
+    const url = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      'providers/gallery',
+    );
+
+    try {
+      const image = await this.prisma.$transaction(async (tx) => {
+        // El UPDATE bloquea la fila hasta terminar la transacción. Dos admins
+        // no pueden insertar la "primera" foto al mismo tiempo.
+        await tx.provider.update({
+          where: { id },
+          data: { updatedAt: new Date() },
+          select: { id: true },
+        });
+
+        const existing = await tx.providerImage.findFirst({
+          where: { providerId: id },
+          select: { id: true },
+        });
+        if (existing) {
+          throw new ConflictException(
+            'El proveedor ya tiene una foto. No se permite reemplazarla desde admin.',
+          );
+        }
+
+        return tx.providerImage.create({
+          data: {
+            providerId: id,
+            url,
+            isCover: true,
+            order: 0,
+          },
+        });
+      });
+
+      await this.clearProvidersCache();
+      return image;
+    } catch (error) {
+      // Evita objetos huérfanos si el proveedor fue eliminado o si otra
+      // carga ganó la carrera después de subir el archivo.
+      await this.minio.deleteFile(url);
+      if ((error as { code?: string }).code === 'P2025') {
+        throw new NotFoundException('Proveedor no encontrado');
+      }
+      throw error;
+    }
+  }
+
   // ── HELPER: plan → prioridad de listado ──────────────────
   private planToPriority(plan: string, status: string): number {
     return sharedPlanToPriority(plan, status);

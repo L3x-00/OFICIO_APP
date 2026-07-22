@@ -20,6 +20,7 @@ import {
   getExpiringProviders,
   broadcastNotification,
   getNotifications,
+  uploadProviderImage,
 } from '@/lib/api';
 
 beforeEach(() => fetchApi.mockClear());
@@ -71,5 +72,18 @@ describe('admin api wrappers', () => {
     expect(url.searchParams.get('limit')).toBe('20');
     expect(url.searchParams.get('from')).toBe('2026-07-01T05:00:00.000Z');
     expect(url.searchParams.get('to')).toBe('2026-08-01T04:59:59.999Z');
+  });
+
+  it('uploadProviderImage envía una sola imagen por multipart', async () => {
+    const file = new File(['foto'], 'perfil.jpg', { type: 'image/jpeg' });
+
+    await uploadProviderImage(42, file);
+
+    expect(fetchApi).toHaveBeenCalledWith(
+      '/admin/providers/42/image',
+      expect.objectContaining({ method: 'POST', body: expect.any(FormData) }),
+    );
+    const options = fetchApi.mock.calls[0]?.[1] as RequestInit;
+    expect((options.body as FormData).get('image')).toBe(file);
   });
 });

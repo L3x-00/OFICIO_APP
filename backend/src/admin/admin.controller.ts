@@ -13,16 +13,17 @@ import {
   Res,
   UseGuards,
   UseInterceptors,
+  UploadedFile,
   UploadedFiles,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 import { AdminService } from './admin.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
-import { providerImagesOpts } from '../common/multer-image.config.js';
+import { memOpts, providerImagesOpts } from '../common/multer-image.config.js';
 import { CreateProviderDto } from './dto/create-provider.dto.js';
 import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
@@ -153,6 +154,15 @@ export class AdminController {
     @Body() body: UpdateProviderDto,
   ) {
     return this.adminService.updateProvider(id, body);
+  }
+
+  @Post('providers/:id/image')
+  @UseInterceptors(FileInterceptor('image', memOpts))
+  addProviderImageIfEmpty(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.adminService.addProviderImageIfEmpty(id, file);
   }
 
   @Patch('providers/:id/toggle-visibility')
