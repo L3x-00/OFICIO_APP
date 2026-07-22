@@ -5,7 +5,7 @@ dar contexto completo sin explorar archivo por archivo. Claude lo auto-carga ví
 `@docs/CONTEXTO_PROYECTO.md` en `CLAUDE.md`; Codex debe leerlo explícitamente por
 instrucción de `AGENTS.md`. Mantener actualizado al cerrar cada tanda.
 
-**Última actualización:** 2026-07-22 · Estado: producción en `main@db0d000` (PR #49) verificada en Render y Vercel. Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
+**Última actualización:** 2026-07-22 · Estado: runtime del PR #49 (`db0d000`) desplegado y verificado en Render/Vercel; `main` puede incluir commits documentales posteriores sin cambios de fuente. Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
 
 ---
 

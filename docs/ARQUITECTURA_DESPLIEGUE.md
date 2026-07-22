@@ -31,8 +31,8 @@ delegado a Cloudflare (`javier.ns.cloudflare.com`, `katelyn.ns.cloudflare.com`).
 - Mobile: distribución manual mediante `.aab`; no se verificó que la versión
   con el ocultamiento actual ya esté publicada en Play.
 
-**Release activo:** PR #49 integra cambios backend, mobile, admin y web en
-`main@db0d000`; CI y despliegues Render/Vercel verificados el 2026-07-22. No
+**Release activo:** PR #49 integra cambios backend, mobile, admin y web; runtime
+funcional `db0d000`, CI y despliegues Render/Vercel verificados el 2026-07-22. No
 contiene migraciones ni SQL. Publicación Android queda fuera: el propietario
 genera y publica el `.aab`.
 
