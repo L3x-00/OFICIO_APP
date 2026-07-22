@@ -23,17 +23,18 @@ delegado a Cloudflare (`javier.ns.cloudflare.com`, `katelyn.ns.cloudflare.com`).
 ## Estado de despliegue verificado
 
 - Backend: Render, auto-deploy desde `main`; `GET /health` respondió `ok` el
-  2026-07-13. Subastas, Ofertas y Referidos devolvieron 404 con sus flags
-  apagados.
-- Web: Vercel `oficio_web`, commit `002791d` desplegado con estado `success`.
-- Admin: Vercel `oficioadmin`, commit `002791d` desplegado con estado `success`.
+  2026-07-22 y la ruta nueva protegida de foto Admin respondió 401 sin JWT.
+- Web: Vercel `oficio_web`, squash `db0d000` desplegado con estado `success`;
+  `oficioapp.org.pe` redirige a `www` y termina 200.
+- Admin: Vercel `oficioadmin`, squash `db0d000` desplegado con estado `success`;
+  headers defensivos y CSP `Report-Only` observados en `/login`.
 - Mobile: distribución manual mediante `.aab`; no se verificó que la versión
   con el ocultamiento actual ya esté publicada en Play.
 
-**Release candidato:** PR #49 integra cambios backend, mobile, admin y web sobre
-`e58a0f4`. Todavía no es producción hasta squash merge y verificación posterior
-de Render/Vercel. No contiene migraciones ni SQL. La publicación Android queda
-fuera: el propietario genera y publica el `.aab`.
+**Release activo:** PR #49 integra cambios backend, mobile, admin y web en
+`main@db0d000`; CI y despliegues Render/Vercel verificados el 2026-07-22. No
+contiene migraciones ni SQL. Publicación Android queda fuera: el propietario
+genera y publica el `.aab`.
 
 ## Límites del tier gratuito (DISEÑAR PARA ESTO)
 

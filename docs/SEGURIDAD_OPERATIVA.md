@@ -19,7 +19,7 @@
 | TLS 1.0/1.1 en `www.oficioapp.org.pe` | Aceptado por Cloudflare | Subir minimo a TLS 1.2 |
 | TLS 1.0/1.1 en API/admin | Rechazado | Correcto |
 | Cabeceras web | HSTS, `DENY`, `nosniff`, referrer policy | CSP queda en observacion antes de imponerla |
-| Cabeceras admin | Producción actual: solo HSTS observado. PR #49: `nosniff`, `DENY`, referrer, permissions, noindex y CSP Report-Only | Desplegar solo tras CI; no imponer CSP aún |
+| Cabeceras admin | Producción `db0d000`: `nosniff`, `DENY`, referrer, permissions, noindex y CSP Report-Only observados | Mantener CSP sin enforcement hasta revisar reportes |
 | Origen directo Render | Publicamente accesible | No asumir que Cloudflare protege ese hostname |
 | SPF/DKIM/DMARC del dominio | Sin MX ni `_dmarc` observados | Configurar solo tras validar remitente real en Brevo |
 | DNSSEC | Sin DS/DNSKEY observado | Habilitar con registrador y Cloudflare, con verificacion |
@@ -28,9 +28,9 @@
 | MFA de cuentas operativas | No verificable desde repo | Obligatoria para propietarios y administradores |
 | Credencial de prueba compartida | Expuesta fuera del gestor de secretos | Rotar y revocar sesiones |
 
-### 2.1 Hardening de código en release PR #49
+### 2.1 Hardening de código activo — PR #49
 
-Validado localmente con suites completas; aún no equivale a despliegue:
+Validado con suites completas, CI y runtime Render/Vercel el 2026-07-22:
 
 - uploads autenticados, límites estrictos, re-encode Sharp sin metadatos y
   validación de origen/carpeta para objetos gestionados;
@@ -45,8 +45,8 @@ Validado localmente con suites completas; aún no equivale a despliegue:
 
 No se añadió certificate pinning, bloqueo del origen Render, WAF agresivo,
 renovación de claves ni cambio Supabase. Esos controles requieren operación
-externa y rollback independiente. Confirmar merge/deploy en
-`CONTEXTO_PROYECTO.md` antes de asumirlos activos.
+externa y rollback independiente. Evidencia de merge/deploy en
+`CONTEXTO_PROYECTO.md` y `REPORTE_RELEASE_2026-07-22.md`.
 
 ## 3. Acciones obligatorias sin cambio de codigo
 
