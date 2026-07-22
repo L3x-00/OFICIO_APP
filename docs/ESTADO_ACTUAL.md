@@ -8,8 +8,8 @@
 > Se unificó aquí para no volver a tener dos documentos de estado divergentes.
 > El histórico de este archivo está en git.
 >
-> **Última sincronización:** 2026-07-22. Release consolidado PR #49 desplegado
-> en `main@db0d000`; CI, Render y Vercel verificados. Hardening, correcciones
+> **Última sincronización:** 2026-07-22. Release consolidado PR #49, runtime
+> `db0d000`; CI, Render y Vercel verificados. Hardening, correcciones
 > funcionales y UX autorizada están activos en backend/web/admin. Publicación
 > del nuevo `.aab` sigue a cargo del propietario. Ver §9–§10 del documento
 > canónico para checks, alcance y pendientes operativos reales.
