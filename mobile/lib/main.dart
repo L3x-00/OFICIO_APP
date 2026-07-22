@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/feature_flags.dart';
 import 'core/router/app_router.dart';
 import 'core/services/fcm_service.dart';
@@ -192,6 +193,8 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   /// cada `notifyListeners()` de auth (restoreSession + refresh + sync)
   /// pusheaba otra instancia → la pantalla aparecía 2-3 veces.
   bool _setupPasswordPushing = false;
+  bool _providerApprovalShowing = false;
+  bool _trustRejectionShowing = false;
 
   @override
   void initState() {
@@ -499,31 +502,36 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   Future<void> _tryShowProviderApproval(
     ProviderApprovalPayload approval,
   ) async {
+    if (_providerApprovalShowing) return;
+    _providerApprovalShowing = true;
     BuildContext? navCtx;
-    // Hasta 30 frames (~500ms en 60fps) esperando al navigator.
-    for (var i = 0; i < 30; i++) {
-      navCtx = _navigatorKey.currentContext;
-      if (navCtx != null && navCtx.mounted) break;
-      await Future<void>.delayed(const Duration(milliseconds: 16));
+    try {
+      // Hasta 30 frames (~500ms en 60fps) esperando al navigator.
+      for (var i = 0; i < 30; i++) {
+        navCtx = _navigatorKey.currentContext;
+        if (navCtx != null && navCtx.mounted) break;
+        await Future<void>.delayed(const Duration(milliseconds: 16));
+        if (!mounted) return;
+      }
+      if (navCtx == null || !navCtx.mounted) {
+        debugPrint(
+          'Welcome modal: navCtx aun null tras 500ms; '
+          'se reintentara en el proximo cambio de estado',
+        );
+        return;
+      }
       if (!mounted) return;
-    }
-    if (navCtx == null || !navCtx.mounted) {
-      debugPrint(
-        '⚠️ Welcome modal: navCtx aún null tras 500ms — '
-        'flag queda puesto para próximo retry',
+      await WelcomeProviderPlanModal.showIfFirstTime(
+        navCtx,
+        displayName: approval.displayName,
+        providerId: approval.providerId,
       );
-      return;
+      if (mounted) {
+        context.read<AuthProvider>().clearPendingProviderApproval();
+      }
+    } finally {
+      _providerApprovalShowing = false;
     }
-    if (!mounted) return;
-    // Limpiamos ANTES del await del modal — evita doble apertura si
-    // el listener se dispara durante el showDialog. La gate del propio
-    // modal (SharedPreferences por providerId) cubre el resto.
-    context.read<AuthProvider>().clearPendingProviderApproval();
-    await WelcomeProviderPlanModal.showIfFirstTime(
-      navCtx,
-      displayName: approval.displayName,
-      providerId: approval.providerId,
-    );
   }
 
   /// Dialog informativo cuando el admin elimina el perfil del user.
@@ -580,17 +588,40 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
   /// limpia `pendingTrustRejection` tras mostrar — mismo patrón robusto que la
   /// aprobación, para que el rechazo aparezca sin reiniciar la app.
   Future<void> _tryShowTrustRejection(TrustRejectionPayload payload) async {
+    if (_trustRejectionShowing) return;
+    _trustRejectionShowing = true;
     BuildContext? navCtx;
-    for (var i = 0; i < 30; i++) {
-      navCtx = _navigatorKey.currentContext;
-      if (navCtx != null && navCtx.mounted) break;
-      await Future<void>.delayed(const Duration(milliseconds: 16));
-      if (!mounted) return;
+    try {
+      for (var i = 0; i < 30; i++) {
+        navCtx = _navigatorKey.currentContext;
+        if (navCtx != null && navCtx.mounted) break;
+        await Future<void>.delayed(const Duration(milliseconds: 16));
+        if (!mounted) return;
+      }
+      if (navCtx == null || !navCtx.mounted || !mounted) return;
+
+      final receiptKey =
+          payload.isProviderRegistration && payload.notificationId != null
+          ? 'seen_provider_rejection_${payload.notificationId}'
+          : null;
+      if (receiptKey != null) {
+        final prefs = await SharedPreferences.getInstance();
+        if (prefs.getBool(receiptKey) == true) {
+          if (mounted) context.read<AuthProvider>().clearTrustRejection();
+          return;
+        }
+      }
+
+      if (!navCtx.mounted || !mounted) return;
+      await showTrustRejectionDialog(navCtx, payload);
+      if (receiptKey != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(receiptKey, true);
+      }
+      if (mounted) context.read<AuthProvider>().clearTrustRejection();
+    } finally {
+      _trustRejectionShowing = false;
     }
-    if (navCtx == null || !navCtx.mounted) return;
-    if (!mounted) return;
-    context.read<AuthProvider>().clearTrustRejection();
-    showTrustRejectionDialog(navCtx, payload);
   }
 
   /// Intenta mostrar dialog bloqueante de cuenta eliminada. Reintenta
@@ -684,7 +715,7 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
     int? providerId = dash.profile?.id;
     providerId ??= () {
       final data = auth.providerDataFor(auth.activeProfileType ?? 'OFICIO');
-      final raw = data?['id'];
+      final raw = data?['providerId'] ?? data?['id'];
       return raw is int ? raw : null;
     }();
     if (providerId == null) {
@@ -747,6 +778,10 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
       notif,
       targetUserId: message.data['targetUserId'],
     );
+    final type = message.data['type'] as String?;
+    if (type == 'PROVIDER_APPROVED' || type == 'PROVIDER_REJECTED') {
+      context.read<AuthProvider>().refreshProviderStatus();
+    }
   }
 
   /// Extrae la imageUrl del RemoteMessage (data o bloques nativos).
@@ -801,7 +836,11 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         // si hay un perfil aprobado, _syncProviderStatus encola el modal
         // y _onAuthChanged lo muestra sobre la pantalla actual.
         context.read<AuthProvider>().refreshProviderStatus();
-        widget.router.go('/profile');
+      case 'PROVIDER_REJECTED':
+        // No forzar ruta: el rechazo se muestra como overlay global sobre
+        // la pantalla actual. El refresh recupera motivo + id persistidos,
+        // incluso si el socket se perdió mientras la app estaba pausada.
+        context.read<AuthProvider>().refreshProviderStatus();
       case 'PLAN_APROBADO':
         // Cold-start desde push (app en background/terminada): el socket NO
         // recibió PLAN_APROBADO en vivo, así que el carrusel de beneficios
@@ -820,7 +859,6 @@ class _AuthSideEffectsState extends State<_AuthSideEffects>
         planAuth.refreshProviderStatus();
         widget.router.go('/profile');
       case 'NEW_REVIEW':
-      case 'PROVIDER_REJECTED':
       case 'PLAN_RECHAZADO':
       case 'PLAN_CANCELADO':
         widget.router.go('/profile');

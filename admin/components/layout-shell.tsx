@@ -5,7 +5,7 @@ import { Sidebar } from './sidebar';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Bell, Search, ChevronRight, Menu, X, LogOut } from 'lucide-react';
 import { useAdminSocket } from '@/hooks/useAdminSocket';
-import { AdminNotificationPayload } from '@/lib/socket';
+import { AdminNotificationPayload, disconnectAdminSocket } from '@/lib/socket';
 import { getNotifications, markNotificationRead, markAllNotificationsRead, clearAdminToken } from '@/lib/api';
 import type { NotificationItem } from '@/lib/api';
 import { toast } from 'sonner';
@@ -46,12 +46,26 @@ function Topbar({ onMenuClick, mobileOpen }: TopbarProps) {
   const menuRef  = useRef<HTMLDivElement | null>(null);
 
   const refreshNotifs = useCallback(() => {
-    getNotifications(1)
+    getNotifications({ page: 1 })
       .then((res) => { setPendingCount(res.unreadCount); setItems(res.data); })
       .catch(() => {});
   }, []);
 
   useEffect(() => { refreshNotifs(); }, [refreshNotifs]);
+
+  // Respaldo liviano para pestañas abiertas por horas. El socket sigue
+  // siendo inmediato; este ciclo corrige cualquier evento perdido.
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (!document.hidden) refreshNotifs();
+    };
+    const timer = window.setInterval(refreshWhenVisible, 60_000);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [refreshNotifs]);
 
   // Cierra dropdowns al hacer click fuera. Pattern estándar para popovers
   // hechos a mano (sin Radix) — listener global mientras estén abiertos.
@@ -69,17 +83,15 @@ function Topbar({ onMenuClick, mobileOpen }: TopbarProps) {
   }, [notifOpen, menuOpen]);
 
   const handleAdminEvent = useCallback((payload: AdminNotificationPayload) => {
-    setPendingCount((n) => n + 1);
-    refreshNotifs();
     const route = EVENT_ROUTES[payload.type];
     toast(payload.title, {
       description: payload.body,
       duration: 6000,
       action: route ? { label: 'Ver', onClick: () => router.push(route) } : undefined,
     });
-  }, [router, refreshNotifs]);
+  }, [router]);
 
-  useAdminSocket(handleAdminEvent);
+  useAdminSocket(handleAdminEvent, refreshNotifs);
 
   const breadcrumbs: Record<string, string[]> = {
     '/':                          ['Dashboard'],
@@ -130,6 +142,7 @@ function Topbar({ onMenuClick, mobileOpen }: TopbarProps) {
   }
 
   function logout() {
+    disconnectAdminSocket();
     clearAdminToken();
     router.push('/login');
   }

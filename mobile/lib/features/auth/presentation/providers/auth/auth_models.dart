@@ -20,10 +20,14 @@ class TrustRejectionPayload {
   final String reason;
   final String profileType;
   final String? rejectedAt;
+  final int? notificationId;
+  final bool isProviderRegistration;
   const TrustRejectionPayload({
     required this.reason,
     required this.profileType,
     this.rejectedAt,
+    this.notificationId,
+    this.isProviderRegistration = false,
   });
 }
 

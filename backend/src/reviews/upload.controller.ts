@@ -4,10 +4,14 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MinioService } from '../common/minio.service.js';
 import { memOpts } from '../common/multer-image.config.js';
+import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { RolesGuard } from '../auth/roles.guard.js';
+import { Roles } from '../auth/roles.decorator.js';
 
 const FOLDERS = {
   reviewEvidence: 'reviews/evidence',
@@ -17,6 +21,7 @@ const FOLDERS = {
 } as const;
 
 @Controller('upload')
+@UseGuards(JwtAuthGuard)
 export class UploadController {
   constructor(private readonly minio: MinioService) {}
 
@@ -60,6 +65,8 @@ export class UploadController {
   // para que el cleanup (vencimiento, retención) pueda tratarlas
   // distinto del resto del catálogo (no son fotos de catálogo).
   @Post('broadcast-image')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file', memOpts))
   async uploadBroadcastImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No se recibió ninguna imagen');

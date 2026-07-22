@@ -63,13 +63,13 @@ void showProviderDeletionDialog(
   );
 }
 
-void showTrustRejectionDialog(
+Future<void> showTrustRejectionDialog(
   BuildContext context,
   TrustRejectionPayload rejection,
-) {
+) async {
   final c = context.colors;
   const accent = Color(0xFFEF4444);
-  showDialog(
+  await showDialog<void>(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.black.withValues(alpha: 0.7),
@@ -92,7 +92,9 @@ void showTrustRejectionDialog(
             ),
             const SizedBox(height: 16),
             Text(
-              'Solicitud de validación rechazada',
+              rejection.isProviderRegistration
+                  ? 'Tu perfil no fue aprobado'
+                  : 'Solicitud de validación rechazada',
               style: TextStyle(
                 color: c.textPrimary,
                 fontSize: 17,

@@ -87,6 +87,8 @@ class AuthProvider extends ChangeNotifier
   @override
   final Map<String, String> _rejectionReasonByType = {};
   @override
+  final Map<String, int> _rejectionNotificationIdByType = {};
+  @override
   final Map<String, Map<String, dynamic>> _providerDataByType = {};
 
   /// Cuando el admin recién aprueba un perfil, guardamos aquí el
@@ -168,6 +170,9 @@ class AuthProvider extends ChangeNotifier
       _providerVerificationStatus = null;
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
+      _rejectionNotificationIdByType.clear();
+      _pendingProviderApproval = null;
+      _pendingTrustRejection = null;
       notifyListeners();
       return true;
     } catch (_) {
@@ -196,8 +201,9 @@ class AuthProvider extends ChangeNotifier
   /// en `/otp`.
   AppNavigationState get navigationState {
     if (!_isInitialized) return AppNavigationState.loading;
-    if (_needsEmailVerification)
+    if (_needsEmailVerification) {
       return AppNavigationState.needsEmailVerification;
+    }
     if (_user == null && _isGuest) return AppNavigationState.guest;
     if (_user == null) return AppNavigationState.unauthenticated;
     if (_needsOnboarding) return AppNavigationState.needsOnboarding;
@@ -218,14 +224,6 @@ class AuthProvider extends ChangeNotifier
       // Refrescar token ANTES de conectar el socket y sincronizar.
       await _refreshUserToken();
       await _syncProviderStatus();
-      // Caso de aprobación recibida en background (FCM): la app puede
-      // abrir recién aquí. Si el sync revela un perfil APROBADO,
-      // encolamos el welcome modal — el gate de SharedPreferences
-      // evita re-mostrarlo si el usuario ya lo vio.
-      _enqueueProviderWelcomeIfNeeded();
-      // Cold-start: si un perfil quedó RECHAZADO (validación de datos),
-      // encola el modal "Datos no validados" para que aparezca al abrir.
-      _enqueueTrustRejectionIfNeeded();
       _connectSocketForUser(_user!.id);
       // Sincroniza el balance de monedas al abrir la app. `restoreSession`
       // trae los `coins` guardados (viejos); si el usuario recibió monedas
@@ -386,7 +384,6 @@ class AuthProvider extends ChangeNotifier
     String password, {
     bool rememberSession = false,
   }) async {
-    _isGuest = false;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -395,6 +392,7 @@ class AuthProvider extends ChangeNotifier
 
     result.when(
       success: (user) {
+        _isGuest = false;
         _user = user;
         _needsOnboarding = (user.role == null || user.role.isEmpty);
       },
@@ -408,6 +406,7 @@ class AuthProvider extends ChangeNotifier
       _providerVerificationStatus = null;
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
+      _rejectionNotificationIdByType.clear();
       await _syncProviderStatus();
       _connectSocketForUser(_user!.id);
     }
@@ -472,6 +471,7 @@ class AuthProvider extends ChangeNotifier
       _providerVerificationStatus = null;
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
+      _rejectionNotificationIdByType.clear();
       // Forzar carga completa del perfil (incluye department/province/
       // district que el endpoint /auth/social-login no devuelve).
       final freshUser = await _repo.getCurrentUser();
@@ -552,6 +552,7 @@ class AuthProvider extends ChangeNotifier
       _providerVerificationStatus = null;
       _verificationStatusByType.clear();
       _rejectionReasonByType.clear();
+      _rejectionNotificationIdByType.clear();
       await _syncProviderStatus();
       _connectSocketForUser(_user!.id);
     }
@@ -568,7 +569,6 @@ class AuthProvider extends ChangeNotifier
     required String lastName,
     String? phone,
   }) async {
-    _isGuest = false;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -583,6 +583,7 @@ class AuthProvider extends ChangeNotifier
 
     result.when(
       success: (data) {
+        _isGuest = false;
         final pendingId = data['pendingId'] as String?;
         if (pendingId != null) {
           _registration?.setPending(pendingId: pendingId, email: email);
@@ -626,6 +627,9 @@ class AuthProvider extends ChangeNotifier
     _providerVerificationStatus = null;
     _verificationStatusByType.clear();
     _rejectionReasonByType.clear();
+    _rejectionNotificationIdByType.clear();
+    _pendingProviderApproval = null;
+    _pendingTrustRejection = null;
     notifyListeners();
 
     // Invalidar tokens en el servidor en segundo plano.

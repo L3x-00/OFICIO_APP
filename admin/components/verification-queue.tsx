@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAdminSocket } from '@/hooks/useAdminSocket';
 import {
   CheckCircle, XCircle, HelpCircle, ShieldOff,
-  Loader2, FileText, Image, Phone, Mail, MapPin,
+  Loader2, FileText, Phone, Mail, MapPin,
   ChevronDown, ChevronUp, RefreshCw,
 } from 'lucide-react';
 import {
@@ -18,10 +18,14 @@ import {
   Provider,
 } from '@/lib/api';
 import { toast } from 'sonner';
+import { ProviderPhotoGallery } from './provider-photo-gallery';
 
 type Tab = 'pending' | 'verified';
 
 type Action = 'approve' | 'reject' | 'info' | 'revoke' | null;
+
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 interface ModalState {
   provider: VerificationProvider | Provider;
@@ -44,8 +48,8 @@ export function VerificationQueue() {
     try {
       const data = await getPendingVerifications();
       setPending(data);
-    } catch (e: any) {
-      toast.error(e?.message || 'Error al cargar solicitudes pendientes');
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, 'Error al cargar solicitudes pendientes'));
     } finally {
       setIsLoading(false);
     }
@@ -56,8 +60,8 @@ export function VerificationQueue() {
     try {
       const data = await getProviders(1, undefined);
       setVerified(data.data.filter((p) => p.isVerified));
-    } catch (e: any) {
-      toast.error(e?.message || 'Error al cargar proveedores verificados');
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, 'Error al cargar proveedores verificados'));
     } finally {
       setIsLoading(false);
     }
@@ -78,8 +82,8 @@ export function VerificationQueue() {
     try {
       await approveVerification(id);
       await loadPending();
-    } catch (e: any) {
-      toast.error(e?.message || 'Error al aprobar la verificación');
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, 'Error al aprobar la verificación'));
     } finally {
       setActionId(null);
     }
@@ -102,8 +106,8 @@ export function VerificationQueue() {
       setReason('');
       if (tab === 'pending') await loadPending();
       else await loadVerified();
-    } catch (e: any) {
-      toast.error(e?.message || 'Error al procesar la acción');
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, 'Error al procesar la acción'));
     } finally {
       setModalLoading(false);
     }
@@ -217,6 +221,21 @@ export function VerificationQueue() {
                       </p>
                     )}
 
+                    <ProviderPhotoGallery
+                      providerId={p.id}
+                      images={p.images}
+                      allowEmptyUpload
+                      onUploaded={(image) =>
+                        setPending((current) =>
+                          current.map((provider) =>
+                            provider.id === p.id
+                              ? { ...provider, images: [image] }
+                              : provider,
+                          ),
+                        )
+                      }
+                    />
+
                     {/* Documentos */}
                     {p.verificationDocs.length > 0 && (
                       <div>
@@ -301,7 +320,7 @@ export function VerificationQueue() {
                     <td className="p-4 text-sm text-gray-400">{p.locality.name}</td>
                     <td className="p-4">
                       <button
-                        onClick={() => setModal({ provider: p as any, action: 'revoke' })}
+                        onClick={() => setModal({ provider: p, action: 'revoke' })}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold hover:bg-red-500/20 transition-all"
                       >
                         <ShieldOff size={12} /> Revocar
@@ -325,7 +344,7 @@ export function VerificationQueue() {
               {modal.action === 'revoke' && 'Revocar verificación'}
             </h3>
             <p className="text-gray-500 text-sm mb-4">
-              {(modal.provider as any).businessName}
+              {modal.provider.businessName}
             </p>
 
             <label className="block text-xs font-medium text-gray-400 mb-1.5">

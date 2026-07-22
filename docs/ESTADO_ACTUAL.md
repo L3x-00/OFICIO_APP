@@ -8,11 +8,17 @@
 > Se unificó aquí para no volver a tener dos documentos de estado divergentes.
 > El histórico de este archivo está en git.
 >
-> **Última sincronización:** 2026-07-13. PR #37 mergeado; Render, CI y
-> Vercel verificados. Ver §10 del documento canónico para SQL aplicado,
-> estado local y pendientes reales.
+> **Última sincronización:** 2026-07-22. Producción continúa en el estado
+> verificado de PR #37/#38 hasta completar el release consolidado PR #49.
+> Hardening, correcciones funcionales y UX autorizada ya están versionados y
+> validados globalmente; falta CI/merge/deploy. Ver §9–§10 del documento
+> canónico para checks, alcance y pendientes operativos reales.
 >
 > Reactivación futura, independiente y reversible:
 > **[`REACTIVACION_FUNCIONALIDADES_OCULTAS.md`](REACTIVACION_FUNCIONALIDADES_OCULTAS.md)**.
 >
-> Contexto, tooling de agentes, CI web y Graphify sincronizados mediante PR #38.
+> Seguridad externa y pasos manuales:
+> **[`SEGURIDAD_OPERATIVA.md`](SEGURIDAD_OPERATIVA.md)**.
+>
+> Graphify fue regenerado desde worktree limpio en `e58a0f4` el 2026-07-22;
+> usar `GRAPH_REPORT.md`/`graph.json`. No regenerar sobre el árbol local sucio.

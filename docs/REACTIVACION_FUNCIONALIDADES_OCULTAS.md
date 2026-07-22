@@ -98,7 +98,7 @@ funciones.
 |---|---|---|---|---|---|
 | Subastas | `FEATURE_SUBASTAS=true` | `kSubastasEnabled=true` + `.aab` | Restaurar nav y `SUBASTAS_ENABLED` + deploy | Sin cambio | Sin SQL |
 | Ofertas | `FEATURE_OFERTAS=true` | `kOfertasEnabled=true` + `.aab` | No hay storefront web de `offer_posts` | Restaurar nav + deploy | Sin SQL |
-| Referidos | `FEATURE_REFERIDOS=true` | `kReferidosEnabled=true` + `.aab` | `NEXT_PUBLIC_FEATURE_REFERIDOS=true`, restaurar ruta/nav/banner | Historial ya accesible | SQL manual Ofi |
+| Referidos | `FEATURE_REFERIDOS=true` | `kReferidosEnabled=true` + `.aab` | `NEXT_PUBLIC_FEATURE_REFERIDOS=true`, restaurar ruta/nav/banner | Restaurar nav/widget; rutas vivas | SQL manual Ofi |
 | Agenda | `FEATURE_AGENDA=true` | Dinámico desde `features`; sin `.aab` | Sin switch dedicado | Sin cambio | SQL manual solo si falta en categorías |
 | Cotización | `FEATURE_COTIZACION=true` | Dinámico desde `features`; sin `.aab` | Restaurar copy si se desea | Sin cambio | SQL manual solo si falta en categorías |
 | Carta/Catálogo OFICIO | PR backend; ideal flags nuevos | Dinámico desde `features` | Dinámico si consume `features` | Admin actual no edita `features` | SQL manual solo si falta en categorías |
@@ -482,7 +482,7 @@ Requiere nuevo build/deploy. Ese flag restaura automáticamente:
 - Aplicación del código en onboarding.
 - FAQ, Acerca de, manual y FAQ del widget IA.
 
-Además hay tres bloques manuales:
+Además hay cuatro bloques manuales:
 
 1. Restaurar la implementación de `web/app/panel/referidos/page.tsx`. La versión
    anterior puede consultarse con:
@@ -502,7 +502,24 @@ Además hay tres bloques manuales:
 Antes del deploy, corregir `PLAN_REWARDS` en
 `web/components/referral-panel.tsx` a `1000/2000`.
 
-### 5.7 Prueba mínima
+### 5.7 Admin
+
+Los endpoints, páginas `/referrals` y `/rewards` e historial permanecen vivos.
+El ocultamiento solo retiró navegación y el widget del dashboard. Para
+reactivarlos juntos con `FEATURE_REFERIDOS`:
+
+1. En `admin/components/sidebar.tsx`, restaurar imports `Coins` y `Gift` desde
+   `lucide-react`.
+2. Descomentar el grupo `Crecimiento` con enlaces `/referrals` y `/rewards`.
+3. En `admin/app/page.tsx`, restaurar import `ReferralsWidget` y su render donde
+   está el comentario `OCULTO (2026-07)`.
+4. Ejecutar tests, type-check y build Admin; desplegar por Vercel.
+
+No crear endpoints nuevos, no tocar tablas y no eliminar historial. Si solo se
+quiere auditoría interna, las URLs directas ya funcionan y no hace falta hacer
+pública la navegación.
+
+### 5.8 Prueba mínima
 
 1. Usuario obtiene código y lo aplica otro usuario.
 2. Aprobación del proveedor acredita exactamente `25` y `5` una sola vez.
@@ -512,12 +529,13 @@ Antes del deploy, corregir `PLAN_REWARDS` en
 6. Ofi responde con `25/5` y `1000/2000`, nunca con cifras antiguas.
 7. Probar historial y saldos previamente congelados.
 
-### 5.8 Rollback
+### 5.9 Rollback
 
 1. Poner `NEXT_PUBLIC_FEATURE_REFERIDOS=false` y desplegar web.
 2. Publicar móvil con `kReferidosEnabled=false`.
-3. Poner `FEATURE_REFERIDOS=false` en Render.
-4. Aplicar manualmente:
+3. Volver a comentar grupo `Crecimiento` y `ReferralsWidget` en Admin; desplegar.
+4. Poner `FEATURE_REFERIDOS=false` en Render.
+5. Aplicar manualmente:
 
    ```sql
    UPDATE ai_knowledge_entries
@@ -525,7 +543,7 @@ Antes del deploy, corregir `PLAN_REWARDS` en
    WHERE topic = 'referidos_y_monedas';
    ```
 
-5. No borrar saldos, códigos, referrals ni redemptions.
+6. No borrar saldos, códigos, referrals ni redemptions.
 
 ---
 
@@ -872,6 +890,7 @@ npm run build
 - [ ] `kReferidosEnabled=true`.
 - [ ] `NEXT_PUBLIC_FEATURE_REFERIDOS=true` y web redeployada.
 - [ ] Ruta/nav/banner web restaurados.
+- [ ] Nav Referidos/Recompensas y widget dashboard Admin restaurados.
 - [ ] Idempotencia de aprobación validada.
 - [ ] Nuevo `.aab` publicado.
 

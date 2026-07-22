@@ -124,14 +124,25 @@ describe('EventsGateway (unit)', () => {
 
     it('payload incompleto (sin role) → disconnect', async () => {
       jwt.verify.mockReturnValue({ sub: 7, email: 'a@b.com' });
-      const client = mkClient({ handshake: { auth: { token: 'tok' }, headers: {} } });
+      const client = mkClient({
+        handshake: { auth: { token: 'tok' }, headers: {} },
+      });
       await gateway.handleConnection(client as any);
       expect(client.disconnect).toHaveBeenCalledWith(true);
     });
 
     it('token válido USUARIO → une a su sala personal (no a admin)', async () => {
       jwt.verify.mockReturnValue({ sub: 7, email: 'a@b.com', role: 'USUARIO' });
-      const client = mkClient({ handshake: { auth: { token: 'Bearer tok' }, headers: {} } });
+      prisma.user.findUnique.mockResolvedValue({
+        id: 7,
+        email: 'a@b.com',
+        role: 'USUARIO',
+        isActive: true,
+        deletedAt: null,
+      });
+      const client = mkClient({
+        handshake: { auth: { token: 'Bearer tok' }, headers: {} },
+      });
       await gateway.handleConnection(client as any);
       expect(client.join).toHaveBeenCalledWith('user_7');
       expect(client.join).not.toHaveBeenCalledWith('admin');
@@ -140,17 +151,66 @@ describe('EventsGateway (unit)', () => {
 
     it('token válido ADMIN → une a su sala + sala admin', async () => {
       jwt.verify.mockReturnValue({ sub: 1, email: 'a@b.com', role: 'ADMIN' });
-      const client = mkClient({ handshake: { auth: { token: 'tok' }, headers: {} } });
+      prisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        email: 'a@b.com',
+        role: 'ADMIN',
+        isActive: true,
+        deletedAt: null,
+      });
+      const client = mkClient({
+        handshake: { auth: { token: 'tok' }, headers: {} },
+      });
       await gateway.handleConnection(client as any);
       expect(client.join).toHaveBeenCalledWith('user_1');
       expect(client.join).toHaveBeenCalledWith('admin');
+    });
+
+    it('usuario suspendido en BD → disconnect aunque el JWT siga vigente', async () => {
+      jwt.verify.mockReturnValue({ sub: 7, email: 'a@b.com', role: 'USUARIO' });
+      prisma.user.findUnique.mockResolvedValue({
+        id: 7,
+        email: 'a@b.com',
+        role: 'USUARIO',
+        isActive: false,
+        deletedAt: null,
+      });
+      const client = mkClient({
+        handshake: { auth: { token: 'tok' }, headers: {} },
+      });
+
+      await gateway.handleConnection(client as any);
+
+      expect(client.disconnect).toHaveBeenCalledWith(true);
+      expect(client.join).not.toHaveBeenCalled();
+    });
+
+    it('usa el rol actual de BD y no privilegios admin antiguos del JWT', async () => {
+      jwt.verify.mockReturnValue({ sub: 7, email: 'a@b.com', role: 'ADMIN' });
+      prisma.user.findUnique.mockResolvedValue({
+        id: 7,
+        email: 'a@b.com',
+        role: 'USUARIO',
+        isActive: true,
+        deletedAt: null,
+      });
+      const client = mkClient({
+        handshake: { auth: { token: 'tok' }, headers: {} },
+      });
+
+      await gateway.handleConnection(client as any);
+
+      expect(client.join).toHaveBeenCalledWith('user_7');
+      expect(client.join).not.toHaveBeenCalledWith('admin');
     });
 
     it('jwt.verify lanza → disconnect (token inválido)', async () => {
       jwt.verify.mockImplementation(() => {
         throw new Error('invalid');
       });
-      const client = mkClient({ handshake: { auth: { token: 'bad' }, headers: {} } });
+      const client = mkClient({
+        handshake: { auth: { token: 'bad' }, headers: {} },
+      });
       await gateway.handleConnection(client as any);
       expect(client.disconnect).toHaveBeenCalledWith(true);
     });

@@ -29,6 +29,7 @@ import {
   clearProvidersCache as sharedClearProvidersCache,
 } from './services/admin-shared.js';
 import { syncCoverageToPlan } from '../coverage/coverage.service.js';
+import { assertManagedServiceImageUrls } from '../common/service-image-validation.js';
 
 @Injectable()
 export class AdminService {
@@ -198,6 +199,27 @@ export class AdminService {
       throw new ConflictException('El correo electrónico ya está registrado.');
     }
 
+    let parsedSchedule: object | undefined;
+    if (data.scheduleJson) {
+      try {
+        parsedSchedule = JSON.parse(data.scheduleJson);
+      } catch {
+        /* Invalid JSON keeps the existing default schedule behavior. */
+      }
+    }
+    if (!parsedSchedule) {
+      parsedSchedule = {
+        lun: '8:00-18:00',
+        mar: '8:00-18:00',
+        mie: '8:00-18:00',
+        jue: '8:00-18:00',
+        vie: '8:00-18:00',
+        sab: '9:00-13:00',
+        dom: 'Cerrado',
+      };
+    }
+    assertManagedServiceImageUrls(this.minio, parsedSchedule);
+
     const bcrypt = await import('bcrypt');
     const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const tempPassword = Array.from(
@@ -243,26 +265,6 @@ export class AdminService {
       });
 
       // 2. Crear Proveedor
-      let parsedSchedule: object | undefined;
-      if (data.scheduleJson) {
-        try {
-          parsedSchedule = JSON.parse(data.scheduleJson);
-        } catch {
-          /* ignore */
-        }
-      }
-      if (!parsedSchedule) {
-        parsedSchedule = {
-          lun: '8:00-18:00',
-          mar: '8:00-18:00',
-          mie: '8:00-18:00',
-          jue: '8:00-18:00',
-          vie: '8:00-18:00',
-          sab: '9:00-13:00',
-          dom: 'Cerrado',
-        };
-      }
-
       const provider = await tx.provider.create({
         data: {
           userId: user.id,
@@ -409,6 +411,74 @@ export class AdminService {
 
     await this.clearProvidersCache(); // cambio visible en mobile/web de inmediato
     return updated;
+  }
+
+  async addProviderImageIfEmpty(id: number, file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Selecciona una imagen para el proveedor.');
+    }
+
+    const provider = await this.prisma.provider.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        images: { take: 1, select: { id: true } },
+      },
+    });
+    if (!provider) throw new NotFoundException('Proveedor no encontrado');
+    if (provider.images.length > 0) {
+      throw new ConflictException(
+        'El proveedor ya tiene una foto. No se permite reemplazarla desde admin.',
+      );
+    }
+
+    const url = await this.minio.uploadFile(
+      file.buffer,
+      file.originalname,
+      'providers/gallery',
+    );
+
+    try {
+      const image = await this.prisma.$transaction(async (tx) => {
+        // El UPDATE bloquea la fila hasta terminar la transacción. Dos admins
+        // no pueden insertar la "primera" foto al mismo tiempo.
+        await tx.provider.update({
+          where: { id },
+          data: { updatedAt: new Date() },
+          select: { id: true },
+        });
+
+        const existing = await tx.providerImage.findFirst({
+          where: { providerId: id },
+          select: { id: true },
+        });
+        if (existing) {
+          throw new ConflictException(
+            'El proveedor ya tiene una foto. No se permite reemplazarla desde admin.',
+          );
+        }
+
+        return tx.providerImage.create({
+          data: {
+            providerId: id,
+            url,
+            isCover: true,
+            order: 0,
+          },
+        });
+      });
+
+      await this.clearProvidersCache();
+      return image;
+    } catch (error) {
+      // Evita objetos huérfanos si el proveedor fue eliminado o si otra
+      // carga ganó la carrera después de subir el archivo.
+      await this.minio.deleteFile(url);
+      if ((error as { code?: string }).code === 'P2025') {
+        throw new NotFoundException('Proveedor no encontrado');
+      }
+      throw error;
+    }
   }
 
   // ── HELPER: plan → prioridad de listado ──────────────────
@@ -688,10 +758,18 @@ export class AdminService {
         'No se puede modificar el estado de un administrador',
       );
 
-    const updated = await this.prisma.user.update({
-      where: { id },
-      data: { isActive },
-      select: { id: true, email: true, isActive: true, role: true },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.user.update({
+        where: { id },
+        data: { isActive },
+        select: { id: true, email: true, isActive: true, role: true },
+      });
+
+      if (!isActive) {
+        await tx.refreshToken.deleteMany({ where: { userId: id } });
+      }
+
+      return result;
     });
 
     // Notificar en tiempo real al dispositivo del usuario para forzar cierre de sesión
@@ -736,9 +814,24 @@ export class AdminService {
       ],
     };
 
-  async getNotifications(page = 1, limit = 20) {
+  async getNotifications(page = 1, limit = 20, from?: Date, to?: Date) {
+    if (from && to && from > to) {
+      throw new BadRequestException(
+        'La fecha inicial no puede ser posterior a la fecha final',
+      );
+    }
     const skip = (page - 1) * limit;
-    const where = AdminService.ADMIN_NOTIF_WHERE;
+    const where: Prisma.AdminNotificationWhereInput = {
+      ...AdminService.ADMIN_NOTIF_WHERE,
+      ...(from || to
+        ? {
+            sentAt: {
+              ...(from ? { gte: from } : {}),
+              ...(to ? { lte: to } : {}),
+            },
+          }
+        : {}),
+    };
 
     const [notifications, total, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({
@@ -961,7 +1054,9 @@ export class AdminService {
     }
     const cleanTitle = title.trim();
     const cleanBody = message.trim();
-    const cleanImage = imageUrl?.trim() || null;
+    const cleanImage = imageUrl?.trim()
+      ? this.minio.assertManagedImageUrl(imageUrl, ['admin/broadcasts'])
+      : null;
 
     const result = await this.push.broadcast({
       title: cleanTitle,
@@ -1074,7 +1169,9 @@ export class AdminService {
     }
     const cleanSubject = subject.trim();
     const cleanBody = message.trim();
-    const cleanImage = imageUrl?.trim() || undefined;
+    const cleanImage = imageUrl?.trim()
+      ? this.minio.assertManagedImageUrl(imageUrl, ['admin/broadcasts'])
+      : undefined;
 
     // Segmentación por rol. Nunca incluimos ADMIN en correos promocionales.
     const roleFilter: Prisma.UserWhereInput =

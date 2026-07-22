@@ -217,6 +217,15 @@ export const createProvider = (data: Record<string, unknown>) =>
 export const updateProvider = (id: number, data: Record<string, unknown>) =>
   fetchApi(`/admin/providers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
+export const uploadProviderImage = (id: number, file: File) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return fetchApi<ProviderImage>(`/admin/providers/${id}/image`, {
+    method: 'POST',
+    body: formData,
+  });
+};
+
 export const deleteProvider = (id: number, reason?: string) =>
   fetchApi(`/admin/providers/${id}`, {
     method: 'DELETE',
@@ -316,8 +325,22 @@ export const updateUserStatus = (id: number, isActive: boolean) =>
   });
 
 // ── NOTIFICACIONES ─────────────────────────────────────────
-export const getNotifications = (page = 1) =>
-  fetchApi<NotificationsResponse>(`/admin/notifications?page=${page}&limit=20`);
+export interface NotificationsQuery {
+  page?: number;
+  limit?: number;
+  from?: string;
+  to?: string;
+}
+
+export const getNotifications = (query: NotificationsQuery = {}) => {
+  const params = new URLSearchParams({
+    page: String(query.page ?? 1),
+    limit: String(query.limit ?? 20),
+  });
+  if (query.from) params.set('from', query.from);
+  if (query.to) params.set('to', query.to);
+  return fetchApi<NotificationsResponse>(`/admin/notifications?${params}`);
+};
 
 export const markNotificationRead = (id: number) =>
   fetchApi(`/admin/notifications/${id}/read`, { method: 'PATCH' });
@@ -546,6 +569,13 @@ export interface ProvidersResponse {
   lastPage: number;
 }
 
+export interface ProviderImage {
+  id?: number;
+  url: string;
+  isCover: boolean;
+  order?: number;
+}
+
 export interface Provider {
   averageRating: number;
   id: number;
@@ -576,7 +606,7 @@ export interface Provider {
   showPhone?: boolean;
   showWhatsapp?: boolean;
   showExactLocation?: boolean;
-  images?: { url: string; isCover: boolean }[];
+  images?: ProviderImage[];
   isTrusted?: boolean;
   trustStatus?: string;
   isVerified: boolean;
@@ -605,7 +635,7 @@ export interface VerificationProvider {
   category: { name: string };
   locality: { name: string };
   verificationDocs: { id: number; docType: string; fileUrl: string; status: string; notes?: string }[];
-  images: { url: string; isCover: boolean }[];
+  images: ProviderImage[];
 }
 
 export interface UsersResponse {

@@ -107,6 +107,9 @@ export class PublicProfileController implements OnModuleInit {
         hasHomeService: true,
         hasDelivery: true,
         plenaCoordinacion: true,
+        showPhone: true,
+        showWhatsapp: true,
+        showExactLocation: true,
         phone: true,
         whatsapp: true,
         website: true,
@@ -167,6 +170,7 @@ export class PublicProfileController implements OnModuleInit {
     // y reaparecen si el proveedor sube de plan. Las imágenes ya vienen
     // ordenadas (isCover desc), así que el slice conserva la portada.
     const plan = provider.subscription?.plan ?? 'GRATIS';
+    const hasPaidPlan = plan === 'ESTANDAR' || plan === 'PREMIUM';
     const photoLimit = plan === 'PREMIUM' ? 10 : plan === 'ESTANDAR' ? 6 : 2;
     const visibleImages = provider.images.slice(0, photoLimit);
 
@@ -195,23 +199,29 @@ export class PublicProfileController implements OnModuleInit {
       coverUrl: cover,
       images: visibleImages,
       categories,
-      locality: provider.locality,
+      locality: provider.showExactLocation
+        ? provider.locality
+        : provider.locality
+          ? { ...provider.locality, name: null, district: null }
+          : null,
       plan: provider.subscription?.plan ?? 'GRATIS',
       // Horarios + servicios/productos viven en scheduleJson (perfil público).
       schedule,
       // Datos de contacto solo para abrir WhatsApp / llamada desde la
       // tarjeta web — no exponemos el id numérico ni el email.
       contact: {
-        phone: provider.phone,
-        whatsapp: provider.whatsapp,
-        website: provider.website,
-        instagram: provider.instagram,
-        tiktok: provider.tiktok,
-        facebook: provider.facebook,
-        linkedin: provider.linkedin,
-        telegram: provider.telegram,
-        twitterX: provider.twitterX,
-        whatsappBiz: provider.whatsappBiz,
+        phone: hasPaidPlan && provider.showPhone ? provider.phone : null,
+        whatsapp:
+          hasPaidPlan && provider.showWhatsapp ? provider.whatsapp : null,
+        website: hasPaidPlan ? provider.website : null,
+        instagram: hasPaidPlan ? provider.instagram : null,
+        tiktok: hasPaidPlan ? provider.tiktok : null,
+        facebook: hasPaidPlan ? provider.facebook : null,
+        linkedin: hasPaidPlan ? provider.linkedin : null,
+        telegram: hasPaidPlan ? provider.telegram : null,
+        twitterX: hasPaidPlan ? provider.twitterX : null,
+        whatsappBiz:
+          hasPaidPlan && provider.showWhatsapp ? provider.whatsappBiz : null,
       },
     };
   }

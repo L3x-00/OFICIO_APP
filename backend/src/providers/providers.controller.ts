@@ -7,12 +7,18 @@ import {
   Body,
   ParseIntPipe,
   UseInterceptors,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ProvidersService } from './providers.service.js';
 import { Throttle } from '@nestjs/throttler';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { TrackEventDto } from './dto/track-event.dto.js';
 import { ProviderFeaturesService } from '../common/provider-features.service.js';
+import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import { RolesGuard } from '../auth/roles.guard.js';
+import { Roles } from '../auth/roles.decorator.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
 @Controller('providers')
 export class ProvidersController {
@@ -78,11 +84,15 @@ export class ProvidersController {
   }
 
   @Get('admin/metrics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   async getAdminMetrics() {
     return this.providersService.getAdminMetrics();
   }
 
   @Get('admin/grace-providers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   async getGraceProviders() {
     return this.providersService.getGraceProviders();
   }
@@ -133,37 +143,44 @@ export class ProvidersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: TrackEventDto,
   ) {
-    return this.providersService.trackEvent(id, body.eventType, body.userId);
+    return this.providersService.trackEvent(id, body.eventType);
   }
 
   // Máximo 5 recomendaciones por minuto por IP (anti-spam)
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post(':id/recommend')
+  @UseGuards(JwtAuthGuard)
   addRecommendation(
     @Param('id', ParseIntPipe) id: number,
-    @Body('userId') userId: number,
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.providersService.addRecommendation(+userId, id);
+    return this.providersService.addRecommendation(req.user.userId, id);
   }
 
   // POST /providers/report-issue — Proveedor reporta un problema de plataforma
   @Post('report-issue')
-  createPlatformIssue(@Body() body: { userId: number; description: string }) {
+  @UseGuards(JwtAuthGuard)
+  createPlatformIssue(
+    @Request() req: AuthenticatedRequest,
+    @Body() body: { userId?: number; description: string },
+  ) {
     return this.providersService.createPlatformIssue(
-      +body.userId,
+      req.user.userId,
       body.description,
     );
   }
 
   // POST /providers/:id/report — Cliente reporta un proveedor
   @Post(':id/report')
+  @UseGuards(JwtAuthGuard)
   createReport(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { userId: number; reason: string; description?: string },
+    @Request() req: AuthenticatedRequest,
+    @Body() body: { userId?: number; reason: string; description?: string },
   ) {
     return this.providersService.createReport({
       providerId: id,
-      userId: +body.userId,
+      userId: req.user.userId,
       reason: body.reason,
       description: body.description,
     });
@@ -171,19 +188,21 @@ export class ProvidersController {
 
   // GET /providers/:id/recommendation-status?userId=X
   @Get(':id/recommendation-status')
+  @UseGuards(JwtAuthGuard)
   getRecommendationStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Query('userId') userId: string,
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.providersService.getRecommendationStatus(+userId, id);
+    return this.providersService.getRecommendationStatus(req.user.userId, id);
   }
 
   // POST /providers/:id/recommend-toggle
   @Post(':id/recommend-toggle')
+  @UseGuards(JwtAuthGuard)
   toggleRecommendation(
     @Param('id', ParseIntPipe) id: number,
-    @Body('userId') userId: number,
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.providersService.toggleRecommendation(+userId, id);
+    return this.providersService.toggleRecommendation(req.user.userId, id);
   }
 }

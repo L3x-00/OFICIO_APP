@@ -13,7 +13,13 @@ export class DiagnosticInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler) {
     const request = context.switchToHttp().getRequest();
-    const { method, url, body } = request;
+    const { method, url } = request;
+    const body =
+      request.body &&
+      typeof request.body === 'object' &&
+      !Array.isArray(request.body)
+        ? { fields: Object.keys(request.body).slice(0, 20) }
+        : undefined;
 
     return next.handle().pipe(
       tap({

@@ -13,16 +13,17 @@ import {
   Res,
   UseGuards,
   UseInterceptors,
+  UploadedFile,
   UploadedFiles,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 import { AdminService } from './admin.service.js';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
+import { memOpts, providerImagesOpts } from '../common/multer-image.config.js';
 import { CreateProviderDto } from './dto/create-provider.dto.js';
 import { UpdateProviderDto } from './dto/update-provider.dto.js';
 import { ReasonDto, OptionalReasonDto } from './dto/reason.dto.js';
@@ -30,6 +31,7 @@ import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 import { BroadcastNotificationDto } from './dto/broadcast-notification.dto.js';
 import { BroadcastEmailDto } from './dto/broadcast-email.dto.js';
 import { NotifyProviderDto } from './dto/notify-provider.dto.js';
+import { NotificationsQueryDto } from './dto/notifications-query.dto.js';
 import { LocalitiesService } from '../localities/localities.service.js';
 import {
   CreateLocalityDto,
@@ -137,7 +139,7 @@ export class AdminController {
 
   @Post('providers')
   // 'images' es el nombre del campo en el FormData, permitimos hasta 4 fotos
-  @UseInterceptors(FilesInterceptor('images', 4, { storage: memoryStorage() }))
+  @UseInterceptors(FilesInterceptor('images', 4, providerImagesOpts))
   createProvider(
     @Body() body: CreateProviderDto,
     @UploadedFiles() files: Express.Multer.File[],
@@ -152,6 +154,15 @@ export class AdminController {
     @Body() body: UpdateProviderDto,
   ) {
     return this.adminService.updateProvider(id, body);
+  }
+
+  @Post('providers/:id/image')
+  @UseInterceptors(FileInterceptor('image', memOpts))
+  addProviderImageIfEmpty(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.adminService.addProviderImageIfEmpty(id, file);
   }
 
   @Patch('providers/:id/toggle-visibility')
@@ -251,13 +262,12 @@ export class AdminController {
   // ── NOTIFICACIONES ────────────────────────────────────────
 
   @Get('notifications')
-  getNotifications(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  getNotifications(@Query() query: NotificationsQueryDto) {
     return this.adminService.getNotifications(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
+      query.page,
+      query.limit,
+      query.from ? new Date(query.from) : undefined,
+      query.to ? new Date(query.to) : undefined,
     );
   }
 

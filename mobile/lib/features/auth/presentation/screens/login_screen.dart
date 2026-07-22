@@ -110,12 +110,8 @@ class _LoginScreenState extends State<LoginScreen>
           MaterialPageRoute(builder: (_) => const OtpVerificationScreen()),
         );
       } else if (!ok && mounted) {
-        final error = auth.error ?? 'Error al registrarse';
+        final error = _friendlyRegistrationError(auth.error);
         context.showErrorSnack(error);
-        // Cuenta ya existe → llevar a login
-        if (_isConflictError(error)) {
-          _switchMode(AuthMode.login);
-        }
       }
     } else {
       final ok = await auth.login(
@@ -133,14 +129,39 @@ class _LoginScreenState extends State<LoginScreen>
         }
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (!ok && mounted) {
-        final error = auth.error ?? 'Correo o contraseña incorrectos';
+        final error = _friendlyLoginError(auth.error);
         context.showErrorSnack(error);
-        // Correo no registrado → llevar a registro
-        if (_isNotRegisteredError(error)) {
-          _switchMode(AuthMode.register);
-        }
       }
     }
+  }
+
+  String _friendlyLoginError(String? error) {
+    final message = error?.trim();
+    if (message == null || message.isEmpty) {
+      return 'Correo o contraseña incorrectos. Revisa tus datos e inténtalo nuevamente.';
+    }
+    if (_isNotRegisteredError(message)) {
+      return 'No encontramos una cuenta con este correo. Regístrate gratis para continuar.';
+    }
+
+    final lower = message.toLowerCase();
+    if (lower.contains('contraseña incorrecta') ||
+        lower.contains('credenciales') ||
+        lower == 'unauthorized') {
+      return 'Correo o contraseña incorrectos. Revisa tus datos e inténtalo nuevamente.';
+    }
+    return message;
+  }
+
+  String _friendlyRegistrationError(String? error) {
+    final message = error?.trim();
+    if (message == null || message.isEmpty) {
+      return 'No pudimos crear tu cuenta. Revisa tus datos e inténtalo nuevamente.';
+    }
+    if (_isConflictError(message)) {
+      return 'Este correo ya está registrado. Inicia sesión o recupera tu contraseña.';
+    }
+    return message;
   }
 
   /// Detecta errores de correo no registrado (404 del backend)

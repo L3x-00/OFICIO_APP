@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
@@ -78,18 +80,21 @@ class WelcomeProviderPlanModal extends StatefulWidget {
     if (!context.mounted) return;
     // Gate: el tutorial del panel espera a que este modal se cierre.
     ShowcaseManager.blockingModalActive = true;
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.65),
-      builder: (_) => WelcomeProviderPlanModal(
-        displayName: displayName,
-        providerId: providerId,
-        plan: plan,
-      ),
-    );
-    ShowcaseManager.blockingModalActive = false;
-    await markShown(providerId, plan: plan);
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withValues(alpha: 0.65),
+        builder: (_) => WelcomeProviderPlanModal(
+          displayName: displayName,
+          providerId: providerId,
+          plan: plan,
+        ),
+      );
+      await markShown(providerId, plan: plan);
+    } finally {
+      ShowcaseManager.blockingModalActive = false;
+    }
   }
 
   @override
@@ -98,9 +103,10 @@ class WelcomeProviderPlanModal extends StatefulWidget {
 }
 
 class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _page = PageController();
   late final AnimationController _fadeCtrl;
+  late final AnimationController _celebrationCtrl;
   late final Animation<double> _fade;
   int _currentPage = 0;
 
@@ -285,13 +291,19 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
       duration: const Duration(milliseconds: 380),
     );
     _fade = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeIn);
+    _celebrationCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    );
     _fadeCtrl.forward();
+    _celebrationCtrl.forward();
   }
 
   @override
   void dispose() {
     _page.dispose();
     _fadeCtrl.dispose();
+    _celebrationCtrl.dispose();
     super.dispose();
   }
 
@@ -312,95 +324,111 @@ class _WelcomeProviderPlanModalState extends State<WelcomeProviderPlanModal>
   Widget build(BuildContext context) {
     final c = context.colors;
 
-    return FadeTransition(
-      opacity: _fade,
-      child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 48),
-        backgroundColor: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.bgCard,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 40,
-                offset: const Offset(0, 16),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ── Carrusel ─────────────────────────────────────
-              SizedBox(
-                height: 360,
-                child: PageView.builder(
-                  controller: _page,
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  itemCount: _slides.length,
-                  itemBuilder: (_, i) => _SlidePage(
-                    slide: _slides[i],
-                    displayName: widget.displayName,
-                    isFirst: i == 0,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        FadeTransition(
+          opacity: _fade,
+          child: Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 48,
+            ),
+            backgroundColor: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: c.bgCard,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 40,
+                    offset: const Offset(0, 16),
                   ),
-                ),
+                ],
               ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Carrusel ─────────────────────────────────────
+                  SizedBox(
+                    height: 360,
+                    child: PageView.builder(
+                      controller: _page,
+                      onPageChanged: (i) => setState(() => _currentPage = i),
+                      itemCount: _slides.length,
+                      itemBuilder: (_, i) => _SlidePage(
+                        slide: _slides[i],
+                        displayName: widget.displayName,
+                        isFirst: i == 0,
+                      ),
+                    ),
+                  ),
 
-              // ── Dots indicador ───────────────────────────────
-              Padding(
-                padding: const EdgeInsets.only(top: 6, bottom: 14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    _slides.length,
-                    (i) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 280),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: _currentPage == i ? 24 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: _currentPage == i
-                            ? AppColors.amber
-                            : Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(3),
+                  // ── Dots indicador ───────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, bottom: 14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        _slides.length,
+                        (i) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 280),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: _currentPage == i ? 24 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: _currentPage == i
+                                ? AppColors.amber
+                                : Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
 
-              // ── Botón único: "Siguiente" hasta el final, "Entendido" en el último.
-              Padding(
-                padding: const EdgeInsets.fromLTRB(22, 4, 22, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _next,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.amber,
-                      foregroundColor: const Color(0xFF3D2B00),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      _isLast ? 'Entendido' : 'Siguiente',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                  // ── Botón único: "Siguiente" hasta el final, "Entendido" en el último.
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 4, 22, 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _next,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.amber,
+                          foregroundColor: const Color(0xFF3D2B00),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          _isLast ? 'Entendido' : 'Siguiente',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        if (!MediaQuery.disableAnimationsOf(context))
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _CelebrationPainter(_celebrationCtrl),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -520,4 +548,53 @@ class _SlidePage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _CelebrationPainter extends CustomPainter {
+  static const _colors = <Color>[
+    AppColors.amber,
+    AppColors.primary,
+    AppColors.available,
+    Color(0xFFEF4444),
+    Color(0xFF8A78B0),
+  ];
+
+  final Animation<double> animation;
+
+  _CelebrationPainter(this.animation) : super(repaint: animation);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    for (var i = 0; i < 36; i++) {
+      final phase = (i * 0.173) % 1;
+      final fall = (animation.value * 1.25 + phase) % 1;
+      final baseX = ((i * 83) % 100) / 100 * size.width;
+      final sway = math.sin((fall * math.pi * 4) + i) * 18;
+      final x = baseX + sway;
+      final y = -18 + fall * (size.height + 36);
+      final fade = ((1 - fall) * 1.8).clamp(0.0, 1.0);
+      paint.color = _colors[i % _colors.length].withValues(alpha: fade);
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate((fall * math.pi * 5) + i);
+      final width = i.isEven ? 8.0 : 5.0;
+      final height = i % 3 == 0 ? 16.0 : 10.0;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset.zero, width: width, height: height),
+          const Radius.circular(2),
+        ),
+        paint,
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CelebrationPainter oldDelegate) =>
+      oldDelegate.animation != animation;
 }

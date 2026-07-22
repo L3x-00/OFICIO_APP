@@ -2,6 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { withCategoryAlias } from './admin-shared.js';
 
+type CsvValue = string | number | boolean | null | undefined;
+
+export function escapeCsvCell(value: CsvValue): string {
+  const raw = value == null ? '' : String(value);
+  const formulaSafe = /^\s*[=+\-@]/.test(raw) ? `'${raw}` : raw;
+  return `"${formulaSafe.replace(/"/g, '""')}"`;
+}
+
+function csvRow(values: CsvValue[]): string {
+  return values.map(escapeCsvCell).join(',');
+}
+
 /**
  * Reportes y analítica de moderación del panel admin: rankings/estadísticas
  * (`getReports`), reportes de usuarios a proveedores y problemas de
@@ -230,7 +242,7 @@ export class AdminReportsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const header = [
+    const header = csvRow([
       'ID',
       'Nombre',
       'Apellido',
@@ -241,21 +253,21 @@ export class AdminReportsService {
       'Negocio',
       'Verificación',
       'Reseñas',
-    ].join(',');
+    ]);
     const rows = users.map((u) => {
       const prov = u.providers[0] ?? null;
-      return [
+      return csvRow([
         u.id,
-        `"${u.firstName}"`,
-        `"${u.lastName}"`,
-        `"${u.email}"`,
+        u.firstName,
+        u.lastName,
+        u.email,
         u.role,
         u.isActive ? 'Sí' : 'No',
         u.createdAt.toISOString().split('T')[0],
-        prov ? `"${prov.businessName}"` : '',
+        prov?.businessName ?? '',
         prov?.verificationStatus ?? '',
         u._count.reviews,
-      ].join(',');
+      ]);
     });
 
     return [header, ...rows].join('\n');
@@ -274,7 +286,7 @@ export class AdminReportsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const header = [
+    const header = csvRow([
       'ID',
       'Negocio',
       'Email',
@@ -288,23 +300,23 @@ export class AdminReportsService {
       'Estado',
       'Plan',
       'Suscripción',
-    ].join(',');
+    ]);
     const rows = providers.map((p) =>
-      [
+      csvRow([
         p.id,
-        `"${p.businessName}"`,
-        `"${p.user.email}"`,
-        `"${p.user.firstName} ${p.user.lastName}"`,
-        `"${p.phone}"`,
-        `"${p.providerCategories.map((pc) => pc.category.name).join('; ')}"`,
-        `"${p.locality.name}"`,
+        p.businessName,
+        p.user.email,
+        `${p.user.firstName} ${p.user.lastName}`,
+        p.phone,
+        p.providerCategories.map((pc) => pc.category.name).join('; '),
+        p.locality.name,
         p.averageRating.toFixed(2),
         p.totalReviews,
         p.isVerified ? 'Sí' : 'No',
         p.verificationStatus,
         p.subscription?.plan ?? '',
         p.subscription?.status ?? '',
-      ].join(','),
+      ]),
     );
 
     return [header, ...rows].join('\n');

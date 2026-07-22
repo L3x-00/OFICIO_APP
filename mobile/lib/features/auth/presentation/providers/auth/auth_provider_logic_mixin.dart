@@ -20,9 +20,11 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
   set _providerVerificationStatus(String? v);
   Map<String, String> get _verificationStatusByType;
   Map<String, String> get _rejectionReasonByType;
+  Map<String, int> get _rejectionNotificationIdByType;
   Map<String, Map<String, dynamic>> get _providerDataByType;
   ProviderApprovalPayload? get _pendingProviderApproval;
   set _pendingProviderApproval(ProviderApprovalPayload? v);
+  TrustRejectionPayload? get _pendingTrustRejection;
 
   // ── Registro ───────────────────────────────────────────────
 
@@ -134,6 +136,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
           final profiles = (data['profiles'] as List<dynamic>?) ?? const [];
           final hasAnyApproved = _parseProviderProfiles(profiles);
           _syncUserRole(hasAnyApproved);
+          _enqueueProviderRejectionIfNeeded();
 
           // Encolar el modal de bienvenida si hay un perfil aprobado
           // y todavía no se mostró (el flag persistido en
@@ -150,6 +153,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
           _providerVerificationStatus = null;
           _verificationStatusByType.clear();
           _rejectionReasonByType.clear();
+          _rejectionNotificationIdByType.clear();
           _providerDataByType.clear();
           _syncUserRole(false);
         }
@@ -168,6 +172,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     _providerVerificationStatus = null;
     _verificationStatusByType.clear();
     _rejectionReasonByType.clear();
+    _rejectionNotificationIdByType.clear();
     _providerDataByType.clear();
 
     bool hasAnyApproved = false;
@@ -200,18 +205,24 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
       if (status == 'RECHAZADO') {
         final notifications =
             profile['pendingNotifications'] as List<dynamic>? ?? [];
-        final rejectionNotif = notifications.firstWhere(
-          (n) => (n as Map<String, dynamic>)['type'] == 'RECHAZADO',
-          orElse: () => null,
-        );
+        final rejectionNotif = notifications.firstWhere((n) {
+          final type = (n as Map<String, dynamic>)['type'];
+          return type == 'RECHAZADO' || type == 'PROVIDER_REJECTED';
+        }, orElse: () => null);
         if (rejectionNotif != null) {
-          final msg =
-              (rejectionNotif as Map<String, dynamic>)['message'] as String? ??
-              '';
+          final notification = rejectionNotif as Map<String, dynamic>;
+          final msg = notification['message'] as String? ?? '';
           final idx = msg.indexOf('Motivo: ');
           _rejectionReasonByType[internalType] = idx >= 0
               ? msg.substring(idx + 8)
               : msg;
+          final rawNotificationId = notification['id'];
+          final notificationId = rawNotificationId is int
+              ? rawNotificationId
+              : int.tryParse(rawNotificationId?.toString() ?? '');
+          if (notificationId != null) {
+            _rejectionNotificationIdByType[internalType] = notificationId;
+          }
         }
       }
     }
@@ -230,11 +241,11 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     }
   }
 
-  /// Cold-start: si algún perfil quedó RECHAZADO en la validación de datos,
-  /// encola el modal "Datos no validados" con el motivo del admin para que
-  /// aparezca al abrir la app (aunque el rechazo haya ocurrido offline). Se
-  /// llama solo desde `initialize()` → una vez por arranque (no spammea).
-  void _enqueueTrustRejectionIfNeeded() {
+  /// Si un sync encuentra un perfil RECHAZADO, encola el modal global con
+  /// el motivo persistido por el backend. El pending evita duplicados en el
+  /// mismo proceso; la UI guarda el notificationId tras mostrarlo.
+  void _enqueueProviderRejectionIfNeeded() {
+    if (_pendingTrustRejection != null) return;
     String? rejectedType;
     for (final e in _verificationStatusByType.entries) {
       if (e.value == 'RECHAZADO') {
@@ -246,7 +257,12 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     final reason = _rejectionReasonByType[rejectedType];
     if (reason == null || reason.isEmpty) return;
     (this as dynamic).setPendingTrustRejection(
-      TrustRejectionPayload(reason: reason, profileType: rejectedType),
+      TrustRejectionPayload(
+        reason: reason,
+        profileType: rejectedType,
+        notificationId: _rejectionNotificationIdByType[rejectedType],
+        isProviderRegistration: true,
+      ),
     );
   }
 
@@ -265,7 +281,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
         : approvedTypes.first;
     final data = _providerDataByType[type];
     if (data == null) return;
-    final id = data['id'];
+    final id = data['providerId'] ?? data['id'];
     if (id is! int) return;
     final name = (data['businessName'] as String?) ?? _user?.firstName ?? '';
     _pendingProviderApproval = ProviderApprovalPayload(

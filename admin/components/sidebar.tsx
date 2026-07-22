@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Star, BarChart2,
   Tag, Zap, Bell, FileBarChart, ChevronRight,
-  Activity, Gift, Coins, MessageSquare,
+  Activity, MessageSquare,
   ShieldCheck, UsersRound, MapPin, Bot, Mail,
 } from 'lucide-react';
 
@@ -52,13 +52,16 @@ const navGroups = [
       { href: '/emails',              label: 'Enviar correos',            icon: Mail },
     ],
   },
-  {
-    label: 'Crecimiento',
-    items: [
-      { href: '/referrals', label: 'Referidos',  icon: Coins },
-      { href: '/rewards',   label: 'Recompensas', icon: Gift },
-    ],
-  },
+  // Feature OCULTA (2026-07): referidos, monedas y recompensas desactivados.
+  // Las páginas siguen accesibles por URL para conservar administración e
+  // historial. Restaurar este grupo al reactivar FEATURE_REFERIDOS.
+  // {
+  //   label: 'Crecimiento',
+  //   items: [
+  //     { href: '/referrals', label: 'Referidos', icon: Coins },
+  //     { href: '/rewards', label: 'Recompensas', icon: Gift },
+  //   ],
+  // },
 ];
 
 interface SidebarProps {

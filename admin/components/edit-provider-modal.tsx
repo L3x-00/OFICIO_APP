@@ -8,8 +8,10 @@ import {
   updateProviderSubscription,
   requestProviderPasswordReset,
   getFormOptions,
+  type ProviderImage,
   type Provider,
 } from '@/lib/api';
+import { ProviderPhotoGallery } from './provider-photo-gallery';
 
 // Límite de especialidades por plan — Premium 6, resto 3.
 const specialtyLimit = (plan?: string) => (plan === 'PREMIUM' ? 6 : 3);
@@ -57,7 +59,12 @@ const inputCls =
 const labelCls =
   'text-xs font-semibold text-gray-400 mb-2 block uppercase tracking-wider';
 
-export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Props) {
+export function EditProviderModal({
+  provider,
+  isOpen,
+  onClose,
+  onUpdated,
+}: Props) {
   const [form, setForm] = useState({
     businessName: '',
     phone: '',
@@ -91,6 +98,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
   const [isLoading, setIsLoading] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState('');
+  const [images, setImages] = useState<ProviderImage[]>([]);
 
   // Especialidades (multi-select) + catálogo de Sectores
   const [allCategories, setAllCategories]             = useState<CatNode[]>([]);
@@ -134,6 +142,7 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
         hasDelivery: provider.hasDelivery ?? false,
       });
       setSelectedPlan(provider.subscription?.plan ?? 'GRATIS');
+      setImages(Array.isArray(provider.images) ? provider.images : []);
 
       // Prefill de Especialidades desde providerCategories.
       const pcs = provider.providerCategories ?? [];
@@ -151,7 +160,6 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
   const isNegocio = provider.type === 'NEGOCIO';
   const maxSpecialties = specialtyLimit(provider.subscription?.plan);
   const filteredParents = allCategories.filter((c) => c.forType === provider.type);
-  const images: { url: string }[] = Array.isArray(provider.images) ? provider.images : [];
 
   const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -347,26 +355,14 @@ export function EditProviderModal({ provider, isOpen, onClose, onUpdated }: Prop
             </div>
           </div>
 
-          {/* ── Fotos (solo lectura — se gestionan desde el panel del proveedor) ── */}
-          {images.length > 0 && (
-            <div>
-              <label className={labelCls}>Fotos ({images.length})</label>
-              <div className="flex flex-wrap gap-2">
-                {images.map((img, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={i}
-                    src={img.url}
-                    alt={`Foto ${i + 1}`}
-                    className="w-16 h-16 rounded-lg object-cover border border-white/10"
-                  />
-                ))}
-              </div>
-              <p className="text-[11px] text-gray-500 mt-1.5">
-                Las fotos las administra el proveedor desde su panel.
-              </p>
-            </div>
-          )}
+          <ProviderPhotoGallery
+            providerId={provider.id}
+            images={images}
+            allowEmptyUpload
+            onUploaded={(image) => {
+              setImages([image]);
+            }}
+          />
 
           {/* ── Especialidades — multi-select con marcado de principal ── */}
           <div>

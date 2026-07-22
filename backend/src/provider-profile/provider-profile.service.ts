@@ -18,12 +18,35 @@ import {
   effectiveFeaturesFromCategories,
   visibleProviderFeatures,
 } from '../common/provider-features.service.js';
+import { MinioService } from '../common/minio.service.js';
+import { assertManagedServiceImageUrls } from '../common/service-image-validation.js';
 
 // Retención de notificaciones (cron diario, ahorra espacio en Supabase):
-// las LEÍDAS se purgan a los 7 días; las NO leídas viven 30 días para que
+// las LEÍDAS se purgan a los 5 días; las NO leídas viven 30 días para que
 // un usuario inactivo no las pierda sin haberlas visto.
-const NOTIFICATION_RETENTION_READ_DAYS = 7;
+const NOTIFICATION_RETENTION_READ_DAYS = 5;
 const NOTIFICATION_RETENTION_UNREAD_DAYS = 30;
+
+const SELF_EDITABLE_PROVIDER_FIELDS = [
+  'businessName',
+  'description',
+  'phone',
+  'whatsapp',
+  'address',
+  'scheduleJson',
+  'hasHomeService',
+  'website',
+  'instagram',
+  'tiktok',
+  'facebook',
+  'linkedin',
+  'twitterX',
+  'telegram',
+  'whatsappBiz',
+  'showPhone',
+  'showWhatsapp',
+  'showExactLocation',
+] as const;
 
 @Injectable()
 export class ProviderProfileService {
@@ -32,6 +55,7 @@ export class ProviderProfileService {
   constructor(
     private prisma: PrismaService,
     private events: EventsGateway,
+    private minio: MinioService,
   ) {}
 
   // ── HELPER: obtener proveedor por userId (y opcionalmente por tipo) ──
@@ -126,7 +150,7 @@ export class ProviderProfileService {
       phone?: string;
       whatsapp?: string;
       address?: string;
-      scheduleJson?: Record<string, string>;
+      scheduleJson?: Prisma.InputJsonValue;
       hasHomeService?: boolean; // solo OFICIO
       website?: string | null;
       instagram?: string | null;
@@ -150,7 +174,19 @@ export class ProviderProfileService {
     type?: string,
   ) {
     const provider = await this.findProviderByUser(userId, type);
-    const { categoryIds, ...scalarData } = data;
+    const { categoryIds } = data;
+    const scalarData = Object.fromEntries(
+      SELF_EDITABLE_PROVIDER_FIELDS.filter(
+        (field) => data[field] !== undefined,
+      ).map((field) => [field, data[field]]),
+    ) as Prisma.ProviderUpdateInput;
+    if (scalarData.scheduleJson !== undefined) {
+      assertManagedServiceImageUrls(
+        this.minio,
+        scalarData.scheduleJson,
+        provider.scheduleJson,
+      );
+    }
 
     // Normaliza los toggles de privacidad a booleanos REALES (el cliente
     // puede enviarlos como "true"/"false"). Prisma exige Boolean.
@@ -389,7 +425,7 @@ export class ProviderProfileService {
 
   /**
    * Una vez al día (04:00 UTC) purga notificaciones viejas: leídas a los
-   * 7 días, NO leídas a los 30 (así un usuario inactivo una semana no
+   * 5 días, NO leídas a los 30 (así un usuario inactivo una semana no
    * pierde avisos sin verlos). Mantiene la bandeja liviana. Afecta tanto
    * el inbox del proveedor como el panel de notificaciones del admin
    * (ambos leen `adminNotification`).
@@ -433,6 +469,9 @@ export class ProviderProfileService {
   };
 
   async addImage(userId: number, url: string, isCover = false, type?: string) {
+    const managedUrl = this.minio.assertManagedImageUrl(url, [
+      'providers/gallery',
+    ]);
     const provider = await this.findProviderByUser(userId, type);
 
     const [existingCount, subscription] = await Promise.all([
@@ -463,7 +502,7 @@ export class ProviderProfileService {
     return this.prisma.providerImage.create({
       data: {
         providerId: provider.id,
-        url,
+        url: managedUrl,
         isCover: shouldBeCover,
         order: existingCount,
       },

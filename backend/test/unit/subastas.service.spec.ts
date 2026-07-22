@@ -58,6 +58,7 @@ describe('SubastasService (unit)', () => {
   let prisma: PrismaMock;
   let events: EventsGatewayMock;
   let push: PushMock;
+  let minio: { assertManagedImageUrl: jest.Mock };
 
   // IDs estables para todos los tests.
   const CLIENT_USER_ID = 1; // dueño de la solicitud
@@ -110,7 +111,15 @@ describe('SubastasService (unit)', () => {
     prisma = createPrismaMock();
     events = createEventsGatewayMock();
     push = createPushMock();
-    service = new SubastasService(prisma as any, events as any, push as any);
+    minio = {
+      assertManagedImageUrl: jest.fn((url: string) => url),
+    };
+    service = new SubastasService(
+      prisma as any,
+      events as any,
+      push as any,
+      minio as any,
+    );
   });
 
   // ────────────────────────────────────────────────────────────────

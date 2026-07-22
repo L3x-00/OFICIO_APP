@@ -1,6 +1,6 @@
 # ARQUITECTURA DE DESPLIEGUE — Servi
 
-**Última actualización:** 2026-07-13
+**Última actualización:** 2026-07-22
 
 > ÚNICA fuente de verdad de arquitectura (la copia de la raíz está gitignored
 > y es solo un puntero local). El estudio largo que vivía aquí quedó obsoleto;
@@ -16,6 +16,10 @@ Admin (Next.js/Vercel) ─┘        │                  ├─► Upstash Redi
                                  └─► WebSocket (socket.io) ── Push FCM (Firebase)
 ```
 
+**Borde público:** web `oficioapp.org.pe` (Cloudflare/Vercel), admin
+`oficioadmin.vercel.app`, API `api.oficioapp.org.pe` (Cloudflare/Render). DNS
+delegado a Cloudflare (`javier.ns.cloudflare.com`, `katelyn.ns.cloudflare.com`).
+
 ## Estado de despliegue verificado
 
 - Backend: Render, auto-deploy desde `main`; `GET /health` respondió `ok` el
@@ -25,6 +29,11 @@ Admin (Next.js/Vercel) ─┘        │                  ├─► Upstash Redi
 - Admin: Vercel `oficioadmin`, commit `002791d` desplegado con estado `success`.
 - Mobile: distribución manual mediante `.aab`; no se verificó que la versión
   con el ocultamiento actual ya esté publicada en Play.
+
+**Release candidato:** PR #49 integra cambios backend, mobile, admin y web sobre
+`e58a0f4`. Todavía no es producción hasta squash merge y verificación posterior
+de Render/Vercel. No contiene migraciones ni SQL. La publicación Android queda
+fuera: el propietario genera y publica el `.aab`.
 
 ## Límites del tier gratuito (DISEÑAR PARA ESTO)
 
@@ -50,10 +59,18 @@ Admin (Next.js/Vercel) ─┘        │                  ├─► Upstash Redi
 ## Resiliencia / seguridad operativa
 - **Redis:** `.on('error')` + reconnect en Throttler (ioredis), Cache (KeyvRedis/node-redis) y AiQuota; ninguno mata el proceso.
 - **Proceso:** `main.ts` captura `uncaughtException`/`unhandledRejection` (log + Sentry, sin `process.exit`).
-- **WebSocket:** handshake valida JWT; `EventsGateway.afterInit` registra listeners de error del engine.
-- **Uploads:** límites Multer + filtro de tipo + auth (JWT) en todas las rutas de subida.
+- **WebSocket:** producción valida JWT y registra listeners de error del engine. PR #49 además consulta usuario activo/rol actual en BD durante el handshake; Admin reconecta, libera socket al salir y combina eventos con fallback visible de 60 s.
+- **Uploads:** PR #49 exige JWT en todas las rutas sensibles, limita tamaño/píxeles, decodifica y re-encodea con Sharp, elimina metadatos y valida origen/carpeta de URLs gestionadas. La foto inicial desde Admin usa la misma frontera y un lock transaccional; solo existe cuando el proveedor tiene cero imágenes.
 - **Pagos:** transacciones atómicas con claim condicional; idempotencia MercadoPago por `reference`; webhook MP con firma HMAC.
 - **Sentry:** backend y Flutter capturan excepciones; DSN por variable de entorno.
+- **Identidad/sesiones en PR #49:** allowlist de campos, guards/roles, privacidad de salida pública, email social verificado, revocación de refresh tokens al suspender y rol WebSocket tomado de BD. Móvil no abandona login/registro ante errores esperables.
+- **Notificaciones en PR #49:** retención leídas 5 días/no leídas 30; móvil depura con el mismo criterio y conserva eventos críticos hasta mostrarlos. Aprobación/rechazo de proveedor se entrega en foreground, resume o cold start sin repetición indefinida.
+- **Admin en PR #49:** CSV protegido contra fórmulas; headers defensivos y CSP `Report-Only`; notificaciones filtradas por fecha en servidor y actualizadas por eventos. Referidos/Recompensas solo se ocultan de navegación, sin eliminar rutas o datos.
+- **Android release:** R8 minify + resource shrinking activos; cleartext bloqueado salvo hosts locales de desarrollo. No hay certificate pinning por su riesgo operativo de corte durante rotaciones; la frontera de seguridad permanece en el backend.
+
+Cambios externos no se aplicaron desde código. Estado observado y orden seguro de
+TLS, correo, MFA, Supabase y origen Render:
+[`SEGURIDAD_OPERATIVA.md`](SEGURIDAD_OPERATIVA.md).
 
 ## Variables de entorno críticas (no hardcodear)
 `DATABASE_URL`, `REDIS_HOST/PORT/PASSWORD/TLS`, `JWT_SECRET`, `MERCADOPAGO_*` (incl. `WEBHOOK_SECRET`), `SENTRY_DSN`, `ALLOWED_ORIGINS`, claves R2/MinIO, credenciales Firebase, claves IA (Gemini/OpenRouter).

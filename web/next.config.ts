@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const webRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: webRoot,
+  },
   images: {
     remotePatterns: [
       // Cloudflare R2 (storage en producción)

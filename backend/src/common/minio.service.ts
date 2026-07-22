@@ -1,16 +1,27 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import * as Minio from 'minio';
 import sharp from 'sharp';
 import { extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-const MIME_MAP: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.gif': 'image/gif',
-  '.pdf': 'application/pdf',
+const IMAGE_FORMATS = {
+  jpeg: { extension: '.jpg', contentType: 'image/jpeg' },
+  png: { extension: '.png', contentType: 'image/png' },
+  webp: { extension: '.webp', contentType: 'image/webp' },
+  gif: { extension: '.gif', contentType: 'image/gif' },
+};
+type SupportedImageFormat = keyof typeof IMAGE_FORMATS;
+
+const MAX_DECODED_IMAGE_PIXELS = 40_000_000;
+type ManagedImageLocation = 'private' | 'public';
+type ManagedImageReference = {
+  key: string;
+  location: ManagedImageLocation;
 };
 
 @Injectable()
@@ -90,7 +101,7 @@ export class MinioService implements OnModuleInit {
   /**
    * Sube un archivo al bucket y devuelve su URL pública.
    * @param fileBuffer Buffer del archivo (Multer memoryStorage)
-   * @param originalName Nombre original del archivo (para extraer extensión)
+   * @param originalName Nombre original; conserva .jpeg cuando corresponde
    * @param folder Carpeta destino dentro del bucket, ej: 'providers/gallery'
    */
   async uploadFile(
@@ -98,9 +109,8 @@ export class MinioService implements OnModuleInit {
     originalName: string,
     folder: string,
   ): Promise<string> {
-    const ext = extname(originalName).toLowerCase() || '.jpg';
-    const objectName = `${folder}/${randomUUID()}${ext}`;
-    const contentType = MIME_MAP[ext] ?? 'application/octet-stream';
+    const sanitized = await this.sanitizeImage(fileBuffer, originalName);
+    const objectName = `${folder}/${randomUUID()}${sanitized.extension}`;
 
     // Imagen pública (perfil/ofertas/avatares/reviews/broadcasts) Y modo
     // público activo → bucket público + thumbnail + URL CDN. Las carpetas
@@ -113,14 +123,14 @@ export class MinioService implements OnModuleInit {
         await this.client.putObject(
           this.publicBucket,
           objectName,
-          fileBuffer,
-          fileBuffer.length,
-          { 'Content-Type': contentType },
+          sanitized.buffer,
+          sanitized.buffer.length,
+          { 'Content-Type': sanitized.contentType },
         );
         // Thumbnail 400px webp q80 (Opción C) — lo sirven los LISTADOS para
-        // bajar el peso en redes lentas. auto-orienta con rotate() (EXIF).
-        const thumb = await sharp(fileBuffer)
-          .rotate()
+        // bajar el peso en redes lentas. El original ya está orientado y
+        // no contiene EXIF.
+        const thumb = await sharp(sanitized.buffer)
           .resize({ width: 400, withoutEnlargement: true })
           .webp({ quality: 80 })
           .toBuffer();
@@ -144,9 +154,9 @@ export class MinioService implements OnModuleInit {
         await this.client.putObject(
           this.bucket,
           objectName,
-          fileBuffer,
-          fileBuffer.length,
-          { 'Content-Type': contentType },
+          sanitized.buffer,
+          sanitized.buffer.length,
+          { 'Content-Type': sanitized.contentType },
         );
         return `${this.r2BaseUrl}/${objectName}`;
       }
@@ -157,11 +167,230 @@ export class MinioService implements OnModuleInit {
     await this.client.putObject(
       this.bucket,
       objectName,
-      fileBuffer,
-      fileBuffer.length,
-      { 'Content-Type': contentType },
+      sanitized.buffer,
+      sanitized.buffer.length,
+      { 'Content-Type': sanitized.contentType },
     );
     return `${this.r2BaseUrl}/${objectName}`;
+  }
+
+  /**
+   * Acepta solo URLs emitidas por el almacenamiento configurado de Servi y
+   * pertenecientes a una de las carpetas esperadas por el flujo llamador.
+   * Conserva la query de URLs presignadas para no romper clientes actuales.
+   */
+  assertManagedImageUrl(
+    rawUrl: string,
+    allowedFolders: readonly string[],
+  ): string {
+    const value = rawUrl.trim();
+    const reference = this.managedImageReference(value);
+    const folderAllowed =
+      reference &&
+      allowedFolders.some((folder) => {
+        const normalized = folder.replace(/^\/+|\/+$/g, '');
+        return (
+          normalized.length > 0 && reference.key.startsWith(`${normalized}/`)
+        );
+      });
+    const privateImageOnPublicCdn =
+      reference?.location === 'public' && this.isPrivateFolder(reference.key);
+
+    if (!reference || !folderAllowed || privateImageOnPublicCdn) {
+      throw new BadRequestException(
+        'La URL de la imagen no pertenece al almacenamiento de Servi.',
+      );
+    }
+    return value;
+  }
+
+  /**
+   * Permite reenviar una URL historica sin cambios. Para URLs administradas,
+   * ignora la firma/query y compara la clave real del objeto.
+   */
+  isSameImageReference(
+    currentUrl: string | null | undefined,
+    nextUrl: string | null | undefined,
+  ): boolean {
+    const current = currentUrl?.trim() ?? '';
+    const next = nextUrl?.trim() ?? '';
+    if (current === next) return true;
+    if (!current || !next) return false;
+
+    const currentReference = this.managedImageReference(current);
+    const nextReference = this.managedImageReference(next);
+    return (
+      currentReference !== null &&
+      nextReference !== null &&
+      currentReference.key === nextReference.key
+    );
+  }
+
+  private managedImageReference(rawUrl: string): ManagedImageReference | null {
+    try {
+      const url = new URL(rawUrl);
+      if (
+        (url.protocol !== 'http:' && url.protocol !== 'https:') ||
+        url.username ||
+        url.password ||
+        url.hash
+      ) {
+        return null;
+      }
+
+      const privateKey = this.objectKeyFromBase(url, this.r2BaseUrl);
+      if (privateKey) return { key: privateKey, location: 'private' };
+
+      if (this.cdnBaseUrl) {
+        const publicKey = this.objectKeyFromBase(url, this.cdnBaseUrl);
+        if (publicKey) return { key: publicKey, location: 'public' };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private objectKeyFromBase(url: URL, rawBaseUrl: string): string | null {
+    try {
+      const base = new URL(rawBaseUrl);
+      if (base.protocol !== 'http:' && base.protocol !== 'https:') {
+        return null;
+      }
+      if (url.origin !== base.origin) return null;
+
+      const basePath = base.pathname.replace(/\/+$/, '');
+      const prefix = `${basePath}/`;
+      if (!url.pathname.startsWith(prefix)) return null;
+
+      const encodedKey = url.pathname.slice(prefix.length);
+      if (
+        !encodedKey ||
+        encodedKey.endsWith('/') ||
+        /%(?:2e|2f|5c)/i.test(encodedKey)
+      ) {
+        return null;
+      }
+
+      const key = decodeURIComponent(encodedKey);
+      if (
+        !key ||
+        key.startsWith('/') ||
+        key.includes('\\') ||
+        key.includes('\0') ||
+        /%(?:2e|2f|5c)/i.test(key)
+      ) {
+        return null;
+      }
+
+      const segments = key.split('/');
+      if (
+        segments.some(
+          (segment) =>
+            !segment ||
+            segment === '.' ||
+            segment === '..' ||
+            [...segment].some((character) => {
+              const code = character.charCodeAt(0);
+              return code <= 0x1f || code === 0x7f;
+            }),
+        )
+      ) {
+        return null;
+      }
+      return key;
+    } catch {
+      return null;
+    }
+  }
+
+  private async sanitizeImage(
+    fileBuffer: Buffer,
+    originalName: string,
+  ): Promise<{
+    buffer: Buffer;
+    extension: string;
+    contentType: string;
+  }> {
+    try {
+      const input = sharp(fileBuffer, {
+        animated: true,
+        failOn: 'warning',
+        limitInputPixels: MAX_DECODED_IMAGE_PIXELS,
+        sequentialRead: true,
+      });
+      const metadata = await input.metadata();
+      const format = metadata.format;
+
+      if (!this.isSupportedImageFormat(format)) {
+        throw new BadRequestException(
+          'Formato de imagen no permitido. Usa JPG, PNG, WEBP o GIF.',
+        );
+      }
+
+      const width = metadata.width ?? 0;
+      const pageHeight = metadata.pageHeight ?? metadata.height ?? 0;
+      const pages = metadata.pages ?? 1;
+      if (
+        width <= 0 ||
+        pageHeight <= 0 ||
+        width * pageHeight * pages > MAX_DECODED_IMAGE_PIXELS
+      ) {
+        throw new BadRequestException(
+          'La imagen tiene dimensiones demasiado grandes.',
+        );
+      }
+
+      let pipeline = input.clone().rotate();
+      if (format === 'jpeg') {
+        pipeline = pipeline.jpeg({
+          quality: 90,
+          progressive: true,
+          chromaSubsampling: '4:4:4',
+        });
+      } else if (format === 'png') {
+        pipeline = pipeline.png({ compressionLevel: 6 });
+      } else if (format === 'webp') {
+        pipeline = pipeline.webp({ quality: 90 });
+      }
+
+      const sanitized = await pipeline.toBuffer({
+        resolveWithObject: true,
+      });
+      const outputFormat = sanitized.info.format;
+      if (!this.isSupportedImageFormat(outputFormat)) {
+        throw new BadRequestException('No se pudo normalizar la imagen.');
+      }
+
+      const formatInfo = IMAGE_FORMATS[outputFormat];
+      const claimedExtension = extname(originalName).toLowerCase();
+      const extension =
+        outputFormat === 'jpeg' && claimedExtension === '.jpeg'
+          ? '.jpeg'
+          : formatInfo.extension;
+
+      return {
+        buffer: sanitized.data,
+        extension,
+        contentType: formatInfo.contentType,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        'La imagen está dañada o su contenido no es válido.',
+      );
+    }
+  }
+
+  private isSupportedImageFormat(
+    format: string | undefined,
+  ): format is SupportedImageFormat {
+    return (
+      format === 'jpeg' ||
+      format === 'png' ||
+      format === 'webp' ||
+      format === 'gif'
+    );
   }
 
   /** Carpetas con PII/financiero — siempre privadas y firmadas. */
