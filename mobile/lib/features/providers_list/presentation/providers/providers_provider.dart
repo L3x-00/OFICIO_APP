@@ -78,6 +78,7 @@ class ProvidersProvider extends ChangeNotifier {
 
   // Preferencia: mostrar cápsulas de categoría en la pantalla principal
   bool _showCategoryFilter = false;
+  bool _ofiFabVisible = true;
 
   // ── Ubicación GPS para recarga inteligente ────────────────
   /// Última posición (lat/lng) que se usó para consultar el backend.
@@ -134,6 +135,7 @@ class ProvidersProvider extends ChangeNotifier {
   bool get hasLocationFilter => _department != null;
   ViewMode get viewMode => _viewMode;
   bool get showCategoryFilter => _showCategoryFilter;
+  bool get ofiFabVisible => _ofiFabVisible;
 
   void setViewMode(ViewMode mode) {
     if (_viewMode == mode) return;
@@ -144,6 +146,7 @@ class ProvidersProvider extends ChangeNotifier {
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     _showCategoryFilter = prefs.getBool('showCategoryFilter') ?? false;
+    _ofiFabVisible = prefs.getBool('ofi_fab_visible') ?? true;
     notifyListeners();
   }
 
@@ -152,6 +155,13 @@ class ProvidersProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('showCategoryFilter', _showCategoryFilter);
+  }
+
+  Future<void> setOfiFabVisible(bool value) async {
+    _ofiFabVisible = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('ofi_fab_visible', value);
   }
 
   /// Devuelve la CategoryModel del padre expandido (o null)
