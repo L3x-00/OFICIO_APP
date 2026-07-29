@@ -6,8 +6,8 @@
  * modifica lógica productiva.
  *
  *   1. Persistencia completa (userId, conversationId, tokens, flags, latencia).
- *   2. Historial largo (100) → solo los últimos 10 van a Gemini.
- *   3. Retención: conversaciones >90d se eliminan.
+ *   2. Historial largo (100) → respeta HISTORY_MAX_MESSAGES.
+ *   3. Retención: mensajes/conversaciones > RETENTION_HOURS se eliminan.
  *   4. Aislamiento: usuarios A y B nunca mezclan mensajes.
  *   5. Soft failure: Gemini falla → conversación auditada + error registrado.
  */
@@ -18,6 +18,10 @@ import {
 } from '../../utils/db.util';
 import { createTestUser } from '../../utils/factories';
 import type { PrismaService } from '../../../prisma/prisma.service.js';
+import {
+  HISTORY_MAX_MESSAGES,
+  RETENTION_HOURS,
+} from '../../../src/ai-assistant/ai-assistant.constants.js';
 
 const mockGenerateContent = jest.fn();
 const sentryCaptureException = jest.fn();
@@ -48,7 +52,7 @@ let AiSanitizerService: any;
 let AiGuardrailsService: any;
 let AiRetentionService: any;
 
-const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
 
 describe('Conversation audit (integration, BD real)', () => {
   let prisma: PrismaService;
@@ -159,7 +163,7 @@ describe('Conversation audit (integration, BD real)', () => {
     expect(modelMsg.moderationPass).toBe(true);
   });
 
-  it('Case 2: 100 mensajes en historial → solo los últimos 10 viajan a Gemini', async () => {
+  it('Case 2: 100 mensajes en historial → respeta HISTORY_MAX_MESSAGES', async () => {
     const u = await createTestUser(prisma);
     const conv = await prisma.aiConversation.create({
       data: { userId: u.id, promptVersion: 'v1' },
@@ -188,27 +192,30 @@ describe('Conversation audit (integration, BD real)', () => {
     );
 
     const contents = mockGenerateContent.mock.calls[0][0].contents;
-    expect(contents).toHaveLength(11); // 10 de historial + 1 actual
+    expect(contents).toHaveLength(HISTORY_MAX_MESSAGES + 1);
     expect(contents[contents.length - 1].parts[0].text).toBe('mensaje nuevo');
 
     const flat = JSON.stringify(contents);
     expect(flat).toContain('hist-99'); // el más reciente del historial
-    expect(flat).toContain('hist-90');
-    expect(flat).not.toContain('hist-89'); // el 11º más reciente NO viaja
+    expect(flat).toContain('hist-70');
+    expect(flat).not.toContain('hist-69'); // el siguiente más antiguo NO viaja
     expect(flat).not.toContain('hist-0"'); // el más viejo tampoco
   });
 
-  it('Case 3: conversaciones >90 días → AiRetentionService.purgeOldConversations las elimina', async () => {
+  it('Case 3: conversaciones > RETENTION_HOURS → AiRetentionService las elimina', async () => {
     const u = await createTestUser(prisma);
+    const expiredAt = new Date(
+      Date.now() - (RETENTION_HOURS + 1) * HOUR,
+    );
     const old = await prisma.aiConversation.create({
-      data: { userId: u.id, createdAt: new Date(Date.now() - 95 * DAY) },
+      data: { userId: u.id, createdAt: expiredAt },
     });
     await prisma.aiMessage.create({
       data: {
         conversationId: old.id,
         role: 'user',
         content: 'viejo',
-        createdAt: new Date(Date.now() - 95 * DAY),
+        createdAt: expiredAt,
       },
     });
     const recent = await prisma.aiConversation.create({
