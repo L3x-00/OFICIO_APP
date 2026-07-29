@@ -140,7 +140,6 @@ export default function SolutionsSection() {
         {/* Header */}
         <div className="mb-10">
           <h2 className="font-display font-bold text-3xl sm:text-4xl text-gray-900 dark:text-white flex items-center gap-3">
-            <FaCubes className="text-primary dark:text-primary-light" />
             Soluciones para todo
           </h2>
           <p className="text-gray-600 dark:text-white/60 mt-2 text-base sm:text-lg">
@@ -148,7 +147,7 @@ export default function SolutionsSection() {
           </p>
           <div className="inline-flex items-center gap-2 mt-3 text-primary dark:text-primary-light bg-primary/10 px-4 py-1.5 rounded-full text-sm font-medium">
             <FiMapPin />
-            Según tu ubicación — o en Huancayo y El Tambo
+            Según tu ubicación
           </div>
         </div>
       </div>

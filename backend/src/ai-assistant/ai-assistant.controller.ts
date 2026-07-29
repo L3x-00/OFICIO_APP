@@ -118,7 +118,7 @@ export class AiAssistantController {
   }
 
   /**
-   * Historial reciente del usuario autenticado (últimos 20 mensajes) para
+   * Historial reciente del chat activo (máximo 30 mensajes) para
    * sincronizar el chat entre dispositivos. Protegido por JwtAuthGuard
    * (a nivel de clase). El userId SIEMPRE sale del JWT — nunca del cliente.
    */
@@ -126,8 +126,17 @@ export class AiAssistantController {
   async history(@Request() req: AuthenticatedRequest): Promise<{
     messages: Array<{ role: string; content: string; createdAt: Date }>;
   }> {
-    const messages = await this.service.getHistory(req.user.userId, 20);
+    const messages = await this.service.getHistory(req.user.userId);
     return { messages };
+  }
+
+  /** Inicia un chat vacío sin borrar los anteriores antes de su retención. */
+  @Post('new-chat')
+  async newChat(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<{ ok: boolean }> {
+    const ok = await this.service.startNewChat(req.user.userId);
+    return { ok };
   }
 
   /**

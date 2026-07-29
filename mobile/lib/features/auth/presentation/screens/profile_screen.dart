@@ -5,7 +5,6 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/core/theme/theme_provider.dart';
 import 'package:mobile/shared/widgets/app_network_image.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/profile/contact_us_section.dart';
 import '../../../agenda/presentation/screens/my_appointments_screen.dart';
@@ -54,6 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final theme = context.watch<ThemeProvider>();
+    final prov = context.watch<ProvidersProvider>();
     final c = context.colors;
     final user = auth.user;
 
@@ -376,12 +376,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               ThemeToggleRow(theme: theme),
               const SizedBox(height: 8),
-              CategoryFilterToggleRow(prov: context.watch<ProvidersProvider>()),
+              CategoryFilterToggleRow(prov: prov),
               // Toggle visibilidad del asistente Ofi.
               // Solo para clientes puros (sin perfil de proveedor).
               if (!auth.hasOficioProfile && !auth.hasNegocioProfile) ...[
                 const SizedBox(height: 8),
-                const _OfiVisibilityToggle(),
+                OfiVisibilityToggleRow(prov: prov),
               ],
               const SizedBox(height: 8),
               SectionItem(
@@ -433,74 +433,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
         ],
       ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Toggle de visibilidad del asistente Ofi
-// ═══════════════════════════════════════════════════════════════
-
-class _OfiVisibilityToggle extends StatefulWidget {
-  const _OfiVisibilityToggle();
-
-  @override
-  State<_OfiVisibilityToggle> createState() => _OfiVisibilityToggleState();
-}
-
-class _OfiVisibilityToggleState extends State<_OfiVisibilityToggle> {
-  static const _key = 'ofi_fab_visible';
-  bool _visible = true;
-  bool _loaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (!mounted) return;
-      setState(() {
-        _visible = prefs.getBool(_key) ?? true;
-        _loaded = true;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _loaded = true);
-    }
-  }
-
-  Future<void> _toggle(bool v) async {
-    setState(() => _visible = v);
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_key, v);
-    } catch (_) {
-      // best-effort: si falla la persistencia, el cambio visual persiste
-      // en esta sesión.
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    if (!_loaded) return const SizedBox.shrink();
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      dense: true,
-      title: Text(
-        'Mostrar asistente Ofi',
-        style: TextStyle(color: c.textPrimary, fontSize: 14),
-      ),
-      subtitle: Text(
-        'Muestra el asistente virtual en la pantalla principal',
-        style: TextStyle(color: c.textMuted, fontSize: 11),
-      ),
-      value: _visible,
-      onChanged: _toggle,
-      activeColor: AppColors.primary,
     );
   }
 }

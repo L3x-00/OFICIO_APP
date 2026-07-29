@@ -29,10 +29,12 @@ import type { PrismaService } from '../../../prisma/prisma.service.js';
 function makePrismaMock() {
   const create = jest.fn(async (_args?: any) => ({ id: 123 }));
   const findFirst = jest.fn(async (_args?: any) => null);
+  const findMany = jest.fn(async (_args?: any) => []);
   const prisma = {
     aiConversation: { create, findFirst },
+    aiMessage: { findMany },
   } as unknown as PrismaService;
-  return { prisma, create, findFirst };
+  return { prisma, create, findFirst, findMany };
 }
 
 describe('AiConversationService.getOrCreate (guard null-constraint)', () => {
@@ -101,5 +103,33 @@ describe('AiConversationService.getOrCreate (guard null-constraint)', () => {
 
     expect(r).toBe(55);
     expect(create).not.toHaveBeenCalled();
+  });
+
+  it('nuevo chat crea otra conversación sin reutilizar la activa', async () => {
+    const { prisma, create, findFirst } = makePrismaMock();
+    const svc = new AiConversationService(prisma);
+
+    const r = await svc.startNewConversation(7, 'v2');
+
+    expect(r).toBe(123);
+    expect(findFirst).not.toHaveBeenCalled();
+    expect(create).toHaveBeenCalledWith({
+      data: { userId: 7, promptVersion: 'v2' },
+      select: { id: true },
+    });
+  });
+
+  it('historial solo lee la conversación activa', async () => {
+    const { prisma, findFirst, findMany } = makePrismaMock();
+    findFirst.mockResolvedValueOnce({ id: 55 } as never);
+    findMany.mockResolvedValueOnce([
+      { role: 'user', content: 'Hola', createdAt: new Date('2026-07-29T10:00:00Z') },
+    ] as never);
+    const svc = new AiConversationService(prisma);
+
+    await expect(svc.getRecentMessages(7, 30)).resolves.toHaveLength(1);
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { conversationId: 55 }, take: 30 }),
+    );
   });
 });

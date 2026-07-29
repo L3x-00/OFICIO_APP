@@ -165,7 +165,7 @@ export default function PanelServiciosPage() {
         </div>
         {isAtLimit && (
           <a
-            href="/panel/ajustes"
+            href="/panel/perfil?section=planes"
             className="inline-flex items-center gap-1 text-primary-light text-sm mt-3 font-semibold hover:text-primary transition-colors group"
           >
             Subir de plan

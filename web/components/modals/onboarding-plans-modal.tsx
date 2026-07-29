@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { PLANS, type PlanInfo, type PlanId } from '@/lib/plans';
+import { useBodyScrollLock } from '@/lib/hooks';
 import YapePaymentModal from '@/components/modals/yape-payment-modal';
 
 interface Props {
@@ -30,6 +31,7 @@ type Step = 'plans' | 'method';
  * que la app móvil con la misma cuenta ya reconoce al proveedor y su plan.
  */
 export default function OnboardingPlansModal({ isOpen, providerType, onClose, onComplete }: Props) {
+  useBodyScrollLock(isOpen);
   const [step, setStep] = useState<Step>('plans');
   const [selected, setSelected] = useState<PlanInfo | null>(null);
   const [mpLoading, setMpLoading] = useState(false);

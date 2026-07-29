@@ -71,11 +71,7 @@ class CategoryFilterToggleRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.category_rounded,
-              color: AppColors.primary,
-              size: 20,
-            ),
+            Icon(Icons.category_rounded, color: AppColors.primary, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -90,6 +86,51 @@ class CategoryFilterToggleRow extends StatelessWidget {
             Switch(
               value: prov.showCategoryFilter,
               onChanged: (_) => prov.toggleCategoryFilter(),
+              activeThumbColor: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Toggle "Mostrar asistente Ofi" — controla la preferencia persistente del
+/// usuario en [ProvidersProvider], leída reactivamente por [AiAssistantFab]
+/// en la pantalla principal.
+class OfiVisibilityToggleRow extends StatelessWidget {
+  final ProvidersProvider prov;
+  const OfiVisibilityToggleRow({super.key, required this.prov});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return GestureDetector(
+      onTap: () => prov.setOfiFabVisible(!prov.ofiFabVisible),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: c.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.smart_toy_rounded, color: AppColors.primary, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Mostrar asistente Ofi',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Switch(
+              value: prov.ofiFabVisible,
+              onChanged: (v) => prov.setOfiFabVisible(v),
               activeThumbColor: AppColors.primary,
             ),
           ],

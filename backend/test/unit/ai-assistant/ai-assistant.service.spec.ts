@@ -38,6 +38,7 @@ import type {
   AiCaller,
   AiHistoryTurn,
 } from '../../../src/ai-assistant/ai-assistant.types.js';
+import { AiPersonaType } from '../../../src/ai-assistant/strategies/ai-context.strategy.js';
 
 const CALLER: AiCaller = { userId: 7, role: 'USUARIO', providerType: null };
 
@@ -99,6 +100,19 @@ describe('AiAssistantService (unit, orquestación)', () => {
     mockGenerateContent.mockReset();
   });
 
+  it('incluye identidad oficial y reglas de formato simple en el prompt', async () => {
+    const { service } = makeService();
+
+    const prompt = await (service as any).systemPrompt(
+      CALLER,
+      AiPersonaType.CLIENT,
+    );
+
+    expect(prompt).toContain('Te llamas Ofi');
+    expect(prompt).toContain('Less es el CEO de Servi');
+    expect(prompt).toContain('Nunca uses Markdown');
+  });
+
   it('Anti-loop: Gemini pide tools en cada ronda → corta a la 4ª y devuelve FORCED_REPHRASE_MESSAGE', async () => {
     const { service } = makeService();
     // Gemini SIEMPRE devuelve una function call → nunca da texto final.
@@ -132,24 +146,24 @@ describe('AiAssistantService (unit, orquestación)', () => {
   });
 
   describe('buildContents (truncado de historial, regla 6)', () => {
-    it('trunca a HISTORY_MAX_MESSAGES (10) mensajes + el actual', () => {
+    it('trunca a HISTORY_MAX_MESSAGES (30) mensajes + el actual', () => {
       const { service } = makeService();
-      const history: AiHistoryTurn[] = Array.from({ length: 15 }, (_, i) => ({
+      const history: AiHistoryTurn[] = Array.from({ length: 35 }, (_, i) => ({
         role: i % 2 === 0 ? 'user' : 'model',
         text: `m${i}`,
       }));
       const contents = (service as any).buildContents(history, 'mensaje actual');
-      // 10 de historial + 1 actual.
+      // 30 de historial + 1 actual.
       expect(contents).toHaveLength(HISTORY_MAX_MESSAGES + 1);
       expect(contents[contents.length - 1].parts[0].text).toBe('mensaje actual');
     });
 
-    it('trunca por HISTORY_MAX_CHARS (6000) acumulados', () => {
+    it('trunca por HISTORY_MAX_CHARS (12000) acumulados', () => {
       const { service } = makeService();
-      // 5 turnos de 2000 chars = 10000 → solo entran ~3 (6000) + el actual.
+      // 5 turnos de 3000 chars = 15000 → solo entran 4 (12000) + el actual.
       const history: AiHistoryTurn[] = Array.from({ length: 5 }, () => ({
         role: 'user' as const,
-        text: 'x'.repeat(2000),
+        text: 'x'.repeat(3000),
       }));
       const contents = (service as any).buildContents(history, 'actual');
       const historyContents = contents.slice(0, -1); // excluye el actual

@@ -19,6 +19,9 @@ import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
 import { OpenRouterProvider } from './providers/openrouter.provider.js';
 import { AiMemoryService } from './ai-memory.service.js';
+import { AiLearningService } from './ai-learning.service.js';
+import { AiLearningReviewService } from './ai-learning-review.service.js';
+import { AiLearningPublisherService } from './ai-learning-publisher.service.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 
 /**
@@ -58,6 +61,10 @@ import { RolesGuard } from '../auth/roles.guard.js';
     OpenRouterProvider,
     // Memoria persistente por usuario/proveedor.
     AiMemoryService,
+    // Cerebro global agregado; no contiene conversaciones ni PII.
+    AiLearningService,
+    AiLearningReviewService,
+    AiLearningPublisherService,
     RolesGuard,
   ],
 })

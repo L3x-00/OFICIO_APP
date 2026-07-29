@@ -23,7 +23,8 @@ class AiAssistantProvider extends ChangeNotifier {
 
   /// Máximo de turnos de historial que el cliente adjunta como respaldo
   /// (el backend recupera el historial real de BD; esto es fallback).
-  static const int _historyCap = 8;
+  static const int maxChatMessages = 30;
+  static const int _historyCap = maxChatMessages;
 
   AiAssistantProvider({AiAssistantRepository? repo, this.providerType})
     : _repo = repo ?? AiAssistantRepository();
@@ -35,11 +36,14 @@ class AiAssistantProvider extends ChangeNotifier {
   AuthProvider? _auth;
   bool _sessionExpired = false;
   bool _disposed = false;
+  int _historyGeneration = 0;
 
   List<AiMessageModel> get messages => List.unmodifiable(_messages);
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasMessages => _messages.isNotEmpty;
+  int get messageCount => _messages.where((m) => !m.local && !m.isError).length;
+  bool get limitReached => messageCount >= maxChatMessages;
 
   /// True cuando el backend devolvió 401: la UI debe avisar y cerrar sesión.
   bool get sessionExpired => _sessionExpired;
@@ -62,7 +66,7 @@ class AiAssistantProvider extends ChangeNotifier {
   /// Envía un mensaje del usuario y agrega la respuesta de Ofi.
   Future<void> send(String text) async {
     final trimmed = text.trim();
-    if (trimmed.isEmpty || _isLoading) return;
+    if (trimmed.isEmpty || _isLoading || limitReached) return;
 
     _messages.add(AiMessageModel.user(trimmed));
     _isLoading = true;
@@ -110,7 +114,10 @@ class AiAssistantProvider extends ChangeNotifier {
         return AiMessageModel.providerResults(reply.reply, models);
       }
     }
-    return AiMessageModel.ofi(reply.reply);
+    return AiMessageModel.ofi(
+      reply.reply,
+      supportActions: reply.supportActions,
+    );
   }
 
   /// Limpia la conversación y vuelve a sembrar el saludo.
@@ -119,6 +126,33 @@ class AiAssistantProvider extends ChangeNotifier {
     _error = null;
     _isLoading = false;
     seedGreeting();
+  }
+
+  /// Crea una conversación nueva en el backend y reinicia el contador local.
+  Future<void> startNewChat() async {
+    if (_isLoading) return;
+    _isLoading = true;
+    _error = null;
+    _safeNotify();
+    try {
+      await _repo.startNewChat();
+      _historyGeneration += 1;
+      _messages.clear();
+      _error = null;
+      _isLoading = false;
+      seedGreeting();
+    } on SessionExpiredException catch (e) {
+      _flagSessionExpired(e.message);
+    } on AiAssistantException catch (e) {
+      _error = e.message;
+      _messages.add(AiMessageModel.error(e.message));
+    } catch (_) {
+      _error = 'No se pudo iniciar el nuevo chat. Intenta de nuevo.';
+      _messages.add(AiMessageModel.error(_error!));
+    } finally {
+      _isLoading = false;
+      _safeNotify();
+    }
   }
 
   /// Conecta el [AuthProvider] global para (a) limpiar el chat al cerrar
@@ -139,9 +173,10 @@ class AiAssistantProvider extends ChangeNotifier {
   /// Best-effort: si falla (red/servidor) mantiene el saludo local; un 401
   /// se trata como sesión expirada.
   Future<void> loadHistory() async {
+    final generation = _historyGeneration;
     try {
       final history = await _repo.fetchHistory();
-      if (history.isNotEmpty) {
+      if (generation == _historyGeneration && history.isNotEmpty) {
         _messages
           ..clear()
           ..addAll(history);

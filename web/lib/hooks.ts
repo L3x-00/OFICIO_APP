@@ -37,6 +37,25 @@ export function useScrollReveal(rootSelector?: string) {
 }
 
 /**
+ * Bloquea el scroll del body mientras un modal/overlay está abierto. Sin
+ * esto, un modal con su propio contenido scrolleable (`overflow-y-auto`)
+ * deja la página de fondo TAMBIÉN scrolleable — se ven 2 barras de scroll
+ * a la vez (la del modal y la de la página).
+ */
+export function useBodyScrollLock(isOpen: boolean) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+}
+
+/**
  * Counts a number from 0 to `target` over `duration` ms with easeOutExpo.
  * Triggers when ref'd element enters viewport (once).
  * Returns [ref, displayValue].

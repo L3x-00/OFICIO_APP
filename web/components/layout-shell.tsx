@@ -3,16 +3,17 @@
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Footer from '@/components/footer';
+import { isVanitySlugPath } from '@/lib/route-utils';
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // `/p/*` = vanity URLs públicas de proveedores. Renderizan su propio
+  // Vanity URLs públicas de proveedores (`/:slug`) renderizan su propio
   // chrome (header de marca + tarjeta full-bleed), no usan el Footer
   // global ni reciben la animación de fade para evitar conflictos con
   // los meta tags SSR del preview de WhatsApp/Facebook.
   const hideChrome = pathname?.startsWith('/panel')
     || pathname?.startsWith('/cliente')
-    || pathname?.startsWith('/p/');
+    || isVanitySlugPath(pathname);
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-premium">

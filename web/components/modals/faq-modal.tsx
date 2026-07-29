@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { useBodyScrollLock } from '@/lib/hooks';
 
 interface FaqItem {
   question: string;
@@ -135,6 +136,8 @@ interface FaqModalProps {
 }
 
 export default function FaqModal({ isOpen, onClose }: FaqModalProps) {
+  useBodyScrollLock(isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (

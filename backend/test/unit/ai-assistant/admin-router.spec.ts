@@ -29,7 +29,11 @@ jest.mock('@google/genai', () => ({
 }));
 
 import { AiAssistantService } from '../../../src/ai-assistant/ai-assistant.service.js';
-import { matchAdminMetric } from '../../../src/ai-assistant/ai-assistant.helpers.js';
+import {
+  buildSupportActions,
+  isSupportRequest,
+  matchAdminMetric,
+} from '../../../src/ai-assistant/ai-assistant.helpers.js';
 import type {
   AiCaller,
   AiHistoryTurn,
@@ -66,7 +70,7 @@ const TOP = [
   },
 ];
 
-function makeService(opts: { breaker?: any; data?: any } = {}) {
+function makeService(opts: { breaker?: any; data?: any; learning?: any } = {}) {
   const config = {
     get: jest.fn((k: string) => (k === 'GEMINI_API_KEY' ? 'test-key' : undefined)),
   };
@@ -108,6 +112,7 @@ function makeService(opts: { breaker?: any; data?: any } = {}) {
     get: jest.fn(async () => undefined),
     set: jest.fn(async () => {}),
   };
+  const learning = opts.learning ?? { record: jest.fn(async () => {}) };
 
   const service = new AiAssistantService(
     config as any,
@@ -119,8 +124,16 @@ function makeService(opts: { breaker?: any; data?: any } = {}) {
     data as any,
     conversations as any,
     cache as any,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    learning as any,
   );
-  return { service, data, conversations, breaker };
+  return { service, data, conversations, breaker, learning };
 }
 
 describe('AiAssistantService — router determinístico admin', () => {
@@ -176,6 +189,42 @@ describe('AiAssistantService — router determinístico admin', () => {
     expect(data.getPlatformStatsSafe).toHaveBeenCalled();
     // Ni siquiera se consultó el breaker: se respondió antes.
     expect(breaker.canRequest).not.toHaveBeenCalled();
+  });
+
+  it('CLIENTE pide soporte → canales oficiales, descripción y cero IA', async () => {
+    const breaker = {
+      canRequest: jest.fn(async () => ({ allowed: false, state: 'OPEN' })),
+      recordSuccess: jest.fn(async () => {}),
+      recordFailure: jest.fn(async () => {}),
+    };
+    const { service, conversations, learning } = makeService({ breaker });
+
+    const r = await service.chat(
+      CLIENT,
+      'Necesito contactar soporte: la app no me deja iniciar sesión.',
+    );
+
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    expect(breaker.canRequest).not.toHaveBeenCalled();
+    expect(r.meta.deterministic).toBe(true);
+    expect(r.reply).toContain('canales oficiales');
+    expect(r.supportActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'whatsapp',
+          href: expect.stringContaining('https://wa.me/51930759515?text='),
+        }),
+        expect.objectContaining({
+          kind: 'email',
+          href: expect.stringContaining('mailto:soporteofiapp@gmail.com'),
+        }),
+      ]),
+    );
+    expect(decodeURIComponent(r.supportActions![0].href)).toContain(
+      'no me deja iniciar sesión',
+    );
+    expect(conversations.saveMessage).toHaveBeenCalledTimes(2);
+    expect(learning.record).toHaveBeenCalledWith('support');
   });
 
   it('NO-admin "¿cuántos usuarios hay?" → va a IA (router omitido)', async () => {
@@ -249,5 +298,21 @@ describe('AiAssistantService — router determinístico admin', () => {
     // sin match → IA
     expect(match('cómo funciona Servi')).toBeNull();
     expect(match('hola Ofi')).toBeNull();
+  });
+
+  it('router soporte cubre frases predefinidas sin capturar consultas a proveedores', () => {
+    expect(isSupportRequest('Quiero hablar con soporte')).toBe(true);
+    expect(isSupportRequest('¿Dónde está atención al cliente?')).toBe(true);
+    expect(isSupportRequest('ayuda')).toBe(true);
+    expect(isSupportRequest('Necesito ayuda con mi cuenta')).toBe(true);
+    expect(isSupportRequest('Quiero contactar soporte')).toBe(true);
+    expect(isSupportRequest('¿Cómo contacto a un proveedor?')).toBe(false);
+    expect(isSupportRequest('Ayúdame a buscar un electricista')).toBe(false);
+    expect(isSupportRequest('Hola Ofi')).toBe(false);
+
+    const actions = buildSupportActions('Tengo un problema con mi pago');
+    expect(actions).toHaveLength(3);
+    expect(actions[0].href).toContain('https://wa.me/51930759515?text=');
+    expect(actions[1].href).toContain('mailto:soporteofiapp@gmail.com');
   });
 });

@@ -22,11 +22,15 @@ import {
   formatPlatformStats,
   formatTopProviders,
   isGeminiOverloaded,
+  isSupportRequest,
   matchAdminMetric,
   respCacheKey,
   secondsUntilPeruMidnight,
   shouldFallback,
+  buildSupportActions,
+  supportReply,
 } from './ai-assistant.helpers.js';
+import { formatAiReply } from './ai-response-formatter.js';
 import { AiCircuitBreakerService } from './ai-circuit-breaker.service.js';
 import { AiSanitizerService } from './ai-sanitizer.service.js';
 import { AiGuardrailsService } from './ai-guardrails.service.js';
@@ -47,6 +51,10 @@ import { AdminStrategy } from './strategies/admin.strategy.js';
 import { buildActiveTools } from './tools/tool-registry.js';
 import { OpenRouterProvider } from './providers/openrouter.provider.js';
 import { AiMemoryService } from './ai-memory.service.js';
+import {
+  AiLearningService,
+  type AiLearningIntent,
+} from './ai-learning.service.js';
 import type {
   AiCaller,
   AiChatResult,
@@ -141,6 +149,10 @@ export class AiAssistantService {
     @Optional()
     @Inject(AiMemoryService)
     private readonly memory?: AiMemoryService,
+    // Señales agregadas globales. Opcional para mantener tests antiguos.
+    @Optional()
+    @Inject(AiLearningService)
+    private readonly learning?: AiLearningService,
   ) {}
 
   /** Lazy init del SDK moderno @google/genai. */
@@ -173,6 +185,33 @@ export class AiAssistantService {
       reply,
       meta: { promptVersion, blocked: true, reason },
     });
+
+    // Router de soporte antes de cualquier IA o cuota: siempre entrega los
+    // canales oficiales, incluso si Gemini está caído o la KB está desactualizada.
+    if (isSupportRequest(message)) {
+      const reply = supportReply(message);
+      this.recordLearning('support', sandbox);
+      if (!sandbox) {
+        await this.persistDeterministic(
+          caller,
+          message,
+          reply,
+          reqMeta,
+          startedAt,
+          promptVersion,
+        );
+      }
+      return {
+        reply,
+        supportActions: buildSupportActions(message),
+        meta: {
+          promptVersion,
+          blocked: false,
+          cached: false,
+          deterministic: true,
+        },
+      };
+    }
 
     // ── Router determinístico de métricas admin (SIN IA) ──────────
     // Antes de tocar Gemini/OpenRouter: si un ADMIN pregunta por una métrica
@@ -316,6 +355,7 @@ export class AiAssistantService {
       const hit = await this.cacheGet(cacheKey);
       if (hit) {
         this.logger.log(`[AI-CACHE] hit (${intent}) → respuesta sin IA`);
+        this.recordLearning(intent, sandbox);
         await this.conversations.saveMessage({
           conversationId,
           role: 'model',
@@ -400,7 +440,7 @@ export class AiAssistantService {
     }
 
     // 5. Guardrails (post-filtro).
-    const guarded = this.guardrails.apply(rawReply);
+    const guarded = this.guardrails.apply(formatAiReply(rawReply));
 
     // Persistimos la respuesta del modelo con metadata de observabilidad.
     if (!sandbox) {
@@ -436,6 +476,10 @@ export class AiAssistantService {
       }
     }
 
+    if (!guarded.toxic) {
+      this.recordLearning(intent, sandbox);
+    }
+
     // Caché semántico: guardamos texto + tarjetas juntos (no tóxicas). Así una
     // búsqueda repetida ("electricista en Huancayo") devuelve la respuesta Y
     // las tarjetas sin tocar la IA. TTL corto en búsquedas (frescura) vs 24h
@@ -466,9 +510,23 @@ export class AiAssistantService {
    */
   async getHistory(
     userId: number,
-    limit = 20,
+    limit = HISTORY_MAX_MESSAGES,
   ): Promise<Array<{ role: string; content: string; createdAt: Date }>> {
     return this.conversations.getRecentMessages(userId, limit);
+  }
+
+  /** Registro global sin contenido del chat. Nunca bloquea la respuesta. */
+  private recordLearning(intent: AiLearningIntent, sandbox: boolean): void {
+    if (!sandbox) void this.learning?.record(intent);
+  }
+
+  /** Crea el chat activo siguiente; los chats previos quedan bajo retención. */
+  async startNewChat(userId: number): Promise<boolean> {
+    const conversationId = await this.conversations.startNewConversation(
+      userId,
+      this.flags.promptVersion(),
+    );
+    return conversationId != null;
   }
 
   // ── Caché inteligente (Fase 4) ──────────────────────────────
@@ -986,6 +1044,19 @@ export class AiAssistantService {
       '- No expongas datos personales de terceros (DNI, RUC, teléfonos, correos).',
       '- Responde SIEMPRE en español neutro; entiendes la jerga peruana.',
       '- Si te piden algo fuera del alcance de Servi, redirige con amabilidad.',
+      '',
+      'IDENTIDAD Y VOZ:',
+      '- Te llamas Ofi: eres el asistente virtual integrado en toda la plataforma Servi.',
+      '- Fuiste creada por el equipo de desarrolladores de Servi. Less es el CEO de Servi.',
+      '- Nunca digas que no tienes nombre, que te creó Google ni reveles el proveedor o modelo que te responde.',
+      '- Solo cuando te pregunten directamente por tu identidad, usa humor ligero y sarcasmo amable; nunca contra el usuario.',
+      '- Fuera de Servi, explica con brevedad que tu función es ayudar dentro de la plataforma.',
+      '',
+      'FORMATO DE RESPUESTA:',
+      '- Escribe texto simple: frases y párrafos cortos.',
+      '- Para listas usa solo • o numeración 1., 2., 3.',
+      '- Nunca uses Markdown: sin **, *, _, --, títulos, separadores ni bloques de código.',
+      '- Usa como máximo dos emojis, solo si aportan cercanía.',
       '',
       // ── Persona (Estrategia de Contexto) ──
       personaPrompt,

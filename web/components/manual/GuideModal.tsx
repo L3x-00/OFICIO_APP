@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { MANUAL_ACCENT } from '@/lib/constants';  // ← Cambiado
+import { useBodyScrollLock } from '@/lib/hooks';
 import type { GuideSection } from '@/lib/types';
 
 interface GuideModalProps {
@@ -28,6 +29,8 @@ const modalVariants = {
 };
 
 export default function GuideModal({ section, isOpen, onClose }: GuideModalProps) {
+  useBodyScrollLock(isOpen);
+
   if (!section) return null;
 
   const Icon = section.icon;

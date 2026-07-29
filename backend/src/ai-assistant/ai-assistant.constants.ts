@@ -10,14 +10,14 @@
 export const AI_MODEL = 'gemini-2.5-flash';
 
 /** Versión del system prompt — permite A/B y rollback vía env. */
-export const DEFAULT_PROMPT_VERSION = 'v1';
+export const DEFAULT_PROMPT_VERSION = 'v2';
 
 /**
  * Versión activa del system prompt por defecto (regla 8). La env
  * `AI_PROMPT_VERSION` la sobrescribe en runtime vía AiFeatureFlagService;
  * esta constante es el fallback canónico cuando la env no está seteada.
  */
-export const AI_PROMPT_VERSION = 'v1';
+export const AI_PROMPT_VERSION = 'v2';
 
 // ── Knowledge base (Fase 2) ─────────────────────────────────
 /** Clave Redis del contexto de knowledge cacheado. */
@@ -34,10 +34,12 @@ export const CACHE_TTL_FAQ_MS = 24 * 60 * 60 * 1000;
 export const CACHE_TTL_SEARCH_MS = 5 * 60 * 1000;
 /**
  * Días de retención del asistente IA: los MENSAJES con más antigüedad se
- * borran automáticamente (scheduler diario) y las conversaciones que quedan
- * vacías expiran. Política de privacidad/almacenamiento: 3 días.
+ * borran automáticamente (scheduler frecuente) y las conversaciones que quedan
+ * vacías expiran. Política de privacidad/almacenamiento: 12 horas.
  */
-export const RETENTION_DAYS = 3;
+export const RETENTION_HOURS = 12;
+/** Memoria personal consentida: vence si el usuario no vuelve a usar Ofi. */
+export const AI_MEMORY_RETENTION_DAYS = 90;
 
 /**
  * Clasificador de intención por palabras clave (Fase 4 — caché inteligente).
@@ -196,8 +198,8 @@ export const GEN_TEMPERATURE = 0.4;
 export const GEN_MAX_OUTPUT_TOKENS = 1024;
 
 // ── Historial (regla 6: límite dual) ────────────────────────
-export const HISTORY_MAX_MESSAGES = 10;
-export const HISTORY_MAX_CHARS = 6000;
+export const HISTORY_MAX_MESSAGES = 30;
+export const HISTORY_MAX_CHARS = 12000;
 
 // ── Timeouts (regla 4) ──────────────────────────────────────
 /** Timeout duro de cada Tool. */

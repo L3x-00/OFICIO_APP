@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Bot, Send, X } from 'lucide-react';
-import { askAssistant } from '@/lib/api';
+import { Bot, Mail, MessageCircle, RefreshCw, Send, X } from 'lucide-react';
+import {
+  askAssistant,
+  getAssistantHistory,
+  startNewAssistantChat,
+  type AiSupportAction,
+} from '@/lib/api';
+
+const MAX_CHAT_MESSAGES = 30;
 
 // ── Modelo de mensaje local ────────────────────────────────
 type Role = 'user' | 'ofi';
@@ -12,6 +19,7 @@ interface ChatMsg {
   /** Local (saludo/errores): no viaja como historial. */
   local?: boolean;
   isError?: boolean;
+  supportActions?: AiSupportAction[];
 }
 
 const GREETING: ChatMsg = {
@@ -36,9 +44,12 @@ export function AiChatWidget() {
   const [messages, setMessages] = useState<ChatMsg[]>([GREETING]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const historyRequestRef = useRef(0);
 
   // Auto-scroll al fondo cuando cambian mensajes o el estado de carga.
   useEffect(() => {
@@ -52,12 +63,35 @@ export function AiChatWidget() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
+  useEffect(() => {
+    if (!open || historyLoaded) return;
+    setHistoryLoaded(true);
+    const requestId = ++historyRequestRef.current;
+    void getAssistantHistory()
+      .then((result) => {
+        const history = result.messages
+          .filter((m) => m.content?.trim())
+          .map<ChatMsg>((m) => ({
+            role: m.role === 'user' ? 'user' : 'ofi',
+            text: m.content,
+          }));
+        if (requestId === historyRequestRef.current && history.length > 0) {
+          setMessages(history);
+        }
+      })
+      .catch(() => {
+        // Historial opcional: el saludo local mantiene el chat disponible.
+      });
+  }, [historyLoaded, open]);
+
   const send = useCallback(async () => {
     const text = input.trim();
-    if (!text || loading) return;
+    const messageCount = messages.filter((m) => !m.local && !m.isError).length;
+    if (!text || loading || messageCount >= MAX_CHAT_MESSAGES) return;
 
     const history = messages
       .filter((m) => !m.local && !m.isError)
+      .slice(-MAX_CHAT_MESSAGES)
       .map((m) => ({ role: (m.role === 'user' ? 'user' : 'model') as 'user' | 'model', text: m.text }));
 
     setMessages((prev) => [...prev, { role: 'user', text }]);
@@ -66,7 +100,10 @@ export function AiChatWidget() {
 
     try {
       const res = await askAssistant(text, history);
-      setMessages((prev) => [...prev, { role: 'ofi', text: res.reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'ofi', text: res.reply, supportActions: res.supportActions },
+      ]);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Ocurrió un error. Intenta de nuevo.';
       setMessages((prev) => [...prev, { role: 'ofi', text: msg, local: true, isError: true }]);
@@ -74,6 +111,26 @@ export function AiChatWidget() {
       setLoading(false);
     }
   }, [input, loading, messages]);
+
+  const startNewChat = useCallback(async () => {
+    if (loading || resetting) return;
+    setResetting(true);
+    historyRequestRef.current += 1;
+    try {
+      const result = await startNewAssistantChat();
+      if (!result.ok) throw new Error('No se pudo iniciar el nuevo chat.');
+      setMessages([GREETING]);
+      setInput('');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'No se pudo iniciar el nuevo chat.';
+      setMessages((prev) => [...prev, { role: 'ofi', text: msg, local: true, isError: true }]);
+    } finally {
+      setResetting(false);
+    }
+  }, [loading, resetting]);
+
+  const messageCount = messages.filter((m) => !m.local && !m.isError).length;
+  const limitReached = messageCount >= MAX_CHAT_MESSAGES;
 
   return (
     <>
@@ -131,6 +188,27 @@ export function AiChatWidget() {
               </div>
             </div>
             <button
+              onClick={() => void startNewChat()}
+              disabled={loading || resetting}
+              aria-label="Iniciar nuevo chat"
+              title="Nuevo chat"
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '8px',
+                background: 'var(--surface-3)',
+                border: '1px solid var(--border-default)',
+                color: 'var(--text-secondary)',
+                cursor: loading || resetting ? 'default' : 'pointer',
+                opacity: loading || resetting ? 0.5 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <RefreshCw size={14} />
+            </button>
+            <button
               onClick={() => setOpen(false)}
               aria-label="Cerrar"
               style={{
@@ -148,6 +226,23 @@ export function AiChatWidget() {
             >
               <X size={15} />
             </button>
+          </div>
+
+          <div
+            role="status"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '10px',
+              padding: '8px 14px',
+              borderBottom: '1px solid var(--border-default)',
+              background: 'var(--surface-2, var(--surface-1))',
+              color: 'var(--text-tertiary)',
+              fontSize: '11px',
+            }}
+          >
+            <span>Este chat se elimina automáticamente en 12 horas.</span>
+            <span>{messageCount}/{MAX_CHAT_MESSAGES}</span>
           </div>
 
           {/* Mensajes */}
@@ -184,11 +279,12 @@ export function AiChatWidget() {
               ref={inputRef}
               type="text"
               value={input}
+              disabled={loading || resetting || limitReached}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') send();
               }}
-              placeholder="Escribe tu mensaje…"
+              placeholder={limitReached ? 'Inicia un nuevo chat para continuar' : 'Escribe tu mensaje…'}
               style={{
                 flex: 1,
                 background: 'var(--surface-3)',
@@ -202,7 +298,7 @@ export function AiChatWidget() {
             />
             <button
               onClick={send}
-              disabled={loading || !input.trim()}
+              disabled={loading || resetting || limitReached || !input.trim()}
               aria-label="Enviar"
               style={{
                 width: '38px',
@@ -211,8 +307,8 @@ export function AiChatWidget() {
                 background: BRAND_GRADIENT,
                 border: 'none',
                 color: '#fff',
-                cursor: loading || !input.trim() ? 'default' : 'pointer',
-                opacity: loading || !input.trim() ? 0.5 : 1,
+                cursor: loading || resetting || limitReached || !input.trim() ? 'default' : 'pointer',
+                opacity: loading || resetting || limitReached || !input.trim() ? 0.5 : 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -281,12 +377,49 @@ function Bubble({ msg }: { msg: ChatMsg }) {
         }}
       >
         {msg.text}
+        {!isUser && msg.supportActions && msg.supportActions.length > 0 && (
+          <SupportActions actions={msg.supportActions} />
+        )}
       </div>
     </div>
   );
 }
 
 // ── Indicador "escribiendo…" ───────────────────────────────
+function SupportActions({ actions }: { actions: AiSupportAction[] }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+      {actions.map((action) => {
+        const isWhatsApp = action.kind === 'whatsapp';
+        return (
+          <a
+            key={action.href}
+            href={action.href}
+            target={isWhatsApp ? '_blank' : undefined}
+            rel={isWhatsApp ? 'noreferrer' : undefined}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '6px 8px',
+              border: '1px solid rgba(59,130,246,0.35)',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              background: 'var(--surface-1)',
+              fontSize: '11px',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            {isWhatsApp ? <MessageCircle size={13} /> : <Mail size={13} />}
+            {action.label}
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 function TypingBubble() {
   const [step, setStep] = useState(0);
   useEffect(() => {

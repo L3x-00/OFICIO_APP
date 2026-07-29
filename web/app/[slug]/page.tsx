@@ -95,7 +95,7 @@ export async function generateMetadata({
     profile.description?.slice(0, 160) ||
     `${profile.businessName} ofrece servicios en Servi. Mira reseñas, contacta y descubre más.`;
   const image = profile.coverUrl ?? undefined;
-  const url = `https://oficioapp.org.pe/p/${profile.slug}`;
+  const url = `https://oficioapp.org.pe/${profile.slug}`;
 
   return {
     title,

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AiUserRole } from './ai-assistant.types.js';
+import { DEFAULT_PROMPT_VERSION } from './ai-assistant.constants.js';
 
 /**
  * Feature flags + Kill-Switch de "Ofi" (regla 8).
@@ -78,6 +79,8 @@ export class AiFeatureFlagService {
 
   /** Versión del system prompt activo. */
   promptVersion(): string {
-    return this.config.get<string>('AI_PROMPT_VERSION') || 'v1';
+    return (
+      this.config.get<string>('AI_PROMPT_VERSION') || DEFAULT_PROMPT_VERSION
+    );
   }
 }

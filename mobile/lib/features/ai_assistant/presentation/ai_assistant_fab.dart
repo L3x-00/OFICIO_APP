@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/features/providers_list/presentation/providers/providers_provider.dart';
 import 'ai_assistant_screen.dart';
 import 'ofi_avatar.dart';
 import 'ofi_messages.dart';
@@ -31,7 +32,6 @@ class AiAssistantFab extends StatefulWidget {
 
 class _AiAssistantFabState extends State<AiAssistantFab> {
   static const _dismissKey = 'ofi_bubble_dismissed_until';
-  static const _ofiVisibleKey = 'ofi_fab_visible';
   static const _visibleDur = Duration(seconds: 6);
   static const _hiddenDur = Duration(seconds: 25);
   static const _firstDelay = Duration(seconds: 3);
@@ -50,15 +50,9 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
   String _idleAsset = OfiAssets.thinking;
   int _dismissedUntilMs = 0;
 
-  /// Controla la visibilidad del FAB según el toggle de Perfil > Preferencias.
-  /// Solo aplica a clientes puros. Valor por defecto: true (visible).
-  bool _ofiVisible = true;
-  bool _ofiPrefLoaded = false;
-
   @override
   void initState() {
     super.initState();
-    _loadOfiPreference();
     _loadDismissed();
     _timer = Timer(_firstDelay, _toggle);
     _idleTimer = Timer.periodic(_idleRotate, (_) => _passivePeek());
@@ -72,38 +66,22 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
     super.dispose();
   }
 
-  /// Carga la preferencia de visibilidad de Ofi desde SharedPreferences.
-  Future<void> _loadOfiPreference() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (!mounted) return;
-      setState(() {
-        _ofiVisible = prefs.getBool(_ofiVisibleKey) ?? true;
-        _ofiPrefLoaded = true;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _ofiPrefLoaded = true);
-    }
-  }
-
   /// Verifica si el FAB debe mostrarse según el contexto del usuario.
   ///
   /// - Invitados: siempre visible (el toggle no aplica).
   /// - Proveedores (OFICIO/NEGOCIO): siempre visible en su panel.
-  /// - Clientes puros: respeta el toggle de Perfil > Preferencias.
+  /// - Clientes puros: respeta el toggle de Perfil > Preferencias, leído
+  ///   reactivamente de [ProvidersProvider] (misma preferencia persistida
+  ///   en SharedPreferences bajo la key `ofi_fab_visible`).
   bool _shouldShow(BuildContext context) {
-    // Mientras la preferencia no se haya cargado, mostramos Ofi por defecto
-    // para evitar un flicker (parpadeo) al iniciar la app.
-    if (!_ofiPrefLoaded) return true;
-
     try {
       final auth = context.read<AuthProvider>();
       // Invitado → siempre visible.
       if (!auth.isAuthenticated) return true;
       // Proveedor → el toggle no aplica (Ofi se muestra en su panel).
       if (auth.hasOficioProfile || auth.hasNegocioProfile) return true;
-      // Cliente puro → leer preferencia.
-      return _ofiVisible;
+      // Cliente puro → leer preferencia reactiva.
+      return context.watch<ProvidersProvider>().ofiFabVisible;
     } catch (_) {
       // Ante cualquier error (ej. Provider no encontrado), mostramos Ofi.
       return true;

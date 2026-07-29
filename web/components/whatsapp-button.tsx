@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import { isVanitySlugPath } from '@/lib/route-utils';
 
 const WHATSAPP_URL = 'https://wa.link/5d7yqt';
 
@@ -11,11 +12,11 @@ export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
-  // Ocultar en panel/cliente (UX interna) y en vanity URLs `/p/*`
-  const isHidden = 
-    pathname?.startsWith('/panel') || 
-    pathname?.startsWith('/cliente') || 
-    pathname?.startsWith('/p/');
+  // Ocultar en panel/cliente (UX interna) y en vanity URLs de proveedor
+  const isHidden =
+    pathname?.startsWith('/panel') ||
+    pathname?.startsWith('/cliente') ||
+    isVanitySlugPath(pathname);
 
   // Lógica del tooltip automático cada 3 segundos
   useEffect(() => {

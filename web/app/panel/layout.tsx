@@ -11,10 +11,11 @@ import {
   updateLastActivity,
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
+import { AccountMenu } from '@/components/account-menu';
 import { getSocket } from '@/lib/socket';
 import { toast } from 'sonner';
 import {
-  Home, UserCog, Zap, Briefcase, BarChart3, Settings, LogOut,
+  Home, UserCog, Zap, Briefcase, BarChart3,
   Wrench, Store, ChevronDown, Check, MessageSquare, User as UserIcon,
 } from 'lucide-react';
 import { useRef, type ElementType } from 'react';
@@ -62,6 +63,7 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
     }
     if (isSessionExpired()) {
       clearSession();
+      toast.error('Vuelve a iniciar sesión para acceder a esta página.');
       router.push('/login');
       return;
     }
@@ -180,6 +182,10 @@ function PanelGate({ children }: { children: React.ReactNode }) {
 
       {/* Contenido principal con transición de páginas */}
       <main className="flex-1 relative z-10 p-4 pt-16 sm:p-6 md:pt-6 lg:p-8 overflow-x-hidden pb-24 md:pb-8">
+        {/* Menú de cuenta desktop-only (mobile lo tiene en MobileTopBar) */}
+        <div className="hidden md:flex justify-end mb-4">
+          <AccountMenu />
+        </div>
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
@@ -203,13 +209,6 @@ function PanelGate({ children }: { children: React.ReactNode }) {
 }
 
 function MobileTopBar() {
-  const router = useRouter();
-
-  function handleLogout() {
-    clearSession();
-    router.push('/login');
-  }
-
   return (
     <motion.div
       initial={{ y: -40, opacity: 0 }}
@@ -220,15 +219,8 @@ function MobileTopBar() {
       <div className="flex items-center justify-between gap-3 px-4 h-14">
         {/* Lado izquierdo: switcher de perfil (o label estático). */}
         <MobilePanelSwitcher />
-        {/* Lado derecho: logout siempre visible. */}
-        <button
-          onClick={handleLogout}
-          aria-label="Cerrar sesión"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-rose/80 hover:text-rose bg-white/[0.03] border border-white/10 hover:border-rose/40 transition-colors text-[12.5px] font-medium flex-shrink-0"
-        >
-          <LogOut size={14} strokeWidth={1.75} />
-          <span>Salir</span>
-        </button>
+        {/* Lado derecho: menú de cuenta (foto, ajustes, cerrar sesión). */}
+        <AccountMenu compact />
       </div>
     </motion.div>
   );
@@ -362,7 +354,6 @@ function MobileBottomNav() {
     // { label: 'Referidos', Icon: Gift,          href: '/panel/referidos' },
     // Cliente: salta al panel del rol USUARIO sin perder sesión.
     { label: 'Cliente',   Icon: UserIcon,      href: '/cliente' },
-    { label: 'Ajustes',   Icon: Settings,      href: '/panel/ajustes' },
   ];
 
   return (

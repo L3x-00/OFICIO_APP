@@ -38,6 +38,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // La vanity URL pública perdió el prefijo /p/ (ahora /:slug directo).
+      // Los enlaces ya compartidos (WhatsApp, redes, Google indexado) siguen
+      // funcionando vía este 301.
+      {
+        source: "/p/:slug",
+        destination: "/:slug",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

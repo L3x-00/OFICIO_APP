@@ -17,6 +17,7 @@ export interface User {
 export interface Provider {
   id: number;
   userId: number;
+  slug?: string;
   type: "OFICIO" | "NEGOCIO";
   businessName: string;
   description?: string;
