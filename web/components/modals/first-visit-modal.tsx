@@ -5,10 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, LogIn, Sparkles } from 'lucide-react';
 import { isAuthenticated } from '@/lib/auth';
+import { isVanitySlugPath } from '@/lib/route-utils';
 
 const STORAGE_KEY = 'oficio_visit_popup_seen';
 // Rutas donde NO tiene sentido el popup de captación (panel, login, perfil).
-const HIDDEN_PREFIXES = ['/panel', '/cliente', '/login', '/p/', '/payments'];
+const HIDDEN_PREFIXES = ['/panel', '/cliente', '/login', '/payments'];
 
 /**
  * Popup de captación para visitantes nuevos (FASE 4 #3).
@@ -25,6 +26,7 @@ export default function FirstVisitModal() {
   useEffect(() => {
     if (isAuthenticated()) return;
     if (HIDDEN_PREFIXES.some((p) => pathname?.startsWith(p))) return;
+    if (isVanitySlugPath(pathname)) return;
     let seen = false;
     try {
       seen = localStorage.getItem(STORAGE_KEY) === '1';

@@ -14,7 +14,8 @@ import {
   LogOut,
   LayoutDashboard,
 } from 'lucide-react';
-import { isAuthenticated, getUser, clearSession } from '@/lib/auth';
+import { isAuthenticated, isSessionExpired, getUser, clearSession } from '@/lib/auth';
+import { isVanitySlugPath } from '@/lib/route-utils';
 import AboutModal from '@/components/modals/about-modal';
 import ThemeToggle from '@/components/theme/theme-toggle';
 
@@ -65,6 +66,7 @@ export default function Navbar() {
   const [userInitials, setUserInitials] = useState('');
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [panelPath, setPanelPath] = useState('/cliente');
+  const [profilePath, setProfilePath] = useState('/cliente');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -79,19 +81,35 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Refleja el estado real de la sesión, no solo si quedó un token viejo en
+  // localStorage: si venció por inactividad (30 min, ver lib/auth.ts) la
+  // limpiamos aquí mismo para que el botón "Acceder" vuelva de inmediato,
+  // sin esperar a que el usuario entre a una ruta protegida y rebote.
   useEffect(() => {
-    const user = getUser();
-    if (isAuthenticated() && user) {
-      setAuthed(true);
-      setUserName(user.firstName);
-      setUserInitials(
-        `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-      );
-      setUserAvatar(user.avatarUrl ?? null);
-      setPanelPath(user.role === 'PROVEEDOR' || user.role === 'ADMIN' ? '/panel' : '/cliente');
-    } else {
-      setAuthed(false);
-    }
+    const checkAuth = () => {
+      if (isAuthenticated() && isSessionExpired()) {
+        clearSession();
+        setAuthed(false);
+        return;
+      }
+      const user = getUser();
+      if (isAuthenticated() && user) {
+        setAuthed(true);
+        setUserName(user.firstName);
+        setUserInitials(
+          `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+        );
+        setUserAvatar(user.avatarUrl ?? null);
+        const isProvider = user.role === 'PROVEEDOR' || user.role === 'ADMIN';
+        setPanelPath(isProvider ? '/panel' : '/cliente');
+        setProfilePath(isProvider ? '/panel/perfil' : '/cliente');
+      } else {
+        setAuthed(false);
+      }
+    };
+    checkAuth();
+    const interval = setInterval(checkAuth, 30000);
+    return () => clearInterval(interval);
   }, [pathname]);
 
   useEffect(() => {
@@ -101,11 +119,11 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Oculta el navbar en panel/cliente y también en vanity URLs `/p/*` —
-  // las tarjetas públicas tienen su propio header de marca minimalista.
+  // Oculta el navbar en panel/cliente y también en vanity URLs de proveedor
+  // (`/:slug`) — las tarjetas públicas tienen su propio header minimalista.
   if (pathname?.startsWith('/panel')
       || pathname?.startsWith('/cliente')
-      || pathname?.startsWith('/p/')) {
+      || isVanitySlugPath(pathname)) {
     return null;
   }
 
@@ -229,7 +247,7 @@ export default function Navbar() {
                           Mi Panel
                         </Link>
                         <Link
-                          href="/perfil"
+                          href={profilePath}
                           onClick={() => setDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-medium text-gray-600 dark:text-white/70 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                         >
@@ -323,7 +341,7 @@ export default function Navbar() {
                         Mi Panel
                       </Link>
                       <Link
-                        href="/perfil"
+                        href={profilePath}
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-2 text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg px-3 py-2.5 transition-colors text-[15px] font-semibold font-display"
                       >

@@ -260,7 +260,7 @@ export default function ProvidersSection() {
               <div className="flex items-center gap-3 mt-6 justify-center lg:justify-start">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground/70">
                   <Smartphone size={16} className="text-primary" />
-                  Disponible en iOS y Android.
+                  Disponible en Android y pronto en iOS.
                 </div>
                 <span className="text-border">|</span>
                 <span className="text-sm text-green-600 dark:text-green-400 font-medium">

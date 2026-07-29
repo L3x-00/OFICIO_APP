@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import FaqModal from '@/components/modals/faq-modal';
+import { isVanitySlugPath } from '@/lib/route-utils';
 
 export default function FloatingFaqButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +13,7 @@ export default function FloatingFaqButton() {
   const pathname = usePathname();
 
   // Ocultar en el panel de proveedor / cliente / vanity URLs
-  const isHidden = pathname?.startsWith('/panel') || pathname?.startsWith('/cliente') || pathname?.startsWith('/p/');
+  const isHidden = pathname?.startsWith('/panel') || pathname?.startsWith('/cliente') || isVanitySlugPath(pathname);
 
   // Lógica del tooltip automático cada 3 segundos
   useEffect(() => {

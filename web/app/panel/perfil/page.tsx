@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
@@ -9,7 +10,9 @@ import { useProfileType } from '@/lib/profile-type-context';
 import {
   Camera, Upload, Trash2, ChevronDown, ChevronUp, Plus,
   Shield, CheckCircle, XCircle, Clock, Star, Loader2, Save,
+  Crown, Package, Check,
 } from 'lucide-react';
+import YapePaymentModal from '@/components/modals/yape-payment-modal';
 import type { Provider } from '@/lib/types';
 
 const SOCIAL_FIELDS = [
@@ -53,13 +56,29 @@ const itemVariants = {
 };
 
 export default function PanelPerfilPage() {
+  return (
+    <Suspense fallback={null}>
+      <PanelPerfilContent />
+    </Suspense>
+  );
+}
+
+function PanelPerfilContent() {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showSocial, setShowSocial] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [showPlans, setShowPlans] = useState(false);
+  const [yapeModal, setYapeModal] = useState<{
+    plan: 'ESTANDAR' | 'PREMIUM';
+    label: string;
+    amount: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
+  const planesRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [businessName, setBusinessName] = useState('');
@@ -102,6 +121,16 @@ export default function PanelPerfilPage() {
     load();
     return () => { cancelled = true; };
   }, [activeType]);
+
+  // Deep-link desde el banner de "Inicio": /panel/perfil?section=planes
+  // hace scroll directo a la sección de planes en vez del tope de la página.
+  useEffect(() => {
+    if (loading) return;
+    if (searchParams.get('section') === 'planes') {
+      setShowPlans(true);
+      planesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading, searchParams]);
 
   const handleSave = async () => {
     const result = profileSchema.safeParse({
@@ -198,6 +227,54 @@ export default function PanelPerfilPage() {
   const imageCount = provider?.images?.length ?? 0;
   const imageProgress = (imageCount / 5) * 100;
 
+  const currentPlan = provider?.subscription?.plan || 'GRATIS';
+  const currentStatus = provider?.subscription?.status || 'ACTIVA';
+  const plans = [
+    {
+      name: 'GRATIS' as const,
+      label: 'Gratis',
+      price: 0,
+      icon: Package,
+      iconColor: 'text-white/50',
+      iconBg: 'bg-white/5',
+      benefits: ['2 fotos en la galería', '1 servicio/producto', 'Perfil básico'],
+      isCurrent: currentPlan === 'GRATIS',
+    },
+    {
+      name: 'ESTANDAR' as const,
+      label: 'Estándar',
+      price: 19.9,
+      icon: Star,
+      iconColor: 'text-accent',
+      iconBg: 'bg-accent/10',
+      popular: true,
+      benefits: [
+        '6 fotos en la galería',
+        '6 servicios/productos',
+        'Estadísticas de visitas',
+        'Mayor visibilidad en búsquedas',
+      ],
+      isCurrent: currentPlan === 'ESTANDAR',
+    },
+    {
+      name: 'PREMIUM' as const,
+      label: 'Premium',
+      price: 39.9,
+      icon: Crown,
+      iconColor: 'text-primary-light',
+      iconBg: 'bg-primary/10',
+      benefits: [
+        '10 fotos en la galería',
+        'Servicios/productos ilimitados',
+        'Estadísticas avanzadas',
+        'Máxima visibilidad',
+        'Insignia destacada',
+      ],
+      isCurrent: currentPlan === 'PREMIUM',
+    },
+  ];
+  const currentPlanData = plans.find((p) => p.name === currentPlan);
+
   return (
     <motion.div 
       variants={containerVariants}
@@ -211,6 +288,122 @@ export default function PanelPerfilPage() {
           Actualiza tu información para que los clientes te encuentren mejor.
         </p>
       </motion.div>
+
+      {/* Plan y suscripción */}
+      <div ref={planesRef}>
+        <motion.div variants={itemVariants} className="relative glass rounded-xl p-6 overflow-hidden border-primary/20 shadow-glow-md">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative flex items-center gap-4">
+            <div className={`w-14 h-14 ${currentPlanData?.iconBg} rounded-2xl flex items-center justify-center ring-1 ring-white/10`}>
+              {currentPlanData?.icon && <currentPlanData.icon className={currentPlanData.iconColor} size={26} />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-white font-bold text-lg font-display">
+                  Plan {currentPlanData?.label || 'Gratis'}
+                </h2>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    currentStatus === 'ACTIVA'
+                      ? 'bg-accent/10 text-accent border border-accent/20'
+                      : currentStatus === 'VENCIDA'
+                      ? 'bg-rose/10 text-rose-400 border border-rose/20'
+                      : 'bg-amber/10 text-amber border border-amber/20'
+                  }`}
+                >
+                  {currentStatus}
+                </span>
+              </div>
+              {provider?.subscription?.startDate && (
+                <p className="text-white/40 text-xs mt-0.5">
+                  Activo desde{' '}
+                  {new Date(provider.subscription.startDate).toLocaleDateString('es-PE', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="mt-6">
+          <CollapsibleSection
+            title="Planes disponibles"
+            open={showPlans}
+            onToggle={() => setShowPlans(!showPlans)}
+          >
+            <div className="grid sm:grid-cols-3 gap-4">
+              {plans.map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`relative border rounded-2xl p-5 transition-all duration-300 ${
+                    plan.isCurrent
+                      ? 'glass border-primary/30 shadow-glow-sm'
+                      : 'glass glass-hover border-white/5'
+                  }`}
+                >
+                  {plan.popular && !plan.isCurrent && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-primary text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-glow-sm">
+                      Más popular
+                    </span>
+                  )}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-10 h-10 ${plan.iconBg} rounded-xl flex items-center justify-center`}>
+                      <plan.icon className={plan.iconColor} size={20} />
+                    </div>
+                    {plan.isCurrent && (
+                      <span className="flex items-center gap-1 text-primary-light text-[10px] font-bold uppercase tracking-wider bg-primary/10 px-2 py-1 rounded-full border border-primary/20">
+                        <Check size={11} /> Actual
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-white text-lg font-display">{plan.label}</h3>
+                  <p className="text-white font-extrabold text-2xl mt-1 mb-4">
+                    {plan.price === 0 ? 'Gratis' : (
+                      <>
+                        <span className="text-gradient">S/. {plan.price}</span>
+                        <span className="text-sm font-normal text-white/40">/mes</span>
+                      </>
+                    )}
+                  </p>
+                  <ul className="space-y-2 mb-5">
+                    {plan.benefits.map((b) => (
+                      <li key={b} className="text-white/50 text-xs flex items-start gap-1.5">
+                        <Check size={13} className="text-accent mt-0.5 shrink-0" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  {!plan.isCurrent && plan.name !== 'GRATIS' && (
+                    <button
+                      onClick={() =>
+                        setYapeModal({
+                          plan: plan.name as 'ESTANDAR' | 'PREMIUM',
+                          label: plan.label,
+                          amount: plan.price,
+                        })
+                      }
+                      className="btn btn-primary press-effect w-full py-2 text-sm"
+                    >
+                      Adquirir
+                    </button>
+                  )}
+                  {plan.isCurrent && (
+                    <button
+                      disabled
+                      className="w-full py-2 text-sm font-semibold bg-white/5 text-white/30 cursor-not-allowed rounded-xl"
+                    >
+                      Plan actual
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CollapsibleSection>
+        </motion.div>
+      </div>
 
       {/* Avatar y galería */}
       <SectionCard title="Foto de perfil y galería" subtitle="Sube hasta 5 imágenes (JPG, PNG, WebP, máx. 5MB)">
@@ -479,6 +672,16 @@ export default function PanelPerfilPage() {
           )}
         </button>
       </div>
+
+      {yapeModal && (
+        <YapePaymentModal
+          isOpen={!!yapeModal}
+          onClose={() => setYapeModal(null)}
+          plan={yapeModal.plan}
+          planLabel={yapeModal.label}
+          amount={yapeModal.amount}
+        />
+      )}
     </motion.div>
   );
 }

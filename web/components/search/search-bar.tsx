@@ -129,7 +129,7 @@ export default function SearchBar() {
               {results.map((p) => (
                 <Link
                   key={p.id}
-                  href={`/p/${p.slug ?? p.id}`}
+                  href={`/${p.slug ?? p.id}`}
                   onClick={handleSelectProvider}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors border-b border-white/5 last:border-b-0 group"
                 >

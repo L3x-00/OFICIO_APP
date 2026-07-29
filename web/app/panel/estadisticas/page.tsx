@@ -159,7 +159,7 @@ export default function PanelEstadisticasPage() {
               ))}
             </ul>
             <a
-              href="/panel/ajustes"
+              href="/panel/perfil?section=planes"
               className="btn btn-primary press-effect inline-flex items-center gap-2 px-7 py-3 font-semibold text-sm"
             >
               Ver planes

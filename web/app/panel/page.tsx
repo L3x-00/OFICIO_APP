@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useCountUp } from '@/lib/hooks';
 import { useProfileType } from '@/lib/profile-type-context';
 import { UserAvatarButton } from '@/components/modals/user-profile-modal';
+import { PanelTipBanner, type PanelTip } from '@/components/panel-tip-banner';
 import type { Provider, Analytics, Review } from '@/lib/types';
 
 // ========== ANIMACIONES TIPADAS CORRECTAMENTE ==========
@@ -93,6 +94,17 @@ export default function PanelHomePage() {
       : 'bg-white/5 text-white/50 border-white/10';
 
   const planLabel = provider?.subscription?.plan ?? 'Gratis';
+  const coverPhoto = provider?.images?.find((i) => i.isCover)?.url ?? provider?.images?.[0]?.url;
+
+  const tips: PanelTip[] = [
+    { text: provider?.type === 'NEGOCIO' ? 'Negocio activo' : 'Profesional activo' },
+    {
+      text: 'Extiende tu alcance con estos grandiosos planes.',
+      cta: { label: 'Ver planes', href: '/panel/perfil?section=planes' },
+    },
+    { text: 'Un perfil completo (fotos, horario, redes) recibe más contactos.', cta: { label: 'Editar perfil', href: '/panel/perfil' } },
+    { text: 'Comparte tu enlace de perfil para que más clientes te encuentren.' },
+  ];
 
   return (
     <motion.div
@@ -110,16 +122,25 @@ export default function PanelHomePage() {
           <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-[80px] animate-float-slow pointer-events-none" />
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-extrabold text-2xl shadow-glow-md ring-2 ring-primary/30 flex-shrink-0">
-                {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
-              </div>
+              {coverPhoto ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={coverPhoto}
+                  alt={provider?.businessName ?? 'Foto de perfil'}
+                  className="w-16 h-16 rounded-2xl object-cover shadow-glow-md ring-2 ring-primary/30 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-extrabold text-2xl shadow-glow-md ring-2 ring-primary/30 flex-shrink-0">
+                  {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
+                </div>
+              )}
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-white">
                   Hola, {provider?.businessName || user?.firstName}
                 </h1>
-                <p className="text-white/50 text-sm mt-0.5">
-                  {provider?.type === 'NEGOCIO' ? 'Negocio activo' : 'Profesional activo'}
-                </p>
+                <div className="mt-0.5 max-w-xs sm:max-w-sm">
+                  <PanelTipBanner tips={tips} />
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3 self-start sm:self-center">
@@ -128,7 +149,7 @@ export default function PanelHomePage() {
               </span>
               <button
                 onClick={() => {
-                  const url = `${window.location.origin}/proveedor/${provider?.id}`;
+                  const url = `${window.location.origin}/${provider?.slug ?? provider?.id}`;
                   navigator.clipboard.writeText(url).then(() => {
                     toast.success('Enlace copiado al portapapeles');
                   });
@@ -267,6 +288,8 @@ function SummaryColumn({
   planLabel: string;
   planBadgeColor: string;
 }) {
+  const cover = provider?.images?.find((i) => i.isCover)?.url ?? provider?.images?.[0]?.url;
+
   return (
     <motion.aside
       variants={itemVariants}
@@ -277,9 +300,18 @@ function SummaryColumn({
           Resumen del perfil
         </p>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-extrabold text-lg shadow-glow-sm flex-shrink-0">
-            {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
-          </div>
+          {cover ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={cover}
+              alt={provider?.businessName ?? 'Foto de perfil'}
+              className="w-12 h-12 rounded-xl object-cover shadow-glow-sm flex-shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-extrabold text-lg shadow-glow-sm flex-shrink-0">
+              {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="text-white font-bold text-sm truncate">
               {provider?.businessName ?? '—'}
@@ -338,7 +370,7 @@ function SummaryColumn({
           <QuickLink href="/panel/perfil" label="Editar mi perfil" />
           <QuickLink href="/panel/servicios" label="Gestionar servicios" />
           <QuickLink href="/panel/estadisticas" label="Ver estadísticas" />
-          <QuickLink href="/panel/ajustes" label="Cambiar de plan" />
+          <QuickLink href="/panel/perfil?section=planes" label="Cambiar de plan" />
         </div>
       </div>
     </motion.aside>

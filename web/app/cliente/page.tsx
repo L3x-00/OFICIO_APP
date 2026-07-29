@@ -12,19 +12,16 @@ import {
   Heart,
   Briefcase,
   Store,
-  LogOut,
-  Globe,
   Sparkles,
   Bell,
   Settings,
   CheckCircle,
-  ChevronRight,
   Gift,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { clearSession } from '@/lib/auth';
 import { getSocket } from '@/lib/socket';
+import { AccountMenu } from '@/components/account-menu';
 import ReferralPanel from '@/components/referral-panel';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -166,26 +163,7 @@ function ClienteContent() {
               Mi Panel
             </h1>
           </div>
-          <div className="flex items-center gap-4">
-            {/* Volver al sitio web SIN cerrar sesión (FASE 4 #3). */}
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-white/40 hover:text-white text-[13px] font-display font-medium transition-colors"
-            >
-              <Globe size={16} strokeWidth={1.75} />
-              <span className="hidden sm:inline">Volver al sitio web</span>
-            </button>
-            <button
-              onClick={() => {
-                clearSession();
-                router.push('/');
-              }}
-              className="flex items-center gap-2 text-white/40 hover:text-rose-400 text-[13px] font-display font-medium transition-colors"
-            >
-              <LogOut size={16} strokeWidth={1.75} />
-              <span className="hidden sm:inline">Cerrar sesión</span>
-            </button>
-          </div>
+          <AccountMenu hasProvider={hasProvider} />
         </motion.div>
 
         {/* Perfil */}
@@ -537,12 +515,6 @@ function SettingsSection({ user }: { user: UserType | null }) {
           />
         </div>
       </div>
-
-      <div className="glass rounded-xl divide-y divide-white/5">
-        <SettingsLink label="Términos y Condiciones" />
-        <SettingsLink label="Política de Privacidad" />
-        <SettingsLink label="Centro de ayuda" />
-      </div>
     </div>
   );
 }
@@ -558,14 +530,5 @@ function Field({ label, value, verified }: { label: string; value: string; verif
         {verified && <CheckCircle size={13} className="text-accent flex-shrink-0" strokeWidth={1.75} />}
       </span>
     </div>
-  );
-}
-
-function SettingsLink({ label }: { label: string }) {
-  return (
-    <button className="flex items-center justify-between w-full px-5 py-4 hover:bg-white/[0.02] transition-colors text-white/60 hover:text-white group">
-      <span className="text-[14px] font-display font-medium">{label}</span>
-      <ChevronRight size={15} className="text-white/20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" strokeWidth={1.75} />
-    </button>
   );
 }

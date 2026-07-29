@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,12 +9,9 @@ import {
   UserCog,
   Briefcase,
   BarChart3,
-  Settings,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  LogOut,
-  Globe,
   Store,
   Wrench,
   LayoutDashboard,
@@ -23,8 +20,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { clearSession, getUser } from '@/lib/auth';
-import { disconnectSocket, getSocket } from '@/lib/socket';
+import { getSocket } from '@/lib/socket';
 import { useProfileTypeOptional } from '@/lib/profile-type-context';
 import { api } from '@/lib/api';
 
@@ -41,21 +37,12 @@ const tabs = [
   { label: 'Estadísticas', icon: BarChart3,     href: '/panel/estadisticas' },
   // Feature OCULTA (2026-07): referidos — restaurar junto con FEATURE_REFERIDOS.
   // { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },
-  { label: 'Ajustes',      icon: Settings,      href: '/panel/ajustes' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const user = getUser();
   const profileCtx = useProfileTypeOptional();
-
-  const handleLogout = () => {
-    disconnectSocket();
-    clearSession();
-    router.push('/login');
-  };
 
   const showSwitcher = !!profileCtx && profileCtx.availableTypes.length > 0;
   const unread = useUnreadNotifications();
@@ -159,46 +146,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User section */}
-      <div className="p-2.5 border-t border-white/5 space-y-1">
-        {!collapsed && user && (
-          <div className="px-3 py-2.5 flex items-center gap-2.5 mb-1">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt={user.firstName}
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-primary/30 flex-shrink-0"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-primary text-white text-xs font-bold flex items-center justify-center flex-shrink-0 shadow-glow-sm">
-                {user.firstName?.charAt(0).toUpperCase()}
-                {user.lastName?.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="text-white text-xs font-semibold truncate">{user.firstName}</div>
-              <div className="text-white/30 text-[10px] truncate">{user.email}</div>
-            </div>
-          </div>
-        )}
-        {/* Volver al sitio web SIN cerrar sesión (FASE 4 #3). */}
-        <Link
-          href="/"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? 'Volver al sitio web' : undefined}
-        >
-          <Globe size={20} className="flex-shrink-0" />
-          {!collapsed && <span>Volver al sitio web</span>}
-        </Link>
-        <button
-          onClick={handleLogout}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-200 w-full ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? 'Cerrar sesión' : undefined}
-        >
-          <LogOut size={20} className="flex-shrink-0" />
-          {!collapsed && <span>Cerrar sesión</span>}
-        </button>
-      </div>
     </aside>
   );
 }
