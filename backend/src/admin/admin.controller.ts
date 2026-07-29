@@ -124,17 +124,19 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
+    @Query('type') type?: string,
   ) {
     return this.adminService.getAllProviders(
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 15,
       search,
+      type,
     );
   }
 
   @Get('form-options')
-  getFormOptions() {
-    return this.adminService.getFormOptions();
+  getFormOptions(@Query('type') type?: string) {
+    return this.adminService.getFormOptions(type);
   }
 
   @Post('providers')

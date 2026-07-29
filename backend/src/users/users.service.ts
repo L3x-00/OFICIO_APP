@@ -8,6 +8,69 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import { EventsGateway } from '../events/events.gateway.js';
 
+type OwnerProfessionalProfile = {
+  specialty: string;
+  institution: string | null;
+  yearsExperience: number | null;
+  professionalTitle: string | null;
+  registrationNumber: string | null;
+  registrationIssuer: string | null;
+};
+
+type OwnerProfessionalMigration = {
+  id: number;
+  status: string;
+  specialty: string;
+  rejectionReason: string | null;
+  reviewedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type ProviderStatusRow = {
+  id: number;
+  businessName: string;
+  type: string;
+  verificationStatus: string;
+  isVerified: boolean;
+  trustStatus: string;
+  isTrusted: boolean;
+  createdAt: Date;
+  phone: string;
+  whatsapp: string | null;
+  description: string | null;
+  dni: string | null;
+  ruc: string | null;
+  nombreComercial: string | null;
+  razonSocial: string | null;
+  hasDelivery: boolean;
+  plenaCoordinacion: boolean;
+  scheduleJson: unknown;
+  address: string | null;
+  providerCategories: Array<{
+    category: {
+      id: number;
+      name: string;
+      slug: string;
+      parentId: number | null;
+      parent: { id: number; name: string } | null;
+    };
+  }>;
+  notifications: unknown[];
+  trustValidations: Array<{ rejectionReason: string | null }>;
+  subscription: {
+    plan: string;
+    status: string;
+    endDate: Date;
+  } | null;
+  professionalProfile: OwnerProfessionalProfile | null;
+  professionalMigrations: OwnerProfessionalMigration[];
+};
+
+type ProviderStatusDelegate = {
+  findMany(args: unknown): Promise<ProviderStatusRow[]>;
+};
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -15,9 +78,15 @@ export class UsersService {
     private eventsGateway: EventsGateway,
   ) {}
 
-  // Devuelve TODOS los perfiles de proveedor del usuario (OFICIO y/o NEGOCIO)
+  // Devuelve TODOS los perfiles de proveedor del usuario (OFICIO,
+  // PROFESIONAL y/o NEGOCIO).
   async getMyProviderStatus(userId: number) {
-    const providers = await this.prisma.provider.findMany({
+    // El cliente Prisma local puede estar un commit detrás del schema durante
+    // esta tanda. El cast queda acotado a esta lectura hasta que CI regenere
+    // el cliente; el select explícito conserva el contrato seguro.
+    const providers = await (
+      this.prisma.provider as unknown as ProviderStatusDelegate
+    ).findMany({
       where: { userId },
       select: {
         id: true,
@@ -78,6 +147,33 @@ export class UsersService {
         subscription: {
           select: { plan: true, status: true, endDate: true },
         },
+        // Campos propios del profesional. Solo viajan al dueño autenticado;
+        // los perfiles públicos construyen un contrato distinto y mínimo.
+        professionalProfile: {
+          select: {
+            specialty: true,
+            institution: true,
+            yearsExperience: true,
+            professionalTitle: true,
+            registrationNumber: true,
+            registrationIssuer: true,
+          },
+        },
+        // Estado compacto de la última migración. Sin documentos, URLs ni
+        // números de colegiatura que pertenezcan a la solicitud.
+        professionalMigrations: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            status: true,
+            specialty: true,
+            rejectionReason: true,
+            reviewedAt: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
@@ -121,6 +217,10 @@ export class UsersService {
         plan: p.subscription?.plan ?? 'GRATIS',
         subscriptionStatus: p.subscription?.status ?? null,
         subscriptionEndDate: p.subscription?.endDate ?? null,
+        professionalProfile: p.professionalProfile ?? null,
+        professionalMigration: p.professionalMigrations?.[0] ?? null,
+        professionalMigrationStatus:
+          p.professionalMigrations?.[0]?.status ?? null,
       })),
     };
   }

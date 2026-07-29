@@ -112,6 +112,44 @@ describe('ProvidersService (unit)', () => {
       expect(p.phone).toBe('999');
       expect(p.images).toHaveLength(3);
     });
+
+    it('profesional público: especialidad y certificado, nunca registro ni documento', async () => {
+      prisma.provider.findFirst.mockResolvedValue({
+        id: 1,
+        type: 'PROFESIONAL',
+        phone: '999',
+        subscription: { plan: 'PREMIUM' },
+        providerCategories: [],
+        images: [],
+        professionalProfile: {
+          specialty: 'Ingeniería civil',
+          institution: 'Universidad privada',
+          registrationNumber: 'CIP 12345',
+        },
+        verificationDocs: [{ id: 44 }],
+      });
+
+      const p: any = await service.findOne(1);
+
+      expect(p.professionalProfile).toEqual({
+        specialty: 'Ingeniería civil',
+      });
+      expect(p.credentialVerified).toBe(true);
+      expect(p).not.toHaveProperty('verificationDocs');
+      expect(JSON.stringify(p)).not.toContain('registrationNumber');
+      expect(JSON.stringify(p)).not.toContain('Universidad privada');
+      expect(prisma.provider.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            professionalProfile: { select: { specialty: true } },
+            verificationDocs: expect.objectContaining({
+              where: { docType: 'certificado', status: 'APROBADO' },
+              take: 1,
+            }),
+          }),
+        }),
+      );
+    });
   });
 
   it('removes legal identity and applies public privacy toggles', async () => {

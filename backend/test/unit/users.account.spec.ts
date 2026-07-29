@@ -5,10 +5,7 @@
  * (roba el token de otro user en transacción → anti-leak de push cross-cuenta),
  * clearFcmToken, updateProfilePicture, getMyProviderStatus (plan default GRATIS).
  */
-import {
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../../src/users/users.service.js';
 import { createPrismaMock, type PrismaMock } from '../mocks/prisma.mock';
@@ -55,6 +52,50 @@ describe('UsersService — cuenta (unit)', () => {
       expect(res.profiles[0].plan).toBe('GRATIS');
       expect(res.profiles[0].subscriptionStatus).toBeNull();
     });
+
+    it('incluye perfil profesional y estado compacto de migración del dueño', async () => {
+      prisma.provider.findMany.mockResolvedValue([
+        {
+          id: 5,
+          businessName: 'Ingeniería Ríos',
+          type: 'PROFESIONAL',
+          providerCategories: [],
+          notifications: [],
+          trustValidations: [],
+          subscription: null,
+          professionalProfile: {
+            specialty: 'Ingeniería civil',
+            registrationNumber: 'CIP 12345',
+          },
+          professionalMigrations: [
+            {
+              id: 9,
+              status: 'APPROVED',
+              specialty: 'Ingeniería civil',
+            },
+          ],
+        },
+      ]);
+
+      const res: any = await service.getMyProviderStatus(7);
+
+      expect(res.profiles[0].professionalProfile).toEqual({
+        specialty: 'Ingeniería civil',
+        registrationNumber: 'CIP 12345',
+      });
+      expect(res.profiles[0].professionalMigration).toEqual(
+        expect.objectContaining({ id: 9, status: 'APPROVED' }),
+      );
+      expect(res.profiles[0].professionalMigrationStatus).toBe('APPROVED');
+      expect(prisma.provider.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          select: expect.objectContaining({
+            professionalProfile: expect.any(Object),
+            professionalMigrations: expect.objectContaining({ take: 1 }),
+          }),
+        }),
+      );
+    });
   });
 
   describe('getMe()', () => {
@@ -93,9 +134,9 @@ describe('UsersService — cuenta (unit)', () => {
         data: { fcmToken: 'fcm-xyz' },
       });
       // ORDEN: liberar ANTES de asignar (asignar primero se auto-anularía).
-      expect(
-        prisma.user.updateMany.mock.invocationCallOrder[0],
-      ).toBeLessThan(prisma.user.update.mock.invocationCallOrder[0]);
+      expect(prisma.user.updateMany.mock.invocationCallOrder[0]).toBeLessThan(
+        prisma.user.update.mock.invocationCallOrder[0],
+      );
     });
   });
 

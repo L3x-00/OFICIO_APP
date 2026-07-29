@@ -288,7 +288,72 @@ async function main() {
   console.log(`  ✓ ${oficioParentDefs.length} categorías padre OFICIO`);
   console.log(`  ✓ ${oficioSubs.length} subcategorías OFICIO`);
 
-  // ── 4. CATEGORÍAS — NEGOCIO ───────────────────────────────
+  // ── 4. CATEGORÍAS — PROFESIONAL ────────────────────────────
+  // Mantiene sectores + especialidades, igual que OFICIO, pero con slugs pro-*
+  // y forType explícito. Nunca se comparte una categoría con OFICIO.
+  console.log('🎓 Creando Sectores y Especialidades PROFESIONAL...');
+
+  const professionalParents: Record<string, number> = {};
+  const professionalParentDefs = [
+    { name: 'Ingeniería, Arquitectura y Construcción', slug: 'pro-ingenieria' },
+    { name: 'Tecnología, Diseño y Marketing', slug: 'pro-tecnologia' },
+    { name: 'Legal, Finanzas y Consultoría', slug: 'pro-legal' },
+    { name: 'Salud y Bienestar Profesional', slug: 'pro-salud' },
+    { name: 'Educación y Desarrollo Profesional', slug: 'pro-educacion' },
+  ];
+
+  for (const parent of professionalParentDefs) {
+    const category = await prisma.category.create({
+      data: { ...parent, forType: 'PROFESIONAL' },
+    });
+    professionalParents[parent.slug] = category.id;
+  }
+
+  const professionalSubs = [
+    { name: 'Ingeniería Civil', slug: 'pro-ingenieria-civil', parent: 'pro-ingenieria' },
+    { name: 'Arquitectura', slug: 'pro-arquitectura', parent: 'pro-ingenieria' },
+    { name: 'Ingeniería Eléctrica', slug: 'pro-ingenieria-electrica', parent: 'pro-ingenieria' },
+    { name: 'Técnico Electricista Certificado', slug: 'pro-tecnico-electricista', parent: 'pro-ingenieria' },
+    { name: 'Ingeniería Mecánica', slug: 'pro-ingenieria-mecanica', parent: 'pro-ingenieria' },
+    { name: 'Topografía y Geomática', slug: 'pro-topografia', parent: 'pro-ingenieria' },
+    { name: 'Seguridad y Salud en el Trabajo', slug: 'pro-seguridad-salud-trabajo', parent: 'pro-ingenieria' },
+    { name: 'Ingeniería de Sistemas', slug: 'pro-ingenieria-sistemas', parent: 'pro-tecnologia' },
+    { name: 'Desarrollo de Software', slug: 'pro-desarrollo-software', parent: 'pro-tecnologia' },
+    { name: 'Diseño Gráfico', slug: 'pro-diseno-grafico', parent: 'pro-tecnologia' },
+    { name: 'Diseño UX/UI', slug: 'pro-diseno-ux-ui', parent: 'pro-tecnologia' },
+    { name: 'Marketing Digital', slug: 'pro-marketing-digital', parent: 'pro-tecnologia' },
+    { name: 'Ciberseguridad y Redes', slug: 'pro-ciberseguridad-redes', parent: 'pro-tecnologia' },
+    { name: 'Abogacía', slug: 'pro-abogacia', parent: 'pro-legal' },
+    { name: 'Contabilidad', slug: 'pro-contabilidad', parent: 'pro-legal' },
+    { name: 'Asesoría Tributaria', slug: 'pro-asesoria-tributaria', parent: 'pro-legal' },
+    { name: 'Administración de Empresas', slug: 'pro-administracion-empresas', parent: 'pro-legal' },
+    { name: 'Consultoría Empresarial', slug: 'pro-consultoria-empresarial', parent: 'pro-legal' },
+    { name: 'Medicina', slug: 'pro-medicina', parent: 'pro-salud' },
+    { name: 'Psicología', slug: 'pro-psicologia', parent: 'pro-salud' },
+    { name: 'Nutrición', slug: 'pro-nutricion', parent: 'pro-salud' },
+    { name: 'Fisioterapia', slug: 'pro-fisioterapia', parent: 'pro-salud' },
+    { name: 'Odontología', slug: 'pro-odontologia', parent: 'pro-salud' },
+    { name: 'Docencia Especializada', slug: 'pro-docencia-especializada', parent: 'pro-educacion' },
+    { name: 'Idiomas y Traducción', slug: 'pro-idiomas-traduccion', parent: 'pro-educacion' },
+    { name: 'Capacitación y Formación', slug: 'pro-capacitacion-formacion', parent: 'pro-educacion' },
+    { name: 'Orientación Vocacional', slug: 'pro-orientacion-vocacional', parent: 'pro-educacion' },
+  ];
+
+  for (const specialty of professionalSubs) {
+    await prisma.category.create({
+      data: {
+        name: specialty.name,
+        slug: specialty.slug,
+        parentId: professionalParents[specialty.parent],
+        forType: 'PROFESIONAL',
+      },
+    });
+  }
+
+  console.log(`  ✓ ${professionalParentDefs.length} categorías padre PROFESIONAL`);
+  console.log(`  ✓ ${professionalSubs.length} subcategorías PROFESIONAL`);
+
+  // ── 5. CATEGORÍAS — NEGOCIO ───────────────────────────────
   console.log('🏪 Creando Sectores y Especialidades NEGOCIO...');
 
   const negocioParents: Record<string, number> = {};

@@ -17,6 +17,10 @@ import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { slugify, uniqueSlug } from '../common/slug.util.js';
 import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
 
+type PublicProfessionalProfileDelegate = {
+  findUnique(args: unknown): Promise<{ specialty: string } | null>;
+};
+
 /**
  * Endpoints públicos del perfil Vanity URL.
  *
@@ -144,6 +148,36 @@ export class PublicProfileController implements OnModuleInit {
       throw new NotFoundException('Perfil no encontrado');
     }
 
+    // El perfil profesional público es deliberadamente mínimo. Consultamos
+    // solo la especialidad y la existencia de un certificado APROBADO; jamás
+    // cargamos registro, institución, archivo ni URL privada.
+    const isProfessional = String(provider.type) === 'PROFESIONAL';
+    let professionalProfile: { specialty: string } | null = null;
+    let credentialVerified = false;
+    if (isProfessional) {
+      const professionalProfiles = (
+        this.prisma as unknown as {
+          professionalProfile: PublicProfessionalProfileDelegate;
+        }
+      ).professionalProfile;
+      const [profile, approvedCredential] = await Promise.all([
+        professionalProfiles.findUnique({
+          where: { providerId: provider.id },
+          select: { specialty: true },
+        }),
+        this.prisma.verificationDoc.findFirst({
+          where: {
+            providerId: provider.id,
+            docType: 'certificado',
+            status: 'APROBADO',
+          },
+          select: { id: true },
+        }),
+      ]);
+      professionalProfile = profile;
+      credentialVerified = approvedCredential != null;
+    }
+
     // Backfill lazy: si caímos aquí por id (o por slug null), genera
     // un slug ahora y persístelo. La próxima vez resuelve por slug y
     // queda registrado en URLs compartidas.
@@ -196,6 +230,14 @@ export class PublicProfileController implements OnModuleInit {
       hasHomeService: provider.hasHomeService,
       hasDelivery: provider.hasDelivery,
       plenaCoordinacion: provider.plenaCoordinacion,
+      ...(isProfessional
+        ? {
+            professionalProfile: professionalProfile
+              ? { specialty: professionalProfile.specialty }
+              : null,
+            credentialVerified,
+          }
+        : {}),
       coverUrl: cover,
       images: visibleImages,
       categories,

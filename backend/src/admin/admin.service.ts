@@ -30,6 +30,8 @@ import {
 } from './services/admin-shared.js';
 import { syncCoverageToPlan } from '../coverage/coverage.service.js';
 import { assertManagedServiceImageUrls } from '../common/service-image-validation.js';
+import { normalizeProviderType } from '../common/provider-type.js';
+import { validateProviderCategorySelection } from '../common/provider-category-validation.js';
 
 @Injectable()
 export class AdminService {
@@ -94,9 +96,15 @@ export class AdminService {
   }
 
   // ── LISTAR TODOS LOS PROVEEDORES ──────────────────────────
-  async getAllProviders(page = 1, limit = 15, search?: string) {
+  async getAllProviders(page = 1, limit = 15, search?: string, type?: string) {
     const skip = (page - 1) * limit;
     const where: Prisma.ProviderWhereInput = {};
+
+    const normalizedType = type == null ? null : normalizeProviderType(type);
+    if (type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    if (normalizedType) where.type = normalizedType as any;
 
     if (search) {
       where.OR = [
@@ -146,13 +154,27 @@ export class AdminService {
   }
 
   // ── OPCIONES PARA FORMULARIOS ─────────────────────────────
-  async getFormOptions() {
+  async getFormOptions(forType?: string) {
+    const normalizedType =
+      forType == null ? null : normalizeProviderType(forType);
+    if (forType != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    const rootTypeFilter =
+      normalizedType === 'PROFESIONAL'
+        ? { forType: normalizedType }
+        : normalizedType
+          ? { OR: [{ forType: normalizedType }, { forType: null }] }
+          : {};
+    const childTypeFilter = normalizedType
+      ? { OR: [{ forType: normalizedType }, { forType: null }] }
+      : {};
     const [categories, localities] = await Promise.all([
       this.prisma.category.findMany({
-        where: { isActive: true, parentId: null },
+        where: { isActive: true, parentId: null, ...rootTypeFilter },
         include: {
           children: {
-            where: { isActive: true },
+            where: { isActive: true, ...childTypeFilter },
             select: { id: true, name: true, slug: true, forType: true },
           },
         },
@@ -188,9 +210,24 @@ export class AdminService {
       province?: string;
       district?: string;
       scheduleJson?: string;
+      professionalSpecialty?: string;
+      professionalInstitution?: string;
+      professionalYearsExperience?: number | string;
+      professionalTitle?: string;
+      professionalRegistrationNumber?: string;
+      professionalRegistrationIssuer?: string;
     },
     files: Express.Multer.File[],
   ) {
+    const providerType = normalizeProviderType(data.type);
+    if (!providerType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    if (providerType === 'PROFESIONAL' && !data.professionalSpecialty?.trim()) {
+      throw new BadRequestException(
+        'La especialidad es obligatoria para un servicio profesional',
+      );
+    }
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -220,6 +257,21 @@ export class AdminService {
     }
     assertManagedServiceImageUrls(this.minio, parsedSchedule);
 
+    if (!Array.isArray(data.categoryIds)) {
+      throw new BadRequestException(
+        'Debes seleccionar al menos una Especialidad',
+      );
+    }
+    // Validar ANTES de subir archivos: evita dejar objetos huérfanos si la
+    // categoría no existe, no es hija o no pertenece al tipo elegido.
+    const catIds = data.categoryIds.slice(0, 6).map(Number);
+    await validateProviderCategorySelection(this.prisma, catIds, providerType);
+    const primaryCatId =
+      data.primaryCategoryId != null &&
+      catIds.includes(Number(data.primaryCategoryId))
+        ? Number(data.primaryCategoryId)
+        : catIds[0];
+
     const bcrypt = await import('bcrypt');
     const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const tempPassword = Array.from(
@@ -227,100 +279,126 @@ export class AdminService {
       () => chars[Math.floor(Math.random() * chars.length)],
     ).join('');
 
-    // Upload images to R2 before transaction
-    const imageUrls: string[] =
-      files && files.length > 0
-        ? await Promise.all(
-            files.map((f) =>
-              this.minio.uploadFile(
-                f.buffer,
-                f.originalname,
-                'providers/gallery',
-              ),
-            ),
-          )
-        : [];
-
-    // Especialidades: máx 6, una marcada como primaria (isPrimary).
-    const catIds = data.categoryIds.slice(0, 6).map(Number);
-    const primaryCatId =
-      data.primaryCategoryId != null &&
-      catIds.includes(Number(data.primaryCategoryId))
-        ? Number(data.primaryCategoryId)
-        : catIds[0];
-
-    const result = await this.prisma.$transaction(async (tx) => {
-      // 1. Crear Usuario
-      const user = await tx.user.create({
-        data: {
-          email: data.email,
-          passwordHash: await bcrypt.hash(tempPassword, 10),
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: 'PROVEEDOR',
-          department: data.department ?? null,
-          province: data.province ?? null,
-          district: data.district ?? null,
-        },
-      });
-
-      // 2. Crear Proveedor
-      const provider = await tx.provider.create({
-        data: {
-          userId: user.id,
-          businessName: data.businessName,
-          phone: data.phone,
-          whatsapp: data.whatsapp ?? null,
-          description: data.description ?? null,
-          address: data.address ?? null,
-          localityId: Number(data.localityId),
-          type: data.type as any,
-          dni: data.dni ?? null,
-          ruc: data.ruc ?? null,
-          nombreComercial: data.nombreComercial ?? null,
-          razonSocial: data.razonSocial ?? null,
-          hasDelivery: data.hasDelivery === true || data.hasDelivery === 'true',
-          scheduleJson: parsedSchedule as any,
-          providerCategories: {
-            create: catIds.map((cid) => ({
-              categoryId: cid,
-              isPrimary: cid === primaryCatId,
-            })),
-          },
-        },
-        include: {
-          providerCategories: { select: { category: true } },
-          locality: true,
-        },
-      });
-
-      // 3. GUARDAR IMÁGENES EN LA TABLA provider_images
-      if (imageUrls.length > 0) {
-        await tx.providerImage.createMany({
-          data: imageUrls.map((url, index) => ({
-            providerId: provider.id,
-            url,
-            isCover: index === 0,
-            order: index,
-          })),
-        });
+    // Subida secuencial: si R2 falla a mitad, conocemos cada objeto ya
+    // creado y podemos limpiarlo. Promise.all perderÃ­a esas URLs parciales.
+    const imageUrls: string[] = [];
+    try {
+      for (const file of files ?? []) {
+        imageUrls.push(
+          await this.minio.uploadFile(
+            file.buffer,
+            file.originalname,
+            'providers/gallery',
+          ),
+        );
       }
+    } catch (error) {
+      await Promise.all(
+        imageUrls.map((url) => this.minio.deleteFile(url).catch(() => {})),
+      );
+      throw error;
+    }
 
-      // 4. Crear Suscripción de cortesía: ESTANDAR por 1 mes (mismo trato
-      // que un proveedor que se registra él mismo y es aprobado luego).
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 1);
-      await tx.subscription.create({
-        data: {
-          providerId: provider.id,
-          plan: 'ESTANDAR',
-          status: 'GRACIA',
-          endDate,
-        },
+    let result: { provider: { id: number }; userId: number };
+    try {
+      result = await this.prisma.$transaction(async (tx) => {
+        // 1. Crear Usuario
+        const user = await tx.user.create({
+          data: {
+            email: data.email,
+            passwordHash: await bcrypt.hash(tempPassword, 10),
+            firstName: data.firstName,
+            lastName: data.lastName,
+            role: 'PROVEEDOR',
+            department: data.department ?? null,
+            province: data.province ?? null,
+            district: data.district ?? null,
+          },
+        });
+
+        // 2. Crear Proveedor
+        const provider = await tx.provider.create({
+          data: {
+            userId: user.id,
+            businessName: data.businessName,
+            phone: data.phone,
+            whatsapp: data.whatsapp ?? null,
+            description: data.description ?? null,
+            address: data.address ?? null,
+            localityId: Number(data.localityId),
+            type: providerType as any,
+            dni: data.dni ?? null,
+            ruc: data.ruc ?? null,
+            nombreComercial: data.nombreComercial ?? null,
+            razonSocial: data.razonSocial ?? null,
+            hasDelivery:
+              data.hasDelivery === true || data.hasDelivery === 'true',
+            scheduleJson: parsedSchedule as any,
+            providerCategories: {
+              create: catIds.map((cid) => ({
+                categoryId: cid,
+                isPrimary: cid === primaryCatId,
+              })),
+            },
+          },
+          include: {
+            providerCategories: { select: { category: true } },
+            locality: true,
+          },
+        });
+
+        // 3. GUARDAR IMÁGENES EN LA TABLA provider_images
+        if (imageUrls.length > 0) {
+          await tx.providerImage.createMany({
+            data: imageUrls.map((url, index) => ({
+              providerId: provider.id,
+              url,
+              isCover: index === 0,
+              order: index,
+            })),
+          });
+        }
+
+        if (providerType === 'PROFESIONAL') {
+          await (tx as any).professionalProfile.create({
+            data: {
+              providerId: provider.id,
+              specialty: data.professionalSpecialty!.trim(),
+              institution: data.professionalInstitution?.trim() || null,
+              yearsExperience:
+                data.professionalYearsExperience != null
+                  ? Number(data.professionalYearsExperience)
+                  : null,
+              professionalTitle: data.professionalTitle?.trim() || null,
+              registrationNumber:
+                data.professionalRegistrationNumber?.trim() || null,
+              registrationIssuer:
+                data.professionalRegistrationIssuer?.trim() || null,
+            },
+          });
+        }
+
+        // 4. Crear Suscripción de cortesía: ESTANDAR por 1 mes (mismo trato
+        // que un proveedor que se registra él mismo y es aprobado luego).
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 1);
+        await tx.subscription.create({
+          data: {
+            providerId: provider.id,
+            plan: 'ESTANDAR',
+            status: 'GRACIA',
+            endDate,
+          },
+        });
+
+        return { provider, userId: user.id };
       });
-
-      return { provider, userId: user.id };
-    });
+    } catch (error) {
+      await Promise.all(
+        imageUrls.map((url) => this.minio.deleteFile(url).catch(() => {})),
+      );
+      throw error;
+    }
 
     // Alcance por distritos: default para la cortesía ESTANDAR.
     await syncCoverageToPlan(this.prisma, result.provider.id, 'ESTANDAR');
@@ -377,9 +455,23 @@ export class AdminService {
     const updated = await this.prisma.$transaction(async (tx) => {
       // Si llegan Especialidades, reemplazamos el set completo.
       // Premium puede hasta 6; el resto, 3.
-      if (categoryIds && categoryIds.length > 0) {
+      if (categoryIds !== undefined) {
+        if (categoryIds.length === 0) {
+          throw new BadRequestException(
+            'Debes seleccionar al menos una Especialidad',
+          );
+        }
         const limit = exists.subscription?.plan === 'PREMIUM' ? 6 : 3;
         const catIds = categoryIds.slice(0, limit).map(Number);
+        const providerType = normalizeProviderType(exists.type);
+        if (!providerType) {
+          throw new BadRequestException('Tipo de proveedor inválido');
+        }
+        await validateProviderCategorySelection(
+          tx as any,
+          catIds,
+          providerType,
+        );
         const primaryCatId =
           primaryCategoryId != null &&
           catIds.includes(Number(primaryCategoryId))
@@ -918,6 +1010,7 @@ export class AdminService {
     slug: string;
     iconUrl?: string;
     parentId?: number;
+    forType?: string | null;
     isActive?: boolean;
   }) {
     return this.categories.createCategory(data);

@@ -61,6 +61,36 @@ describe('ProviderProfileService (unit)', () => {
       expect(res.totalFavorites).toBe(3);
       expect(res).toHaveProperty('features');
     });
+
+    it('devuelve datos profesionales y última migración solo al dueño', async () => {
+      const migration = {
+        id: 12,
+        status: 'PENDING',
+        specialty: 'Ingeniería civil',
+      };
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
+      prisma.provider.findUnique.mockResolvedValue({
+        id: 5,
+        type: 'OFICIO',
+        providerCategories: [],
+        _count: { favorites: 0 },
+        professionalProfile: null,
+        professionalMigrations: [migration],
+      });
+
+      const res: any = await service.getMyProfile(7);
+
+      expect(res.professionalMigration).toEqual(migration);
+      expect(res).not.toHaveProperty('professionalMigrations');
+      expect(prisma.provider.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            professionalProfile: expect.any(Object),
+            professionalMigrations: expect.objectContaining({ take: 1 }),
+          }),
+        }),
+      );
+    });
   });
 
   describe('updateMyProfile()', () => {

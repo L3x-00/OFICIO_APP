@@ -53,6 +53,33 @@ const SELF_EDITABLE_PROVIDER_FIELDS = [
   'showExactLocation',
 ] as const;
 
+type OwnProfessionalMigration = {
+  id: number;
+  status: string;
+  specialty: string;
+  rejectionReason: string | null;
+  reviewedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type OwnProfileLookup = {
+  type: string;
+  providerCategories: Array<{
+    category?: {
+      features?: unknown;
+      parent?: { features?: unknown } | null;
+    } | null;
+  } | null>;
+  _count?: { favorites?: number } | null;
+  professionalMigrations?: OwnProfessionalMigration[];
+  [key: string]: unknown;
+};
+
+type OwnProfileProviderDelegate = {
+  findUnique(args: unknown): Promise<OwnProfileLookup | null>;
+};
+
 @Injectable()
 export class ProviderProfileService {
   private readonly logger = new Logger(ProviderProfileService.name);
@@ -98,7 +125,12 @@ export class ProviderProfileService {
   // un único perfil; evita mutar por accidente el perfil equivocado.
   async getMyProfile(userId: number, type?: string) {
     const current = await this.findProviderByUser(userId, type);
-    const provider = await this.prisma.provider.findUnique({
+    // El cliente Prisma local puede estar un commit detrás del schema durante
+    // esta tanda. El cast queda acotado a esta lectura hasta que CI regenere
+    // el cliente; el select explícito conserva el contrato seguro.
+    const provider = await (
+      this.prisma.provider as unknown as OwnProfileProviderDelegate
+    ).findUnique({
       where: { id: current.id },
       include: {
         providerCategories: {
@@ -126,6 +158,34 @@ export class ProviderProfileService {
         verificationDocs: {
           select: { id: true, docType: true, status: true },
         },
+        // Datos del profesional: el dueño sí puede ver sus campos opcionales.
+        // Nunca se incluyen documentos ni URLs privadas en este endpoint.
+        professionalProfile: {
+          select: {
+            specialty: true,
+            institution: true,
+            yearsExperience: true,
+            professionalTitle: true,
+            registrationNumber: true,
+            registrationIssuer: true,
+          },
+        },
+        // Una solicitud por vez puede quedar PENDING, pero conservamos el
+        // último estado para que el panel explique aprobaciones/rechazos sin
+        // consultar ni exponer sus archivos adjuntos.
+        professionalMigrations: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            status: true,
+            specialty: true,
+            rejectionReason: true,
+            reviewedAt: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
         user: {
           select: {
             email: true,
@@ -147,8 +207,10 @@ export class ProviderProfileService {
     // Aplanamos _count.favorites → totalFavorites para que el JSON
     // tenga la misma forma que el modelo DashboardProfileModel del
     // mobile (`json['totalFavorites']`).
+    const { professionalMigrations, ...profile } = provider;
     return {
-      ...provider,
+      ...profile,
+      professionalMigration: professionalMigrations?.[0] ?? null,
       totalFavorites: provider._count?.favorites ?? 0,
       // Features efectivos (propios o heredados del padre) para que el panel
       // del proveedor muestre las herramientas de su categoría. Superficie

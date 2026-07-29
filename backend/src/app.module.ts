@@ -35,6 +35,7 @@ import { AppointmentsModule } from './appointments/appointments.module.js';
 import { MenuModule } from './menu/menu.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { QuotationsModule } from './quotations/quotations.module.js';
+import { ProfessionalMigrationsModule } from './professional-migrations/professional-migrations.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -145,6 +146,7 @@ import { QuotationsModule } from './quotations/quotations.module.js';
     CatalogModule,
     // Cotización (canal de presupuestos).
     QuotationsModule,
+    ProfessionalMigrationsModule,
   ],
   controllers: [AppController],
   providers: [

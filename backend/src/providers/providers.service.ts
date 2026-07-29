@@ -30,6 +30,21 @@ const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
   'updatedAt',
 ] as const;
 
+type PublicProfessionalProvider = {
+  type: string;
+  providerCategories: Array<{
+    category?: {
+      features?: unknown;
+      parent?: { features?: unknown } | null;
+    } | null;
+  } | null>;
+  [key: string]: unknown;
+};
+
+type PublicProfessionalProviderDelegate = {
+  findFirst(args: unknown): Promise<PublicProfessionalProvider | null>;
+};
+
 @Injectable()
 export class ProvidersService {
   constructor(
@@ -381,6 +396,26 @@ export class ProvidersService {
       delete sanitized[field];
     }
 
+    // La ficha pública de un profesional solo muestra su especialidad y una
+    // señal factual: existe al menos un certificado APROBADO. Nunca expone
+    // documentos, URLs privadas, número de registro ni institución.
+    const isProfessional = provider.type === 'PROFESIONAL';
+    const specialty = isProfessional
+      ? (sanitized.professionalProfile?.specialty ?? null)
+      : null;
+    const credentialVerified =
+      isProfessional &&
+      Array.isArray(sanitized.verificationDocs) &&
+      sanitized.verificationDocs.length > 0;
+    delete sanitized.verificationDocs;
+    if (isProfessional) {
+      sanitized.professionalProfile = specialty ? { specialty } : null;
+      sanitized.credentialVerified = credentialVerified;
+    } else {
+      delete sanitized.professionalProfile;
+      delete sanitized.credentialVerified;
+    }
+
     if (sanitized.showPhone === false) sanitized.phone = '';
     if (sanitized.showWhatsapp === false) {
       sanitized.whatsapp = null;
@@ -672,7 +707,12 @@ export class ProvidersService {
 
   // ── OBTENER un proveedor por ID ──────────────────────────
   async findOne(id: number) {
-    const provider = await this.prisma.provider.findFirst({
+    // El cliente Prisma local puede estar un commit detrás del schema durante
+    // esta tanda. El cast queda acotado a esta lectura hasta que CI regenere
+    // el cliente; el select explícito conserva el contrato público mínimo.
+    const provider = await (
+      this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+    ).findFirst({
       where: {
         id,
         isVisible: true,
@@ -710,6 +750,16 @@ export class ProvidersService {
         },
         subscription: {
           select: { plan: true, status: true, endDate: true },
+        },
+        professionalProfile: {
+          select: { specialty: true },
+        },
+        // Solo se consulta existencia de un certificado aprobado. `id` se
+        // elimina en toPublicProvider antes de serializar la respuesta.
+        verificationDocs: {
+          where: { docType: 'certificado', status: 'APROBADO' },
+          select: { id: true },
+          take: 1,
         },
       },
     });

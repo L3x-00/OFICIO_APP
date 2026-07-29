@@ -3,11 +3,25 @@ import {
   IsOptional,
   IsInt,
   IsPositive,
+  IsIn,
   MinLength,
   MaxLength,
   Matches,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
+
+const CATEGORY_PROVIDER_TYPES = [
+  'OFICIO',
+  'PROFESIONAL',
+  'NEGOCIO',
+  // Clientes publicados antes de PROFESIONAL / NEGOCIO en español.
+  'PROFESSIONAL',
+  'BUSINESS',
+] as const;
+
+function normalizeCategoryProviderTypeInput(value: unknown): unknown {
+  return typeof value === 'string' ? value.trim().toUpperCase() : value;
+}
 
 export class CreateCategoryDto {
   @IsString()
@@ -35,8 +49,12 @@ export class CreateCategoryDto {
 
   /** 'OFICIO' | 'NEGOCIO' | null — si null aplica a ambos tipos */
   @IsOptional()
+  @Transform(({ value }) => normalizeCategoryProviderTypeInput(value))
   @IsString()
-  forType?: string;
+  @IsIn(CATEGORY_PROVIDER_TYPES, {
+    message: 'forType debe ser OFICIO, PROFESIONAL o NEGOCIO',
+  })
+  forType?: string | null;
 }
 
 export class UpdateCategoryDto {
@@ -64,6 +82,10 @@ export class UpdateCategoryDto {
   parentId?: number | null;
 
   @IsOptional()
+  @Transform(({ value }) => normalizeCategoryProviderTypeInput(value))
   @IsString()
+  @IsIn(CATEGORY_PROVIDER_TYPES, {
+    message: 'forType debe ser OFICIO, PROFESIONAL o NEGOCIO',
+  })
   forType?: string | null;
 }
