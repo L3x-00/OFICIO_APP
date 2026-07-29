@@ -235,6 +235,53 @@ describe('ProvidersService (unit)', () => {
     });
   });
 
+  describe('getCategories()', () => {
+    it('PROFESIONAL exige raíz profesional y permite hijas que heredan ese tipo', async () => {
+      prisma.category.findMany.mockResolvedValue([]);
+
+      await service.getCategories('PROFESIONAL');
+
+      expect(prisma.category.findMany).toHaveBeenCalledWith({
+        where: {
+          isActive: true,
+          parentId: null,
+          forType: 'PROFESIONAL',
+        },
+        include: {
+          children: {
+            where: {
+              isActive: true,
+              OR: [{ forType: 'PROFESIONAL' }, { forType: null }],
+            },
+            select: { id: true, name: true, slug: true, iconUrl: true },
+          },
+        },
+        orderBy: { name: 'asc' },
+      });
+    });
+
+    it('alias PROFESSIONAL conserva el catálogo legacy de OFICIO', async () => {
+      prisma.category.findMany.mockResolvedValue([]);
+
+      await service.getCategories('PROFESSIONAL');
+
+      expect(prisma.category.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: [{ forType: 'OFICIO' }, { forType: null }],
+          }),
+        }),
+      );
+    });
+
+    it('tipo desconocido → BadRequest sin consultar categorías', async () => {
+      await expect(service.getCategories('OTRO')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.category.findMany).not.toHaveBeenCalled();
+    });
+  });
+
   describe('trackEvent()', () => {
     it('persiste y emite al DUEÑO del provider', async () => {
       prisma.providerAnalytic.create.mockResolvedValue({ id: 1 });

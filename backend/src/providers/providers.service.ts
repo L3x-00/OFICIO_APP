@@ -12,6 +12,7 @@ import {
   effectiveFeaturesFromCategories,
   visibleProviderFeatures,
 } from '../common/provider-features.service.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 import { visibleInLocalities } from '../coverage/coverage.service.js';
 
 const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
@@ -44,7 +45,7 @@ export class ProvidersService {
     search?: string;
     localityId?: number;
     // Nuevos filtros
-    type?: string; // PROFESSIONAL | BUSINESS (providerType)
+    type?: string; // OFICIO | PROFESIONAL | NEGOCIO + aliases legacy
     sortBy?: string; // 'reviews' | 'availability' | 'rating' (default)
     verified?: boolean; // true = solo verificados (por defecto true)
     location?: string; // búsqueda por texto en dirección
@@ -87,6 +88,10 @@ export class ProvidersService {
       isVisible: true,
       verificationStatus: 'APROBADO',
     };
+    const normalizedType = type == null ? null : normalizeProviderType(type);
+    if (type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
 
     if (parentCategorySlug) {
       // Muestra proveedores cuya categoría (cualquiera de las suyas) es hija de la macrocategoría dada
@@ -153,21 +158,22 @@ export class ProvidersService {
       // todo el Perú (un profesional sí puede desplazarse / atender a
       // distancia, o el cliente lo busca por nombre).
       const onlyDepartment = !!nDept && !nProv && !nDist;
-      const wantsOficio = type === 'OFICIO' || type === 'PROFESSIONAL';
-      const wantsNegocio = type === 'NEGOCIO' || type === 'BUSINESS';
+      const wantsIndividual =
+        normalizedType === 'OFICIO' || normalizedType === 'PROFESIONAL';
+      const wantsNegocio = normalizedType === 'NEGOCIO';
 
       if (onlyDepartment) {
         const deptIds = matchAt(nDept, '', '');
         const inDept = deptIds.length > 0 ? deptIds : [-1];
-        if (wantsOficio) {
-          // Solo profesionales — sin filtro de ubicación (todo el Perú).
+        if (wantsIndividual) {
+          // Oficios/Servicios profesionales: sin filtro de ubicación.
         } else if (wantsNegocio) {
           andWhere(visibleInLocalities(inDept));
         } else {
-          // Todos: OFICIO de cualquier zona + NEGOCIO del departamento.
+          // Todos: perfiles individuales de cualquier zona + NEGOCIO local.
           andWhere({
             OR: [
-              { type: 'OFICIO' },
+              { type: { in: ['OFICIO', 'PROFESIONAL'] as any } },
               { AND: [{ type: 'NEGOCIO' }, visibleInLocalities(inDept)] },
             ],
           });
@@ -193,13 +199,7 @@ export class ProvidersService {
       }
     }
 
-    // Filtro por tipo de proveedor. Acepta tanto los nombres canónicos
-    // (OFICIO|NEGOCIO) como los alias legacy que aún puede enviar Flutter.
-    if (type === 'OFICIO' || type === 'PROFESSIONAL') {
-      where.type = 'OFICIO';
-    } else if (type === 'NEGOCIO' || type === 'BUSINESS') {
-      where.type = 'NEGOCIO';
-    }
+    if (normalizedType) where.type = normalizedType as any;
 
     // Búsqueda por texto libre. OR sobre múltiples campos para que la
     // búsqueda en tiempo real sea robusta — el usuario puede tipear el
@@ -560,6 +560,11 @@ export class ProvidersService {
     ) {
       throw new BadRequestException('Coordenadas inválidas');
     }
+    const normalizedType =
+      filters.type == null ? null : normalizeProviderType(filters.type);
+    if (filters.type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
     const km = Math.min(50, Math.max(1, Number(radiusKm) || 1));
     const radiusM = km * 1000;
 
@@ -604,11 +609,7 @@ export class ProvidersService {
         some: { category: { slug: filters.categorySlug } },
       };
     }
-    if (filters.type === 'OFICIO' || filters.type === 'PROFESSIONAL') {
-      hydrateWhere.type = 'OFICIO';
-    } else if (filters.type === 'NEGOCIO' || filters.type === 'BUSINESS') {
-      hydrateWhere.type = 'NEGOCIO';
-    }
+    if (normalizedType) hydrateWhere.type = normalizedType as any;
     if (filters.search && filters.search.trim().length > 0) {
       const q = filters.search.trim();
       hydrateWhere.OR = [
@@ -728,15 +729,36 @@ export class ProvidersService {
 
   // ── LISTAR CATEGORÍAS ────────────────────────────────────
   async getCategories(forType?: string) {
+    const normalizedType =
+      forType == null ? null : normalizeProviderType(forType);
+    if (forType != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    // Las categorías antiguas sin forType siguen siendo catálogo compartido
+    // para Oficio/Negocio. PROFESIONAL requiere una raíz explícita para no
+    // mostrar opciones que después el validador rechazaría; sus hijas null
+    // pueden heredar el tipo de esa raíz profesional.
+    const rootTypeFilter =
+      normalizedType === 'PROFESIONAL'
+        ? { forType: normalizedType }
+        : normalizedType
+          ? { OR: [{ forType: normalizedType }, { forType: null }] }
+          : {};
+    const childTypeFilter = normalizedType
+      ? { OR: [{ forType: normalizedType }, { forType: null }] }
+      : {};
     return this.prisma.category.findMany({
       where: {
         isActive: true,
         parentId: null,
-        ...(forType ? { forType } : {}),
+        ...rootTypeFilter,
       },
       include: {
         children: {
-          where: { isActive: true },
+          where: {
+            isActive: true,
+            ...childTypeFilter,
+          },
           select: { id: true, name: true, slug: true, iconUrl: true },
         },
       },

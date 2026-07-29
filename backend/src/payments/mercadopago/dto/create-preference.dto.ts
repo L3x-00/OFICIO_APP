@@ -7,7 +7,7 @@ import { IsEnum, IsIn } from 'class-validator';
 export const PAID_PLANS = ['ESTANDAR', 'PREMIUM'] as const;
 export type PaidPlan = (typeof PAID_PLANS)[number];
 
-export const PROVIDER_TYPES = ['OFICIO', 'NEGOCIO'] as const;
+export const PROVIDER_TYPES = ['OFICIO', 'PROFESIONAL', 'NEGOCIO'] as const;
 export type ProviderTypeValue = (typeof PROVIDER_TYPES)[number];
 
 export class CreatePreferenceDto {
@@ -15,8 +15,10 @@ export class CreatePreferenceDto {
   plan: PaidPlan;
 
   // Identifica a qué perfil aplicar el plan cuando el user tiene
-  // ambos (OFICIO + NEGOCIO). Si solo tiene uno, igual debe enviarlo
+  // ambos (perfil individual + NEGOCIO). Si solo tiene uno, igual debe enviarlo
   // — el backend valida que coincida con el perfil del user.
-  @IsIn(PROVIDER_TYPES, { message: 'providerType inválido (OFICIO o NEGOCIO)' })
+  @IsIn(PROVIDER_TYPES, {
+    message: 'providerType inválido (OFICIO, PROFESIONAL o NEGOCIO)',
+  })
   providerType: ProviderTypeValue;
 }

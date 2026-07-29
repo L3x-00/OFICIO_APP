@@ -38,6 +38,7 @@ describe('PaymentsService (unit)', () => {
     minio = {
       assertManagedImageUrl: jest.fn((url: string) => url),
     };
+    prisma.providerCoverage.findMany.mockResolvedValue([]);
     service = new PaymentsService(
       prisma as any,
       events as any,
@@ -79,7 +80,7 @@ describe('PaymentsService (unit)', () => {
 
   describe('submitYapePayment()', () => {
     it('sin perfil del tipo pedido → Forbidden', async () => {
-      prisma.provider.findUnique.mockResolvedValue(null);
+      prisma.provider.findMany.mockResolvedValue([]);
       await expect(
         service.submitYapePayment(7, {
           plan: 'PREMIUM',
@@ -89,14 +90,14 @@ describe('PaymentsService (unit)', () => {
     });
 
     it('plan no válido → BadRequest', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 1 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 1 }]);
       await expect(
         service.submitYapePayment(7, { plan: 'GRATIS' } as any),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('pago pendiente existente → BadRequest (1 por proveedor)', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 1 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 1 }]);
       prisma.yapePayment.findFirst.mockResolvedValue({ id: 5 });
       await expect(
         service.submitYapePayment(7, { plan: 'PREMIUM' } as any),
@@ -104,7 +105,7 @@ describe('PaymentsService (unit)', () => {
     });
 
     it('ANTI-TAMPERING: guarda el monto del SERVIDOR, no el del cliente', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 1 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 1 }]);
       prisma.yapePayment.findFirst.mockResolvedValue(null);
       prisma.yapePayment.create.mockResolvedValue({ id: 7 });
       // El cliente declara S/1 por un PREMIUM (39.9).
@@ -142,6 +143,35 @@ describe('PaymentsService (unit)', () => {
           }),
         }),
       );
+    });
+
+    it('PROFESIONAL usa su perfil exacto, nunca el primer perfil del usuario', async () => {
+      prisma.provider.findMany.mockResolvedValue([{ id: 31 }]);
+      prisma.yapePayment.create.mockResolvedValue({ id: 8 });
+
+      await service.submitYapePayment(7, {
+        plan: 'PREMIUM',
+        providerType: 'PROFESIONAL',
+      } as any);
+
+      expect(prisma.provider.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 7, type: 'PROFESIONAL' },
+          take: 1,
+        }),
+      );
+      expect(prisma.yapePayment.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ providerId: 31 }) }),
+      );
+    });
+
+    it('dos perfiles sin tipo explícito → BadRequest, no cobra al primero', async () => {
+      prisma.provider.findMany.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+
+      await expect(
+        service.submitYapePayment(7, { plan: 'PREMIUM' } as any),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.yapePayment.create).not.toHaveBeenCalled();
     });
   });
 
@@ -362,6 +392,7 @@ describe('PaymentsService (unit)', () => {
   describe('activateSubscriptionFromPayment() [webhook MercadoPago]', () => {
     const base = {
       userId: 7,
+      providerId: 10,
       plan: 'PREMIUM',
       amount: 39.9,
       paymentMethod: 'visa',
@@ -460,6 +491,40 @@ describe('PaymentsService (unit)', () => {
       await expect(
         service.activateSubscriptionFromPayment(base),
       ).rejects.toThrow('boom');
+    });
+
+    it('referencia legacy OFICIO activa el mismo perfil ya migrado a PROFESIONAL', async () => {
+      prisma.payment.findFirst.mockResolvedValue(null);
+      prisma.provider.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 10,
+          businessName: 'Perfil migrado',
+          type: 'PROFESIONAL',
+        });
+      prisma.subscription.findUniqueOrThrow.mockResolvedValue({ id: 99 });
+
+      await service.activateSubscriptionFromPayment({
+        ...base,
+        providerId: undefined,
+        providerType: 'OFICIO',
+      });
+
+      expect(prisma.provider.findUnique).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: { userId_type: { userId: 7, type: 'OFICIO' } },
+        }),
+      );
+      expect(prisma.provider.findUnique).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          where: { userId_type: { userId: 7, type: 'PROFESIONAL' } },
+        }),
+      );
+      expect(prisma.provider.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 10 } }),
+      );
     });
   });
 });

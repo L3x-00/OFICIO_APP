@@ -107,10 +107,10 @@ export class MercadoPagoService {
         },
         notification_url: `${this.apiBaseUrl}/payments/mercadopago/webhook`,
         auto_return: 'approved',
-        // external_reference incluye providerType (A-02) — necesario
-        // para usuarios con perfil OFICIO + NEGOCIO. Sin esto, el
-        // webhook elegía un perfil al azar.
-        external_reference: `user_${user.id}_type_${params.providerType}_plan_${params.plan}`,
+        // Referencia estable por Provider.id. El tipo puede cambiar de
+        // OFICIO a PROFESIONAL, pero el perfil y sus pagos conservan el id.
+        // También incluye userId para que el webhook valide pertenencia.
+        external_reference: `provider_${provider.id}_user_${user.id}_plan_${params.plan}`,
       },
     });
 

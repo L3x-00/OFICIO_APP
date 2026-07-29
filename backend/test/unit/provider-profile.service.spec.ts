@@ -45,13 +45,15 @@ describe('ProviderProfileService (unit)', () => {
 
   describe('getMyProfile()', () => {
     it('sin perfil → NotFound', async () => {
-      prisma.provider.findFirst.mockResolvedValue(null);
+      prisma.provider.findMany.mockResolvedValue([]);
       await expect(service.getMyProfile(7)).rejects.toThrow(NotFoundException);
     });
 
     it('aplana _count.favorites → totalFavorites', async () => {
-      prisma.provider.findFirst.mockResolvedValue({
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
+      prisma.provider.findUnique.mockResolvedValue({
         id: 5,
+        type: 'OFICIO',
         providerCategories: [],
         _count: { favorites: 3 },
       });
@@ -63,7 +65,7 @@ describe('ProviderProfileService (unit)', () => {
 
   describe('updateMyProfile()', () => {
     beforeEach(() => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
     });
 
     it('categoryIds vacío → BadRequest', async () => {
@@ -86,7 +88,14 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('éxito con categorías: reescribe la relación M:N (delete + createMany)', async () => {
-      prisma.category.findMany.mockResolvedValue([{ id: 1 }]);
+      prisma.category.findMany.mockResolvedValue([
+        {
+          id: 1,
+          parentId: 10,
+          forType: 'OFICIO',
+          parent: { forType: 'OFICIO' },
+        },
+      ]);
       prisma.provider.update.mockResolvedValue({ id: 5 });
       await service.updateMyProfile(7, { categoryIds: [1] });
       expect(prisma.providerCategory.deleteMany).toHaveBeenCalledWith({
@@ -129,7 +138,7 @@ describe('ProviderProfileService (unit)', () => {
   });
 
   it('drops privileged fields from a manipulated self-update object', async () => {
-    prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+    prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
     prisma.provider.update.mockResolvedValue({ id: 5 });
 
     await service.updateMyProfile(7, {
@@ -149,7 +158,7 @@ describe('ProviderProfileService (unit)', () => {
 
   describe('setAvailability()', () => {
     it('actualiza y emite cambio de disponibilidad por WS', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
       prisma.provider.update.mockResolvedValue({
         id: 5,
         availability: 'DISPONIBLE',
@@ -164,7 +173,7 @@ describe('ProviderProfileService (unit)', () => {
 
   describe('addImage()', () => {
     it('alcanzó el límite del plan GRATIS → BadRequest', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
       prisma.providerImage.count.mockResolvedValue(2); // límite GRATIS = 2
       prisma.subscription.findUnique.mockResolvedValue(null);
       await expect(service.addImage(7, 'https://x.jpg')).rejects.toThrow(
@@ -173,7 +182,7 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('primera imagen sube como portada automáticamente', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
       prisma.providerImage.count.mockResolvedValue(0);
       prisma.subscription.findUnique.mockResolvedValue(null);
       prisma.providerImage.create.mockResolvedValue({ id: 1 });
@@ -192,7 +201,7 @@ describe('ProviderProfileService (unit)', () => {
 
   describe('deleteImage()', () => {
     it('imagen inexistente → NotFound', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
       prisma.providerImage.findFirst.mockResolvedValue(null);
       await expect(service.deleteImage(7, 99)).rejects.toThrow(
         NotFoundException,
@@ -200,7 +209,7 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('al borrar la portada, promueve la siguiente imagen', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5 });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
       prisma.providerImage.findFirst
         .mockResolvedValueOnce({ id: 9, isCover: true }) // la que se borra
         .mockResolvedValueOnce({ id: 10 }); // la siguiente
@@ -220,7 +229,7 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('ya tiene ese plan → Conflict', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
       prisma.subscription.findUnique.mockResolvedValue({ plan: 'PREMIUM' });
       await expect(service.requestPlanUpgrade(7, 'PREMIUM')).rejects.toThrow(
         ConflictException,
@@ -228,7 +237,7 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('solicitud pendiente existente → Conflict', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
       prisma.subscription.findUnique.mockResolvedValue({ plan: 'ESTANDAR' });
       prisma.planRequest.findFirst.mockResolvedValue({ id: 1 });
       await expect(service.requestPlanUpgrade(7, 'PREMIUM')).rejects.toThrow(
@@ -237,7 +246,7 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('éxito: crea solicitud, persiste notif y emite a proveedor + admin', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
       prisma.subscription.findUnique.mockResolvedValue({ plan: 'ESTANDAR' });
       prisma.planRequest.findFirst.mockResolvedValue(null);
       prisma.planRequest.create.mockResolvedValue({
@@ -282,7 +291,7 @@ describe('ProviderProfileService (unit)', () => {
 
   describe('deleteMyProfile()', () => {
     it('si no quedan perfiles, degrada el rol del usuario a USUARIO', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
       prisma.provider.count.mockResolvedValue(0);
       await service.deleteMyProfile(7);
       expect(prisma.provider.delete).toHaveBeenCalledWith({ where: { id: 5 } });
@@ -297,7 +306,7 @@ describe('ProviderProfileService (unit)', () => {
     });
 
     it('si aún quedan perfiles, NO degrada el rol', async () => {
-      prisma.provider.findFirst.mockResolvedValue({ id: 5, type: 'OFICIO' });
+      prisma.provider.findMany.mockResolvedValue([{ id: 5, type: 'OFICIO' }]);
       prisma.provider.count.mockResolvedValue(1);
       await service.deleteMyProfile(7);
       expect(prisma.user.update).not.toHaveBeenCalled();

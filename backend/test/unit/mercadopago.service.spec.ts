@@ -72,7 +72,7 @@ describe('MercadoPagoService (unit)', () => {
       expect(prefCreate).not.toHaveBeenCalled();
     });
 
-    it('éxito: unit_price viene del catálogo (NO del cliente) y external_reference identifica user+tipo+plan', async () => {
+    it('éxito: unit_price viene del catálogo y external_reference conserva el Provider.id', async () => {
       prisma.user.findUnique.mockResolvedValue({ id: 7, email: 'a@b.com' });
       prisma.provider.findUnique.mockResolvedValue({ id: 5 });
 
@@ -83,7 +83,7 @@ describe('MercadoPagoService (unit)', () => {
       expect(body.items[0].unit_price).toBe(19.9);
       expect(body.items[0].currency_id).toBe('PEN');
       expect(body.payer.email).toBe('a@b.com');
-      expect(body.external_reference).toBe('user_7_type_OFICIO_plan_ESTANDAR');
+      expect(body.external_reference).toBe('provider_5_user_7_plan_ESTANDAR');
       // notification_url load-bearing: si apunta mal, MP nunca confirma el pago.
       expect(body.notification_url).toBe(
         'https://api/payments/mercadopago/webhook',

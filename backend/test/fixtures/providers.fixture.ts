@@ -8,7 +8,7 @@
 export type FixtureProvider = {
   id: number;
   userId: number;
-  type: 'OFICIO' | 'NEGOCIO';
+  type: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
   businessName: string;
   phone: string;
   whatsapp: string | null;

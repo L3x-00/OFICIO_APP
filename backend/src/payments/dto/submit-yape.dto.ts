@@ -34,10 +34,10 @@ export class SubmitYapeDto {
   @IsString()
   note?: string;
 
-  /// Cuando el user tiene perfil OFICIO y NEGOCIO, indica a cuál
+  /// Cuando el user tiene más de un perfil, indica a cuál
   /// aplicar el pago. Opcional — sin él, el backend usa el primer
   /// perfil que encuentre del user.
   @IsOptional()
-  @IsIn(['OFICIO', 'NEGOCIO'])
+  @IsIn(['OFICIO', 'PROFESIONAL', 'NEGOCIO'])
   providerType?: string;
 }

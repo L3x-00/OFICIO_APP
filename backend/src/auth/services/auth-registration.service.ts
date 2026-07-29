@@ -16,6 +16,12 @@ import { EmailService } from '../../email/email.service.js';
 import { MinioService } from '../../common/minio.service.js';
 import { assertManagedServiceImageUrls } from '../../common/service-image-validation.js';
 import { uniqueSlug } from '../../common/slug.util.js';
+import { validateProviderCategorySelection } from '../../common/provider-category-validation.js';
+import {
+  isIndividualProviderType,
+  providerTypeLabel,
+  type CanonicalProviderType,
+} from '../../common/provider-type.js';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { generateTokens } from './auth-shared.js';
@@ -36,7 +42,7 @@ export type RegisterUserData = {
 export type RegisterProviderData = {
   businessName: string;
   phone: string;
-  type: 'OFICIO' | 'NEGOCIO';
+  type: CanonicalProviderType;
   // OFICIO
   dni?: string | null;
   // NEGOCIO
@@ -73,6 +79,13 @@ export type RegisterProviderData = {
   twitterX?: string | null;
   telegram?: string | null;
   whatsappBiz?: string | null;
+  // datos del perfil profesional (solo PROFESIONAL)
+  professionalSpecialty?: string | null;
+  professionalInstitution?: string | null;
+  professionalYearsExperience?: number;
+  professionalTitle?: string | null;
+  professionalRegistrationNumber?: string | null;
+  professionalRegistrationIssuer?: string | null;
 };
 
 /**
@@ -206,9 +219,25 @@ export class AuthRegistrationService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
-    // Verificar que no tenga ya un perfil del MISMO tipo (puede tener OFICIO + NEGOCIO)
+    // Un usuario puede tener NEGOCIO + un perfil individual, pero nunca
+    // OFICIO + PROFESIONAL. La restricción parcial de BD cubre carreras; esta
+    // guardia devuelve un mensaje accionable antes de intentar crear.
+    if (isIndividualProviderType(data.type)) {
+      const oppositeType = data.type === 'OFICIO' ? 'PROFESIONAL' : 'OFICIO';
+      const opposite = await this.prisma.provider.findUnique({
+        where: { userId_type: { userId, type: oppositeType as any } },
+        select: { id: true, type: true },
+      });
+      if (opposite) {
+        throw new ConflictException(
+          'Ya tienes un perfil individual. Para pasar de Oficios a Servicios profesionales usa la migración de tu panel.',
+        );
+      }
+    }
+
+    // Verificar que no tenga ya un perfil del MISMO tipo.
     const existing = await this.prisma.provider.findUnique({
-      where: { userId_type: { userId, type: data.type } },
+      where: { userId_type: { userId, type: data.type as any } },
     });
     if (existing) {
       if (existing.verificationStatus === 'RECHAZADO') {
@@ -305,29 +334,26 @@ export class AuthRegistrationService {
       localityId = firstLocality?.id ?? 1;
     }
 
-    // Validar categoryIds (Especialidades): filtrar solo las que existen, máx 6.
-    // Si ninguna es válida, asignar la primera Especialidad disponible como fallback.
-    let validCategoryIds: number[] = [];
-    if (data.categoryIds && data.categoryIds.length > 0) {
-      const ids = data.categoryIds.slice(0, 6);
-      const found = await this.prisma.category.findMany({
-        where: { id: { in: ids }, isActive: true },
-        select: { id: true },
-      });
-      validCategoryIds = found.map((c) => c.id);
-    }
-    if (validCategoryIds.length === 0) {
-      const firstCategory = await this.prisma.category.findFirst({
-        where: { parentId: { not: null }, isActive: true },
-      });
-      if (firstCategory) validCategoryIds = [firstCategory.id];
-    }
+    // Nunca asignar una categoría de fallback: una especialidad incorrecta
+    // daña el descubrimiento y puede mezclar Oficios/Profesionales.
+    const validCategoryIds = await validateProviderCategorySelection(
+      this.prisma,
+      data.categoryIds,
+      data.type,
+    );
 
     // Especialidad principal: la indicada por el cliente si está entre las
     // válidas; de lo contrario la primera. Garantiza exactamente un isPrimary.
-    const primaryCategoryId =
+    if (
       data.primaryCategoryId != null &&
-      validCategoryIds.includes(Number(data.primaryCategoryId))
+      !validCategoryIds.includes(Number(data.primaryCategoryId))
+    ) {
+      throw new BadRequestException(
+        'La Especialidad principal debe estar incluida en tu selección',
+      );
+    }
+    const primaryCategoryId =
+      data.primaryCategoryId != null
         ? Number(data.primaryCategoryId)
         : validCategoryIds[0];
 
@@ -368,8 +394,8 @@ export class AuthRegistrationService {
           businessName: data.businessName,
           slug: providerSlug,
           phone: data.phone,
-          // OFICIO-only
-          dni: data.type === 'OFICIO' ? data.dni?.trim() || null : null,
+          // Perfil individual (OFICIO o PROFESIONAL)
+          dni: data.type !== 'NEGOCIO' ? data.dni?.trim() || null : null,
           // NEGOCIO-only
           ruc: data.type === 'NEGOCIO' ? data.ruc?.trim() || null : null,
           nombreComercial:
@@ -405,7 +431,7 @@ export class AuthRegistrationService {
           twitterX: data.twitterX?.trim() || null,
           telegram: data.telegram?.trim() || null,
           whatsappBiz: data.whatsappBiz?.trim() || null,
-          type: data.type,
+          type: data.type as any,
           localityId,
           providerCategories: {
             create: validCategoryIds.map((cid) => ({
@@ -427,6 +453,22 @@ export class AuthRegistrationService {
                   sab: '9:00-13:00',
                   dom: 'Cerrado',
                 },
+          ...(data.type === 'PROFESIONAL'
+            ? {
+                professionalProfile: {
+                  create: {
+                    specialty: data.professionalSpecialty!.trim(),
+                    institution: data.professionalInstitution?.trim() || null,
+                    yearsExperience: data.professionalYearsExperience ?? null,
+                    professionalTitle: data.professionalTitle?.trim() || null,
+                    registrationNumber:
+                      data.professionalRegistrationNumber?.trim() || null,
+                    registrationIssuer:
+                      data.professionalRegistrationIssuer?.trim() || null,
+                  },
+                },
+              }
+            : {}),
         },
       });
       if (imageUrls.length > 0) {
@@ -453,7 +495,7 @@ export class AuthRegistrationService {
           providerId: provider.id,
           type: 'NUEVO_PROVEEDOR',
           title: 'Nuevo proveedor registrado',
-          message: `${data.businessName} se registró como ${data.type === 'OFICIO' ? 'profesional' : 'negocio'} y está pendiente de verificación.`,
+          message: `${data.businessName} se registró como ${providerTypeLabel(data.type)} y está pendiente de verificación.`,
         },
       })
       .catch(() => {});
@@ -462,7 +504,7 @@ export class AuthRegistrationService {
     this.eventsGateway.emitNotification({
       type: 'NEW_PROVIDER',
       title: 'Nuevo proveedor registrado',
-      body: `${data.businessName} se registró como ${data.type === 'OFICIO' ? 'profesional' : 'negocio'} y está pendiente de verificación.`,
+      body: `${data.businessName} se registró como ${providerTypeLabel(data.type)} y está pendiente de verificación.`,
       targetRole: 'ADMIN',
     });
     this.eventsGateway.emitAdminEvent('NEW_PROVIDER', {

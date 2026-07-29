@@ -78,7 +78,7 @@ export async function createTestUser(
 export interface CreatedProvider {
   id: number;
   userId: number;
-  type: 'OFICIO' | 'NEGOCIO';
+  type: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
   businessName: string;
   localityId: number;
   categoryId: number;
@@ -93,7 +93,7 @@ export async function createTestProvider(
   prisma: PrismaService,
   userId: number,
   overrides: Partial<{
-    type: 'OFICIO' | 'NEGOCIO';
+    type: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
     businessName: string;
     verificationStatus: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
     isVisible: boolean;
@@ -174,7 +174,7 @@ export async function createTestProvider(
   return {
     id: p.id,
     userId: p.userId,
-    type: p.type as 'OFICIO' | 'NEGOCIO',
+    type: p.type as 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO',
     businessName: p.businessName,
     localityId: loc.id,
     categoryId,

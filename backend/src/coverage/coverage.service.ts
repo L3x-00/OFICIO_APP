@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '../generated/client/client.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 
 /**
  * ALCANCE POR DISTRITOS
@@ -150,12 +151,18 @@ export class CoverageService {
   constructor(private prisma: PrismaService) {}
 
   private async findProvider(userId: number, type?: string) {
-    const where: Prisma.ProviderWhereInput = { userId };
-    if (type === 'OFICIO' || type === 'NEGOCIO') {
-      where.type = type as Prisma.EnumProviderTypeFilter;
+    const normalizedType = type == null ? null : normalizeProviderType(type);
+    if (type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
     }
-    const provider = await this.prisma.provider.findFirst({
+    const where: Prisma.ProviderWhereInput = {
+      userId,
+      ...(normalizedType ? { type: normalizedType as any } : {}),
+    };
+    const providers = await this.prisma.provider.findMany({
       where,
+      take: normalizedType ? 1 : 2,
+      orderBy: { id: 'asc' },
       select: {
         id: true,
         localityId: true,
@@ -163,6 +170,10 @@ export class CoverageService {
         subscription: { select: { plan: true } },
       },
     });
+    if (!normalizedType && providers.length > 1) {
+      throw new BadRequestException('Indica el tipo de perfil para continuar');
+    }
+    const provider = providers[0];
     if (!provider)
       throw new NotFoundException('No tienes un perfil de proveedor');
     return provider;

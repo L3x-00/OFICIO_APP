@@ -20,6 +20,11 @@ import {
 } from '../common/provider-features.service.js';
 import { MinioService } from '../common/minio.service.js';
 import { assertManagedServiceImageUrls } from '../common/service-image-validation.js';
+import {
+  normalizeProviderType,
+  type CanonicalProviderType,
+} from '../common/provider-type.js';
+import { validateProviderCategorySelection } from '../common/provider-category-validation.js';
 
 // Retención de notificaciones (cron diario, ahorra espacio en Supabase):
 // las LEÍDAS se purgan a los 5 días; las NO leídas viven 30 días para que
@@ -58,27 +63,43 @@ export class ProviderProfileService {
     private minio: MinioService,
   ) {}
 
-  // ── HELPER: obtener proveedor por userId (y opcionalmente por tipo) ──
+  // ── HELPER: obtener proveedor por userId (y obligar tipo si es ambiguo) ──
   private async findProviderByUser(userId: number, type?: string) {
-    const where: Prisma.ProviderWhereInput = { userId };
-    if (type === 'OFICIO' || type === 'NEGOCIO')
-      where.type = type as Prisma.EnumProviderTypeFilter;
-    const provider = await this.prisma.provider.findFirst({ where });
+    const normalizedType = type == null ? null : normalizeProviderType(type);
+    if (type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+
+    if (normalizedType) {
+      const provider = await this.prisma.provider.findFirst({
+        where: { userId, type: normalizedType as any },
+      });
+      if (!provider)
+        throw new NotFoundException('Perfil de proveedor no encontrado');
+      return provider;
+    }
+
+    const providers = await this.prisma.provider.findMany({
+      where: { userId },
+      orderBy: { id: 'asc' },
+      take: 2,
+    });
+    if (providers.length > 1) {
+      throw new BadRequestException('Indica el tipo de perfil para continuar');
+    }
+    const provider = providers[0];
     if (!provider)
       throw new NotFoundException('Perfil de proveedor no encontrado');
     return provider;
   }
 
   // ── OBTENER MI PERFIL DE PROVEEDOR ───────────────────────
-  // type = 'OFICIO' | 'NEGOCIO' — si no se pasa, devuelve el primer perfil encontrado
+  // type = OFICIO | PROFESIONAL | NEGOCIO. Sin type solo es válido si hay
+  // un único perfil; evita mutar por accidente el perfil equivocado.
   async getMyProfile(userId: number, type?: string) {
-    const where: Prisma.ProviderWhereInput = { userId };
-    if (type === 'OFICIO' || type === 'NEGOCIO') {
-      where.type = type as Prisma.EnumProviderTypeFilter;
-    }
-
-    const provider = await this.prisma.provider.findFirst({
-      where,
+    const current = await this.findProviderByUser(userId, type);
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: current.id },
       include: {
         providerCategories: {
           select: {
@@ -218,17 +239,15 @@ export class ProviderProfileService {
         if (unique.some((n) => !Number.isInteger(n) || n <= 0)) {
           throw new BadRequestException('IDs de categoría inválidos');
         }
-        // Verificamos que existan + estén activas — evita inflar la
-        // tabla con FKs huérfanos por un cliente mal calibrado.
-        const found = await tx.category.findMany({
-          where: { id: { in: unique }, isActive: true },
-          select: { id: true },
-        });
-        if (found.length !== unique.length) {
-          throw new BadRequestException(
-            'Una o más categorías no existen o están inactivas',
-          );
+        const providerType = normalizeProviderType(provider.type);
+        if (!providerType) {
+          throw new BadRequestException('Tipo de proveedor inválido');
         }
+        await validateProviderCategorySelection(
+          tx as any,
+          unique,
+          providerType,
+        );
         await tx.providerCategory.deleteMany({
           where: { providerId: provider.id },
         });
@@ -327,6 +346,11 @@ export class ProviderProfileService {
 
   async getMyNotifications(userId: number, providerType?: string) {
     const baseWhere = await this._myNotificationsWhere(userId);
+    const normalizedType =
+      providerType == null ? null : normalizeProviderType(providerType);
+    if (providerType != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
 
     // Filtro estricto por tipo de perfil (OFICIO|NEGOCIO). El home tab
     // del provider pasa `type=OFICIO` o `type=NEGOCIO`. Antes el filtro
@@ -341,20 +365,25 @@ export class ProviderProfileService {
     // `providerId=null AND targetProfileType=null` y pasan también
     // cuando el panel consulta. Sin `type`, devolvemos todo (la pantalla
     // "Alertas" del cliente las muestra todas).
-    const where: Prisma.AdminNotificationWhereInput =
-      providerType === 'OFICIO' || providerType === 'NEGOCIO'
-        ? {
-            AND: [
-              baseWhere,
-              {
-                OR: [
-                  { targetProfileType: providerType },
-                  { AND: [{ targetProfileType: null }, { providerId: null }] },
-                ],
-              },
-            ],
-          }
-        : baseWhere;
+    const targetProfileTypes =
+      normalizedType === 'PROFESIONAL'
+        ? ['PROFESIONAL', 'OFICIO']
+        : normalizedType
+          ? [normalizedType]
+          : [];
+    const where: Prisma.AdminNotificationWhereInput = normalizedType
+      ? {
+          AND: [
+            baseWhere,
+            {
+              OR: [
+                { targetProfileType: { in: targetProfileTypes } },
+                { AND: [{ targetProfileType: null }, { providerId: null }] },
+              ],
+            },
+          ],
+        }
+      : baseWhere;
 
     const [rawNotifications, unreadCount] = await Promise.all([
       this.prisma.adminNotification.findMany({

@@ -14,6 +14,7 @@ import { MercadoPagoService } from './mercadopago/mercadopago.service.js';
 import type { PaidPlan } from './mercadopago/dto/create-preference.dto.js';
 import { syncCoverageToPlan } from '../coverage/coverage.service.js';
 import { MinioService } from '../common/minio.service.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 
 const YapePaymentStatus = {
   PENDING: 'PENDING',
@@ -98,17 +99,27 @@ export class PaymentsService {
     // moría con "No tienes un perfil de proveedor activo". Si llegan
     // múltiples perfiles (OFICIO+NEGOCIO) y el DTO trae `providerType`,
     // tomamos el del tipo solicitado; si no, el primero del user.
-    const providerType = (dto as { providerType?: string }).providerType;
-    const provider =
-      providerType === 'OFICIO' || providerType === 'NEGOCIO'
-        ? await this.prisma.provider.findUnique({
-            where: { userId_type: { userId, type: providerType as any } },
-            select: { id: true },
-          })
-        : await this.prisma.provider.findFirst({
-            where: { userId },
-            select: { id: true },
-          });
+    const providerType = dto.providerType
+      ? normalizeProviderType(dto.providerType)
+      : null;
+    if (dto.providerType && !providerType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    const candidates = await this.prisma.provider.findMany({
+      where: {
+        userId,
+        ...(providerType ? { type: providerType as any } : {}),
+      },
+      select: { id: true },
+      take: providerType ? 1 : 2,
+      orderBy: { id: 'asc' },
+    });
+    if (!providerType && candidates.length > 1) {
+      throw new BadRequestException(
+        'Indica el tipo de perfil para enviar el comprobante',
+      );
+    }
+    const provider = candidates[0];
     if (!provider)
       throw new ForbiddenException('No tienes un perfil de proveedor');
 
@@ -332,9 +343,19 @@ export class PaymentsService {
   }
 
   // ── PROVEEDOR: cancelar plan ─────────────────────────────────
-  async cancelPlan(userId: number) {
-    const provider = await this.prisma.provider.findFirst({
-      where: { userId, isVisible: true },
+  async cancelPlan(userId: number, providerType?: string) {
+    const normalizedType = providerType
+      ? normalizeProviderType(providerType)
+      : null;
+    if (providerType && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    const providers = await this.prisma.provider.findMany({
+      where: {
+        userId,
+        isVisible: true,
+        ...(normalizedType ? { type: normalizedType as any } : {}),
+      },
       select: {
         id: true,
         userId: true,
@@ -342,7 +363,15 @@ export class PaymentsService {
         type: true,
         subscription: { select: { id: true, plan: true, status: true } },
       },
+      take: normalizedType ? 1 : 2,
+      orderBy: { id: 'asc' },
     });
+    if (!normalizedType && providers.length > 1) {
+      throw new BadRequestException(
+        'Indica el tipo de perfil para cancelar el plan',
+      );
+    }
+    const provider = providers[0];
     if (!provider)
       throw new NotFoundException('Perfil de proveedor no encontrado');
     // GRACIA y ACTIVA son ambos planes vigentes desde la perspectiva
@@ -453,7 +482,8 @@ export class PaymentsService {
    * Reemplaza el flujo manual de Yape.
    *
    * Flujo:
-   * 1. Busca el provider por userId.
+   * 1. Busca el provider por Provider.id estable o, para referencias legacy,
+   *    por userId + tipo.
    * 2. Crea o actualiza la suscripción con plan y fecha de expiración.
    * 3. Registra el pago en la tabla payments con el ID real de la suscripción.
    * 4. Actualiza planPriority del provider para el ranking público.
@@ -462,10 +492,12 @@ export class PaymentsService {
   async activateSubscriptionFromPayment(params: {
     userId: number;
     plan: string; // 'ESTANDAR' | 'PREMIUM'
-    /// Identifica a qué perfil aplicar el plan cuando el user tiene
-    /// ambos (OFICIO + NEGOCIO). Undefined = pago legacy sin type en
-    /// el external_reference; cae al findFirst histórico.
-    providerType?: 'OFICIO' | 'NEGOCIO';
+    /// Provider.id estable para referencias nuevas. Conserva la asociación
+    /// aunque una migración cambie OFICIO a PROFESIONAL.
+    providerId?: number;
+    /// Compatibilidad con referencias v1 por tipo. Nunca se usa para crear
+    /// nuevas preferencias; OFICIO puede caer a PROFESIONAL tras migración.
+    providerType?: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
     amount: number;
     paymentMethod: string;
     paymentId: string;
@@ -474,6 +506,7 @@ export class PaymentsService {
     const {
       userId,
       plan,
+      providerId,
       providerType,
       amount,
       paymentMethod,
@@ -484,10 +517,11 @@ export class PaymentsService {
     // C-05: gate de idempotencia. MP reintenta el mismo webhook si
     // tarda > 22s o falla. Sin esto, cada reintento renovaba endDate
     // (robando días al user) y mandaba otra push notification.
-    // Payment.reference @unique también atrapa este caso a nivel BD
+    // El índice parcial de Payment.reference para MercadoPago también atrapa
+    // este caso a nivel BD
     // — defensa en profundidad.
     const existing = await this.prisma.payment.findFirst({
-      where: { reference: paymentId },
+      where: { reference: paymentId, method: 'mercadopago' as any },
       select: { id: true },
     });
     if (existing) {
@@ -514,17 +548,44 @@ export class PaymentsService {
       }
     }
 
-    // 1. Buscar el provider. Si vino providerType, lookup exacto via
-    //    @@unique([userId, type]). Si no (legacy), findFirst.
-    const provider = providerType
-      ? await this.prisma.provider.findUnique({
-          where: { userId_type: { userId, type: providerType as any } },
-          select: { id: true, businessName: true, type: true },
-        })
-      : await this.prisma.provider.findFirst({
-          where: { userId },
+    // 1. Buscar el provider. v2 usa Provider.id estable; v1 usa lookup
+    //    exacto por tipo. Referencias sin tipo solo sobreviven si no son
+    //    ambiguas.
+    let provider: { id: number; businessName: string; type: string } | null =
+      null;
+    if (providerId != null) {
+      provider = await this.prisma.provider.findFirst({
+        where: { id: providerId, userId },
+        select: { id: true, businessName: true, type: true },
+      });
+    } else if (providerType) {
+      provider = await this.prisma.provider.findUnique({
+        where: { userId_type: { userId, type: providerType as any } },
+        select: { id: true, businessName: true, type: true },
+      });
+      // Pago v1 en vuelo: el id del perfil se conserva pero su tipo ya puede
+      // ser PROFESIONAL. XOR garantiza que no exista otro individual ambiguo.
+      if (!provider && providerType === 'OFICIO') {
+        provider = await this.prisma.provider.findUnique({
+          where: { userId_type: { userId, type: 'PROFESIONAL' as any } },
           select: { id: true, businessName: true, type: true },
         });
+      }
+    } else {
+      const candidates = await this.prisma.provider.findMany({
+        where: { userId },
+        select: { id: true, businessName: true, type: true },
+        take: 2,
+        orderBy: { id: 'asc' },
+      });
+      if (candidates.length === 1) provider = candidates[0];
+      if (candidates.length > 1) {
+        this.logger.error(
+          `Pago legacy ${paymentId} ambiguo para userId=${userId}; requiere conciliación manual`,
+        );
+        return;
+      }
+    }
 
     if (!provider) {
       this.logger.error(
@@ -542,7 +603,7 @@ export class PaymentsService {
 
     // C-05 + A-04: TODO en una transacción atómica.
     //   - Si llegan 2 webhooks simultáneos, el segundo falla con
-    //     P2002 en payment.create (reference @unique) → rollback
+    //     P2002 en payment.create (índice parcial MercadoPago) → rollback
     //     limpio, no se duplica nada.
     //   - A-04: en UPDATE de subscription NO tocamos startDate
     //     (preservar fecha original de inicio para analytics).
@@ -578,7 +639,7 @@ export class PaymentsService {
             amount,
             currency: 'PEN',
             method: paymentMethod as any,
-            reference: paymentId, // @unique → idempotencia
+            reference: paymentId, // índice parcial MP → idempotencia
             confirmedAt: new Date(dateApproved),
           },
         });

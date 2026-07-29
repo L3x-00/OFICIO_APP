@@ -46,8 +46,8 @@ export class AskAiDto {
 
   /** Perfil de proveedor activo opcional para contextualizar respuestas. */
   @IsOptional()
-  @IsIn(['OFICIO', 'NEGOCIO'])
-  providerType?: 'OFICIO' | 'NEGOCIO';
+  @IsIn(['OFICIO', 'PROFESIONAL', 'NEGOCIO'])
+  providerType?: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
 
   /**
    * Contexto/pantalla activa de la app cliente. Fuerza la Estrategia de

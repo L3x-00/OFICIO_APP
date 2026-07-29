@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { MinioService } from '../common/minio.service.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 
 @Injectable()
 export class TrustValidationService {
@@ -38,7 +39,8 @@ export class TrustValidationService {
       ownerDniPhoto?: Express.Multer.File[];
     },
   ) {
-    const type = providerType === 'NEGOCIO' ? 'NEGOCIO' : 'OFICIO';
+    const type = normalizeProviderType(providerType);
+    if (!type) throw new BadRequestException('Tipo de proveedor inválido');
 
     const provider = await this.prisma.provider.findFirst({
       where: { userId, type: type as any },
@@ -115,7 +117,8 @@ export class TrustValidationService {
 
   // ── PROVEEDOR: Ver su estado de confianza ────────────────
   async getMyTrustStatus(userId: number, providerType: string) {
-    const type = providerType === 'NEGOCIO' ? 'NEGOCIO' : 'OFICIO';
+    const type = normalizeProviderType(providerType);
+    if (!type) throw new BadRequestException('Tipo de proveedor inválido');
     const provider = await this.prisma.provider.findFirst({
       where: { userId, type: type as any },
       select: {

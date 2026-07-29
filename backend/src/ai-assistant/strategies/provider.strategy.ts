@@ -45,10 +45,7 @@ export class ProviderStrategy implements AiContextStrategy {
       });
       const types = profiles.map((p) => p.type);
       if (types.length === 0) return 'proveedor';
-      if (types.includes('OFICIO') && types.includes('NEGOCIO')) {
-        return 'OFICIO y NEGOCIO';
-      }
-      return types[0] === 'NEGOCIO' ? 'NEGOCIO' : 'OFICIO';
+      return types.join(' y ');
     } catch (e) {
       this.logger.warn(
         `resolveProfileLabel falló (fallback genérico): ${(e as Error)?.message ?? e}`,

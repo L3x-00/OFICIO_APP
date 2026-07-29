@@ -35,8 +35,11 @@ export class PaymentsController {
 
   // ── Proveedor: cancelar plan activo ──────────────────────────
   @Patch('cancel-plan')
-  cancelPlan(@Request() req: AuthenticatedRequest) {
-    return this.svc.cancelPlan(req.user.id);
+  cancelPlan(
+    @Request() req: AuthenticatedRequest,
+    @Query('type') providerType?: string,
+  ) {
+    return this.svc.cancelPlan(req.user.id, providerType);
   }
 
   // ── Admin: listar pagos ──────────────────────────────────────

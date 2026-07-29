@@ -326,9 +326,11 @@ export function matchAdminMetric(message: string): AdminMetric | null {
   return null;
 }
 
-/** OFICIO → 'Profesional', NEGOCIO → 'Negocio'. */
+/** Etiqueta pública del tipo de proveedor. */
 export function providerTypeLabel(type: string): string {
-  return type === 'NEGOCIO' ? 'Negocio' : 'Profesional';
+  if (type === 'NEGOCIO') return 'Negocio';
+  if (type === 'PROFESIONAL') return 'Servicio profesional';
+  return 'Oficio';
 }
 
 export function formatPlatformStats(s: PlatformStatsDto): string {
