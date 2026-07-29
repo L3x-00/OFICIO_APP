@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useBodyScrollLock } from '@/lib/hooks';
 
 interface Props {
   isOpen: boolean;
@@ -12,17 +13,7 @@ interface Props {
 }
 
 export default function LegalModal({ isOpen, onClose, title, content }: Props) {
-  // Bloquear scroll del body cuando el modal está abierto
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   // Cerrar con tecla Escape
   useEffect(() => {

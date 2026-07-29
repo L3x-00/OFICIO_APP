@@ -7,6 +7,7 @@ import { X, Upload, CheckCircle, Loader2, ScanLine, CreditCard, FileCheck } from
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { yapePaymentSchema } from '@/lib/validators';
+import { useBodyScrollLock } from '@/lib/hooks';
 
 interface Props {
   isOpen: boolean;
@@ -27,6 +28,7 @@ const STEPS = [
 ];
 
 export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amount, providerType, onSuccess }: Props) {
+  useBodyScrollLock(isOpen);
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [verificationCode, setVerificationCode] = useState('');
   const [note, setNote] = useState('');
