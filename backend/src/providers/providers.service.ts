@@ -437,9 +437,13 @@ export class ProvidersService {
     };
 
     // 1. Conteo de proveedores aprobados/visibles por categoría (hoja).
+    // Solo cuenta la categoría INSIGNIA (isPrimary) de cada proveedor: así el
+    // ranking coincide con el paso 4, que también filtra por isPrimary — evita
+    // que una categoría rankee alto por tags secundarios y luego no tenga
+    // proveedores propios que mostrar.
     const counts = await this.prisma.providerCategory.groupBy({
       by: ['categoryId'],
-      where: { provider: VISIBLE_APPROVED },
+      where: { provider: VISIBLE_APPROVED, isPrimary: true },
       _count: { providerId: true },
     });
     const countByCat = new Map<number, number>();
@@ -477,7 +481,12 @@ export class ProvidersService {
         const providers = await this.prisma.provider.findMany({
           where: {
             ...VISIBLE_APPROVED,
-            providerCategories: { some: { categoryId: { in: r.catIds } } },
+            // isPrimary: true → solo su categoría insignia. Sin esto un
+            // proveedor con categorías secundarias en varios padres aparecía
+            // duplicado en cada carrusel (2-3 veces en /buscar).
+            providerCategories: {
+              some: { categoryId: { in: r.catIds }, isPrimary: true },
+            },
           },
           include: {
             providerCategories: {

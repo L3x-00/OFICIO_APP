@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Search, MapPin, Star, Radar, Loader2, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Search, MapPin, Star, Radar, Loader2, X, ChevronDown } from 'lucide-react';
 import {
   api,
   type PublicProvider,
@@ -312,7 +313,7 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
   const location = [provider.locality?.district, provider.locality?.province]
     .filter(Boolean)
     .join(', ');
-  const href = `/p/${provider.slug ?? provider.id}`;
+  const href = `/${provider.slug ?? provider.id}`;
   const distance = (provider as { distanceKm?: number | null }).distanceKm;
 
   return (
@@ -359,16 +360,52 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
 }
 
 // ── Carrusel horizontal ──
+// Muestra solo los primeros 3 para no saturar; el resto se "acopla" oculto
+// detrás de un botón y se despliega/repliega con una animación de docking.
+const CAROUSEL_VISIBLE = 3;
+
 function Carousel({ title, providers }: { title: string; providers: PublicProvider[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const hiddenCount = providers.length - CAROUSEL_VISIBLE;
+  const visible = expanded ? providers : providers.slice(0, CAROUSEL_VISIBLE);
+
   return (
     <section className="mb-8">
-      <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white mb-4">{title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">{title}</h2>
+        {hiddenCount > 0 && (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark transition-colors"
+          >
+            {expanded ? 'Ver menos' : `Ver todos (+${hiddenCount})`}
+            <ChevronDown
+              size={14}
+              className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+            />
+          </button>
+        )}
+      </div>
       <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
-        {providers.map((p) => (
-          <div key={p.id} className="w-[260px] shrink-0">
-            <ProviderCard provider={p} />
-          </div>
-        ))}
+        <AnimatePresence initial={false}>
+          {visible.map((p, i) => (
+            <motion.div
+              key={p.id}
+              layout
+              initial={{ opacity: 0, scale: 0.82, x: -28 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.82, x: -28 }}
+              transition={{
+                duration: 0.32,
+                ease: [0.22, 1, 0.36, 1],
+                delay: i >= CAROUSEL_VISIBLE ? (i - CAROUSEL_VISIBLE) * 0.05 : 0,
+              }}
+              className="w-[260px] shrink-0"
+            >
+              <ProviderCard provider={p} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </section>
   );
