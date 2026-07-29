@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
@@ -91,6 +92,7 @@ class _AiChatViewState extends State<_AiChatView> {
     final prov = context.watch<AiAssistantProvider>();
     final messages = prov.messages;
     final isLoading = prov.isLoading;
+    final limitReached = prov.limitReached;
 
     // Sesión expirada (401): avisamos y cerramos sesión una sola vez. El
     // SnackBar se encola en el ScaffoldMessenger raíz ANTES del logout, así
@@ -147,11 +149,21 @@ class _AiChatViewState extends State<_AiChatView> {
             ),
           ],
         ),
+        actions: [
+          TextButton.icon(
+            onPressed: isLoading ? null : () => prov.startNewChat(),
+            icon: Icon(Icons.refresh_rounded, size: 16, color: c.textSecondary),
+            label: Text(
+              'Nuevo',
+              style: TextStyle(color: c.textSecondary, fontSize: 12),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            const _RetentionNotice(),
+            _RetentionNotice(messageCount: prov.messageCount),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -170,7 +182,10 @@ class _AiChatViewState extends State<_AiChatView> {
             // (historial ya pintado arriba). Solo cuando Ofi está a la espera
             // (no cargando y último turno no es del usuario) para no estorbar
             // mientras conversa. Al tocar, envía la pregunta al backend real.
-            if (!isLoading && messages.isNotEmpty && !messages.last.isUser)
+            if (!isLoading &&
+                !limitReached &&
+                messages.isNotEmpty &&
+                !messages.last.isUser)
               _FaqSuggestions(
                 prompts: _faqPrompts(prov.providerType),
                 onTap: (q) => context.read<AiAssistantProvider>().send(q),
@@ -178,7 +193,10 @@ class _AiChatViewState extends State<_AiChatView> {
             _InputBar(
               controller: _controller,
               onSend: _send,
-              enabled: !isLoading,
+              enabled: !isLoading && !limitReached,
+              hintText: limitReached
+                  ? 'Inicia un nuevo chat para continuar'
+                  : 'Escribe tu mensaje…',
             ),
           ],
         ),
@@ -283,10 +301,10 @@ class _OfiAvatar extends StatelessWidget {
   Widget build(BuildContext context) => OfiChatAvatar(size: size);
 }
 
-/// Aviso de retención: informa que los mensajes se borran solos a los 3 días
-/// (la limpieza la hace el backend; aquí solo se informa al usuario).
+/// Aviso de retención y contador del chat activo.
 class _RetentionNotice extends StatelessWidget {
-  const _RetentionNotice();
+  final int messageCount;
+  const _RetentionNotice({required this.messageCount});
 
   @override
   Widget build(BuildContext context) {
@@ -296,17 +314,20 @@ class _RetentionNotice extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       color: c.bgCard,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Icon(Icons.auto_delete_outlined, size: 14, color: c.textMuted),
           const SizedBox(width: 6),
-          Flexible(
+          Expanded(
             child: Text(
-              'Los mensajes de esta conversación se eliminan automáticamente '
-              'después de 3 días.',
+              'Este chat se elimina automáticamente en 12 horas.',
               style: TextStyle(color: c.textMuted, fontSize: 11.5, height: 1.2),
-              textAlign: TextAlign.center,
             ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$messageCount/${AiAssistantProvider.maxChatMessages}',
+            style: TextStyle(color: c.textMuted, fontSize: 11.5),
           ),
         ],
       ),
@@ -331,7 +352,9 @@ class _MessageBubble extends StatelessWidget {
         : isError
         ? Color.alphaBlend(AppColors.busy.withValues(alpha: 0.14), c.bgCard)
         : Color.alphaBlend(AppColors.amber.withValues(alpha: 0.10), c.bgCard);
-    final Color fg = isUser ? Colors.white : c.textPrimary;
+    final Color fg = isUser
+        ? AppColors.onSolid(AppColors.primary)
+        : c.textPrimary;
 
     final bubble = Container(
       constraints: BoxConstraints(
@@ -372,50 +395,17 @@ class _MessageBubble extends StatelessWidget {
                 ],
               ),
             ),
-          // El usuario va en texto plano; Ofi puede responder con Markdown
-          // (**negrita**, viñetas, etc.) → lo renderizamos como tal.
-          isUser
-              ? Text(
-                  message.text,
-                  style: TextStyle(color: fg, fontSize: 15, height: 1.35),
-                )
-              : MarkdownBody(
-                  data: message.text,
-                  shrinkWrap: true,
-                  // No interactivo: ignoramos taps en links para no sacar
-                  // al usuario de la app.
-                  onTapLink: (_, _, _) {},
-                  styleSheet: MarkdownStyleSheet(
-                    p: TextStyle(color: fg, fontSize: 15, height: 1.35),
-                    strong: TextStyle(
-                      color: fg,
-                      fontSize: 15,
-                      height: 1.35,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    em: TextStyle(
-                      color: fg,
-                      fontSize: 15,
-                      height: 1.35,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    listBullet: TextStyle(
-                      color: fg,
-                      fontSize: 15,
-                      height: 1.35,
-                    ),
-                    a: const TextStyle(
-                      color: AppColors.primary,
-                      decoration: TextDecoration.underline,
-                    ),
-                    blockSpacing: 6,
-                  ),
-                ),
+          Text(
+            message.text,
+            style: TextStyle(color: fg, fontSize: 15, height: 1.35),
+          ),
           const SizedBox(height: 4),
           Text(
             _formatTime(message.timestamp),
             style: TextStyle(
-              color: isUser ? Colors.white70 : c.textMuted,
+              color: isUser
+                  ? AppColors.onSolid(AppColors.primary).withValues(alpha: 0.72)
+                  : c.textMuted,
               fontSize: 10,
             ),
           ),
@@ -435,7 +425,7 @@ class _MessageBubble extends StatelessWidget {
     );
 
     // Mensaje normal → solo la burbuja.
-    if (!message.hasProviders) {
+    if (!message.hasProviders && !message.hasSupportActions) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: row,
@@ -456,12 +446,16 @@ class _MessageBubble extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 36, top: 8),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final p in message.providers!)
-                  ServiceCardContent(
-                    provider: p,
-                    onTap: () => ProviderDetailSheet.show(context, p),
-                  ),
+                if (message.hasSupportActions)
+                  _SupportActions(actions: message.supportActions!),
+                if (message.hasProviders)
+                  for (final p in message.providers!)
+                    ServiceCardContent(
+                      provider: p,
+                      onTap: () => ProviderDetailSheet.show(context, p),
+                    ),
               ],
             ),
           ),
@@ -478,6 +472,77 @@ class _MessageBubble extends StatelessWidget {
 }
 
 /// Burbuja "escribiendo…" con tres puntos animados.
+class _SupportActions extends StatelessWidget {
+  final List<AiSupportAction> actions;
+  const _SupportActions({required this.actions});
+
+  Future<void> _open(BuildContext context, String href) async {
+    final uri = Uri.tryParse(href);
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir el canal de soporte.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final action in actions)
+          InkWell(
+            onTap: () => _open(context, action.href),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: Color.alphaBlend(
+                  AppColors.amber.withValues(alpha: 0.13),
+                  c.bgCard,
+                ),
+                border: Border.all(
+                  color: AppColors.amber.withValues(alpha: 0.35),
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (action.kind == 'whatsapp')
+                    SvgPicture.asset(
+                      'assets/icons/whatsapp.svg',
+                      width: 15,
+                      height: 15,
+                    )
+                  else
+                    Icon(
+                      Icons.email_outlined,
+                      size: 16,
+                      color: AppColors.tintOn(AppColors.amber, c.isDark),
+                    ),
+                  const SizedBox(width: 6),
+                  Text(
+                    action.label,
+                    style: TextStyle(
+                      color: AppColors.tintOn(AppColors.amber, c.isDark),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _TypingBubble extends StatelessWidget {
   const _TypingBubble();
 
@@ -578,11 +643,13 @@ class _InputBar extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
   final bool enabled;
+  final String hintText;
 
   const _InputBar({
     required this.controller,
     required this.onSend,
     required this.enabled,
+    required this.hintText,
   });
 
   @override
@@ -606,7 +673,7 @@ class _InputBar extends StatelessWidget {
               onSubmitted: (_) => onSend(),
               style: TextStyle(color: c.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Escribe tu mensaje…',
+                hintText: hintText,
                 hintStyle: TextStyle(color: c.textMuted),
                 filled: true,
                 fillColor: c.bgInput,
@@ -638,9 +705,9 @@ class _InputBar extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.send_rounded,
-                  color: Colors.white,
+                  color: AppColors.onSolid(AppColors.primary),
                   size: 22,
                 ),
               ),

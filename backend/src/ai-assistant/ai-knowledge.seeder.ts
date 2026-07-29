@@ -109,8 +109,10 @@ export class AiKnowledgeSeeder implements OnModuleInit {
       topic: 'soporte',
       content: {
         contacto:
-          'Para problemas técnicos o de cuenta, usar la opción "Reportar ' +
-          'problema" dentro de la app o el centro de ayuda.',
+          'Canales oficiales: WhatsApp +51 930 759 515, correo ' +
+          'soporteofiapp@gmail.com y ventas/planes ' +
+          'ronla.angarita31@gmail.com. Ofi muestra botones directos al ' +
+          'detectar una solicitud de soporte.',
       },
     },
   ];

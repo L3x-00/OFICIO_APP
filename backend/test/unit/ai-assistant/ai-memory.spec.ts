@@ -40,6 +40,8 @@ describe('AiMemoryService', () => {
             searchCategories: ['electricista', 'gasfitero'],
             recentProviderIds: [1],
             lastIntent: 'search',
+            consentGranted: true,
+            expiresAt: new Date(Date.now() + 86400000),
           })),
           upsert: jest.fn(),
         },
@@ -105,8 +107,16 @@ describe('AiMemoryService', () => {
   });
 
   describe('recordTurn', () => {
-    it('crea memoria nueva con las señales del turno', async () => {
-      const prisma = makePrisma();
+    it('actualiza memoria interna con las señales del turno', async () => {
+      const prisma = makePrisma({
+        aiUserMemory: {
+          findUnique: jest.fn(async () => ({
+            searchCategories: [], recentProviderIds: [], lastIntent: null,
+            consentGranted: true, expiresAt: new Date(Date.now() + 86400000),
+          })),
+          upsert: jest.fn(async () => ({})),
+        },
+      });
       const svc = new AiMemoryService(prisma);
 
       await svc.recordTurn(7, {
@@ -117,9 +127,9 @@ describe('AiMemoryService', () => {
 
       const arg = prisma.aiUserMemory.upsert.mock.calls[0][0];
       expect(arg.where).toEqual({ userId: 7 });
-      expect(arg.create.searchCategories).toEqual(['electricista']);
-      expect(arg.create.recentProviderIds).toEqual([1, 2]);
-      expect(arg.create.lastIntent).toBe('search');
+      expect(arg.update.searchCategories).toEqual(['electricista']);
+      expect(arg.update.recentProviderIds).toEqual([1, 2]);
+      expect(arg.update.lastIntent).toBe('search');
     });
 
     it('fusiona con lo existente, dedup case-insensitive y cap (más reciente primero)', async () => {
@@ -129,6 +139,8 @@ describe('AiMemoryService', () => {
             searchCategories: ['a', 'b', 'c', 'd', 'e'],
             recentProviderIds: [1, 2],
             lastIntent: 'faq',
+            consentGranted: true,
+            expiresAt: new Date(Date.now() + 86400000),
           })),
           upsert: jest.fn(async () => ({})),
         },
@@ -153,6 +165,23 @@ describe('AiMemoryService', () => {
       expect(prisma.aiUserMemory.upsert).not.toHaveBeenCalled();
     });
 
+    it('memoria sin inicializar se actualiza automáticamente', async () => {
+      const prisma = makePrisma({
+        aiUserMemory: {
+          findUnique: jest.fn(async () => ({
+            searchCategories: [], recentProviderIds: [], lastIntent: null,
+            consentGranted: false, expiresAt: null,
+          })),
+          upsert: jest.fn(),
+        },
+      });
+      const svc = new AiMemoryService(prisma);
+
+      await svc.recordTurn(7, { intent: 'search', categories: ['gasfitero'] });
+
+      expect(prisma.aiUserMemory.upsert).toHaveBeenCalled();
+    });
+
     it('userId inválido → no escribe', async () => {
       const prisma = makePrisma();
       const svc = new AiMemoryService(prisma);
@@ -162,6 +191,7 @@ describe('AiMemoryService', () => {
       expect(prisma.aiUserMemory.upsert).not.toHaveBeenCalled();
     });
   });
+
 
   describe('refreshProviderMemory', () => {
     it('upsert desde el perfil (rubros + snapshot)', async () => {

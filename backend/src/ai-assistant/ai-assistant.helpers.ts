@@ -5,7 +5,7 @@ import type {
   TopProviderDto,
   PendingApprovalsDto,
 } from './ai-data-access.service.js';
-import type { AiIntent } from './ai-assistant.types.js';
+import type { AiIntent, AiSupportAction } from './ai-assistant.types.js';
 import {
   AI_QUERY_STOPWORDS,
   FAQ_KEYWORDS,
@@ -93,6 +93,98 @@ export function respCacheKey(
   const canonical = semanticCanonical(message);
   const hash = createHash('sha1').update(canonical).digest('hex');
   return `${RESP_CACHE_PREFIX}${version}:${role}:${hash}`;
+}
+
+// ── Soporte oficial (router determinístico) ────────────────────────────────
+
+const SUPPORT_WHATSAPP = 'https://wa.me/51930759515';
+const SUPPORT_EMAIL = 'soporteofiapp@gmail.com';
+const SALES_EMAIL = 'ronla.angarita31@gmail.com';
+
+/** Detecta peticiones explícitas de ayuda o contacto con soporte Servi. */
+export function isSupportRequest(message: string): boolean {
+  const m = normalizeText(message);
+  if (m.length === 0) return false;
+  if (
+    [
+      'soporte',
+      'contactar soporte',
+      'contacto soporte',
+      'contacto con soporte',
+      'ayuda tecnica',
+      'problema con la app',
+      'reportar problema',
+      'hablar con alguien',
+      'atencion al cliente',
+      'servicio al cliente',
+    ].some((term) => m.includes(term))
+  ) {
+    return true;
+  }
+
+  // "Ayuda" aislada es soporte. Variantes con más texto requieren contexto
+  // de incidencia para no desviar búsquedas de proveedores a soporte.
+  if (m === 'ayuda' || m === 'necesito ayuda') return true;
+  return (
+    m.includes('ayuda') &&
+    [
+      'cuenta',
+      'app',
+      'aplicacion',
+      'problema',
+      'error',
+      'falla',
+      'pago',
+      'iniciar sesion',
+    ].some((term) => m.includes(term))
+  );
+}
+
+/** Respuesta fija: útil aun si Gemini o la base de conocimiento no responden. */
+export function supportReply(message: string): string {
+  const hasDetail = normalizeText(message).length > 24;
+  return hasDetail
+    ? 'Claro. Preparé los canales oficiales y añadí tu descripción para que soporte entienda el caso más rápido.'
+    : 'Claro. Elige un canal oficial y cuéntale a soporte qué estabas intentando hacer y qué ocurrió.';
+}
+
+/** Construye enlaces seguros con texto precargado para el canal elegido. */
+export function buildSupportActions(message: string): AiSupportAction[] {
+  const detail = message.replace(/\s+/g, ' ').trim().slice(0, 280);
+  const body =
+    'Hola, equipo de soporte de Servi. Necesito ayuda con: ' +
+    (detail || 'un problema en la plataforma.');
+  const encodedBody = encodeURIComponent(body);
+
+  return [
+    {
+      kind: 'whatsapp',
+      label: 'Escribir por WhatsApp',
+      href: SUPPORT_WHATSAPP + '?text=' + encodedBody,
+    },
+    {
+      kind: 'email',
+      label: 'Correo de soporte',
+      href:
+        'mailto:' +
+        SUPPORT_EMAIL +
+        '?subject=' +
+        encodeURIComponent('Solicitud de soporte Servi') +
+        '&body=' +
+        encodedBody,
+    },
+    {
+      kind: 'sales',
+      label: 'Ventas y planes',
+      href:
+        'mailto:' +
+        SALES_EMAIL +
+        '?subject=' +
+        encodeURIComponent('Consulta sobre planes Servi') +
+        '&body=' +
+        encodedBody,
+    },
+  ];
 }
 
 // ── Tools / proveedores ───────────────────────────────────────

@@ -67,7 +67,7 @@ export class AiConversationService {
     try {
       const existing = await this.prisma.aiConversation.findFirst({
         where: { userId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         select: { id: true },
       });
       if (existing) return existing.id;
@@ -97,8 +97,39 @@ export class AiConversationService {
   }
 
   /**
+   * Inicia una conversación nueva sin borrar las anteriores. La retención
+   * automática conserva privacidad y el historial activo queda aislado.
+   */
+  async startNewConversation(
+    userId: number,
+    promptVersion: string,
+  ): Promise<number | null> {
+    if (!Number.isInteger(userId) || userId <= 0) return null;
+    const version =
+      typeof promptVersion === 'string' && promptVersion.trim()
+        ? promptVersion
+        : AI_PROMPT_VERSION;
+    try {
+      const created = await this.prisma.aiConversation.create({
+        data: { userId, promptVersion: version },
+        select: { id: true },
+      });
+      return created.id;
+    } catch (e) {
+      this.logger.warn(
+        `startNewConversation falló: ${(e as Error)?.message ?? e}`,
+      );
+      Sentry.captureException(e, {
+        tags: { module: 'ai-assistant', op: 'startNewConversation' },
+        extra: { userId },
+      });
+      return null;
+    }
+  }
+
+  /**
    * Recupera el historial reciente aplicando el LÍMITE DUAL (regla 6):
-   * máx 10 mensajes Y máx 6000 caracteres acumulados, priorizando los más
+   * máx 30 mensajes Y máx 12000 caracteres acumulados, priorizando los más
    * recientes. Los mensajes antiguos que exceden el tope se omiten.
    *
    * Devuelve en orden cronológico (viejo → nuevo) listo para Gemini.
@@ -108,7 +139,7 @@ export class AiConversationService {
       // Traemos los más recientes primero (DESC) y recortamos por chars.
       const rows = await this.prisma.aiMessage.findMany({
         where: { conversationId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: HISTORY_MAX_MESSAGES,
         select: { role: true, content: true },
       });
@@ -132,17 +163,22 @@ export class AiConversationService {
   }
 
   /**
-   * Últimos `limit` mensajes del usuario (en cualquiera de sus conversaciones),
-   * en orden cronológico, para sincronizar el chat entre dispositivos. Filtra
-   * por la relación `conversation.userId`. Resiliente: [] si la BD falla.
+   * Últimos `limit` mensajes de la conversación activa del usuario, en orden
+   * cronológico. Nunca mezcla chats anteriores al sincronizar dispositivos.
    */
   async getRecentMessages(
     userId: number,
     limit = 20,
   ): Promise<Array<{ role: string; content: string; createdAt: Date }>> {
     try {
+      const current = await this.prisma.aiConversation.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      });
+      if (!current) return [];
       const rows = await this.prisma.aiMessage.findMany({
-        where: { conversation: { userId } },
+        where: { conversationId: current.id },
         orderBy: { createdAt: 'desc' },
         take: limit,
         select: { role: true, content: true, createdAt: true },

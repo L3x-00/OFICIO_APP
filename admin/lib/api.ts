@@ -17,14 +17,25 @@ export {
 } from './api-client';
 
 // ── ASISTENTE IA "OFI" ─────────────────────────────────────
+export interface AiSupportAction {
+  kind: 'whatsapp' | 'email' | 'sales';
+  label: string;
+  href: string;
+}
+
 export interface AiChatResponse {
   reply: string;
+  supportActions?: AiSupportAction[];
   meta: {
     promptVersion: string;
     blocked: boolean;
     reason?: string;
     cached?: boolean;
   };
+}
+
+export interface AiHistoryResponse {
+  messages: Array<{ role: string; content: string; createdAt?: string }>;
 }
 
 /** Envía un mensaje al asistente. `fetchApi` adjunta el JWT y maneja el
@@ -43,6 +54,18 @@ export const askAssistant = (
       message,
       ...(history && history.length ? { history } : {}),
     }),
+  });
+
+/** Crea una conversación vacía para que el siguiente mensaje no herede contexto. */
+export const startNewAssistantChat = () =>
+  fetchApi<{ ok: boolean }>('/ai-assistant/new-chat', {
+    method: 'POST',
+    headers: { 'X-App-Origin': 'admin' },
+  });
+
+export const getAssistantHistory = () =>
+  fetchApi<AiHistoryResponse>('/ai-assistant/history', {
+    headers: { 'X-App-Origin': 'admin' },
   });
 
 // ── OBSERVABILIDAD IA (Fase 8) ─────────────────────────────

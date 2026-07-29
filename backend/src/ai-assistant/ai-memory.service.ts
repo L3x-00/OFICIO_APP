@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AI_MEMORY_RETENTION_DAYS } from './ai-assistant.constants.js';
 
 /** Señales de un turno para actualizar la memoria del cliente. */
 export interface TurnSignals {
@@ -40,12 +41,15 @@ export class AiMemoryService {
   async getUserMemoryBlock(userId: number): Promise<string> {
     if (!Number.isInteger(userId) || userId <= 0) return '';
     try {
-      const [user, mem, favCount] = await Promise.all([
+      const mem = await this.prisma.aiUserMemory.findUnique({
+        where: { userId },
+      });
+      if (!this.isActive(mem)) return '';
+      const [user, favCount] = await Promise.all([
         this.prisma.user.findUnique({
           where: { id: userId },
           select: { province: true, district: true },
         }),
-        this.prisma.aiUserMemory.findUnique({ where: { userId } }),
         this.prisma.favorite.count({ where: { userId } }),
       ]);
 
@@ -147,6 +151,7 @@ export class AiMemoryService {
         searchCategories,
         recentProviderIds,
         lastIntent: signals.intent ?? existing?.lastIntent ?? null,
+        expiresAt: this.expiryDate(),
       };
       await this.prisma.aiUserMemory.upsert({
         where: { userId },
@@ -218,6 +223,16 @@ export class AiMemoryService {
       if (out.length >= cap) break;
     }
     return out;
+  }
+
+  private expiryDate(): Date {
+    return new Date(
+      Date.now() + AI_MEMORY_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+    );
+  }
+
+  private isActive(memory: { expiresAt: Date | null } | null): boolean {
+    return !!memory?.expiresAt && memory.expiresAt > new Date();
   }
 
   private mergeCappedNum(

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X } from 'lucide-react';
+import { Mail, RefreshCw, Send, X } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { isAuthenticated, getUser } from '@/lib/auth';
 
@@ -14,10 +14,18 @@ interface ChatMsg {
   text: string;
   local?: boolean;
   isError?: boolean;
+  supportActions?: AiSupportAction[];
+}
+
+interface AiSupportAction {
+  kind: 'whatsapp' | 'email' | 'sales';
+  label: string;
+  href: string;
 }
 
 interface AiChatResponse {
   reply: string;
+  supportActions?: AiSupportAction[];
   meta: { promptVersion: string; blocked: boolean; reason?: string; cached?: boolean };
 }
 
@@ -26,6 +34,7 @@ interface AiHistoryResponse {
 }
 
 const REFERRALS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_REFERIDOS === 'true';
+const MAX_CHAT_MESSAGES = 30;
 
 // FAQs de arranque. Para visitantes se responden localmente (el endpoint de
 // IA exige sesión); para usuarios autenticados se envían al modelo real.
@@ -78,9 +87,11 @@ export default function AiChatWidget() {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const historyRequestRef = useRef(0);
 
   // Resolvemos sesión/rol tras el montaje (evita mismatch de hidratación con
   // localStorage). providerType se lee del mismo storage que usa el panel.
@@ -126,6 +137,7 @@ export default function AiChatWidget() {
   useEffect(() => {
     if (!open || !authed || historyLoaded) return;
     setHistoryLoaded(true);
+    const requestId = ++historyRequestRef.current;
     (async () => {
       try {
         const res = await apiFetch<AiHistoryResponse>('/ai-assistant/history');
@@ -135,7 +147,9 @@ export default function AiChatWidget() {
             role: m.role === 'user' ? 'user' : 'ofi',
             text: m.content,
           }));
-        if (hist.length > 0) setMessages(hist);
+        if (requestId === historyRequestRef.current && hist.length > 0) {
+          setMessages(hist);
+        }
       } catch {
         /* historial opcional */
       }
@@ -146,7 +160,9 @@ export default function AiChatWidget() {
     async (text: string) => {
       const history = messages
         .filter((m) => !m.local && !m.isError)
+        .slice(-MAX_CHAT_MESSAGES)
         .map((m) => ({ role: (m.role === 'user' ? 'user' : 'model') as 'user' | 'model', text: m.text }));
+      if (history.length >= MAX_CHAT_MESSAGES) return;
 
       setMessages((prev) => [...prev, { role: 'user', text }]);
       setLoading(true);
@@ -159,7 +175,10 @@ export default function AiChatWidget() {
             ...(providerType ? { providerType } : {}),
           }),
         });
-        setMessages((prev) => [...prev, { role: 'ofi', text: res.reply }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'ofi', text: res.reply, supportActions: res.supportActions },
+        ]);
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Ocurrió un error. Intenta de nuevo.';
         setMessages((prev) => [...prev, { role: 'ofi', text: msg, local: true, isError: true }]);
@@ -176,6 +195,25 @@ export default function AiChatWidget() {
     setInput('');
     void sendToAi(text);
   }, [input, loading, authed, sendToAi]);
+
+  const startNewChat = useCallback(async () => {
+    if (!authed || loading || resetting) return;
+    setResetting(true);
+    historyRequestRef.current += 1;
+    try {
+      const result = await apiFetch<{ ok: boolean }>('/ai-assistant/new-chat', {
+        method: 'POST',
+      });
+      if (!result.ok) throw new Error('No se pudo iniciar el nuevo chat.');
+      setMessages([]);
+      setInput('');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'No se pudo iniciar el nuevo chat.';
+      setMessages((prev) => [...prev, { role: 'ofi', text: msg, local: true, isError: true }]);
+    } finally {
+      setResetting(false);
+    }
+  }, [authed, loading, resetting]);
 
   // Click en una FAQ: visitante → respuesta local; autenticado → al modelo.
   const askFaq = useCallback(
@@ -197,6 +235,8 @@ export default function AiChatWidget() {
   if (!mounted) return null;
 
   const showStarters = messages.length === 0;
+  const messageCount = messages.filter((m) => !m.local && !m.isError).length;
+  const limitReached = messageCount >= MAX_CHAT_MESSAGES;
 
   return (
     <>
@@ -207,7 +247,7 @@ export default function AiChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[99998] flex flex-col w-[min(380px,calc(100vw-32px))] h-[min(560px,calc(100vh-150px))] glass-card rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[99998] flex flex-col w-[min(380px,calc(100vw-32px))] h-[min(560px,calc(100vh-150px))] bg-dark-card rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
@@ -221,12 +261,26 @@ export default function AiChatWidget() {
                 </p>
               </div>
               <button
+                onClick={() => void startNewChat()}
+                disabled={!authed || loading || resetting}
+                aria-label="Iniciar nuevo chat"
+                title="Nuevo chat"
+                className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors disabled:opacity-50"
+              >
+                <RefreshCw size={14} />
+              </button>
+              <button
                 onClick={() => setOpen(false)}
                 aria-label="Cerrar"
                 className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
               >
                 <X size={15} />
               </button>
+            </div>
+
+            <div role="status" className="flex items-center justify-between gap-3 px-4 py-2 border-b border-white/10 bg-white/[0.02] text-[11px] text-white/45">
+              <span>Este chat se elimina automáticamente en 12 horas.</span>
+              <span className="shrink-0">{messageCount}/{MAX_CHAT_MESSAGES}</span>
             </div>
 
             {/* Mensajes */}
@@ -267,17 +321,17 @@ export default function AiChatWidget() {
               <input
                 type="text"
                 value={input}
-                disabled={!authed}
+                disabled={!authed || loading || resetting || limitReached}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') send();
                 }}
-                placeholder={authed ? 'Escribe tu mensaje…' : 'Inicia sesión para chatear'}
+                placeholder={!authed ? 'Inicia sesión para chatear' : limitReached ? 'Inicia un nuevo chat para continuar' : 'Escribe tu mensaje…'}
                 className="flex-1 bg-white/[0.05] border border-white/10 rounded-full px-4 py-2.5 text-white text-[13px] placeholder:text-white/30 outline-none focus:border-amber/40 transition-colors disabled:opacity-50"
               />
               <button
                 onClick={send}
-                disabled={loading || !input.trim() || !authed}
+                disabled={loading || resetting || limitReached || !input.trim() || !authed}
                 aria-label="Enviar"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-amber to-amber-dark text-black flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-opacity"
               >
@@ -319,7 +373,36 @@ function Bubble({ msg }: { msg: ChatMsg }) {
         }`}
       >
         {msg.text}
+        {!isUser && msg.supportActions && msg.supportActions.length > 0 && (
+          <SupportActions actions={msg.supportActions} />
+        )}
       </div>
+    </div>
+  );
+}
+
+function SupportActions({ actions }: { actions: AiSupportAction[] }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {actions.map((action) => {
+        const isWhatsApp = action.kind === 'whatsapp';
+        return (
+          <a
+            key={action.href}
+            href={action.href}
+            target={isWhatsApp ? '_blank' : undefined}
+            rel={isWhatsApp ? 'noreferrer' : undefined}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-amber/35 bg-amber/10 px-2.5 py-1.5 text-[11px] font-medium text-amber transition-colors hover:bg-amber/20"
+          >
+            {isWhatsApp ? (
+              <img src="/images/social/whatsapp.svg" alt="" className="h-3.5 w-3.5" />
+            ) : (
+              <Mail size={13} aria-hidden="true" />
+            )}
+            {action.label}
+          </a>
+        );
+      })}
     </div>
   );
 }

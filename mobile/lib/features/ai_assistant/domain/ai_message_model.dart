@@ -3,6 +3,27 @@ import 'package:mobile/features/providers_list/domain/models/provider_model.dart
 /// Origen de un mensaje en el chat con "Ofi".
 enum AiSender { user, ofi }
 
+/// AcciÃ³n de contacto oficial que Ofi muestra tras detectar una solicitud de
+/// soporte. El backend entrega los enlaces ya codificados con la descripciÃ³n.
+class AiSupportAction {
+  final String kind;
+  final String label;
+  final String href;
+
+  const AiSupportAction({
+    required this.kind,
+    required this.label,
+    required this.href,
+  });
+
+  factory AiSupportAction.fromJson(Map<String, dynamic> json) =>
+      AiSupportAction(
+        kind: json['kind']?.toString() ?? 'email',
+        label: json['label']?.toString() ?? 'Contactar soporte',
+        href: json['href']?.toString() ?? '',
+      );
+}
+
 /// Un mensaje del chat con el asistente IA "Ofi".
 ///
 /// `local` marca mensajes que viven SOLO en el cliente (saludo inicial,
@@ -23,6 +44,9 @@ class AiMessageModel {
   /// PROVIDER_RESULTS). Null/empty para mensajes normales.
   final List<ProviderModel>? providers;
 
+  /// Acciones oficiales de soporte mostradas debajo de la respuesta de Ofi.
+  final List<AiSupportAction>? supportActions;
+
   AiMessageModel({
     required this.text,
     required this.sender,
@@ -30,6 +54,7 @@ class AiMessageModel {
     this.isError = false,
     this.local = false,
     this.providers,
+    this.supportActions,
   }) : timestamp = timestamp ?? DateTime.now();
 
   /// Mensaje del usuario (lado derecho, color primario).
@@ -37,8 +62,14 @@ class AiMessageModel {
       AiMessageModel(text: text, sender: AiSender.user);
 
   /// Respuesta de Ofi (lado izquierdo).
-  factory AiMessageModel.ofi(String text) =>
-      AiMessageModel(text: text, sender: AiSender.ofi);
+  factory AiMessageModel.ofi(
+    String text, {
+    List<AiSupportAction>? supportActions,
+  }) => AiMessageModel(
+    text: text,
+    sender: AiSender.ofi,
+    supportActions: supportActions,
+  );
 
   /// Respuesta de Ofi con tarjetas de proveedores navegables (el texto se
   /// muestra arriba y las tarjetas debajo).
@@ -63,4 +94,7 @@ class AiMessageModel {
 
   /// True si el mensaje trae tarjetas de proveedores para renderizar.
   bool get hasProviders => providers != null && providers!.isNotEmpty;
+
+  bool get hasSupportActions =>
+      supportActions != null && supportActions!.isNotEmpty;
 }

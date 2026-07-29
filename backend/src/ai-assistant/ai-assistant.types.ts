@@ -64,6 +64,13 @@ export interface GuardrailResult {
   toxic: boolean;
 }
 
+/** Acción de contacto seguro que el cliente renderiza como botón. */
+export interface AiSupportAction {
+  kind: 'whatsapp' | 'email' | 'sales';
+  label: string;
+  href: string;
+}
+
 /** Respuesta pública del endpoint /ai-assistant/chat. */
 export interface AiChatResult {
   reply: string;
@@ -75,6 +82,8 @@ export interface AiChatResult {
   type?: 'PROVIDER_RESULTS';
   /** Proveedores encontrados (shape de catálogo). Acompaña a `reply`. */
   providers?: ProviderCardDto[];
+  /** Canales oficiales cuando el router determinístico detecta soporte. */
+  supportActions?: AiSupportAction[];
   /** Metadata no sensible para el cliente (debug/UX). */
   meta: {
     promptVersion: string;

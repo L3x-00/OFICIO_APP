@@ -9,61 +9,61 @@ datasource db {
 }
 
 model User {
-  id               Int              @id @default(autoincrement())
-  email            String           @unique
-  phone            String?          @unique
-  passwordHash     String
-  role             UserRole         @default(USUARIO)
-  firstName        String
-  lastName         String
-  avatarUrl        String?
-  isActive         Boolean          @default(true)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  department       String?
-  province         String?
-  district         String?
-  firebaseUid      String?          @unique
-  isEmailVerified  Boolean          @default(false)
-  fcmToken         String?
-  coins            Int              @default(0)
+  id                    Int                @id @default(autoincrement())
+  email                 String             @unique
+  phone                 String?            @unique
+  passwordHash          String
+  role                  UserRole           @default(USUARIO)
+  firstName             String
+  lastName              String
+  avatarUrl             String?
+  isActive              Boolean            @default(true)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  department            String?
+  province              String?
+  district              String?
+  firebaseUid           String?            @unique
+  isEmailVerified       Boolean            @default(false)
+  fcmToken              String?
+  coins                 Int                @default(0)
   /// true cuando el usuario ya consumió el mes de cortesía (ESTANDAR).
   /// Se marca al reactivar una cuenta soft-deleted — un re-registro NO
   /// vuelve a recibir el mes de gracia (anti freemium abuse).
-  hasUsedTrial     Boolean          @default(false)
+  hasUsedTrial          Boolean            @default(false)
   /// Fecha de auto-eliminación (soft delete por el propio usuario).
   /// null = cuenta no eliminada. Distingue el soft-delete del usuario
   /// de un baneo del admin (que solo pone isActive=false sin deletedAt),
   /// para que un re-registro NO reactive una cuenta suspendida.
-  deletedAt        DateTime?
-  lastIp           String?
-  lastLoginAt      DateTime?
+  deletedAt             DateTime?
+  lastIp                String?
+  lastLoginAt           DateTime?
   /// Última vez que se envió el correo "Te extrañamos" (cron de inactividad).
   /// Evita re-enviarlo a diario: solo se vuelve a enviar si el usuario reactiva
   /// (lastLoginAt > inactivityEmailSentAt) y vuelve a quedar inactivo.
   inactivityEmailSentAt DateTime?
-  appointments     Appointment[]
-  quotationRequests QuotationRequest[]
-  chatsAsClient    ChatRoom[]       @relation("ClientChats")
-  redemptions      CoinRedemption[]
-  favorites        Favorite[]
-  offerReports     OfferReport[]
-  otpCodes         OtpCode[]
-  platformIssues   PlatformIssue[]
-  providerReports  ProviderReport[]
-  providers        Provider[]
-  recommendations  Recommendation[]
-  referralCode     ReferralCode?
-  referralReceived Referral?        @relation("ReferralInvited")
-  referralsSent    Referral[]       @relation("ReferralInviter")
-  refreshTokens    RefreshToken[]
-  reviewReplies    ReviewReply[]
-  reviews          Review[]
-  serviceRequests  ServiceRequest[]
-  penalty          UserPenalty?
-  aiMemory         AiUserMemory?
-  reportsMade      UserReport[]     @relation("UserReportsMade")
-  reportsReceived  UserReport[]     @relation("UserReportsReceived")
+  appointments          Appointment[]
+  quotationRequests     QuotationRequest[]
+  chatsAsClient         ChatRoom[]         @relation("ClientChats")
+  redemptions           CoinRedemption[]
+  favorites             Favorite[]
+  offerReports          OfferReport[]
+  otpCodes              OtpCode[]
+  platformIssues        PlatformIssue[]
+  providerReports       ProviderReport[]
+  providers             Provider[]
+  recommendations       Recommendation[]
+  referralCode          ReferralCode?
+  referralReceived      Referral?          @relation("ReferralInvited")
+  referralsSent         Referral[]         @relation("ReferralInviter")
+  refreshTokens         RefreshToken[]
+  reviewReplies         ReviewReply[]
+  reviews               Review[]
+  serviceRequests       ServiceRequest[]
+  penalty               UserPenalty?
+  aiMemory              AiUserMemory?
+  reportsMade           UserReport[]       @relation("UserReportsMade")
+  reportsReceived       UserReport[]       @relation("UserReportsReceived")
 
   @@index([role, isActive])
   @@index([department, province])
@@ -95,15 +95,15 @@ model RefreshToken {
 }
 
 model Locality {
-  id              Int            @id @default(autoincrement())
+  id              Int                @id @default(autoincrement())
   name            String
   department      String
-  country         String         @default("Perú")
-  isActive        Boolean        @default(true)
-  createdAt       DateTime       @default(now())
+  country         String             @default("Perú")
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
   district        String?
   province        String?
-  source          LocalitySource @default(SEED)
+  source          LocalitySource     @default(SEED)
   department_norm String?
   province_norm   String?
   district_norm   String?
@@ -728,16 +728,16 @@ model YapePayment {
 }
 
 model UserPenalty {
-  id           Int       @id @default(autoincrement())
-  userId       Int       @unique
-  noPickCount  Int       @default(0)
+  id               Int       @id @default(autoincrement())
+  userId           Int       @unique
+  noPickCount      Int       @default(0)
   /// Veces que el PROVEEDOR canceló (retiró) una oferta. A partir de 10 no
   /// puede postular a nuevas solicitudes (sí puede verlas).
-  offerCancelCount Int   @default(0)
-  blockedUntil DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offerCancelCount Int       @default(0)
+  blockedUntil     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_penalties")
 }
@@ -923,7 +923,8 @@ model AiKnowledgeEntry {
 /// Conversación con el asistente IA "Ofi" (Fase 4). `userId` es Int plano
 /// (sin FK a User) para mantener el módulo IA desacoplado. Guarda la
 /// versión de prompt activa al crearse (regla 8) y sus mensajes en
-/// cascada. Política de retención: se purga > 90 días (AiRetentionService).
+/// cascada. Mensajes > 12 horas se purgan; conversaciones vacías antiguas se
+/// eliminan por AiRetentionService.
 model AiConversation {
   id            Int         @id @default(autoincrement())
   userId        Int
@@ -964,18 +965,23 @@ model AiMessage {
 /// se inyectan compactas en el system prompt para no repreguntar y reducir
 /// tool calls. 1 fila por usuario; se actualiza best-effort tras cada turno.
 model AiUserMemory {
-  id                Int      @id @default(autoincrement())
-  userId            Int      @unique
+  id                Int       @id @default(autoincrement())
+  userId            Int       @unique
   /// Rubros buscados recientemente (cap 5, más reciente primero).
-  searchCategories  String[] @default([])
+  searchCategories  String[]  @default([])
   /// Proveedores surgidos/visitados en el chat (cap 8, más reciente primero).
-  recentProviderIds Int[]    @default([])
+  recentProviderIds Int[]     @default([])
   /// Última intención: 'search' | 'faq' | 'financial' | 'other'.
   lastIntent        String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Flag interno heredado; nunca se expone a clientes.
+  consentGranted    Boolean   @default(false)
+  /// Vencimiento renovado por cada turno útil; null = memoria aún no inicializada.
+  expiresAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([expiresAt])
   @@map("ai_user_memories")
 }
 
@@ -992,6 +998,24 @@ model AiProviderMemory {
   provider        Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("ai_provider_memories")
+}
+
+/// Candidato agregado del cerebro global de Ofi. No guarda texto de chats,
+/// usuarios ni historial. Solo prioriza temas para futura revisión de la KB.
+model AiLearningCandidate {
+  id          Int      @id @default(autoincrement())
+  topic       String   @unique
+  intent      String
+  occurrences Int      @default(0)
+  /// PENDING | READY_FOR_REVIEW | REVIEWED | DISMISSED | PUBLISHED.
+  status      String   @default("PENDING")
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, occurrences])
+  @@index([lastSeenAt])
+  @@map("ai_learning_candidates")
 }
 
 enum UserRole {

@@ -27,6 +27,9 @@ class AiChatReply {
   /// Vacío en cualquier otro caso. Cada item alimenta `ProviderModel.fromJson`.
   final List<Map<String, dynamic>> providers;
 
+  /// Enlaces de contacto oficiales cuando Ofi deriva la consulta a soporte.
+  final List<AiSupportAction> supportActions;
+
   const AiChatReply({
     required this.reply,
     required this.promptVersion,
@@ -35,6 +38,7 @@ class AiChatReply {
     this.cached = false,
     this.type,
     this.providers = const [],
+    this.supportActions = const [],
   });
 
   factory AiChatReply.fromJson(Map<String, dynamic> json) {
@@ -48,6 +52,16 @@ class AiChatReply {
               .map((m) => Map<String, dynamic>.from(m))
               .toList()
         : <Map<String, dynamic>>[];
+    final rawSupportActions = json['supportActions'];
+    final supportActions = rawSupportActions is List
+        ? rawSupportActions
+              .whereType<Map>()
+              .map(
+                (m) => AiSupportAction.fromJson(Map<String, dynamic>.from(m)),
+              )
+              .where((action) => action.href.isNotEmpty)
+              .toList()
+        : <AiSupportAction>[];
     return AiChatReply(
       reply: json['reply']?.toString() ?? '',
       promptVersion: meta['promptVersion']?.toString() ?? 'v1',
@@ -56,6 +70,7 @@ class AiChatReply {
       cached: meta['cached'] as bool? ?? false,
       type: json['type']?.toString(),
       providers: providers,
+      supportActions: supportActions,
     );
   }
 }
@@ -138,6 +153,23 @@ class AiAssistantRepository {
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) throw const SessionExpiredException();
       rethrow;
+    }
+  }
+
+  /// Inicia un chat vacío. Los mensajes anteriores siguen sujetos a retención.
+  Future<void> startNewChat() async {
+    try {
+      final res = await _dio.post('/ai-assistant/new-chat');
+      final data = Map<String, dynamic>.from(res.data as Map);
+      if (data['ok'] != true) {
+        throw const AiAssistantException(
+          'No se pudo iniciar el nuevo chat. Intenta de nuevo.',
+          AiErrorKind.server,
+        );
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw const SessionExpiredException();
+      throw _mapError(e);
     }
   }
 

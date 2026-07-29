@@ -1,31 +1,32 @@
 /**
  * UNIT — AiRetentionService (retención automática de IA).
  *
- *   • Purga mensajes con > RETENTION_DAYS días (cutoff correcto).
+ *   • Purga mensajes con > RETENTION_HOURS horas (cutoff correcto).
  *   • Expira conversaciones antiguas que quedaron vacías (messages none).
  *   • NO toca mensajes recientes (WHERE acotado por fecha).
  *   • Resiliente: un fallo de Prisma → retorna 0 sin lanzar.
  *   • scheduledPurge dispara la purga.
  */
 import { AiRetentionService } from '../../../src/ai-assistant/ai-retention.service.js';
-import { RETENTION_DAYS } from '../../../src/ai-assistant/ai-assistant.constants.js';
+import { RETENTION_HOURS } from '../../../src/ai-assistant/ai-assistant.constants.js';
 
-const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
 
 function makePrisma(over: Record<string, unknown> = {}) {
   return {
     aiMessage: { deleteMany: jest.fn(async () => ({ count: 5 })) },
     aiConversation: { deleteMany: jest.fn(async () => ({ count: 2 })) },
+    aiUserMemory: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     ...over,
   } as any;
 }
 
 describe('AiRetentionService', () => {
-  it('RETENTION_DAYS = 3 (política de 3 días)', () => {
-    expect(RETENTION_DAYS).toBe(3);
+  it('RETENTION_HOURS = 12 (política de 12 horas)', () => {
+    expect(RETENTION_HOURS).toBe(12);
   });
 
-  it('purga mensajes > RETENTION_DAYS y conversaciones vacías; retorna total', async () => {
+  it('purga mensajes > RETENTION_HOURS y conversaciones vacías; retorna total', async () => {
     const prisma = makePrisma();
     const svc = new AiRetentionService(prisma);
 
@@ -34,11 +35,11 @@ describe('AiRetentionService', () => {
 
     expect(total).toBe(7); // 5 mensajes + 2 conversaciones
 
-    // (1) Mensajes: solo los anteriores al cutoff (hoy - RETENTION_DAYS).
+    // (1) Mensajes: solo los anteriores al cutoff (ahora - RETENTION_HOURS).
     const msgArg = prisma.aiMessage.deleteMany.mock.calls[0][0];
     const lt = msgArg.where.createdAt.lt as Date;
     expect(lt).toBeInstanceOf(Date);
-    expect(Math.abs(lt.getTime() - (before - RETENTION_DAYS * DAY))).toBeLessThan(
+    expect(Math.abs(lt.getTime() - (before - RETENTION_HOURS * HOUR))).toBeLessThan(
       5000,
     );
 
@@ -52,6 +53,7 @@ describe('AiRetentionService', () => {
     const prisma = makePrisma({
       aiMessage: { deleteMany: jest.fn(async () => ({ count: 0 })) },
       aiConversation: { deleteMany: jest.fn(async () => ({ count: 0 })) },
+      aiUserMemory: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     });
     const svc = new AiRetentionService(prisma);
 
