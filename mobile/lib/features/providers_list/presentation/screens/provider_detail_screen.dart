@@ -179,7 +179,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
 
   /// Lanza el share-sheet nativo (Android/iOS) o Web Share API con la
   /// Vanity URL del proveedor + un copy con el nombre. La URL apunta al
-  /// dominio público (`oficioapp.org.pe/p/:slug`) que sirve la tarjeta
+  /// dominio público (`oficioapp.org.pe/:slug`) que sirve la tarjeta
   /// SSR con OG tags — al pegarla en WhatsApp / Facebook se ve preview
   /// con foto y descripción.
   ///
@@ -192,7 +192,7 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
     final pathSegment = (p.slug != null && p.slug!.isNotEmpty)
         ? p.slug!
         : '${p.id}';
-    final url = '${DioClient.publicWebUrl}/p/$pathSegment';
+    final url = '${DioClient.publicWebUrl}/$pathSegment';
     final text = p.type == ProviderType.negocio
         ? 'Mira el negocio ${p.businessName} en Servi'
         : 'Mira el perfil de ${p.businessName} en Servi';

@@ -15,7 +15,7 @@ class DioClient {
     defaultValue: 'http://192.168.1.65:3000',
   );
 
-  /// Dominio público para Vanity URLs (`/p/:slug`). Configurable por build
+  /// Dominio público para Vanity URLs (`/:slug`). Configurable por build
   /// para entornos de staging vs. producción. Default apunta al dominio
   /// oficial del marketplace.
   static const String publicWebUrl = String.fromEnvironment(
@@ -31,7 +31,7 @@ class DioClient {
         receiveTimeout: const Duration(seconds: 15),
         headers: {
           'Content-Type': 'application/json',
-          'Accept':        'application/json',
+          'Accept': 'application/json',
         },
       ),
     );
@@ -41,10 +41,7 @@ class DioClient {
   }
 
   /// Actualiza los tokens después del login
-  void setTokens({
-    required String accessToken,
-    required String refreshToken,
-  }) {
+  void setTokens({required String accessToken, required String refreshToken}) {
     ApiInterceptor.setTokens(
       accessToken: accessToken,
       refreshToken: refreshToken,
