@@ -67,7 +67,7 @@ describe('CoverageService (unit)', () => {
 
   describe('getCoverage()', () => {
     it('GRATIS → locked, sin selected ni options (extras se conservan en BD)', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('GRATIS'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('GRATIS')]);
       prisma.providerCoverage.findMany.mockResolvedValue([
         { id: 100, locality: LOCS[0] }, // selección previa de un plan vencido
       ]);
@@ -81,14 +81,14 @@ describe('CoverageService (unit)', () => {
     });
 
     it('sin suscripción = default-deny como GRATIS', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow(null));
+      prisma.provider.findMany.mockResolvedValue([providerRow(null)]);
       const res = await service.getCoverage(1);
       expect(res.plan).toBe('GRATIS');
       expect(res.locked).toBe(true);
     });
 
     it('ESTANDAR → options solo de su provincia (accent-insensitive), sin el registrado', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('ESTANDAR'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('ESTANDAR')]);
       prisma.providerCoverage.findMany.mockResolvedValue([
         { id: 100, locality: LOCS[0] },
       ]);
@@ -101,7 +101,7 @@ describe('CoverageService (unit)', () => {
     });
 
     it('self-heal: recorta extras sobrantes tras un downgrade sin hook', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('ESTANDAR'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('ESTANDAR')]);
       prisma.providerCoverage.findMany.mockResolvedValue([
         { id: 100, locality: LOCS[0] },
         { id: 101, locality: LOCS[2] },
@@ -117,28 +117,28 @@ describe('CoverageService (unit)', () => {
 
   describe('setCoverage()', () => {
     it('GRATIS → ForbiddenException (opción bloqueada)', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('GRATIS'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('GRATIS')]);
       await expect(service.setCoverage(1, [1])).rejects.toBeInstanceOf(
         ForbiddenException,
       );
     });
 
     it('más extras que el límite del plan → BadRequest', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('ESTANDAR'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('ESTANDAR')]);
       await expect(service.setCoverage(1, [1, 3, 4])).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
 
     it('distrito de otra provincia → BadRequest', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('ESTANDAR'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('ESTANDAR')]);
       await expect(service.setCoverage(1, [5])).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
 
     it('OK: filtra el registrado, reemplaza en transacción y devuelve estado fresco', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('ESTANDAR'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('ESTANDAR')]);
       // ids incluyen el home (2) — se ignora, quedan [1, 3] dentro del límite
       const res = await service.setCoverage(1, [1, 2, 3]);
       expect(prisma.providerCoverage.deleteMany).toHaveBeenCalledWith({
@@ -154,7 +154,7 @@ describe('CoverageService (unit)', () => {
     });
 
     it('lista vacía = volver solo al distrito registrado (sin createMany)', async () => {
-      prisma.provider.findFirst.mockResolvedValue(providerRow('PREMIUM'));
+      prisma.provider.findMany.mockResolvedValue([providerRow('PREMIUM')]);
       await service.setCoverage(1, []);
       expect(prisma.providerCoverage.deleteMany).toHaveBeenCalled();
       expect(prisma.providerCoverage.createMany).not.toHaveBeenCalled();
