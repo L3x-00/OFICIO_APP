@@ -1,7 +1,11 @@
 # Plan V1 — Oficios, Profesionales y Negocios
 
-**Fecha:** 2026-07-29
-**Estado:** investigación y diseño. Sin cambios funcionales, SQL, commit ni push.
+**Fecha:** 2026-07-29 (última actualización 2026-07-30)
+**Estado:** Fases 0-4 completas y commiteadas localmente en `feat/profesionales-v1`
+(commits `1c3cc74`, `f54432c`, `96c73ef`, `b3a8ff5`, `0dc3672`, `edfeea8`). Sin
+push. SQL idempotente listo en `backend/prisma/sql/profesionales_*.sql`,
+pendiente de aplicación manual del propietario en Supabase antes de mergear.
+Ver reporte completo en `docs/REPORTE_SERVICIOS_PROFESIONALES_V1.md`.
 
 ## Objetivo aprobado
 
@@ -197,4 +201,13 @@ crear categorías reales.
 
 ## Estado y siguiente decisión
 
-Documento listo para revisión. Se espera aprobación explícita del propietario para iniciar Fase 0/Fase 1. No hay commits ni push autorizados.
+Fases 0-4 ejecutadas y verificadas (backend 626/626, admin 26/26, web build OK,
+flutter analyze 0 issues nuevos). Falta, en este orden:
+
+1. Propietario aplica manualmente en Supabase, en orden, los SQL de
+   `backend/prisma/sql/profesionales_01..05_*.sql` y confirma resultado.
+2. Revisión del diff completo (6 commits locales) y aprobación explícita.
+3. Push de la rama, PR, CI y squash-merge (skill `/subir-pr`).
+
+Detalle completo de qué se hizo, qué se verificó y qué queda pendiente
+(incluye deuda menor no bloqueante) en `docs/REPORTE_SERVICIOS_PROFESIONALES_V1.md`.
