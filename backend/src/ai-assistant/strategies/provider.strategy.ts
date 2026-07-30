@@ -1,15 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import type { AiContextStrategy } from './ai-context.strategy.js';
+import { providerTypeLabel } from '../ai-assistant.helpers.js';
 
 /**
  * Persona PROVIDER — usuario con perfil de proveedor. Asistente "empresarial"
  * enfocado en visibilidad, plan y métricas propias.
  *
  * El prompt es DINÁMICO: incluye el/los perfil(es) activo(s) del proveedor
- * (OFICIO/NEGOCIO) consultados en BD. La interfaz solo recibe `userId`, así
- * que el tipo de perfil se resuelve aquí. Best-effort: si la BD falla o no
- * hay perfil, devuelve un prompt válido genérico (NUNCA lanza).
+ * (OFICIO/PROFESIONAL/NEGOCIO) consultados en BD. La interfaz solo recibe
+ * `userId`, así que el tipo de perfil se resuelve aquí. Best-effort: si la BD
+ * falla o no hay perfil, devuelve un prompt válido genérico (NUNCA lanza).
  */
 @Injectable()
 export class ProviderStrategy implements AiContextStrategy {
@@ -33,9 +34,10 @@ export class ProviderStrategy implements AiContextStrategy {
   }
 
   /**
-   * Etiqueta del/los perfil(es) del proveedor: 'OFICIO', 'NEGOCIO',
-   * 'OFICIO y NEGOCIO' o 'proveedor' como fallback. Un usuario puede tener
-   * ambos tipos (@@unique([userId, type])).
+   * Etiqueta del/los perfil(es) del proveedor: 'Oficio', 'Servicio
+   * profesional', 'Negocio', combinaciones como 'Oficio y Negocio' (un
+   * usuario puede tener Oficio o Profesional, nunca ambos, más Negocio
+   * opcional; @@unique([userId, type])) o 'proveedor' como fallback.
    */
   private async resolveProfileLabel(userId: number): Promise<string> {
     try {
@@ -45,7 +47,7 @@ export class ProviderStrategy implements AiContextStrategy {
       });
       const types = profiles.map((p) => p.type);
       if (types.length === 0) return 'proveedor';
-      return types.join(' y ');
+      return types.map((t) => providerTypeLabel(t)).join(' y ');
     } catch (e) {
       this.logger.warn(
         `resolveProfileLabel falló (fallback genérico): ${(e as Error)?.message ?? e}`,

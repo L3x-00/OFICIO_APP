@@ -54,8 +54,8 @@ export class AiKnowledgeSeeder implements OnModuleInit {
       content: {
         resumen:
           'Servi es un marketplace de servicios locales del Perú que conecta ' +
-          'clientes con profesionales (OFICIO) y negocios (NEGOCIO) verificados ' +
-          'de su ciudad.',
+          'clientes con Oficios, Servicios profesionales y Negocios de su ' +
+          'ciudad.',
         para_clientes: 'Buscar y contactar proveedores es 100% gratis.',
         para_proveedores:
           'Crean un perfil, suben fotos y reciben clientes. Pagan una ' +
@@ -65,9 +65,20 @@ export class AiKnowledgeSeeder implements OnModuleInit {
     {
       topic: 'tipos_de_perfil',
       content: {
-        OFICIO: 'Profesional independiente: electricista, gasfitero, etc.',
-        NEGOCIO: 'Local o establecimiento: pollería, peluquería, etc.',
-        nota: 'Un mismo usuario puede tener perfil OFICIO y NEGOCIO a la vez.',
+        OFICIO:
+          'Oficio: trabajo manual o técnico (electricista, gasfitero, etc.), ' +
+          'sin requerir estudios formales certificados.',
+        PROFESIONAL:
+          'Servicio profesional: especialidad con formación o experiencia ' +
+          'declarada (abogado, ingeniero, contador, etc.).',
+        NEGOCIO:
+          'Negocio: local, empresa o marca (pollería, peluquería, etc.).',
+        nota:
+          'Un usuario puede ser Cliente y además tener un perfil de Oficio O ' +
+          'de Servicio profesional (nunca ambos a la vez), más un perfil de ' +
+          'Negocio opcional. El sello "Credenciales verificadas" es opcional: ' +
+          'solo aparece si un admin aprobó documentos, no todo Servicio ' +
+          'profesional está certificado.',
       },
     },
     {

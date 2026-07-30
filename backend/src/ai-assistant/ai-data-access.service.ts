@@ -37,7 +37,7 @@ export interface ProviderCardDto {
   id: number;
   slug: string | null;
   businessName: string;
-  /** 'OFICIO' | 'NEGOCIO'. */
+  /** 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO'. */
   type: string;
   averageRating: number;
   totalReviews: number;
@@ -596,7 +596,8 @@ export class AiDataAccessService {
           subscription: { select: { plan: true, status: true, endDate: true } },
         },
       })
-      // Si no hay perfil NEGOCIO, intenta cualquiera con suscripción.
+      // Si no hay perfil NEGOCIO, intenta cualquiera (OFICIO/PROFESIONAL/
+      // NEGOCIO) con suscripción.
       .then(async (negocio) => {
         if (negocio?.subscription) return negocio.subscription;
         const any = await this.prisma.provider.findFirst({
